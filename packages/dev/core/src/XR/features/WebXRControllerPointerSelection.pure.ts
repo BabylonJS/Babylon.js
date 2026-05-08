@@ -24,7 +24,7 @@ import { type WebXRCamera } from "../webXRCamera";
 import { type Node } from "../../node";
 import { Viewport } from "../../Maths/math.viewport";
 import { type Mesh } from "../../Meshes/mesh.pure";
-import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 
 /**
  * Options interface for the pointer selection module
@@ -907,7 +907,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     }
                 }
             } catch (e) {
-                Tools.Warn("controller already detached.");
+                Logger.Warn("controller already detached.");
             }
         });
     }

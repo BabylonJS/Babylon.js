@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize, serializeAsMatrix, serializeAsVector3 } from "../../Misc/decorators";
-import { Tools } from "../../Misc/tools.pure";
+import { TimingTools } from "../../Misc/timingTools";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
@@ -509,7 +509,7 @@ export class CubeTexture extends BaseTexture {
             this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
         } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoadProcessing());
+                TimingTools.SetImmediate(() => onLoadProcessing());
             } else {
                 this._texture.onLoadedObservable.add(() => onLoadProcessing());
             }

@@ -15,7 +15,6 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from "./transformNode.pure";
 import { type Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer.pure";
-import { Tools } from "../Misc/tools.pure";
 import { type Geometry } from "./geometry";
 
 import { type ThinEngine } from "../Engines/thinEngine.pure";
@@ -116,7 +115,7 @@ export class InstancedMesh extends AbstractMesh {
 
     public override set receiveShadows(_value: boolean) {
         if (this._sourceMesh?.receiveShadows !== _value) {
-            Tools.Warn("Setting receiveShadows on an instanced mesh has no effect");
+            Logger.Warn("Setting receiveShadows on an instanced mesh has no effect");
         }
     }
 
@@ -129,7 +128,7 @@ export class InstancedMesh extends AbstractMesh {
 
     public override set material(_value: Nullable<Material>) {
         if (this._sourceMesh?.material !== _value) {
-            Tools.Warn("Setting material on an instanced mesh has no effect");
+            Logger.Warn("Setting material on an instanced mesh has no effect");
         }
     }
 
@@ -142,7 +141,7 @@ export class InstancedMesh extends AbstractMesh {
 
     public override set visibility(_value: number) {
         if (this._sourceMesh?.visibility !== _value) {
-            Tools.Warn("Setting visibility on an instanced mesh has no effect");
+            Logger.Warn("Setting visibility on an instanced mesh has no effect");
         }
     }
 
@@ -155,7 +154,7 @@ export class InstancedMesh extends AbstractMesh {
 
     public override set skeleton(_value: Nullable<Skeleton>) {
         if (this._sourceMesh?.skeleton !== _value) {
-            Tools.Warn("Setting skeleton on an instanced mesh has no effect");
+            Logger.Warn("Setting skeleton on an instanced mesh has no effect");
         }
     }
 

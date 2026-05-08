@@ -5,6 +5,7 @@ import { CameraInputTypes, type ICameraInput } from "../../Cameras/cameraInputsM
 import { type FreeCamera } from "../../Cameras/freeCamera.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
 import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 
 import { Observable } from "../../Misc/observable.pure";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager.pure";
@@ -62,12 +63,12 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                         if (response == "granted") {
                             window.addEventListener("deviceorientation", eventHandler);
                         } else {
-                            Tools.Warn("Permission not granted.");
+                            Logger.Warn("Permission not granted.");
                         }
                     })
                     // eslint-disable-next-line github/no-then
                     .catch((error: any) => {
-                        Tools.Error(error);
+                        Logger.Error(error);
                     });
             } else {
                 window.addEventListener("deviceorientation", eventHandler);
@@ -129,12 +130,12 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                         if (response === "granted") {
                             eventHandler();
                         } else {
-                            Tools.Warn("Permission not granted.");
+                            Logger.Warn("Permission not granted.");
                         }
                     })
                     // eslint-disable-next-line github/no-then
                     .catch((error: any) => {
-                        Tools.Error(error);
+                        Logger.Error(error);
                     });
             } else {
                 eventHandler();
@@ -149,7 +150,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"]
                   ? (<any>window.screen).orientation.angle
                   : 0;
-        this._screenOrientationAngle = -Tools.ToRadians(this._screenOrientationAngle / 2);
+        this._screenOrientationAngle = -(this._screenOrientationAngle / 2) * (Math.PI / 180);
         this._screenQuaternion.copyFromFloats(0, Math.sin(this._screenOrientationAngle), 0, Math.cos(this._screenOrientationAngle));
     };
 
@@ -189,7 +190,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
             return;
         }
         if (this._camera.rotationQuaternion) {
-            Quaternion.RotationYawPitchRollToRef(Tools.ToRadians(this._alpha), Tools.ToRadians(this._beta), -Tools.ToRadians(this._gamma), this._camera.rotationQuaternion);
+            Quaternion.RotationYawPitchRollToRef(this._alpha * (Math.PI / 180), this._beta * (Math.PI / 180), -this._gamma * (Math.PI / 180), this._camera.rotationQuaternion);
 
             this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
             this._camera.rotationQuaternion.multiplyInPlace(this._constantTransform);

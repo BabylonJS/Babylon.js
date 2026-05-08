@@ -1639,6 +1639,67 @@ High-level registration bundles for common use cases:
 
 ---
 
+## Phase 14 — Eliminate Static Class Indirections in Pure Files
+
+### Problem Statement
+
+Many `.pure.ts` files import heavyweight classes (primarily `Tools` at ~1700 lines) only to
+call thin proxy methods like `Tools.Warn()`, `Tools.SetImmediate()`, or `Tools.LoadFile()`.
+These calls defeat tree-shaking because:
+
+1. The `Tools` class cannot be split — importing it for one method pulls everything.
+2. The proxy pattern adds an unnecessary layer of indirection.
+3. For `FileTools`, the old pattern required a side-effect registration (`RegisterFileTools()`)
+   just to populate function containers — even when the pure functions were already available.
+
+### Solution
+
+Replace static class method calls in `.pure.ts` files with direct module-level function
+imports from the appropriate pure source files:
+
+| Old pattern (static call)                      | New pattern (direct import)                          | Source module          |
+| ---------------------------------------------- | ---------------------------------------------------- | ---------------------- |
+| `Tools.Log/Warn/Error(msg)`                    | `Logger.Log/Warn/Error(msg)`                         | `Misc/logger.ts`       |
+| `Tools.SetImmediate(fn)`                       | `SetImmediate(fn)`                                   | `Misc/timingTools.ts`  |
+| `Tools.ToRadians(angle)`                       | `ToRadians(angle)`                                   | `Misc/math.ts` (new)   |
+| `Tools.IsExponentOfTwo(n)`                     | `IsExponentOfTwo(n)`                                 | `Misc/tools.functions` |
+| `Tools.LoadFile(...)`                          | `LoadFile(...)`                                      | `Misc/fileTools.pure`  |
+| `Tools.LoadFileAsync(...)`                     | `LoadFileAsync(...)` (or wrap `LoadFile` in promise) | `Misc/fileTools.pure`  |
+| `Tools.SmoothAngleChange(a,b,f)`               | `SmoothAngleChange(a,b,f)` (new export)              | `Misc/tools.pure`      |
+| `Tools.BackCompatCameraNoPreventDefault(args)` | `BackCompatCameraNoPreventDefault(args)`             | `Misc/tools.pure`      |
+| `Tools.GetBabylonScriptURL(url)`               | `GetBabylonScriptURL(url)` (new export)              | `Misc/tools.pure`      |
+| `AbstractEngine._FileToolsLoadImage(...)`      | `LoadImage(...)`                                     | `Misc/fileTools.pure`  |
+| `EngineFunctionContext.loadFile(...)`          | `LoadFile(...)`                                      | `Misc/fileTools.pure`  |
+
+### Scope
+
+- **58 `.pure.ts` files** currently reference `Tools.*` methods
+- **~24 `Tools.SetImmediate` calls**, **~27 `Tools.Log/Warn/Error` calls**, **~5 `Tools.ToRadians` calls**
+- Priority: Logger, SetImmediate, IsExponentOfTwo, LoadFile (highest call counts, clearest replacements)
+
+### What This Does NOT Change
+
+- `_WarnImport` stubs — those remain as runtime safety nets
+- Factory patterns (`Mesh._InstancedMeshFactory`, `Texture._CubeTextureParser`) — those need class instantiation
+- Scene component registrations — those are lifecycle hooks
+- Non-pure files — they already have side effects, so pulling in `Tools` doesn't matter
+
+### Implementation
+
+- [x] **14.1** — Eliminate `FileTools` side-effect requirement (AbstractEngine.\_FileToolsLoadImage,
+      EngineFunctionContext.loadFile, \_FunctionContainer.loadFile → direct `LoadFile`/`LoadImage` imports)
+- [ ] **14.2** — Replace `Tools.Log/Warn/Error` → `Logger.Log/Warn/Error` in pure files
+- [ ] **14.3** — Replace `Tools.SetImmediate` → `SetImmediate` (module-level export from timingTools)
+- [ ] **14.4** — Replace `Tools.ToRadians` → inline `(angle * Math.PI / 180)` or extracted constant
+- [ ] **14.5** — Replace `Tools.IsExponentOfTwo` → `IsExponentOfTwo` from `tools.functions.ts`
+- [ ] **14.6** — Replace `Tools.LoadFile`/`Tools.LoadFileAsync` → `LoadFile` from `fileTools.pure`
+- [ ] **14.7** — Export remaining helpers as module-level functions from `tools.pure.ts`:
+      `BackCompatCameraNoPreventDefault`, `SmoothAngleChange`, `GetBabylonScriptURL`, `GetFolderPath`
+- [ ] **14.8** — Remove `Tools` import from pure files that no longer need it
+- [ ] **14.9** — Verify: TypeScript, lint, unit tests, tree-shaking smoke tests all pass
+
+---
+
 ## Current State Summary (as of latest fresh run)
 
 ### File Counts

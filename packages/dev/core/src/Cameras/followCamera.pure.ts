@@ -130,7 +130,7 @@ export class FollowCamera extends TargetCamera {
         cameraTarget.absoluteRotationQuaternion.toRotationMatrix(rotMatrix);
         const yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
 
-        const radians = Tools.ToRadians(this.rotationOffset) + yRotation;
+        const radians = this.rotationOffset * (Math.PI / 180) + yRotation;
         const targetPosition = cameraTarget.getAbsolutePosition();
         const targetX: number = targetPosition.x + Math.sin(radians) * this.radius;
 

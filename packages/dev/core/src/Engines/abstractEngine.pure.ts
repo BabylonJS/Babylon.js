@@ -22,7 +22,7 @@ import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { type IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { type IFileRequest } from "../Misc/fileRequest";
 import { type Texture } from "../Materials/Textures/texture.pure";
-import { type LoadFileError } from "../Misc/fileTools.pure";
+import { type LoadFileError, LoadImage, LoadFile as _PureLoadFile } from "../Misc/fileTools.pure";
 import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { type IPipelineContext } from "./IPipelineContext";
 import { type ThinTexture } from "../Materials/Textures/thinTexture";
@@ -1752,7 +1752,7 @@ export abstract class AbstractEngine {
                 if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
-                    AbstractEngine._FileToolsLoadImage(
+                    LoadImage(
                         url || "",
                         onload,
                         onInternalError,
@@ -1763,7 +1763,7 @@ export abstract class AbstractEngine {
                     );
                 }
             } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                AbstractEngine._FileToolsLoadImage(
+                LoadImage(
                     buffer,
                     onload,
                     onInternalError,
@@ -2622,7 +2622,7 @@ export abstract class AbstractEngine {
         imageBitmapOptions?: ImageBitmapOptions,
         engine?: AbstractEngine
     ): Nullable<HTMLImageElement> {
-        throw _WarnImport("FileTools");
+        return LoadImage(input, onLoad, onError, offlineProvider, mimeType, imageBitmapOptions, engine);
     }
 
     /**
@@ -2669,7 +2669,7 @@ export abstract class AbstractEngine {
         if (EngineFunctionContext.loadFile) {
             return EngineFunctionContext.loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         }
-        throw _WarnImport("FileTools");
+        return _PureLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
     /**

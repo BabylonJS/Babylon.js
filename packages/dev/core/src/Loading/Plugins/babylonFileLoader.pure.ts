@@ -19,7 +19,6 @@ import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { ReflectionProbe } from "../../Probes/reflectionProbe.pure";
 import { GetClass } from "../../Misc/typeStore";
-import { Tools } from "../../Misc/tools.pure";
 import { PostProcess } from "../../PostProcesses/postProcess.pure";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { Parse, GetIndividualParser } from "./babylonFileParser.function";
@@ -97,7 +96,7 @@ export const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
                         mastermesh.setEnabled(true);
                     }
                 } else {
-                    Tools.Warn("Invalid level of detail distances for " + mesh.name);
+                    Logger.Warn("Invalid level of detail distances for " + mesh.name);
                 }
             }
         }

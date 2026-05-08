@@ -25,7 +25,7 @@ import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/p
 import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostProcesses/depthOfFieldEffect";
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { EngineStore } from "../../../Engines/engineStore";
-import { Tools } from "core/Misc/tools.pure";
+import { TimingTools } from "core/Misc/timingTools";
 import { type Animation } from "../../../Animations/animation.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 
@@ -522,7 +522,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
                 // Note that the pipeline could have been disposed before the deferred call was executed, but in that case
                 // _buildAllowed will have been set to false, preventing _buildPipeline from being executed.
                 if (avoidReentrancyAtConstructionTime) {
-                    Tools.SetImmediate(() => {
+                    TimingTools.SetImmediate(() => {
                         this._buildPipeline();
                     });
                 } else {

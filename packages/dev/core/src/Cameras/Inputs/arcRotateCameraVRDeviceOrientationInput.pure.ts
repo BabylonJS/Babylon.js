@@ -4,6 +4,7 @@ import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera.pure";
 import { CameraInputTypes, type ICameraInput } from "../../Cameras/cameraInputsManager";
 
 import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager.pure";
 
 /**
@@ -60,12 +61,12 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
                         if (response === "granted") {
                             hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
                         } else {
-                            Tools.Warn("Permission not granted.");
+                            Logger.Warn("Permission not granted.");
                         }
                     })
                     // eslint-disable-next-line github/no-then
                     .catch((error: any) => {
-                        Tools.Error(error);
+                        Logger.Error(error);
                     });
             } else {
                 hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);

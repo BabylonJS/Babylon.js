@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { Tools } from "../Misc/tools.pure";
+import { TimingTools } from "../Misc/timingTools";
 import { Logger } from "../Misc/logger";
 import { GetTGAHeader } from "../Misc/tga";
 import { type IOfflineProvider } from "./IOfflineProvider";
@@ -69,7 +69,7 @@ export class Database implements IOfflineProvider {
                 this._enableSceneOffline = true;
                 this._enableTexturesOffline = true;
                 this._manifestVersionFound = 1;
-                Tools.SetImmediate(() => {
+                TimingTools.SetImmediate(() => {
                     callbackManifestChecked(true);
                 });
             } else {

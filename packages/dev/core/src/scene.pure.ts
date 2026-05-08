@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Nullable } from "./types";
 import { Tools } from "./Misc/tools.pure";
+import { TimingTools, _RetryWithInterval } from "./Misc/timingTools";
 import { type IAnimatable } from "./Animations/animatable.interface";
 import { PrecisionDate } from "./Misc/precisionDate";
 import { type Observer, Observable } from "./Misc/observable.pure";
@@ -96,7 +97,6 @@ import { type Layer } from "./Layers/layer";
 import { type LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import { type ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture.pure";
 import { type FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
-import { _RetryWithInterval } from "./Misc/timingTools";
 import { type ObjectRenderer } from "./Rendering/objectRenderer";
 import { type BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer.pure";
 import { type BoundingBox } from "./Culling/boundingBox";
@@ -2960,7 +2960,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             newMesh._addToSceneRootNodes();
         }
 
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         });
 
@@ -3352,7 +3352,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewLightAddedObservable.notifyObservers(newLight);
         });
     }
@@ -3376,7 +3376,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this.cameras.push(newCamera);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         });
 
@@ -3395,7 +3395,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
         this.skeletons.push(newSkeleton);
 
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
         });
     }
@@ -3410,7 +3410,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
         this.particleSystems.push(newParticleSystem);
 
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewParticleSystemAddedObservable.notifyObservers(newParticleSystem);
         });
     }
@@ -3436,7 +3436,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
         this.animationGroups.push(newAnimationGroup);
 
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewAnimationGroupAddedObservable.notifyObservers(newAnimationGroup);
         });
     }
@@ -3450,7 +3450,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
         });
     }
@@ -3471,7 +3471,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         });
     }
@@ -3530,7 +3530,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public addFrameGraph(newFrameGraph: FrameGraph): void {
         this.frameGraphs.push(newFrameGraph);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewFrameGraphAddedObservable.notifyObservers(newFrameGraph);
         });
     }
@@ -3541,7 +3541,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public addObjectRenderer(objectRenderer: ObjectRenderer): void {
         this.objectRenderers.push(objectRenderer);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewObjectRendererAddedObservable.notifyObservers(objectRenderer);
         });
     }
@@ -3555,7 +3555,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.postProcesses.push(newPostProcess);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewPostProcessAddedObservable.notifyObservers(newPostProcess);
         });
     }
@@ -3569,7 +3569,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.effectLayers.push(newEffectLayer);
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewEffectLayerAddedObservable.notifyObservers(newEffectLayer);
         });
     }
@@ -3957,7 +3957,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.addGeometry(geometry);
 
-        Tools.SetImmediate(() => {
+        TimingTools.SetImmediate(() => {
             this.onNewGeometryAddedObservable.notifyObservers(geometry);
         });
 

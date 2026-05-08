@@ -485,7 +485,7 @@ export class NodeMaterial extends NodeMaterialBase {
                 if (!result) {
                     result = block;
                 } else {
-                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    Logger.Warn("More than one block was found with the name `" + name + "`");
                     return result;
                 }
             }

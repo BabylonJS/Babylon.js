@@ -14,9 +14,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import { GetBlobBufferSource } from "../Buffers/bufferUtils";
-import { _FunctionContainer } from "../Engines/Processors/shaderProcessor";
-import { EngineFunctionContext } from "core/Engines/abstractEngine.functions";
-import { AbstractEngine } from "../Engines/abstractEngine.pure";
 
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -1039,14 +1036,6 @@ export function RegisterFileTools(): void {
         return;
     }
     _Registered = true;
-
-    const initSideEffects = () => {
-        AbstractEngine._FileToolsLoadImage = LoadImage;
-        EngineFunctionContext.loadFile = LoadFile;
-        _FunctionContainer.loadFile = LoadFile;
-    };
-
-    initSideEffects();
 
     _injectLTSFileTools(
         DecodeBase64UrlToBinary,

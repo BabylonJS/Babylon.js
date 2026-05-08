@@ -8,7 +8,7 @@ import { Texture } from "../../Materials/Textures/texture.pure";
 import { Constants } from "../../Engines/constants";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Observable } from "../../Misc/observable.pure";
-import { Tools } from "../../Misc/tools.pure";
+import { TimingTools } from "../../Misc/timingTools";
 import { ToGammaSpace } from "../../Maths/math.constants";
 import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
@@ -178,7 +178,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
             }
         } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => this._onLoad());
+                TimingTools.SetImmediate(() => this._onLoad());
             } else {
                 this._texture.onLoadedObservable.add(this._onLoad);
             }

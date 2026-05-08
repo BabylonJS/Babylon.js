@@ -4,7 +4,7 @@ import { RawTexture } from "../../Materials/Textures/rawTexture";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Observable } from "../../Misc/observable.pure";
 import { type Observer } from "../../Misc/observable";
@@ -427,7 +427,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "depth-sensing";
 
         // https://immersive-web.github.io/depth-sensing/
-        Tools.Warn("depth-sensing is an experimental and unstable feature.");
+        Logger.Warn("depth-sensing is an experimental and unstable feature.");
         EnableDiscard = !options.useToleranceFactorForDepthSensing;
 
         RegisterMaterialPlugin("WebXRDepthSensingMaterialPlugin", (material) => new WebXRDepthSensingMaterialPlugin(material));
@@ -532,7 +532,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                     this._updateDepthInformationAndTextureWebGLDepthUsage(this._glBinding, view, this.depthDataFormat);
                     break;
                 default:
-                    Tools.Error("Unknown depth usage");
+                    Logger.Error("Unknown depth usage");
                     this.detach();
                     break;
             }

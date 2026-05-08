@@ -3,7 +3,7 @@
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Observable } from "../../Misc/observable.pure";
-import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 import { type Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
@@ -176,7 +176,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
         this._hdrFilter = new HDRFiltering(this._xrSessionManager.scene.getEngine() as ThinEngine);
 
         // https://immersive-web.github.io/lighting-estimation/
-        Tools.Warn("light-estimation is an experimental and unstable feature.");
+        Logger.Warn("light-estimation is an experimental and unstable feature.");
     }
 
     /**

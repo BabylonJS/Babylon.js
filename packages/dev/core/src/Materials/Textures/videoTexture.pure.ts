@@ -2,6 +2,7 @@
 
 import { Observable } from "../../Misc/observable.pure";
 import { Tools } from "../../Misc/tools.pure";
+import { IsExponentOfTwo } from "../../Misc/tools.functions";
 import { Logger } from "../../Misc/logger";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Constants } from "../../Engines/constants";
@@ -293,7 +294,7 @@ export class VideoTexture extends Texture {
             this._texture.dispose();
         }
 
-        if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
+        if (!this._getEngine()!.needPOTTextures || (IsExponentOfTwo(this.video.videoWidth) && IsExponentOfTwo(this.video.videoHeight))) {
             this.wrapU = Texture.WRAP_ADDRESSMODE;
             this.wrapV = Texture.WRAP_ADDRESSMODE;
         } else {

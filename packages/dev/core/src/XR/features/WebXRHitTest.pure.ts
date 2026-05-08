@@ -6,7 +6,7 @@ import { Observable } from "../../Misc/observable.pure";
 import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type IWebXRLegacyHitTestOptions, type IWebXRLegacyHitResult, type IWebXRHitTestFeature } from "./WebXRHitTestLegacy";
-import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 import { type Nullable } from "../../types";
 
 /**
@@ -99,7 +99,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             hitTestOptions.entityTypes = this.options.entityTypes;
         }
         if (!hitTestOptions.space) {
-            Tools.Warn("waiting for viewer reference space to initialize");
+            Logger.Warn("waiting for viewer reference space to initialize");
             return;
         }
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
@@ -152,7 +152,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "hit-test";
-        Tools.Warn("Hit test is an experimental and unstable feature.");
+        Logger.Warn("Hit test is an experimental and unstable feature.");
     }
 
     /**

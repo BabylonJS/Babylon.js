@@ -2,7 +2,8 @@
 
 /* eslint-disable jsdoc/require-returns-check */
 import { type Observer, Observable } from "../Misc/observable.pure";
-import { Tools, AsyncLoop } from "../Misc/tools.pure";
+import { AsyncLoop } from "../Misc/tools.pure";
+import { LoadFile, LoadImage } from "../Misc/fileTools.pure";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
@@ -3097,7 +3098,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
 
-        Tools.LoadFile(
+        LoadFile(
             this.delayLoadingFile,
             (data) => {
                 if (data instanceof ArrayBuffer) {
@@ -3448,7 +3449,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, onError ? onError : () => {}, scene.offlineProvider);
+        LoadImage(url, onload, onError ? onError : () => {}, scene.offlineProvider);
         return this;
     }
 

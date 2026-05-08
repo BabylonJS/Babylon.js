@@ -5,7 +5,7 @@ import { BaseTexture } from "./baseTexture.pure";
 import { Texture } from "./texture.pure";
 import { type Scene } from "../../scene.pure";
 import { type Nullable } from "../../types";
-import { Tools } from "../../Misc/tools.pure";
+import { TimingTools } from "../../Misc/timingTools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools.pure";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
@@ -93,7 +93,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             }
         } else if (onLoad) {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                TimingTools.SetImmediate(() => onLoad());
             } else {
                 this._texture.onLoadedObservable.add(onLoad);
             }

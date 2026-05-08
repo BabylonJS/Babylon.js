@@ -2,7 +2,6 @@
 
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
-import { Tools } from "../Misc/tools.pure";
 import { Observable } from "../Misc/observable.pure";
 import { type DeepImmutable, type Nullable } from "../types";
 import { type CameraInputsManager } from "./cameraInputsManager";
@@ -1314,7 +1313,7 @@ export class Camera extends Node {
         //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
         //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
         this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
-        this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+        this._cameraRigParams.stereoHalfAngle = (this._cameraRigParams.interaxialDistance / 0.0637) * (Math.PI / 180);
 
         // create the rig cameras, unless none
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
@@ -1368,7 +1367,7 @@ export class Camera extends Node {
         this._cameraRigParams[name] = value;
         //provisionnally:
         if (name === "interaxialDistance") {
-            this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637);
+            this._cameraRigParams.stereoHalfAngle = (value / 0.0637) * (Math.PI / 180);
         }
     }
 

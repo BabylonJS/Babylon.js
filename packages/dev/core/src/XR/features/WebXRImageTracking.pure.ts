@@ -6,7 +6,7 @@ import { Observable } from "../../Misc/observable.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector.pure";
 import { type Nullable } from "../../types";
-import { Tools } from "../../Misc/tools.pure";
+import { Logger } from "../../Misc/logger";
 import { type Engine } from "../../Engines/engine.pure";
 
 /**
@@ -199,7 +199,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
                 trackedImages: this._originalTrackingRequest,
             };
         } catch (ex) {
-            Tools.Error("Error loading images for tracking, WebXRImageTracking disabled for this session.");
+            Logger.Error("Error loading images for tracking, WebXRImageTracking disabled for this session.");
             return {};
         }
     }

@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "../types";
-import { Tools } from "./tools.pure";
+import { IsExponentOfTwo } from "./tools.functions";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { ILog2 } from "../Maths/math.scalar.functions";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial.pure";
@@ -733,7 +733,7 @@ async function _UploadLevelsAsync(
     canGenerateNonLODTextures: boolean,
     imageType: string = DefaultEnvironmentTextureImageType
 ) {
-    if (!Tools.IsExponentOfTwo(texture.width)) {
+    if (!IsExponentOfTwo(texture.width)) {
         throw new Error("Texture size must be a power of two");
     }
 
