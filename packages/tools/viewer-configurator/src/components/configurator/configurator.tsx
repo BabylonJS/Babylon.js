@@ -32,7 +32,7 @@ import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/synced
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
-import { DefaultViewerOptions, SSAOOptions } from "viewer/viewer";
+import { DefaultViewerOptions, type SSAOOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
