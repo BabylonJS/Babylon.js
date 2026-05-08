@@ -217,12 +217,13 @@ export function GetAllSmartAssets(scene: Scene): ReadonlyMap<string, string> {
 export async function LoadSmartAssetAsync(scene: Scene, key: string, url?: string, options?: SmartAssetLoadOptions): Promise<AssetContainer> {
     const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
+    const previousUrl = internal.urls.get(key);
+    const { reloadSource, ...registrationOptions } = options ?? {};
     if (url) {
-        const { reloadSource: _ignored, ...registrationOptions } = options ?? {};
         RegisterSmartAsset(scene, key, url, registrationOptions);
     }
-    if (options?.reloadSource) {
-        internal.reloadSources.set(key, options.reloadSource);
+    if (reloadSource) {
+        internal.reloadSources.set(key, reloadSource);
     }
 
     const resolvedUrl = internal.urls.get(key);
@@ -232,7 +233,13 @@ export async function LoadSmartAssetAsync(scene: Scene, key: string, url?: strin
 
     const existing = internal.containers.get(key);
     if (existing) {
-        return existing;
+        if (url && url !== previousUrl) {
+            // URL changed — drop the stale container before fetching the new one
+            // so callers don't get a surprise cached return for an updated URL.
+            await UnloadSmartAssetAsync(scene, key);
+        } else {
+            return existing;
+        }
     }
 
     return await LoadSmartAssetSceneFileAsync(manager, key, resolvedUrl, internal.options.get(key)?.extension);
@@ -292,15 +299,28 @@ export async function LoadAllSmartAssetsAsync(scene: Scene): Promise<AssetContai
 export async function LoadSmartAssetTextureAsync(scene: Scene, key: string, url?: string, options?: SmartAssetLoadOptions): Promise<BaseTexture> {
     const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
+    const previousUrl = internal.urls.get(key);
+    const { reloadSource, ...registrationOptions } = options ?? {};
     if (url) {
-        const { reloadSource: _ignored, ...registrationOptions } = options ?? {};
         RegisterSmartAsset(scene, key, url, { ...registrationOptions, type: registrationOptions.type ?? "texture" });
     }
-    if (options?.reloadSource) {
-        internal.reloadSources.set(key, options.reloadSource);
+    if (reloadSource) {
+        internal.reloadSources.set(key, reloadSource);
     }
 
     internal.textureKeys.add(key);
+
+    // If the URL changed for an already-tracked texture, dispose the stale instance.
+    // Callers that hold material references to the old texture should re-point them
+    // to the returned new texture.
+    if (url && previousUrl !== undefined && url !== previousUrl) {
+        for (const tex of [...scene.textures]) {
+            if (internal.objectToKeyMap.get(tex) === key) {
+                internal.objectToKeyMap.delete(tex);
+                tex.dispose();
+            }
+        }
+    }
 
     const resolvedUrl = internal.urls.get(key);
     if (!resolvedUrl) {

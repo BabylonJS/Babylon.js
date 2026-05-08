@@ -37,8 +37,8 @@ import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular }
 
 const SmartAssetsPaneKey = "Smart Assets";
 
-const TextureFileAccept = [".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"];
 const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
+const TextureFileAccept = Array.from(GetSmartAssetTextureExtensions());
 const AllAcceptString = [...SceneFileAccept, ...TextureFileAccept].join(",");
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
