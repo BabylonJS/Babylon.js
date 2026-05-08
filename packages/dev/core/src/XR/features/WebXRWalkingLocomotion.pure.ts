@@ -7,11 +7,9 @@ import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import { type Nullable } from "../../types";
 import { type WebXRCamera } from "../webXRCamera";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 class CircleBuffer {
     private _samples: Array<Vector2> = [];
@@ -477,7 +475,6 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         this.locomotionTarget.position.addInPlace(this._movement);
     }
 }
-
 
 let _registered = false;
 export function registerWebXRWalkingLocomotion(): void {

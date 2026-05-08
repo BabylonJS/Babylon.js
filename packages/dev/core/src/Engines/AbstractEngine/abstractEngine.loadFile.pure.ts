@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 
@@ -18,7 +16,6 @@ declare module "../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerAbstractEngineLoadFile(): void {

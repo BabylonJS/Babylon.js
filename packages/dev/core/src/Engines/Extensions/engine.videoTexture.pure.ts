@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type InternalTexture } from "../../Materials/Textures/internalTexture";
-import { type Nullable } from "../../types";
 import { type ExternalTexture } from "../../Materials/Textures/externalTexture";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
@@ -22,7 +20,6 @@ declare module "../../Engines/abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineVideoTexture(): void {

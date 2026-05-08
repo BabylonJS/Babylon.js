@@ -1,18 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type Nullable } from "../../types";
-import { type Scene } from "../../scene.pure";
-import { type DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
 import { Constants } from "../constants";
 import { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -150,7 +145,6 @@ declare module "../../Engines/abstractEngine" {
 
 export {};
 
-
 let _registered = false;
 export function registerEnginesExtensionsEngineCubeTexture(): void {
     if (_registered) {
@@ -260,7 +254,11 @@ export function registerEnginesExtensionsEngineCubeTexture(): void {
                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                 this._unpackFlipY(false);
 
-                const internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : texture._useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : gl.RGBA;
+                const internalFormat = format
+                    ? this._getInternalFormat(format, texture._useSRGBBuffer)
+                    : texture._useSRGBBuffer
+                      ? this._glSRGBExtensionValues.SRGB8_ALPHA8
+                      : gl.RGBA;
                 let texelFormat = format ? this._getInternalFormat(format) : gl.RGBA;
 
                 if (texture._useSRGBBuffer && this.webGLVersion === 1) {

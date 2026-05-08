@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
-import { type Scene } from "../../scene.pure";
 import { Matrix, Vector4 } from "../../Maths/math.vector.pure";
 import { Color4 } from "../../Maths/math.color.pure";
 import { Mesh } from "../mesh.pure";
@@ -275,7 +273,6 @@ export const BoxBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateBox,
 };
-
 
 let _registered = false;
 export function registerBoxBuilder(): void {

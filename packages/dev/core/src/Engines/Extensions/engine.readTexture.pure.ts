@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type InternalTexture } from "../../Materials/Textures/internalTexture";
-import { type Nullable } from "../../types";
 import { allocateAndCopyTypedBuffer } from "../../Engines/abstractEngine.functions";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
@@ -42,7 +40,6 @@ declare module "../../Engines/abstractEngine" {
 
 // back-compat
 export { allocateAndCopyTypedBuffer };
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineReadTexture(): void {

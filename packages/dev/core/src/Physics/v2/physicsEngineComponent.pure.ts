@@ -1,17 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
 import { type Observer } from "../../Misc/observable";
-import { type Vector3 } from "../../Maths/math.vector.pure";
 
 import { type Node } from "../../node";
-import { type PhysicsBody } from "./physicsBody";
 import { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector.pure";
 import { PhysicsBody } from "./physicsBody";
 import { TransformNode } from "../../Meshes/transformNode";
-
-
 
 declare module "../../Meshes/transformNode" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -55,7 +50,6 @@ declare module "../../Meshes/transformNode" {
 
 export {};
 
-
 let _registered = false;
 export function registerPhysicsV2PhysicsEngineComponent(): void {
     if (_registered) {
@@ -91,7 +85,6 @@ export function registerPhysicsV2PhysicsEngineComponent(): void {
         configurable: true,
     });
 
-
     /**
      * Gets the current physics body
      * @returns a physics body or null
@@ -99,7 +92,6 @@ export function registerPhysicsV2PhysicsEngineComponent(): void {
     TransformNode.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
         return this.physicsBody;
     };
-
 
     /**
      * Apply a physic impulse to the mesh
@@ -116,7 +108,6 @@ export function registerPhysicsV2PhysicsEngineComponent(): void {
         return this;
     };
 
-
     /**
      * Apply a physic angular impulse to the mesh
      * @param angularImpulse defines the torque to apply
@@ -130,7 +121,6 @@ export function registerPhysicsV2PhysicsEngineComponent(): void {
         this.physicsBody.applyAngularImpulse(angularImpulse);
         return this;
     };
-
 
     /**
      * Apply a physic torque to the mesh

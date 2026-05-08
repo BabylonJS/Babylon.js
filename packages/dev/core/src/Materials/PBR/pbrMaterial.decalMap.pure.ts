@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "core/types";
-import { DecalMapConfiguration } from "../material.decalMapConfiguration";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { DecalMapConfiguration } from "../material.decalMapConfiguration.pure";
+import { PBRBaseMaterial } from "./pbrBaseMaterial.pure";
 
 
 

@@ -1,18 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
-
-import { type Scene } from "../../scene.pure";
-import { type IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { Nullable } from "../../types";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import { Scene } from "../../scene.pure";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine";
 import { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { IsExponentOfTwo } from "../../Misc/tools.functions";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 declare module "../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -203,7 +198,6 @@ declare module "../abstractEngine" {
  */
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineRawTexture(): void {

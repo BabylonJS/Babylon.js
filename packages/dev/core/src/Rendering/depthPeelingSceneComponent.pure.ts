@@ -5,10 +5,8 @@ import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
 import { type Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
-import { type ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
 import { Constants } from "../Engines/constants";
 import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
-
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -73,7 +71,6 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerDepthPeelingSceneComponent(): void {
     if (_registered) {
@@ -99,7 +96,6 @@ export function registerDepthPeelingSceneComponent(): void {
         enumerable: true,
         configurable: true,
     });
-
 
     Object.defineProperty(Scene.prototype, "useOrderIndependentTransparency", {
         get: function (this: Scene) {

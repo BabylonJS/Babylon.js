@@ -7,18 +7,16 @@ import { Vector3, Quaternion } from "../../Maths/math.vector.pure";
 import type { Matrix } from "../../Maths/math.vector";
 import { type TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type Scene } from "../../scene.pure";
 import { type Bone } from "../../Bones/bone";
 import { type BoundingInfo } from "../../Culling/boundingInfo";
 import { type PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
 import { PhysicsJoint } from "./physicsJoint";
 import type { PhysicsJointData } from "./physicsJoint";
 import { Space } from "../../Maths/math.axis";
-import { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh.pure";
 import { Scene } from "../../scene.pure";
 
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-
 
 /**
  * The interface for the physics imposter parameters
@@ -1299,7 +1297,6 @@ export class PhysicsImpostor {
      */
     public static SoftbodyImpostor = 103;
 }
-
 
 let _registered = false;
 export function registerPhysicsImpostor(): void {

@@ -2,7 +2,6 @@
 
 import { serialize } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
 import { Scene } from "../scene.pure";
 import { Vector2 } from "../Maths/math.vector.pure";
@@ -629,7 +628,6 @@ export class HighlightLayer extends EffectLayer {
         return hl;
     }
 }
-
 
 let _registered = false;
 export function registerHighlightLayer(): void {

@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
@@ -9,7 +8,6 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { IblCdfGenerator } from "./iblCdfGenerator";
-
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -109,7 +107,6 @@ export class IblCdfGeneratorSceneComponent implements ISceneComponent {
     private _newIblObserver: Nullable<Observer<Nullable<BaseTexture>>> = null;
 }
 
-
 let _registered = false;
 export function registerIblCdfGeneratorSceneComponent(): void {
     if (_registered) {
@@ -130,7 +127,6 @@ export function registerIblCdfGeneratorSceneComponent(): void {
         configurable: true,
     });
 
-
     Scene.prototype.enableIblCdfGenerator = function (): Nullable<IblCdfGenerator> {
         if (this._iblCdfGenerator) {
             return this._iblCdfGenerator;
@@ -147,7 +143,6 @@ export function registerIblCdfGeneratorSceneComponent(): void {
         return this._iblCdfGenerator;
     };
 
-
     Scene.prototype.disableIblCdfGenerator = function (): void {
         if (!this._iblCdfGenerator) {
             return;
@@ -156,7 +151,6 @@ export function registerIblCdfGeneratorSceneComponent(): void {
         this._iblCdfGenerator.dispose();
         this._iblCdfGenerator = null;
     };
-
 
     IblCdfGenerator._SceneComponentInitialization = (scene: Scene) => {
         // Register the CDF generator component to the scene.

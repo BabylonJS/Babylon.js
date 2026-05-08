@@ -13,7 +13,6 @@ import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import {
-import { RegisterClass } from "../../../../Misc/typeStore";
     type FlowGraphMathOperationType,
     type FlowGraphNumber,
     _AreSameIntegerClass,
@@ -23,6 +22,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
     getNumericValue,
     isNumeric,
 } from "core/FlowGraph/utils";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * A configuration interface for math blocks

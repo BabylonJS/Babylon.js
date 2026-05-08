@@ -1,25 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type IParticleSystem } from "./IParticleSystem";
-import { type Effect } from "../Materials/effect";
-import { type Scene } from "../scene.pure";
-import { type AssetContainer } from "../assetContainer";
-import { type EffectFallbacks } from "../Materials/effectFallbacks";
 import { IParticleSystem } from "./IParticleSystem";
-import { GPUParticleSystem } from "./gpuParticleSystem";
+import { GPUParticleSystem } from "./gpuParticleSystem.pure";
 import { Effect } from "../Materials/effect";
-import { ParticleSystem } from "./particleSystem";
+import { ParticleSystem } from "./particleSystem.pure";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import { AssetContainer } from "../assetContainer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { AddParser, AddIndividualParser, GetIndividualParser } from "core/Loading/Plugins/babylonFileParser.function";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-
-
 
 declare module "../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -74,7 +66,6 @@ declare module "../Meshes/mesh" {
 
 export {};
 
-
 let _registered = false;
 export function registerParticleSystemComponent(): void {
     if (_registered) {
@@ -99,7 +90,6 @@ export function registerParticleSystemComponent(): void {
         }
     });
 
-
     AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedParticleSystem: any, scene: Scene, rootUrl: string) => {
         if (parsedParticleSystem.activeParticleCount) {
             const ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
@@ -109,7 +99,6 @@ export function registerParticleSystemComponent(): void {
             return ps;
         }
     });
-
 
     AbstractEngine.prototype.createEffectForParticles = function (
         fragmentName: string,
@@ -172,7 +161,6 @@ export function registerParticleSystemComponent(): void {
         );
     };
 
-
     Mesh.prototype.getEmittedParticleSystems = function (): IParticleSystem[] {
         const results: IParticleSystem[] = [];
         for (let index = 0; index < this.getScene().particleSystems.length; index++) {
@@ -183,7 +171,6 @@ export function registerParticleSystemComponent(): void {
         }
         return results;
     };
-
 
     Mesh.prototype.getHierarchyEmittedParticleSystems = function (): IParticleSystem[] {
         const results: IParticleSystem[] = [];

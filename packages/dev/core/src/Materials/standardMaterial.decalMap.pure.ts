@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "core/types";
-import { DecalMapConfiguration } from "./material.decalMapConfiguration";
-import { StandardMaterial } from "./standardMaterial";
+import { DecalMapConfiguration } from "./material.decalMapConfiguration.pure";
+import { StandardMaterial } from "./standardMaterial.pure";
 
 
 

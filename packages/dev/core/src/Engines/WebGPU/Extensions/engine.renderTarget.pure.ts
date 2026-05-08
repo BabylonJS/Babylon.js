@@ -1,11 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type RenderTargetCreationOptions, type DepthTextureCreationOptions, type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
-import { type Nullable } from "../../../types";
-import { type RenderTargetWrapper } from "../../renderTargetWrapper";
-import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
-import { InternalTextureSource } from "../../../Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
@@ -14,7 +9,6 @@ import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import { GetTypeForDepthTexture, HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -48,7 +42,6 @@ declare module "../../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineRenderTarget(): void {
@@ -125,7 +118,11 @@ export function registerEnginesWebGPUExtensionsEngineRenderTarget(): void {
         return rtWrapper;
     };
 
-    ThinWebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, wrapper: WebGPURenderTargetWrapper): InternalTexture {
+    ThinWebGPUEngine.prototype._createDepthStencilTexture = function (
+        size: TextureSize,
+        options: DepthTextureCreationOptions,
+        wrapper: WebGPURenderTargetWrapper
+    ): InternalTexture {
         const internalOptions = {
             bilinearFiltering: false,
             comparisonFunction: 0,

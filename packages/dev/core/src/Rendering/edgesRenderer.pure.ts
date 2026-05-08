@@ -18,7 +18,7 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { SmartArray } from "../Misc/smartArray";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
+import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh.pure";
 
 
 

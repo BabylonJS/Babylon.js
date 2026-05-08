@@ -1,13 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable, type int } from "../../types";
-
-
 import { type Observer } from "../../Misc/observable";
 import { type AbstractEngine } from "../abstractEngine";
-import { type OcclusionQuery } from "../AbstractEngine/abstractEngine.query.pure";
 import { Nullable, int } from "../../types";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { OcclusionQuery } from "../AbstractEngine/abstractEngine.query.pure";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { _TimeToken } from "../../Instrumentation/timeToken";
@@ -65,7 +61,6 @@ declare module "../../Engines/thinEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineQuery(): void {

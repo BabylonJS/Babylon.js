@@ -5,7 +5,7 @@ import { InternalTexture, InternalTextureSource } from "../../Materials/Textures
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools.pure";
 import { type Nullable } from "../../types";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Constants } from "../../Engines/constants";
@@ -17,8 +17,6 @@ import { SphericalHarmonics, SphericalPolynomial } from "../../Maths/sphericalPo
 import { LightConstants } from "../../Lights/lightConstants";
 import { HDRFiltering } from "core/Materials/Textures/Filtering/hdrFiltering";
 import { type ThinEngine } from "core/Engines";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * Options for Light Estimation feature
@@ -412,7 +410,6 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
         }
     }
 }
-
 
 let _registered = false;
 export function registerWebXRLightEstimation(): void {

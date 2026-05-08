@@ -1,7 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../../types";
-import { type Scene } from "../../scene.pure";
 import { Vector3, TmpVectors, Matrix } from "../../Maths/math.vector.pure";
 import type { Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
@@ -192,7 +191,6 @@ export const TubeBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTube,
 };
-
 
 let _registered = false;
 export function registerTubeBuilder(): void {

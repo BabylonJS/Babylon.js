@@ -1,12 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3 } from "../../Maths/math.vector.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * A babylon interface for a "WebXR" feature point.
@@ -164,7 +162,6 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
         this._enabled = true;
     }
 }
-
 
 let _registered = false;
 export function registerWebXRFeaturePointSystem(): void {

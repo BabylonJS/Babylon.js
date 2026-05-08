@@ -2,7 +2,7 @@
 
 import { type Engine } from "../../Engines/engine.pure";
 import { type WebGLRenderTargetWrapper } from "../../Engines/WebGL/webGLRenderTargetWrapper";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type Nullable } from "../../types";
@@ -17,8 +17,6 @@ import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Material } from "../../Materials/material";
 import { type Observer } from "../../Misc/observable";
 import { type ThinEngine } from "../../Engines/thinEngine";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * Used for Space Warp render process
@@ -345,7 +343,6 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         this.spaceWarpRTTProvider!.accessMotionVector(view);
     }
 }
-
 
 let _registered = false;
 export function registerWebXRSpaceWarp(): void {

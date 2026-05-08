@@ -1,10 +1,6 @@
-import { CoroutineStep, inlineScheduler } from "./coroutine";
+import { CoroutineStep, inlineScheduler, AsyncCoroutine, CoroutineScheduler, runCoroutineAsync } from "./coroutine";
 import { Observable } from "./observable";
-import { AsyncCoroutine, CoroutineScheduler, runCoroutineAsync } from "./coroutine";
 /** This file must only contain pure code and pure imports */
-
-
-
 
 declare module "./observable" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -34,7 +30,6 @@ declare module "./observable" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerObservableCoroutine(): void {
@@ -69,7 +64,6 @@ export function registerObservableCoroutine(): void {
         };
     }
 
-
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     Observable.prototype.runCoroutineAsync = function (coroutine: AsyncCoroutine<void>) {
         if (!this._coroutineScheduler) {
@@ -80,7 +74,6 @@ export function registerObservableCoroutine(): void {
 
         return runCoroutineAsync(coroutine, this._coroutineScheduler);
     };
-
 
     Observable.prototype.cancelAllCoroutines = function () {
         if (this._coroutineSchedulerDispose) {

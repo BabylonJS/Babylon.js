@@ -1,11 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type Nullable } from "../../../types";
-import { type DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
-import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
-import { type Scene } from "../../../scene.pure";
-import { InternalTextureSource } from "../../../Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
@@ -13,7 +8,6 @@ import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 import { Scene } from "../../../scene.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -185,7 +179,6 @@ declare module "../../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineCubeTexture(): void {

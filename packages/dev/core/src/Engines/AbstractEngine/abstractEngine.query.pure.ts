@@ -1,10 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { AbstractMesh } from "core/Meshes/abstractMesh.pure";
-import { type Nullable } from "../../types";
 import { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
-
 
 /** @internal */
 export type OcclusionQuery = WebGLQuery | number;
@@ -145,7 +143,6 @@ declare module "../../Meshes/abstractMesh" {
         occlusionForRenderPassId: number;
     }
 }
-
 
 let _registered = false;
 export function registerAbstractEngineQuery(): void {

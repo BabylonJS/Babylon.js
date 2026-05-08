@@ -2,11 +2,9 @@
 
 import { Tools } from "../../Misc/tools.pure";
 import { type Nullable } from "../../types";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * Options for DOM Overlay feature
@@ -167,7 +165,6 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
         };
     }
 }
-
 
 let _registered = false;
 export function registerWebXRDOMOverlay(): void {

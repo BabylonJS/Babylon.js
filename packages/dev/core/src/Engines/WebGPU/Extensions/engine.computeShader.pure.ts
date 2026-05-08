@@ -1,16 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type IComputeContext } from "../../../Compute/IComputeContext";
-import { type IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
-import { type Nullable } from "../../../types";
-import { type ComputeBindingList, type ComputeBindingMapping, type ComputeCompilationMessages } from "../../Extensions/engine.computeShader.pure";
-
-import { type WebGPUPerfCounter } from "../webgpuPerfCounter";
-import { type DataBuffer } from "../../../Buffers/dataBuffer";
 import * as WebGPUConstants from "../webgpuConstants";
 import { Logger } from "core/Misc/logger";
-import { IComputeEffectCreationOptions, IComputeShaderPath } from "../../../Compute/computeEffect";
+import { IComputeEffectCreationOptions, IComputeShaderPath, ComputeEffect } from "../../../Compute/computeEffect";
 import { IComputeContext } from "../../../Compute/IComputeContext";
 import { IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
 import { Nullable } from "../../../types";
@@ -19,8 +11,7 @@ import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 import { WebGPUPerfCounter } from "../webgpuPerfCounter";
 import { DataBuffer } from "../../../Buffers/dataBuffer";
-import { ComputeEffect } from "../../../Compute/computeEffect";
-import { WebGPUEngine } from "../../webgpuEngine";
+import { WebGPUEngine } from "../../webgpuEngine.pure";
 
 declare module "../../webgpuEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -47,7 +38,6 @@ declare module "../../webgpuEngine" {
 
 export {};
 
-
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineComputeShader(): void {
     if (_registered) {
@@ -61,7 +51,10 @@ export function registerEnginesWebGPUExtensionsEngineComputeShader(): void {
         return new WebGPUComputeContext(this._device, this._cacheSampler);
     };
 
-    WebGPUEngine.prototype.createComputeEffect = function (baseName: string | (IComputeShaderPath & { computeToken?: string }), options: IComputeEffectCreationOptions): ComputeEffect {
+    WebGPUEngine.prototype.createComputeEffect = function (
+        baseName: string | (IComputeShaderPath & { computeToken?: string }),
+        options: IComputeEffectCreationOptions
+    ): ComputeEffect {
         const compute = typeof baseName === "string" ? baseName : baseName.computeToken || baseName.computeSource || baseName.computeElement || baseName.compute;
 
         const name = compute + "@" + options.defines;

@@ -1,7 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
-import type { IWebXRFeature } from "../webXRFeaturesManager";
+import { type IWebXRFeature, WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { Observable } from "../../Misc/observable";
 import type { Observer } from "../../Misc/observable";
 import { type WebXRSessionManager } from "../webXRSessionManager";
@@ -32,8 +31,6 @@ import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { setAndStartTimer } from "../../Misc/timer";
 import { type LinesMesh } from "../../Meshes/linesMesh.pure";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * The options container for the teleportation module
@@ -1151,7 +1148,6 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
     }
 }
-
 
 let _registered = false;
 export function registerWebXRControllerTeleportation(): void {

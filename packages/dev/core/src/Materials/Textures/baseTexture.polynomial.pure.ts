@@ -1,12 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
-import { type SphericalPolynomial } from "../../Maths/sphericalPolynomial.pure";
 import { Nullable } from "../../types";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial.pure";
-import { BaseTexture } from "./baseTexture";
-
+import { BaseTexture } from "./baseTexture.pure";
 
 declare module "./baseTexture" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -30,7 +27,6 @@ declare module "./baseTexture" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerBaseTexturePolynomial(): void {

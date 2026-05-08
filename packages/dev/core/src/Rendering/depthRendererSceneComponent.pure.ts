@@ -1,20 +1,16 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
 import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 
-import { type Camera } from "../Cameras/camera";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
-import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { DepthRenderer } from "./depthRenderer";
-
+import { DepthRenderer } from "./depthRenderer.pure";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -153,7 +149,6 @@ export class DepthRendererSceneComponent implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerDepthRendererSceneComponent(): void {
     if (_registered) {
@@ -202,7 +197,6 @@ export function registerDepthRendererSceneComponent(): void {
         return this._depthRenderer[camera.uniqueId];
     };
 
-
     Scene.prototype.disableDepthRenderer = function (camera?: Nullable<Camera>): void {
         camera = camera || this.activeCamera;
         if (!camera || !this._depthRenderer || !this._depthRenderer[camera.uniqueId]) {
@@ -211,7 +205,6 @@ export function registerDepthRendererSceneComponent(): void {
 
         this._depthRenderer[camera.uniqueId].dispose();
     };
-
 
     DepthRenderer._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.

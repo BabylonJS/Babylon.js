@@ -1,10 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type FloatArray, type Nullable } from "../../types";
-import { type DataBuffer } from "../../Buffers/dataBuffer";
-import { type IPipelineContext } from "../IPipelineContext";
-import { type WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 import { FloatArray, Nullable } from "../../types";
 import { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
@@ -68,7 +63,6 @@ declare module "../../Engines/thinEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEngineUniformBuffer(): void {

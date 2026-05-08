@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { RawTexture } from "../../Materials/Textures/rawTexture";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools.pure";
@@ -23,9 +23,7 @@ import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials
 import { type Camera } from "core/Cameras/camera";
 import { Matrix } from "core/Maths/math.vector.pure";
 import { type Engine } from "core/Engines/engine.pure";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { RegisterClass } from "../../Misc/typeStore";
-
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
@@ -708,7 +706,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 }
 
-
 let _registered = false;
 export function registerWebXRDepthSensing(): void {
     if (_registered) {
@@ -717,7 +714,6 @@ export function registerWebXRDepthSensing(): void {
     _registered = true;
 
     RegisterClass(`BABYLON.DepthSensingMaterialPlugin`, WebXRDepthSensingMaterialPlugin);
-
 
     WebXRFeaturesManager.AddWebXRFeature(
         WebXRDepthSensing.Name,

@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
-import { type Scene } from "../../scene.pure";
 import { type Vector4 } from "../../Maths/math.vector.pure";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
@@ -117,7 +115,6 @@ export const DiscBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateDisc,
 };
-
 
 let _registered = false;
 export function registerDiscBuilder(): void {

@@ -6,7 +6,6 @@ import { Lerp } from "../../Maths/math.scalar.functions";
 import { Mesh } from "../mesh.pure";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import { type AbstractMesh } from "../abstractMesh.pure";
 import { type Camera } from "../../Cameras/camera";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { AbstractMesh } from "../abstractMesh.pure";
@@ -559,7 +558,6 @@ export const DecalBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateDecal,
 };
-
 
 let _registered = false;
 export function registerDecalBuilder(): void {

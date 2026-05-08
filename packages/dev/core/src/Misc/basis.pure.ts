@@ -5,7 +5,7 @@ import { Tools } from "./tools.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Constants } from "../Engines/constants";
-import { initializeWebWorker } from "./basisWorker";
+import { initializeWebWorker, workerFunction } from "./basisWorker";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type Engine } from "core/Engines/engine.pure";
 
@@ -367,7 +367,6 @@ export const BasisTools = {
     LoadTextureFromTranscodeResult,
 };
 
-
 let _registered = false;
 export function registerBasis(): void {
     if (_registered) {
@@ -383,7 +382,6 @@ export function registerBasis(): void {
             BasisToolsOptions.JSModuleURL = value;
         },
     });
-
 
     Object.defineProperty(BasisTools, "WasmModuleURL", {
         get: function (this: null) {

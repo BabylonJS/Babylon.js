@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
-import { type RenderTargetWrapper } from "../../renderTargetWrapper";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
@@ -22,7 +20,6 @@ declare module "../../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineRenderTargetCube(): void {

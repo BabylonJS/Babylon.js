@@ -4,14 +4,12 @@ import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Mesh } from "../Meshes/mesh.pure";
 import { type Nullable } from "../types";
 import { type Observer } from "../Misc/observable";
-import { type Scene } from "../scene.pure";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { type TransformNode } from "../Meshes/transformNode";
 import { Scene } from "../scene.pure";
-
 
 /**
  * Options to be used when creating a trail mesh
@@ -308,7 +306,6 @@ export class TrailMesh extends Mesh {
         return new TrailMesh(parsedMesh.name, generator, scene, options);
     }
 }
-
 
 let _registered = false;
 export function registerTrailMesh(): void {

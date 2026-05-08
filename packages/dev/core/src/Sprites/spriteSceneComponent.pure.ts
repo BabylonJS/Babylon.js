@@ -1,13 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import type { IReadonlyObservable } from "../Misc/observable";
 import { Scene } from "../scene.pure";
-import { type Sprite } from "./sprite";
-import { type ISpriteManager } from "./spriteManager";
-import { Ray } from "../Culling/ray.core";
-import { type Camera } from "../Cameras/camera";
+import { Ray, CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef } from "../Culling/ray.core";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
@@ -17,9 +13,7 @@ import { type IPointerEvent } from "../Events/deviceInputEvents";
 import { Nullable } from "../types";
 import { Sprite } from "./sprite";
 import { ISpriteManager } from "./spriteManager";
-import { CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef } from "../Culling/ray.core";
 import { Camera } from "../Cameras/camera";
-
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -319,7 +313,6 @@ export class SpriteSceneComponent implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerSpriteSceneComponent(): void {
     if (_registered) {
@@ -339,7 +332,6 @@ export function registerSpriteSceneComponent(): void {
         configurable: true,
     });
 
-
     Object.defineProperty(Scene.prototype, "onSpriteManagerRemovedObservable", {
         get: function (this: InternalSpriteAugmentedScene) {
             if (!this.isDisposed && !this._onSpriteManagerRemovedObservable) {
@@ -351,7 +343,6 @@ export function registerSpriteSceneComponent(): void {
         enumerable: true,
         configurable: true,
     });
-
 
     Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
         if (!PickingInfo) {
@@ -395,7 +386,6 @@ export function registerSpriteSceneComponent(): void {
         return pickingInfo || new PickingInfo();
     };
 
-
     Scene.prototype._internalMultiPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
         if (!PickingInfo) {
             return null;
@@ -429,7 +419,6 @@ export function registerSpriteSceneComponent(): void {
         return pickingInfos;
     };
 
-
     Scene.prototype.pickSprite = function (x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
         if (!this._tempSpritePickingRay) {
             return null;
@@ -444,7 +433,6 @@ export function registerSpriteSceneComponent(): void {
 
         return result;
     };
-
 
     Scene.prototype.pickSpriteWithRay = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
         if (!this._tempSpritePickingRay) {
@@ -468,13 +456,11 @@ export function registerSpriteSceneComponent(): void {
         return result;
     };
 
-
     Scene.prototype.multiPickSprite = function (x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
         CreatePickingRayInCameraSpaceToRef(this, x, y, this._tempSpritePickingRay!, camera);
 
         return this._internalMultiPickSprites(this._tempSpritePickingRay!, predicate, camera);
     };
-
 
     Scene.prototype.multiPickSpriteWithRay = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
         if (!this._tempSpritePickingRay) {
@@ -493,7 +479,6 @@ export function registerSpriteSceneComponent(): void {
         return this._internalMultiPickSprites(this._tempSpritePickingRay, predicate, camera);
     };
 
-
     Scene.prototype.setPointerOverSprite = function (sprite: Nullable<Sprite>): void {
         if (this._pointerOverSprite === sprite) {
             return;
@@ -508,7 +493,6 @@ export function registerSpriteSceneComponent(): void {
             this._pointerOverSprite.actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
         }
     };
-
 
     Scene.prototype.getPointerOverSprite = function (): Nullable<Sprite> {
         return this._pointerOverSprite;

@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
@@ -14,8 +13,7 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { type PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { PrePassRenderer } from "./prePassRenderer";
-
+import { PrePassRenderer } from "./prePassRenderer.pure";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -171,7 +169,6 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerPrePassRendererSceneComponent(): void {
     if (_registered) {
@@ -192,7 +189,6 @@ export function registerPrePassRendererSceneComponent(): void {
         configurable: true,
     });
 
-
     Scene.prototype.enablePrePassRenderer = function (): Nullable<PrePassRenderer> {
         if (this._prePassRenderer) {
             return this._prePassRenderer;
@@ -202,12 +198,13 @@ export function registerPrePassRendererSceneComponent(): void {
 
         if (!this._prePassRenderer.isSupported) {
             this._prePassRenderer = null;
-            Logger.Error("PrePassRenderer needs WebGL 2 support.\n" + "Maybe you tried to use the following features that need the PrePassRenderer :\n" + " + Subsurface Scattering");
+            Logger.Error(
+                "PrePassRenderer needs WebGL 2 support.\n" + "Maybe you tried to use the following features that need the PrePassRenderer :\n" + " + Subsurface Scattering"
+            );
         }
 
         return this._prePassRenderer;
     };
-
 
     Scene.prototype.disablePrePassRenderer = function (): void {
         if (!this._prePassRenderer) {
@@ -217,7 +214,6 @@ export function registerPrePassRendererSceneComponent(): void {
         this._prePassRenderer.dispose();
         this._prePassRenderer = null;
     };
-
 
     PrePassRenderer._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.

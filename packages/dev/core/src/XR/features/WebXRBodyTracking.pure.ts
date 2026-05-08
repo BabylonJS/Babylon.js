@@ -2,7 +2,7 @@
 
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type WebXRSessionManager } from "../webXRSessionManager";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector.pure";
 import { type Nullable } from "../../types";
@@ -13,8 +13,6 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { type Node } from "../../node";
 import { Logger } from "../../Misc/logger";
 import { type Bone } from "../../Bones/bone";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * All 83 body joint names as defined by the WebXR Body Tracking specification.
@@ -2612,7 +2610,6 @@ export class WebXRBodyTracking extends WebXRAbstractFeature {
         return await this._trackedBody.snapshotFrameToClipboardAsync();
     }
 }
-
 
 let _registered = false;
 export function registerWebXRBodyTracking(): void {

@@ -6,7 +6,7 @@ import { type Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { Constants } from "../../Engines/constants";
-import { GetClass } from "../../Misc/typeStore";
+import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import { type IInspectable } from "../../Misc/iInspectable";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
@@ -23,7 +23,6 @@ import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetT
 import { type Scene } from "../../scene.pure";
 import { type VideoTexture, type VideoTextureSettings } from "./videoTexture.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * Defines the available options when creating a texture
@@ -1246,7 +1245,6 @@ export class Texture extends BaseTexture {
         );
     }
 }
-
 
 let _registered = false;
 export function registerTexture(): void {

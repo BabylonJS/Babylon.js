@@ -1,12 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
 import { Tools } from "../Misc/tools.pure";
-import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneSerializableComponent } from "../sceneComponent";
-import { type AssetContainer } from "../assetContainer";
 
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Nullable } from "../types";
@@ -162,7 +160,6 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
         }
     }
 }
-
 
 let _registered = false;
 export function registerLensFlareSystemSceneComponent(): void {

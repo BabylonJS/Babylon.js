@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type Observer } from "../../Misc/observable";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type Nullable } from "../../types";
@@ -12,8 +12,6 @@ import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type MotionControllerComponentType } from "../motionController/webXRAbstractMotionController";
 import { Tools } from "../../Misc/tools.pure";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * The options container for the controller movement module
@@ -556,7 +554,6 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
         delete this._controllers[xrControllerUniqueId];
     }
 }
-
 
 let _registered = false;
 export function registerWebXRControllerMovement(): void {

@@ -1,14 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector.pure";
 import { type TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type IWebXRHitResult } from "./WebXRHitTest.pure";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * Configuration options of the anchor system
@@ -427,7 +425,6 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         }
     }
 }
-
 
 let _registered = false;
 export function registerWebXRAnchorSystem(): void {

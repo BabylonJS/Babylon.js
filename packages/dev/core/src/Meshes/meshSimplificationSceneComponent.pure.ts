@@ -5,7 +5,7 @@ import { Scene } from "../scene.pure";
 
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
-import { Mesh } from "./mesh";
+import { Mesh } from "./mesh.pure";
 import { ISimplificationSettings, SimplificationQueue, SimplificationType } from "./meshSimplification";
 
 

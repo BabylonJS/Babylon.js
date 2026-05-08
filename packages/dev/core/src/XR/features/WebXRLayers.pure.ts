@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type WebXRLayerWrapper } from "../webXRLayerWrapper";
@@ -12,8 +12,6 @@ import { type DynamicTexture } from "../../Materials/Textures/dynamicTexture.pur
 import { Color4 } from "../../Maths/math.color.pure";
 import { type LensFlareSystem } from "../../LensFlares/lensFlareSystem";
 import { type ThinEngine } from "../../Engines";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 const DefaultXRWebGLLayerInit: XRWebGLLayerInit = {};
 
@@ -376,7 +374,6 @@ export class WebXRLayers extends WebXRAbstractFeature {
         }
     }
 }
-
 
 let _registered = false;
 export function registerWebXRLayers(): void {

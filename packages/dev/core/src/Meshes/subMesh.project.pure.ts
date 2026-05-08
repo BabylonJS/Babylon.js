@@ -1,14 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type IndicesArray } from "../types";
 import { Constants } from "../Engines/constants";
-import { TmpVectors } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { IndicesArray } from "../types";
-import { Vector3 } from "../Maths/math.vector";
 import { SubMesh } from "./subMesh";
-
-
 
 declare module "./subMesh" {
     /** @internal */
@@ -33,7 +28,6 @@ declare module "./subMesh" {
 
 export {};
 
-
 let _registered = false;
 export function registerSubMeshProject(): void {
     if (_registered) {
@@ -44,7 +38,14 @@ export function registerSubMeshProject(): void {
     /**
      * @internal
      */
-    SubMesh.prototype._projectOnTrianglesToRef = function (vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number {
+    SubMesh.prototype._projectOnTrianglesToRef = function (
+        vector: Vector3,
+        positions: Vector3[],
+        indices: IndicesArray,
+        step: number,
+        checkStopper: boolean,
+        ref: Vector3
+    ): number {
         // Triangles test
         const proj = TmpVectors.Vector3[0];
         const tmp = TmpVectors.Vector3[1];
@@ -81,7 +82,6 @@ export function registerSubMeshProject(): void {
         return distance;
     };
 
-
     /**
      * @internal
      */
@@ -107,7 +107,6 @@ export function registerSubMeshProject(): void {
 
         return distance;
     };
-
 
     SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number {
         const material = this.getMaterial();

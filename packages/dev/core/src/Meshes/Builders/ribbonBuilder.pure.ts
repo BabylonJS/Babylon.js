@@ -1,8 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable, type FloatArray } from "../../types";
-import { type Scene } from "../../scene.pure";
-import { TmpVectors } from "../../Maths/math.vector.pure";
+import { TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import type { Vector2, Vector4 } from "../../Maths/math.vector";
 import { type Color4 } from "../../Maths/math.color.pure";
 import { Mesh, _CreationDataStorage } from "../mesh.pure";
@@ -10,7 +9,6 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { Scene } from "../../scene.pure";
-import { Vector3 } from "../../Maths/math.vector.pure";
 
 /**
  * Creates the VertexData for a Ribbon
@@ -443,7 +441,6 @@ export const RibbonBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateRibbon,
 };
-
 
 let _registered = false;
 export function registerRibbonBuilder(): void {

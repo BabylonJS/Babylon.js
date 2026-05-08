@@ -1,11 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
-
-import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { Nullable } from "../../types";
 import { DataBuffer } from "../../Buffers/dataBuffer";
-import { Engine } from "../../Engines/engine";
+import { Engine } from "../../Engines/engine.pure";
 
 /** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
@@ -64,7 +61,6 @@ declare module "../../Engines/engine" {
         readTransformFeedbackBuffer(target: ArrayBufferView): void;
     }
 }
-
 
 let _registered = false;
 export function registerEngineTransformFeedback(): void {

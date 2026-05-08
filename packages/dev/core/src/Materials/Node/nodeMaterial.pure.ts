@@ -25,7 +25,7 @@ import { TransformBlock } from "./Blocks/transformBlock.pure";
 import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock.pure";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock.pure";
 import { InputBlock } from "./Blocks/Input/inputBlock.pure";
-import { GetClass } from "../../Misc/typeStore";
+import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { type TextureBlock } from "./Blocks/Dual/textureBlock.pure";
@@ -72,7 +72,6 @@ import { type LoopBlock } from "./Blocks/loopBlock.pure";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
-import { RegisterClass } from "../../Misc/typeStore";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -2696,7 +2695,6 @@ export class NodeMaterial extends NodeMaterialBase {
         return newMaterial;
     }
 }
-
 
 let _registered = false;
 export function registerNodeMaterial(): void {

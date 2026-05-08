@@ -2,7 +2,6 @@
 
 import { TouchCamera } from "./touchCamera.pure";
 import { type FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput";
-import { type Scene } from "../scene.pure";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { Node } from "../node";
 import { Scene } from "../scene.pure";
@@ -75,7 +74,6 @@ export class UniversalCamera extends TouchCamera {
         return "UniversalCamera";
     }
 }
-
 
 let _registered = false;
 export function registerUniversalCamera(): void {

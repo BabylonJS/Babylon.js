@@ -1,7 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Scene } from "../scene.pure";
 import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -15,7 +14,6 @@ import { type Effect } from "../Materials/effect";
 import { type MeshCreationOptions } from "./mesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Scene } from "../scene.pure";
-
 
 /**
  * Line mesh
@@ -352,7 +350,6 @@ export class InstancedLinesMesh extends InstancedMesh {
         return "InstancedLinesMesh";
     }
 }
-
 
 let _registered = false;
 export function registerLinesMesh(): void {

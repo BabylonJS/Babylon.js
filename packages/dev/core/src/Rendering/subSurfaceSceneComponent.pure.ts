@@ -1,15 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneSerializableComponent } from "../sceneComponent";
 import { Nullable } from "../types";
-import { Color3 } from "../Maths/math.color";
+import { Color3 } from "../Maths/math.color.pure";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
-
-
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -121,7 +118,6 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
     }
 }
 
-
 let _registered = false;
 export function registerSubSurfaceSceneComponent(): void {
     if (_registered) {
@@ -143,7 +139,6 @@ export function registerSubSurfaceSceneComponent(): void {
         }
     });
 
-
     Object.defineProperty(Scene.prototype, "subSurfaceConfiguration", {
         get: function (this: Scene) {
             return this._subSurfaceConfiguration;
@@ -158,7 +153,6 @@ export function registerSubSurfaceSceneComponent(): void {
         enumerable: true,
         configurable: true,
     });
-
 
     Scene.prototype.enableSubSurfaceForPrePass = function (): Nullable<SubSurfaceConfiguration> {
         if (this._subSurfaceConfiguration) {
@@ -175,7 +169,6 @@ export function registerSubSurfaceSceneComponent(): void {
         return null;
     };
 
-
     Scene.prototype.disableSubSurfaceForPrePass = function (): void {
         if (!this._subSurfaceConfiguration) {
             return;
@@ -184,7 +177,6 @@ export function registerSubSurfaceSceneComponent(): void {
         this._subSurfaceConfiguration.dispose();
         this._subSurfaceConfiguration = null;
     };
-
 
     SubSurfaceConfiguration._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.

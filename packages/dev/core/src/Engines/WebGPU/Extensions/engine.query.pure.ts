@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type PerfCounter } from "../../../Misc/perfCounter";
-import { type OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.query.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
 import { PerfCounter } from "../../../Misc/perfCounter";
@@ -12,7 +10,6 @@ import { OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.q
 // eslint-disable-next-line import/no-duplicates
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineQuery(): void {

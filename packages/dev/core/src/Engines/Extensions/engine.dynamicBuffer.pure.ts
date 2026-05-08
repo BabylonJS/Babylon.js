@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type DataBuffer } from "../../Buffers/dataBuffer";
-import { type IndicesArray, type DataArray } from "../../types";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { DataBuffer } from "../../Buffers/dataBuffer";
 import { IndicesArray, DataArray } from "../../types";
@@ -29,7 +27,6 @@ declare module "../../Engines/abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEngineDynamicBuffer(): void {

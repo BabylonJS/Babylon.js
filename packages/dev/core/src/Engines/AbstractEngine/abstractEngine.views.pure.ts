@@ -1,15 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Camera } from "../../Cameras/camera";
-import { type Nullable } from "../../types";
-import { type Scene } from "../../scene.pure";
 import { Camera } from "../../Cameras/camera";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
 import { Observable } from "../../Misc/observable";
 import { AbstractEngine } from "../abstractEngine";
-
-
 
 /**
  * Class used to define an additional view for the engine
@@ -92,7 +87,6 @@ declare module "../../Engines/abstractEngine" {
         _renderViewStep(view: EngineView): boolean;
     }
 }
-
 
 let _registered = false;
 export function registerAbstractEngineViews(): void {

@@ -2,15 +2,13 @@
 
 import { Vector3 } from "../../Maths/math.vector.pure";
 import { type Color4 } from "../../Maths/math.color.pure";
-import { _CreationDataStorage } from "../mesh.pure";
+import { _CreationDataStorage, Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
-import { type FloatArray, type Nullable } from "../../types";
+import type { FloatArray } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh.pure";
-import { type Scene } from "../../scene.pure";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Logger } from "../../Misc/logger";
 import { type Material } from "../../Materials/material";
-import { Mesh } from "../mesh.pure";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
 
@@ -306,7 +304,6 @@ export const LinesBuilder = {
     CreateLineSystem,
     CreateLines,
 };
-
 
 let _registered = false;
 export function registerLinesBuilder(): void {

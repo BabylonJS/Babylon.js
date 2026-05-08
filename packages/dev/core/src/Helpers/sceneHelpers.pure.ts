@@ -1,30 +1,22 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
-
-import { type Mesh } from "../Meshes/mesh.pure";
-import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
-
-import { type TargetCamera } from "../Cameras/targetCamera.pure";
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { Mesh } from "../Meshes/mesh.pure";
 import { BaseTexture } from "../Materials/Textures/baseTexture.pure";
-import { Texture } from "../Materials/Textures/texture";
-import { StandardMaterial } from "../Materials/standardMaterial";
-import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
-import { HemisphericLight } from "../Lights/hemisphericLight";
-import { FreeCamera } from "../Cameras/freeCamera";
-import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
+import { PBRMaterial } from "../Materials/PBR/pbrMaterial.pure";
+import { HemisphericLight } from "../Lights/hemisphericLight.pure";
+import { FreeCamera } from "../Cameras/freeCamera.pure";
+import { ArcRotateCamera } from "../Cameras/arcRotateCamera.pure";
 import { TargetCamera } from "../Cameras/targetCamera.pure";
-import { CreateBox } from "../Meshes/Builders/boxBuilder";
-import { Scene } from "../scene";
+import { CreateBox } from "../Meshes/Builders/boxBuilder.pure";
+import { Scene } from "../scene.pure";
 import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
-import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper";
+import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper.pure";
 import { WebXRDefaultExperienceOptions, WebXRDefaultExperience } from "../XR/webXRDefaultExperience";
-
-
 
 /** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
@@ -96,7 +88,6 @@ declare module "../scene" {
         createDefaultXRExperienceAsync(options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
     }
 }
-
 
 let _registered = false;
 export function registerSceneHelpers(): void {

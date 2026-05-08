@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
 import { type Vector4 } from "../../Maths/math.vector.pure";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
@@ -117,7 +116,6 @@ export const PlaneBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreatePlane,
 };
-
 
 let _registered = false;
 export function registerPlaneBuilder(): void {

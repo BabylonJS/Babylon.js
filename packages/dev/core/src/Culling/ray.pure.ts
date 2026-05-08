@@ -1,19 +1,28 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
-import { type Matrix } from "../Maths/math.vector.pure";
-import { type PickingInfo } from "../Collisions/pickingInfo";
 import { Nullable } from "../types";
 import { Matrix } from "../Maths/math.vector.pure";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { Scene } from "../scene";
+import { Scene } from "../scene.pure";
 import { Camera } from "../Cameras/camera";
-import { MeshPredicate, TrianglePickingPredicate, Ray, AddRayExtensions, CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef, CreatePickingRayToRef, MultiPick, MultiPickWithRay, Pick, PickWithBoundingInfo, PickWithRay, } from "./ray.core";
+import {
+    MeshPredicate,
+    TrianglePickingPredicate,
+    Ray,
+    AddRayExtensions,
+    CreatePickingRayInCameraSpace,
+    CreatePickingRayInCameraSpaceToRef,
+    CreatePickingRayToRef,
+    MultiPick,
+    MultiPickWithRay,
+    Pick,
+    PickWithBoundingInfo,
+    PickWithRay,
+} from "./ray.core";
 
 export * from "./ray.core";
 
 export {};
-
 
 let _registered = false;
 export function registerRay(): void {

@@ -1,26 +1,18 @@
 /** This file must only contain pure code and pure imports */
 
-
-
 import { type Nullable } from "../../types";
 import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 
-
-import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { type RenderTargetWrapper } from "../renderTargetWrapper";
-import { type AbstractEngine } from "../abstractEngine";
-import { ICreateSceneUboOptions } from "../../scene";
+import { ICreateSceneUboOptions, Scene } from "../../scene.pure";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { TmpVectors } from "../../Maths/math.vector";
+import { TmpVectors, Matrix } from "../../Maths/math.vector.pure";
 import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderTarget";
 import { Frustum } from "../../Maths/math.frustum";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { AbstractEngine } from "../abstractEngine";
 import { Camera } from "../../Cameras/camera";
-import { Engine } from "../../Engines/engine";
-import { Scene } from "../../scene";
-import { Matrix } from "../../Maths/math.vector";
+import { Engine } from "../../Engines/engine.pure";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 
 declare module "../../Engines/engine" {
@@ -97,7 +89,6 @@ declare module "../../scene" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEngineMultiview(): void {

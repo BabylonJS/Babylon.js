@@ -4,7 +4,6 @@ import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector.pure";
 import type { Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
-import { type Scene } from "../../scene.pure";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { Scene } from "../../scene.pure";
 
@@ -125,7 +124,6 @@ export const TorusBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTorus,
 };
-
 
 let _registered = false;
 export function registerTorusBuilder(): void {

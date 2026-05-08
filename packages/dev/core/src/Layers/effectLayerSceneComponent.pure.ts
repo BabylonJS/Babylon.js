@@ -1,13 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { Camera } from "../Cameras/camera";
-import { type Scene } from "../scene.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneSerializableComponent } from "../sceneComponent";
-import { type AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Scene } from "../scene.pure";
@@ -228,7 +226,6 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         }
     }
 }
-
 
 let _registered = false;
 export function registerEffectLayerSceneComponent(): void {

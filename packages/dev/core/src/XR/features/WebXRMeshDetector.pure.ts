@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type TransformNode } from "../../Meshes/transformNode";
@@ -9,8 +9,6 @@ import { Observable } from "../../Misc/observable";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Logger } from "core/Misc/logger";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * Options used in the mesh detector module
@@ -308,7 +306,6 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         return <IWebXRVertexData>mesh;
     }
 }
-
 
 let _registered = false;
 export function registerWebXRMeshDetector(): void {

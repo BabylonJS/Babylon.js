@@ -2,12 +2,11 @@
 
 import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import type { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness } from "./webXRAbstractMotionController";
-import { type Scene } from "../../scene.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
 import { Scene } from "../../scene.pure";
-import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
+import { WebXRMotionControllerManager } from "./webXRMotionControllerManager.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -231,7 +230,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
         assetPath: "none.glb",
     },
 };
-
 
 let _registered = false;
 export function registerWebXRHTCViveMotionController(): void {

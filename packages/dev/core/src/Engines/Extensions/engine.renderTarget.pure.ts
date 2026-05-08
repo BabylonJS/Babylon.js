@@ -1,11 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type RenderTargetCreationOptions, type DepthTextureCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import { type Nullable } from "../../types";
-import { type RenderTargetWrapper } from "../renderTargetWrapper";
-import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../thinEngine";
@@ -15,7 +10,6 @@ import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 import { Constants } from "../constants";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 /**
  * Type used to define a texture size (either with a number or with a rect width and height)
@@ -53,7 +47,6 @@ declare module "../../Engines/abstractEngine" {
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: TextureSize, bilinearFiltering: boolean, comparisonFunction: number, samples?: number): void;
     }
 }
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineRenderTarget(): void {

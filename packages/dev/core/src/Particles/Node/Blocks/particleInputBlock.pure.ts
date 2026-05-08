@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { Observable } from "../../../Misc/observable";
-import { GetClass } from "../../../Misc/typeStore";
+import { GetClass, RegisterClass } from "../../../Misc/typeStore";
 import { Matrix, Vector2, Vector3 } from "../../../Maths/math.vector.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
@@ -10,7 +10,6 @@ import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Color4 } from "core/Maths/math.color.pure";
 import { NodeParticleContextualSources } from "../Enums/nodeParticleContextualSources";
 import { NodeParticleSystemSources } from "../Enums/nodeParticleSystemSources";
-import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to expose an input value
@@ -339,7 +338,6 @@ export class ParticleInputBlock extends NodeParticleBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerParticleInputBlock(): void {

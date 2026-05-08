@@ -2,12 +2,10 @@
 
 import { Sound } from "./sound.pure";
 import { SoundTrack } from "./soundTrack";
-import { type Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneSerializableComponent } from "../sceneComponent";
 import { Scene } from "../scene.pure";
-import { type AssetContainer } from "../assetContainer";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
@@ -412,7 +410,6 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
     }
 }
-
 
 let _registered = false;
 export function registerAudioSceneComponent(): void {

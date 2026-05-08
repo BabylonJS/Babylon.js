@@ -1,7 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
-import { Vector2, Vector4 } from "../../Maths/math.vector.pure";
+import { Vector2, Vector4, Vector3 } from "../../Maths/math.vector.pure";
 
 import { Color4 } from "../../Maths/math.color.pure";
 import { Mesh } from "../mesh.pure";
@@ -12,7 +11,6 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { EngineStore } from "../../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { Scene } from "../../scene.pure";
-import { Vector3 } from "../../Maths/math.vector.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -236,7 +234,6 @@ export const PolygonBuilder = {
     ExtrudePolygon,
     CreatePolygon,
 };
-
 
 let _registered = false;
 export function registerPolygonBuilder(): void {

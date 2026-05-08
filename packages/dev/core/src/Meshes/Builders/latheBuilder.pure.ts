@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
 import { Vector3 } from "../../Maths/math.vector.pure";
 import type { Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
@@ -98,7 +97,6 @@ export const LatheBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateLathe,
 };
-
 
 let _registered = false;
 export function registerLatheBuilder(): void {

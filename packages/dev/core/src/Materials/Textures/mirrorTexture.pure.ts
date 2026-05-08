@@ -3,7 +3,6 @@
 import { type Observer } from "../../Misc/observable";
 import { type Nullable } from "../../types";
 import { type Camera } from "../../Cameras/camera";
-import { type Scene } from "../../scene.pure";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
@@ -353,7 +352,6 @@ export class MirrorTexture extends RenderTargetTexture {
         this._sceneUBO?.dispose();
     }
 }
-
 
 let _registered = false;
 export function registerMirrorTexture(): void {

@@ -1,9 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
 import { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
-
 
 declare module "../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -57,7 +55,6 @@ declare module "../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerAbstractEngineTextureSelector(): void {

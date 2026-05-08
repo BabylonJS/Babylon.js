@@ -1,15 +1,18 @@
 /** This file must only contain pure code and pure imports */
 
-import { type IViewportLike } from "../../Maths/math.like";
-import { type Nullable } from "../../types";
 import { IViewportLike } from "../../Maths/math.like";
 import { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
 
-
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
  */
+interface IViewportOwnerLike {
+    /**
+     * Gets or sets the viewport
+     */
+    viewport: IViewportLike;
+}
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -73,20 +76,12 @@ declare module "../../Engines/abstractEngine" {
 
 export {};
 
-
 let _registered = false;
 export function registerAbstractEngineDom(): void {
     if (_registered) {
         return;
     }
     _registered = true;
-
-    interface IViewportOwnerLike {
-        /**
-         * Gets or sets the viewport
-         */
-        viewport: IViewportLike;
-    }
 
     AbstractEngine.prototype.getInputElement = function (): Nullable<HTMLElement> {
         return this._renderingCanvas;

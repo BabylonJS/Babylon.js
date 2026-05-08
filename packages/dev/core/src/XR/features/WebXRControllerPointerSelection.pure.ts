@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Observer } from "../../Misc/observable";
@@ -25,8 +25,6 @@ import { type Node } from "../../node";
 import { Viewport } from "../../Maths/math.viewport";
 import { type Mesh } from "../../Meshes/mesh.pure";
 import { Tools } from "../../Misc/tools.pure";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 /**
  * Options interface for the pointer selection module
@@ -1015,7 +1013,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return this.laserPointerDefaultColor;
     }
 }
-
 
 let _registered = false;
 export function registerWebXRControllerPointerSelection(): void {

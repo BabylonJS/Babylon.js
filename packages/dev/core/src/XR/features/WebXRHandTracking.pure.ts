@@ -2,7 +2,7 @@
 
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type WebXRSessionManager } from "../webXRSessionManager";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { type WebXRInput } from "../webXRInput";
@@ -30,10 +30,6 @@ import { type WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLaye
 import { Tools } from "core/Misc/tools.pure";
 import { type WebXRCamera } from "../webXRCamera";
 import { type Node } from "../../node";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
-
-
 
 declare const XRHand: XRHand;
 
@@ -1098,7 +1094,6 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         }
     }
 }
-
 
 let _registered = false;
 export function registerWebXRHandTracking(): void {

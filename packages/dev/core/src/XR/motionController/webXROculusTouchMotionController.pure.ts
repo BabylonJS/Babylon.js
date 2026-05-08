@@ -3,10 +3,9 @@
 import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import type { IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type Scene } from "../../scene.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
-import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
+import { WebXRMotionControllerManager } from "./webXRMotionControllerManager.pure";
 import { Scene } from "../../scene.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -279,7 +278,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
     },
 };
 
-
 let _registered = false;
 export function registerWebXROculusTouchMotionController(): void {
     if (_registered) {
@@ -291,7 +289,6 @@ export function registerWebXROculusTouchMotionController(): void {
     WebXRMotionControllerManager.RegisterController("oculus-touch", (xrInput: XRInputSource, scene: Scene) => {
         return new WebXROculusTouchMotionController(scene, <any>xrInput.gamepad, xrInput.handedness);
     });
-
 
     WebXRMotionControllerManager.RegisterController("oculus-touch-legacy", (xrInput: XRInputSource, scene: Scene) => {
         return new WebXROculusTouchMotionController(scene, <any>xrInput.gamepad, xrInput.handedness, true);

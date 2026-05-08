@@ -2,10 +2,9 @@
 
 import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import type { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness } from "./webXRAbstractMotionController";
-import { type Scene } from "../../scene.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Scene } from "../../scene.pure";
-import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
+import { WebXRMotionControllerManager } from "./webXRMotionControllerManager.pure";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -128,7 +127,6 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
         assetPath: "none.glb",
     },
 };
-
 
 let _registered = false;
 export function registerWebXRGenericHandController(): void {

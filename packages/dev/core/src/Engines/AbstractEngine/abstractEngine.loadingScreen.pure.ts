@@ -1,10 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type ILoadingScreen } from "../../Loading/loadingScreen.pure";
 import { IsWindowObjectExist } from "../../Misc/domManagement";
 import { ILoadingScreen } from "../../Loading/loadingScreen.pure";
 import { AbstractEngine } from "../abstractEngine";
-
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -42,7 +40,6 @@ declare module "../../Engines/abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerAbstractEngineLoadingScreen(): void {

@@ -1,14 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { type WebXRAbstractMotionController, type IMotionControllerProfile } from "./webXRAbstractMotionController";
-import { type Scene } from "../../scene.pure";
 import { Tools } from "../../Misc/tools.pure";
 import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
 import { type Nullable } from "../../types";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionController";
 import { Scene } from "../../scene.pure";
-
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -275,7 +273,6 @@ export class WebXRMotionControllerManager {
     }
 }
 
-
 let _registered = false;
 export function registerWebXRMotionControllerManager(): void {
     if (_registered) {
@@ -287,7 +284,6 @@ export function registerWebXRMotionControllerManager(): void {
     WebXRMotionControllerManager.RegisterController(WebXRGenericTriggerMotionController.ProfileId, (xrInput: XRInputSource, scene: Scene) => {
         return new WebXRGenericTriggerMotionController(scene, <any>xrInput.gamepad, xrInput.handedness);
     });
-
 
     // register fallbacks
     WebXRMotionControllerManager.DefaultFallbacks();

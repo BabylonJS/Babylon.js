@@ -8,11 +8,10 @@ import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Constants } from "../../Engines/constants";
-import { GetClass } from "../../Misc/typeStore";
+import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { Observable } from "../../Misc/observable";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * Defines the available options when creating a cube texture
@@ -601,7 +600,6 @@ export class CubeTexture extends BaseTexture {
         return newCubeTexture;
     }
 }
-
 
 let _registered = false;
 export function registerCubeTexture(): void {

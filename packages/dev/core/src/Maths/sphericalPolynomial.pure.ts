@@ -1,11 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3 } from "../Maths/math.vector.pure";
 import { type Nullable } from "../types";
 import { type Color3 } from "../Maths/math.color.pure";
 import { TmpVectors } from "./math";
-
-/* eslint-disable @typescript-eslint/naming-convention */
 
 // https://dickyjim.wordpress.com/2013/09/04/spherical-harmonics-for-beginners/
 // http://silviojemma.com/public/papers/lighting/spherical-harmonic-lighting.pdf
@@ -44,7 +43,18 @@ import { TmpVectors } from "./math";
 //                         l - m
 // Leaving the trigonometric terms aside we can precompute the constants to :
 const SH3ylmBasisConstants = [
+    Math.sqrt(1 / (4 * Math.PI)), // l00
+
     -Math.sqrt(3 / (4 * Math.PI)), // l1_1
+    Math.sqrt(3 / (4 * Math.PI)), // l10
+    -Math.sqrt(3 / (4 * Math.PI)), // l11
+
+    Math.sqrt(15 / (4 * Math.PI)), // l2_2
+    -Math.sqrt(15 / (4 * Math.PI)), // l2_1
+    Math.sqrt(5 / (16 * Math.PI)), // l20
+    -Math.sqrt(15 / (4 * Math.PI)), // l21
+    Math.sqrt(15 / (16 * Math.PI)), // l22
+];
 
 // cm = cos(m * phi)
 // sm = sin(m * phi)
@@ -477,29 +487,4 @@ export class SphericalPolynomial {
         Vector3.FromArrayToRef(data[8], 0, sp.xy);
         return sp;
     }
-}
-
-
-let _registered = false;
-export function registerSphericalPolynomial(): void {
-    if (_registered) {
-        return;
-    }
-    _registered = true;
-
-        Math.sqrt(1 / (4 * Math.PI)), // l00
-
-
-        Math.sqrt(3 / (4 * Math.PI)), // l10
-        -Math.sqrt(3 / (4 * Math.PI)), // l11
-
-
-        Math.sqrt(15 / (4 * Math.PI)), // l2_2
-        -Math.sqrt(15 / (4 * Math.PI)), // l2_1
-
-        Math.sqrt(5 / (16 * Math.PI)), // l20
-        -Math.sqrt(15 / (4 * Math.PI)), // l21
-
-        Math.sqrt(15 / (16 * Math.PI)), // l22
-    ];
 }

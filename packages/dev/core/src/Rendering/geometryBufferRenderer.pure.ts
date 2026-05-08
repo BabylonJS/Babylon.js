@@ -18,16 +18,18 @@ import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type Nullable } from "../types";
 import { Material } from "../Materials/material";
 import { MaterialFlags } from "../Materials/materialFlags";
-import { BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances, PrepareDefinesForIBL } from "../Materials/materialHelper.functions";
+import { BindClipPlane, PrepareStringDefinesForClipPlanes, AddClipPlaneUniforms } from "../Materials/clipPlaneMaterialHelper";
+import {
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareDefinesAndAttributesForMorphTargets,
+    PushAttributesForInstances,
+    PrepareDefinesForIBL,
+    PrepareUniformsAndSamplersForIBL,
+} from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
-import { AddClipPlaneUniforms } from "../Materials/clipPlaneMaterialHelper";
-import { PrepareUniformsAndSamplersForIBL } from "../Materials/materialHelper.functions";
-
-
-
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -1622,7 +1624,6 @@ export class GeometryBufferRenderer {
         return target;
     }
 }
-
 
 let _registered = false;
 export function registerGeometryBufferRenderer(): void {

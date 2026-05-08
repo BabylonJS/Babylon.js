@@ -1,8 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { type Nullable } from "../../../types";
-import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { Nullable } from "../../../types";
@@ -42,7 +39,6 @@ declare module "../../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineReadTexture(): void {

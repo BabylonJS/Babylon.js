@@ -1,19 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type IWebRequest } from "../../../Misc/interfaces/iWebRequest";
-import { type Scene } from "../../../scene.pure";
-import { type Nullable } from "../../../types";
-import { InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { Texture } from "../../../Materials/Textures/texture";
-import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../../../Misc/environmentTextureTools";
+import { InternalTextureSource, InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { Texture } from "../../../Materials/Textures/texture.pure";
+import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../../../Misc/environmentTextureTools.pure";
 import { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
 import { Scene } from "../../../scene.pure";
 import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { ThinNativeEngine } from "../../thinNativeEngine";
-
+import { ThinNativeEngine } from "../../thinNativeEngine.pure";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -60,7 +54,6 @@ declare module "../../../Engines/thinNativeEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerNativeEngineCubeTexture(): void {

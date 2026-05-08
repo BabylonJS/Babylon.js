@@ -1,7 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../../types";
-import { type RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { Nullable } from "../../../types";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
@@ -21,7 +19,6 @@ declare module "../../abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineRenderTargetTexture(): void {

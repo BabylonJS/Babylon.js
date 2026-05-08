@@ -1,11 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget.pure";
-import { type Nullable } from "../../types";
-import { type RenderTargetWrapper } from "../renderTargetWrapper";
-import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget.pure";
 import { Logger } from "../../Misc/logger";
@@ -91,7 +85,6 @@ declare module "../../Engines/abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineMultiRender(): void {
@@ -248,7 +241,14 @@ export function registerEnginesExtensionsEngineMultiRender(): void {
         rtWrapper._framebuffer = framebuffer;
         rtWrapper._generateDepthBuffer = generateDepthTexture || generateDepthBuffer;
         rtWrapper._generateStencilBuffer = generateDepthTexture ? useStencilTexture : generateStencilBuffer;
-        rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(rtWrapper._generateStencilBuffer, rtWrapper._generateDepthBuffer, width, height, 1, depthTextureFormat);
+        rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
+            rtWrapper._generateStencilBuffer,
+            rtWrapper._generateDepthBuffer,
+            width,
+            height,
+            1,
+            depthTextureFormat
+        );
         rtWrapper._attachments = attachments;
 
         for (let i = 0; i < textureCount; i++) {

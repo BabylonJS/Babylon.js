@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
 import { Vector3 } from "../../Maths/math.vector.pure";
 import type { Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
@@ -396,7 +395,6 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         return vertexData;
     }
 }
-
 
 let _registered = false;
 export function registerGreasedLineMesh(): void {

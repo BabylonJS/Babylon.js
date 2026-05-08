@@ -4,7 +4,6 @@ import { Vector3, Matrix } from "../../Maths/math.vector.pure";
 import type { Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
-import { type Scene } from "../../scene.pure";
 import { type Nullable } from "../../types";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { Scene } from "../../scene.pure";
@@ -172,7 +171,6 @@ export const SphereBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateSphere,
 };
-
 
 let _registered = false;
 export function registerSphereBuilder(): void {

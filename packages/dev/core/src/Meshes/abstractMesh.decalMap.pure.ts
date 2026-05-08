@@ -1,11 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
-
-import { type MeshUVSpaceRenderer } from "./meshUVSpaceRenderer.pure";
 import { Nullable } from "../types";
 import { MeshUVSpaceRenderer } from "./meshUVSpaceRenderer.pure";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 
 declare module "./abstractMesh" {
     /** @internal */
@@ -22,7 +19,6 @@ declare module "./abstractMesh" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerAbstractMeshDecalMap(): void {

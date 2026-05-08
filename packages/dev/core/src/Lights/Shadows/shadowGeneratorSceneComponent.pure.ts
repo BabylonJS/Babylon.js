@@ -1,7 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
 import { type SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import { type Scene } from "../../scene.pure";
 import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 import { SceneComponentConstants } from "../../sceneComponent";
 import type { ISceneSerializableComponent } from "../../sceneComponent";
@@ -124,7 +123,6 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
         }
     }
 }
-
 
 let _registered = false;
 export function registerShadowGeneratorSceneComponent(): void {

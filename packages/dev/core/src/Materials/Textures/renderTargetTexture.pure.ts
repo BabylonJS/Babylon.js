@@ -3,9 +3,8 @@
 import { Observable } from "../../Misc/observable";
 import type { Observer } from "../../Misc/observable";
 import { type SmartArray } from "../../Misc/smartArray";
-import { type Nullable, type Immutable } from "../../types";
+import type { Immutable } from "../../types";
 import { type Camera } from "../../Cameras/camera";
-import { type Scene } from "../../scene.pure";
 import { Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { type Color4 } from "../../Maths/math.color.pure";
 import { type RenderTargetCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
@@ -1414,7 +1413,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         return 1;
     }
 }
-
 
 let _registered = false;
 export function registerRenderTargetTexture(): void {

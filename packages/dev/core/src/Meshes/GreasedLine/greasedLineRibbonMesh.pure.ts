@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { Mesh } from "../mesh.pure";
 import { Buffer } from "../../Buffers/buffer";
@@ -567,7 +566,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return vertexData;
     }
 }
-
 
 let _registered = false;
 export function registerGreasedLineRibbonMesh(): void {

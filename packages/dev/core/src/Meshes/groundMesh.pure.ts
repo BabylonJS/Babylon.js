@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../scene.pure";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector.pure";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh.pure";
@@ -325,7 +324,6 @@ export class GroundMesh extends Mesh {
         return result;
     }
 }
-
 
 let _registered = false;
 export function registerGroundMesh(): void {

@@ -1,13 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type TransformNode } from "../../Meshes/transformNode";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3, Matrix } from "../../Maths/math.vector.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-
 
 declare const XRPlane: XRPlane;
 
@@ -267,7 +265,6 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         return -1;
     }
 }
-
 
 let _registered = false;
 export function registerWebXRPlaneDetector(): void {

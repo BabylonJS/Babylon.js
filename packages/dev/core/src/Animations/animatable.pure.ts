@@ -8,7 +8,7 @@ import type { Animatable } from "./animatable.core";
 import { type Animation } from "./animation.pure";
 import { AddAnimationExtensions } from "./animatable.core";
 import { Bone } from "../Bones/bone";
-import { Scene } from "core/scene";
+import { Scene } from "core/scene.pure";
 
 
 export * from "./animatable.core";

@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
 import { Vector4 } from "../../Maths/math.vector.pure";
 import { Color4 } from "../../Maths/math.color.pure";
 import { Mesh } from "../mesh.pure";
@@ -621,7 +620,6 @@ export const PolyhedronBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreatePolyhedron,
 };
-
 
 let _registered = false;
 export function registerPolyhedronBuilder(): void {

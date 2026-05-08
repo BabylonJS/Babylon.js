@@ -1,9 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type DepthTextureCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
-
-import { type RenderTargetWrapper } from "../renderTargetWrapper";
-import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
@@ -25,7 +21,6 @@ declare module "../../Engines/abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerAbstractEngineTexture(): void {

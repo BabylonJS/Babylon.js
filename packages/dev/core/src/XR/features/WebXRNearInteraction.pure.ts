@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection.pure";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
@@ -26,7 +26,6 @@ import { type Material } from "../../Materials/material";
 import { Animation } from "../../Animations/animation.pure";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 import { Logger } from "core/Misc/logger";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 
 // side effects
 
@@ -1070,7 +1069,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         return pi;
     }
 }
-
 
 let _registered = false;
 export function registerWebXRNearInteraction(): void {

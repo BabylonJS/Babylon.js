@@ -1,12 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type ComputeEffect, type IComputeEffectCreationOptions, type IComputeShaderPath } from "../../Compute/computeEffect";
-import { type IComputeContext } from "../../Compute/IComputeContext";
-import { type IComputePipelineContext } from "../../Compute/IComputePipelineContext";
-import { type Nullable } from "../../types";
-
 import { type WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
-import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { ComputeEffect, IComputeEffectCreationOptions, IComputeShaderPath } from "../../Compute/computeEffect";
 import { IComputeContext } from "../../Compute/IComputeContext";
 import { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
@@ -180,7 +174,6 @@ declare module "../../Engines/abstractEngine" {
         _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void;
     }
 }
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineComputeShader(): void {

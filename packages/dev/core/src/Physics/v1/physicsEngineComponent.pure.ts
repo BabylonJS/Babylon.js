@@ -1,19 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
 import { type Observer } from "../../Misc/observable";
-import { type Vector3 } from "../../Maths/math.vector.pure";
-import { type Mesh } from "../../Meshes/mesh.pure";
 
 import { type Node } from "../../node";
-import { type PhysicsImpostor } from "./physicsImpostor.pure";
 import { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { PhysicsImpostor } from "./physicsImpostor.pure";
 import { PhysicsJoint } from "./physicsJoint";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-
+import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 
 declare module "../../Meshes/abstractMesh" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -60,7 +55,6 @@ declare module "../../Meshes/abstractMesh" {
 
 export {};
 
-
 let _registered = false;
 export function registerPhysicsV1PhysicsEngineComponent(): void {
     if (_registered) {
@@ -96,7 +90,6 @@ export function registerPhysicsV1PhysicsEngineComponent(): void {
         configurable: true,
     });
 
-
     /**
      * Gets the current physics impostor
      * @see https://doc.babylonjs.com/features/featuresDeepDive/physics
@@ -105,7 +98,6 @@ export function registerPhysicsV1PhysicsEngineComponent(): void {
     AbstractMesh.prototype.getPhysicsImpostor = function (): Nullable<PhysicsImpostor> {
         return this.physicsImpostor;
     };
-
 
     /**
      * Apply a physic impulse to the mesh
@@ -121,7 +113,6 @@ export function registerPhysicsV1PhysicsEngineComponent(): void {
         this.physicsImpostor.applyImpulse(force, contactPoint);
         return this;
     };
-
 
     /**
      * Creates a physic joint between two meshes

@@ -2,7 +2,7 @@
 
 import { Scene } from "core/scene.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
-import { type FloatArray, type Nullable } from "core/types";
+import type { FloatArray } from "core/types";
 import { type Observer } from "core/Misc/observable";
 import { type Camera } from "core/Cameras/camera";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
@@ -19,8 +19,6 @@ import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCusto
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Nullable } from "core/types";
-
-
 
 declare module "../../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -564,7 +562,6 @@ export class FluidRenderer {
     }
 }
 
-
 let _registered = false;
 export function registerFluidRenderer(): void {
     if (_registered) {
@@ -583,7 +580,6 @@ export function registerFluidRenderer(): void {
         configurable: true,
     });
 
-
     Scene.prototype.enableFluidRenderer = function (): Nullable<FluidRenderer> {
         if (this._fluidRenderer) {
             return this._fluidRenderer;
@@ -593,7 +589,6 @@ export function registerFluidRenderer(): void {
 
         return this._fluidRenderer;
     };
-
 
     Scene.prototype.disableFluidRenderer = function (): void {
         this._fluidRenderer?.dispose();

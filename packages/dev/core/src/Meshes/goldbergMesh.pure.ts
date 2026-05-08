@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../scene.pure";
 import { Vector3 } from "../Maths/math.vector.pure";
 import type { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -298,7 +297,6 @@ export class GoldbergMesh extends Mesh {
         return goldberg;
     }
 }
-
 
 let _registered = false;
 export function registerGoldbergMesh(): void {

@@ -1,13 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { Logger } from "../../Misc/logger";
-import { type Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
-import { type Scene } from "../../scene.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
-import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Geometry } from "../../Meshes/geometry";
-import { type Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
@@ -19,7 +15,6 @@ import { SceneLoaderFlags } from "../sceneLoaderFlags";
 import { Constants } from "../../Engines/constants";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
-import { type IParticleSystem } from "../../Particles/IParticleSystem";
 import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { ReflectionProbe } from "../../Probes/reflectionProbe.pure";
@@ -27,22 +22,21 @@ import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools.pure";
 import { PostProcess } from "../../PostProcesses/postProcess.pure";
 import { SpriteManager } from "core/Sprites/spriteManager";
-import { Parse } from "./babylonFileParser.function";
+import { Parse, GetIndividualParser } from "./babylonFileParser.function";
 import { Observable } from "../../Misc/observable";
 import { type MorphTarget } from "../../Morph/morphTarget";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
-import { Vector3 } from "../../Maths/math.vector";
-import { Color3, Color4 } from "../../Maths/math.color";
+import { Vector3 } from "../../Maths/math.vector.pure";
+import { Color3, Color4 } from "../../Maths/math.color.pure";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Node } from "../../node";
 import { SceneComponentConstants } from "../../sceneComponent";
 import { RegisterSceneLoaderPlugin } from "../../Loading/sceneLoader";
 import { IParticleSystem } from "../../Particles/IParticleSystem";
-import { CannonJSPlugin } from "../../Physics/v1/Plugins/cannonJSPlugin";
+import { CannonJSPlugin } from "../../Physics/v1/Plugins/cannonJSPlugin.pure";
 import { OimoJSPlugin } from "../../Physics/v1/Plugins/oimoJSPlugin";
 import { AmmoJSPlugin } from "../../Physics/v1/Plugins/ammoJSPlugin";
-import { GetIndividualParser } from "./babylonFileParser.function";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -799,7 +793,6 @@ export const LoadAssetContainer = (
     return container;
 };
 
-
 let _registered = false;
 export function registerBabylonFileLoader(): void {
     if (_registered) {
@@ -1220,7 +1213,8 @@ export function registerBabylonFileLoader(): void {
             } finally {
                 if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
                     Logger.Log(
-                        logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
+                        logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") +
+                            (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
                     );
                 }
                 TempMaterialIndexContainer = {};
@@ -1307,7 +1301,11 @@ export function registerBabylonFileLoader(): void {
                     }
                     log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                     //else - default engine, which is currently oimo
-                    const physicsGravity = parsedData.gravity ? Vector3.FromArray(parsedData.gravity) : parsedData.physicsGravity ? Vector3.FromArray(parsedData.physicsGravity) : null;
+                    const physicsGravity = parsedData.gravity
+                        ? Vector3.FromArray(parsedData.gravity)
+                        : parsedData.physicsGravity
+                          ? Vector3.FromArray(parsedData.physicsGravity)
+                          : null;
                     scene.enablePhysics(physicsGravity, physicsPlugin);
                 }
 
@@ -1347,7 +1345,8 @@ export function registerBabylonFileLoader(): void {
             } finally {
                 if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
                     Logger.Log(
-                        logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
+                        logOperation("importScene", parsedData ? parsedData.producer : "Unknown") +
+                            (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
                     );
                 }
             }

@@ -1,15 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Observable } from "../Misc/observable";
-import { type Vector3 } from "../Maths/math.vector.pure";
-import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
 import { Scene } from "../scene.pure";
-import { type IPhysicsEngine } from "./IPhysicsEngine";
-import { type IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
-import { type IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math.vector.pure";
@@ -19,7 +13,6 @@ import { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEng
 import { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
 import { PhysicsEngine as PhysicsEngineV1 } from "./v1/physicsEngine";
 import { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
-
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -131,7 +124,6 @@ export class PhysicsEngineSceneComponent implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerJoinedPhysicsEngineComponent(): void {
     if (_registered) {
@@ -146,7 +138,6 @@ export function registerJoinedPhysicsEngineComponent(): void {
     Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
         return this._physicsEngine ?? null;
     };
-
 
     /**
      * Enables physics to the current scene
@@ -182,7 +173,6 @@ export function registerJoinedPhysicsEngineComponent(): void {
         }
     };
 
-
     /**
      * Disables and disposes the physics engine associated with the scene
      */
@@ -195,7 +185,6 @@ export function registerJoinedPhysicsEngineComponent(): void {
         this._physicsEngine = null;
     };
 
-
     /**
      * Gets a boolean indicating if there is an active physics engine
      * @returns a boolean indicating if there is an active physics engine
@@ -203,7 +192,6 @@ export function registerJoinedPhysicsEngineComponent(): void {
     Scene.prototype.isPhysicsEnabled = function (): boolean {
         return !!this._physicsEngine;
     };
-
 
     /**
      * Deletes a physics compound impostor
@@ -217,7 +205,6 @@ export function registerJoinedPhysicsEngineComponent(): void {
             mesh.physicsImpostor = null;
         }
     };
-
 
     /**
      * @internal

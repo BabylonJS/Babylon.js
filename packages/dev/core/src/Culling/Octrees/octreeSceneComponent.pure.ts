@@ -3,7 +3,6 @@
 import { type ISmartArrayLike } from "../../Misc/smartArray";
 import { Scene } from "../../scene.pure";
 import { Vector3 } from "../../Maths/math.vector.pure";
-import { type SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Ray } from "../../Culling/ray.pure";
 import { SceneComponentConstants } from "../../sceneComponent";
@@ -190,7 +189,6 @@ export class OctreeSceneComponent {
         // Nothing to do here.
     }
 }
-
 
 let _registered = false;
 export function registerOctreeSceneComponent(): void {

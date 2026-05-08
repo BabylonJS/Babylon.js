@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { SmartArray } from "../Misc/smartArray";
 import { Observable } from "../Misc/observable";
 import type { Observer } from "../Misc/observable";
@@ -14,7 +13,7 @@ import { type Color4 } from "../Maths/math.color.pure";
 import { type NodeMaterial } from "../Materials/Node/nodeMaterial.pure";
 import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { GetClass } from "../Misc/typeStore";
+import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { type Scene } from "../scene.pure";
@@ -28,10 +27,6 @@ import { type IAssetContainer } from "core/IAssetContainer";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOptions } from "../Materials/effectRenderer";
 import { Nullable } from "../types";
-import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 declare module "../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1259,7 +1254,6 @@ export class PostProcess {
     }
 }
 
-
 let _registered = false;
 export function registerPostProcess(): void {
     if (_registered) {
@@ -1280,11 +1274,9 @@ export function registerPostProcess(): void {
         this._bindTexture(channel, postProcessInput?.texture ?? null, name);
     };
 
-
     AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     };
-
 
     /**
      * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
@@ -1295,7 +1287,6 @@ export function registerPostProcess(): void {
         this._engine.setTextureFromPostProcess(this._samplers[channel], postProcess, channel);
     };
 
-
     /**
      * (Warning! setTextureFromPostProcessOutput may be desired instead)
      * Sets the input texture of the passed in post process to be input of this effect. (To use the output of the passed in post process use setTextureFromPostProcessOutput)
@@ -1305,7 +1296,6 @@ export function registerPostProcess(): void {
     Effect.prototype.setTextureFromPostProcessOutput = function (channel: string, postProcess: Nullable<PostProcess>): void {
         this._engine.setTextureFromPostProcessOutput(this._samplers[channel], postProcess, channel);
     };
-
 
     RegisterClass("BABYLON.PostProcess", PostProcess);
 }

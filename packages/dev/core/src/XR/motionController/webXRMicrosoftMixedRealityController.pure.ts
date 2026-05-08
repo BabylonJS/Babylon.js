@@ -3,12 +3,11 @@
 import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import type { IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type Scene } from "../../scene.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { Logger } from "../../Misc/logger";
-import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
+import { WebXRMotionControllerManager } from "./webXRMotionControllerManager.pure";
 import { Scene } from "../../scene.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -510,7 +509,6 @@ const MixedRealityProfile: IMotionControllerLayoutMap = {
         assetPath: "right.glb",
     },
 };
-
 
 let _registered = false;
 export function registerWebXRMicrosoftMixedRealityController(): void {

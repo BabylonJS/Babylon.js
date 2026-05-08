@@ -3,7 +3,7 @@
 import { NativeDataStream } from "./nativeDataStream";
 import type { NativeData } from "./nativeDataStream";
 import { type INative } from "./nativeInterfaces";
-import { ThinNativeEngine } from "../thinNativeEngine";
+import { ThinNativeEngine } from "../thinNativeEngine.pure";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;

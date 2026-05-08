@@ -28,7 +28,7 @@ import { type Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
-import { GetClass } from "../Misc/typeStore";
+import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
@@ -46,7 +46,6 @@ import { type LinesMesh } from "./linesMesh.pure";
 import { type GroundMesh } from "./groundMesh.pure";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
-import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * @internal
@@ -5987,7 +5986,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw new Error("Import MeshBuilder to populate this function");
     }
 }
-
 
 let _registered = false;
 export function registerMesh(): void {

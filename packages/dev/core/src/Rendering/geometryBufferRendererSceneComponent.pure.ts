@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
@@ -8,9 +7,7 @@ import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { GeometryBufferRenderer, IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer";
-
-
+import { GeometryBufferRenderer, IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer.pure";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -96,7 +93,6 @@ export class GeometryBufferRendererSceneComponent implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryBufferRendererSceneComponent(): void {
     if (_registered) {
@@ -117,7 +113,6 @@ export function registerGeometryBufferRendererSceneComponent(): void {
         configurable: true,
     });
 
-
     Scene.prototype.enableGeometryBufferRenderer = function (
         ratio: number | { width: number; height: number } = 1,
         depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
@@ -135,7 +130,6 @@ export function registerGeometryBufferRendererSceneComponent(): void {
         return this._geometryBufferRenderer;
     };
 
-
     Scene.prototype.disableGeometryBufferRenderer = function (): void {
         if (!this._geometryBufferRenderer) {
             return;
@@ -144,7 +138,6 @@ export function registerGeometryBufferRendererSceneComponent(): void {
         this._geometryBufferRenderer.dispose();
         this._geometryBufferRenderer = null;
     };
-
 
     GeometryBufferRenderer._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.

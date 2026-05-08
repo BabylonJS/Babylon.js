@@ -1,13 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-
-import { type ImageSource, type Nullable } from "../../types";
 import { type ICanvas } from "../ICanvas";
 import { GetExponentOfTwo } from "core/Misc/tools.functions";
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { ImageSource, Nullable } from "../../types";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -45,7 +42,6 @@ declare module "../../Engines/abstractEngine" {
 }
 
 export {};
-
 
 let _registered = false;
 export function registerEnginesExtensionsEngineDynamicTexture(): void {

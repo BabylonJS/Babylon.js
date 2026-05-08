@@ -1,6 +1,5 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene } from "../../scene.pure";
 import { Vector3 } from "../../Maths/math.vector.pure";
 import { Color3 } from "../../Maths/math.color.pure";
 import { Mesh } from "../mesh.pure";
@@ -518,7 +517,6 @@ export const GroundBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTiledGround,
 };
-
 
 let _registered = false;
 export function registerGroundBuilder(): void {

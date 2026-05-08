@@ -1,7 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
 import { Mesh } from "../mesh.pure";
-import { type Scene } from "../../scene.pure";
 import { CreateSphere } from "../Builders/sphereBuilder.pure";
 import { CreateDisc } from "./discBuilder.pure";
 import { Scene } from "../../scene.pure";
@@ -39,7 +38,6 @@ export const HemisphereBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateHemisphere,
 };
-
 
 let _registered = false;
 export function registerHemisphereBuilder(): void {
