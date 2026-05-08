@@ -45,3 +45,4 @@ export * from "./Conditions/pure";
 export * from "./Teleport/pure";
 export * from "./Triggers/pure";
 export * from "./Update/pure";
+export * from "./allBlocks.pure";

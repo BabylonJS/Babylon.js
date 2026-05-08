@@ -1,5 +1,6 @@
 /** Pure barrel — re-exports only side-effect-free modules */
-export * from "./index.pure";
+export * from "./types";
+export * from "./sceneComponent";
 export * from "./scene.pure";
 export * from "./Actions/pure";
 export * from "./Animations/pure";

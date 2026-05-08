@@ -51,3 +51,4 @@ export * from "./Set/pure";
 export * from "./Sources/pure";
 export * from "./Teleport/pure";
 export * from "./Textures/pure";
+export * from "./allBlocks.pure";

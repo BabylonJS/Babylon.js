@@ -7,3 +7,5 @@ export * from "./sceneHelpers.pure";
 
 import { RegisterSceneHelpers } from "./sceneHelpers.pure";
 RegisterSceneHelpers();
+
+import "../Cameras/VR/vrExperienceHelper";

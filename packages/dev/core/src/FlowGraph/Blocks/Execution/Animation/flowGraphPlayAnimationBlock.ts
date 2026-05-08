@@ -6,3 +6,5 @@ export * from "./flowGraphPlayAnimationBlock.pure";
 
 import { RegisterFlowGraphPlayAnimationBlock } from "./flowGraphPlayAnimationBlock.pure";
 RegisterFlowGraphPlayAnimationBlock();
+
+import "../../../../Animations/animationGroup";

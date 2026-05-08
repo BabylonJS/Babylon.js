@@ -6,3 +6,6 @@ export * from "./gaussianSplattingMesh.pure";
 
 import { RegisterGaussianSplattingMesh } from "./gaussianSplattingMesh.pure";
 RegisterGaussianSplattingMesh();
+
+import "../thinInstanceMesh";
+import "./gaussianSplattingPartProxyMesh";

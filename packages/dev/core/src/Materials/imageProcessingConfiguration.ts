@@ -6,3 +6,5 @@ export * from "./imageProcessingConfiguration.pure";
 
 import { RegisterImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
 RegisterImageProcessingConfiguration();
+
+import "./colorCurves";

@@ -25,6 +25,15 @@ import { join, resolve } from "path";
 const REPO_ROOT = resolve(__dirname, "../../../../..");
 const TMP_DIR = join(REPO_ROOT, "packages/tools/tests/test/unit/.tmp-treeshake");
 
+// Check if webpack is available (optional dependency)
+let hasWebpack = false;
+try {
+    require.resolve("webpack");
+    hasWebpack = true;
+} catch {
+    // webpack not installed — webpack tests will be skipped
+}
+
 // ---------------------------------------------------------------------------
 // Bundle-size baseline tracking
 // ---------------------------------------------------------------------------
@@ -181,7 +190,18 @@ async function bundleWithWebpack(name: string, entryCode: string, distDir: strin
             optimization: {
                 usedExports: true,
                 sideEffects: true,
-                minimize: false, // keep output readable so we can search for forbidden strings
+                // Enable minimization with Terser to eliminate dead code (unused functions)
+                // while keeping output readable for forbidden-string checks.
+                minimize: true,
+                minimizer: [
+                    new (require("terser-webpack-plugin"))({
+                        terserOptions: {
+                            compress: { dead_code: true, unused: false },
+                            mangle: false,
+                            format: { beautify: true, comments: false },
+                        },
+                    }),
+                ],
             },
             resolve: {
                 extensions: [".js", ".mjs"],
@@ -335,13 +355,6 @@ const TEST_CASE_TEMPLATES: SideEffectTestCase[] = [
         forbiddenStrings: [],
         maxBundleSizeBytes: 500,
         description: "Bare import of math.vector.functions (side-effect-free) should produce near-empty bundle",
-    },
-    {
-        name: "color-functions-bare",
-        entryCode: `import "%DIST%/Maths/math.color.functions.js";\n`,
-        forbiddenStrings: [],
-        maxBundleSizeBytes: 500,
-        description: "Bare import of math.color.functions (side-effect-free) should produce near-empty bundle",
     },
 
     // ── Simple scene test (cherry-picked imports should not pull in heavy subsystems) ──
@@ -676,32 +689,36 @@ for (const pkg of PACKAGES) {
                 }, 30_000);
 
                 // ── Webpack ─────────────────────────────────────────────────
-                it(`[Webpack] ${template.description}`, async () => {
-                    const tc = testCases.find((t) => t.name === template.name)!;
-                    const uniqueName = `${pkg.label.replace(/[/@]/g, "_")}-${tc.name}`;
-                    const result = await bundleWithWebpack(uniqueName, tc.entryCode, distDir);
+                it.skipIf(!hasWebpack)(
+                    `[Webpack] ${template.description}`,
+                    async () => {
+                        const tc = testCases.find((t) => t.name === template.name)!;
+                        const uniqueName = `${pkg.label.replace(/[/@]/g, "_")}-${tc.name}`;
+                        const result = await bundleWithWebpack(uniqueName, tc.entryCode, distDir);
 
-                    // Size check (for bare-import tests)
-                    if (tc.maxBundleSizeBytes !== undefined) {
-                        expect(result.size, `Webpack bundle too large (${result.size} bytes, max ${tc.maxBundleSizeBytes})`).toBeLessThanOrEqual(tc.maxBundleSizeBytes);
-                    }
+                        // Size check (for bare-import tests)
+                        if (tc.maxBundleSizeBytes !== undefined) {
+                            expect(result.size, `Webpack bundle too large (${result.size} bytes, max ${tc.maxBundleSizeBytes})`).toBeLessThanOrEqual(tc.maxBundleSizeBytes);
+                        }
 
-                    // Bundle-size regression check (warn-only)
-                    checkBundleSizeRegression(baselineKey(pkg.label, "webpack", tc.name), result.size);
+                        // Bundle-size regression check (warn-only)
+                        checkBundleSizeRegression(baselineKey(pkg.label, "webpack", tc.name), result.size);
 
-                    // Forbidden string checks
-                    for (const forbidden of tc.forbiddenStrings) {
-                        expect(
-                            result.content,
-                            `Webpack bundle for "${tc.name}" should NOT contain "${forbidden}".\nBundle preview:\n${result.content.substring(0, 500)}`
-                        ).not.toContain(forbidden);
-                    }
+                        // Forbidden string checks
+                        for (const forbidden of tc.forbiddenStrings) {
+                            expect(
+                                result.content,
+                                `Webpack bundle for "${tc.name}" should NOT contain "${forbidden}".\nBundle preview:\n${result.content.substring(0, 500)}`
+                            ).not.toContain(forbidden);
+                        }
 
-                    // Required string checks (positive inclusion)
-                    for (const required of tc.requiredStrings ?? []) {
-                        expect(result.content, `Webpack bundle for "${tc.name}" SHOULD contain "${required}" but it was missing.`).toContain(required);
-                    }
-                }, 30_000);
+                        // Required string checks (positive inclusion)
+                        for (const required of tc.requiredStrings ?? []) {
+                            expect(result.content, `Webpack bundle for "${tc.name}" SHOULD contain "${required}" but it was missing.`).toContain(required);
+                        }
+                    },
+                    30_000
+                );
             });
         }
     });

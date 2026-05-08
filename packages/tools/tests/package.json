@@ -29,8 +29,9 @@
         "@tools/test-tools": "^1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
+        "browserstack-local": "^1.5.5",
         "sass": "^1.62.1",
-        "browserstack-local": "^1.5.5"
+        "webpack": "^5.106.2"
     },
     "sideEffects": false
 }

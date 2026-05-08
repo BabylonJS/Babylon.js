@@ -51,3 +51,4 @@ export * from "./PostProcesses/pure";
 export * from "./Rendering/pure";
 export * from "./Teleport/pure";
 export * from "./Textures/pure";
+export * from "./allBlocks.pure";

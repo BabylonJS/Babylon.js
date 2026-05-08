@@ -30,7 +30,7 @@ export * from "./LensFlares/index";
 export * from "./Lights/index";
 export * from "./Loading/index";
 export * from "./Materials/index";
-export * from "./Maths/index";
+export * from "./Maths/pure";
 export * from "./Meshes/index";
 export * from "./Misc/index";
 export * from "./Morph/index";

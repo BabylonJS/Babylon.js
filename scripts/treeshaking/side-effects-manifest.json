@@ -1,20 +1,20 @@
 {
   "stats": {
-    "totalFiles": 3197,
-    "filesWithSideEffects": 1410,
-    "filesWithoutSideEffects": 1787,
+    "totalFiles": 3207,
+    "filesWithSideEffects": 1415,
+    "filesWithoutSideEffects": 1792,
     "byType": {
-      "top-level-call": 628,
+      "top-level-call": 633,
       "declare-module": 108,
-      "bare-import": 144,
+      "bare-import": 150,
       "static-property-assignment": 1,
       "prototype-assignment": 6,
       "shader-store-write": 633
     },
     "filesByType": {
-      "top-level-call": 628,
+      "top-level-call": 633,
       "declare-module": 91,
-      "bare-import": 54,
+      "bare-import": 58,
       "static-property-assignment": 1,
       "prototype-assignment": 3,
       "shader-store-write": 633
@@ -1417,16 +1417,21 @@
         {
           "type": "bare-import",
           "line": 3,
-          "text": "import \"./AbstractEngine/abstractEngine.loadFile\";"
+          "text": "import \"./engine\";"
         },
         {
           "type": "bare-import",
           "line": 4,
-          "text": "import \"./AbstractEngine/abstractEngine.textureLoaders\";"
+          "text": "import \"./AbstractEngine/abstractEngine.loadFile\";"
         },
         {
           "type": "bare-import",
           "line": 5,
+          "text": "import \"./AbstractEngine/abstractEngine.textureLoaders\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 6,
           "text": "import \"./AbstractEngine/abstractEngine.renderPass\";"
         }
       ]
@@ -1927,6 +1932,16 @@
       ]
     },
     {
+      "file": "FlowGraph/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterAllFlowGraphBlocks();"
+        }
+      ]
+    },
+    {
       "file": "FlowGraph/Blocks/Data/Audio/flowGraphGetSoundVolumeBlock.ts",
       "sideEffects": [
         {
@@ -2323,6 +2338,11 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterFlowGraphPlayAnimationBlock();"
+        },
+        {
+          "type": "bare-import",
+          "line": 10,
+          "text": "import \"../../../../Animations/animationGroup\";"
         }
       ]
     },
@@ -2633,6 +2653,16 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterFlowGraphSignalConnection();"
+        }
+      ]
+    },
+    {
+      "file": "FrameGraph/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterAllNodeRenderGraphBlocks();"
         }
       ]
     },
@@ -3143,6 +3173,11 @@
           "type": "top-level-call",
           "line": 9,
           "text": "RegisterSceneHelpers();"
+        },
+        {
+          "type": "bare-import",
+          "line": 11,
+          "text": "import \"../Cameras/VR/vrExperienceHelper\";"
         }
       ]
     },
@@ -3508,6 +3543,11 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterImageProcessingConfiguration();"
+        },
+        {
+          "type": "bare-import",
+          "line": 10,
+          "text": "import \"./colorCurves\";"
         }
       ]
     },
@@ -3598,6 +3638,16 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterAddBlock();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterAllNodeMaterialBlocks();"
         }
       ]
     },
@@ -5318,6 +5368,16 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterGaussianSplattingMesh();"
+        },
+        {
+          "type": "bare-import",
+          "line": 10,
+          "text": "import \"../thinInstanceMesh\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 11,
+          "text": "import \"./gaussianSplattingPartProxyMesh\";"
         }
       ]
     },
@@ -5473,6 +5533,16 @@
           "type": "declare-module",
           "line": 3,
           "text": "declare module \"../scene.pure\" {"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterAllNodeGeometryBlocks();"
         }
       ]
     },
@@ -6548,6 +6618,16 @@
           "type": "bare-import",
           "line": 3,
           "text": "import \"./particleSystemComponent\";"
+        }
+      ]
+    },
+    {
+      "file": "Particles/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterAllNodeParticleBlocks();"
         }
       ]
     },
