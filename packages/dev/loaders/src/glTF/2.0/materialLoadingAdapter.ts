@@ -13,6 +13,9 @@ export interface IMaterialLoadingAdapter {
      */
     readonly material: Material;
 
+    /** @deprecated Use finalizeAsync instead. */
+    finalize?(): void;
+
     /**
      * Finalizes material properties after all loading is complete.
      * May return a Promise for async work (e.g. GPU texture processing). Any returned
@@ -114,6 +117,11 @@ export interface IMaterialLoadingAdapter {
     enableSpecularEdgeColor(enableEdgeColor?: boolean): void;
 
     /**
+     * Enable the specular/glossiness workflow and disable metallic/roughness.
+     */
+    configureSpecularGlossiness(): void;
+
+    /**
      * Sets/gets the specular weight
      */
     specularWeight: number;
@@ -147,6 +155,12 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the specular IOR
      */
     specularIor: number;
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    glossiness: number;
 
     // ========================================
     // EMISSION PARAMETERS

@@ -268,6 +268,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public USE_GLTF_STYLE_ANISOTROPY = false;
     public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
     public FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = false;
+    public SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = false;
     public GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = false;
 
     public ENVIRONMENTBRDF = false;
@@ -1596,6 +1597,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * the alpha channel of the fuzz color texture.
      */
     public _useFuzzRoughnessFromTextureAlpha = false;
+
+    /**
+     * Specifies that the subsurface weight is stored in the alpha channel of the texture.
+     * This is for compatibility with glTF where the subsurface weight is stored in
+     * the alpha channel of the diffuseTransmissionTexture.
+     */
+    public _useSubsurfaceWeightFromTextureAlpha = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -3155,6 +3163,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.COAT_ROUGHNESS_FROM_GREEN_CHANNEL = this._useCoatRoughnessFromGreenChannel;
                 defines.SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = this._useFuzzRoughnessFromTextureAlpha;
+                defines.SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = this._useSubsurfaceWeightFromTextureAlpha;
                 defines.BASE_METALNESS_FROM_METALNESS_TEXTURE_BLUE = this._useMetallicFromMetallicTextureBlue;
                 defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
                 defines.GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = this._useGeometryThicknessFromGreenChannel;

@@ -1,5 +1,5 @@
 // Texture processing fragment shader
-// Supports multiply, max, and lerp operations with texture/constant/combined operands.
+// Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
 //
 // Defines:
 //   OPERAND_A_TEXTURE      - operand A has a texture
@@ -17,11 +17,22 @@
 //   OPERAND_B_MATRIX       - operand B texture has a UV transform to bake; uses textureBMatrix uniform
 //   OP_LERP                - use mix(a, b, t) instead of a * b
 //   OP_MAX                 - use max(a, b) instead of a * b
+//   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
+//   INVERT_R               - invert the red channel (used with OP_INVERT)
+//   INVERT_G               - invert the green channel (used with OP_INVERT)
+//   INVERT_B               - invert the blue channel (used with OP_INVERT)
+//   INVERT_A               - invert the alpha channel (used with OP_INVERT)
+//   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
+//   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
 //   LERP_T_FACTOR          - t operand has a constant vec4 factor (combined with texture when both are set)
 //   LERP_T_SRGB            - linearize t operand RGB channels before swizzle/factor
 //   LERP_T_CHANNEL_R/G/B/A - channel swizzles for the lerp t operand
 //   LERP_T_MATRIX          - t operand texture has a UV transform to bake; uses textureTMatrix uniform
+//   OUTPUT_MASK_R_ZERO     - set red channel of result to 0.0 (excluded from output)
+//   OUTPUT_MASK_G_ZERO     - set green channel of result to 0.0
+//   OUTPUT_MASK_B_ZERO     - set blue channel of result to 0.0
+//   OUTPUT_MASK_A_ONE      - set alpha channel of result to 1.0 (excluded from output)
 //   OUTPUT_SRGB            - convert the final linear result to sRGB (IEC 61966-2-1) before output
 //
 // When both TEXTURE and FACTOR are set for the same operand, the result is sample(texture) * factor.
@@ -118,7 +129,30 @@ void main() {
     #endif
 
     // Apply operation
-    #ifdef OP_LERP
+    #ifdef OP_CHANNEL_MAX
+    float _cmax = max(max(a.r, a.g), a.b);
+    #ifdef CHANNEL_MAX_INCLUDE_ALPHA
+    _cmax = max(_cmax, a.a);
+    vec4 result = vec4(_cmax, _cmax, _cmax, _cmax);
+    #else
+    vec4 result = vec4(_cmax, _cmax, _cmax, a.a);
+    #endif
+    #elif defined(OP_INVERT)
+    float _ir = a.r; float _ig = a.g; float _ib = a.b; float _ia = a.a;
+    #ifdef INVERT_R
+    _ir = 1.0 - _ir;
+    #endif
+    #ifdef INVERT_G
+    _ig = 1.0 - _ig;
+    #endif
+    #ifdef INVERT_B
+    _ib = 1.0 - _ib;
+    #endif
+    #ifdef INVERT_A
+    _ia = 1.0 - _ia;
+    #endif
+    vec4 result = vec4(_ir, _ig, _ib, _ia);
+    #elif defined(OP_LERP)
     #ifdef LERP_T_TEXTURE
     #ifdef LERP_T_MATRIX
     vec4 t = texture2D(textureT, (textureTMatrix * vec4(uv, 0.0, 1.0)).xy);
@@ -148,6 +182,20 @@ void main() {
     vec4 result = max(a, b);
     #else
     vec4 result = a * b;
+    #endif
+
+    // Apply output channel mask (excluded color channels → 0.0, excluded alpha → 1.0)
+    #ifdef OUTPUT_MASK_R_ZERO
+    result.r = 0.0;
+    #endif
+    #ifdef OUTPUT_MASK_G_ZERO
+    result.g = 0.0;
+    #endif
+    #ifdef OUTPUT_MASK_B_ZERO
+    result.b = 0.0;
+    #endif
+    #ifdef OUTPUT_MASK_A_ONE
+    result.a = 1.0;
     #endif
 
     // Convert result to output color space

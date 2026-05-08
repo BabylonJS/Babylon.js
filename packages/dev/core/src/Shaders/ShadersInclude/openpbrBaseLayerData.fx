@@ -162,12 +162,12 @@ geometry_thickness = vGeometryThickness;
     #else
         specular_color *= specularColorFromTexture.rgb;
     #endif
-#endif
 
-#ifdef SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE
-    specular_weight *= specularColorFromTexture.a;
-#elif defined(SPECULAR_WEIGHT)
-    specular_weight *= specularWeightFromTexture;
+    #ifdef SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE
+        specular_weight *= specularColorFromTexture.a;
+    #elif defined(SPECULAR_WEIGHT)
+        specular_weight *= specularWeightFromTexture;
+    #endif
 #endif
 
 #if defined(SPECULAR_ROUGHNESS) || (defined(SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN) && defined(BASE_METALNESS))

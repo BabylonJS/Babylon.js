@@ -526,13 +526,20 @@ export class GLTFLoader implements IGLTFLoader {
                         }
                     }
 
-                    // Finalize all material adapters. finalize() may return a Promise for async
+                    // Finalize all material adapters. finalizeAsync() may return a Promise for async
                     // work (e.g. GPU texture processing); push any such promises into
                     // _completePromises so they are awaited before the COMPLETE state is reached.
+                    // Fall back to the deprecated finalize() for third-party adapters that have not
+                    // yet migrated, logging a warning so authors know to update.
                     for (const adapter of Array.from(this._materialAdapters)) {
-                        const finalizePromise = adapter.finalizeAsync?.();
-                        if (finalizePromise) {
-                            this._completePromises.push(finalizePromise);
+                        if (adapter.finalizeAsync) {
+                            const finalizePromise = adapter.finalizeAsync();
+                            if (finalizePromise) {
+                                this._completePromises.push(finalizePromise);
+                            }
+                        } else if (adapter.finalize) {
+                            Logger.Warn("GLTFLoader: IMaterialLoadingAdapter.finalize() is deprecated. Implement finalizeAsync() instead.");
+                            adapter.finalize();
                         }
                     }
 
