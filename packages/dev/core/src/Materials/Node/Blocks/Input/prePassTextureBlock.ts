@@ -4,5 +4,5 @@
  */
 export * from "./prePassTextureBlock.pure";
 
-import { registerPrePassTextureBlock } from "./prePassTextureBlock.pure";
-registerPrePassTextureBlock();
+import { RegisterPrePassTextureBlock } from "./prePassTextureBlock.pure";
+RegisterPrePassTextureBlock();

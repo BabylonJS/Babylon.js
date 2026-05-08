@@ -181,12 +181,16 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 
 // #L54P2C
 
-let _registered = false;
-export function registerFlowGraphInterpolationBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphInterpolationBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphInterpolationBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.ValueInterpolation, FlowGraphInterpolationBlock);
 }

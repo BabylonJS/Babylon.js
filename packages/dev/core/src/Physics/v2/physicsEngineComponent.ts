@@ -5,5 +5,5 @@ export * from "./physicsEngineComponent.types";
  */
 export * from "./physicsEngineComponent.pure";
 
-import { registerPhysicsV2PhysicsEngineComponent } from "./physicsEngineComponent.pure";
-registerPhysicsV2PhysicsEngineComponent();
+import { RegisterPhysicsV2PhysicsEngineComponent } from "./physicsEngineComponent.pure";
+RegisterPhysicsV2PhysicsEngineComponent();

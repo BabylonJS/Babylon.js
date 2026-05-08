@@ -174,12 +174,16 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerClearBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for clearBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterClearBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphClearBlock", NodeRenderGraphClearBlock);
 }

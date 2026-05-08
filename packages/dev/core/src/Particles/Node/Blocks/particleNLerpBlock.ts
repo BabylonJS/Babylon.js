@@ -4,5 +4,5 @@
  */
 export * from "./particleNLerpBlock.pure";
 
-import { registerParticleNLerpBlock } from "./particleNLerpBlock.pure";
-registerParticleNLerpBlock();
+import { RegisterParticleNLerpBlock } from "./particleNLerpBlock.pure";
+RegisterParticleNLerpBlock();

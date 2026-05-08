@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphIndexOfBlock.pure";
 
-import { registerFlowGraphIndexOfBlock } from "./flowGraphIndexOfBlock.pure";
-registerFlowGraphIndexOfBlock();
+import { RegisterFlowGraphIndexOfBlock } from "./flowGraphIndexOfBlock.pure";
+RegisterFlowGraphIndexOfBlock();

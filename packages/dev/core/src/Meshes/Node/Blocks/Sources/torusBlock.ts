@@ -4,5 +4,5 @@
  */
 export * from "./torusBlock.pure";
 
-import { registerTorusBlock } from "./torusBlock.pure";
-registerTorusBlock();
+import { RegisterTorusBlock } from "./torusBlock.pure";
+RegisterTorusBlock();

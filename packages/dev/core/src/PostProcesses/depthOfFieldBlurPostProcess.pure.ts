@@ -91,12 +91,16 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
     }
 }
 
-let _registered = false;
-export function registerDepthOfFieldBlurPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for depthOfFieldBlurPostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDepthOfFieldBlurPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DepthOfFieldBlurPostProcess", DepthOfFieldBlurPostProcess);
 }

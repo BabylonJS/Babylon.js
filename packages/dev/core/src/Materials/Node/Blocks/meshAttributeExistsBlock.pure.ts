@@ -231,12 +231,16 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerMeshAttributeExistsBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for meshAttributeExistsBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMeshAttributeExistsBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.MeshAttributeExistsBlock", MeshAttributeExistsBlock);
 }

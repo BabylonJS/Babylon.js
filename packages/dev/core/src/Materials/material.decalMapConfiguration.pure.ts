@@ -148,12 +148,16 @@ export class DecalMapConfiguration extends MaterialPluginBase {
     }
 }
 
-let _registered = false;
-export function registerMaterialDecalMapConfiguration(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for materialDecalMapConfiguration.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMaterialDecalMapConfiguration(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DecalMapConfiguration", DecalMapConfiguration);
 }

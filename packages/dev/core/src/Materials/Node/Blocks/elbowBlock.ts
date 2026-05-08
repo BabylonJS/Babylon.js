@@ -4,5 +4,5 @@
  */
 export * from "./elbowBlock.pure";
 
-import { registerMaterialsNodeBlocksElbowBlock } from "./elbowBlock.pure";
-registerMaterialsNodeBlocksElbowBlock();
+import { RegisterMaterialsNodeBlocksElbowBlock } from "./elbowBlock.pure";
+RegisterMaterialsNodeBlocksElbowBlock();

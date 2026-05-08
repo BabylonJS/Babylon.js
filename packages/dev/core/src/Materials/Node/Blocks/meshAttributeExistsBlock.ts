@@ -4,5 +4,5 @@
  */
 export * from "./meshAttributeExistsBlock.pure";
 
-import { registerMeshAttributeExistsBlock } from "./meshAttributeExistsBlock.pure";
-registerMeshAttributeExistsBlock();
+import { RegisterMeshAttributeExistsBlock } from "./meshAttributeExistsBlock.pure";
+RegisterMeshAttributeExistsBlock();

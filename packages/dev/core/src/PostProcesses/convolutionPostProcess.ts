@@ -4,5 +4,5 @@
  */
 export * from "./convolutionPostProcess.pure";
 
-import { registerConvolutionPostProcess } from "./convolutionPostProcess.pure";
-registerConvolutionPostProcess();
+import { RegisterConvolutionPostProcess } from "./convolutionPostProcess.pure";
+RegisterConvolutionPostProcess();

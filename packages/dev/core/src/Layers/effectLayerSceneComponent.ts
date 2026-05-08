@@ -4,5 +4,5 @@
  */
 export * from "./effectLayerSceneComponent.pure";
 
-import { registerEffectLayerSceneComponent } from "./effectLayerSceneComponent.pure";
-registerEffectLayerSceneComponent();
+import { RegisterEffectLayerSceneComponent } from "./effectLayerSceneComponent.pure";
+RegisterEffectLayerSceneComponent();

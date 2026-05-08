@@ -60,12 +60,16 @@ export class ReciprocalBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerReciprocalBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for reciprocalBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterReciprocalBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ReciprocalBlock", ReciprocalBlock);
 }

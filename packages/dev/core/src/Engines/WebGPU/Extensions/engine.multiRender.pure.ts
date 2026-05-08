@@ -11,12 +11,16 @@ import { WebGPUEngine } from "../../webgpuEngine.pure";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineMultiRender(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineMultiRender.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineMultiRender(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
         rtWrapper: RenderTargetWrapper,

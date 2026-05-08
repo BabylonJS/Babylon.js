@@ -5,5 +5,5 @@ export * from "./nativeEngine.cubeTexture.types";
  */
 export * from "./nativeEngine.cubeTexture.pure";
 
-import { registerNativeEngineCubeTexture } from "./nativeEngine.cubeTexture.pure";
-registerNativeEngineCubeTexture();
+import { RegisterNativeEngineCubeTexture } from "./nativeEngine.cubeTexture.pure";
+RegisterNativeEngineCubeTexture();

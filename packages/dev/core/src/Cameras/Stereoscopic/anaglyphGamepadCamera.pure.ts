@@ -36,12 +36,16 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
     protected override _setRigMode = () => _SetStereoscopicAnaglyphRigMode(this);
 }
 
-let _registered = false;
-export function registerAnaglyphGamepadCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for anaglyphGamepadCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAnaglyphGamepadCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {
         return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, scene);

@@ -103,12 +103,16 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryLerpBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryLerpBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryLerpBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryLerpBlock", GeometryLerpBlock);
 }

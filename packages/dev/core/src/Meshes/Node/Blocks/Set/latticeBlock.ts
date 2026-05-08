@@ -4,5 +4,5 @@
  */
 export * from "./latticeBlock.pure";
 
-import { registerLatticeBlock } from "./latticeBlock.pure";
-registerLatticeBlock();
+import { RegisterLatticeBlock } from "./latticeBlock.pure";
+RegisterLatticeBlock();

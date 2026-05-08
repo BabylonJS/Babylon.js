@@ -4,5 +4,5 @@
  */
 export * from "./objectRendererBlock.pure";
 
-import { registerObjectRendererBlock } from "./objectRendererBlock.pure";
-registerObjectRendererBlock();
+import { RegisterObjectRendererBlock } from "./objectRendererBlock.pure";
+RegisterObjectRendererBlock();

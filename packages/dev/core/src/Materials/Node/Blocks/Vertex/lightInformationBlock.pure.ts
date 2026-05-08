@@ -270,12 +270,16 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerLightInformationBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for lightInformationBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterLightInformationBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.LightInformationBlock", LightInformationBlock);
 }

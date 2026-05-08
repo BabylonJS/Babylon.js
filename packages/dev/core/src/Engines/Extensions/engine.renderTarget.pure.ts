@@ -17,12 +17,16 @@ import { Constants } from "../constants";
  */
 export type RenderTargetTextureSize = TextureSize;
 
-let _registered = false;
-export function registerEnginesExtensionsEngineRenderTarget(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineRenderTarget.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineRenderTarget(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
         const rtWrapper = new WebGLRenderTargetWrapper(isMulti, isCube, size, this, this._gl);

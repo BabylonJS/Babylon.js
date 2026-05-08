@@ -4,5 +4,5 @@
  */
 export * from "./sphereBlock.pure";
 
-import { registerSphereBlock } from "./sphereBlock.pure";
-registerSphereBlock();
+import { RegisterSphereBlock } from "./sphereBlock.pure";
+RegisterSphereBlock();

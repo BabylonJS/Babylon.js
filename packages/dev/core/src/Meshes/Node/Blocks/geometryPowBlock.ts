@@ -4,5 +4,5 @@
  */
 export * from "./geometryPowBlock.pure";
 
-import { registerGeometryPowBlock } from "./geometryPowBlock.pure";
-registerGeometryPowBlock();
+import { RegisterGeometryPowBlock } from "./geometryPowBlock.pure";
+RegisterGeometryPowBlock();

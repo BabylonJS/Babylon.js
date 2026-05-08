@@ -4,5 +4,5 @@
  */
 export * from "./refractionPostProcess.pure";
 
-import { registerRefractionPostProcess } from "./refractionPostProcess.pure";
-registerRefractionPostProcess();
+import { RegisterRefractionPostProcess } from "./refractionPostProcess.pure";
+RegisterRefractionPostProcess();

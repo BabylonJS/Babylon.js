@@ -324,12 +324,16 @@ export const DumpTools = {
  * @internal
  */
 
-let _registered = false;
-export function registerDumpTools(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for dumpTools.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDumpTools(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     const InitSideEffects = () => {
         // References the dependencies.

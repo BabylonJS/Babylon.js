@@ -4,5 +4,5 @@
  */
 export * from "./fragCoordBlock.pure";
 
-import { registerFragCoordBlock } from "./fragCoordBlock.pure";
-registerFragCoordBlock();
+import { RegisterFragCoordBlock } from "./fragCoordBlock.pure";
+RegisterFragCoordBlock();

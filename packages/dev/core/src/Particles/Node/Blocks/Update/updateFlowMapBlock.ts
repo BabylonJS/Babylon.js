@@ -4,5 +4,5 @@
  */
 export * from "./updateFlowMapBlock.pure";
 
-import { registerUpdateFlowMapBlock } from "./updateFlowMapBlock.pure";
-registerUpdateFlowMapBlock();
+import { RegisterUpdateFlowMapBlock } from "./updateFlowMapBlock.pure";
+RegisterUpdateFlowMapBlock();

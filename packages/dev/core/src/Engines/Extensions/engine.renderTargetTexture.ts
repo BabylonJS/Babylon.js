@@ -5,5 +5,5 @@ export * from "./engine.renderTargetTexture.types";
  */
 export * from "./engine.renderTargetTexture.pure";
 
-import { registerEnginesExtensionsEngineRenderTargetTexture } from "./engine.renderTargetTexture.pure";
-registerEnginesExtensionsEngineRenderTargetTexture();
+import { RegisterEnginesExtensionsEngineRenderTargetTexture } from "./engine.renderTargetTexture.pure";
+RegisterEnginesExtensionsEngineRenderTargetTexture();

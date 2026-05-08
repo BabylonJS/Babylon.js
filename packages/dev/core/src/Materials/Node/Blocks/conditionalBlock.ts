@@ -4,5 +4,5 @@
  */
 export * from "./conditionalBlock.pure";
 
-import { registerConditionalBlock } from "./conditionalBlock.pure";
-registerConditionalBlock();
+import { RegisterConditionalBlock } from "./conditionalBlock.pure";
+RegisterConditionalBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./pbrMaterial.pure";
 
-import { registerPbrMaterial } from "./pbrMaterial.pure";
-registerPbrMaterial();
+import { RegisterPbrMaterial } from "./pbrMaterial.pure";
+RegisterPbrMaterial();

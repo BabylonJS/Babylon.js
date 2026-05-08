@@ -4,5 +4,5 @@
  */
 export * from "./vrDeviceOrientationFreeCamera.pure";
 
-import { registerVrDeviceOrientationFreeCamera } from "./vrDeviceOrientationFreeCamera.pure";
-registerVrDeviceOrientationFreeCamera();
+import { RegisterVrDeviceOrientationFreeCamera } from "./vrDeviceOrientationFreeCamera.pure";
+RegisterVrDeviceOrientationFreeCamera();

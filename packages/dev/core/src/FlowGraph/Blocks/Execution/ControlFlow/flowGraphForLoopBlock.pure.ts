@@ -109,12 +109,16 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
     }
 }
 
-let _registered = false;
-export function registerFlowGraphForLoopBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphForLoopBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphForLoopBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.ForLoop, FlowGraphForLoopBlock);
 }

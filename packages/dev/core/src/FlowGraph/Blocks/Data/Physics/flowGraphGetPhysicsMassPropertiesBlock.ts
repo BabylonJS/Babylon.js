@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphGetPhysicsMassPropertiesBlock.pure";
 
-import { registerFlowGraphGetPhysicsMassPropertiesBlock } from "./flowGraphGetPhysicsMassPropertiesBlock.pure";
-registerFlowGraphGetPhysicsMassPropertiesBlock();
+import { RegisterFlowGraphGetPhysicsMassPropertiesBlock } from "./flowGraphGetPhysicsMassPropertiesBlock.pure";
+RegisterFlowGraphGetPhysicsMassPropertiesBlock();

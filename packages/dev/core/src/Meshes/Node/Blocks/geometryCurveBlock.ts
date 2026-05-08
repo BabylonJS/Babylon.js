@@ -4,5 +4,5 @@
  */
 export * from "./geometryCurveBlock.pure";
 
-import { registerGeometryCurveBlock } from "./geometryCurveBlock.pure";
-registerGeometryCurveBlock();
+import { RegisterGeometryCurveBlock } from "./geometryCurveBlock.pure";
+RegisterGeometryCurveBlock();

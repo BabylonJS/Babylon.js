@@ -125,12 +125,16 @@ export const TorusBuilder = {
     CreateTorus,
 };
 
-let _registered = false;
-export function registerTorusBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for torusBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTorusBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreateTorus = CreateTorusVertexData;
 

@@ -11,12 +11,16 @@ import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineMultiRender(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineMultiRender.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineMultiRender(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.restoreSingleAttachment = function (): void {
         const gl = this._gl;

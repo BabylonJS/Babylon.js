@@ -4,5 +4,5 @@
  */
 export * from "./cannonJSPlugin.pure";
 
-import { registerCannonJSPlugin } from "./cannonJSPlugin.pure";
-registerCannonJSPlugin();
+import { RegisterCannonJSPlugin } from "./cannonJSPlugin.pure";
+RegisterCannonJSPlugin();

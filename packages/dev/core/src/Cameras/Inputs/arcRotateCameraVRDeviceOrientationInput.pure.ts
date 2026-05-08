@@ -131,12 +131,16 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
 (<any>CameraInputTypes)["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
 
-let _registered = false;
-export function registerArcRotateCameraVRDeviceOrientationInput(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for arcRotateCameraVRDeviceOrientationInput.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterArcRotateCameraVRDeviceOrientationInput(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * Add orientation input support to the input manager.

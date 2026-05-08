@@ -116,12 +116,16 @@ export class GeometryInfoBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryInfoBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryInfoBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryInfoBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryInfoBlock", GeometryInfoBlock);
 }

@@ -51,12 +51,16 @@ export class FlowGraphStopSoundBlock extends FlowGraphExecutionBlockWithOutSigna
     }
 }
 
-let _registered = false;
-export function registerFlowGraphStopSoundBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphStopSoundBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphStopSoundBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.AudioStopSound, FlowGraphStopSoundBlock);
 }

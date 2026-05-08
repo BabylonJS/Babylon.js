@@ -172,12 +172,16 @@ export const SphereBuilder = {
     CreateSphere,
 };
 
-let _registered = false;
-export function registerSphereBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for sphereBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSphereBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreateSphere = CreateSphereVertexData;
 

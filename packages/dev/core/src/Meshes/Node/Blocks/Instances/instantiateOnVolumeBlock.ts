@@ -4,5 +4,5 @@
  */
 export * from "./instantiateOnVolumeBlock.pure";
 
-import { registerInstantiateOnVolumeBlock } from "./instantiateOnVolumeBlock.pure";
-registerInstantiateOnVolumeBlock();
+import { RegisterInstantiateOnVolumeBlock } from "./instantiateOnVolumeBlock.pure";
+RegisterInstantiateOnVolumeBlock();

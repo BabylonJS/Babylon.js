@@ -117,12 +117,16 @@ export const PlaneBuilder = {
     CreatePlane,
 };
 
-let _registered = false;
-export function registerPlaneBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for planeBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPlaneBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreatePlane = CreatePlaneVertexData;
 

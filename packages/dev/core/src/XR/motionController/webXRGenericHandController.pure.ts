@@ -128,12 +128,16 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
     },
 };
 
-let _registered = false;
-export function registerWebXRGenericHandController(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRGenericHandController.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRGenericHandController(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // register the profiles
     WebXRMotionControllerManager.RegisterController("generic-hand-select-grasp", (xrInput: XRInputSource, scene: Scene) => {

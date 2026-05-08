@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphDebounceBlock.pure";
 
-import { registerFlowGraphDebounceBlock } from "./flowGraphDebounceBlock.pure";
-registerFlowGraphDebounceBlock();
+import { RegisterFlowGraphDebounceBlock } from "./flowGraphDebounceBlock.pure";
+RegisterFlowGraphDebounceBlock();

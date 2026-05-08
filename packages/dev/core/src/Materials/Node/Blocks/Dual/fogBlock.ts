@@ -4,5 +4,5 @@
  */
 export * from "./fogBlock.pure";
 
-import { registerFogBlock } from "./fogBlock.pure";
-registerFogBlock();
+import { RegisterFogBlock } from "./fogBlock.pure";
+RegisterFogBlock();

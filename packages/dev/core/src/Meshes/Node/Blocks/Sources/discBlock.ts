@@ -4,5 +4,5 @@
  */
 export * from "./discBlock.pure";
 
-import { registerDiscBlock } from "./discBlock.pure";
-registerDiscBlock();
+import { RegisterDiscBlock } from "./discBlock.pure";
+RegisterDiscBlock();

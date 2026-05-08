@@ -4,5 +4,5 @@
  */
 export * from "./heightToNormalBlock.pure";
 
-import { registerHeightToNormalBlock } from "./heightToNormalBlock.pure";
-registerHeightToNormalBlock();
+import { RegisterHeightToNormalBlock } from "./heightToNormalBlock.pure";
+RegisterHeightToNormalBlock();

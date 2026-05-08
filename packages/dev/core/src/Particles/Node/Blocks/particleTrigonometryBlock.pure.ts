@@ -289,12 +289,16 @@ export class ParticleTrigonometryBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleTrigonometryBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleTrigonometryBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleTrigonometryBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleTrigonometryBlock", ParticleTrigonometryBlock);
 }

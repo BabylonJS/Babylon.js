@@ -83,12 +83,16 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
     }
 }
 
-let _registered = false;
-export function registerFlowGraphGetAssetBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphGetAssetBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphGetAssetBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.GetAsset, FlowGraphGetAssetBlock);
 }

@@ -5,5 +5,5 @@ export * from "./boundingBoxRenderer.types";
  */
 export * from "./boundingBoxRenderer.pure";
 
-import { registerBoundingBoxRenderer } from "./boundingBoxRenderer.pure";
-registerBoundingBoxRenderer();
+import { RegisterBoundingBoxRenderer } from "./boundingBoxRenderer.pure";
+RegisterBoundingBoxRenderer();

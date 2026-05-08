@@ -4,5 +4,5 @@
  */
 export * from "./webXRMicrosoftMixedRealityController.pure";
 
-import { registerWebXRMicrosoftMixedRealityController } from "./webXRMicrosoftMixedRealityController.pure";
-registerWebXRMicrosoftMixedRealityController();
+import { RegisterWebXRMicrosoftMixedRealityController } from "./webXRMicrosoftMixedRealityController.pure";
+RegisterWebXRMicrosoftMixedRealityController();

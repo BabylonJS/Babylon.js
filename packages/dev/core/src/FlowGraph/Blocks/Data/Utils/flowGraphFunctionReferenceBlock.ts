@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphFunctionReferenceBlock.pure";
 
-import { registerFlowGraphFunctionReferenceBlock } from "./flowGraphFunctionReferenceBlock.pure";
-registerFlowGraphFunctionReferenceBlock();
+import { RegisterFlowGraphFunctionReferenceBlock } from "./flowGraphFunctionReferenceBlock.pure";
+RegisterFlowGraphFunctionReferenceBlock();

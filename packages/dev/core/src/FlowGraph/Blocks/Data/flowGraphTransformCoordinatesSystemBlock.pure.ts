@@ -73,12 +73,16 @@ export class FlowGraphTransformCoordinatesSystemBlock extends FlowGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphTransformCoordinatesSystemBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphTransformCoordinatesSystemBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphTransformCoordinatesSystemBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.TransformCoordinatesSystem, FlowGraphTransformCoordinatesSystemBlock);
 }

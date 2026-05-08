@@ -4,5 +4,5 @@
  */
 export * from "./shapeBuilder.pure";
 
-import { registerShapeBuilder } from "./shapeBuilder.pure";
-registerShapeBuilder();
+import { RegisterShapeBuilder } from "./shapeBuilder.pure";
+RegisterShapeBuilder();

@@ -5,5 +5,5 @@ export * from "./particleSystemComponent.types";
  */
 export * from "./particleSystemComponent.pure";
 
-import { registerParticleSystemComponent } from "./particleSystemComponent.pure";
-registerParticleSystemComponent();
+import { RegisterParticleSystemComponent } from "./particleSystemComponent.pure";
+RegisterParticleSystemComponent();

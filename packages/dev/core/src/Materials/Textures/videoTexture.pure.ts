@@ -597,12 +597,16 @@ export class VideoTexture extends Texture {
     }
 }
 
-let _registered = false;
-export function registerVideoTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for videoTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVideoTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Texture._CreateVideoTexture = (
         name: Nullable<string>,

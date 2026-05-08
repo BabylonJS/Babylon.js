@@ -4,5 +4,5 @@
  */
 export * from "./WebXRHitTest.pure";
 
-import { registerWebXRHitTest } from "./WebXRHitTest.pure";
-registerWebXRHitTest();
+import { RegisterWebXRHitTest } from "./WebXRHitTest.pure";
+RegisterWebXRHitTest();

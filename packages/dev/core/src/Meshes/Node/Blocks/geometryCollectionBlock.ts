@@ -4,5 +4,5 @@
  */
 export * from "./geometryCollectionBlock.pure";
 
-import { registerGeometryCollectionBlock } from "./geometryCollectionBlock.pure";
-registerGeometryCollectionBlock();
+import { RegisterGeometryCollectionBlock } from "./geometryCollectionBlock.pure";
+RegisterGeometryCollectionBlock();

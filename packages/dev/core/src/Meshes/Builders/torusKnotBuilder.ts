@@ -4,5 +4,5 @@
  */
 export * from "./torusKnotBuilder.pure";
 
-import { registerTorusKnotBuilder } from "./torusKnotBuilder.pure";
-registerTorusKnotBuilder();
+import { RegisterTorusKnotBuilder } from "./torusKnotBuilder.pure";
+RegisterTorusKnotBuilder();

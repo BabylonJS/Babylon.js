@@ -4,5 +4,5 @@
  */
 export * from "./randomBlock.pure";
 
-import { registerRandomBlock } from "./randomBlock.pure";
-registerRandomBlock();
+import { RegisterRandomBlock } from "./randomBlock.pure";
+RegisterRandomBlock();

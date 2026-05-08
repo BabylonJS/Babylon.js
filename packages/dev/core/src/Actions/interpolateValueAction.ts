@@ -4,5 +4,5 @@
  */
 export * from "./interpolateValueAction.pure";
 
-import { registerInterpolateValueAction } from "./interpolateValueAction.pure";
-registerInterpolateValueAction();
+import { RegisterInterpolateValueAction } from "./interpolateValueAction.pure";
+RegisterInterpolateValueAction();

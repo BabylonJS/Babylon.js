@@ -1,12 +1,16 @@
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { Constants } from "../constants";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineAlpha(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineAlpha.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineAlpha(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false, targetIndex: number = 0): void {
         if (this._alphaMode[targetIndex] === mode) {

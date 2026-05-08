@@ -4,12 +4,16 @@ import { Nullable } from "../types";
 import { MeshUVSpaceRenderer } from "./meshUVSpaceRenderer.pure";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 
-let _registered = false;
-export function registerAbstractMeshDecalMap(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractMeshDecalMap.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractMeshDecalMap(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(AbstractMesh.prototype, "decalMap", {
         get: function (this: AbstractMesh) {

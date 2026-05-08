@@ -171,7 +171,7 @@ const TEST_CASES = [
     },
     {
         name: "registration-pure-named-call",
-        entryCode: `import { registerRay } from "${CORE_DIST}/Culling/ray.pure.js";\nregisterRay();\n`,
+        entryCode: `import { RegisterRay } from "${CORE_DIST}/Culling/ray.pure.js";\nregisterRay();\n`,
         maxBundleSizeBytes: Infinity,
         description: "Import + call of registration function should bundle correctly (sanity check)",
     },
@@ -189,7 +189,7 @@ const TEST_CASES = [
     },
     {
         name: "registration-engine-pure-named-call",
-        entryCode: `import { registerDepthRendererSceneComponent } from "${CORE_DIST}/Rendering/depthRendererSceneComponent.pure.js";\nregisterDepthRendererSceneComponent();\n`,
+        entryCode: `import { RegisterDepthRendererSceneComponent } from "${CORE_DIST}/Rendering/depthRendererSceneComponent.pure.js";\nregisterDepthRendererSceneComponent();\n`,
         maxBundleSizeBytes: Infinity,
         description: "Import + call of scene component registration function should bundle correctly",
     },

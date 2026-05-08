@@ -5,5 +5,5 @@ export * from "./abstractEngine.query.types";
  */
 export * from "./abstractEngine.query.pure";
 
-import { registerAbstractEngineQuery } from "./abstractEngine.query.pure";
-registerAbstractEngineQuery();
+import { RegisterAbstractEngineQuery } from "./abstractEngine.query.pure";
+RegisterAbstractEngineQuery();

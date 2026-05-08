@@ -4,5 +4,5 @@
  */
 export * from "./setNormalsBlock.pure";
 
-import { registerSetNormalsBlock } from "./setNormalsBlock.pure";
-registerSetNormalsBlock();
+import { RegisterSetNormalsBlock } from "./setNormalsBlock.pure";
+RegisterSetNormalsBlock();

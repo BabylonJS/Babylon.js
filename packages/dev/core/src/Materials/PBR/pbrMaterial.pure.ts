@@ -749,12 +749,16 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 }
 
-let _registered = false;
-export function registerPbrMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for pbrMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPbrMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PBRMaterial", PBRMaterial);
 }

@@ -339,12 +339,16 @@ export class ParticleInputBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleInputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleInputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleInputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleInputBlock", ParticleInputBlock);
 }

@@ -559,12 +559,16 @@ export const DecalBuilder = {
     CreateDecal,
 };
 
-let _registered = false;
-export function registerDecalBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for decalBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDecalBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
         const options = {

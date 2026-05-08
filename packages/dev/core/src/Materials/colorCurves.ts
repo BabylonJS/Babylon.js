@@ -4,5 +4,5 @@
  */
 export * from "./colorCurves.pure";
 
-import { registerColorCurves } from "./colorCurves.pure";
-registerColorCurves();
+import { RegisterColorCurves } from "./colorCurves.pure";
+RegisterColorCurves();

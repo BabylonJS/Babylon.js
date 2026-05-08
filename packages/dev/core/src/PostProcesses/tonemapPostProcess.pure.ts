@@ -117,12 +117,16 @@ export class TonemapPostProcess extends PostProcess {
     }
 }
 
-let _registered = false;
-export function registerTonemapPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for tonemapPostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTonemapPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.TonemapPostProcess", TonemapPostProcess);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./grainPostProcess.pure";
 
-import { registerGrainPostProcess } from "./grainPostProcess.pure";
-registerGrainPostProcess();
+import { RegisterGrainPostProcess } from "./grainPostProcess.pure";
+RegisterGrainPostProcess();

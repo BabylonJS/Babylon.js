@@ -4,5 +4,5 @@
  */
 export * from "./geometryLengthBlock.pure";
 
-import { registerGeometryLengthBlock } from "./geometryLengthBlock.pure";
-registerGeometryLengthBlock();
+import { RegisterGeometryLengthBlock } from "./geometryLengthBlock.pure";
+RegisterGeometryLengthBlock();

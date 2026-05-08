@@ -4,5 +4,5 @@
  */
 export * from "./arcRotateCamera.pure";
 
-import { registerArcRotateCamera } from "./arcRotateCamera.pure";
-registerArcRotateCamera();
+import { RegisterArcRotateCamera } from "./arcRotateCamera.pure";
+RegisterArcRotateCamera();

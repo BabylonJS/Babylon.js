@@ -4,5 +4,5 @@
  */
 export * from "./hdrCubeTexture.pure";
 
-import { registerHdrCubeTexture } from "./hdrCubeTexture.pure";
-registerHdrCubeTexture();
+import { RegisterHdrCubeTexture } from "./hdrCubeTexture.pure";
+RegisterHdrCubeTexture();

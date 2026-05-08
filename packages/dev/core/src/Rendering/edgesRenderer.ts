@@ -5,5 +5,5 @@ export * from "./edgesRenderer.types";
  */
 export * from "./edgesRenderer.pure";
 
-import { registerEdgesRenderer } from "./edgesRenderer.pure";
-registerEdgesRenderer();
+import { RegisterEdgesRenderer } from "./edgesRenderer.pure";
+RegisterEdgesRenderer();

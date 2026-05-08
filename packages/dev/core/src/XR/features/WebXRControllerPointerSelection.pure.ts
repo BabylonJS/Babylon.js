@@ -1014,12 +1014,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXRControllerPointerSelection(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRControllerPointerSelection.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRControllerPointerSelection(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     //register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

@@ -4,5 +4,5 @@
  */
 export * from "./audioEngine.pure";
 
-import { registerAudioEngine } from "./audioEngine.pure";
-registerAudioEngine();
+import { RegisterAudioEngine } from "./audioEngine.pure";
+RegisterAudioEngine();

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphFlipFlopBlock.pure";
 
-import { registerFlowGraphFlipFlopBlock } from "./flowGraphFlipFlopBlock.pure";
-registerFlowGraphFlipFlopBlock();
+import { RegisterFlowGraphFlipFlopBlock } from "./flowGraphFlipFlopBlock.pure";
+RegisterFlowGraphFlipFlopBlock();

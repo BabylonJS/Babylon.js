@@ -4,5 +4,5 @@
  */
 export * from "./trailMesh.pure";
 
-import { registerTrailMesh } from "./trailMesh.pure";
-registerTrailMesh();
+import { RegisterTrailMesh } from "./trailMesh.pure";
+RegisterTrailMesh();

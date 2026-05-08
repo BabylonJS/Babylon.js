@@ -4,5 +4,5 @@
  */
 export * from "./mergeGeometryBlock.pure";
 
-import { registerMergeGeometryBlock } from "./mergeGeometryBlock.pure";
-registerMergeGeometryBlock();
+import { RegisterMergeGeometryBlock } from "./mergeGeometryBlock.pure";
+RegisterMergeGeometryBlock();

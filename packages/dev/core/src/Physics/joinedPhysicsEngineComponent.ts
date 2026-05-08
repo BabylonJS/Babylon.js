@@ -5,5 +5,5 @@ export * from "./joinedPhysicsEngineComponent.types";
  */
 export * from "./joinedPhysicsEngineComponent.pure";
 
-import { registerJoinedPhysicsEngineComponent } from "./joinedPhysicsEngineComponent.pure";
-registerJoinedPhysicsEngineComponent();
+import { RegisterJoinedPhysicsEngineComponent } from "./joinedPhysicsEngineComponent.pure";
+RegisterJoinedPhysicsEngineComponent();

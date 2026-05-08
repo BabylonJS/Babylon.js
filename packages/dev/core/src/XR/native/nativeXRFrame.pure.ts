@@ -88,12 +88,16 @@ export class NativeXRFrame implements XRFrame {
     }
 }
 
-let _registered = false;
-export function registerNativeXRFrame(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for nativeXRFrame.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterNativeXRFrame(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);

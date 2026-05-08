@@ -4,5 +4,5 @@
  */
 export * from "./matrixComposeBlock.pure";
 
-import { registerMatrixComposeBlock } from "./matrixComposeBlock.pure";
-registerMatrixComposeBlock();
+import { RegisterMatrixComposeBlock } from "./matrixComposeBlock.pure";
+RegisterMatrixComposeBlock();

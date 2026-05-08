@@ -4,5 +4,5 @@
  */
 export * from "./geometryTransformBlock.pure";
 
-import { registerGeometryTransformBlock } from "./geometryTransformBlock.pure";
-registerGeometryTransformBlock();
+import { RegisterGeometryTransformBlock } from "./geometryTransformBlock.pure";
+RegisterGeometryTransformBlock();

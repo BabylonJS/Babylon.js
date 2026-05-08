@@ -36,12 +36,16 @@ export class AnaglyphFreeCamera extends FreeCamera {
     protected override _setRigMode = () => _SetStereoscopicAnaglyphRigMode(this);
 }
 
-let _registered = false;
-export function registerAnaglyphFreeCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for anaglyphFreeCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAnaglyphFreeCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("AnaglyphFreeCamera", (name, scene, options) => {
         return () => new AnaglyphFreeCamera(name, Vector3.Zero(), options.interaxial_distance, scene);

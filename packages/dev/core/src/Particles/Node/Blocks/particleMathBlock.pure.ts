@@ -355,12 +355,16 @@ export class ParticleMathBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleMathBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleMathBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleMathBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleMathBlock", ParticleMathBlock);
 }

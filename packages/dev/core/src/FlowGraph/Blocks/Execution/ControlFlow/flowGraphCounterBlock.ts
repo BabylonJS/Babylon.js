@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphCounterBlock.pure";
 
-import { registerFlowGraphCounterBlock } from "./flowGraphCounterBlock.pure";
-registerFlowGraphCounterBlock();
+import { RegisterFlowGraphCounterBlock } from "./flowGraphCounterBlock.pure";
+RegisterFlowGraphCounterBlock();

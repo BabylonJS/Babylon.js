@@ -857,12 +857,16 @@ export class ProceduralTexture extends Texture {
     }
 }
 
-let _registered = false;
-export function registerProceduralTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for proceduralTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterProceduralTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ProceduralTexture", ProceduralTexture);
 }

@@ -211,12 +211,16 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 }
 
-let _registered = false;
-export function registerReflectionTextureBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for reflectionTextureBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterReflectionTextureBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ReflectionTextureBlock", ReflectionTextureBlock);
 }

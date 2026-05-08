@@ -5,5 +5,5 @@ export * from "./abstractEngine.loadFile.types";
  */
 export * from "./abstractEngine.loadFile.pure";
 
-import { registerAbstractEngineLoadFile } from "./abstractEngine.loadFile.pure";
-registerAbstractEngineLoadFile();
+import { RegisterAbstractEngineLoadFile } from "./abstractEngine.loadFile.pure";
+RegisterAbstractEngineLoadFile();

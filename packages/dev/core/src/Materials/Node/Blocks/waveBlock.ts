@@ -4,5 +4,5 @@
  */
 export * from "./waveBlock.pure";
 
-import { registerWaveBlock } from "./waveBlock.pure";
-registerWaveBlock();
+import { RegisterWaveBlock } from "./waveBlock.pure";
+RegisterWaveBlock();

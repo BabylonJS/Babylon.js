@@ -4,5 +4,5 @@
  */
 export * from "./clearBlock.pure";
 
-import { registerClearBlock } from "./clearBlock.pure";
-registerClearBlock();
+import { RegisterClearBlock } from "./clearBlock.pure";
+RegisterClearBlock();

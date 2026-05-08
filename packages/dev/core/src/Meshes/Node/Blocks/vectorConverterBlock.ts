@@ -4,5 +4,5 @@
  */
 export * from "./vectorConverterBlock.pure";
 
-import { registerVectorConverterBlock } from "./vectorConverterBlock.pure";
-registerVectorConverterBlock();
+import { RegisterVectorConverterBlock } from "./vectorConverterBlock.pure";
+RegisterVectorConverterBlock();

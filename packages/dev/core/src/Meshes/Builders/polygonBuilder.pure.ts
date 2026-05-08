@@ -235,12 +235,16 @@ export const PolygonBuilder = {
     CreatePolygon,
 };
 
-let _registered = false;
-export function registerPolygonBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for polygonBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPolygonBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreatePolygon = CreatePolygonVertexData;
 

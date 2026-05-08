@@ -11,12 +11,16 @@ import { OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.q
 
 export {};
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineQuery(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineQuery.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineQuery(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinWebGPUEngine.prototype.getGPUFrameTimeCounter = function (): PerfCounter {
         return this._timestampQuery.gpuFrameTimeCounter;

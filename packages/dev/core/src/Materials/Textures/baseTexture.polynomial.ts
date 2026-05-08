@@ -5,5 +5,5 @@ export * from "./baseTexture.polynomial.types";
  */
 export * from "./baseTexture.polynomial.pure";
 
-import { registerBaseTexturePolynomial } from "./baseTexture.polynomial.pure";
-registerBaseTexturePolynomial();
+import { RegisterBaseTexturePolynomial } from "./baseTexture.polynomial.pure";
+RegisterBaseTexturePolynomial();

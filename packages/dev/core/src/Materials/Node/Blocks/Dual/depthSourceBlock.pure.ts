@@ -73,12 +73,16 @@ export class DepthSourceBlock extends ImageSourceBlock {
     }
 }
 
-let _registered = false;
-export function registerDepthSourceBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for depthSourceBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDepthSourceBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DepthSourceBlock", DepthSourceBlock);
 }

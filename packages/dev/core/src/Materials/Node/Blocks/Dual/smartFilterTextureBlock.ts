@@ -4,5 +4,5 @@
  */
 export * from "./smartFilterTextureBlock.pure";
 
-import { registerSmartFilterTextureBlock } from "./smartFilterTextureBlock.pure";
-registerSmartFilterTextureBlock();
+import { RegisterSmartFilterTextureBlock } from "./smartFilterTextureBlock.pure";
+RegisterSmartFilterTextureBlock();

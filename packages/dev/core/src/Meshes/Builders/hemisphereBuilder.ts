@@ -4,5 +4,5 @@
  */
 export * from "./hemisphereBuilder.pure";
 
-import { registerHemisphereBuilder } from "./hemisphereBuilder.pure";
-registerHemisphereBuilder();
+import { RegisterHemisphereBuilder } from "./hemisphereBuilder.pure";
+RegisterHemisphereBuilder();

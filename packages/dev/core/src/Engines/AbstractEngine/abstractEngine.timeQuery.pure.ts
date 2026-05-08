@@ -3,12 +3,16 @@
 import { AbstractEngine } from "../abstractEngine.pure";
 import { PerfCounter } from "../../Misc/perfCounter";
 
-let _registered = false;
-export function registerAbstractEngineTimeQuery(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineTimeQuery.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineTimeQuery(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.getGPUFrameTimeCounter = function () {
         if (!this._gpuFrameTime) {

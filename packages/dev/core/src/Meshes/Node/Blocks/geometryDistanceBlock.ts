@@ -4,5 +4,5 @@
  */
 export * from "./geometryDistanceBlock.pure";
 
-import { registerGeometryDistanceBlock } from "./geometryDistanceBlock.pure";
-registerGeometryDistanceBlock();
+import { RegisterGeometryDistanceBlock } from "./geometryDistanceBlock.pure";
+RegisterGeometryDistanceBlock();

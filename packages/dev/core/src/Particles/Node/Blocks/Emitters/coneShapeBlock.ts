@@ -4,5 +4,5 @@
  */
 export * from "./coneShapeBlock.pure";
 
-import { registerConeShapeBlock } from "./coneShapeBlock.pure";
-registerConeShapeBlock();
+import { RegisterConeShapeBlock } from "./coneShapeBlock.pure";
+RegisterConeShapeBlock();

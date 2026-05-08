@@ -4,5 +4,5 @@
  */
 export * from "./geometrySmoothStepBlock.pure";
 
-import { registerGeometrySmoothStepBlock } from "./geometrySmoothStepBlock.pure";
-registerGeometrySmoothStepBlock();
+import { RegisterGeometrySmoothStepBlock } from "./geometrySmoothStepBlock.pure";
+RegisterGeometrySmoothStepBlock();

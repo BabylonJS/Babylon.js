@@ -4,5 +4,5 @@
  */
 export * from "./physicsImpostor.pure";
 
-import { registerPhysicsImpostor } from "./physicsImpostor.pure";
-registerPhysicsImpostor();
+import { RegisterPhysicsImpostor } from "./physicsImpostor.pure";
+RegisterPhysicsImpostor();

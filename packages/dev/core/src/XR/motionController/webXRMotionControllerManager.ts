@@ -4,5 +4,5 @@
  */
 export * from "./webXRMotionControllerManager.pure";
 
-import { registerWebXRMotionControllerManager } from "./webXRMotionControllerManager.pure";
-registerWebXRMotionControllerManager();
+import { RegisterWebXRMotionControllerManager } from "./webXRMotionControllerManager.pure";
+RegisterWebXRMotionControllerManager();

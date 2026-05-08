@@ -4,5 +4,5 @@
  */
 export * from "./colorSplitterBlock.pure";
 
-import { registerColorSplitterBlock } from "./colorSplitterBlock.pure";
-registerColorSplitterBlock();
+import { RegisterColorSplitterBlock } from "./colorSplitterBlock.pure";
+RegisterColorSplitterBlock();

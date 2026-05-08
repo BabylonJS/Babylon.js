@@ -4,5 +4,5 @@
  */
 export * from "./setUVsBlock.pure";
 
-import { registerSetUVsBlock } from "./setUVsBlock.pure";
-registerSetUVsBlock();
+import { RegisterSetUVsBlock } from "./setUVsBlock.pure";
+RegisterSetUVsBlock();

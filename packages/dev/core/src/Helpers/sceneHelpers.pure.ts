@@ -22,12 +22,16 @@ import { WebXRDefaultExperienceOptions, WebXRDefaultExperience } from "../XR/web
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var _forceSceneHelpersToBundle = true;
 
-let _registered = false;
-export function registerSceneHelpers(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for sceneHelpers.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSceneHelpers(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.createDefaultLight = function (replace = false): void {
         // Dispose existing light in replace mode.

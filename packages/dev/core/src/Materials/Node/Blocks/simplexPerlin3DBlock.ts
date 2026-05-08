@@ -4,5 +4,5 @@
  */
 export * from "./simplexPerlin3DBlock.pure";
 
-import { registerSimplexPerlin3DBlock } from "./simplexPerlin3DBlock.pure";
-registerSimplexPerlin3DBlock();
+import { RegisterSimplexPerlin3DBlock } from "./simplexPerlin3DBlock.pure";
+RegisterSimplexPerlin3DBlock();

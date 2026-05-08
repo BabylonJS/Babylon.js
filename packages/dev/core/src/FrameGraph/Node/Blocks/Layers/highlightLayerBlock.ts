@@ -4,5 +4,5 @@
  */
 export * from "./highlightLayerBlock.pure";
 
-import { registerHighlightLayerBlock } from "./highlightLayerBlock.pure";
-registerHighlightLayerBlock();
+import { RegisterHighlightLayerBlock } from "./highlightLayerBlock.pure";
+RegisterHighlightLayerBlock();

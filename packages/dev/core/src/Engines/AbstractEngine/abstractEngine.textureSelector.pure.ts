@@ -3,12 +3,16 @@
 import { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine.pure";
 
-let _registered = false;
-export function registerAbstractEngineTextureSelector(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineTextureSelector.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineTextureSelector(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     function TransformTextureUrl(this: AbstractEngine, url: string): string {
         const excludeFn = (entry: string) => {

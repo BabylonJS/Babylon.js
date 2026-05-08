@@ -5,12 +5,16 @@ import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Nullable } from "../../types";
 import { Constants } from "../constants";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineVideoTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineVideoTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineVideoTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
         if (!texture || texture._isDisabled) {

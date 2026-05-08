@@ -64,12 +64,16 @@ export class ArcTan2Block extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerArcTan2Block(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for arcTan2Block.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterArcTan2Block(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ArcTan2Block", ArcTan2Block);
 }

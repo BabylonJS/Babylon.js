@@ -4,5 +4,5 @@
  */
 export * from "./voronoiNoiseBlock.pure";
 
-import { registerVoronoiNoiseBlock } from "./voronoiNoiseBlock.pure";
-registerVoronoiNoiseBlock();
+import { RegisterVoronoiNoiseBlock } from "./voronoiNoiseBlock.pure";
+RegisterVoronoiNoiseBlock();

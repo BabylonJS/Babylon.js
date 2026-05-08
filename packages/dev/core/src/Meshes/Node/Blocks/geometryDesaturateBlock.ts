@@ -4,5 +4,5 @@
  */
 export * from "./geometryDesaturateBlock.pure";
 
-import { registerGeometryDesaturateBlock } from "./geometryDesaturateBlock.pure";
-registerGeometryDesaturateBlock();
+import { RegisterGeometryDesaturateBlock } from "./geometryDesaturateBlock.pure";
+RegisterGeometryDesaturateBlock();

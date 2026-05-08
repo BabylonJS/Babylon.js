@@ -212,12 +212,16 @@ export class CustomBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerCustomBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for customBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCustomBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.CustomBlock", CustomBlock);
 }

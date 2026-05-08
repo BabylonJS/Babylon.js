@@ -89,12 +89,16 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     }
 }
 
-let _registered = false;
-export function registerExtractHighlightsPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for extractHighlightsPostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterExtractHighlightsPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ExtractHighlightsPostProcess", ExtractHighlightsPostProcess);
 }

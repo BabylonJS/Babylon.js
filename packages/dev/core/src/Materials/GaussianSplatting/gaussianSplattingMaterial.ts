@@ -4,5 +4,5 @@
  */
 export * from "./gaussianSplattingMaterial.pure";
 
-import { registerGaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
-registerGaussianSplattingMaterial();
+import { RegisterGaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
+RegisterGaussianSplattingMaterial();

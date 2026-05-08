@@ -53,12 +53,16 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
     protected override _setRigMode = (rigParams: any) => _SetVrRigMode(this, rigParams);
 }
 
-let _registered = false;
-export function registerVrDeviceOrientationArcRotateCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for vrDeviceOrientationArcRotateCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVrDeviceOrientationArcRotateCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("VRDeviceOrientationArcRotateCamera", (name, scene) => {
         return () => new VRDeviceOrientationArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);

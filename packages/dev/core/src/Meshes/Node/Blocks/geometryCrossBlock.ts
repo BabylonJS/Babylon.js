@@ -4,5 +4,5 @@
  */
 export * from "./geometryCrossBlock.pure";
 
-import { registerGeometryCrossBlock } from "./geometryCrossBlock.pure";
-registerGeometryCrossBlock();
+import { RegisterGeometryCrossBlock } from "./geometryCrossBlock.pure";
+RegisterGeometryCrossBlock();

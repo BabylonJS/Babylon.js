@@ -4,5 +4,5 @@
  */
 export * from "./derivativeBlock.pure";
 
-import { registerDerivativeBlock } from "./derivativeBlock.pure";
-registerDerivativeBlock();
+import { RegisterDerivativeBlock } from "./derivativeBlock.pure";
+RegisterDerivativeBlock();

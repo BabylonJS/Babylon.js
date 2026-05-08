@@ -4,5 +4,5 @@
  */
 export * from "./icoSphereBuilder.pure";
 
-import { registerIcoSphereBuilder } from "./icoSphereBuilder.pure";
-registerIcoSphereBuilder();
+import { RegisterIcoSphereBuilder } from "./icoSphereBuilder.pure";
+RegisterIcoSphereBuilder();

@@ -61,12 +61,16 @@ export class PostProcessRenderPipelineManagerSceneComponent implements ISceneCom
     }
 }
 
-let _registered = false;
-export function registerPostProcessRenderPipelineManagerSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for postProcessRenderPipelineManagerSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPostProcessRenderPipelineManagerSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
         get: function (this: Scene) {

@@ -188,12 +188,16 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerGaussianSplattingBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for gaussianSplattingBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGaussianSplattingBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GaussianSplattingBlock", GaussianSplattingBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./updateAgeBlock.pure";
 
-import { registerUpdateAgeBlock } from "./updateAgeBlock.pure";
-registerUpdateAgeBlock();
+import { RegisterUpdateAgeBlock } from "./updateAgeBlock.pure";
+RegisterUpdateAgeBlock();

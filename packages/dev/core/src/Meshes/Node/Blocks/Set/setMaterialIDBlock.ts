@@ -4,5 +4,5 @@
  */
 export * from "./setMaterialIDBlock.pure";
 
-import { registerSetMaterialIDBlock } from "./setMaterialIDBlock.pure";
-registerSetMaterialIDBlock();
+import { RegisterSetMaterialIDBlock } from "./setMaterialIDBlock.pure";
+RegisterSetMaterialIDBlock();

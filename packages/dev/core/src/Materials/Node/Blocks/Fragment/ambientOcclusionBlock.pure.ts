@@ -307,12 +307,16 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerAmbientOcclusionBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for ambientOcclusionBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAmbientOcclusionBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.AmbientOcclusionBlock", AmbientOcclusionBlock);
 }

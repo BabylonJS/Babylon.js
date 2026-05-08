@@ -4,5 +4,5 @@
  */
 export * from "./cleanGeometryBlock.pure";
 
-import { registerCleanGeometryBlock } from "./cleanGeometryBlock.pure";
-registerCleanGeometryBlock();
+import { RegisterCleanGeometryBlock } from "./cleanGeometryBlock.pure";
+RegisterCleanGeometryBlock();

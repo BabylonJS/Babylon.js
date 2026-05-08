@@ -5,5 +5,5 @@ export * from "./abstractEngine.views.types";
  */
 export * from "./abstractEngine.views.pure";
 
-import { registerAbstractEngineViews } from "./abstractEngine.views.pure";
-registerAbstractEngineViews();
+import { RegisterAbstractEngineViews } from "./abstractEngine.views.pure";
+RegisterAbstractEngineViews();

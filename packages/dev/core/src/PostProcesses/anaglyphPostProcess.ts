@@ -4,5 +4,5 @@
  */
 export * from "./anaglyphPostProcess.pure";
 
-import { registerAnaglyphPostProcess } from "./anaglyphPostProcess.pure";
-registerAnaglyphPostProcess();
+import { RegisterAnaglyphPostProcess } from "./anaglyphPostProcess.pure";
+RegisterAnaglyphPostProcess();

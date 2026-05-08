@@ -4,5 +4,5 @@
  */
 export * from "./depthSourceBlock.pure";
 
-import { registerDepthSourceBlock } from "./depthSourceBlock.pure";
-registerDepthSourceBlock();
+import { RegisterDepthSourceBlock } from "./depthSourceBlock.pure";
+RegisterDepthSourceBlock();

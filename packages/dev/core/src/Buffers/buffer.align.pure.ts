@@ -3,12 +3,16 @@
 import { GetTypeByteLength } from "./bufferUtils";
 import { Buffer, VertexBuffer } from "./buffer.pure";
 
-let _registered = false;
-export function registerBufferAlign(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for bufferAlign.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBufferAlign(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     const IsLittleEndian = (() => {
         const array = new Uint8Array(4);

@@ -4,5 +4,5 @@
  */
 export * from "./greasedLineMesh.pure";
 
-import { registerGreasedLineMesh } from "./greasedLineMesh.pure";
-registerGreasedLineMesh();
+import { RegisterGreasedLineMesh } from "./greasedLineMesh.pure";
+RegisterGreasedLineMesh();

@@ -4,5 +4,5 @@
  */
 export * from "./screenSpaceCurvaturePostProcess.pure";
 
-import { registerScreenSpaceCurvaturePostProcess } from "./screenSpaceCurvaturePostProcess.pure";
-registerScreenSpaceCurvaturePostProcess();
+import { RegisterScreenSpaceCurvaturePostProcess } from "./screenSpaceCurvaturePostProcess.pure";
+RegisterScreenSpaceCurvaturePostProcess();

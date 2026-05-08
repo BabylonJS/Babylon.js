@@ -4,5 +4,5 @@
  */
 export * from "./hemisphericLight.pure";
 
-import { registerHemisphericLight } from "./hemisphericLight.pure";
-registerHemisphericLight();
+import { RegisterHemisphericLight } from "./hemisphericLight.pure";
+RegisterHemisphericLight();

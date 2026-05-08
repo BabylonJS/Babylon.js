@@ -5,5 +5,5 @@ export * from "./abstractEngine.texture.types";
  */
 export * from "./abstractEngine.texture.pure";
 
-import { registerAbstractEngineTexture } from "./abstractEngine.texture.pure";
-registerAbstractEngineTexture();
+import { RegisterAbstractEngineTexture } from "./abstractEngine.texture.pure";
+RegisterAbstractEngineTexture();

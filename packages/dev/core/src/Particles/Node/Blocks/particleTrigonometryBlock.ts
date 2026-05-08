@@ -4,5 +4,5 @@
  */
 export * from "./particleTrigonometryBlock.pure";
 
-import { registerParticleTrigonometryBlock } from "./particleTrigonometryBlock.pure";
-registerParticleTrigonometryBlock();
+import { RegisterParticleTrigonometryBlock } from "./particleTrigonometryBlock.pure";
+RegisterParticleTrigonometryBlock();

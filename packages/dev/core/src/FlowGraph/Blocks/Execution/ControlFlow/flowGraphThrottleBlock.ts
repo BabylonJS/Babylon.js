@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphThrottleBlock.pure";
 
-import { registerFlowGraphThrottleBlock } from "./flowGraphThrottleBlock.pure";
-registerFlowGraphThrottleBlock();
+import { RegisterFlowGraphThrottleBlock } from "./flowGraphThrottleBlock.pure";
+RegisterFlowGraphThrottleBlock();

@@ -5,5 +5,5 @@ export * from "./reflectionProbe.types";
  */
 export * from "./reflectionProbe.pure";
 
-import { registerReflectionProbe } from "./reflectionProbe.pure";
-registerReflectionProbe();
+import { RegisterReflectionProbe } from "./reflectionProbe.pure";
+RegisterReflectionProbe();

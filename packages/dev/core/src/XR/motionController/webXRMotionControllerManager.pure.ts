@@ -273,12 +273,16 @@ export class WebXRMotionControllerManager {
     }
 }
 
-let _registered = false;
-export function registerWebXRMotionControllerManager(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRMotionControllerManager.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRMotionControllerManager(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // register the generic profile(s) here so we will at least have them
     WebXRMotionControllerManager.RegisterController(WebXRGenericTriggerMotionController.ProfileId, (xrInput: XRInputSource, scene: Scene) => {

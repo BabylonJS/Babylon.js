@@ -4,5 +4,5 @@
  */
 export * from "./lerpBlock.pure";
 
-import { registerLerpBlock } from "./lerpBlock.pure";
-registerLerpBlock();
+import { RegisterLerpBlock } from "./lerpBlock.pure";
+RegisterLerpBlock();

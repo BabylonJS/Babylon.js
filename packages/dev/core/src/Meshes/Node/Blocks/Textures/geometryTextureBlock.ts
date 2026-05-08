@@ -4,5 +4,5 @@
  */
 export * from "./geometryTextureBlock.pure";
 
-import { registerGeometryTextureBlock } from "./geometryTextureBlock.pure";
-registerGeometryTextureBlock();
+import { RegisterGeometryTextureBlock } from "./geometryTextureBlock.pure";
+RegisterGeometryTextureBlock();

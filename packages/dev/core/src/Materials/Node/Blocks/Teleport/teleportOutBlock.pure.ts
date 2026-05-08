@@ -196,12 +196,16 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerMaterialsNodeBlocksTeleportTeleportOutBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for materialsNodeBlocksTeleportTeleportOutBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMaterialsNodeBlocksTeleportTeleportOutBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeMaterialTeleportOutBlock", NodeMaterialTeleportOutBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./distanceBlock.pure";
 
-import { registerDistanceBlock } from "./distanceBlock.pure";
-registerDistanceBlock();
+import { RegisterDistanceBlock } from "./distanceBlock.pure";
+RegisterDistanceBlock();

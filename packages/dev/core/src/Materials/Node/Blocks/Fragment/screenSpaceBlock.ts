@@ -4,5 +4,5 @@
  */
 export * from "./screenSpaceBlock.pure";
 
-import { registerScreenSpaceBlock } from "./screenSpaceBlock.pure";
-registerScreenSpaceBlock();
+import { RegisterScreenSpaceBlock } from "./screenSpaceBlock.pure";
+RegisterScreenSpaceBlock();

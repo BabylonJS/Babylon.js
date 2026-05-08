@@ -4,5 +4,5 @@
  */
 export * from "./iblShadowsPluginMaterial.pure";
 
-import { registerIblShadowsPluginMaterial } from "./iblShadowsPluginMaterial.pure";
-registerIblShadowsPluginMaterial();
+import { RegisterIblShadowsPluginMaterial } from "./iblShadowsPluginMaterial.pure";
+RegisterIblShadowsPluginMaterial();

@@ -1095,12 +1095,16 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXRHandTracking(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRHandTracking.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRHandTracking(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     //register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

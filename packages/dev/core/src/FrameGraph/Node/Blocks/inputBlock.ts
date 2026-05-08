@@ -4,5 +4,5 @@
  */
 export * from "./inputBlock.pure";
 
-import { registerFrameGraphNodeBlocksInputBlock } from "./inputBlock.pure";
-registerFrameGraphNodeBlocksInputBlock();
+import { RegisterFrameGraphNodeBlocksInputBlock } from "./inputBlock.pure";
+RegisterFrameGraphNodeBlocksInputBlock();

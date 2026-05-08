@@ -4,5 +4,5 @@
  */
 export * from "./subdivideBlock.pure";
 
-import { registerSubdivideBlock } from "./subdivideBlock.pure";
-registerSubdivideBlock();
+import { RegisterSubdivideBlock } from "./subdivideBlock.pure";
+RegisterSubdivideBlock();

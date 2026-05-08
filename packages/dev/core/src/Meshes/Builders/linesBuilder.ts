@@ -4,5 +4,5 @@
  */
 export * from "./linesBuilder.pure";
 
-import { registerLinesBuilder } from "./linesBuilder.pure";
-registerLinesBuilder();
+import { RegisterLinesBuilder } from "./linesBuilder.pure";
+RegisterLinesBuilder();

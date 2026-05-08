@@ -4,5 +4,5 @@
  */
 export * from "./normalizeVectorBlock.pure";
 
-import { registerNormalizeVectorBlock } from "./normalizeVectorBlock.pure";
-registerNormalizeVectorBlock();
+import { RegisterNormalizeVectorBlock } from "./normalizeVectorBlock.pure";
+RegisterNormalizeVectorBlock();

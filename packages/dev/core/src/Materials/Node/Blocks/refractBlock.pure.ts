@@ -85,12 +85,16 @@ export class RefractBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerRefractBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for refractBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterRefractBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.RefractBlock", RefractBlock);
 }

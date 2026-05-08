@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphContextBlock.pure";
 
-import { registerFlowGraphContextBlock } from "./flowGraphContextBlock.pure";
-registerFlowGraphContextBlock();
+import { RegisterFlowGraphContextBlock } from "./flowGraphContextBlock.pure";
+RegisterFlowGraphContextBlock();

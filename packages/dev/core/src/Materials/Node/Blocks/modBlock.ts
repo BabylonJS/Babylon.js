@@ -4,5 +4,5 @@
  */
 export * from "./modBlock.pure";
 
-import { registerModBlock } from "./modBlock.pure";
-registerModBlock();
+import { RegisterModBlock } from "./modBlock.pure";
+RegisterModBlock();

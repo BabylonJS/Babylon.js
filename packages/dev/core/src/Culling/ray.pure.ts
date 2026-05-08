@@ -24,12 +24,16 @@ export * from "./ray.core";
 
 export {};
 
-let _registered = false;
-export function registerRay(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for ray.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterRay(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Picking
     AddRayExtensions(Scene, Camera);

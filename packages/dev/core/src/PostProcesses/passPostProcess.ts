@@ -4,5 +4,5 @@
  */
 export * from "./passPostProcess.pure";
 
-import { registerPassPostProcess } from "./passPostProcess.pure";
-registerPassPostProcess();
+import { RegisterPassPostProcess } from "./passPostProcess.pure";
+RegisterPassPostProcess();

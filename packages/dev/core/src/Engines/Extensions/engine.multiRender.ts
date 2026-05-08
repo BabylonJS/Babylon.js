@@ -5,5 +5,5 @@ export * from "./engine.multiRender.types";
  */
 export * from "./engine.multiRender.pure";
 
-import { registerEnginesExtensionsEngineMultiRender } from "./engine.multiRender.pure";
-registerEnginesExtensionsEngineMultiRender();
+import { RegisterEnginesExtensionsEngineMultiRender } from "./engine.multiRender.pure";
+RegisterEnginesExtensionsEngineMultiRender();

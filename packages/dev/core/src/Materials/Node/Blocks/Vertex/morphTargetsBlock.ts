@@ -4,5 +4,5 @@
  */
 export * from "./morphTargetsBlock.pure";
 
-import { registerMorphTargetsBlock } from "./morphTargetsBlock.pure";
-registerMorphTargetsBlock();
+import { RegisterMorphTargetsBlock } from "./morphTargetsBlock.pure";
+RegisterMorphTargetsBlock();

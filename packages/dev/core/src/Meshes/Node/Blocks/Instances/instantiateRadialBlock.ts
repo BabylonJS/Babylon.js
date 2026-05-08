@@ -4,5 +4,5 @@
  */
 export * from "./instantiateRadialBlock.pure";
 
-import { registerInstantiateRadialBlock } from "./instantiateRadialBlock.pure";
-registerInstantiateRadialBlock();
+import { RegisterInstantiateRadialBlock } from "./instantiateRadialBlock.pure";
+RegisterInstantiateRadialBlock();

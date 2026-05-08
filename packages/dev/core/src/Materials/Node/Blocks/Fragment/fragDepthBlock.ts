@@ -4,5 +4,5 @@
  */
 export * from "./fragDepthBlock.pure";
 
-import { registerFragDepthBlock } from "./fragDepthBlock.pure";
-registerFragDepthBlock();
+import { RegisterFragDepthBlock } from "./fragDepthBlock.pure";
+RegisterFragDepthBlock();

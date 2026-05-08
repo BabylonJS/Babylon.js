@@ -4,5 +4,5 @@
  */
 export * from "./particleVectorMathBlock.pure";
 
-import { registerParticleVectorMathBlock } from "./particleVectorMathBlock.pure";
-registerParticleVectorMathBlock();
+import { RegisterParticleVectorMathBlock } from "./particleVectorMathBlock.pure";
+RegisterParticleVectorMathBlock();

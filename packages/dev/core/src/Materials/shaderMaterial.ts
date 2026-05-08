@@ -4,5 +4,5 @@
  */
 export * from "./shaderMaterial.pure";
 
-import { registerShaderMaterial } from "./shaderMaterial.pure";
-registerShaderMaterial();
+import { RegisterShaderMaterial } from "./shaderMaterial.pure";
+RegisterShaderMaterial();

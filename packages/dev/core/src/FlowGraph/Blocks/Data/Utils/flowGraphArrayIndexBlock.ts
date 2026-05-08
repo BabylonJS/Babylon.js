@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphArrayIndexBlock.pure";
 
-import { registerFlowGraphArrayIndexBlock } from "./flowGraphArrayIndexBlock.pure";
-registerFlowGraphArrayIndexBlock();
+import { RegisterFlowGraphArrayIndexBlock } from "./flowGraphArrayIndexBlock.pure";
+RegisterFlowGraphArrayIndexBlock();

@@ -93,12 +93,16 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryArcTan2Block(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryArcTan2Block.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryArcTan2Block(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryArcTan2Block", GeometryArcTan2Block);
 }

@@ -83,12 +83,16 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
     }
 }
 
-let _registered = false;
-export function registerFlowGraphWhileLoopBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphWhileLoopBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphWhileLoopBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.WhileLoop, FlowGraphWhileLoopBlock);
 }

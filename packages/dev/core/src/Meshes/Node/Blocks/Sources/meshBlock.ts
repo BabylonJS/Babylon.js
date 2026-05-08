@@ -4,5 +4,5 @@
  */
 export * from "./meshBlock.pure";
 
-import { registerMeshBlock } from "./meshBlock.pure";
-registerMeshBlock();
+import { RegisterMeshBlock } from "./meshBlock.pure";
+RegisterMeshBlock();

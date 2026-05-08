@@ -596,12 +596,16 @@ export class TargetCamera extends Camera {
     }
 }
 
-let _registered = false;
-export function registerTargetCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for targetCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTargetCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("TargetCamera", (name, scene) => {
         return () => new TargetCamera(name, Vector3.Zero(), scene);

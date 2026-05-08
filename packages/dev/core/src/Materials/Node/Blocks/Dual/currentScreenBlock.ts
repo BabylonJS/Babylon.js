@@ -4,5 +4,5 @@
  */
 export * from "./currentScreenBlock.pure";
 
-import { registerCurrentScreenBlock } from "./currentScreenBlock.pure";
-registerCurrentScreenBlock();
+import { RegisterCurrentScreenBlock } from "./currentScreenBlock.pure";
+RegisterCurrentScreenBlock();

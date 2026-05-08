@@ -4,5 +4,5 @@
  */
 export * from "./updateAttractorBlock.pure";
 
-import { registerUpdateAttractorBlock } from "./updateAttractorBlock.pure";
-registerUpdateAttractorBlock();
+import { RegisterUpdateAttractorBlock } from "./updateAttractorBlock.pure";
+RegisterUpdateAttractorBlock();

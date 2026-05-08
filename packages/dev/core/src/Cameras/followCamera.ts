@@ -4,5 +4,5 @@
  */
 export * from "./followCamera.pure";
 
-import { registerFollowCamera } from "./followCamera.pure";
-registerFollowCamera();
+import { RegisterFollowCamera } from "./followCamera.pure";
+RegisterFollowCamera();

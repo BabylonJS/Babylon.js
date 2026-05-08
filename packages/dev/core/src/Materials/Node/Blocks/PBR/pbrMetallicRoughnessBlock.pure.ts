@@ -1660,12 +1660,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerPbrMetallicRoughnessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for pbrMetallicRoughnessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPbrMetallicRoughnessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PBRMetallicRoughnessBlock", PBRMetallicRoughnessBlock);
 }

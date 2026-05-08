@@ -4,5 +4,5 @@
  */
 export * from "./normalBlendBlock.pure";
 
-import { registerNormalBlendBlock } from "./normalBlendBlock.pure";
-registerNormalBlendBlock();
+import { RegisterNormalBlendBlock } from "./normalBlendBlock.pure";
+RegisterNormalBlendBlock();

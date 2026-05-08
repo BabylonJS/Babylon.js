@@ -4,5 +4,5 @@
  */
 export * from "./computeShaderBlock.pure";
 
-import { registerComputeShaderBlock } from "./computeShaderBlock.pure";
-registerComputeShaderBlock();
+import { RegisterComputeShaderBlock } from "./computeShaderBlock.pure";
+RegisterComputeShaderBlock();

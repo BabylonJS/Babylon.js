@@ -4,5 +4,5 @@
  */
 export * from "./texture.pure";
 
-import { registerTexture } from "./texture.pure";
-registerTexture();
+import { RegisterTexture } from "./texture.pure";
+RegisterTexture();

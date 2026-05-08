@@ -121,12 +121,16 @@ export class NodeRenderGraphConvolutionPostProcessBlock extends NodeRenderGraphB
     }
 }
 
-let _registered = false;
-export function registerConvolutionPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for convolutionPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterConvolutionPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphConvolutionPostProcessBlock", NodeRenderGraphConvolutionPostProcessBlock);
 }

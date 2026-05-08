@@ -177,12 +177,16 @@ export const TorusKnotBuilder = {
     CreateTorusKnot,
 };
 
-let _registered = false;
-export function registerTorusKnotBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for torusKnotBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTorusKnotBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreateTorusKnot = CreateTorusKnotVertexData;
 

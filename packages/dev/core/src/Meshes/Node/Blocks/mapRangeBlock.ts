@@ -4,5 +4,5 @@
  */
 export * from "./mapRangeBlock.pure";
 
-import { registerMapRangeBlock } from "./mapRangeBlock.pure";
-registerMapRangeBlock();
+import { RegisterMapRangeBlock } from "./mapRangeBlock.pure";
+RegisterMapRangeBlock();

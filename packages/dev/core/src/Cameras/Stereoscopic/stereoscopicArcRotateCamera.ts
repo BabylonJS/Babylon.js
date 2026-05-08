@@ -4,5 +4,5 @@
  */
 export * from "./stereoscopicArcRotateCamera.pure";
 
-import { registerStereoscopicArcRotateCamera } from "./stereoscopicArcRotateCamera.pure";
-registerStereoscopicArcRotateCamera();
+import { RegisterStereoscopicArcRotateCamera } from "./stereoscopicArcRotateCamera.pure";
+RegisterStereoscopicArcRotateCamera();

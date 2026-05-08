@@ -4,5 +4,5 @@
  */
 export * from "./geometryClampBlock.pure";
 
-import { registerGeometryClampBlock } from "./geometryClampBlock.pure";
-registerGeometryClampBlock();
+import { RegisterGeometryClampBlock } from "./geometryClampBlock.pure";
+RegisterGeometryClampBlock();

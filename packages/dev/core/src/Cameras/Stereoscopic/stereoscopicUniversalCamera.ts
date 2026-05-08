@@ -4,5 +4,5 @@
  */
 export * from "./stereoscopicUniversalCamera.pure";
 
-import { registerStereoscopicUniversalCamera } from "./stereoscopicUniversalCamera.pure";
-registerStereoscopicUniversalCamera();
+import { RegisterStereoscopicUniversalCamera } from "./stereoscopicUniversalCamera.pure";
+RegisterStereoscopicUniversalCamera();

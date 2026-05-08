@@ -4,5 +4,5 @@
  */
 export * from "./webXROculusTouchMotionController.pure";
 
-import { registerWebXROculusTouchMotionController } from "./webXROculusTouchMotionController.pure";
-registerWebXROculusTouchMotionController();
+import { RegisterWebXROculusTouchMotionController } from "./webXROculusTouchMotionController.pure";
+RegisterWebXROculusTouchMotionController();

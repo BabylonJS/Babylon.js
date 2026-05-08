@@ -137,12 +137,16 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphMultiGateBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphMultiGateBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphMultiGateBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.MultiGate, FlowGraphMultiGateBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./desaturateBlock.pure";
 
-import { registerDesaturateBlock } from "./desaturateBlock.pure";
-registerDesaturateBlock();
+import { RegisterDesaturateBlock } from "./desaturateBlock.pure";
+RegisterDesaturateBlock();

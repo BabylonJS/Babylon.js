@@ -4,5 +4,5 @@
  */
 export * from "./torusBuilder.pure";
 
-import { registerTorusBuilder } from "./torusBuilder.pure";
-registerTorusBuilder();
+import { RegisterTorusBuilder } from "./torusBuilder.pure";
+RegisterTorusBuilder();

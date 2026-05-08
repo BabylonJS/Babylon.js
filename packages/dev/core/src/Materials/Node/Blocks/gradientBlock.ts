@@ -4,5 +4,5 @@
  */
 export * from "./gradientBlock.pure";
 
-import { registerGradientBlock } from "./gradientBlock.pure";
-registerGradientBlock();
+import { RegisterGradientBlock } from "./gradientBlock.pure";
+RegisterGradientBlock();

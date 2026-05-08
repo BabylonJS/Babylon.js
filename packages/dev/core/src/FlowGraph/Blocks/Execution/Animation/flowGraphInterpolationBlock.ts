@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphInterpolationBlock.pure";
 
-import { registerFlowGraphInterpolationBlock } from "./flowGraphInterpolationBlock.pure";
-registerFlowGraphInterpolationBlock();
+import { RegisterFlowGraphInterpolationBlock } from "./flowGraphInterpolationBlock.pure";
+RegisterFlowGraphInterpolationBlock();

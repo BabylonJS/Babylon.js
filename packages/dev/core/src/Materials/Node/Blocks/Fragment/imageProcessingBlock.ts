@@ -4,5 +4,5 @@
  */
 export * from "./imageProcessingBlock.pure";
 
-import { registerImageProcessingBlock } from "./imageProcessingBlock.pure";
-registerImageProcessingBlock();
+import { RegisterImageProcessingBlock } from "./imageProcessingBlock.pure";
+RegisterImageProcessingBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./trigonometryBlock.pure";
 
-import { registerTrigonometryBlock } from "./trigonometryBlock.pure";
-registerTrigonometryBlock();
+import { RegisterTrigonometryBlock } from "./trigonometryBlock.pure";
+RegisterTrigonometryBlock();

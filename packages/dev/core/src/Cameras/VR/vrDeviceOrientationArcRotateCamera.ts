@@ -4,5 +4,5 @@
  */
 export * from "./vrDeviceOrientationArcRotateCamera.pure";
 
-import { registerVrDeviceOrientationArcRotateCamera } from "./vrDeviceOrientationArcRotateCamera.pure";
-registerVrDeviceOrientationArcRotateCamera();
+import { RegisterVrDeviceOrientationArcRotateCamera } from "./vrDeviceOrientationArcRotateCamera.pure";
+RegisterVrDeviceOrientationArcRotateCamera();

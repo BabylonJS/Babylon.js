@@ -4,5 +4,5 @@
  */
 export * from "./WebXRFeaturePointSystem.pure";
 
-import { registerWebXRFeaturePointSystem } from "./WebXRFeaturePointSystem.pure";
-registerWebXRFeaturePointSystem();
+import { RegisterWebXRFeaturePointSystem } from "./WebXRFeaturePointSystem.pure";
+RegisterWebXRFeaturePointSystem();

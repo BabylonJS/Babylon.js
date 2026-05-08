@@ -64,12 +64,16 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerOutputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for outputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterOutputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphOutputBlock", NodeRenderGraphOutputBlock);
 }

@@ -35,12 +35,16 @@ export class DivideBlock extends BaseMathBlock {
     }
 }
 
-let _registered = false;
-export function registerDivideBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for divideBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDivideBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DivideBlock", DivideBlock);
 }

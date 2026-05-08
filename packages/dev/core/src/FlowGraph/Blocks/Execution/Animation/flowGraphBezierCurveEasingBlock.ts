@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphBezierCurveEasingBlock.pure";
 
-import { registerFlowGraphBezierCurveEasingBlock } from "./flowGraphBezierCurveEasingBlock.pure";
-registerFlowGraphBezierCurveEasingBlock();
+import { RegisterFlowGraphBezierCurveEasingBlock } from "./flowGraphBezierCurveEasingBlock.pure";
+RegisterFlowGraphBezierCurveEasingBlock();

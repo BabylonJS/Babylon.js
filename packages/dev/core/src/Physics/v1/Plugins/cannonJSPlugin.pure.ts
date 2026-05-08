@@ -798,12 +798,16 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 }
 
-let _registered = false;
-export function registerCannonJSPlugin(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for cannonJSPlugin.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCannonJSPlugin(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     PhysicsEngine.DefaultPluginFactory = () => {
         return new CannonJSPlugin();

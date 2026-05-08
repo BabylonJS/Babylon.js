@@ -13,12 +13,16 @@ import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
  * @internal
  */
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineRawTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineRawTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineRawTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     function ConvertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
         // Create new RGBA data container.

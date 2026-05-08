@@ -4,5 +4,5 @@
  */
 export * from "./geometryRotate2dBlock.pure";
 
-import { registerGeometryRotate2dBlock } from "./geometryRotate2dBlock.pure";
-registerGeometryRotate2dBlock();
+import { RegisterGeometryRotate2dBlock } from "./geometryRotate2dBlock.pure";
+RegisterGeometryRotate2dBlock();

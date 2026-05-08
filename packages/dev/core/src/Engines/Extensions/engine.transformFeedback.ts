@@ -5,5 +5,5 @@ export * from "./engine.transformFeedback.types";
  */
 export * from "./engine.transformFeedback.pure";
 
-import { registerEngineTransformFeedback } from "./engine.transformFeedback.pure";
-registerEngineTransformFeedback();
+import { RegisterEngineTransformFeedback } from "./engine.transformFeedback.pure";
+RegisterEngineTransformFeedback();

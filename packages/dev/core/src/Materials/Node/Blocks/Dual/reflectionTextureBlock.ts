@@ -4,5 +4,5 @@
  */
 export * from "./reflectionTextureBlock.pure";
 
-import { registerReflectionTextureBlock } from "./reflectionTextureBlock.pure";
-registerReflectionTextureBlock();
+import { RegisterReflectionTextureBlock } from "./reflectionTextureBlock.pure";
+RegisterReflectionTextureBlock();

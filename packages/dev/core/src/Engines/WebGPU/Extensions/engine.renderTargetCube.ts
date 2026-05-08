@@ -5,5 +5,5 @@ export * from "./engine.renderTargetCube.types";
  */
 export * from "./engine.renderTargetCube.pure";
 
-import { registerEnginesWebGPUExtensionsEngineRenderTargetCube } from "./engine.renderTargetCube.pure";
-registerEnginesWebGPUExtensionsEngineRenderTargetCube();
+import { RegisterEnginesWebGPUExtensionsEngineRenderTargetCube } from "./engine.renderTargetCube.pure";
+RegisterEnginesWebGPUExtensionsEngineRenderTargetCube();

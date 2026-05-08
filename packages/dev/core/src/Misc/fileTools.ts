@@ -4,5 +4,5 @@
  */
 export * from "./fileTools.pure";
 
-import { registerFileTools } from "./fileTools.pure";
-registerFileTools();
+import { RegisterFileTools } from "./fileTools.pure";
+RegisterFileTools();

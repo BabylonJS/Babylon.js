@@ -4,5 +4,5 @@
  */
 export * from "./rotate2dBlock.pure";
 
-import { registerRotate2dBlock } from "./rotate2dBlock.pure";
-registerRotate2dBlock();
+import { RegisterRotate2dBlock } from "./rotate2dBlock.pure";
+RegisterRotate2dBlock();

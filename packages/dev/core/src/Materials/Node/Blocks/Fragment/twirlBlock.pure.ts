@@ -145,12 +145,16 @@ export class TwirlBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerTwirlBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for twirlBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTwirlBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.TwirlBlock", TwirlBlock);
 }

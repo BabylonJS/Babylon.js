@@ -4,5 +4,5 @@
  */
 export * from "./bevelBlock.pure";
 
-import { registerBevelBlock } from "./bevelBlock.pure";
-registerBevelBlock();
+import { RegisterBevelBlock } from "./bevelBlock.pure";
+RegisterBevelBlock();

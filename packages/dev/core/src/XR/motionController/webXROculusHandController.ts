@@ -4,5 +4,5 @@
  */
 export * from "./webXROculusHandController.pure";
 
-import { registerWebXROculusHandController } from "./webXROculusHandController.pure";
-registerWebXROculusHandController();
+import { RegisterWebXROculusHandController } from "./webXROculusHandController.pure";
+RegisterWebXROculusHandController();

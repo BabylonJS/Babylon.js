@@ -62,12 +62,16 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphConditionalDataBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphConditionalDataBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphConditionalDataBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.Conditional, FlowGraphConditionalDataBlock);
 }

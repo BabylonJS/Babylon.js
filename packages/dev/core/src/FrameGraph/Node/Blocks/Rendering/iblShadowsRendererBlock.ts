@@ -4,5 +4,5 @@
  */
 export * from "./iblShadowsRendererBlock.pure";
 
-import { registerIblShadowsRendererBlock } from "./iblShadowsRendererBlock.pure";
-registerIblShadowsRendererBlock();
+import { RegisterIblShadowsRendererBlock } from "./iblShadowsRendererBlock.pure";
+RegisterIblShadowsRendererBlock();

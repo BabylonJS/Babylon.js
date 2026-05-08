@@ -4,5 +4,5 @@
  */
 export * from "./groundBuilder.pure";
 
-import { registerGroundBuilder } from "./groundBuilder.pure";
-registerGroundBuilder();
+import { RegisterGroundBuilder } from "./groundBuilder.pure";
+RegisterGroundBuilder();

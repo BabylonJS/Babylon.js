@@ -4,5 +4,5 @@
  */
 export * from "./lightInformationBlock.pure";
 
-import { registerLightInformationBlock } from "./lightInformationBlock.pure";
-registerLightInformationBlock();
+import { RegisterLightInformationBlock } from "./lightInformationBlock.pure";
+RegisterLightInformationBlock();

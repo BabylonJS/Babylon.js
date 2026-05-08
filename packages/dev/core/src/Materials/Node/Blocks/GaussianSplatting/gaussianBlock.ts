@@ -4,5 +4,5 @@
  */
 export * from "./gaussianBlock.pure";
 
-import { registerGaussianBlock } from "./gaussianBlock.pure";
-registerGaussianBlock();
+import { RegisterGaussianBlock } from "./gaussianBlock.pure";
+RegisterGaussianBlock();

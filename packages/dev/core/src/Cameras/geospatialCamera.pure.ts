@@ -710,12 +710,16 @@ export function ComputeYawPitchFromLookAtToRef(
     return result;
 }
 
-let _registered = false;
-export function registerGeospatialCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geospatialCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeospatialCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeospatialCamera", GeospatialCamera);
 }

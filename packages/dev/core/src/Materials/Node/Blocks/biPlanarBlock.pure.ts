@@ -113,12 +113,16 @@ export class BiPlanarBlock extends TriPlanarBlock {
     }
 }
 
-let _registered = false;
-export function registerBiPlanarBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for biPlanarBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBiPlanarBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BiPlanarBlock", BiPlanarBlock);
 }

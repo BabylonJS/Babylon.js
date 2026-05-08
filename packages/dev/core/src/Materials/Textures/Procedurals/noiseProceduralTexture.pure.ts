@@ -136,12 +136,16 @@ export class NoiseProceduralTexture extends ProceduralTexture {
     }
 }
 
-let _registered = false;
-export function registerNoiseProceduralTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for noiseProceduralTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterNoiseProceduralTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NoiseProceduralTexture", NoiseProceduralTexture);
 }

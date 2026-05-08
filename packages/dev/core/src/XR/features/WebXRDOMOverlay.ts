@@ -4,5 +4,5 @@
  */
 export * from "./WebXRDOMOverlay.pure";
 
-import { registerWebXRDOMOverlay } from "./WebXRDOMOverlay.pure";
-registerWebXRDOMOverlay();
+import { RegisterWebXRDOMOverlay } from "./WebXRDOMOverlay.pure";
+RegisterWebXRDOMOverlay();

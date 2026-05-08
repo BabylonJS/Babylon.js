@@ -4,5 +4,5 @@
  */
 export * from "./discardBlock.pure";
 
-import { registerDiscardBlock } from "./discardBlock.pure";
-registerDiscardBlock();
+import { RegisterDiscardBlock } from "./discardBlock.pure";
+RegisterDiscardBlock();

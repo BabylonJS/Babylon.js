@@ -117,12 +117,16 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerMatrixBuilderBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for matrixBuilderBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMatrixBuilderBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.MatrixBuilder", MatrixBuilderBlock);
 }

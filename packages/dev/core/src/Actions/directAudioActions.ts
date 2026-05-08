@@ -4,5 +4,5 @@
  */
 export * from "./directAudioActions.pure";
 
-import { registerDirectAudioActions } from "./directAudioActions.pure";
-registerDirectAudioActions();
+import { RegisterDirectAudioActions } from "./directAudioActions.pure";
+RegisterDirectAudioActions();

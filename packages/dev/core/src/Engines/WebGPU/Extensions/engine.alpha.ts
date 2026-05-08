@@ -5,5 +5,5 @@ export * from "./engine.alpha.types";
  */
 export * from "./engine.alpha.pure";
 
-import { registerEnginesWebGPUExtensionsEngineAlpha } from "./engine.alpha.pure";
-registerEnginesWebGPUExtensionsEngineAlpha();
+import { RegisterEnginesWebGPUExtensionsEngineAlpha } from "./engine.alpha.pure";
+RegisterEnginesWebGPUExtensionsEngineAlpha();

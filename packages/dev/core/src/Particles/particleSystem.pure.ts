@@ -1128,12 +1128,16 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 }
 
-let _registered = false;
-export function registerParticleSystem(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleSystem.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleSystem(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     SubEmitter._ParseParticleSystem = ParticleSystem.Parse;
 }

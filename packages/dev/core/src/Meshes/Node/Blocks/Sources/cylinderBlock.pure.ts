@@ -196,12 +196,16 @@ export class CylinderBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerCylinderBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for cylinderBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCylinderBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.CylinderBlock", CylinderBlock);
 }

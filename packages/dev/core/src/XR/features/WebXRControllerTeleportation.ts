@@ -4,5 +4,5 @@
  */
 export * from "./WebXRControllerTeleportation.pure";
 
-import { registerWebXRControllerTeleportation } from "./WebXRControllerTeleportation.pure";
-registerWebXRControllerTeleportation();
+import { RegisterWebXRControllerTeleportation } from "./WebXRControllerTeleportation.pure";
+RegisterWebXRControllerTeleportation();

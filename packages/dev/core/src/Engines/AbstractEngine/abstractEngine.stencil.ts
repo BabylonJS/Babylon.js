@@ -5,5 +5,5 @@ export * from "./abstractEngine.stencil.types";
  */
 export * from "./abstractEngine.stencil.pure";
 
-import { registerAbstractEngineStencil } from "./abstractEngine.stencil.pure";
-registerAbstractEngineStencil();
+import { RegisterAbstractEngineStencil } from "./abstractEngine.stencil.pure";
+RegisterAbstractEngineStencil();

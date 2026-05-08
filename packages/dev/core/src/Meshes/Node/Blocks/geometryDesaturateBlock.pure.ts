@@ -72,12 +72,16 @@ export class GeometryDesaturateBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryDesaturateBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryDesaturateBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryDesaturateBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryDesaturateBlock", GeometryDesaturateBlock);
 }

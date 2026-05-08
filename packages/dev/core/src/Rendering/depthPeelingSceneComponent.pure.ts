@@ -51,12 +51,16 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
     }
 }
 
-let _registered = false;
-export function registerDepthPeelingSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for depthPeelingSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDepthPeelingSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
         get: function (this: Scene) {

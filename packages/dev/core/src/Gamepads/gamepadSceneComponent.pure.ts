@@ -58,12 +58,16 @@ export class GamepadSystemSceneComponent implements ISceneComponent {
     }
 }
 
-let _registered = false;
-export function registerGamepadSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for gamepadSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGamepadSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(Scene.prototype, "gamepadManager", {
         get: function (this: Scene) {

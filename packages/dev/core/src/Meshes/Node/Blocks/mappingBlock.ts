@@ -4,5 +4,5 @@
  */
 export * from "./mappingBlock.pure";
 
-import { registerMappingBlock } from "./mappingBlock.pure";
-registerMappingBlock();
+import { RegisterMappingBlock } from "./mappingBlock.pure";
+RegisterMappingBlock();

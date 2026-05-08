@@ -4,5 +4,5 @@
  */
 export * from "./scaleBlock.pure";
 
-import { registerScaleBlock } from "./scaleBlock.pure";
-registerScaleBlock();
+import { RegisterScaleBlock } from "./scaleBlock.pure";
+RegisterScaleBlock();

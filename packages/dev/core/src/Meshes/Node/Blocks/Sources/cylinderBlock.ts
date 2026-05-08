@@ -4,5 +4,5 @@
  */
 export * from "./cylinderBlock.pure";
 
-import { registerCylinderBlock } from "./cylinderBlock.pure";
-registerCylinderBlock();
+import { RegisterCylinderBlock } from "./cylinderBlock.pure";
+RegisterCylinderBlock();

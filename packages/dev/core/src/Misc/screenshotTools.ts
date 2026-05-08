@@ -4,5 +4,5 @@
  */
 export * from "./screenshotTools.pure";
 
-import { registerScreenshotTools } from "./screenshotTools.pure";
-registerScreenshotTools();
+import { RegisterScreenshotTools } from "./screenshotTools.pure";
+RegisterScreenshotTools();

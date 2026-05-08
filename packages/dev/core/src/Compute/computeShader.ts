@@ -4,5 +4,5 @@
  */
 export * from "./computeShader.pure";
 
-import { registerComputeShader } from "./computeShader.pure";
-registerComputeShader();
+import { RegisterComputeShader } from "./computeShader.pure";
+RegisterComputeShader();

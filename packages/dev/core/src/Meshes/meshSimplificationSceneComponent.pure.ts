@@ -59,12 +59,16 @@ export class SimplicationQueueSceneComponent implements ISceneComponent {
     }
 }
 
-let _registered = false;
-export function registerMeshSimplificationSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for meshSimplificationSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMeshSimplificationSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(Scene.prototype, "simplificationQueue", {
         get: function (this: Scene) {

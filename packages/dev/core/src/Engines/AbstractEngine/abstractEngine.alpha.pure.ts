@@ -2,12 +2,16 @@ import { Constants } from "../constants";
 import { AbstractEngine } from "../abstractEngine.pure";
 /** This file must only contain pure code and pure imports */
 
-let _registered = false;
-export function registerAbstractEngineAlpha(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineAlpha.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineAlpha(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.setAlphaEquation = function (equation: number, targetIndex: number = 0): void {
         if (this._alphaEquation[targetIndex] === equation) {

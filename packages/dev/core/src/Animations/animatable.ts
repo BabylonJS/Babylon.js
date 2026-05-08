@@ -5,5 +5,5 @@ export * from "./animatable.types";
  */
 export * from "./animatable.pure";
 
-import { registerAnimatable } from "./animatable.pure";
-registerAnimatable();
+import { RegisterAnimatable } from "./animatable.pure";
+RegisterAnimatable();

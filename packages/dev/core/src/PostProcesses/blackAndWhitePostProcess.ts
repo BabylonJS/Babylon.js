@@ -4,5 +4,5 @@
  */
 export * from "./blackAndWhitePostProcess.pure";
 
-import { registerBlackAndWhitePostProcess } from "./blackAndWhitePostProcess.pure";
-registerBlackAndWhitePostProcess();
+import { RegisterBlackAndWhitePostProcess } from "./blackAndWhitePostProcess.pure";
+RegisterBlackAndWhitePostProcess();

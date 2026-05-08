@@ -4,5 +4,5 @@
  */
 export * from "./WebXRControllerMovement.pure";
 
-import { registerWebXRControllerMovement } from "./WebXRControllerMovement.pure";
-registerWebXRControllerMovement();
+import { RegisterWebXRControllerMovement } from "./WebXRControllerMovement.pure";
+RegisterWebXRControllerMovement();

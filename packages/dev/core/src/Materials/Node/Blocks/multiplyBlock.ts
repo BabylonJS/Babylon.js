@@ -4,5 +4,5 @@
  */
 export * from "./multiplyBlock.pure";
 
-import { registerMultiplyBlock } from "./multiplyBlock.pure";
-registerMultiplyBlock();
+import { RegisterMultiplyBlock } from "./multiplyBlock.pure";
+RegisterMultiplyBlock();

@@ -5,5 +5,5 @@ export * from "./engine.videoTexture.types";
  */
 export * from "./engine.videoTexture.pure";
 
-import { registerEnginesWebGPUExtensionsEngineVideoTexture } from "./engine.videoTexture.pure";
-registerEnginesWebGPUExtensionsEngineVideoTexture();
+import { RegisterEnginesWebGPUExtensionsEngineVideoTexture } from "./engine.videoTexture.pure";
+RegisterEnginesWebGPUExtensionsEngineVideoTexture();

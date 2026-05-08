@@ -4,5 +4,5 @@
  */
 export * from "./pointLight.pure";
 
-import { registerPointLight } from "./pointLight.pure";
-registerPointLight();
+import { RegisterPointLight } from "./pointLight.pure";
+RegisterPointLight();

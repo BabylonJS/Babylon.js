@@ -40,12 +40,16 @@ export class StereoscopicFreeCamera extends FreeCamera {
     protected override _setRigMode = () => _SetStereoscopicRigMode(this);
 }
 
-let _registered = false;
-export function registerStereoscopicFreeCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for stereoscopicFreeCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterStereoscopicFreeCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
         return () => new StereoscopicFreeCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);

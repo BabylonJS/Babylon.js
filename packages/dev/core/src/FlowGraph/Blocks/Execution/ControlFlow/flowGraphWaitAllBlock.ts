@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphWaitAllBlock.pure";
 
-import { registerFlowGraphWaitAllBlock } from "./flowGraphWaitAllBlock.pure";
-registerFlowGraphWaitAllBlock();
+import { RegisterFlowGraphWaitAllBlock } from "./flowGraphWaitAllBlock.pure";
+RegisterFlowGraphWaitAllBlock();

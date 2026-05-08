@@ -4,5 +4,5 @@
  */
 export * from "./vectorMergerBlock.pure";
 
-import { registerVectorMergerBlock } from "./vectorMergerBlock.pure";
-registerVectorMergerBlock();
+import { RegisterVectorMergerBlock } from "./vectorMergerBlock.pure";
+RegisterVectorMergerBlock();

@@ -12,12 +12,16 @@ import { Camera } from "../../Cameras/camera.pure";
 import { Engine } from "../../Engines/engine.pure";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 
-let _registered = false;
-export function registerEngineMultiview(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for engineMultiview.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEngineMultiview(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     function CreateMultiviewUbo(engine: AbstractEngine, name?: string, trackUBOsInFrame?: boolean) {
         const ubo = new UniformBuffer(engine, undefined, true, name, undefined, trackUBOsInFrame);

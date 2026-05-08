@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphMatrixMathBlocks.pure";
 
-import { registerFlowGraphMatrixMathBlocks } from "./flowGraphMatrixMathBlocks.pure";
-registerFlowGraphMatrixMathBlocks();
+import { RegisterFlowGraphMatrixMathBlocks } from "./flowGraphMatrixMathBlocks.pure";
+RegisterFlowGraphMatrixMathBlocks();

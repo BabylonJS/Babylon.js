@@ -4,12 +4,16 @@ import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { DataBuffer } from "../../Buffers/dataBuffer";
 import { IndicesArray, DataArray } from "../../types";
 
-let _registered = false;
-export function registerEngineDynamicBuffer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for engineDynamicBuffer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEngineDynamicBuffer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {

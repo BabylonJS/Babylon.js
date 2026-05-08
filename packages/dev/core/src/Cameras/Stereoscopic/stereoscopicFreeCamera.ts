@@ -4,5 +4,5 @@
  */
 export * from "./stereoscopicFreeCamera.pure";
 
-import { registerStereoscopicFreeCamera } from "./stereoscopicFreeCamera.pure";
-registerStereoscopicFreeCamera();
+import { RegisterStereoscopicFreeCamera } from "./stereoscopicFreeCamera.pure";
+RegisterStereoscopicFreeCamera();

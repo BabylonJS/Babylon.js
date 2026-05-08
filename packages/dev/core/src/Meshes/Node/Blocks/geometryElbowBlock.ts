@@ -4,5 +4,5 @@
  */
 export * from "./geometryElbowBlock.pure";
 
-import { registerGeometryElbowBlock } from "./geometryElbowBlock.pure";
-registerGeometryElbowBlock();
+import { RegisterGeometryElbowBlock } from "./geometryElbowBlock.pure";
+RegisterGeometryElbowBlock();

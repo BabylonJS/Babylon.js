@@ -119,12 +119,16 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerUpdateFlowMapBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for updateFlowMapBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterUpdateFlowMapBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.UpdateFlowMapBlock", UpdateFlowMapBlock);
 }

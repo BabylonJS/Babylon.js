@@ -4,5 +4,5 @@
  */
 export * from "./geometryStepBlock.pure";
 
-import { registerGeometryStepBlock } from "./geometryStepBlock.pure";
-registerGeometryStepBlock();
+import { RegisterGeometryStepBlock } from "./geometryStepBlock.pure";
+RegisterGeometryStepBlock();

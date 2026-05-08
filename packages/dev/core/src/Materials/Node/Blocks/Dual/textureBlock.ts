@@ -4,5 +4,5 @@
  */
 export * from "./textureBlock.pure";
 
-import { registerTextureBlock } from "./textureBlock.pure";
-registerTextureBlock();
+import { RegisterTextureBlock } from "./textureBlock.pure";
+RegisterTextureBlock();

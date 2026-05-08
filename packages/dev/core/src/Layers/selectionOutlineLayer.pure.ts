@@ -409,12 +409,16 @@ export class SelectionOutlineLayer extends EffectLayer {
     }
 }
 
-let _registered = false;
-export function registerSelectionOutlineLayer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for selectionOutlineLayer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSelectionOutlineLayer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.getSelectionOutlineLayerByName = function (name: string): Nullable<SelectionOutlineLayer> {
         for (let index = 0; index < this.effectLayers?.length; index++) {

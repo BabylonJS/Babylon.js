@@ -4,5 +4,5 @@
  */
 export * from "./replaceColorBlock.pure";
 
-import { registerReplaceColorBlock } from "./replaceColorBlock.pure";
-registerReplaceColorBlock();
+import { RegisterReplaceColorBlock } from "./replaceColorBlock.pure";
+RegisterReplaceColorBlock();

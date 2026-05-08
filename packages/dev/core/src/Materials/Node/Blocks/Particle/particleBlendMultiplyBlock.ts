@@ -4,5 +4,5 @@
  */
 export * from "./particleBlendMultiplyBlock.pure";
 
-import { registerParticleBlendMultiplyBlock } from "./particleBlendMultiplyBlock.pure";
-registerParticleBlendMultiplyBlock();
+import { RegisterParticleBlendMultiplyBlock } from "./particleBlendMultiplyBlock.pure";
+RegisterParticleBlendMultiplyBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./videoTexture.pure";
 
-import { registerVideoTexture } from "./videoTexture.pure";
-registerVideoTexture();
+import { RegisterVideoTexture } from "./videoTexture.pure";
+RegisterVideoTexture();

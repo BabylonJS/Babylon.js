@@ -139,12 +139,16 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerSimplexPerlin3DBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for simplexPerlin3DBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSimplexPerlin3DBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.SimplexPerlin3DBlock", SimplexPerlin3DBlock);
 }

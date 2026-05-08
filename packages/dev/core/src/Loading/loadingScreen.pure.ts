@@ -345,12 +345,16 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     };
 }
 
-let _registered = false;
-export function registerLoadingScreen(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for loadingScreen.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterLoadingScreen(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.DefaultLoadingScreenFactory = (canvas: HTMLCanvasElement) => {
         return new DefaultLoadingScreen(canvas);

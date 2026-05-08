@@ -76,12 +76,16 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphSceneTickEventBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphSceneTickEventBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphSceneTickEventBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.SceneTickEvent, FlowGraphSceneTickEventBlock);
 }

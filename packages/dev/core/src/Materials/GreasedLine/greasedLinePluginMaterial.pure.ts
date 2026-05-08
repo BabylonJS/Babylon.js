@@ -652,12 +652,16 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     }
 }
 
-let _registered = false;
-export function registerGreasedLinePluginMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for greasedLinePluginMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGreasedLinePluginMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(`BABYLON.${GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME}`, GreasedLinePluginMaterial);
 }

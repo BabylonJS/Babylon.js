@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSetAngularVelocityBlock.pure";
 
-import { registerFlowGraphSetAngularVelocityBlock } from "./flowGraphSetAngularVelocityBlock.pure";
-registerFlowGraphSetAngularVelocityBlock();
+import { RegisterFlowGraphSetAngularVelocityBlock } from "./flowGraphSetAngularVelocityBlock.pure";
+RegisterFlowGraphSetAngularVelocityBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./ray.pure";
 
-import { registerRay } from "./ray.pure";
-registerRay();
+import { RegisterRay } from "./ray.pure";
+RegisterRay();

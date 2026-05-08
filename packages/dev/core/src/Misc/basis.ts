@@ -4,5 +4,5 @@
  */
 export * from "./basis.pure";
 
-import { registerBasis } from "./basis.pure";
-registerBasis();
+import { RegisterBasis } from "./basis.pure";
+RegisterBasis();

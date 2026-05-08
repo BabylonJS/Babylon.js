@@ -4,5 +4,5 @@
  */
 export * from "./WebXREyeTracking.pure";
 
-import { registerWebXREyeTracking } from "./WebXREyeTracking.pure";
-registerWebXREyeTracking();
+import { RegisterWebXREyeTracking } from "./WebXREyeTracking.pure";
+RegisterWebXREyeTracking();

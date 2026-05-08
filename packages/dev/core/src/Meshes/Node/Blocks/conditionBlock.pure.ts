@@ -230,12 +230,16 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerConditionBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for conditionBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterConditionBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ConditionBlock", ConditionBlock);
 }

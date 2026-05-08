@@ -124,12 +124,16 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
     }
 }
 
-let _registered = false;
-export function registerShadowGeneratorSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for shadowGeneratorSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterShadowGeneratorSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Adds the parser to the scene parsers.
     AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {

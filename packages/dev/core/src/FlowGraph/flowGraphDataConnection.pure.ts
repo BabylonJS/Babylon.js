@@ -179,12 +179,16 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 }
 
-let _registered = false;
-export function registerFlowGraphDataConnection(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphDataConnection.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphDataConnection(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("FlowGraphDataConnection", FlowGraphDataConnection);
 }

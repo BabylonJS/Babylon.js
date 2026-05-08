@@ -4,5 +4,5 @@
  */
 export * from "./particleClampBlock.pure";
 
-import { registerParticleClampBlock } from "./particleClampBlock.pure";
-registerParticleClampBlock();
+import { RegisterParticleClampBlock } from "./particleClampBlock.pure";
+RegisterParticleClampBlock();

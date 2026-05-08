@@ -4,5 +4,5 @@
  */
 export * from "./rotationYBlock.pure";
 
-import { registerRotationYBlock } from "./rotationYBlock.pure";
-registerRotationYBlock();
+import { RegisterRotationYBlock } from "./rotationYBlock.pure";
+RegisterRotationYBlock();

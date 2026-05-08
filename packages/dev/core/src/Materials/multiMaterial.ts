@@ -4,5 +4,5 @@
  */
 export * from "./multiMaterial.pure";
 
-import { registerMultiMaterial } from "./multiMaterial.pure";
-registerMultiMaterial();
+import { RegisterMultiMaterial } from "./multiMaterial.pure";
+RegisterMultiMaterial();

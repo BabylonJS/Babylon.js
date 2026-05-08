@@ -4,5 +4,5 @@
  */
 export * from "./perturbNormalBlock.pure";
 
-import { registerPerturbNormalBlock } from "./perturbNormalBlock.pure";
-registerPerturbNormalBlock();
+import { RegisterPerturbNormalBlock } from "./perturbNormalBlock.pure";
+RegisterPerturbNormalBlock();

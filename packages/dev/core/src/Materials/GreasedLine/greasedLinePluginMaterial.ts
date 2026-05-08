@@ -4,5 +4,5 @@
  */
 export * from "./greasedLinePluginMaterial.pure";
 
-import { registerGreasedLinePluginMaterial } from "./greasedLinePluginMaterial.pure";
-registerGreasedLinePluginMaterial();
+import { RegisterGreasedLinePluginMaterial } from "./greasedLinePluginMaterial.pure";
+RegisterGreasedLinePluginMaterial();

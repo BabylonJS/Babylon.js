@@ -4,5 +4,5 @@
  */
 export * from "./particleFloatToIntBlock.pure";
 
-import { registerParticleFloatToIntBlock } from "./particleFloatToIntBlock.pure";
-registerParticleFloatToIntBlock();
+import { RegisterParticleFloatToIntBlock } from "./particleFloatToIntBlock.pure";
+RegisterParticleFloatToIntBlock();

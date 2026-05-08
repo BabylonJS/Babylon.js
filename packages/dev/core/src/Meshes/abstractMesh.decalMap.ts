@@ -5,5 +5,5 @@ export * from "./abstractMesh.decalMap.types";
  */
 export * from "./abstractMesh.decalMap.pure";
 
-import { registerAbstractMeshDecalMap } from "./abstractMesh.decalMap.pure";
-registerAbstractMeshDecalMap();
+import { RegisterAbstractMeshDecalMap } from "./abstractMesh.decalMap.pure";
+RegisterAbstractMeshDecalMap();

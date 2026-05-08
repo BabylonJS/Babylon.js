@@ -4,5 +4,5 @@
  */
 export * from "./condition.pure";
 
-import { registerCondition } from "./condition.pure";
-registerCondition();
+import { RegisterCondition } from "./condition.pure";
+RegisterCondition();

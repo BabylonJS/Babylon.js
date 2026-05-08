@@ -65,12 +65,16 @@ export const enum ComputeBindingType {
 /** @internal */
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
-let _registered = false;
-export function registerEnginesExtensionsEngineComputeShader(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineComputeShader.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineComputeShader(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.createComputeEffect = function (baseName: IComputeShaderPath & { computeToken?: string }, options: IComputeEffectCreationOptions): ComputeEffect {
         throw new Error("createComputeEffect: This engine does not support compute shaders!");

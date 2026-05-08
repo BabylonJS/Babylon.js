@@ -4,5 +4,5 @@
  */
 export * from "./cullObjectsBlock.pure";
 
-import { registerCullObjectsBlock } from "./cullObjectsBlock.pure";
-registerCullObjectsBlock();
+import { RegisterCullObjectsBlock } from "./cullObjectsBlock.pure";
+RegisterCullObjectsBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./storageWriteBlock.pure";
 
-import { registerStorageWriteBlock } from "./storageWriteBlock.pure";
-registerStorageWriteBlock();
+import { RegisterStorageWriteBlock } from "./storageWriteBlock.pure";
+RegisterStorageWriteBlock();

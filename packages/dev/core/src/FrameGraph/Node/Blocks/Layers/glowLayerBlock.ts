@@ -4,5 +4,5 @@
  */
 export * from "./glowLayerBlock.pure";
 
-import { registerGlowLayerBlock } from "./glowLayerBlock.pure";
-registerGlowLayerBlock();
+import { RegisterGlowLayerBlock } from "./glowLayerBlock.pure";
+RegisterGlowLayerBlock();

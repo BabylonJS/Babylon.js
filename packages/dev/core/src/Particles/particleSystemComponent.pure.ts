@@ -13,12 +13,16 @@ import { Mesh } from "../Meshes/mesh.pure";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-let _registered = false;
-export function registerParticleSystemComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleSystemComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleSystemComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Adds the parsers to the scene parsers.
     AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

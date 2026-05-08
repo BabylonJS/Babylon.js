@@ -4,5 +4,5 @@
  */
 export * from "./smoothStepBlock.pure";
 
-import { registerSmoothStepBlock } from "./smoothStepBlock.pure";
-registerSmoothStepBlock();
+import { RegisterSmoothStepBlock } from "./smoothStepBlock.pure";
+RegisterSmoothStepBlock();

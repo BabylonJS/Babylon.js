@@ -325,12 +325,16 @@ export class GroundMesh extends Mesh {
     }
 }
 
-let _registered = false;
-export function registerGroundMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for groundMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGroundMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         return GroundMesh.Parse(parsedMesh, scene);

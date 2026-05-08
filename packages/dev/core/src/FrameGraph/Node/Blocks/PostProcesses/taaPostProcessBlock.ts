@@ -4,5 +4,5 @@
  */
 export * from "./taaPostProcessBlock.pure";
 
-import { registerTaaPostProcessBlock } from "./taaPostProcessBlock.pure";
-registerTaaPostProcessBlock();
+import { RegisterTaaPostProcessBlock } from "./taaPostProcessBlock.pure";
+RegisterTaaPostProcessBlock();

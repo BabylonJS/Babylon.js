@@ -136,12 +136,16 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerVoronoiNoiseBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for voronoiNoiseBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVoronoiNoiseBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.VoronoiNoiseBlock", VoronoiNoiseBlock);
 }

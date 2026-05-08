@@ -5,5 +5,5 @@ export * from "./engine.rawTexture.types";
  */
 export * from "./engine.rawTexture.pure";
 
-import { registerEnginesExtensionsEngineRawTexture } from "./engine.rawTexture.pure";
-registerEnginesExtensionsEngineRawTexture();
+import { RegisterEnginesExtensionsEngineRawTexture } from "./engine.rawTexture.pure";
+RegisterEnginesExtensionsEngineRawTexture();

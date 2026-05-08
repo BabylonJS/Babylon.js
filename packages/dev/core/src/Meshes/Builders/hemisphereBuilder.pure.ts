@@ -39,12 +39,16 @@ export const HemisphereBuilder = {
     CreateHemisphere,
 };
 
-let _registered = false;
-export function registerHemisphereBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for hemisphereBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterHemisphereBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * Creates a hemispheric light

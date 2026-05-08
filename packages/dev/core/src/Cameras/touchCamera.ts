@@ -4,5 +4,5 @@
  */
 export * from "./touchCamera.pure";
 
-import { registerTouchCamera } from "./touchCamera.pure";
-registerTouchCamera();
+import { RegisterTouchCamera } from "./touchCamera.pure";
+RegisterTouchCamera();

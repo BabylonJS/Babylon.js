@@ -54,12 +54,16 @@ export class FlowGraphGetAngularVelocityBlock extends FlowGraphCachedOperationBl
     }
 }
 
-let _registered = false;
-export function registerFlowGraphGetAngularVelocityBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphGetAngularVelocityBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphGetAngularVelocityBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.PhysicsGetAngularVelocity, FlowGraphGetAngularVelocityBlock);
 }

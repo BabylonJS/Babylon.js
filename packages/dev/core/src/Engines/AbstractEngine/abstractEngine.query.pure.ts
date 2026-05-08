@@ -35,12 +35,16 @@ export class _OcclusionDataStorage {
     public occlusionForRenderPassId = -1;
 }
 
-let _registered = false;
-export function registerAbstractEngineQuery(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineQuery.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineQuery(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.createQuery = function (): Nullable<OcclusionQuery> {
         return null;

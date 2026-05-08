@@ -4,5 +4,5 @@
  */
 export * from "./particleConverterBlock.pure";
 
-import { registerParticleConverterBlock } from "./particleConverterBlock.pure";
-registerParticleConverterBlock();
+import { RegisterParticleConverterBlock } from "./particleConverterBlock.pure";
+RegisterParticleConverterBlock();

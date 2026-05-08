@@ -4,5 +4,5 @@
  */
 export * from "./directionalLight.pure";
 
-import { registerDirectionalLight } from "./directionalLight.pure";
-registerDirectionalLight();
+import { RegisterDirectionalLight } from "./directionalLight.pure";
+RegisterDirectionalLight();

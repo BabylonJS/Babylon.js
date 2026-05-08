@@ -4,5 +4,5 @@
  */
 export * from "./gaussianSplattingGpuPickingMaterialPlugin.pure";
 
-import { registerGaussianSplattingGpuPickingMaterialPlugin } from "./gaussianSplattingGpuPickingMaterialPlugin.pure";
-registerGaussianSplattingGpuPickingMaterialPlugin();
+import { RegisterGaussianSplattingGpuPickingMaterialPlugin } from "./gaussianSplattingGpuPickingMaterialPlugin.pure";
+RegisterGaussianSplattingGpuPickingMaterialPlugin();

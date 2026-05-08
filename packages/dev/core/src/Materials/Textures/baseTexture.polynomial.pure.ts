@@ -5,12 +5,16 @@ import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/c
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial.pure";
 import { BaseTexture } from "./baseTexture.pure";
 
-let _registered = false;
-export function registerBaseTexturePolynomial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for baseTexturePolynomial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBaseTexturePolynomial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     BaseTexture.prototype._sphericalPolynomialTargetSize = 0;
 

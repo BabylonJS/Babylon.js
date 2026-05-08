@@ -4,5 +4,5 @@
  */
 export * from "./booleanGeometryBlock.pure";
 
-import { registerBooleanGeometryBlock } from "./booleanGeometryBlock.pure";
-registerBooleanGeometryBlock();
+import { RegisterBooleanGeometryBlock } from "./booleanGeometryBlock.pure";
+RegisterBooleanGeometryBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./geometryLerpBlock.pure";
 
-import { registerGeometryLerpBlock } from "./geometryLerpBlock.pure";
-registerGeometryLerpBlock();
+import { RegisterGeometryLerpBlock } from "./geometryLerpBlock.pure";
+RegisterGeometryLerpBlock();

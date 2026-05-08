@@ -4,5 +4,5 @@
  */
 export * from "./WebXRSpaceWarp.pure";
 
-import { registerWebXRSpaceWarp } from "./WebXRSpaceWarp.pure";
-registerWebXRSpaceWarp();
+import { RegisterWebXRSpaceWarp } from "./WebXRSpaceWarp.pure";
+RegisterWebXRSpaceWarp();

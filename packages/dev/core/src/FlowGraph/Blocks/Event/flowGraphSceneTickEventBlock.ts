@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSceneTickEventBlock.pure";
 
-import { registerFlowGraphSceneTickEventBlock } from "./flowGraphSceneTickEventBlock.pure";
-registerFlowGraphSceneTickEventBlock();
+import { RegisterFlowGraphSceneTickEventBlock } from "./flowGraphSceneTickEventBlock.pure";
+RegisterFlowGraphSceneTickEventBlock();

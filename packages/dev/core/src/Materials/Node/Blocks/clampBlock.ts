@@ -4,5 +4,5 @@
  */
 export * from "./clampBlock.pure";
 
-import { registerClampBlock } from "./clampBlock.pure";
-registerClampBlock();
+import { RegisterClampBlock } from "./clampBlock.pure";
+RegisterClampBlock();

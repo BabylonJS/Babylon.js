@@ -83,12 +83,16 @@ export class ElbowBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerMaterialsNodeBlocksElbowBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for materialsNodeBlocksElbowBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMaterialsNodeBlocksElbowBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ElbowBlock", ElbowBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./particleTextureBlock.pure";
 
-import { registerParticleTextureBlock } from "./particleTextureBlock.pure";
-registerParticleTextureBlock();
+import { RegisterParticleTextureBlock } from "./particleTextureBlock.pure";
+RegisterParticleTextureBlock();

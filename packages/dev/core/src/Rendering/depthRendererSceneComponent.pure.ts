@@ -116,12 +116,16 @@ export class DepthRendererSceneComponent implements ISceneComponent {
     }
 }
 
-let _registered = false;
-export function registerDepthRendererSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for depthRendererSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDepthRendererSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.enableDepthRenderer = function (
         camera?: Nullable<Camera>,

@@ -4,5 +4,5 @@
  */
 export * from "./math.vector.pure";
 
-import { registerMathVector } from "./math.vector.pure";
-registerMathVector();
+import { RegisterMathVector } from "./math.vector.pure";
+RegisterMathVector();

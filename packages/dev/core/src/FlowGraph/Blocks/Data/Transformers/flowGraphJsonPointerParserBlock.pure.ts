@@ -195,12 +195,16 @@ function FromColor(value: Color3 | Color4): Vector3 | Vector4 {
     throw new Error("Invalid color type");
 }
 
-let _registered = false;
-export function registerFlowGraphJsonPointerParserBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphJsonPointerParserBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphJsonPointerParserBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.JsonPointerParser, FlowGraphJsonPointerParserBlock);
 }

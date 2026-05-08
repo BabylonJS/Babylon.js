@@ -4,5 +4,5 @@
  */
 export * from "./targetCamera.pure";
 
-import { registerTargetCamera } from "./targetCamera.pure";
-registerTargetCamera();
+import { RegisterTargetCamera } from "./targetCamera.pure";
+RegisterTargetCamera();

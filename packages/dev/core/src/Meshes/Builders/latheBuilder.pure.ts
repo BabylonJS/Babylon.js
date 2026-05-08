@@ -98,12 +98,16 @@ export const LatheBuilder = {
     CreateLathe,
 };
 
-let _registered = false;
-export function registerLatheBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for latheBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterLatheBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh.CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
         const options = {

@@ -3,12 +3,16 @@
 import { IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { AbstractEngine } from "../../Engines/abstractEngine.pure";
 
-let _registered = false;
-export function registerAbstractEngineLoadFile(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineLoadFile.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineLoadFile(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype._loadFileAsync = async function (url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<any> {
         return await new Promise<string | ArrayBuffer>((resolve, reject) => {

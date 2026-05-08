@@ -4,5 +4,5 @@
  */
 export * from "./sheenBlock.pure";
 
-import { registerSheenBlock } from "./sheenBlock.pure";
-registerSheenBlock();
+import { RegisterSheenBlock } from "./sheenBlock.pure";
+RegisterSheenBlock();

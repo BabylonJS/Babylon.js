@@ -4,5 +4,5 @@
  */
 export * from "./sound.pure";
 
-import { registerSound } from "./sound.pure";
-registerSound();
+import { RegisterSound } from "./sound.pure";
+RegisterSound();

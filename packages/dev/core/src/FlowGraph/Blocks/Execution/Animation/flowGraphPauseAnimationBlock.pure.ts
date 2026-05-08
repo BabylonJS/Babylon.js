@@ -37,12 +37,16 @@ export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOut
     }
 }
 
-let _registered = false;
-export function registerFlowGraphPauseAnimationBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphPauseAnimationBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphPauseAnimationBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.PauseAnimation, FlowGraphPauseAnimationBlock);
 }

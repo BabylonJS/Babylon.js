@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphWhileLoopBlock.pure";
 
-import { registerFlowGraphWhileLoopBlock } from "./flowGraphWhileLoopBlock.pure";
-registerFlowGraphWhileLoopBlock();
+import { RegisterFlowGraphWhileLoopBlock } from "./flowGraphWhileLoopBlock.pure";
+RegisterFlowGraphWhileLoopBlock();

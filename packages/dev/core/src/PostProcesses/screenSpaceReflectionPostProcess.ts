@@ -4,5 +4,5 @@
  */
 export * from "./screenSpaceReflectionPostProcess.pure";
 
-import { registerScreenSpaceReflectionPostProcess } from "./screenSpaceReflectionPostProcess.pure";
-registerScreenSpaceReflectionPostProcess();
+import { RegisterScreenSpaceReflectionPostProcess } from "./screenSpaceReflectionPostProcess.pure";
+RegisterScreenSpaceReflectionPostProcess();

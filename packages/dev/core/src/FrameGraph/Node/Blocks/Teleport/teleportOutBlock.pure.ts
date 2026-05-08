@@ -138,12 +138,16 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFrameGraphNodeBlocksTeleportTeleportOutBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for frameGraphNodeBlocksTeleportTeleportOutBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFrameGraphNodeBlocksTeleportTeleportOutBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphTeleportOutBlock", NodeRenderGraphTeleportOutBlock);
 }

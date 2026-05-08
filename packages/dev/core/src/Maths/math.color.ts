@@ -4,5 +4,5 @@
  */
 export * from "./math.color.pure";
 
-import { registerMathColor } from "./math.color.pure";
-registerMathColor();
+import { RegisterMathColor } from "./math.color.pure";
+RegisterMathColor();

@@ -570,12 +570,16 @@ export class SetParentAction extends Action {
     }
 }
 
-let _registered = false;
-export function registerDirectActions(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for directActions.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDirectActions(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.SetParentAction", SetParentAction);
     RegisterClass("BABYLON.ExecuteCodeAction", ExecuteCodeAction);

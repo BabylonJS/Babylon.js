@@ -4,5 +4,5 @@
  */
 export * from "./customBlock.pure";
 
-import { registerCustomBlock } from "./customBlock.pure";
-registerCustomBlock();
+import { RegisterCustomBlock } from "./customBlock.pure";
+RegisterCustomBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./matrixDeterminantBlock.pure";
 
-import { registerMatrixDeterminantBlock } from "./matrixDeterminantBlock.pure";
-registerMatrixDeterminantBlock();
+import { RegisterMatrixDeterminantBlock } from "./matrixDeterminantBlock.pure";
+RegisterMatrixDeterminantBlock();

@@ -135,12 +135,16 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
     }
 }
 
-let _registered = false;
-export function registerBloomPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for bloomPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBloomPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphBloomPostProcessBlock", NodeRenderGraphBloomPostProcessBlock);
 }

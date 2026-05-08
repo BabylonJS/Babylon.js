@@ -4,5 +4,5 @@
  */
 export * from "./updateDirectionBlock.pure";
 
-import { registerUpdateDirectionBlock } from "./updateDirectionBlock.pure";
-registerUpdateDirectionBlock();
+import { RegisterUpdateDirectionBlock } from "./updateDirectionBlock.pure";
+RegisterUpdateDirectionBlock();

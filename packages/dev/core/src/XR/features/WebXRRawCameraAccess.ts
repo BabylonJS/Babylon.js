@@ -4,5 +4,5 @@
  */
 export * from "./WebXRRawCameraAccess.pure";
 
-import { registerWebXRRawCameraAccess } from "./WebXRRawCameraAccess.pure";
-registerWebXRRawCameraAccess();
+import { RegisterWebXRRawCameraAccess } from "./WebXRRawCameraAccess.pure";
+RegisterWebXRRawCameraAccess();

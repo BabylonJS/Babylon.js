@@ -4,5 +4,5 @@
  */
 export * from "./vectorSplitterBlock.pure";
 
-import { registerVectorSplitterBlock } from "./vectorSplitterBlock.pure";
-registerVectorSplitterBlock();
+import { RegisterVectorSplitterBlock } from "./vectorSplitterBlock.pure";
+RegisterVectorSplitterBlock();

@@ -5,5 +5,5 @@ export * from "./pbrMaterial.decalMap.types";
  */
 export * from "./pbrMaterial.decalMap.pure";
 
-import { registerPbrMaterialDecalMap } from "./pbrMaterial.decalMap.pure";
-registerPbrMaterialDecalMap();
+import { RegisterPbrMaterialDecalMap } from "./pbrMaterial.decalMap.pure";
+RegisterPbrMaterialDecalMap();

@@ -61,12 +61,16 @@ export class GeometryLengthBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryLengthBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryLengthBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryLengthBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryLengthBlock", GeometryLengthBlock);
 }

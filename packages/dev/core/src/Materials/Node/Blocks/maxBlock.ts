@@ -4,5 +4,5 @@
  */
 export * from "./maxBlock.pure";
 
-import { registerMaxBlock } from "./maxBlock.pure";
-registerMaxBlock();
+import { RegisterMaxBlock } from "./maxBlock.pure";
+RegisterMaxBlock();

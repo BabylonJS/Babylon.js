@@ -10,12 +10,16 @@ import { SphericalPolynomial } from "core/Maths/sphericalPolynomial.pure";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
 import { DDSInfo } from "core/Misc/dds.pure";
 
-let _registered = false;
-export function registerEnginePrefilteredCubeTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginePrefilteredCubeTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginePrefilteredCubeTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.createPrefilteredCubeTexture = function (
         rootUrl: string,

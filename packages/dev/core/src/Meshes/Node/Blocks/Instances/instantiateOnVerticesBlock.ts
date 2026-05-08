@@ -4,5 +4,5 @@
  */
 export * from "./instantiateOnVerticesBlock.pure";
 
-import { registerInstantiateOnVerticesBlock } from "./instantiateOnVerticesBlock.pure";
-registerInstantiateOnVerticesBlock();
+import { RegisterInstantiateOnVerticesBlock } from "./instantiateOnVerticesBlock.pure";
+RegisterInstantiateOnVerticesBlock();

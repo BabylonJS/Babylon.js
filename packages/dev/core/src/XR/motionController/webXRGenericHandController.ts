@@ -4,5 +4,5 @@
  */
 export * from "./webXRGenericHandController.pure";
 
-import { registerWebXRGenericHandController } from "./webXRGenericHandController.pure";
-registerWebXRGenericHandController();
+import { RegisterWebXRGenericHandController } from "./webXRGenericHandController.pure";
+RegisterWebXRGenericHandController();

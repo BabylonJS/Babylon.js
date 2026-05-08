@@ -134,12 +134,16 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXREyeTracking(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXREyeTracking.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXREyeTracking(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     WebXRFeaturesManager.AddWebXRFeature(
         WebXREyeTracking.Name,

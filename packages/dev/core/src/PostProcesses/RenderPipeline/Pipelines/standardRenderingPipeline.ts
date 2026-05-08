@@ -4,5 +4,5 @@
  */
 export * from "./standardRenderingPipeline.pure";
 
-import { registerStandardRenderingPipeline } from "./standardRenderingPipeline.pure";
-registerStandardRenderingPipeline();
+import { RegisterStandardRenderingPipeline } from "./standardRenderingPipeline.pure";
+RegisterStandardRenderingPipeline();

@@ -349,12 +349,16 @@ export class DirectionalLight extends ShadowLight {
     }
 }
 
-let _registered = false;
-export function registerDirectionalLight(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for directionalLight.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDirectionalLight(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
         return () => new DirectionalLight(name, Vector3.Zero(), scene);

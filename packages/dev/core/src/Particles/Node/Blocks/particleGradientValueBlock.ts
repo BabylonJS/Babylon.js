@@ -4,5 +4,5 @@
  */
 export * from "./particleGradientValueBlock.pure";
 
-import { registerParticleGradientValueBlock } from "./particleGradientValueBlock.pure";
-registerParticleGradientValueBlock();
+import { RegisterParticleGradientValueBlock } from "./particleGradientValueBlock.pure";
+RegisterParticleGradientValueBlock();

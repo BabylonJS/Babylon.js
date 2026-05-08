@@ -4,5 +4,5 @@
  */
 export * from "./colorMergerBlock.pure";
 
-import { registerColorMergerBlock } from "./colorMergerBlock.pure";
-registerColorMergerBlock();
+import { RegisterColorMergerBlock } from "./colorMergerBlock.pure";
+RegisterColorMergerBlock();

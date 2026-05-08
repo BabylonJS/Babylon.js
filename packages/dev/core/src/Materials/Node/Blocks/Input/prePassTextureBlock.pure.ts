@@ -291,12 +291,16 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerPrePassTextureBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for prePassTextureBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPrePassTextureBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PrePassTextureBlock", PrePassTextureBlock);
 }

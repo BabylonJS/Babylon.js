@@ -105,12 +105,16 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
 
 (<any>CameraInputTypes)["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
 
-let _registered = false;
-export function registerFreeCameraVirtualJoystickInput(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for freeCameraVirtualJoystickInput.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFreeCameraVirtualJoystickInput(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * Add virtual joystick input support to the input manager.

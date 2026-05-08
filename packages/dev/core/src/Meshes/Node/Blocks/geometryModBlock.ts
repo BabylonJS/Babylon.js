@@ -4,5 +4,5 @@
  */
 export * from "./geometryModBlock.pure";
 
-import { registerGeometryModBlock } from "./geometryModBlock.pure";
-registerGeometryModBlock();
+import { RegisterGeometryModBlock } from "./geometryModBlock.pure";
+RegisterGeometryModBlock();

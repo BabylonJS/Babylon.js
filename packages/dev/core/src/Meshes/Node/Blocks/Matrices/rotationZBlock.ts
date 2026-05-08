@@ -4,5 +4,5 @@
  */
 export * from "./rotationZBlock.pure";
 
-import { registerRotationZBlock } from "./rotationZBlock.pure";
-registerRotationZBlock();
+import { RegisterRotationZBlock } from "./rotationZBlock.pure";
+RegisterRotationZBlock();

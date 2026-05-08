@@ -4,5 +4,5 @@
  */
 export * from "./rotationXBlock.pure";
 
-import { registerRotationXBlock } from "./rotationXBlock.pure";
-registerRotationXBlock();
+import { RegisterRotationXBlock } from "./rotationXBlock.pure";
+RegisterRotationXBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./instantiateOnFacesBlock.pure";
 
-import { registerInstantiateOnFacesBlock } from "./instantiateOnFacesBlock.pure";
-registerInstantiateOnFacesBlock();
+import { RegisterInstantiateOnFacesBlock } from "./instantiateOnFacesBlock.pure";
+RegisterInstantiateOnFacesBlock();

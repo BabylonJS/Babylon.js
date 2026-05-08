@@ -4,5 +4,5 @@
  */
 export * from "./directActions.pure";
 
-import { registerDirectActions } from "./directActions.pure";
-registerDirectActions();
+import { RegisterDirectActions } from "./directActions.pure";
+RegisterDirectActions();

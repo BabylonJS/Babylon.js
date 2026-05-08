@@ -210,12 +210,16 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     }
 }
 
-let _registered = false;
-export function registerSetUVsBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for setUVsBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSetUVsBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.SetUVsBlock", SetUVsBlock);
 }

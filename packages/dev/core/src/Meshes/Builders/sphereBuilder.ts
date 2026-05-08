@@ -4,5 +4,5 @@
  */
 export * from "./sphereBuilder.pure";
 
-import { registerSphereBuilder } from "./sphereBuilder.pure";
-registerSphereBuilder();
+import { RegisterSphereBuilder } from "./sphereBuilder.pure";
+RegisterSphereBuilder();

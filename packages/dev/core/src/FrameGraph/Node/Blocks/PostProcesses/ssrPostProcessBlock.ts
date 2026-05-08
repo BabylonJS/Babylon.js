@@ -4,5 +4,5 @@
  */
 export * from "./ssrPostProcessBlock.pure";
 
-import { registerSsrPostProcessBlock } from "./ssrPostProcessBlock.pure";
-registerSsrPostProcessBlock();
+import { RegisterSsrPostProcessBlock } from "./ssrPostProcessBlock.pure";
+RegisterSsrPostProcessBlock();

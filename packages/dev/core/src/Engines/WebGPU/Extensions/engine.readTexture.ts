@@ -5,5 +5,5 @@ export * from "./engine.readTexture.types";
  */
 export * from "./engine.readTexture.pure";
 
-import { registerEnginesWebGPUExtensionsEngineReadTexture } from "./engine.readTexture.pure";
-registerEnginesWebGPUExtensionsEngineReadTexture();
+import { RegisterEnginesWebGPUExtensionsEngineReadTexture } from "./engine.readTexture.pure";
+RegisterEnginesWebGPUExtensionsEngineReadTexture();

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphBranchBlock.pure";
 
-import { registerFlowGraphBranchBlock } from "./flowGraphBranchBlock.pure";
-registerFlowGraphBranchBlock();
+import { RegisterFlowGraphBranchBlock } from "./flowGraphBranchBlock.pure";
+RegisterFlowGraphBranchBlock();

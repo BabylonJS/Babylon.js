@@ -4,5 +4,5 @@
  */
 export * from "./scene.pure";
 
-import { registerScene } from "./scene.pure";
-registerScene();
+import { RegisterScene } from "./scene.pure";
+RegisterScene();

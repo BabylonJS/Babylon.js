@@ -36,12 +36,16 @@ export class AnaglyphUniversalCamera extends UniversalCamera {
     protected override _setRigMode = () => _SetStereoscopicAnaglyphRigMode(this);
 }
 
-let _registered = false;
-export function registerAnaglyphUniversalCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for anaglyphUniversalCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAnaglyphUniversalCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("AnaglyphUniversalCamera", (name, scene, options) => {
         return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, scene);

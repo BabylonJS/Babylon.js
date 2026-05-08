@@ -4,5 +4,5 @@
  */
 export * from "./updateSizeBlock.pure";
 
-import { registerUpdateSizeBlock } from "./updateSizeBlock.pure";
-registerUpdateSizeBlock();
+import { RegisterUpdateSizeBlock } from "./updateSizeBlock.pure";
+RegisterUpdateSizeBlock();

@@ -31,12 +31,16 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphSceneReadyEventBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphSceneReadyEventBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphSceneReadyEventBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.SceneReadyEvent, FlowGraphSceneReadyEventBlock);
 }

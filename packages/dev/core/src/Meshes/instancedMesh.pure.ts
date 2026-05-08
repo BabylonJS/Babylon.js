@@ -653,12 +653,16 @@ export class InstancedMesh extends AbstractMesh {
     }
 }
 
-let _registered = false;
-export function registerInstancedMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for instancedMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInstancedMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
         const instance = new InstancedMesh(name, mesh);

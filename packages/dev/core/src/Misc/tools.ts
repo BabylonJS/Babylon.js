@@ -4,5 +4,5 @@
  */
 export * from "./tools.pure";
 
-import { registerTools } from "./tools.pure";
-registerTools();
+import { RegisterTools } from "./tools.pure";
+RegisterTools();

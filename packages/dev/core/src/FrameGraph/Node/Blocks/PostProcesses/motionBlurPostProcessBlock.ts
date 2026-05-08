@@ -4,5 +4,5 @@
  */
 export * from "./motionBlurPostProcessBlock.pure";
 
-import { registerMotionBlurPostProcessBlock } from "./motionBlurPostProcessBlock.pure";
-registerMotionBlurPostProcessBlock();
+import { RegisterMotionBlurPostProcessBlock } from "./motionBlurPostProcessBlock.pure";
+RegisterMotionBlurPostProcessBlock();

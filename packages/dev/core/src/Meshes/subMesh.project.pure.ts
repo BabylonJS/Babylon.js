@@ -5,12 +5,16 @@ import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { IndicesArray } from "../types";
 import { SubMesh } from "./subMesh.pure";
 
-let _registered = false;
-export function registerSubMeshProject(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for subMeshProject.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSubMeshProject(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * @internal

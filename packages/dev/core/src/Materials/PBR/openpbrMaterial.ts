@@ -4,5 +4,5 @@
  */
 export * from "./openpbrMaterial.pure";
 
-import { registerOpenpbrMaterial } from "./openpbrMaterial.pure";
-registerOpenpbrMaterial();
+import { RegisterOpenpbrMaterial } from "./openpbrMaterial.pure";
+RegisterOpenpbrMaterial();

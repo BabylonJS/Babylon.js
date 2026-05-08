@@ -4,5 +4,5 @@
  */
 export * from "./collisionCoordinator.pure";
 
-import { registerCollisionCoordinator } from "./collisionCoordinator.pure";
-registerCollisionCoordinator();
+import { RegisterCollisionCoordinator } from "./collisionCoordinator.pure";
+RegisterCollisionCoordinator();

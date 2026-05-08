@@ -4,5 +4,5 @@
  */
 export * from "./clearCoatBlock.pure";
 
-import { registerClearCoatBlock } from "./clearCoatBlock.pure";
-registerClearCoatBlock();
+import { RegisterClearCoatBlock } from "./clearCoatBlock.pure";
+RegisterClearCoatBlock();

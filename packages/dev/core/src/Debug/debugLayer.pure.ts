@@ -441,12 +441,16 @@ export class DebugLayer {
     }
 }
 
-let _registered = false;
-export function registerDebugLayer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for debugLayer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDebugLayer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(Scene.prototype, "debugLayer", {
         get: function (this: Scene) {

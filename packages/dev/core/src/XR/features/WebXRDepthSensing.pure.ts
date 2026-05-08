@@ -706,12 +706,16 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXRDepthSensing(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRDepthSensing.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRDepthSensing(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(`BABYLON.DepthSensingMaterialPlugin`, WebXRDepthSensingMaterialPlugin);
 

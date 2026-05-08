@@ -4,5 +4,5 @@
  */
 export * from "./translationBlock.pure";
 
-import { registerTranslationBlock } from "./translationBlock.pure";
-registerTranslationBlock();
+import { RegisterTranslationBlock } from "./translationBlock.pure";
+RegisterTranslationBlock();

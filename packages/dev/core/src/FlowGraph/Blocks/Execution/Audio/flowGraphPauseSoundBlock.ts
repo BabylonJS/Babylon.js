@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPauseSoundBlock.pure";
 
-import { registerFlowGraphPauseSoundBlock } from "./flowGraphPauseSoundBlock.pure";
-registerFlowGraphPauseSoundBlock();
+import { RegisterFlowGraphPauseSoundBlock } from "./flowGraphPauseSoundBlock.pure";
+RegisterFlowGraphPauseSoundBlock();

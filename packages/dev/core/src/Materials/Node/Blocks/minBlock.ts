@@ -4,5 +4,5 @@
  */
 export * from "./minBlock.pure";
 
-import { registerMinBlock } from "./minBlock.pure";
-registerMinBlock();
+import { RegisterMinBlock } from "./minBlock.pure";
+RegisterMinBlock();

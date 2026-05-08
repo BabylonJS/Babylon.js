@@ -4,5 +4,5 @@
  */
 export * from "./reflectiveShadowMap.pure";
 
-import { registerReflectiveShadowMap } from "./reflectiveShadowMap.pure";
-registerReflectiveShadowMap();
+import { RegisterReflectiveShadowMap } from "./reflectiveShadowMap.pure";
+RegisterReflectiveShadowMap();

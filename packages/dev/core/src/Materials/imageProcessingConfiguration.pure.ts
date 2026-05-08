@@ -656,12 +656,16 @@ export class ImageProcessingConfiguration {
     }
 }
 
-let _registered = false;
-export function registerImageProcessingConfiguration(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for imageProcessingConfiguration.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterImageProcessingConfiguration(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // References the dependencies.
     SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfiguration.Parse;

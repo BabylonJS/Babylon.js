@@ -4,5 +4,5 @@
  */
 export * from "./pointListBlock.pure";
 
-import { registerPointListBlock } from "./pointListBlock.pure";
-registerPointListBlock();
+import { RegisterPointListBlock } from "./pointListBlock.pure";
+RegisterPointListBlock();

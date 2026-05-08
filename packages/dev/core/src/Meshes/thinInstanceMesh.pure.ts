@@ -7,12 +7,16 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import { Mesh } from "../Meshes/mesh.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
-let _registered = false;
-export function registerThinInstanceMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for thinInstanceMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterThinInstanceMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh.prototype.thinInstanceAdd = function (matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean = true): number {
         if (!this.getScene().getEngine().getCaps().instancedArrays) {

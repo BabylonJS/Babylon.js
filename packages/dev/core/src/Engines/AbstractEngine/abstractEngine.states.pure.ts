@@ -4,12 +4,16 @@ import { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { AbstractEngine } from "../abstractEngine.pure";
 
-let _registered = false;
-export function registerAbstractEngineStates(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineStates.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineStates(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.getInputElement = function (): Nullable<HTMLElement> {
         return this._renderingCanvas;

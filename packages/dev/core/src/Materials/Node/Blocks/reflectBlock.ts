@@ -4,5 +4,5 @@
  */
 export * from "./reflectBlock.pure";
 
-import { registerReflectBlock } from "./reflectBlock.pure";
-registerReflectBlock();
+import { RegisterReflectBlock } from "./reflectBlock.pure";
+RegisterReflectBlock();

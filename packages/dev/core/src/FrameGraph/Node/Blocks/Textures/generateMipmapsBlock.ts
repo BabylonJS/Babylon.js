@@ -4,5 +4,5 @@
  */
 export * from "./generateMipmapsBlock.pure";
 
-import { registerGenerateMipmapsBlock } from "./generateMipmapsBlock.pure";
-registerGenerateMipmapsBlock();
+import { RegisterGenerateMipmapsBlock } from "./generateMipmapsBlock.pure";
+RegisterGenerateMipmapsBlock();

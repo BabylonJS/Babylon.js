@@ -198,12 +198,16 @@ export class ParticleConditionBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleConditionBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleConditionBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleConditionBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleConditionBlock", ParticleConditionBlock);
 }

@@ -5,5 +5,5 @@ export * from "./abstractEngine.states.types";
  */
 export * from "./abstractEngine.states.pure";
 
-import { registerAbstractEngineStates } from "./abstractEngine.states.pure";
-registerAbstractEngineStates();
+import { RegisterAbstractEngineStates } from "./abstractEngine.states.pure";
+RegisterAbstractEngineStates();

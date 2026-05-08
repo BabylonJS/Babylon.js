@@ -1983,12 +1983,16 @@ export class StandardMaterial extends StandardMaterialBase {
     }
 }
 
-let _registered = false;
-export function registerStandardMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for standardMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterStandardMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 

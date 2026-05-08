@@ -274,12 +274,16 @@ export const BoxBuilder = {
     CreateBox,
 };
 
-let _registered = false;
-export function registerBoxBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for boxBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBoxBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Side effects
     VertexData.CreateBox = CreateBoxVertexData;

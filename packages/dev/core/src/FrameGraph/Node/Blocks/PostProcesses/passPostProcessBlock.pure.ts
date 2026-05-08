@@ -78,12 +78,16 @@ export class NodeRenderGraphPassCubePostProcessBlock extends NodeRenderGraphBase
     }
 }
 
-let _registered = false;
-export function registerPassPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for passPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPassPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphPassPostProcessBlock", NodeRenderGraphPassPostProcessBlock);
     RegisterClass("BABYLON.NodeRenderGraphPassCubePostProcessBlock", NodeRenderGraphPassCubePostProcessBlock);

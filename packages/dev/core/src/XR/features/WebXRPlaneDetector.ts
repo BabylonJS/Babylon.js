@@ -4,5 +4,5 @@
  */
 export * from "./WebXRPlaneDetector.pure";
 
-import { registerWebXRPlaneDetector } from "./WebXRPlaneDetector.pure";
-registerWebXRPlaneDetector();
+import { RegisterWebXRPlaneDetector } from "./WebXRPlaneDetector.pure";
+RegisterWebXRPlaneDetector();

@@ -93,12 +93,16 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphDataSwitchBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphDataSwitchBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphDataSwitchBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.DataSwitch, FlowGraphDataSwitchBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./abstractMesh.pure";
 
-import { registerAbstractMesh } from "./abstractMesh.pure";
-registerAbstractMesh();
+import { RegisterAbstractMesh } from "./abstractMesh.pure";
+RegisterAbstractMesh();

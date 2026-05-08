@@ -307,12 +307,16 @@ export class TrailMesh extends Mesh {
     }
 }
 
-let _registered = false;
-export function registerTrailMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for trailMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTrailMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._TrailMeshParser = (parsedMesh: any, scene: Scene) => {
         return TrailMesh.Parse(parsedMesh, scene);

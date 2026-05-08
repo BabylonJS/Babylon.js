@@ -4,5 +4,5 @@
  */
 export * from "./intFloatConverterBlock.pure";
 
-import { registerIntFloatConverterBlock } from "./intFloatConverterBlock.pure";
-registerIntFloatConverterBlock();
+import { RegisterIntFloatConverterBlock } from "./intFloatConverterBlock.pure";
+RegisterIntFloatConverterBlock();

@@ -317,12 +317,16 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFrameGraphNodeBlocksInputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for frameGraphNodeBlocksInputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFrameGraphNodeBlocksInputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphInputBlock", NodeRenderGraphInputBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./resourceContainerBlock.pure";
 
-import { registerResourceContainerBlock } from "./resourceContainerBlock.pure";
-registerResourceContainerBlock();
+import { RegisterResourceContainerBlock } from "./resourceContainerBlock.pure";
+RegisterResourceContainerBlock();

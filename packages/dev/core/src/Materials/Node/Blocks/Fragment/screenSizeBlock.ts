@@ -4,5 +4,5 @@
  */
 export * from "./screenSizeBlock.pure";
 
-import { registerScreenSizeBlock } from "./screenSizeBlock.pure";
-registerScreenSizeBlock();
+import { RegisterScreenSizeBlock } from "./screenSizeBlock.pure";
+RegisterScreenSizeBlock();

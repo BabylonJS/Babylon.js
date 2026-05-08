@@ -355,12 +355,16 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     }
 }
 
-let _registered = false;
-export function registerWebgl2ParticleSystem(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webgl2ParticleSystem.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebgl2ParticleSystem(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.WebGL2ParticleSystem", WebGL2ParticleSystem);
 }

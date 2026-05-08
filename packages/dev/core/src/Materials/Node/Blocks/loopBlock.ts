@@ -4,5 +4,5 @@
  */
 export * from "./loopBlock.pure";
 
-import { registerLoopBlock } from "./loopBlock.pure";
-registerLoopBlock();
+import { RegisterLoopBlock } from "./loopBlock.pure";
+RegisterLoopBlock();

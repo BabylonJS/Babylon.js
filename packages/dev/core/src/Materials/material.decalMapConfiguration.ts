@@ -4,5 +4,5 @@
  */
 export * from "./material.decalMapConfiguration.pure";
 
-import { registerMaterialDecalMapConfiguration } from "./material.decalMapConfiguration.pure";
-registerMaterialDecalMapConfiguration();
+import { RegisterMaterialDecalMapConfiguration } from "./material.decalMapConfiguration.pure";
+RegisterMaterialDecalMapConfiguration();

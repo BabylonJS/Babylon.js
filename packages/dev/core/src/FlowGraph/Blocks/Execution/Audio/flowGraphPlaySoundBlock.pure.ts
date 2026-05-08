@@ -72,12 +72,16 @@ export class FlowGraphPlaySoundBlock extends FlowGraphExecutionBlockWithOutSigna
     }
 }
 
-let _registered = false;
-export function registerFlowGraphPlaySoundBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphPlaySoundBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphPlaySoundBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.AudioPlaySound, FlowGraphPlaySoundBlock);
 }

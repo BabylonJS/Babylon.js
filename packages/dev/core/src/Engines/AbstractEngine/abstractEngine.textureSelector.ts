@@ -5,5 +5,5 @@ export * from "./abstractEngine.textureSelector.types";
  */
 export * from "./abstractEngine.textureSelector.pure";
 
-import { registerAbstractEngineTextureSelector } from "./abstractEngine.textureSelector.pure";
-registerAbstractEngineTextureSelector();
+import { RegisterAbstractEngineTextureSelector } from "./abstractEngine.textureSelector.pure";
+RegisterAbstractEngineTextureSelector();

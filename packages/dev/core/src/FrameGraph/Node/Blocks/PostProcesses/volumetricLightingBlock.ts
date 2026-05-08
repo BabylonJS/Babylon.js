@@ -4,5 +4,5 @@
  */
 export * from "./volumetricLightingBlock.pure";
 
-import { registerVolumetricLightingBlock } from "./volumetricLightingBlock.pure";
-registerVolumetricLightingBlock();
+import { RegisterVolumetricLightingBlock } from "./volumetricLightingBlock.pure";
+RegisterVolumetricLightingBlock();

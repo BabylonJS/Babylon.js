@@ -100,12 +100,16 @@ export class GeometryReplaceColorBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryReplaceColorBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryReplaceColorBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryReplaceColorBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryReplaceColorBlock", GeometryReplaceColorBlock);
 }

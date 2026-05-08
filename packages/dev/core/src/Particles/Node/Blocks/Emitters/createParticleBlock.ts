@@ -4,5 +4,5 @@
  */
 export * from "./createParticleBlock.pure";
 
-import { registerCreateParticleBlock } from "./createParticleBlock.pure";
-registerCreateParticleBlock();
+import { RegisterCreateParticleBlock } from "./createParticleBlock.pure";
+RegisterCreateParticleBlock();

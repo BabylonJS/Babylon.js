@@ -4,5 +4,5 @@
  */
 export * from "./standardMaterial.pure";
 
-import { registerStandardMaterial } from "./standardMaterial.pure";
-registerStandardMaterial();
+import { RegisterStandardMaterial } from "./standardMaterial.pure";
+RegisterStandardMaterial();

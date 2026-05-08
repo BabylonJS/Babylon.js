@@ -4,5 +4,5 @@
  */
 export * from "./ssrRenderingPipeline.pure";
 
-import { registerSsrRenderingPipeline } from "./ssrRenderingPipeline.pure";
-registerSsrRenderingPipeline();
+import { RegisterSsrRenderingPipeline } from "./ssrRenderingPipeline.pure";
+RegisterSsrRenderingPipeline();

@@ -4,5 +4,5 @@
  */
 export * from "./gaussianSplattingSolidColorMaterialPlugin.pure";
 
-import { registerGaussianSplattingSolidColorMaterialPlugin } from "./gaussianSplattingSolidColorMaterialPlugin.pure";
-registerGaussianSplattingSolidColorMaterialPlugin();
+import { RegisterGaussianSplattingSolidColorMaterialPlugin } from "./gaussianSplattingSolidColorMaterialPlugin.pure";
+RegisterGaussianSplattingSolidColorMaterialPlugin();

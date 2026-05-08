@@ -4,5 +4,5 @@
  */
 export * from "./discBuilder.pure";
 
-import { registerDiscBuilder } from "./discBuilder.pure";
-registerDiscBuilder();
+import { RegisterDiscBuilder } from "./discBuilder.pure";
+RegisterDiscBuilder();

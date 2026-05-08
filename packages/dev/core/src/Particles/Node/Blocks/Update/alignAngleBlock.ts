@@ -4,5 +4,5 @@
  */
 export * from "./alignAngleBlock.pure";
 
-import { registerAlignAngleBlock } from "./alignAngleBlock.pure";
-registerAlignAngleBlock();
+import { RegisterAlignAngleBlock } from "./alignAngleBlock.pure";
+RegisterAlignAngleBlock();

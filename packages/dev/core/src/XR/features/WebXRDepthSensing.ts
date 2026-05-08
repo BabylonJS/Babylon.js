@@ -4,5 +4,5 @@
  */
 export * from "./WebXRDepthSensing.pure";
 
-import { registerWebXRDepthSensing } from "./WebXRDepthSensing.pure";
-registerWebXRDepthSensing();
+import { RegisterWebXRDepthSensing } from "./WebXRDepthSensing.pure";
+RegisterWebXRDepthSensing();

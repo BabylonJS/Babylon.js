@@ -4,5 +4,5 @@
  */
 export * from "./anaglyphUniversalCamera.pure";
 
-import { registerAnaglyphUniversalCamera } from "./anaglyphUniversalCamera.pure";
-registerAnaglyphUniversalCamera();
+import { RegisterAnaglyphUniversalCamera } from "./anaglyphUniversalCamera.pure";
+RegisterAnaglyphUniversalCamera();

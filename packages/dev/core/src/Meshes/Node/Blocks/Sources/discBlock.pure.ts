@@ -134,12 +134,16 @@ export class DiscBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerDiscBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for discBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDiscBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DiscBlock", DiscBlock);
 }

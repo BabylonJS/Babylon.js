@@ -67,12 +67,16 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphArrayIndexBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphArrayIndexBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphArrayIndexBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.ArrayIndex, FlowGraphArrayIndexBlock);
 }

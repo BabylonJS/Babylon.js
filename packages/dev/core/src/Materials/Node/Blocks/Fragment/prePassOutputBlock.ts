@@ -4,5 +4,5 @@
  */
 export * from "./prePassOutputBlock.pure";
 
-import { registerPrePassOutputBlock } from "./prePassOutputBlock.pure";
-registerPrePassOutputBlock();
+import { RegisterPrePassOutputBlock } from "./prePassOutputBlock.pure";
+RegisterPrePassOutputBlock();

@@ -1,11 +1,15 @@
 import { CoroutineStep, inlineScheduler, AsyncCoroutine, CoroutineScheduler, runCoroutineAsync } from "./coroutine";
 import { Observable } from "./observable.pure";
-let _registered = false;
-export function registerObservableCoroutine(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for observableCoroutine.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterObservableCoroutine(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     function CreateObservableScheduler<T>(observable: Observable<any>): { scheduler: CoroutineScheduler<T>; dispose: () => void } {
         const coroutines = new Array<AsyncCoroutine<T>>();

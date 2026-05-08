@@ -1017,12 +1017,16 @@ export class LineEdgesRenderer extends EdgesRenderer {
     }
 }
 
-let _registered = false;
-export function registerEdgesRenderer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for edgesRenderer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEdgesRenderer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractMesh.prototype.disableEdgesRendering = function (): AbstractMesh {
         if (this._edgesRenderer) {

@@ -601,12 +601,16 @@ export class CubeTexture extends BaseTexture {
     }
 }
 
-let _registered = false;
-export function registerCubeTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for cubeTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCubeTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Texture._CubeTextureParser = CubeTexture.Parse;
 

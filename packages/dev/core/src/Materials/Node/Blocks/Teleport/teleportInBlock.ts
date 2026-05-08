@@ -4,5 +4,5 @@
  */
 export * from "./teleportInBlock.pure";
 
-import { registerMaterialsNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
-registerMaterialsNodeBlocksTeleportTeleportInBlock();
+import { RegisterMaterialsNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
+RegisterMaterialsNodeBlocksTeleportTeleportInBlock();

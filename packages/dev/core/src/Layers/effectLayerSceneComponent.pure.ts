@@ -227,12 +227,16 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 }
 
-let _registered = false;
-export function registerEffectLayerSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for effectLayerSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEffectLayerSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Adds the parser to the scene parsers.
     AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

@@ -4,5 +4,5 @@
  */
 export * from "./shadowMapBlock.pure";
 
-import { registerShadowMapBlock } from "./shadowMapBlock.pure";
-registerShadowMapBlock();
+import { RegisterShadowMapBlock } from "./shadowMapBlock.pure";
+RegisterShadowMapBlock();

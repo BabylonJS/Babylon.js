@@ -278,12 +278,16 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
     },
 };
 
-let _registered = false;
-export function registerWebXROculusTouchMotionController(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXROculusTouchMotionController.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXROculusTouchMotionController(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // register the profile
     WebXRMotionControllerManager.RegisterController("oculus-touch", (xrInput: XRInputSource, scene: Scene) => {

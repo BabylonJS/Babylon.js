@@ -4,5 +4,5 @@
  */
 export * from "./pbrSpecularGlossinessMaterial.pure";
 
-import { registerPbrSpecularGlossinessMaterial } from "./pbrSpecularGlossinessMaterial.pure";
-registerPbrSpecularGlossinessMaterial();
+import { RegisterPbrSpecularGlossinessMaterial } from "./pbrSpecularGlossinessMaterial.pure";
+RegisterPbrSpecularGlossinessMaterial();

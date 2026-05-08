@@ -229,12 +229,16 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
     }
 }
 
-let _registered = false;
-export function registerLatticeBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for latticeBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterLatticeBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.LatticeBlock", LatticeBlock);
 }

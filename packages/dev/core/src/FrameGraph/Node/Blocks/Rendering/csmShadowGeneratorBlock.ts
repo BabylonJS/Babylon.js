@@ -4,5 +4,5 @@
  */
 export * from "./csmShadowGeneratorBlock.pure";
 
-import { registerCsmShadowGeneratorBlock } from "./csmShadowGeneratorBlock.pure";
-registerCsmShadowGeneratorBlock();
+import { RegisterCsmShadowGeneratorBlock } from "./csmShadowGeneratorBlock.pure";
+RegisterCsmShadowGeneratorBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./giRSMManager.pure";
 
-import { registerGiRSMManager } from "./giRSMManager.pure";
-registerGiRSMManager();
+import { RegisterGiRSMManager } from "./giRSMManager.pure";
+RegisterGiRSMManager();

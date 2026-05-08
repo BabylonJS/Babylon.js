@@ -4,5 +4,5 @@
  */
 export * from "./reciprocalBlock.pure";
 
-import { registerReciprocalBlock } from "./reciprocalBlock.pure";
-registerReciprocalBlock();
+import { RegisterReciprocalBlock } from "./reciprocalBlock.pure";
+RegisterReciprocalBlock();

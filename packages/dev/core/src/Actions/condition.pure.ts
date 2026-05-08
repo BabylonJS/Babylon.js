@@ -290,12 +290,16 @@ export class StateCondition extends Condition {
     }
 }
 
-let _registered = false;
-export function registerCondition(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for condition.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCondition(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ValueCondition", ValueCondition);
     RegisterClass("BABYLON.PredicateCondition", PredicateCondition);

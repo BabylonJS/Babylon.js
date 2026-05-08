@@ -4,5 +4,5 @@
  */
 export * from "./worleyNoise3DBlock.pure";
 
-import { registerWorleyNoise3DBlock } from "./worleyNoise3DBlock.pure";
-registerWorleyNoise3DBlock();
+import { RegisterWorleyNoise3DBlock } from "./worleyNoise3DBlock.pure";
+RegisterWorleyNoise3DBlock();

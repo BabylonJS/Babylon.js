@@ -4,5 +4,5 @@
  */
 export * from "./validatedNativeDataStream.pure";
 
-import { registerValidatedNativeDataStream } from "./validatedNativeDataStream.pure";
-registerValidatedNativeDataStream();
+import { RegisterValidatedNativeDataStream } from "./validatedNativeDataStream.pure";
+RegisterValidatedNativeDataStream();

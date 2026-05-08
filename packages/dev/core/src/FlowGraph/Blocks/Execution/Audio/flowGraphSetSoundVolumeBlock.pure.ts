@@ -58,12 +58,16 @@ export class FlowGraphSetSoundVolumeBlock extends FlowGraphExecutionBlockWithOut
     }
 }
 
-let _registered = false;
-export function registerFlowGraphSetSoundVolumeBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphSetSoundVolumeBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphSetSoundVolumeBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.AudioSetVolume, FlowGraphSetSoundVolumeBlock);
 }

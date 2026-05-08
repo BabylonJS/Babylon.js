@@ -100,12 +100,16 @@ export class NodeRenderGraphComputeShaderBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerComputeShaderBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for computeShaderBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterComputeShaderBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphComputeShaderBlock", NodeRenderGraphComputeShaderBlock);
 }

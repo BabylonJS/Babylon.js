@@ -396,12 +396,16 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     }
 }
 
-let _registered = false;
-export function registerGreasedLineMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for greasedLineMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGreasedLineMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         return GreasedLineMesh.Parse(parsedMesh, scene);

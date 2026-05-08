@@ -353,12 +353,16 @@ export class MirrorTexture extends RenderTargetTexture {
     }
 }
 
-let _registered = false;
-export function registerMirrorTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for mirrorTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMirrorTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Texture._CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
         return new MirrorTexture(name, renderTargetSize, scene, generateMipMaps);

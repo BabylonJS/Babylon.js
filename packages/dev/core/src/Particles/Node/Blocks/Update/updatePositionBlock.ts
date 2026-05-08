@@ -4,5 +4,5 @@
  */
 export * from "./updatePositionBlock.pure";
 
-import { registerUpdatePositionBlock } from "./updatePositionBlock.pure";
-registerUpdatePositionBlock();
+import { RegisterUpdatePositionBlock } from "./updatePositionBlock.pure";
+RegisterUpdatePositionBlock();

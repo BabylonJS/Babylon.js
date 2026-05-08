@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphReceiveCustomEventBlock.pure";
 
-import { registerFlowGraphReceiveCustomEventBlock } from "./flowGraphReceiveCustomEventBlock.pure";
-registerFlowGraphReceiveCustomEventBlock();
+import { RegisterFlowGraphReceiveCustomEventBlock } from "./flowGraphReceiveCustomEventBlock.pure";
+RegisterFlowGraphReceiveCustomEventBlock();

@@ -70,12 +70,16 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerMatrixComposeBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for matrixComposeBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMatrixComposeBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.MatrixComposeBlock", MatrixComposeBlock);
 }

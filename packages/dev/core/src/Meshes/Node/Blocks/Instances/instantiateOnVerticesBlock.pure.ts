@@ -297,12 +297,16 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 }
 
-let _registered = false;
-export function registerInstantiateOnVerticesBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for instantiateOnVerticesBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInstantiateOnVerticesBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.InstantiateOnVerticesBlock", InstantiateOnVerticesBlock);
 }

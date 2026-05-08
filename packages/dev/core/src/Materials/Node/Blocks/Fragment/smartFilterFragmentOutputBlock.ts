@@ -4,5 +4,5 @@
  */
 export * from "./smartFilterFragmentOutputBlock.pure";
 
-import { registerSmartFilterFragmentOutputBlock } from "./smartFilterFragmentOutputBlock.pure";
-registerSmartFilterFragmentOutputBlock();
+import { RegisterSmartFilterFragmentOutputBlock } from "./smartFilterFragmentOutputBlock.pure";
+RegisterSmartFilterFragmentOutputBlock();

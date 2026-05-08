@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphDoNBlock.pure";
 
-import { registerFlowGraphDoNBlock } from "./flowGraphDoNBlock.pure";
-registerFlowGraphDoNBlock();
+import { RegisterFlowGraphDoNBlock } from "./flowGraphDoNBlock.pure";
+RegisterFlowGraphDoNBlock();

@@ -117,12 +117,16 @@ export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphEx
     }
 }
 
-let _registered = false;
-export function registerFlowGraphSwitchBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphSwitchBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphSwitchBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.Switch, FlowGraphSwitchBlock);
 }

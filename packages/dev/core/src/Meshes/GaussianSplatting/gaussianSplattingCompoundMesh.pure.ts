@@ -89,12 +89,16 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
     }
 }
 
-let _registered = false;
-export function registerGaussianSplattingCompoundMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for gaussianSplattingCompoundMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGaussianSplattingCompoundMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._GaussianSplattingCompoundMeshParser = GaussianSplattingCompoundMesh.Parse;
 }

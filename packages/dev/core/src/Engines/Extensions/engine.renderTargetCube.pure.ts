@@ -8,12 +8,16 @@ import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineRenderTargetCube(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineRenderTargetCube.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineRenderTargetCube(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as WebGLRenderTargetWrapper;

@@ -4,5 +4,5 @@
  */
 export * from "./ssao2RenderingPipeline.pure";
 
-import { registerSsao2RenderingPipeline } from "./ssao2RenderingPipeline.pure";
-registerSsao2RenderingPipeline();
+import { RegisterSsao2RenderingPipeline } from "./ssao2RenderingPipeline.pure";
+RegisterSsao2RenderingPipeline();

@@ -4,5 +4,5 @@
  */
 export * from "./WebXRControllerPhysics.pure";
 
-import { registerWebXRControllerPhysics } from "./WebXRControllerPhysics.pure";
-registerWebXRControllerPhysics();
+import { RegisterWebXRControllerPhysics } from "./WebXRControllerPhysics.pure";
+RegisterWebXRControllerPhysics();

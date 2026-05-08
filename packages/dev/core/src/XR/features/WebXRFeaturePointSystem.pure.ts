@@ -163,12 +163,16 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXRFeaturePointSystem(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRFeaturePointSystem.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRFeaturePointSystem(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

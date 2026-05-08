@@ -134,12 +134,16 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerColorSplitterBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for colorSplitterBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterColorSplitterBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ColorSplitterBlock", ColorSplitterBlock);
 }

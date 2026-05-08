@@ -4,5 +4,5 @@
  */
 export * from "./teleportInBlock.pure";
 
-import { registerMeshesNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
-registerMeshesNodeBlocksTeleportTeleportInBlock();
+import { RegisterMeshesNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
+RegisterMeshesNodeBlocksTeleportTeleportInBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./sharpenPostProcessBlock.pure";
 
-import { registerSharpenPostProcessBlock } from "./sharpenPostProcessBlock.pure";
-registerSharpenPostProcessBlock();
+import { RegisterSharpenPostProcessBlock } from "./sharpenPostProcessBlock.pure";
+RegisterSharpenPostProcessBlock();

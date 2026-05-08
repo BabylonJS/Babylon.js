@@ -5,12 +5,16 @@ import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { ImageSource, Nullable } from "../../types";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineDynamicTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineDynamicTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineDynamicTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Dynamic);

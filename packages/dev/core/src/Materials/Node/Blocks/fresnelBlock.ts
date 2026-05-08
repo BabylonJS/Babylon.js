@@ -4,5 +4,5 @@
  */
 export * from "./fresnelBlock.pure";
 
-import { registerFresnelBlock } from "./fresnelBlock.pure";
-registerFresnelBlock();
+import { RegisterFresnelBlock } from "./fresnelBlock.pure";
+RegisterFresnelBlock();

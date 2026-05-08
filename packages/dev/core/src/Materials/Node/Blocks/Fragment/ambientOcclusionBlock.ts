@@ -4,5 +4,5 @@
  */
 export * from "./ambientOcclusionBlock.pure";
 
-import { registerAmbientOcclusionBlock } from "./ambientOcclusionBlock.pure";
-registerAmbientOcclusionBlock();
+import { RegisterAmbientOcclusionBlock } from "./ambientOcclusionBlock.pure";
+RegisterAmbientOcclusionBlock();

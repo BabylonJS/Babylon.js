@@ -83,12 +83,16 @@ export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseW
     }
 }
 
-let _registered = false;
-export function registerSharpenPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for sharpenPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSharpenPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphSharpenPostProcessBlock", NodeRenderGraphSharpenPostProcessBlock);
 }

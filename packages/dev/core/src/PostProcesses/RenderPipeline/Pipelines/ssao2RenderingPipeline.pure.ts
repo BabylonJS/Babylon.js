@@ -620,12 +620,16 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 }
 
-let _registered = false;
-export function registerSsao2RenderingPipeline(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for ssao2RenderingPipeline.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSsao2RenderingPipeline(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.SSAO2RenderingPipeline", SSAO2RenderingPipeline);
 }

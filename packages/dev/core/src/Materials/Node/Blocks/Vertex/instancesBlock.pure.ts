@@ -218,12 +218,16 @@ export class InstancesBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerInstancesBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for instancesBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInstancesBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.InstancesBlock", InstancesBlock);
 }

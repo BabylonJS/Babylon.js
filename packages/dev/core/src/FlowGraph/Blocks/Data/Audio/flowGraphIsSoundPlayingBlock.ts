@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphIsSoundPlayingBlock.pure";
 
-import { registerFlowGraphIsSoundPlayingBlock } from "./flowGraphIsSoundPlayingBlock.pure";
-registerFlowGraphIsSoundPlayingBlock();
+import { RegisterFlowGraphIsSoundPlayingBlock } from "./flowGraphIsSoundPlayingBlock.pure";
+RegisterFlowGraphIsSoundPlayingBlock();

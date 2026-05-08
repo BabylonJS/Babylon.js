@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSoundEndedEventBlock.pure";
 
-import { registerFlowGraphSoundEndedEventBlock } from "./flowGraphSoundEndedEventBlock.pure";
-registerFlowGraphSoundEndedEventBlock();
+import { RegisterFlowGraphSoundEndedEventBlock } from "./flowGraphSoundEndedEventBlock.pure";
+RegisterFlowGraphSoundEndedEventBlock();

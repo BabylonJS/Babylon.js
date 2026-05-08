@@ -5,5 +5,5 @@ export * from "./glowLayer.types";
  */
 export * from "./glowLayer.pure";
 
-import { registerGlowLayer } from "./glowLayer.pure";
-registerGlowLayer();
+import { RegisterGlowLayer } from "./glowLayer.pure";
+RegisterGlowLayer();

@@ -4,5 +4,5 @@
  */
 export * from "./sharpenPostProcess.pure";
 
-import { registerSharpenPostProcess } from "./sharpenPostProcess.pure";
-registerSharpenPostProcess();
+import { RegisterSharpenPostProcess } from "./sharpenPostProcess.pure";
+RegisterSharpenPostProcess();

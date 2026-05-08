@@ -5,5 +5,5 @@ export * from "./engine.uniformBuffer.types";
  */
 export * from "./engine.uniformBuffer.pure";
 
-import { registerEngineUniformBuffer } from "./engine.uniformBuffer.pure";
-registerEngineUniformBuffer();
+import { RegisterEngineUniformBuffer } from "./engine.uniformBuffer.pure";
+RegisterEngineUniformBuffer();

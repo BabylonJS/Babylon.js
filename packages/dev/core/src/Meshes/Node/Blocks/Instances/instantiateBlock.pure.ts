@@ -156,12 +156,16 @@ export class InstantiateBlock extends InstantiateBaseBlock {
     }
 }
 
-let _registered = false;
-export function registerInstantiateBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for instantiateBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInstantiateBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.InstantiateBlock", InstantiateBlock);
 }

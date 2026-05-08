@@ -4,5 +4,5 @@
  */
 export * from "./selectionOutlineLayerBlock.pure";
 
-import { registerSelectionOutlineLayerBlock } from "./selectionOutlineLayerBlock.pure";
-registerSelectionOutlineLayerBlock();
+import { RegisterSelectionOutlineLayerBlock } from "./selectionOutlineLayerBlock.pure";
+RegisterSelectionOutlineLayerBlock();

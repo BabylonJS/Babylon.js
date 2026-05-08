@@ -4,5 +4,5 @@
  */
 export * from "./setColorsBlock.pure";
 
-import { registerSetColorsBlock } from "./setColorsBlock.pure";
-registerSetColorsBlock();
+import { RegisterSetColorsBlock } from "./setColorsBlock.pure";
+RegisterSetColorsBlock();

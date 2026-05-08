@@ -4,5 +4,5 @@
  */
 export * from "./WebXRAnchorSystem.pure";
 
-import { registerWebXRAnchorSystem } from "./WebXRAnchorSystem.pure";
-registerWebXRAnchorSystem();
+import { RegisterWebXRAnchorSystem } from "./WebXRAnchorSystem.pure";
+RegisterWebXRAnchorSystem();

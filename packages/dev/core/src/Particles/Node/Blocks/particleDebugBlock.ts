@@ -4,5 +4,5 @@
  */
 export * from "./particleDebugBlock.pure";
 
-import { registerParticleDebugBlock } from "./particleDebugBlock.pure";
-registerParticleDebugBlock();
+import { RegisterParticleDebugBlock } from "./particleDebugBlock.pure";
+RegisterParticleDebugBlock();

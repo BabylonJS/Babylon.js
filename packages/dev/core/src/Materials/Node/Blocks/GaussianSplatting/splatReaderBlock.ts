@@ -4,5 +4,5 @@
  */
 export * from "./splatReaderBlock.pure";
 
-import { registerSplatReaderBlock } from "./splatReaderBlock.pure";
-registerSplatReaderBlock();
+import { RegisterSplatReaderBlock } from "./splatReaderBlock.pure";
+RegisterSplatReaderBlock();

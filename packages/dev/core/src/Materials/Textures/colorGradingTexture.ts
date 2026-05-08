@@ -4,5 +4,5 @@
  */
 export * from "./colorGradingTexture.pure";
 
-import { registerColorGradingTexture } from "./colorGradingTexture.pure";
-registerColorGradingTexture();
+import { RegisterColorGradingTexture } from "./colorGradingTexture.pure";
+RegisterColorGradingTexture();

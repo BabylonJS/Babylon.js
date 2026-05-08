@@ -4,5 +4,5 @@
  */
 export * from "./updateNoiseBlock.pure";
 
-import { registerUpdateNoiseBlock } from "./updateNoiseBlock.pure";
-registerUpdateNoiseBlock();
+import { RegisterUpdateNoiseBlock } from "./updateNoiseBlock.pure";
+RegisterUpdateNoiseBlock();

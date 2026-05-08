@@ -4,5 +4,5 @@
  */
 export * from "./gaussianSplattingPartProxyMesh.pure";
 
-import { registerGaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
-registerGaussianSplattingPartProxyMesh();
+import { RegisterGaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
+RegisterGaussianSplattingPartProxyMesh();

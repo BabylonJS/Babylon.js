@@ -4,5 +4,5 @@
  */
 export * from "./geometryDotBlock.pure";
 
-import { registerGeometryDotBlock } from "./geometryDotBlock.pure";
-registerGeometryDotBlock();
+import { RegisterGeometryDotBlock } from "./geometryDotBlock.pure";
+RegisterGeometryDotBlock();

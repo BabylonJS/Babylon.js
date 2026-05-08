@@ -4,5 +4,5 @@
  */
 export * from "./setTangentsBlock.pure";
 
-import { registerSetTangentsBlock } from "./setTangentsBlock.pure";
-registerSetTangentsBlock();
+import { RegisterSetTangentsBlock } from "./setTangentsBlock.pure";
+RegisterSetTangentsBlock();

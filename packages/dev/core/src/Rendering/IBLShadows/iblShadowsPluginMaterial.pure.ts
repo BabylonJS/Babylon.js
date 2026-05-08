@@ -314,12 +314,16 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     }
 }
 
-let _registered = false;
-export function registerIblShadowsPluginMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for iblShadowsPluginMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterIblShadowsPluginMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(`BABYLON.IBLShadowsPluginMaterial`, IBLShadowsPluginMaterial);
 }

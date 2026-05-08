@@ -5,5 +5,5 @@ export * from "./sceneHelpers.types";
  */
 export * from "./sceneHelpers.pure";
 
-import { registerSceneHelpers } from "./sceneHelpers.pure";
-registerSceneHelpers();
+import { RegisterSceneHelpers } from "./sceneHelpers.pure";
+RegisterSceneHelpers();

@@ -4,5 +4,5 @@
  */
 export * from "./updateSpriteCellIndexBlock.pure";
 
-import { registerUpdateSpriteCellIndexBlock } from "./updateSpriteCellIndexBlock.pure";
-registerUpdateSpriteCellIndexBlock();
+import { RegisterUpdateSpriteCellIndexBlock } from "./updateSpriteCellIndexBlock.pure";
+RegisterUpdateSpriteCellIndexBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphStopSoundBlock.pure";
 
-import { registerFlowGraphStopSoundBlock } from "./flowGraphStopSoundBlock.pure";
-registerFlowGraphStopSoundBlock();
+import { RegisterFlowGraphStopSoundBlock } from "./flowGraphStopSoundBlock.pure";
+RegisterFlowGraphStopSoundBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphMeshPickEventBlock.pure";
 
-import { registerFlowGraphMeshPickEventBlock } from "./flowGraphMeshPickEventBlock.pure";
-registerFlowGraphMeshPickEventBlock();
+import { RegisterFlowGraphMeshPickEventBlock } from "./flowGraphMeshPickEventBlock.pure";
+RegisterFlowGraphMeshPickEventBlock();

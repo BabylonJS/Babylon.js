@@ -4,5 +4,5 @@
  */
 export * from "./colorCorrectionPostProcessBlock.pure";
 
-import { registerColorCorrectionPostProcessBlock } from "./colorCorrectionPostProcessBlock.pure";
-registerColorCorrectionPostProcessBlock();
+import { RegisterColorCorrectionPostProcessBlock } from "./colorCorrectionPostProcessBlock.pure";
+RegisterColorCorrectionPostProcessBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./particleTeleportInBlock.pure";
 
-import { registerParticleTeleportInBlock } from "./particleTeleportInBlock.pure";
-registerParticleTeleportInBlock();
+import { RegisterParticleTeleportInBlock } from "./particleTeleportInBlock.pure";
+RegisterParticleTeleportInBlock();

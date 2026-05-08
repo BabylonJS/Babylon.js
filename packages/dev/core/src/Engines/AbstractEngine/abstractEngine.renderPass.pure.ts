@@ -1,12 +1,16 @@
 import { AbstractEngine } from "../abstractEngine.pure";
 /** This file must only contain pure code and pure imports */
 
-let _registered = false;
-export function registerAbstractEngineRenderPass(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineRenderPass.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineRenderPass(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.getRenderPassNames = function (): string[] {
         return this._renderPassNames;

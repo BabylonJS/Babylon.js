@@ -4,5 +4,5 @@
  */
 export * from "./cubeTexture.pure";
 
-import { registerCubeTexture } from "./cubeTexture.pure";
-registerCubeTexture();
+import { RegisterCubeTexture } from "./cubeTexture.pure";
+RegisterCubeTexture();

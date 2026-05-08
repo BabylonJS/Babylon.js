@@ -7,12 +7,16 @@ import { PhysicsImpostor } from "./physicsImpostor.pure";
 import { PhysicsJoint } from "./physicsJoint";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 
-let _registered = false;
-export function registerPhysicsV1PhysicsEngineComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for physicsV1PhysicsEngineComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPhysicsV1PhysicsEngineComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
         get: function (this: AbstractMesh) {

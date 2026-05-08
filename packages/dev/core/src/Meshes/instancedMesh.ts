@@ -5,5 +5,5 @@ export * from "./instancedMesh.types";
  */
 export * from "./instancedMesh.pure";
 
-import { registerInstancedMesh } from "./instancedMesh.pure";
-registerInstancedMesh();
+import { RegisterInstancedMesh } from "./instancedMesh.pure";
+RegisterInstancedMesh();

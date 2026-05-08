@@ -4,5 +4,5 @@
  */
 export * from "./depthOfFieldPostProcessBlock.pure";
 
-import { registerDepthOfFieldPostProcessBlock } from "./depthOfFieldPostProcessBlock.pure";
-registerDepthOfFieldPostProcessBlock();
+import { RegisterDepthOfFieldPostProcessBlock } from "./depthOfFieldPostProcessBlock.pure";
+RegisterDepthOfFieldPostProcessBlock();

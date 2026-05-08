@@ -109,12 +109,16 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     }
 }
 
-let _registered = false;
-export function registerFlowGraphGetPropertyBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphGetPropertyBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphGetPropertyBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.GetProperty, FlowGraphGetPropertyBlock);
 }

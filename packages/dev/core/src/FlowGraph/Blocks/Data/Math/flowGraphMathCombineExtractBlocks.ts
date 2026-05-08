@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphMathCombineExtractBlocks.pure";
 
-import { registerFlowGraphMathCombineExtractBlocks } from "./flowGraphMathCombineExtractBlocks.pure";
-registerFlowGraphMathCombineExtractBlocks();
+import { RegisterFlowGraphMathCombineExtractBlocks } from "./flowGraphMathCombineExtractBlocks.pure";
+RegisterFlowGraphMathCombineExtractBlocks();

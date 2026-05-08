@@ -57,12 +57,16 @@ export class ValidatedNativeDataStream extends NativeDataStream {
     }
 }
 
-let _registered = false;
-export function registerValidatedNativeDataStream(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for validatedNativeDataStream.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterValidatedNativeDataStream(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinNativeEngine._createNativeDataStream = function () {
         if (_native.NativeDataStream.VALIDATION_ENABLED) {

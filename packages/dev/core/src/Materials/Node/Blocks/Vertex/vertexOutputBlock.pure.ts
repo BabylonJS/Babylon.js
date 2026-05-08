@@ -82,12 +82,16 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerVertexOutputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for vertexOutputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVertexOutputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.VertexOutputBlock", VertexOutputBlock);
 }

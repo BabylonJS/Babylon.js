@@ -4,5 +4,5 @@
  */
 export * from "./geometryRendererBlock.pure";
 
-import { registerGeometryRendererBlock } from "./geometryRendererBlock.pure";
-registerGeometryRendererBlock();
+import { RegisterGeometryRendererBlock } from "./geometryRendererBlock.pure";
+RegisterGeometryRendererBlock();

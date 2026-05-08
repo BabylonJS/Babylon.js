@@ -4,5 +4,5 @@
  */
 export * from "./inputBlock.pure";
 
-import { registerMaterialsNodeBlocksInputInputBlock } from "./inputBlock.pure";
-registerMaterialsNodeBlocksInputInputBlock();
+import { RegisterMaterialsNodeBlocksInputInputBlock } from "./inputBlock.pure";
+RegisterMaterialsNodeBlocksInputInputBlock();

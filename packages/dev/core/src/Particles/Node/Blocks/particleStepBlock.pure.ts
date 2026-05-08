@@ -96,12 +96,16 @@ export class ParticleStepBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleStepBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleStepBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleStepBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleStepBlock", ParticleStepBlock);
 }

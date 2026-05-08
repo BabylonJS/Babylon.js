@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphGetAssetBlock.pure";
 
-import { registerFlowGraphGetAssetBlock } from "./flowGraphGetAssetBlock.pure";
-registerFlowGraphGetAssetBlock();
+import { RegisterFlowGraphGetAssetBlock } from "./flowGraphGetAssetBlock.pure";
+RegisterFlowGraphGetAssetBlock();

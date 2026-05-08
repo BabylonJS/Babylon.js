@@ -186,12 +186,16 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
     }
 }
 
-let _registered = false;
-export function registerSetColorsBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for setColorsBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSetColorsBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.SetColorsBlock", SetColorsBlock);
 }

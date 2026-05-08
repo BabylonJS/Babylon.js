@@ -4,5 +4,5 @@
  */
 export * from "./WebXRImageTracking.pure";
 
-import { registerWebXRImageTracking } from "./WebXRImageTracking.pure";
-registerWebXRImageTracking();
+import { RegisterWebXRImageTracking } from "./WebXRImageTracking.pure";
+RegisterWebXRImageTracking();

@@ -5,5 +5,5 @@ export * from "./lensFlareSystemSceneComponent.types";
  */
 export * from "./lensFlareSystemSceneComponent.pure";
 
-import { registerLensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent.pure";
-registerLensFlareSystemSceneComponent();
+import { RegisterLensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent.pure";
+RegisterLensFlareSystemSceneComponent();

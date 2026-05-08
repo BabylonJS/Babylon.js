@@ -4,5 +4,5 @@
  */
 export * from "./updateColorBlock.pure";
 
-import { registerUpdateColorBlock } from "./updateColorBlock.pure";
-registerUpdateColorBlock();
+import { RegisterUpdateColorBlock } from "./updateColorBlock.pure";
+RegisterUpdateColorBlock();

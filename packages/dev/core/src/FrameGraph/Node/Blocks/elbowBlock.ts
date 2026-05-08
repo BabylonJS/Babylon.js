@@ -4,5 +4,5 @@
  */
 export * from "./elbowBlock.pure";
 
-import { registerFrameGraphNodeBlocksElbowBlock } from "./elbowBlock.pure";
-registerFrameGraphNodeBlocksElbowBlock();
+import { RegisterFrameGraphNodeBlocksElbowBlock } from "./elbowBlock.pure";
+RegisterFrameGraphNodeBlocksElbowBlock();

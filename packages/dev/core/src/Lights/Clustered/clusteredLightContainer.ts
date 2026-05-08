@@ -4,5 +4,5 @@
  */
 export * from "./clusteredLightContainer.pure";
 
-import { registerClusteredLightContainer } from "./clusteredLightContainer.pure";
-registerClusteredLightContainer();
+import { RegisterClusteredLightContainer } from "./clusteredLightContainer.pure";
+RegisterClusteredLightContainer();

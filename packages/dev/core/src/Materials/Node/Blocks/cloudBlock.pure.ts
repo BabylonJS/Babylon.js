@@ -240,12 +240,16 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerCloudBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for cloudBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCloudBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.CloudBlock", CloudBlock);
 }

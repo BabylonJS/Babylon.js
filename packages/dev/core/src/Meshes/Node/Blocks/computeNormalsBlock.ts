@@ -4,5 +4,5 @@
  */
 export * from "./computeNormalsBlock.pure";
 
-import { registerComputeNormalsBlock } from "./computeNormalsBlock.pure";
-registerComputeNormalsBlock();
+import { RegisterComputeNormalsBlock } from "./computeNormalsBlock.pure";
+RegisterComputeNormalsBlock();

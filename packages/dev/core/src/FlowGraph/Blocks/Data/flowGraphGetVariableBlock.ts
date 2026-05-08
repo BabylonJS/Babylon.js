@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphGetVariableBlock.pure";
 
-import { registerFlowGraphGetVariableBlock } from "./flowGraphGetVariableBlock.pure";
-registerFlowGraphGetVariableBlock();
+import { RegisterFlowGraphGetVariableBlock } from "./flowGraphGetVariableBlock.pure";
+RegisterFlowGraphGetVariableBlock();

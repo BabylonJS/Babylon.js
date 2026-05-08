@@ -63,12 +63,16 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphConstantBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphConstantBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphConstantBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.Constant, FlowGraphConstantBlock);
 }

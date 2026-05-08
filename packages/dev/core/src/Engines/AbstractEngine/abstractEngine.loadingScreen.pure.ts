@@ -4,12 +4,16 @@ import { IsWindowObjectExist } from "../../Misc/domManagement";
 import { ILoadingScreen } from "../../Loading/loadingScreen.pure";
 import { AbstractEngine } from "../abstractEngine.pure";
 
-let _registered = false;
-export function registerAbstractEngineLoadingScreen(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineLoadingScreen.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineLoadingScreen(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.displayLoadingUI = function (): void {
         if (!IsWindowObjectExist()) {

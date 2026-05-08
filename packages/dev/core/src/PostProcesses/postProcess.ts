@@ -5,5 +5,5 @@ export * from "./postProcess.types";
  */
 export * from "./postProcess.pure";
 
-import { registerPostProcess } from "./postProcess.pure";
-registerPostProcess();
+import { RegisterPostProcess } from "./postProcess.pure";
+RegisterPostProcess();

@@ -4,5 +4,5 @@
  */
 export * from "./particleLerpBlock.pure";
 
-import { registerParticleLerpBlock } from "./particleLerpBlock.pure";
-registerParticleLerpBlock();
+import { RegisterParticleLerpBlock } from "./particleLerpBlock.pure";
+RegisterParticleLerpBlock();

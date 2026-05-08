@@ -4,5 +4,5 @@
  */
 export * from "./WebXRBodyTracking.pure";
 
-import { registerWebXRBodyTracking } from "./WebXRBodyTracking.pure";
-registerWebXRBodyTracking();
+import { RegisterWebXRBodyTracking } from "./WebXRBodyTracking.pure";
+RegisterWebXRBodyTracking();

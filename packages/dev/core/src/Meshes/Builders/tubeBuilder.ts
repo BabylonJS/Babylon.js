@@ -4,5 +4,5 @@
  */
 export * from "./tubeBuilder.pure";
 
-import { registerTubeBuilder } from "./tubeBuilder.pure";
-registerTubeBuilder();
+import { RegisterTubeBuilder } from "./tubeBuilder.pure";
+RegisterTubeBuilder();

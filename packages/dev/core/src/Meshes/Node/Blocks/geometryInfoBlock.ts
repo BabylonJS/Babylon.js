@@ -4,5 +4,5 @@
  */
 export * from "./geometryInfoBlock.pure";
 
-import { registerGeometryInfoBlock } from "./geometryInfoBlock.pure";
-registerGeometryInfoBlock();
+import { RegisterGeometryInfoBlock } from "./geometryInfoBlock.pure";
+RegisterGeometryInfoBlock();

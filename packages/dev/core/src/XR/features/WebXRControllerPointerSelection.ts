@@ -4,5 +4,5 @@
  */
 export * from "./WebXRControllerPointerSelection.pure";
 
-import { registerWebXRControllerPointerSelection } from "./WebXRControllerPointerSelection.pure";
-registerWebXRControllerPointerSelection();
+import { RegisterWebXRControllerPointerSelection } from "./WebXRControllerPointerSelection.pure";
+RegisterWebXRControllerPointerSelection();

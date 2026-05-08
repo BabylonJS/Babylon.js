@@ -567,12 +567,16 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 }
 
-let _registered = false;
-export function registerGreasedLineRibbonMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for greasedLineRibbonMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGreasedLineRibbonMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         return GreasedLineRibbonMesh.Parse(parsedMesh, scene);

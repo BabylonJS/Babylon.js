@@ -4,5 +4,5 @@
  */
 export * from "./spotLight.pure";
 
-import { registerSpotLight } from "./spotLight.pure";
-registerSpotLight();
+import { RegisterSpotLight } from "./spotLight.pure";
+RegisterSpotLight();

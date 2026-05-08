@@ -136,12 +136,16 @@ export class ParticleFloatToIntBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleFloatToIntBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleFloatToIntBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleFloatToIntBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleFloatToIntBlock", ParticleFloatToIntBlock);
 }

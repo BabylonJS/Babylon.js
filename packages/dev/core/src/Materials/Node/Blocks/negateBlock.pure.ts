@@ -56,12 +56,16 @@ export class NegateBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerNegateBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for negateBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterNegateBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NegateBlock", NegateBlock);
 }

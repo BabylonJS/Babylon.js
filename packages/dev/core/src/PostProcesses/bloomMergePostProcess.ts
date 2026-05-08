@@ -4,5 +4,5 @@
  */
 export * from "./bloomMergePostProcess.pure";
 
-import { registerBloomMergePostProcess } from "./bloomMergePostProcess.pure";
-registerBloomMergePostProcess();
+import { RegisterBloomMergePostProcess } from "./bloomMergePostProcess.pure";
+RegisterBloomMergePostProcess();

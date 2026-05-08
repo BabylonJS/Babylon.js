@@ -4,5 +4,5 @@
  */
 export * from "./bloomPostProcessBlock.pure";
 
-import { registerBloomPostProcessBlock } from "./bloomPostProcessBlock.pure";
-registerBloomPostProcessBlock();
+import { RegisterBloomPostProcessBlock } from "./bloomPostProcessBlock.pure";
+RegisterBloomPostProcessBlock();

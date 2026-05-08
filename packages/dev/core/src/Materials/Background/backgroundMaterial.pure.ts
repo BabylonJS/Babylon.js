@@ -1156,12 +1156,16 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
     }
 }
 
-let _registered = false;
-export function registerBackgroundMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for backgroundMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBackgroundMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BackgroundMaterial", BackgroundMaterial);
 }

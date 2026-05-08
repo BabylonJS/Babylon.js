@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPointerOverEventBlock.pure";
 
-import { registerFlowGraphPointerOverEventBlock } from "./flowGraphPointerOverEventBlock.pure";
-registerFlowGraphPointerOverEventBlock();
+import { RegisterFlowGraphPointerOverEventBlock } from "./flowGraphPointerOverEventBlock.pure";
+RegisterFlowGraphPointerOverEventBlock();

@@ -469,6 +469,10 @@ let MaterialObserver: Nullable<Observer<Material>> = null;
  * @param factory The factory function which allows to create the plugin
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
+/**
+ * Register side effects for materialPlugin.
+ * Safe to call multiple times; only the first call has an effect.
+ */
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
     if (!Inited) {
         MaterialObserver = Material.OnEventObservable.add((material: Material) => {

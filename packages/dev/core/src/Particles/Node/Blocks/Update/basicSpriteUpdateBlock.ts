@@ -4,5 +4,5 @@
  */
 export * from "./basicSpriteUpdateBlock.pure";
 
-import { registerBasicSpriteUpdateBlock } from "./basicSpriteUpdateBlock.pure";
-registerBasicSpriteUpdateBlock();
+import { RegisterBasicSpriteUpdateBlock } from "./basicSpriteUpdateBlock.pure";
+RegisterBasicSpriteUpdateBlock();

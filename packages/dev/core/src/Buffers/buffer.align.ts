@@ -5,5 +5,5 @@ export * from "./buffer.align.types";
  */
 export * from "./buffer.align.pure";
 
-import { registerBufferAlign } from "./buffer.align.pure";
-registerBufferAlign();
+import { RegisterBufferAlign } from "./buffer.align.pure";
+RegisterBufferAlign();

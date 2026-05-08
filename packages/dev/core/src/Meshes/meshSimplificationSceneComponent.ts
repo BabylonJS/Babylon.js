@@ -5,5 +5,5 @@ export * from "./meshSimplificationSceneComponent.types";
  */
 export * from "./meshSimplificationSceneComponent.pure";
 
-import { registerMeshSimplificationSceneComponent } from "./meshSimplificationSceneComponent.pure";
-registerMeshSimplificationSceneComponent();
+import { RegisterMeshSimplificationSceneComponent } from "./meshSimplificationSceneComponent.pure";
+RegisterMeshSimplificationSceneComponent();

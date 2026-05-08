@@ -5,5 +5,5 @@ export * from "./engine.renderTargetCube.types";
  */
 export * from "./engine.renderTargetCube.pure";
 
-import { registerEnginesExtensionsEngineRenderTargetCube } from "./engine.renderTargetCube.pure";
-registerEnginesExtensionsEngineRenderTargetCube();
+import { RegisterEnginesExtensionsEngineRenderTargetCube } from "./engine.renderTargetCube.pure";
+RegisterEnginesExtensionsEngineRenderTargetCube();

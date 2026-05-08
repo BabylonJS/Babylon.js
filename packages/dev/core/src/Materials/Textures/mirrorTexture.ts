@@ -4,5 +4,5 @@
  */
 export * from "./mirrorTexture.pure";
 
-import { registerMirrorTexture } from "./mirrorTexture.pure";
-registerMirrorTexture();
+import { RegisterMirrorTexture } from "./mirrorTexture.pure";
+RegisterMirrorTexture();

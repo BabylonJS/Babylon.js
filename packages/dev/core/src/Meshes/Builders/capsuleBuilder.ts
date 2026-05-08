@@ -4,5 +4,5 @@
  */
 export * from "./capsuleBuilder.pure";
 
-import { registerCapsuleBuilder } from "./capsuleBuilder.pure";
-registerCapsuleBuilder();
+import { RegisterCapsuleBuilder } from "./capsuleBuilder.pure";
+RegisterCapsuleBuilder();

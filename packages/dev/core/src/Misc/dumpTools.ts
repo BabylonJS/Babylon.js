@@ -4,5 +4,5 @@
  */
 export * from "./dumpTools.pure";
 
-import { registerDumpTools } from "./dumpTools.pure";
-registerDumpTools();
+import { RegisterDumpTools } from "./dumpTools.pure";
+RegisterDumpTools();

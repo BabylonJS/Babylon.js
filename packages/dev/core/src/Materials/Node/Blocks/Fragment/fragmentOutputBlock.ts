@@ -4,5 +4,5 @@
  */
 export * from "./fragmentOutputBlock.pure";
 
-import { registerFragmentOutputBlock } from "./fragmentOutputBlock.pure";
-registerFragmentOutputBlock();
+import { RegisterFragmentOutputBlock } from "./fragmentOutputBlock.pure";
+RegisterFragmentOutputBlock();

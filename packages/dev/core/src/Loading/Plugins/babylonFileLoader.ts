@@ -4,5 +4,5 @@
  */
 export * from "./babylonFileLoader.pure";
 
-import { registerBabylonFileLoader } from "./babylonFileLoader.pure";
-registerBabylonFileLoader();
+import { RegisterBabylonFileLoader } from "./babylonFileLoader.pure";
+RegisterBabylonFileLoader();

@@ -4,5 +4,5 @@
  */
 export * from "./defaultRenderingPipeline.pure";
 
-import { registerDefaultRenderingPipeline } from "./defaultRenderingPipeline.pure";
-registerDefaultRenderingPipeline();
+import { RegisterDefaultRenderingPipeline } from "./defaultRenderingPipeline.pure";
+RegisterDefaultRenderingPipeline();

@@ -4,5 +4,5 @@
  */
 export * from "./icoSphereBlock.pure";
 
-import { registerIcoSphereBlock } from "./icoSphereBlock.pure";
-registerIcoSphereBlock();
+import { RegisterIcoSphereBlock } from "./icoSphereBlock.pure";
+RegisterIcoSphereBlock();

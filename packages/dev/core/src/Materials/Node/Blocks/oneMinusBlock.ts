@@ -4,5 +4,5 @@
  */
 export * from "./oneMinusBlock.pure";
 
-import { registerOneMinusBlock } from "./oneMinusBlock.pure";
-registerOneMinusBlock();
+import { RegisterOneMinusBlock } from "./oneMinusBlock.pure";
+RegisterOneMinusBlock();

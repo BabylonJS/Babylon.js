@@ -4,5 +4,5 @@
  */
 export * from "./curveBlock.pure";
 
-import { registerCurveBlock } from "./curveBlock.pure";
-registerCurveBlock();
+import { RegisterCurveBlock } from "./curveBlock.pure";
+RegisterCurveBlock();

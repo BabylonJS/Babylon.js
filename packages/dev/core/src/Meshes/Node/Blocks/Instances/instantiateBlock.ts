@@ -4,5 +4,5 @@
  */
 export * from "./instantiateBlock.pure";
 
-import { registerInstantiateBlock } from "./instantiateBlock.pure";
-registerInstantiateBlock();
+import { RegisterInstantiateBlock } from "./instantiateBlock.pure";
+RegisterInstantiateBlock();

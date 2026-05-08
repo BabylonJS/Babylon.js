@@ -4,5 +4,5 @@
  */
 export * from "./nLerpBlock.pure";
 
-import { registerNLerpBlock } from "./nLerpBlock.pure";
-registerNLerpBlock();
+import { RegisterNLerpBlock } from "./nLerpBlock.pure";
+RegisterNLerpBlock();

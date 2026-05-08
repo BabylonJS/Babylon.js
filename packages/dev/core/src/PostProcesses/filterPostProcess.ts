@@ -4,5 +4,5 @@
  */
 export * from "./filterPostProcess.pure";
 
-import { registerFilterPostProcess } from "./filterPostProcess.pure";
-registerFilterPostProcess();
+import { RegisterFilterPostProcess } from "./filterPostProcess.pure";
+RegisterFilterPostProcess();

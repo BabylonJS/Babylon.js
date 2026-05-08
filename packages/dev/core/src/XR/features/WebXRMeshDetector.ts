@@ -4,5 +4,5 @@
  */
 export * from "./WebXRMeshDetector.pure";
 
-import { registerWebXRMeshDetector } from "./WebXRMeshDetector.pure";
-registerWebXRMeshDetector();
+import { RegisterWebXRMeshDetector } from "./WebXRMeshDetector.pure";
+RegisterWebXRMeshDetector();

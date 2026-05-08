@@ -4,5 +4,5 @@
  */
 export * from "./latheBuilder.pure";
 
-import { registerLatheBuilder } from "./latheBuilder.pure";
-registerLatheBuilder();
+import { RegisterLatheBuilder } from "./latheBuilder.pure";
+RegisterLatheBuilder();

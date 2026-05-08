@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPhysicsCollisionEventBlock.pure";
 
-import { registerFlowGraphPhysicsCollisionEventBlock } from "./flowGraphPhysicsCollisionEventBlock.pure";
-registerFlowGraphPhysicsCollisionEventBlock();
+import { RegisterFlowGraphPhysicsCollisionEventBlock } from "./flowGraphPhysicsCollisionEventBlock.pure";
+RegisterFlowGraphPhysicsCollisionEventBlock();

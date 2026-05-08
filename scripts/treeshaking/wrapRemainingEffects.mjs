@@ -74,7 +74,7 @@ function walk(dir, results = []) {
 // ── Naming ──────────────────────────────────────────────────────────────────
 /**
  * Generate register function name from filename + optional directory qualifier.
- *   shadowGeneratorSceneComponent -> registerShadowGeneratorSceneComponent
+ *   shadowGeneratorSceneComponent -> RegisterShadowGeneratorSceneComponent
  *   engine.multiRender           -> registerEngineMultiRender
  */
 function generateRegisterName(filename, dirQualifier) {

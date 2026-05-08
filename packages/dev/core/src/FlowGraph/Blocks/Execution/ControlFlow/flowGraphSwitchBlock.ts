@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSwitchBlock.pure";
 
-import { registerFlowGraphSwitchBlock } from "./flowGraphSwitchBlock.pure";
-registerFlowGraphSwitchBlock();
+import { RegisterFlowGraphSwitchBlock } from "./flowGraphSwitchBlock.pure";
+RegisterFlowGraphSwitchBlock();

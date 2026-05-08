@@ -8857,12 +8857,16 @@ export class TmpVectors {
 
 const mtxConvertNDCToHalfZRange = Matrix.FromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1);
 
-let _registered = false;
-export function registerMathVector(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for mathVector.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMathVector(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperties(Vector2.prototype, {
         dimension: { value: [2] },

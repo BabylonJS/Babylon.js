@@ -4,5 +4,5 @@
  */
 export * from "./boundingBlock.pure";
 
-import { registerBoundingBlock } from "./boundingBlock.pure";
-registerBoundingBlock();
+import { RegisterBoundingBlock } from "./boundingBlock.pure";
+RegisterBoundingBlock();

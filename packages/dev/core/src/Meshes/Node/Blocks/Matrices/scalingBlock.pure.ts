@@ -64,12 +64,16 @@ export class ScalingBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerScalingBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for scalingBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterScalingBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ScalingBlock", ScalingBlock);
 }

@@ -139,12 +139,16 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleLocalVariableBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleLocalVariableBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleLocalVariableBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleLocalVariableBlock", ParticleLocalVariableBlock);
 }

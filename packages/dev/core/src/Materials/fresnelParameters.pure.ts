@@ -183,12 +183,16 @@ export class FresnelParameters {
     }
 }
 
-let _registered = false;
-export function registerFresnelParameters(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for fresnelParameters.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFresnelParameters(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // References the dependencies.
     SerializationHelper._FresnelParametersParser = FresnelParameters.Parse;

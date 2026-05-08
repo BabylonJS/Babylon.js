@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphGetAngularVelocityBlock.pure";
 
-import { registerFlowGraphGetAngularVelocityBlock } from "./flowGraphGetAngularVelocityBlock.pure";
-registerFlowGraphGetAngularVelocityBlock();
+import { RegisterFlowGraphGetAngularVelocityBlock } from "./flowGraphGetAngularVelocityBlock.pure";
+RegisterFlowGraphGetAngularVelocityBlock();

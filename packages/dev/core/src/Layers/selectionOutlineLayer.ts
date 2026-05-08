@@ -5,5 +5,5 @@ export * from "./selectionOutlineLayer.types";
  */
 export * from "./selectionOutlineLayer.pure";
 
-import { registerSelectionOutlineLayer } from "./selectionOutlineLayer.pure";
-registerSelectionOutlineLayer();
+import { RegisterSelectionOutlineLayer } from "./selectionOutlineLayer.pure";
+RegisterSelectionOutlineLayer();

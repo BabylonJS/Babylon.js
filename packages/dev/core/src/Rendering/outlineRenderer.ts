@@ -5,5 +5,5 @@ export * from "./outlineRenderer.types";
  */
 export * from "./outlineRenderer.pure";
 
-import { registerOutlineRenderer } from "./outlineRenderer.pure";
-registerOutlineRenderer();
+import { RegisterOutlineRenderer } from "./outlineRenderer.pure";
+RegisterOutlineRenderer();

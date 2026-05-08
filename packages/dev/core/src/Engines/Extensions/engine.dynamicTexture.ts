@@ -5,5 +5,5 @@ export * from "./engine.dynamicTexture.types";
  */
 export * from "./engine.dynamicTexture.pure";
 
-import { registerEnginesExtensionsEngineDynamicTexture } from "./engine.dynamicTexture.pure";
-registerEnginesExtensionsEngineDynamicTexture();
+import { RegisterEnginesExtensionsEngineDynamicTexture } from "./engine.dynamicTexture.pure";
+RegisterEnginesExtensionsEngineDynamicTexture();

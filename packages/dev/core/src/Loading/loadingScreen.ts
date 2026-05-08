@@ -4,5 +4,5 @@
  */
 export * from "./loadingScreen.pure";
 
-import { registerLoadingScreen } from "./loadingScreen.pure";
-registerLoadingScreen();
+import { RegisterLoadingScreen } from "./loadingScreen.pure";
+RegisterLoadingScreen();

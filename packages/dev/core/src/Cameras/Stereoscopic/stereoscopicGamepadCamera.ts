@@ -4,5 +4,5 @@
  */
 export * from "./stereoscopicGamepadCamera.pure";
 
-import { registerStereoscopicGamepadCamera } from "./stereoscopicGamepadCamera.pure";
-registerStereoscopicGamepadCamera();
+import { RegisterStereoscopicGamepadCamera } from "./stereoscopicGamepadCamera.pure";
+RegisterStereoscopicGamepadCamera();

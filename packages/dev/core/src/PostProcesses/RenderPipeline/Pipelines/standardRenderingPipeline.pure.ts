@@ -1687,12 +1687,16 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public static LuminanceSteps: number = 6;
 }
 
-let _registered = false;
-export function registerStandardRenderingPipeline(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for standardRenderingPipeline.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterStandardRenderingPipeline(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.StandardRenderingPipeline", StandardRenderingPipeline);
 }

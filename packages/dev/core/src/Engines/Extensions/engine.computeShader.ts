@@ -5,5 +5,5 @@ export * from "./engine.computeShader.types";
  */
 export * from "./engine.computeShader.pure";
 
-import { registerEnginesExtensionsEngineComputeShader } from "./engine.computeShader.pure";
-registerEnginesExtensionsEngineComputeShader();
+import { RegisterEnginesExtensionsEngineComputeShader } from "./engine.computeShader.pure";
+RegisterEnginesExtensionsEngineComputeShader();

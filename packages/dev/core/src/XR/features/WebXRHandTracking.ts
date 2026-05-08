@@ -4,5 +4,5 @@
  */
 export * from "./WebXRHandTracking.pure";
 
-import { registerWebXRHandTracking } from "./WebXRHandTracking.pure";
-registerWebXRHandTracking();
+import { RegisterWebXRHandTracking } from "./WebXRHandTracking.pure";
+RegisterWebXRHandTracking();

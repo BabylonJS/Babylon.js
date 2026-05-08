@@ -4,5 +4,5 @@
  */
 export * from "./extractHighlightsPostProcessBlock.pure";
 
-import { registerExtractHighlightsPostProcessBlock } from "./extractHighlightsPostProcessBlock.pure";
-registerExtractHighlightsPostProcessBlock();
+import { RegisterExtractHighlightsPostProcessBlock } from "./extractHighlightsPostProcessBlock.pure";
+RegisterExtractHighlightsPostProcessBlock();

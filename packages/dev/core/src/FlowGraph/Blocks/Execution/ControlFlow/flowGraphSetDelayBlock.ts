@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSetDelayBlock.pure";
 
-import { registerFlowGraphSetDelayBlock } from "./flowGraphSetDelayBlock.pure";
-registerFlowGraphSetDelayBlock();
+import { RegisterFlowGraphSetDelayBlock } from "./flowGraphSetDelayBlock.pure";
+RegisterFlowGraphSetDelayBlock();

@@ -89,12 +89,16 @@ export class UpdateSpriteCellIndexBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerUpdateSpriteCellIndexBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for updateSpriteCellIndexBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterUpdateSpriteCellIndexBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.UpdateSpriteCellIndexBlock", UpdateSpriteCellIndexBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./storageReadBlock.pure";
 
-import { registerStorageReadBlock } from "./storageReadBlock.pure";
-registerStorageReadBlock();
+import { RegisterStorageReadBlock } from "./storageReadBlock.pure";
+RegisterStorageReadBlock();

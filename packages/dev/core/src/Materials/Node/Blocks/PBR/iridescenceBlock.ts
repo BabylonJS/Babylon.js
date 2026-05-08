@@ -4,5 +4,5 @@
  */
 export * from "./iridescenceBlock.pure";
 
-import { registerIridescenceBlock } from "./iridescenceBlock.pure";
-registerIridescenceBlock();
+import { RegisterIridescenceBlock } from "./iridescenceBlock.pure";
+RegisterIridescenceBlock();

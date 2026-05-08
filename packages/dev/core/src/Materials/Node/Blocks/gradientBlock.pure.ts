@@ -207,12 +207,16 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerGradientBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for gradientBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGradientBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GradientBlock", GradientBlock);
 }

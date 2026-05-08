@@ -8,12 +8,16 @@ import { Nullable } from "../../types";
 // back-compat
 export { allocateAndCopyTypedBuffer };
 
-let _registered = false;
-export function registerEnginesExtensionsEngineReadTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineReadTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineReadTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype._readTexturePixelsSync = function (
         texture: InternalTexture,

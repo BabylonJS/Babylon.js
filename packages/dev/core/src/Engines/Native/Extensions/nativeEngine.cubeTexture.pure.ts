@@ -9,12 +9,16 @@ import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { ThinNativeEngine } from "../../thinNativeEngine.pure";
 
-let _registered = false;
-export function registerNativeEngineCubeTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for nativeEngineCubeTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterNativeEngineCubeTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinNativeEngine.prototype.createCubeTexture = function (
         rootUrl: string,

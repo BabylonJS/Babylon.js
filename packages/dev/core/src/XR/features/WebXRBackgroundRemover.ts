@@ -4,5 +4,5 @@
  */
 export * from "./WebXRBackgroundRemover.pure";
 
-import { registerWebXRBackgroundRemover } from "./WebXRBackgroundRemover.pure";
-registerWebXRBackgroundRemover();
+import { RegisterWebXRBackgroundRemover } from "./WebXRBackgroundRemover.pure";
+RegisterWebXRBackgroundRemover();

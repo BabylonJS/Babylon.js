@@ -4,5 +4,5 @@
  */
 export * from "./particleNumberMathBlock.pure";
 
-import { registerParticleNumberMathBlock } from "./particleNumberMathBlock.pure";
-registerParticleNumberMathBlock();
+import { RegisterParticleNumberMathBlock } from "./particleNumberMathBlock.pure";
+RegisterParticleNumberMathBlock();

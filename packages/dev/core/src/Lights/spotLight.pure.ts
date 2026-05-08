@@ -532,12 +532,16 @@ export class SpotLight extends ShadowLight {
     }
 }
 
-let _registered = false;
-export function registerSpotLight(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for spotLight.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSpotLight(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
         return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);

@@ -146,12 +146,16 @@ export class RemapBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerRemapBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for remapBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterRemapBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.RemapBlock", RemapBlock);
 }

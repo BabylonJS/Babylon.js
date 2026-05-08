@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPointerUpEventBlock.pure";
 
-import { registerFlowGraphPointerUpEventBlock } from "./flowGraphPointerUpEventBlock.pure";
-registerFlowGraphPointerUpEventBlock();
+import { RegisterFlowGraphPointerUpEventBlock } from "./flowGraphPointerUpEventBlock.pure";
+RegisterFlowGraphPointerUpEventBlock();

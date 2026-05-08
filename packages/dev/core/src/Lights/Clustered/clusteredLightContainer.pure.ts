@@ -380,7 +380,9 @@ export class ClusteredLightContainer extends Light {
         this._proxyMaterial.setVector3("tileMaskResolution", new Vector3(this._horizontalTiles, this.verticalTiles, batches));
 
         // We don't actually use the matrix data but we need enough capacity for the lights
-        this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
+        if (this._proxyMesh.thinInstanceSetBuffer) {
+            this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
+        }
         this._proxyMesh.thinInstanceCount = this._sortedLights.length;
         this._tileMaskBatches = batches;
         return this._tileMaskTexture;
@@ -681,12 +683,16 @@ export class ClusteredLightContainer extends Light {
     }
 }
 
-let _registered = false;
-export function registerClusteredLightContainer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for clusteredLightContainer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterClusteredLightContainer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("Light_Type_5", (name, scene) => {
         return () => new ClusteredLightContainer(name, [], scene);

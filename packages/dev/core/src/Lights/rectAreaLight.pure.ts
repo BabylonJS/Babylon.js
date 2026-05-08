@@ -216,12 +216,16 @@ export class RectAreaLight extends AreaLight {
     }
 }
 
-let _registered = false;
-export function registerRectAreaLight(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for rectAreaLight.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterRectAreaLight(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
         return () => new RectAreaLight(name, Vector3.Zero(), 1, 1, scene);

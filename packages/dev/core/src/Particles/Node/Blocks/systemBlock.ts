@@ -4,5 +4,5 @@
  */
 export * from "./systemBlock.pure";
 
-import { registerSystemBlock } from "./systemBlock.pure";
-registerSystemBlock();
+import { RegisterSystemBlock } from "./systemBlock.pure";
+RegisterSystemBlock();

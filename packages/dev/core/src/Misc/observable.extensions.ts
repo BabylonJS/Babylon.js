@@ -5,5 +5,5 @@ export * from "./observable.extensions.types";
  */
 export * from "./observable.extensions.pure";
 
-import { registerObservableExtensions } from "./observable.extensions.pure";
-registerObservableExtensions();
+import { RegisterObservableExtensions } from "./observable.extensions.pure";
+RegisterObservableExtensions();

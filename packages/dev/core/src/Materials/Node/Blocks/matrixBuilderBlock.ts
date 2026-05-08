@@ -4,5 +4,5 @@
  */
 export * from "./matrixBuilderBlock.pure";
 
-import { registerMatrixBuilderBlock } from "./matrixBuilderBlock.pure";
-registerMatrixBuilderBlock();
+import { RegisterMatrixBuilderBlock } from "./matrixBuilderBlock.pure";
+RegisterMatrixBuilderBlock();

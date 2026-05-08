@@ -4,5 +4,5 @@
  */
 export * from "./setupSpriteSheetBlock.pure";
 
-import { registerSetupSpriteSheetBlock } from "./setupSpriteSheetBlock.pure";
-registerSetupSpriteSheetBlock();
+import { RegisterSetupSpriteSheetBlock } from "./setupSpriteSheetBlock.pure";
+RegisterSetupSpriteSheetBlock();

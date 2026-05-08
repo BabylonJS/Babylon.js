@@ -4,5 +4,5 @@
  */
 export * from "./particleConditionBlock.pure";
 
-import { registerParticleConditionBlock } from "./particleConditionBlock.pure";
-registerParticleConditionBlock();
+import { RegisterParticleConditionBlock } from "./particleConditionBlock.pure";
+RegisterParticleConditionBlock();

@@ -160,12 +160,16 @@ export class InterpolateValueAction extends Action {
     }
 }
 
-let _registered = false;
-export function registerInterpolateValueAction(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for interpolateValueAction.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInterpolateValueAction(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.InterpolateValueAction", InterpolateValueAction);
 }

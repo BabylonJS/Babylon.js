@@ -89,12 +89,16 @@ export class FlowGraphFloatToInt extends FlowGraphUnaryOperationBlock<number, Fl
     }
 }
 
-let _registered = false;
-export function registerFlowGraphTypeToTypeBlocks(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphTypeToTypeBlocks.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphTypeToTypeBlocks(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.BooleanToFloat, FlowGraphBooleanToFloat);
     RegisterClass(FlowGraphBlockNames.BooleanToInt, FlowGraphBooleanToInt);

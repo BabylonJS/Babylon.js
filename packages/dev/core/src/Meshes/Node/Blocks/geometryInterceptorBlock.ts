@@ -4,5 +4,5 @@
  */
 export * from "./geometryInterceptorBlock.pure";
 
-import { registerGeometryInterceptorBlock } from "./geometryInterceptorBlock.pure";
-registerGeometryInterceptorBlock();
+import { RegisterGeometryInterceptorBlock } from "./geometryInterceptorBlock.pure";
+RegisterGeometryInterceptorBlock();

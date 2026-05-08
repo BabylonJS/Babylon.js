@@ -59,12 +59,16 @@ export class ClusteredLightingSceneComponent implements ISceneComponent {
     };
 }
 
-let _registered = false;
-export function registerClusteredLightingSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for clusteredLightingSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterClusteredLightingSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ClusteredLightContainer._SceneComponentInitialization = (scene) => {
         if (!scene._getComponent(SceneComponentConstants.NAME_CLUSTEREDLIGHTING)) {

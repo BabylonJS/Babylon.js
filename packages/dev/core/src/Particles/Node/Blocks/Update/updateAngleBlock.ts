@@ -4,5 +4,5 @@
  */
 export * from "./updateAngleBlock.pure";
 
-import { registerUpdateAngleBlock } from "./updateAngleBlock.pure";
-registerUpdateAngleBlock();
+import { RegisterUpdateAngleBlock } from "./updateAngleBlock.pure";
+RegisterUpdateAngleBlock();

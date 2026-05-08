@@ -13,12 +13,16 @@ import { WebGPUPerfCounter } from "../webgpuPerfCounter";
 import { DataBuffer } from "../../../Buffers/dataBuffer";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineComputeShader(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineComputeShader.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineComputeShader(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     const ComputePassDescriptor: GPUComputePassDescriptor = {};
 

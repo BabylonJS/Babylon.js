@@ -4,5 +4,5 @@
  */
 export * from "./particleRandomBlock.pure";
 
-import { registerParticleRandomBlock } from "./particleRandomBlock.pure";
-registerParticleRandomBlock();
+import { RegisterParticleRandomBlock } from "./particleRandomBlock.pure";
+RegisterParticleRandomBlock();

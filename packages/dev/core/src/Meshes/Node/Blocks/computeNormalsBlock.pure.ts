@@ -64,12 +64,16 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerComputeNormalsBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for computeNormalsBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterComputeNormalsBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ComputeNormalsBlock", ComputeNormalsBlock);
 }

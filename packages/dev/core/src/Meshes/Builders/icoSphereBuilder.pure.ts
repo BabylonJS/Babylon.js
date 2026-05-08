@@ -429,12 +429,16 @@ export const IcoSphereBuilder = {
     CreateIcoSphere,
 };
 
-let _registered = false;
-export function registerIcoSphereBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for icoSphereBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterIcoSphereBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreateIcoSphere = CreateIcoSphereVertexData;
 

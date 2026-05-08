@@ -5,5 +5,5 @@ export * from "./octreeSceneComponent.types";
  */
 export * from "./octreeSceneComponent.pure";
 
-import { registerOctreeSceneComponent } from "./octreeSceneComponent.pure";
-registerOctreeSceneComponent();
+import { RegisterOctreeSceneComponent } from "./octreeSceneComponent.pure";
+RegisterOctreeSceneComponent();

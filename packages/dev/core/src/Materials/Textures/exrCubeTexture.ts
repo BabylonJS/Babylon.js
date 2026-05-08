@@ -4,5 +4,5 @@
  */
 export * from "./exrCubeTexture.pure";
 
-import { registerExrCubeTexture } from "./exrCubeTexture.pure";
-registerExrCubeTexture();
+import { RegisterExrCubeTexture } from "./exrCubeTexture.pure";
+RegisterExrCubeTexture();

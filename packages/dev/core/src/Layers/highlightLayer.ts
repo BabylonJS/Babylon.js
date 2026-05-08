@@ -5,5 +5,5 @@ export * from "./highlightLayer.types";
  */
 export * from "./highlightLayer.pure";
 
-import { registerHighlightLayer } from "./highlightLayer.pure";
-registerHighlightLayer();
+import { RegisterHighlightLayer } from "./highlightLayer.pure";
+RegisterHighlightLayer();

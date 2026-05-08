@@ -4,5 +4,5 @@
  */
 export * from "./cylinderShapeBlock.pure";
 
-import { registerCylinderShapeBlock } from "./cylinderShapeBlock.pure";
-registerCylinderShapeBlock();
+import { RegisterCylinderShapeBlock } from "./cylinderShapeBlock.pure";
+RegisterCylinderShapeBlock();

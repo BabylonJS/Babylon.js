@@ -4,5 +4,5 @@
  */
 export * from "./filterPostProcessBlock.pure";
 
-import { registerFilterPostProcessBlock } from "./filterPostProcessBlock.pure";
-registerFilterPostProcessBlock();
+import { RegisterFilterPostProcessBlock } from "./filterPostProcessBlock.pure";
+RegisterFilterPostProcessBlock();

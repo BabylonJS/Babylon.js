@@ -94,12 +94,16 @@ export class BloomMergePostProcess extends PostProcess {
     }
 }
 
-let _registered = false;
-export function registerBloomMergePostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for bloomMergePostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBloomMergePostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BloomMergePostProcess", BloomMergePostProcess);
 }

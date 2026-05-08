@@ -1298,12 +1298,16 @@ export class PhysicsImpostor {
     public static SoftbodyImpostor = 103;
 }
 
-let _registered = false;
-export function registerPhysicsImpostor(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for physicsImpostor.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPhysicsImpostor(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._PhysicsImpostorParser = function (scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
         return new PhysicsImpostor(

@@ -5,5 +5,5 @@ export * from "./fluidRenderer.types";
  */
 export * from "./fluidRenderer.pure";
 
-import { registerFluidRenderer } from "./fluidRenderer.pure";
-registerFluidRenderer();
+import { RegisterFluidRenderer } from "./fluidRenderer.pure";
+RegisterFluidRenderer();

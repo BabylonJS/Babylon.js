@@ -4,5 +4,5 @@
  */
 export * from "./lengthBlock.pure";
 
-import { registerLengthBlock } from "./lengthBlock.pure";
-registerLengthBlock();
+import { RegisterLengthBlock } from "./lengthBlock.pure";
+RegisterLengthBlock();

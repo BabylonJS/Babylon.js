@@ -4,5 +4,5 @@
  */
 export * from "./gaussianSplattingBlock.pure";
 
-import { registerGaussianSplattingBlock } from "./gaussianSplattingBlock.pure";
-registerGaussianSplattingBlock();
+import { RegisterGaussianSplattingBlock } from "./gaussianSplattingBlock.pure";
+RegisterGaussianSplattingBlock();

@@ -9,12 +9,16 @@ import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 import { Scene } from "../../../scene.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineCubeTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineCubeTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineCubeTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinWebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
         const internalTexture = new InternalTexture(this, options.generateStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);

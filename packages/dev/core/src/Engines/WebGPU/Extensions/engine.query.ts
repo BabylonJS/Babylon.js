@@ -4,5 +4,5 @@
  */
 export * from "./engine.query.pure";
 
-import { registerEnginesWebGPUExtensionsEngineQuery } from "./engine.query.pure";
-registerEnginesWebGPUExtensionsEngineQuery();
+import { RegisterEnginesWebGPUExtensionsEngineQuery } from "./engine.query.pure";
+RegisterEnginesWebGPUExtensionsEngineQuery();

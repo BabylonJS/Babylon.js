@@ -4,5 +4,5 @@
  */
 export * from "./imageSourceBlock.pure";
 
-import { registerImageSourceBlock } from "./imageSourceBlock.pure";
-registerImageSourceBlock();
+import { RegisterImageSourceBlock } from "./imageSourceBlock.pure";
+RegisterImageSourceBlock();

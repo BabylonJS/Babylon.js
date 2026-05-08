@@ -4,5 +4,5 @@
  */
 export * from "./action.pure";
 
-import { registerAction } from "./action.pure";
-registerAction();
+import { RegisterAction } from "./action.pure";
+RegisterAction();

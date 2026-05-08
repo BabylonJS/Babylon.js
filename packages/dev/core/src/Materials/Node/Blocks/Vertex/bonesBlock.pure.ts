@@ -237,12 +237,16 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerBonesBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for bonesBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBonesBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BonesBlock", BonesBlock);
 }

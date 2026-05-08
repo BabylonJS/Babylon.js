@@ -4,5 +4,5 @@
  */
 export * from "./customShapeBlock.pure";
 
-import { registerCustomShapeBlock } from "./customShapeBlock.pure";
-registerCustomShapeBlock();
+import { RegisterCustomShapeBlock } from "./customShapeBlock.pure";
+RegisterCustomShapeBlock();

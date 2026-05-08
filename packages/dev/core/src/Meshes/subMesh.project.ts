@@ -5,5 +5,5 @@ export * from "./subMesh.project.types";
  */
 export * from "./subMesh.project.pure";
 
-import { registerSubMeshProject } from "./subMesh.project.pure";
-registerSubMeshProject();
+import { RegisterSubMeshProject } from "./subMesh.project.pure";
+RegisterSubMeshProject();

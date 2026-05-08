@@ -58,12 +58,16 @@ export class DiscardBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerDiscardBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for discardBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDiscardBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DiscardBlock", DiscardBlock);
 }

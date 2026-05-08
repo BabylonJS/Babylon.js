@@ -4,5 +4,5 @@
  */
 export * from "./rectAreaLight.pure";
 
-import { registerRectAreaLight } from "./rectAreaLight.pure";
-registerRectAreaLight();
+import { RegisterRectAreaLight } from "./rectAreaLight.pure";
+RegisterRectAreaLight();

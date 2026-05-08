@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphConditionalDataBlock.pure";
 
-import { registerFlowGraphConditionalDataBlock } from "./flowGraphConditionalDataBlock.pure";
-registerFlowGraphConditionalDataBlock();
+import { RegisterFlowGraphConditionalDataBlock } from "./flowGraphConditionalDataBlock.pure";
+RegisterFlowGraphConditionalDataBlock();

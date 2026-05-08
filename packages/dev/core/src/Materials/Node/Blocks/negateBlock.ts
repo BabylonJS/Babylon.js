@@ -4,5 +4,5 @@
  */
 export * from "./negateBlock.pure";
 
-import { registerNegateBlock } from "./negateBlock.pure";
-registerNegateBlock();
+import { RegisterNegateBlock } from "./negateBlock.pure";
+RegisterNegateBlock();

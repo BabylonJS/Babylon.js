@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphEasingBlock.pure";
 
-import { registerFlowGraphEasingBlock } from "./flowGraphEasingBlock.pure";
-registerFlowGraphEasingBlock();
+import { RegisterFlowGraphEasingBlock } from "./flowGraphEasingBlock.pure";
+RegisterFlowGraphEasingBlock();

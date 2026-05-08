@@ -4,5 +4,5 @@
  */
 export * from "./pbrMetallicRoughnessMaterial.pure";
 
-import { registerPbrMetallicRoughnessMaterial } from "./pbrMetallicRoughnessMaterial.pure";
-registerPbrMetallicRoughnessMaterial();
+import { RegisterPbrMetallicRoughnessMaterial } from "./pbrMetallicRoughnessMaterial.pure";
+RegisterPbrMetallicRoughnessMaterial();

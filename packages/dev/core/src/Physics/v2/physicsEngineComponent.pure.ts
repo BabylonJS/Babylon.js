@@ -5,12 +5,16 @@ import { Vector3 } from "../../Maths/math.vector.pure";
 import { PhysicsBody } from "./physicsBody";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 
-let _registered = false;
-export function registerPhysicsV2PhysicsEngineComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for physicsV2PhysicsEngineComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPhysicsV2PhysicsEngineComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(TransformNode.prototype, "physicsBody", {
         get: function (this: TransformNode) {

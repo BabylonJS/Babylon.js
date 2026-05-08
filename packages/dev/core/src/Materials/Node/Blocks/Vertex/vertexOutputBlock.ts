@@ -4,5 +4,5 @@
  */
 export * from "./vertexOutputBlock.pure";
 
-import { registerVertexOutputBlock } from "./vertexOutputBlock.pure";
-registerVertexOutputBlock();
+import { RegisterVertexOutputBlock } from "./vertexOutputBlock.pure";
+RegisterVertexOutputBlock();

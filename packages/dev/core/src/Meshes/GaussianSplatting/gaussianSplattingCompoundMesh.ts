@@ -4,5 +4,5 @@
  */
 export * from "./gaussianSplattingCompoundMesh.pure";
 
-import { registerGaussianSplattingCompoundMesh } from "./gaussianSplattingCompoundMesh.pure";
-registerGaussianSplattingCompoundMesh();
+import { RegisterGaussianSplattingCompoundMesh } from "./gaussianSplattingCompoundMesh.pure";
+RegisterGaussianSplattingCompoundMesh();

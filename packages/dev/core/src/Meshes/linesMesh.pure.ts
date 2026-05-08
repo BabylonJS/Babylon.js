@@ -351,12 +351,16 @@ export class InstancedLinesMesh extends InstancedMesh {
     }
 }
 
-let _registered = false;
-export function registerLinesMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for linesMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterLinesMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         return LinesMesh.Parse(parsedMesh, scene);

@@ -4,5 +4,5 @@
  */
 export * from "./alignBlock.pure";
 
-import { registerAlignBlock } from "./alignBlock.pure";
-registerAlignBlock();
+import { RegisterAlignBlock } from "./alignBlock.pure";
+RegisterAlignBlock();

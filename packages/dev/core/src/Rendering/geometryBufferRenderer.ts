@@ -4,5 +4,5 @@
  */
 export * from "./geometryBufferRenderer.pure";
 
-import { registerGeometryBufferRenderer } from "./geometryBufferRenderer.pure";
-registerGeometryBufferRenderer();
+import { RegisterGeometryBufferRenderer } from "./geometryBufferRenderer.pure";
+RegisterGeometryBufferRenderer();

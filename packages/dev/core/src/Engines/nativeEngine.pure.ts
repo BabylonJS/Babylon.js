@@ -56,12 +56,16 @@ export interface NativeEngine extends Omit<ThinNativeEngine, keyof Engine> {}
  * Applies the functionality of one or more base constructors to a derived constructor.
  */
 
-let _registered = false;
-export function registerNativeEngine(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for nativeEngine.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterNativeEngine(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     function applyMixins(derivedCtor: any, constructors: any[]) {
         constructors.forEach((baseCtor) => {

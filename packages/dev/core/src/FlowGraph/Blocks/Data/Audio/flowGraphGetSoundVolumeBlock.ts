@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphGetSoundVolumeBlock.pure";
 
-import { registerFlowGraphGetSoundVolumeBlock } from "./flowGraphGetSoundVolumeBlock.pure";
-registerFlowGraphGetSoundVolumeBlock();
+import { RegisterFlowGraphGetSoundVolumeBlock } from "./flowGraphGetSoundVolumeBlock.pure";
+RegisterFlowGraphGetSoundVolumeBlock();

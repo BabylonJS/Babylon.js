@@ -58,12 +58,16 @@ export class ParticleVectorLengthBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleVectorLengthBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleVectorLengthBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleVectorLengthBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleVectorLengthBlock", ParticleVectorLengthBlock);
 }

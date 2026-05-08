@@ -71,12 +71,16 @@ export class NodeRenderGraphFilterPostProcessBlock extends NodeRenderGraphBaseWi
     }
 }
 
-let _registered = false;
-export function registerFilterPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for filterPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFilterPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphFilterPostProcessBlock", NodeRenderGraphFilterPostProcessBlock);
 }

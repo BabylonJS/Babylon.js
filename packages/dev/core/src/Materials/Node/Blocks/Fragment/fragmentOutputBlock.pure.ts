@@ -317,12 +317,16 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerFragmentOutputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for fragmentOutputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFragmentOutputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.FragmentOutputBlock", FragmentOutputBlock);
 }

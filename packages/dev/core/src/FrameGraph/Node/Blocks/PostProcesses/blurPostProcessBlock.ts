@@ -4,5 +4,5 @@
  */
 export * from "./blurPostProcessBlock.pure";
 
-import { registerBlurPostProcessBlock } from "./blurPostProcessBlock.pure";
-registerBlurPostProcessBlock();
+import { RegisterBlurPostProcessBlock } from "./blurPostProcessBlock.pure";
+RegisterBlurPostProcessBlock();

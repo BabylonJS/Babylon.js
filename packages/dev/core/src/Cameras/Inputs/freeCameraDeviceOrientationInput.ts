@@ -5,5 +5,5 @@ export * from "./freeCameraDeviceOrientationInput.types";
  */
 export * from "./freeCameraDeviceOrientationInput.pure";
 
-import { registerFreeCameraDeviceOrientationInput } from "./freeCameraDeviceOrientationInput.pure";
-registerFreeCameraDeviceOrientationInput();
+import { RegisterFreeCameraDeviceOrientationInput } from "./freeCameraDeviceOrientationInput.pure";
+RegisterFreeCameraDeviceOrientationInput();

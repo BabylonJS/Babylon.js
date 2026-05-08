@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphGetPropertyBlock.pure";
 
-import { registerFlowGraphGetPropertyBlock } from "./flowGraphGetPropertyBlock.pure";
-registerFlowGraphGetPropertyBlock();
+import { RegisterFlowGraphGetPropertyBlock } from "./flowGraphGetPropertyBlock.pure";
+RegisterFlowGraphGetPropertyBlock();

@@ -134,12 +134,16 @@ export class TorusBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerTorusBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for torusBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTorusBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.TorusBlock", TorusBlock);
 }

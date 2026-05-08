@@ -4,5 +4,5 @@
  */
 export * from "./fresnelParameters.pure";
 
-import { registerFresnelParameters } from "./fresnelParameters.pure";
-registerFresnelParameters();
+import { RegisterFresnelParameters } from "./fresnelParameters.pure";
+RegisterFresnelParameters();

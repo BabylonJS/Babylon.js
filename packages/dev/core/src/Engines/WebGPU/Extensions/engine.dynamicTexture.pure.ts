@@ -6,12 +6,16 @@ import { WebGPUEngine } from "../../webgpuEngine.pure";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { GetExponentOfTwo } from "../../../Misc/tools.functions";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineDynamicTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineDynamicTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineDynamicTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     WebGPUEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Dynamic);

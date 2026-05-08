@@ -298,12 +298,16 @@ export class GoldbergMesh extends Mesh {
     }
 }
 
-let _registered = false;
-export function registerGoldbergMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for goldbergMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGoldbergMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
         return GoldbergMesh.Parse(parsedMesh, scene);

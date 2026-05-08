@@ -4,5 +4,5 @@
  */
 export * from "./flyCamera.pure";
 
-import { registerFlyCamera } from "./flyCamera.pure";
-registerFlyCamera();
+import { RegisterFlyCamera } from "./flyCamera.pure";
+RegisterFlyCamera();

@@ -4,5 +4,5 @@
  */
 export * from "./displayPassPostProcess.pure";
 
-import { registerDisplayPassPostProcess } from "./displayPassPostProcess.pure";
-registerDisplayPassPostProcess();
+import { RegisterDisplayPassPostProcess } from "./displayPassPostProcess.pure";
+RegisterDisplayPassPostProcess();

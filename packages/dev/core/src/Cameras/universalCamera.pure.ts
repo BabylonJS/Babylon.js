@@ -75,12 +75,16 @@ export class UniversalCamera extends TouchCamera {
     }
 }
 
-let _registered = false;
-export function registerUniversalCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for universalCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterUniversalCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("FreeCamera", (name, scene) => {
         // Forcing to use the Universal camera

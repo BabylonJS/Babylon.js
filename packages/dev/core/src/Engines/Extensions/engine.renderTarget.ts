@@ -5,5 +5,5 @@ export * from "./engine.renderTarget.types";
  */
 export * from "./engine.renderTarget.pure";
 
-import { registerEnginesExtensionsEngineRenderTarget } from "./engine.renderTarget.pure";
-registerEnginesExtensionsEngineRenderTarget();
+import { RegisterEnginesExtensionsEngineRenderTarget } from "./engine.renderTarget.pure";
+RegisterEnginesExtensionsEngineRenderTarget();

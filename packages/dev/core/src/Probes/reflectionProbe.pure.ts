@@ -340,12 +340,16 @@ export class ReflectionProbe {
     }
 }
 
-let _registered = false;
-export function registerReflectionProbe(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for reflectionProbe.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterReflectionProbe(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.removeReflectionProbe = function (toRemove: ReflectionProbe): number {
         if (!this.reflectionProbes) {

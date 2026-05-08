@@ -4,5 +4,5 @@
  */
 export * from "./colorConverterBlock.pure";
 
-import { registerColorConverterBlock } from "./colorConverterBlock.pure";
-registerColorConverterBlock();
+import { RegisterColorConverterBlock } from "./colorConverterBlock.pure";
+RegisterColorConverterBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./deviceOrientationCamera.pure";
 
-import { registerDeviceOrientationCamera } from "./deviceOrientationCamera.pure";
-registerDeviceOrientationCamera();
+import { RegisterDeviceOrientationCamera } from "./deviceOrientationCamera.pure";
+RegisterDeviceOrientationCamera();

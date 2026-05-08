@@ -95,12 +95,16 @@ export class StopSoundAction extends Action {
     }
 }
 
-let _registered = false;
-export function registerDirectAudioActions(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for directAudioActions.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDirectAudioActions(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PlaySoundAction", PlaySoundAction);
     RegisterClass("BABYLON.StopSoundAction", StopSoundAction);

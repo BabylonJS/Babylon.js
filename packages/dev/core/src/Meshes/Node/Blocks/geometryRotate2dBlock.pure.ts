@@ -68,12 +68,16 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryRotate2dBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryRotate2dBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryRotate2dBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryRotate2dBlock", GeometryRotate2dBlock);
 }

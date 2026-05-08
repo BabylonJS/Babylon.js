@@ -4,5 +4,5 @@
  */
 export * from "./teleportInBlock.pure";
 
-import { registerFrameGraphNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
-registerFrameGraphNodeBlocksTeleportTeleportInBlock();
+import { RegisterFrameGraphNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
+RegisterFrameGraphNodeBlocksTeleportTeleportInBlock();

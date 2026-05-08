@@ -4,5 +4,5 @@
  */
 export * from "./decalBuilder.pure";
 
-import { registerDecalBuilder } from "./decalBuilder.pure";
-registerDecalBuilder();
+import { RegisterDecalBuilder } from "./decalBuilder.pure";
+RegisterDecalBuilder();

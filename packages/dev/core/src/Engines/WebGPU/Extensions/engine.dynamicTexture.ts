@@ -5,5 +5,5 @@ export * from "./engine.dynamicTexture.types";
  */
 export * from "./engine.dynamicTexture.pure";
 
-import { registerEnginesWebGPUExtensionsEngineDynamicTexture } from "./engine.dynamicTexture.pure";
-registerEnginesWebGPUExtensionsEngineDynamicTexture();
+import { RegisterEnginesWebGPUExtensionsEngineDynamicTexture } from "./engine.dynamicTexture.pure";
+RegisterEnginesWebGPUExtensionsEngineDynamicTexture();

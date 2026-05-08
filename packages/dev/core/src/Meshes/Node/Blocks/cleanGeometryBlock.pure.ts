@@ -105,12 +105,16 @@ export class CleanGeometryBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerCleanGeometryBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for cleanGeometryBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCleanGeometryBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.CleanGeometryBlock", CleanGeometryBlock);
 }

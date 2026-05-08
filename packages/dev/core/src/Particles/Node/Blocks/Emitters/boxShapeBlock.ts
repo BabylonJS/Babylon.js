@@ -4,5 +4,5 @@
  */
 export * from "./boxShapeBlock.pure";
 
-import { registerBoxShapeBlock } from "./boxShapeBlock.pure";
-registerBoxShapeBlock();
+import { RegisterBoxShapeBlock } from "./boxShapeBlock.pure";
+RegisterBoxShapeBlock();

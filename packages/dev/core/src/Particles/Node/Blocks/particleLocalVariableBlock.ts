@@ -4,5 +4,5 @@
  */
 export * from "./particleLocalVariableBlock.pure";
 
-import { registerParticleLocalVariableBlock } from "./particleLocalVariableBlock.pure";
-registerParticleLocalVariableBlock();
+import { RegisterParticleLocalVariableBlock } from "./particleLocalVariableBlock.pure";
+RegisterParticleLocalVariableBlock();

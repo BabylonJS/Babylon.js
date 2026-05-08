@@ -4,5 +4,5 @@
  */
 export * from "./dotBlock.pure";
 
-import { registerDotBlock } from "./dotBlock.pure";
-registerDotBlock();
+import { RegisterDotBlock } from "./dotBlock.pure";
+RegisterDotBlock();

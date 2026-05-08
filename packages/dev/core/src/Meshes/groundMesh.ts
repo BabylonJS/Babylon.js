@@ -4,5 +4,5 @@
  */
 export * from "./groundMesh.pure";
 
-import { registerGroundMesh } from "./groundMesh.pure";
-registerGroundMesh();
+import { RegisterGroundMesh } from "./groundMesh.pure";
+RegisterGroundMesh();

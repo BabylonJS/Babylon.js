@@ -4,5 +4,5 @@
  */
 export * from "./mathBlock.pure";
 
-import { registerMathBlock } from "./mathBlock.pure";
-registerMathBlock();
+import { RegisterMathBlock } from "./mathBlock.pure";
+RegisterMathBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./polyhedronBuilder.pure";
 
-import { registerPolyhedronBuilder } from "./polyhedronBuilder.pure";
-registerPolyhedronBuilder();
+import { RegisterPolyhedronBuilder } from "./polyhedronBuilder.pure";
+RegisterPolyhedronBuilder();

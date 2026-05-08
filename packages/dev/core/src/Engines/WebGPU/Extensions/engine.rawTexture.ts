@@ -5,5 +5,5 @@ export * from "./engine.rawTexture.types";
  */
 export * from "./engine.rawTexture.pure";
 
-import { registerEnginesWebGPUExtensionsEngineRawTexture } from "./engine.rawTexture.pure";
-registerEnginesWebGPUExtensionsEngineRawTexture();
+import { RegisterEnginesWebGPUExtensionsEngineRawTexture } from "./engine.rawTexture.pure";
+RegisterEnginesWebGPUExtensionsEngineRawTexture();

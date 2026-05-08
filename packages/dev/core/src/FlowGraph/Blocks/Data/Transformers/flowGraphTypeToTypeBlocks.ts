@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphTypeToTypeBlocks.pure";
 
-import { registerFlowGraphTypeToTypeBlocks } from "./flowGraphTypeToTypeBlocks.pure";
-registerFlowGraphTypeToTypeBlocks();
+import { RegisterFlowGraphTypeToTypeBlocks } from "./flowGraphTypeToTypeBlocks.pure";
+RegisterFlowGraphTypeToTypeBlocks();

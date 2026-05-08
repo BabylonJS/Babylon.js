@@ -48,12 +48,16 @@ export class FlowGraphIsSoundPlayingBlock extends FlowGraphCachedOperationBlock<
     }
 }
 
-let _registered = false;
-export function registerFlowGraphIsSoundPlayingBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphIsSoundPlayingBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphIsSoundPlayingBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.AudioIsSoundPlaying, FlowGraphIsSoundPlayingBlock);
 }

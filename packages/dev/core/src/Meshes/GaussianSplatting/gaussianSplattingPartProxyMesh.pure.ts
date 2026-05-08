@@ -261,12 +261,16 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
     }
 }
 
-let _registered = false;
-export function registerGaussianSplattingPartProxyMesh(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for gaussianSplattingPartProxyMesh.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGaussianSplattingPartProxyMesh(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh._GaussianSplattingPartProxyMeshParser = GaussianSplattingPartProxyMesh.Parse;
 }

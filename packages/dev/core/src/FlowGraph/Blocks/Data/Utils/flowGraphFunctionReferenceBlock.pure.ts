@@ -60,12 +60,16 @@ export class FlowGraphFunctionReferenceBlock extends FlowGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphFunctionReferenceBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphFunctionReferenceBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphFunctionReferenceBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.FunctionReference, FlowGraphFunctionReferenceBlock);
 }

@@ -544,12 +544,16 @@ export class GlowLayer extends EffectLayer {
     }
 }
 
-let _registered = false;
-export function registerGlowLayer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for glowLayer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGlowLayer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
         for (let index = 0; index < this.effectLayers?.length; index++) {

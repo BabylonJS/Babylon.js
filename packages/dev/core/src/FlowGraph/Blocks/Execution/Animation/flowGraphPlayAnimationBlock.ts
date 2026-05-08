@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPlayAnimationBlock.pure";
 
-import { registerFlowGraphPlayAnimationBlock } from "./flowGraphPlayAnimationBlock.pure";
-registerFlowGraphPlayAnimationBlock();
+import { RegisterFlowGraphPlayAnimationBlock } from "./flowGraphPlayAnimationBlock.pure";
+RegisterFlowGraphPlayAnimationBlock();

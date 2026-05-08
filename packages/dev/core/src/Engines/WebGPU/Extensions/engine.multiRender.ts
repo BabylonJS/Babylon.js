@@ -5,5 +5,5 @@ export * from "./engine.multiRender.types";
  */
 export * from "./engine.multiRender.pure";
 
-import { registerEnginesWebGPUExtensionsEngineMultiRender } from "./engine.multiRender.pure";
-registerEnginesWebGPUExtensionsEngineMultiRender();
+import { RegisterEnginesWebGPUExtensionsEngineMultiRender } from "./engine.multiRender.pure";
+RegisterEnginesWebGPUExtensionsEngineMultiRender();

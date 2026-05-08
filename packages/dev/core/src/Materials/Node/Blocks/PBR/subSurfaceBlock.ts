@@ -4,5 +4,5 @@
  */
 export * from "./subSurfaceBlock.pure";
 
-import { registerSubSurfaceBlock } from "./subSurfaceBlock.pure";
-registerSubSurfaceBlock();
+import { RegisterSubSurfaceBlock } from "./subSurfaceBlock.pure";
+RegisterSubSurfaceBlock();

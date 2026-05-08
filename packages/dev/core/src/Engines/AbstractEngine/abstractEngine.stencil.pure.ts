@@ -1,12 +1,16 @@
 import { AbstractEngine } from "../abstractEngine.pure";
 /** This file must only contain pure code and pure imports */
 
-let _registered = false;
-export function registerAbstractEngineStencil(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineStencil.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineStencil(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.getStencilBuffer = function (): boolean {
         return this._stencilState.stencilTest;

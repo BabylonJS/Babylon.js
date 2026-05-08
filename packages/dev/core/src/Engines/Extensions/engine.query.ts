@@ -5,5 +5,5 @@ export * from "./engine.query.types";
  */
 export * from "./engine.query.pure";
 
-import { registerEnginesExtensionsEngineQuery } from "./engine.query.pure";
-registerEnginesExtensionsEngineQuery();
+import { RegisterEnginesExtensionsEngineQuery } from "./engine.query.pure";
+RegisterEnginesExtensionsEngineQuery();

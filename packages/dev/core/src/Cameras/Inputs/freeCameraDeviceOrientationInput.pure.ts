@@ -221,12 +221,16 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
 (<any>CameraInputTypes)["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 
-let _registered = false;
-export function registerFreeCameraDeviceOrientationInput(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for freeCameraDeviceOrientationInput.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFreeCameraDeviceOrientationInput(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * Add orientation input support to the input manager.

@@ -4,5 +4,5 @@
  */
 export * from "./geospatialCamera.pure";
 
-import { registerGeospatialCamera } from "./geospatialCamera.pure";
-registerGeospatialCamera();
+import { RegisterGeospatialCamera } from "./geospatialCamera.pure";
+RegisterGeospatialCamera();

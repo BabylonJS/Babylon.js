@@ -216,12 +216,16 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
     }
 }
 
-let _registered = false;
-export function registerCsmShadowGeneratorBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for csmShadowGeneratorBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCsmShadowGeneratorBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphCascadedShadowGeneratorBlock", NodeRenderGraphCascadedShadowGeneratorBlock);
 }

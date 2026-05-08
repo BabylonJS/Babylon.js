@@ -4,5 +4,5 @@
  */
 export * from "./divideBlock.pure";
 
-import { registerDivideBlock } from "./divideBlock.pure";
-registerDivideBlock();
+import { RegisterDivideBlock } from "./divideBlock.pure";
+RegisterDivideBlock();

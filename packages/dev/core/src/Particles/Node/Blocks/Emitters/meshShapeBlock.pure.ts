@@ -291,12 +291,16 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 }
 
-let _registered = false;
-export function registerMeshShapeBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for meshShapeBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMeshShapeBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.MeshShapeBlock", MeshShapeBlock);
 }

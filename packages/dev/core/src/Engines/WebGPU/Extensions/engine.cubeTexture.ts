@@ -5,5 +5,5 @@ export * from "./engine.cubeTexture.types";
  */
 export * from "./engine.cubeTexture.pure";
 
-import { registerEnginesWebGPUExtensionsEngineCubeTexture } from "./engine.cubeTexture.pure";
-registerEnginesWebGPUExtensionsEngineCubeTexture();
+import { RegisterEnginesWebGPUExtensionsEngineCubeTexture } from "./engine.cubeTexture.pure";
+RegisterEnginesWebGPUExtensionsEngineCubeTexture();

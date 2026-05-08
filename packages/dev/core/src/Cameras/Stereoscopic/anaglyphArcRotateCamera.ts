@@ -4,5 +4,5 @@
  */
 export * from "./anaglyphArcRotateCamera.pure";
 
-import { registerAnaglyphArcRotateCamera } from "./anaglyphArcRotateCamera.pure";
-registerAnaglyphArcRotateCamera();
+import { RegisterAnaglyphArcRotateCamera } from "./anaglyphArcRotateCamera.pure";
+RegisterAnaglyphArcRotateCamera();

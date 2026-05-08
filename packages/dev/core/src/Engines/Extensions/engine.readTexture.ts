@@ -5,5 +5,5 @@ export * from "./engine.readTexture.types";
  */
 export * from "./engine.readTexture.pure";
 
-import { registerEnginesExtensionsEngineReadTexture } from "./engine.readTexture.pure";
-registerEnginesExtensionsEngineReadTexture();
+import { RegisterEnginesExtensionsEngineReadTexture } from "./engine.readTexture.pure";
+RegisterEnginesExtensionsEngineReadTexture();

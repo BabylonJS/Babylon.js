@@ -230,12 +230,16 @@ export function getRichTypeByAnimationType(animationType: number): RichType<any>
     }
 }
 
-let _registered = false;
-export function registerFlowGraphRichTypes(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphRichTypes.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphRichTypes(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RichTypeQuaternion.typeTransformer = (value: any) => {
         if (value.getClassName) {

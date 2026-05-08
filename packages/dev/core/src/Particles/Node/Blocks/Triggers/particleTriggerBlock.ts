@@ -4,5 +4,5 @@
  */
 export * from "./particleTriggerBlock.pure";
 
-import { registerParticleTriggerBlock } from "./particleTriggerBlock.pure";
-registerParticleTriggerBlock();
+import { RegisterParticleTriggerBlock } from "./particleTriggerBlock.pure";
+RegisterParticleTriggerBlock();

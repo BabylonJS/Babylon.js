@@ -5,5 +5,5 @@ export * from "./debugLayer.types";
  */
 export * from "./debugLayer.pure";
 
-import { registerDebugLayer } from "./debugLayer.pure";
-registerDebugLayer();
+import { RegisterDebugLayer } from "./debugLayer.pure";
+RegisterDebugLayer();

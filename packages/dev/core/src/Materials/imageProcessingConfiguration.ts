@@ -4,5 +4,5 @@
  */
 export * from "./imageProcessingConfiguration.pure";
 
-import { registerImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
-registerImageProcessingConfiguration();
+import { RegisterImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
+RegisterImageProcessingConfiguration();

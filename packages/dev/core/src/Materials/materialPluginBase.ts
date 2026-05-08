@@ -4,5 +4,5 @@
  */
 export * from "./materialPluginBase.pure";
 
-import { registerMaterialPluginBase } from "./materialPluginBase.pure";
-registerMaterialPluginBase();
+import { RegisterMaterialPluginBase } from "./materialPluginBase.pure";
+RegisterMaterialPluginBase();

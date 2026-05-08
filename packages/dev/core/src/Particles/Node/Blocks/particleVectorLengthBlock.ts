@@ -4,5 +4,5 @@
  */
 export * from "./particleVectorLengthBlock.pure";
 
-import { registerParticleVectorLengthBlock } from "./particleVectorLengthBlock.pure";
-registerParticleVectorLengthBlock();
+import { RegisterParticleVectorLengthBlock } from "./particleVectorLengthBlock.pure";
+RegisterParticleVectorLengthBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphCancelDelayBlock.pure";
 
-import { registerFlowGraphCancelDelayBlock } from "./flowGraphCancelDelayBlock.pure";
-registerFlowGraphCancelDelayBlock();
+import { RegisterFlowGraphCancelDelayBlock } from "./flowGraphCancelDelayBlock.pure";
+RegisterFlowGraphCancelDelayBlock();

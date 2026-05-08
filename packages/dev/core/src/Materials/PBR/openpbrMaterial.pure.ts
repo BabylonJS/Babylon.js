@@ -3362,12 +3362,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     }
 }
 
-let _registered = false;
-export function registerOpenpbrMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for openpbrMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterOpenpbrMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.OpenPBRMaterial", OpenPBRMaterial);
 }

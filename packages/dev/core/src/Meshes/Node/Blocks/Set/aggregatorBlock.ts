@@ -4,5 +4,5 @@
  */
 export * from "./aggregatorBlock.pure";
 
-import { registerAggregatorBlock } from "./aggregatorBlock.pure";
-registerAggregatorBlock();
+import { RegisterAggregatorBlock } from "./aggregatorBlock.pure";
+RegisterAggregatorBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./shadowGeneratorSceneComponent.pure";
 
-import { registerShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent.pure";
-registerShadowGeneratorSceneComponent();
+import { RegisterShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent.pure";
+RegisterShadowGeneratorSceneComponent();

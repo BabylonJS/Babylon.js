@@ -138,12 +138,16 @@ export class MeshBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerMeshBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for meshBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMeshBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.MeshBlock", MeshBlock);
 }

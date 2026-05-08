@@ -104,12 +104,16 @@ export class DebugBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerMeshesNodeBlocksDebugBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for meshesNodeBlocksDebugBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMeshesNodeBlocksDebugBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.DebugBlock", DebugBlock);
 }

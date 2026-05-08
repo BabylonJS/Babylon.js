@@ -4,12 +4,16 @@ import { Nullable } from "../../../types";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineRenderTargetTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineRenderTargetTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineRenderTargetTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinWebGPUEngine.prototype.setDepthStencilTexture = function (
         channel: number,

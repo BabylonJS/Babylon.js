@@ -4,5 +4,5 @@
  */
 export * from "./anisotropyBlock.pure";
 
-import { registerAnisotropyBlock } from "./anisotropyBlock.pure";
-registerAnisotropyBlock();
+import { RegisterAnisotropyBlock } from "./anisotropyBlock.pure";
+RegisterAnisotropyBlock();

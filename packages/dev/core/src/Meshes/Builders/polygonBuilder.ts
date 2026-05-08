@@ -4,5 +4,5 @@
  */
 export * from "./polygonBuilder.pure";
 
-import { registerPolygonBuilder } from "./polygonBuilder.pure";
-registerPolygonBuilder();
+import { RegisterPolygonBuilder } from "./polygonBuilder.pure";
+RegisterPolygonBuilder();

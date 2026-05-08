@@ -220,12 +220,16 @@ export class BoxBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerBoxBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for boxBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBoxBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BoxBlock", BoxBlock);
 }

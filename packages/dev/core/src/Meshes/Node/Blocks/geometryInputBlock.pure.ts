@@ -322,12 +322,16 @@ export class GeometryInputBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryInputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryInputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryInputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryInputBlock", GeometryInputBlock);
 }

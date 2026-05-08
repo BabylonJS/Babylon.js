@@ -70,12 +70,16 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
     }
 }
 
-let _registered = false;
-export function registerBlackAndWhitePostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for blackAndWhitePostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBlackAndWhitePostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphBlackAndWhitePostProcessBlock", NodeRenderGraphBlackAndWhitePostProcessBlock);
 }

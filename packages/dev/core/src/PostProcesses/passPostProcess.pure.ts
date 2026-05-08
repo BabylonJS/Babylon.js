@@ -176,12 +176,16 @@ export class PassCubePostProcess extends PostProcess {
     }
 }
 
-let _registered = false;
-export function registerPassPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for passPostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPassPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PassPostProcess", PassPostProcess);
 

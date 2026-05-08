@@ -4,5 +4,5 @@
  */
 export * from "./cylinderBuilder.pure";
 
-import { registerCylinderBuilder } from "./cylinderBuilder.pure";
-registerCylinderBuilder();
+import { RegisterCylinderBuilder } from "./cylinderBuilder.pure";
+RegisterCylinderBuilder();

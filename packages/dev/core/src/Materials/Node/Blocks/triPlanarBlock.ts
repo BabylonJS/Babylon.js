@@ -4,5 +4,5 @@
  */
 export * from "./triPlanarBlock.pure";
 
-import { registerTriPlanarBlock } from "./triPlanarBlock.pure";
-registerTriPlanarBlock();
+import { RegisterTriPlanarBlock } from "./triPlanarBlock.pure";
+RegisterTriPlanarBlock();

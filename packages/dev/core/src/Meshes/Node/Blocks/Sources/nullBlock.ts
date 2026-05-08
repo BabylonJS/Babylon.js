@@ -4,5 +4,5 @@
  */
 export * from "./nullBlock.pure";
 
-import { registerNullBlock } from "./nullBlock.pure";
-registerNullBlock();
+import { RegisterNullBlock } from "./nullBlock.pure";
+RegisterNullBlock();

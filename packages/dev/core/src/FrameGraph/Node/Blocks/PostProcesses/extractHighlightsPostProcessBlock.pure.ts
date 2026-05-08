@@ -70,12 +70,16 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
     }
 }
 
-let _registered = false;
-export function registerExtractHighlightsPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for extractHighlightsPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterExtractHighlightsPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphExtractHighlightsPostProcessBlock", NodeRenderGraphExtractHighlightsPostProcessBlock);
 }

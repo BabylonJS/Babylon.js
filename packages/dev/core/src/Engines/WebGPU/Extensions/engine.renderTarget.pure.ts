@@ -10,12 +10,16 @@ import { GetTypeForDepthTexture, HasStencilAspect } from "core/Materials/Texture
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineRenderTarget(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineRenderTarget.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineRenderTarget(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinWebGPUEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
         const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);

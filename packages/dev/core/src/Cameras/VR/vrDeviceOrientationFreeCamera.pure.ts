@@ -39,12 +39,16 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
     protected override _setRigMode = (rigParams: any) => _SetVrRigMode(this, rigParams);
 }
 
-let _registered = false;
-export function registerVrDeviceOrientationFreeCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for vrDeviceOrientationFreeCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVrDeviceOrientationFreeCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
         return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);

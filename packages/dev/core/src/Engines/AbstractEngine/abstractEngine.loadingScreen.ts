@@ -5,5 +5,5 @@ export * from "./abstractEngine.loadingScreen.types";
  */
 export * from "./abstractEngine.loadingScreen.pure";
 
-import { registerAbstractEngineLoadingScreen } from "./abstractEngine.loadingScreen.pure";
-registerAbstractEngineLoadingScreen();
+import { RegisterAbstractEngineLoadingScreen } from "./abstractEngine.loadingScreen.pure";
+RegisterAbstractEngineLoadingScreen();

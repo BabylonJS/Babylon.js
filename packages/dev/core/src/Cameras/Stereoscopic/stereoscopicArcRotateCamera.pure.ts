@@ -43,12 +43,16 @@ export class StereoscopicArcRotateCamera extends ArcRotateCamera {
     protected override _setRigMode = () => _SetStereoscopicRigMode(this);
 }
 
-let _registered = false;
-export function registerStereoscopicArcRotateCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for stereoscopicArcRotateCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterStereoscopicArcRotateCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) => {
         return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);

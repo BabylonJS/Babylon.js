@@ -4,5 +4,5 @@
  */
 export * from "./basicColorUpdateBlock.pure";
 
-import { registerBasicColorUpdateBlock } from "./basicColorUpdateBlock.pure";
-registerBasicColorUpdateBlock();
+import { RegisterBasicColorUpdateBlock } from "./basicColorUpdateBlock.pure";
+RegisterBasicColorUpdateBlock();

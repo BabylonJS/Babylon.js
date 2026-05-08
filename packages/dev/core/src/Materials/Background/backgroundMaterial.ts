@@ -4,5 +4,5 @@
  */
 export * from "./backgroundMaterial.pure";
 
-import { registerBackgroundMaterial } from "./backgroundMaterial.pure";
-registerBackgroundMaterial();
+import { RegisterBackgroundMaterial } from "./backgroundMaterial.pure";
+RegisterBackgroundMaterial();

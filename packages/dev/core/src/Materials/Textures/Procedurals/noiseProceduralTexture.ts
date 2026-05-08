@@ -4,5 +4,5 @@
  */
 export * from "./noiseProceduralTexture.pure";
 
-import { registerNoiseProceduralTexture } from "./noiseProceduralTexture.pure";
-registerNoiseProceduralTexture();
+import { RegisterNoiseProceduralTexture } from "./noiseProceduralTexture.pure";
+RegisterNoiseProceduralTexture();

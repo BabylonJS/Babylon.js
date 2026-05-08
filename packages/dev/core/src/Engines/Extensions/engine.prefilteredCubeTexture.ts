@@ -5,5 +5,5 @@ export * from "./engine.prefilteredCubeTexture.types";
  */
 export * from "./engine.prefilteredCubeTexture.pure";
 
-import { registerEnginePrefilteredCubeTexture } from "./engine.prefilteredCubeTexture.pure";
-registerEnginePrefilteredCubeTexture();
+import { RegisterEnginePrefilteredCubeTexture } from "./engine.prefilteredCubeTexture.pure";
+RegisterEnginePrefilteredCubeTexture();

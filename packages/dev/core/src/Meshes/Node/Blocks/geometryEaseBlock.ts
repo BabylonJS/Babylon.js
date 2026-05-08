@@ -4,5 +4,5 @@
  */
 export * from "./geometryEaseBlock.pure";
 
-import { registerGeometryEaseBlock } from "./geometryEaseBlock.pure";
-registerGeometryEaseBlock();
+import { RegisterGeometryEaseBlock } from "./geometryEaseBlock.pure";
+RegisterGeometryEaseBlock();

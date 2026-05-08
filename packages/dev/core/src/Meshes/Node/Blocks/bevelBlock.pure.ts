@@ -1849,12 +1849,16 @@ export class BevelBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerBevelBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for bevelBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBevelBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BevelBlock", BevelBlock);
 }

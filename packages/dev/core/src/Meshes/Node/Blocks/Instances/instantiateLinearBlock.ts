@@ -4,5 +4,5 @@
  */
 export * from "./instantiateLinearBlock.pure";
 
-import { registerInstantiateLinearBlock } from "./instantiateLinearBlock.pure";
-registerInstantiateLinearBlock();
+import { RegisterInstantiateLinearBlock } from "./instantiateLinearBlock.pure";
+RegisterInstantiateLinearBlock();

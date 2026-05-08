@@ -4,5 +4,5 @@
  */
 export * from "./WebXRNearInteraction.pure";
 
-import { registerWebXRNearInteraction } from "./WebXRNearInteraction.pure";
-registerWebXRNearInteraction();
+import { RegisterWebXRNearInteraction } from "./WebXRNearInteraction.pure";
+RegisterWebXRNearInteraction();

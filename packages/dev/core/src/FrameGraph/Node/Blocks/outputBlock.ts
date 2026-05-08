@@ -4,5 +4,5 @@
  */
 export * from "./outputBlock.pure";
 
-import { registerOutputBlock } from "./outputBlock.pure";
-registerOutputBlock();
+import { RegisterOutputBlock } from "./outputBlock.pure";
+RegisterOutputBlock();

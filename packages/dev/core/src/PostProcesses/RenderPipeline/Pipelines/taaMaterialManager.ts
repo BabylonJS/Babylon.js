@@ -4,5 +4,5 @@
  */
 export * from "./taaMaterialManager.pure";
 
-import { registerTaaMaterialManager } from "./taaMaterialManager.pure";
-registerTaaMaterialManager();
+import { RegisterTaaMaterialManager } from "./taaMaterialManager.pure";
+RegisterTaaMaterialManager();

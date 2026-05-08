@@ -299,12 +299,16 @@ export class ParticleConverterBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleConverterBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleConverterBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleConverterBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleConverterBlock", ParticleConverterBlock);
 }

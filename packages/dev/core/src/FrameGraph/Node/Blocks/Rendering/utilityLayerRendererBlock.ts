@@ -4,5 +4,5 @@
  */
 export * from "./utilityLayerRendererBlock.pure";
 
-import { registerUtilityLayerRendererBlock } from "./utilityLayerRendererBlock.pure";
-registerUtilityLayerRendererBlock();
+import { RegisterUtilityLayerRendererBlock } from "./utilityLayerRendererBlock.pure";
+RegisterUtilityLayerRendererBlock();

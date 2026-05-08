@@ -6,12 +6,16 @@ import { WebGPUEngine } from "../../webgpuEngine.pure";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineVideoTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineVideoTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineVideoTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     function IsExternalTexture(texture: Nullable<ExternalTexture> | HTMLVideoElement): texture is ExternalTexture {
         return texture && (texture as ExternalTexture).underlyingResource !== undefined ? true : false;

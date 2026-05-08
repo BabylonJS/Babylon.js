@@ -4,5 +4,5 @@
  */
 export * from "./crossBlock.pure";
 
-import { registerCrossBlock } from "./crossBlock.pure";
-registerCrossBlock();
+import { RegisterCrossBlock } from "./crossBlock.pure";
+RegisterCrossBlock();

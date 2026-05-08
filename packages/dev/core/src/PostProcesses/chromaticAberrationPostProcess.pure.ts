@@ -168,12 +168,16 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     }
 }
 
-let _registered = false;
-export function registerChromaticAberrationPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for chromaticAberrationPostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterChromaticAberrationPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ChromaticAberrationPostProcess", ChromaticAberrationPostProcess);
 }

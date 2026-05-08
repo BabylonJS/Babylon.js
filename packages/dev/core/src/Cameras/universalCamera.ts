@@ -4,5 +4,5 @@
  */
 export * from "./universalCamera.pure";
 
-import { registerUniversalCamera } from "./universalCamera.pure";
-registerUniversalCamera();
+import { RegisterUniversalCamera } from "./universalCamera.pure";
+RegisterUniversalCamera();

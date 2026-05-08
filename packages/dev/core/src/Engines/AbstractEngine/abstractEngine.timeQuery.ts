@@ -5,5 +5,5 @@ export * from "./abstractEngine.timeQuery.types";
  */
 export * from "./abstractEngine.timeQuery.pure";
 
-import { registerAbstractEngineTimeQuery } from "./abstractEngine.timeQuery.pure";
-registerAbstractEngineTimeQuery();
+import { RegisterAbstractEngineTimeQuery } from "./abstractEngine.timeQuery.pure";
+RegisterAbstractEngineTimeQuery();

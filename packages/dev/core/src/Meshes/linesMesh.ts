@@ -4,5 +4,5 @@
  */
 export * from "./linesMesh.pure";
 
-import { registerLinesMesh } from "./linesMesh.pure";
-registerLinesMesh();
+import { RegisterLinesMesh } from "./linesMesh.pure";
+RegisterLinesMesh();

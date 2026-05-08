@@ -4,5 +4,5 @@
  */
 export * from "./circleOfConfusionPostProcess.pure";
 
-import { registerCircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess.pure";
-registerCircleOfConfusionPostProcess();
+import { RegisterCircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess.pure";
+RegisterCircleOfConfusionPostProcess();

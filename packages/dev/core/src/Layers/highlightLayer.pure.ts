@@ -615,12 +615,16 @@ export class HighlightLayer extends EffectLayer {
     }
 }
 
-let _registered = false;
-export function registerHighlightLayer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for highlightLayer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterHighlightLayer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
         for (let index = 0; index < this.effectLayers?.length; index++) {

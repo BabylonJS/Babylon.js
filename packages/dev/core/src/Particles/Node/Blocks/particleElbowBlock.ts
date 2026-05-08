@@ -4,5 +4,5 @@
  */
 export * from "./particleElbowBlock.pure";
 
-import { registerParticleElbowBlock } from "./particleElbowBlock.pure";
-registerParticleElbowBlock();
+import { RegisterParticleElbowBlock } from "./particleElbowBlock.pure";
+RegisterParticleElbowBlock();

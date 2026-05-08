@@ -4,5 +4,5 @@
  */
 export * from "./biPlanarBlock.pure";
 
-import { registerBiPlanarBlock } from "./biPlanarBlock.pure";
-registerBiPlanarBlock();
+import { RegisterBiPlanarBlock } from "./biPlanarBlock.pure";
+RegisterBiPlanarBlock();

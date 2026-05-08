@@ -1246,12 +1246,16 @@ export class Texture extends BaseTexture {
     }
 }
 
-let _registered = false;
-export function registerTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for texture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // References the dependencies.
     RegisterClass("BABYLON.Texture", Texture);

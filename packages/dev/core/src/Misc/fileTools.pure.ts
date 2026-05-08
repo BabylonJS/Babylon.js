@@ -1029,12 +1029,16 @@ export const _injectLTSFileTools = (
     });
 };
 
-let _registered = false;
-export function registerFileTools(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for fileTools.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFileTools(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     const initSideEffects = () => {
         AbstractEngine._FileToolsLoadImage = LoadImage;

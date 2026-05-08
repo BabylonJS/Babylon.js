@@ -4,5 +4,5 @@
  */
 export * from "./ribbonBuilder.pure";
 
-import { registerRibbonBuilder } from "./ribbonBuilder.pure";
-registerRibbonBuilder();
+import { RegisterRibbonBuilder } from "./ribbonBuilder.pure";
+RegisterRibbonBuilder();

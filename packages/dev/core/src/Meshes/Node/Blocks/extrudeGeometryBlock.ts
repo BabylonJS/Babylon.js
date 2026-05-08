@@ -4,5 +4,5 @@
  */
 export * from "./extrudeGeometryBlock.pure";
 
-import { registerExtrudeGeometryBlock } from "./extrudeGeometryBlock.pure";
-registerExtrudeGeometryBlock();
+import { RegisterExtrudeGeometryBlock } from "./extrudeGeometryBlock.pure";
+RegisterExtrudeGeometryBlock();

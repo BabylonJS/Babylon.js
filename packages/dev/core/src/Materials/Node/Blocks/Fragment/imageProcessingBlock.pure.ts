@@ -259,12 +259,16 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerImageProcessingBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for imageProcessingBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterImageProcessingBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ImageProcessingBlock", ImageProcessingBlock);
 }

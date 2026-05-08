@@ -4,5 +4,5 @@
  */
 export * from "./cloudBlock.pure";
 
-import { registerCloudBlock } from "./cloudBlock.pure";
-registerCloudBlock();
+import { RegisterCloudBlock } from "./cloudBlock.pure";
+RegisterCloudBlock();

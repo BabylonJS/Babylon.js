@@ -256,12 +256,16 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerHighlightLayerBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for highlightLayerBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterHighlightLayerBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphHighlightLayerBlock", NodeRenderGraphHighlightLayerBlock);
 }

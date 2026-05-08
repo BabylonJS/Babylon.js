@@ -4,5 +4,5 @@
  */
 export * from "./remapBlock.pure";
 
-import { registerRemapBlock } from "./remapBlock.pure";
-registerRemapBlock();
+import { RegisterRemapBlock } from "./remapBlock.pure";
+RegisterRemapBlock();

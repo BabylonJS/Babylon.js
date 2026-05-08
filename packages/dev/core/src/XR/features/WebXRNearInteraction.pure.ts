@@ -1070,12 +1070,16 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXRNearInteraction(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRNearInteraction.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRNearInteraction(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     //Register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

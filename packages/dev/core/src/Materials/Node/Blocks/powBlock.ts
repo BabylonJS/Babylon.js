@@ -4,5 +4,5 @@
  */
 export * from "./powBlock.pure";
 
-import { registerPowBlock } from "./powBlock.pure";
-registerPowBlock();
+import { RegisterPowBlock } from "./powBlock.pure";
+RegisterPowBlock();

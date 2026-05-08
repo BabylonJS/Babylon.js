@@ -4,5 +4,5 @@
  */
 export * from "./geometryPosterizeBlock.pure";
 
-import { registerGeometryPosterizeBlock } from "./geometryPosterizeBlock.pure";
-registerGeometryPosterizeBlock();
+import { RegisterGeometryPosterizeBlock } from "./geometryPosterizeBlock.pure";
+RegisterGeometryPosterizeBlock();

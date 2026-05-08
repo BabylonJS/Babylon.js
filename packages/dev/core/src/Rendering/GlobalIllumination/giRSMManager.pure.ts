@@ -1054,12 +1054,16 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
     }
 }
 
-let _registered = false;
-export function registerGiRSMManager(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for giRSMManager.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGiRSMManager(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(`BABYLON.GIRSMRenderPluginMaterial`, GIRSMRenderPluginMaterial);
 }

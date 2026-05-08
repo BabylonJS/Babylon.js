@@ -3,12 +3,16 @@ import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 /** This file must only contain pure code and pure imports */
 
-let _registered = false;
-export function registerEnginesWebGPUExtensionsEngineAlpha(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesWebGPUExtensionsEngineAlpha.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesWebGPUExtensionsEngineAlpha(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinWebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false, targetIndex: number = 0): void {
         const alphaBlend = this._alphaState._alphaBlend[targetIndex];

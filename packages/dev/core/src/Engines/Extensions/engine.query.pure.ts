@@ -6,12 +6,16 @@ import { OcclusionQuery } from "../AbstractEngine/abstractEngine.query.pure";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineQuery(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineQuery.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineQuery(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.createQuery = function (): OcclusionQuery {
         const query = this._gl.createQuery();

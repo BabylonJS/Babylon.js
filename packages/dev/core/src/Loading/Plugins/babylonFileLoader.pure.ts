@@ -793,12 +793,16 @@ export const LoadAssetContainer = (
     return container;
 };
 
-let _registered = false;
-export function registerBabylonFileLoader(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for babylonFileLoader.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBabylonFileLoader(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
         if (!parsedData.materials) {

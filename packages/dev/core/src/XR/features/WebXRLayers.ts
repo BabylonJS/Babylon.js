@@ -4,5 +4,5 @@
  */
 export * from "./WebXRLayers.pure";
 
-import { registerWebXRLayers } from "./WebXRLayers.pure";
-registerWebXRLayers();
+import { RegisterWebXRLayers } from "./WebXRLayers.pure";
+RegisterWebXRLayers();

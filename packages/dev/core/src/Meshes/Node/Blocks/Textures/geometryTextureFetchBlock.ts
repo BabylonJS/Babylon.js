@@ -4,5 +4,5 @@
  */
 export * from "./geometryTextureFetchBlock.pure";
 
-import { registerGeometryTextureFetchBlock } from "./geometryTextureFetchBlock.pure";
-registerGeometryTextureFetchBlock();
+import { RegisterGeometryTextureFetchBlock } from "./geometryTextureFetchBlock.pure";
+RegisterGeometryTextureFetchBlock();

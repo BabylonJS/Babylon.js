@@ -4,5 +4,5 @@
  */
 export * from "./nativeXRFrame.pure";
 
-import { registerNativeXRFrame } from "./nativeXRFrame.pure";
-registerNativeXRFrame();
+import { RegisterNativeXRFrame } from "./nativeXRFrame.pure";
+RegisterNativeXRFrame();

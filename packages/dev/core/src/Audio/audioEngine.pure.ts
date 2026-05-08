@@ -270,12 +270,16 @@ export class AudioEngine implements IAudioEngine {
     }
 }
 
-let _registered = false;
-export function registerAudioEngine(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for audioEngine.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAudioEngine(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Sets the default audio engine to Babylon.js
     AbstractEngine.AudioEngineFactory = (

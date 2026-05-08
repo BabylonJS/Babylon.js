@@ -4,5 +4,5 @@
  */
 export * from "./particleMathBlock.pure";
 
-import { registerParticleMathBlock } from "./particleMathBlock.pure";
-registerParticleMathBlock();
+import { RegisterParticleMathBlock } from "./particleMathBlock.pure";
+RegisterParticleMathBlock();

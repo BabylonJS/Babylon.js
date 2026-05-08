@@ -4,5 +4,5 @@
  */
 export * from "./pannerBlock.pure";
 
-import { registerPannerBlock } from "./pannerBlock.pure";
-registerPannerBlock();
+import { RegisterPannerBlock } from "./pannerBlock.pure";
+RegisterPannerBlock();

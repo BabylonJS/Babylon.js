@@ -4,5 +4,5 @@
  */
 export * from "./goldbergMesh.pure";
 
-import { registerGoldbergMesh } from "./goldbergMesh.pure";
-registerGoldbergMesh();
+import { RegisterGoldbergMesh } from "./goldbergMesh.pure";
+RegisterGoldbergMesh();

@@ -212,12 +212,16 @@ export class ParticleRandomBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleRandomBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleRandomBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleRandomBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleRandomBlock", ParticleRandomBlock);
 }

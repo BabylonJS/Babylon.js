@@ -91,12 +91,16 @@ export class ParticleGradientValueBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerParticleGradientValueBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for particleGradientValueBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterParticleGradientValueBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ParticleGradientValueBlock", ParticleGradientValueBlock);
 }

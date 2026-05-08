@@ -4,5 +4,5 @@
  */
 export * from "./webgl2ParticleSystem.pure";
 
-import { registerWebgl2ParticleSystem } from "./webgl2ParticleSystem.pure";
-registerWebgl2ParticleSystem();
+import { RegisterWebgl2ParticleSystem } from "./webgl2ParticleSystem.pure";
+RegisterWebgl2ParticleSystem();

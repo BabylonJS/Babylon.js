@@ -5,5 +5,5 @@ export * from "./thinInstanceMesh.types";
  */
 export * from "./thinInstanceMesh.pure";
 
-import { registerThinInstanceMesh } from "./thinInstanceMesh.pure";
-registerThinInstanceMesh();
+import { RegisterThinInstanceMesh } from "./thinInstanceMesh.pure";
+RegisterThinInstanceMesh();

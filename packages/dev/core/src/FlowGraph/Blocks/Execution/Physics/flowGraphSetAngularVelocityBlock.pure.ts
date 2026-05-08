@@ -58,12 +58,16 @@ export class FlowGraphSetAngularVelocityBlock extends FlowGraphExecutionBlockWit
     }
 }
 
-let _registered = false;
-export function registerFlowGraphSetAngularVelocityBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphSetAngularVelocityBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphSetAngularVelocityBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.PhysicsSetAngularVelocity, FlowGraphSetAngularVelocityBlock);
 }

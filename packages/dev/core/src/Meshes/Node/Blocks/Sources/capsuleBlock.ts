@@ -4,5 +4,5 @@
  */
 export * from "./capsuleBlock.pure";
 
-import { registerCapsuleBlock } from "./capsuleBlock.pure";
-registerCapsuleBlock();
+import { RegisterCapsuleBlock } from "./capsuleBlock.pure";
+RegisterCapsuleBlock();

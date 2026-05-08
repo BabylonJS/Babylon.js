@@ -83,12 +83,16 @@ export class NodeRenderGraphGrainPostProcessBlock extends NodeRenderGraphBaseWit
     }
 }
 
-let _registered = false;
-export function registerGrainPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for grainPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGrainPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphGrainPostProcessBlock", NodeRenderGraphGrainPostProcessBlock);
 }

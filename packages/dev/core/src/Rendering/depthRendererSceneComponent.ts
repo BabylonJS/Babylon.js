@@ -5,5 +5,5 @@ export * from "./depthRendererSceneComponent.types";
  */
 export * from "./depthRendererSceneComponent.pure";
 
-import { registerDepthRendererSceneComponent } from "./depthRendererSceneComponent.pure";
-registerDepthRendererSceneComponent();
+import { RegisterDepthRendererSceneComponent } from "./depthRendererSceneComponent.pure";
+RegisterDepthRendererSceneComponent();

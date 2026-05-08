@@ -4,5 +4,5 @@
  */
 export * from "./meshDebugPluginMaterial.pure";
 
-import { registerMeshDebugPluginMaterial } from "./meshDebugPluginMaterial.pure";
-registerMeshDebugPluginMaterial();
+import { RegisterMeshDebugPluginMaterial } from "./meshDebugPluginMaterial.pure";
+RegisterMeshDebugPluginMaterial();

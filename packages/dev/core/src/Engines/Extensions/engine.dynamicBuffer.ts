@@ -5,5 +5,5 @@ export * from "./engine.dynamicBuffer.types";
  */
 export * from "./engine.dynamicBuffer.pure";
 
-import { registerEngineDynamicBuffer } from "./engine.dynamicBuffer.pure";
-registerEngineDynamicBuffer();
+import { RegisterEngineDynamicBuffer } from "./engine.dynamicBuffer.pure";
+RegisterEngineDynamicBuffer();

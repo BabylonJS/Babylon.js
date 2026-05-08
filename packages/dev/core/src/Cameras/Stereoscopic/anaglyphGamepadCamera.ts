@@ -4,5 +4,5 @@
  */
 export * from "./anaglyphGamepadCamera.pure";
 
-import { registerAnaglyphGamepadCamera } from "./anaglyphGamepadCamera.pure";
-registerAnaglyphGamepadCamera();
+import { RegisterAnaglyphGamepadCamera } from "./anaglyphGamepadCamera.pure";
+RegisterAnaglyphGamepadCamera();

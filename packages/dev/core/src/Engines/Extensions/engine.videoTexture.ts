@@ -5,5 +5,5 @@ export * from "./engine.videoTexture.types";
  */
 export * from "./engine.videoTexture.pure";
 
-import { registerEnginesExtensionsEngineVideoTexture } from "./engine.videoTexture.pure";
-registerEnginesExtensionsEngineVideoTexture();
+import { RegisterEnginesExtensionsEngineVideoTexture } from "./engine.videoTexture.pure";
+RegisterEnginesExtensionsEngineVideoTexture();

@@ -87,12 +87,16 @@ export class UpdateAngleBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerUpdateAngleBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for updateAngleBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterUpdateAngleBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.UpdateAngleBlock", UpdateAngleBlock);
 }

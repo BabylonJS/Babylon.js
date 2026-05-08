@@ -40,12 +40,16 @@ export class StereoscopicGamepadCamera extends GamepadCamera {
     protected override _setRigMode = () => _SetStereoscopicRigMode(this);
 }
 
-let _registered = false;
-export function registerStereoscopicGamepadCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for stereoscopicGamepadCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterStereoscopicGamepadCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("StereoscopicGamepadCamera", (name, scene, options) => {
         return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);

@@ -4,5 +4,5 @@
  */
 export * from "./bonesBlock.pure";
 
-import { registerBonesBlock } from "./bonesBlock.pure";
-registerBonesBlock();
+import { RegisterBonesBlock } from "./bonesBlock.pure";
+RegisterBonesBlock();

@@ -5,5 +5,5 @@ export * from "./abstractEngine.renderPass.types";
  */
 export * from "./abstractEngine.renderPass.pure";
 
-import { registerAbstractEngineRenderPass } from "./abstractEngine.renderPass.pure";
-registerAbstractEngineRenderPass();
+import { RegisterAbstractEngineRenderPass } from "./abstractEngine.renderPass.pure";
+RegisterAbstractEngineRenderPass();

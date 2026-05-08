@@ -142,12 +142,16 @@ export class OctreeSceneComponent {
     }
 }
 
-let _registered = false;
-export function registerOctreeSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for octreeSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterOctreeSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
         let component = this._getComponent(SceneComponentConstants.NAME_OCTREE);

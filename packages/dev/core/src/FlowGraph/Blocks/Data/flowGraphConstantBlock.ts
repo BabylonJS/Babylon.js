@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphConstantBlock.pure";
 
-import { registerFlowGraphConstantBlock } from "./flowGraphConstantBlock.pure";
-registerFlowGraphConstantBlock();
+import { RegisterFlowGraphConstantBlock } from "./flowGraphConstantBlock.pure";
+RegisterFlowGraphConstantBlock();

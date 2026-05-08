@@ -5,5 +5,5 @@ export * from "./engine.debugging.types";
  */
 export * from "./engine.debugging.pure";
 
-import { registerEngineDebugging } from "./engine.debugging.pure";
-registerEngineDebugging();
+import { RegisterEngineDebugging } from "./engine.debugging.pure";
+RegisterEngineDebugging();

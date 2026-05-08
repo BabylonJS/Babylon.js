@@ -4,5 +4,5 @@
  */
 export * from "./subtractBlock.pure";
 
-import { registerSubtractBlock } from "./subtractBlock.pure";
-registerSubtractBlock();
+import { RegisterSubtractBlock } from "./subtractBlock.pure";
+RegisterSubtractBlock();

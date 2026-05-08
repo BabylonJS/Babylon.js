@@ -4,5 +4,5 @@
  */
 export * from "./viewDirectionBlock.pure";
 
-import { registerViewDirectionBlock } from "./viewDirectionBlock.pure";
-registerViewDirectionBlock();
+import { RegisterViewDirectionBlock } from "./viewDirectionBlock.pure";
+RegisterViewDirectionBlock();

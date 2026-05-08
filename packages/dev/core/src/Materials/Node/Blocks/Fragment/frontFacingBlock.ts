@@ -4,5 +4,5 @@
  */
 export * from "./frontFacingBlock.pure";
 
-import { registerFrontFacingBlock } from "./frontFacingBlock.pure";
-registerFrontFacingBlock();
+import { RegisterFrontFacingBlock } from "./frontFacingBlock.pure";
+RegisterFrontFacingBlock();

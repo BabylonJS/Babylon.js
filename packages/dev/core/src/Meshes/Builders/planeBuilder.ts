@@ -4,5 +4,5 @@
  */
 export * from "./planeBuilder.pure";
 
-import { registerPlaneBuilder } from "./planeBuilder.pure";
-registerPlaneBuilder();
+import { RegisterPlaneBuilder } from "./planeBuilder.pure";
+RegisterPlaneBuilder();

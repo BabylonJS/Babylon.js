@@ -108,12 +108,16 @@ export class FlowGraphPointerDownEventBlock extends FlowGraphEventBlock {
     }
 }
 
-let _registered = false;
-export function registerFlowGraphPointerDownEventBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphPointerDownEventBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphPointerDownEventBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.PointerDownEvent, FlowGraphPointerDownEventBlock);
 }

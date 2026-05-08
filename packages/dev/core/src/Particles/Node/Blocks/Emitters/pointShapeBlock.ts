@@ -4,5 +4,5 @@
  */
 export * from "./pointShapeBlock.pure";
 
-import { registerPointShapeBlock } from "./pointShapeBlock.pure";
-registerPointShapeBlock();
+import { RegisterPointShapeBlock } from "./pointShapeBlock.pure";
+RegisterPointShapeBlock();

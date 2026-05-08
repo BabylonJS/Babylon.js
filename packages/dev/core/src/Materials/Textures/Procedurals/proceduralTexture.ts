@@ -4,5 +4,5 @@
  */
 export * from "./proceduralTexture.pure";
 
-import { registerProceduralTexture } from "./proceduralTexture.pure";
-registerProceduralTexture();
+import { RegisterProceduralTexture } from "./proceduralTexture.pure";
+RegisterProceduralTexture();

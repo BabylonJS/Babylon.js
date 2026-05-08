@@ -172,12 +172,16 @@ export class ShadowMapBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerShadowMapBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for shadowMapBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterShadowMapBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ShadowMapBlock", ShadowMapBlock);
 }

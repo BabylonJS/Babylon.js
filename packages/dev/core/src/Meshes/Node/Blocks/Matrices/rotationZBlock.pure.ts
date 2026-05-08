@@ -53,12 +53,16 @@ export class RotationZBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerRotationZBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for rotationZBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterRotationZBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.RotationZBlock", RotationZBlock);
 }

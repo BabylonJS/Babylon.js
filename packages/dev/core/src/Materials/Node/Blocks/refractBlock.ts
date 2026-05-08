@@ -4,5 +4,5 @@
  */
 export * from "./refractBlock.pure";
 
-import { registerRefractBlock } from "./refractBlock.pure";
-registerRefractBlock();
+import { RegisterRefractBlock } from "./refractBlock.pure";
+RegisterRefractBlock();

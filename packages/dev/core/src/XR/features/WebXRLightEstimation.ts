@@ -4,5 +4,5 @@
  */
 export * from "./WebXRLightEstimation.pure";
 
-import { registerWebXRLightEstimation } from "./WebXRLightEstimation.pure";
-registerWebXRLightEstimation();
+import { RegisterWebXRLightEstimation } from "./WebXRLightEstimation.pure";
+RegisterWebXRLightEstimation();

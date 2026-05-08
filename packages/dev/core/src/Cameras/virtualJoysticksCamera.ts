@@ -4,5 +4,5 @@
  */
 export * from "./virtualJoysticksCamera.pure";
 
-import { registerVirtualJoysticksCamera } from "./virtualJoysticksCamera.pure";
-registerVirtualJoysticksCamera();
+import { RegisterVirtualJoysticksCamera } from "./virtualJoysticksCamera.pure";
+RegisterVirtualJoysticksCamera();

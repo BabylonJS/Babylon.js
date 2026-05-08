@@ -4,5 +4,5 @@
  */
 export * from "./gridBlock.pure";
 
-import { registerGridBlock } from "./gridBlock.pure";
-registerGridBlock();
+import { RegisterGridBlock } from "./gridBlock.pure";
+RegisterGridBlock();

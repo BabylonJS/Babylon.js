@@ -4,5 +4,5 @@
  */
 export * from "./webXRHTCViveMotionController.pure";
 
-import { registerWebXRHTCViveMotionController } from "./webXRHTCViveMotionController.pure";
-registerWebXRHTCViveMotionController();
+import { RegisterWebXRHTCViveMotionController } from "./webXRHTCViveMotionController.pure";
+RegisterWebXRHTCViveMotionController();

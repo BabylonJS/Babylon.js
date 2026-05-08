@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphInteger.pure";
 
-import { registerFlowGraphInteger } from "./flowGraphInteger.pure";
-registerFlowGraphInteger();
+import { RegisterFlowGraphInteger } from "./flowGraphInteger.pure";
+RegisterFlowGraphInteger();

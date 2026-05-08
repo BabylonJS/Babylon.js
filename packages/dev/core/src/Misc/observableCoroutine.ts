@@ -5,5 +5,5 @@ export * from "./observableCoroutine.types";
  */
 export * from "./observableCoroutine.pure";
 
-import { registerObservableCoroutine } from "./observableCoroutine.pure";
-registerObservableCoroutine();
+import { RegisterObservableCoroutine } from "./observableCoroutine.pure";
+RegisterObservableCoroutine();

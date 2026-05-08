@@ -4,5 +4,5 @@
  */
 export * from "./geometryInputBlock.pure";
 
-import { registerGeometryInputBlock } from "./geometryInputBlock.pure";
-registerGeometryInputBlock();
+import { RegisterGeometryInputBlock } from "./geometryInputBlock.pure";
+RegisterGeometryInputBlock();

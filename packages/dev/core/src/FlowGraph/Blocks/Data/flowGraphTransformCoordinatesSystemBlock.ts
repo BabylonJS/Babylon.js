@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphTransformCoordinatesSystemBlock.pure";
 
-import { registerFlowGraphTransformCoordinatesSystemBlock } from "./flowGraphTransformCoordinatesSystemBlock.pure";
-registerFlowGraphTransformCoordinatesSystemBlock();
+import { RegisterFlowGraphTransformCoordinatesSystemBlock } from "./flowGraphTransformCoordinatesSystemBlock.pure";
+RegisterFlowGraphTransformCoordinatesSystemBlock();

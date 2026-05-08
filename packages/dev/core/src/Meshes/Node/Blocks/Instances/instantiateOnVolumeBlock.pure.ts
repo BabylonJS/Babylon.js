@@ -360,12 +360,16 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 }
 
-let _registered = false;
-export function registerInstantiateOnVolumeBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for instantiateOnVolumeBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInstantiateOnVolumeBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.InstantiateOnVolumeBlock", InstantiateOnVolumeBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./tonemapPostProcess.pure";
 
-import { registerTonemapPostProcess } from "./tonemapPostProcess.pure";
-registerTonemapPostProcess();
+import { RegisterTonemapPostProcess } from "./tonemapPostProcess.pure";
+RegisterTonemapPostProcess();

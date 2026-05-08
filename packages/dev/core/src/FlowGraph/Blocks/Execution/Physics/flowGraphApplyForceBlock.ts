@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphApplyForceBlock.pure";
 
-import { registerFlowGraphApplyForceBlock } from "./flowGraphApplyForceBlock.pure";
-registerFlowGraphApplyForceBlock();
+import { RegisterFlowGraphApplyForceBlock } from "./flowGraphApplyForceBlock.pure";
+RegisterFlowGraphApplyForceBlock();

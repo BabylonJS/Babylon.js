@@ -112,12 +112,16 @@ export class GrainPostProcess extends PostProcess {
     }
 }
 
-let _registered = false;
-export function registerGrainPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for grainPostProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGrainPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GrainPostProcess", GrainPostProcess);
 }

@@ -1904,12 +1904,16 @@ export class TmpColors {
     public static Color4: Color4[] = BuildArray(3, () => new Color4(0, 0, 0, 0));
 }
 
-let _registered = false;
-export function registerMathColor(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for mathColor.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMathColor(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperties(Color3.prototype, {
         dimension: { value: [3] },

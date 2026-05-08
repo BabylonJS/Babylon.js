@@ -4,5 +4,5 @@
  */
 export * from "./matrixTransposeBlock.pure";
 
-import { registerMatrixTransposeBlock } from "./matrixTransposeBlock.pure";
-registerMatrixTransposeBlock();
+import { RegisterMatrixTransposeBlock } from "./matrixTransposeBlock.pure";
+RegisterMatrixTransposeBlock();

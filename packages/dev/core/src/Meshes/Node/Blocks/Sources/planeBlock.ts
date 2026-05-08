@@ -4,5 +4,5 @@
  */
 export * from "./planeBlock.pure";
 
-import { registerPlaneBlock } from "./planeBlock.pure";
-registerPlaneBlock();
+import { RegisterPlaneBlock } from "./planeBlock.pure";
+RegisterPlaneBlock();

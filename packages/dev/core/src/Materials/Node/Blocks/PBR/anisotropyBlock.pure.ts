@@ -247,12 +247,16 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerAnisotropyBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for anisotropyBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAnisotropyBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.AnisotropyBlock", AnisotropyBlock);
 }

@@ -32,12 +32,16 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBaseShad
     }
 }
 
-let _registered = false;
-export function registerShadowGeneratorBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for shadowGeneratorBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterShadowGeneratorBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphShadowGeneratorBlock", NodeRenderGraphShadowGeneratorBlock);
 }

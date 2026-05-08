@@ -4,5 +4,5 @@
  */
 export * from "./executeBlock.pure";
 
-import { registerExecuteBlock } from "./executeBlock.pure";
-registerExecuteBlock();
+import { RegisterExecuteBlock } from "./executeBlock.pure";
+RegisterExecuteBlock();

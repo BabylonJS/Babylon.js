@@ -255,12 +255,16 @@ const OculusHandProfile: IMotionControllerLayoutMap = {
     },
 };
 
-let _registered = false;
-export function registerWebXROculusHandController(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXROculusHandController.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXROculusHandController(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // register the profiles
     WebXRMotionControllerManager.RegisterController("oculus-hand", (xrInput: XRInputSource, scene: Scene) => {

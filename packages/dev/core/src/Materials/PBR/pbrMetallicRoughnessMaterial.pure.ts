@@ -161,12 +161,16 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-let _registered = false;
-export function registerPbrMetallicRoughnessMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for pbrMetallicRoughnessMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPbrMetallicRoughnessMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PBRMetallicRoughnessMaterial", PBRMetallicRoughnessMaterial);
 }

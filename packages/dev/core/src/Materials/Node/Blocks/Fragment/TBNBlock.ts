@@ -4,5 +4,5 @@
  */
 export * from "./TBNBlock.pure";
 
-import { registerTBNBlock } from "./TBNBlock.pure";
-registerTBNBlock();
+import { RegisterTBNBlock } from "./TBNBlock.pure";
+RegisterTBNBlock();

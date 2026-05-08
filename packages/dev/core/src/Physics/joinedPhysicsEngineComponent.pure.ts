@@ -73,12 +73,16 @@ export class PhysicsEngineSceneComponent implements ISceneComponent {
     }
 }
 
-let _registered = false;
-export function registerJoinedPhysicsEngineComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for joinedPhysicsEngineComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterJoinedPhysicsEngineComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * Gets the current physics engine

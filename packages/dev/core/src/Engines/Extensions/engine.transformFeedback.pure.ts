@@ -8,12 +8,16 @@ import { Engine } from "../../Engines/engine.pure";
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var _forceTransformFeedbackToBundle = true;
 
-let _registered = false;
-export function registerEngineTransformFeedback(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for engineTransformFeedback.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEngineTransformFeedback(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Engine.prototype.createTransformFeedback = function (): WebGLTransformFeedback {
         const transformFeedback = this._gl.createTransformFeedback();

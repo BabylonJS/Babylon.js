@@ -81,12 +81,16 @@ export class BasicColorUpdateBlock extends NodeParticleBlock {
     }
 }
 
-let _registered = false;
-export function registerBasicColorUpdateBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for basicColorUpdateBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBasicColorUpdateBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.BasicColorUpdateBlock", BasicColorUpdateBlock);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPauseAnimationBlock.pure";
 
-import { registerFlowGraphPauseAnimationBlock } from "./flowGraphPauseAnimationBlock.pure";
-registerFlowGraphPauseAnimationBlock();
+import { RegisterFlowGraphPauseAnimationBlock } from "./flowGraphPauseAnimationBlock.pure";
+RegisterFlowGraphPauseAnimationBlock();

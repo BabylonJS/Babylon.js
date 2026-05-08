@@ -35,12 +35,16 @@ export class VirtualJoysticksCamera extends FreeCamera {
     }
 }
 
-let _registered = false;
-export function registerVirtualJoysticksCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for virtualJoysticksCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVirtualJoysticksCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("VirtualJoysticksCamera", (name, scene) => {
         return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);

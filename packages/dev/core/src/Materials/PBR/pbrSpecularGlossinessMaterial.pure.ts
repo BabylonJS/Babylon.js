@@ -158,12 +158,16 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-let _registered = false;
-export function registerPbrSpecularGlossinessMaterial(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for pbrSpecularGlossinessMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPbrSpecularGlossinessMaterial(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PBRSpecularGlossinessMaterial", PBRSpecularGlossinessMaterial);
 }

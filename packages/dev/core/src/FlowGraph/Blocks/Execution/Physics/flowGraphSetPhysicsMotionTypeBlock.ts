@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSetPhysicsMotionTypeBlock.pure";
 
-import { registerFlowGraphSetPhysicsMotionTypeBlock } from "./flowGraphSetPhysicsMotionTypeBlock.pure";
-registerFlowGraphSetPhysicsMotionTypeBlock();
+import { RegisterFlowGraphSetPhysicsMotionTypeBlock } from "./flowGraphSetPhysicsMotionTypeBlock.pure";
+RegisterFlowGraphSetPhysicsMotionTypeBlock();

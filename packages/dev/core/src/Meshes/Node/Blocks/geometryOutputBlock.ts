@@ -4,5 +4,5 @@
  */
 export * from "./geometryOutputBlock.pure";
 
-import { registerGeometryOutputBlock } from "./geometryOutputBlock.pure";
-registerGeometryOutputBlock();
+import { RegisterGeometryOutputBlock } from "./geometryOutputBlock.pure";
+RegisterGeometryOutputBlock();

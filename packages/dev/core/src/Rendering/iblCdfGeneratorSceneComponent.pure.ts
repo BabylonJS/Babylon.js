@@ -80,12 +80,16 @@ export class IblCdfGeneratorSceneComponent implements ISceneComponent {
     private _newIblObserver: Nullable<Observer<Nullable<BaseTexture>>> = null;
 }
 
-let _registered = false;
-export function registerIblCdfGeneratorSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for iblCdfGeneratorSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterIblCdfGeneratorSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Object.defineProperty(Scene.prototype, "iblCdfGenerator", {
         get: function (this: Scene) {

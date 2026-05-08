@@ -5,5 +5,5 @@ export * from "./gamepadSceneComponent.types";
  */
 export * from "./gamepadSceneComponent.pure";
 
-import { registerGamepadSceneComponent } from "./gamepadSceneComponent.pure";
-registerGamepadSceneComponent();
+import { RegisterGamepadSceneComponent } from "./gamepadSceneComponent.pure";
+RegisterGamepadSceneComponent();

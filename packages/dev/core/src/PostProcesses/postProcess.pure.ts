@@ -1213,12 +1213,16 @@ export class PostProcess {
     }
 }
 
-let _registered = false;
-export function registerPostProcess(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for postProcess.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPostProcess(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.setTextureFromPostProcess = function (channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         let postProcessInput = null;

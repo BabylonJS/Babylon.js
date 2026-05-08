@@ -4,5 +4,5 @@
  */
 export * from "./twirlBlock.pure";
 
-import { registerTwirlBlock } from "./twirlBlock.pure";
-registerTwirlBlock();
+import { RegisterTwirlBlock } from "./twirlBlock.pure";
+RegisterTwirlBlock();

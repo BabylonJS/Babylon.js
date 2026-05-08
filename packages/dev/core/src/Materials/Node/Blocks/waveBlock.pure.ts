@@ -125,12 +125,16 @@ export class WaveBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerWaveBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for waveBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWaveBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.WaveBlock", WaveBlock);
 }

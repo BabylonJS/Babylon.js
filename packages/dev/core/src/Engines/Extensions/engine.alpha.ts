@@ -5,5 +5,5 @@ export * from "./engine.alpha.types";
  */
 export * from "./engine.alpha.pure";
 
-import { registerEnginesExtensionsEngineAlpha } from "./engine.alpha.pure";
-registerEnginesExtensionsEngineAlpha();
+import { RegisterEnginesExtensionsEngineAlpha } from "./engine.alpha.pure";
+RegisterEnginesExtensionsEngineAlpha();

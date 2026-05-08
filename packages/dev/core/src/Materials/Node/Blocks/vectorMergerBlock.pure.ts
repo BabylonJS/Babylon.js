@@ -351,12 +351,16 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerVectorMergerBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for vectorMergerBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVectorMergerBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.VectorMergerBlock", VectorMergerBlock);
 }

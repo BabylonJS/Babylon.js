@@ -124,12 +124,16 @@ export class DeviceOrientationCamera extends FreeCamera {
     }
 }
 
-let _registered = false;
-export function registerDeviceOrientationCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for deviceOrientationCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDeviceOrientationCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
         return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);

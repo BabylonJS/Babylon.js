@@ -4,5 +4,5 @@
  */
 export * from "./volumetricLightScatteringPostProcess.pure";
 
-import { registerVolumetricLightScatteringPostProcess } from "./volumetricLightScatteringPostProcess.pure";
-registerVolumetricLightScatteringPostProcess();
+import { RegisterVolumetricLightScatteringPostProcess } from "./volumetricLightScatteringPostProcess.pure";
+RegisterVolumetricLightScatteringPostProcess();

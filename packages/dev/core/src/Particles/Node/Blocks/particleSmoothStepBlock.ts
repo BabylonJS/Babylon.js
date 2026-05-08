@@ -4,5 +4,5 @@
  */
 export * from "./particleSmoothStepBlock.pure";
 
-import { registerParticleSmoothStepBlock } from "./particleSmoothStepBlock.pure";
-registerParticleSmoothStepBlock();
+import { RegisterParticleSmoothStepBlock } from "./particleSmoothStepBlock.pure";
+RegisterParticleSmoothStepBlock();

@@ -71,12 +71,16 @@ export class CrossBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerCrossBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for crossBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterCrossBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.CrossBlock", CrossBlock);
 }

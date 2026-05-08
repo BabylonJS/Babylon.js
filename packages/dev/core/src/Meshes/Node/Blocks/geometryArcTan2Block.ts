@@ -4,5 +4,5 @@
  */
 export * from "./geometryArcTan2Block.pure";
 
-import { registerGeometryArcTan2Block } from "./geometryArcTan2Block.pure";
-registerGeometryArcTan2Block();
+import { RegisterGeometryArcTan2Block } from "./geometryArcTan2Block.pure";
+RegisterGeometryArcTan2Block();

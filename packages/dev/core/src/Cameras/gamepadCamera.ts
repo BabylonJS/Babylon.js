@@ -4,5 +4,5 @@
  */
 export * from "./gamepadCamera.pure";
 
-import { registerGamepadCamera } from "./gamepadCamera.pure";
-registerGamepadCamera();
+import { RegisterGamepadCamera } from "./gamepadCamera.pure";
+RegisterGamepadCamera();

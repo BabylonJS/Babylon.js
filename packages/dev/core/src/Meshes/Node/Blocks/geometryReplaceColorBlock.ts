@@ -4,5 +4,5 @@
  */
 export * from "./geometryReplaceColorBlock.pure";
 
-import { registerGeometryReplaceColorBlock } from "./geometryReplaceColorBlock.pure";
-registerGeometryReplaceColorBlock();
+import { RegisterGeometryReplaceColorBlock } from "./geometryReplaceColorBlock.pure";
+RegisterGeometryReplaceColorBlock();

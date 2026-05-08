@@ -533,12 +533,16 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerMorphTargetsBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for morphTargetsBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMorphTargetsBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.MorphTargetsBlock", MorphTargetsBlock);
 }

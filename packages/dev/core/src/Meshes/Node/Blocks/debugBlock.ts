@@ -4,5 +4,5 @@
  */
 export * from "./debugBlock.pure";
 
-import { registerMeshesNodeBlocksDebugBlock } from "./debugBlock.pure";
-registerMeshesNodeBlocksDebugBlock();
+import { RegisterMeshesNodeBlocksDebugBlock } from "./debugBlock.pure";
+RegisterMeshesNodeBlocksDebugBlock();

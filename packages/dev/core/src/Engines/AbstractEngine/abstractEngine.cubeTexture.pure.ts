@@ -11,12 +11,16 @@ import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/tex
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { AbstractEngine } from "../abstractEngine.pure";
 
-let _registered = false;
-export function registerAbstractEngineCubeTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineCubeTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineCubeTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype._partialLoadFile = function (
         url: string,

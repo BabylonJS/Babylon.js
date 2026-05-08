@@ -5,5 +5,5 @@ export * from "./arcRotateCameraVRDeviceOrientationInput.types";
  */
 export * from "./arcRotateCameraVRDeviceOrientationInput.pure";
 
-import { registerArcRotateCameraVRDeviceOrientationInput } from "./arcRotateCameraVRDeviceOrientationInput.pure";
-registerArcRotateCameraVRDeviceOrientationInput();
+import { RegisterArcRotateCameraVRDeviceOrientationInput } from "./arcRotateCameraVRDeviceOrientationInput.pure";
+RegisterArcRotateCameraVRDeviceOrientationInput();

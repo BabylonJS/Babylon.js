@@ -4,5 +4,5 @@
  */
 export * from "./instancesBlock.pure";
 
-import { registerInstancesBlock } from "./instancesBlock.pure";
-registerInstancesBlock();
+import { RegisterInstancesBlock } from "./instancesBlock.pure";
+RegisterInstancesBlock();

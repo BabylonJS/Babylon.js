@@ -621,12 +621,16 @@ export const PolyhedronBuilder = {
     CreatePolyhedron,
 };
 
-let _registered = false;
-export function registerPolyhedronBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for polyhedronBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPolyhedronBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     VertexData.CreatePolyhedron = CreatePolyhedronVertexData;
 

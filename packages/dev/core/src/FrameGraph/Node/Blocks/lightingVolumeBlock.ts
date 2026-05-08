@@ -4,5 +4,5 @@
  */
 export * from "./lightingVolumeBlock.pure";
 
-import { registerLightingVolumeBlock } from "./lightingVolumeBlock.pure";
-registerLightingVolumeBlock();
+import { RegisterLightingVolumeBlock } from "./lightingVolumeBlock.pure";
+RegisterLightingVolumeBlock();

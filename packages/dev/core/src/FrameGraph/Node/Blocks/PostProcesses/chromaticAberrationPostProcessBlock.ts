@@ -4,5 +4,5 @@
  */
 export * from "./chromaticAberrationPostProcessBlock.pure";
 
-import { registerChromaticAberrationPostProcessBlock } from "./chromaticAberrationPostProcessBlock.pure";
-registerChromaticAberrationPostProcessBlock();
+import { RegisterChromaticAberrationPostProcessBlock } from "./chromaticAberrationPostProcessBlock.pure";
+RegisterChromaticAberrationPostProcessBlock();

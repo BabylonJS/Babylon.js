@@ -4,5 +4,5 @@
  */
 export * from "./nativeEngine.pure";
 
-import { registerNativeEngine } from "./nativeEngine.pure";
-registerNativeEngine();
+import { RegisterNativeEngine } from "./nativeEngine.pure";
+RegisterNativeEngine();

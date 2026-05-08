@@ -50,12 +50,16 @@ export class FlowGraphCallCounterBlock extends FlowGraphExecutionBlockWithOutSig
     }
 }
 
-let _registered = false;
-export function registerFlowGraphCounterBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphCounterBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphCounterBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.CallCounter, FlowGraphCallCounterBlock);
 }

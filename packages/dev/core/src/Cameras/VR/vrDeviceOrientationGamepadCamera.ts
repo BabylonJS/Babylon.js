@@ -4,5 +4,5 @@
  */
 export * from "./vrDeviceOrientationGamepadCamera.pure";
 
-import { registerVrDeviceOrientationGamepadCamera } from "./vrDeviceOrientationGamepadCamera.pure";
-registerVrDeviceOrientationGamepadCamera();
+import { RegisterVrDeviceOrientationGamepadCamera } from "./vrDeviceOrientationGamepadCamera.pure";
+RegisterVrDeviceOrientationGamepadCamera();

@@ -4,5 +4,5 @@
  */
 export * from "./clipPlanesBlock.pure";
 
-import { registerClipPlanesBlock } from "./clipPlanesBlock.pure";
-registerClipPlanesBlock();
+import { RegisterClipPlanesBlock } from "./clipPlanesBlock.pure";
+RegisterClipPlanesBlock();

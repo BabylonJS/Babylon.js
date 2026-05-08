@@ -81,12 +81,16 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     }
 }
 
-let _registered = false;
-export function registerFlowGraphSendCustomEventBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphSendCustomEventBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphSendCustomEventBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.SendCustomEvent, FlowGraphSendCustomEventBlock);
 }

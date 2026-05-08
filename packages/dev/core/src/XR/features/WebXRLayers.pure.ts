@@ -375,12 +375,16 @@ export class WebXRLayers extends WebXRAbstractFeature {
     }
 }
 
-let _registered = false;
-export function registerWebXRLayers(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRLayers.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRLayers(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     //register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

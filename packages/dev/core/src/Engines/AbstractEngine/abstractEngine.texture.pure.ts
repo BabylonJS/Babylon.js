@@ -5,12 +5,16 @@ import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { AbstractEngine } from "../abstractEngine.pure";
 
-let _registered = false;
-export function registerAbstractEngineTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for abstractEngineTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAbstractEngineTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     AbstractEngine.prototype.createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         if (options.isCube) {

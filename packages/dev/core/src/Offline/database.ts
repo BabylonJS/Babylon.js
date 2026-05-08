@@ -4,5 +4,5 @@
  */
 export * from "./database.pure";
 
-import { registerDatabase } from "./database.pure";
-registerDatabase();
+import { RegisterDatabase } from "./database.pure";
+RegisterDatabase();

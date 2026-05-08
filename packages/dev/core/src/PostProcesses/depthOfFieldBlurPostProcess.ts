@@ -4,5 +4,5 @@
  */
 export * from "./depthOfFieldBlurPostProcess.pure";
 
-import { registerDepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess.pure";
-registerDepthOfFieldBlurPostProcess();
+import { RegisterDepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess.pure";
+RegisterDepthOfFieldBlurPostProcess();

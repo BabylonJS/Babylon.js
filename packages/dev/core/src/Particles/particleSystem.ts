@@ -4,5 +4,5 @@
  */
 export * from "./particleSystem.pure";
 
-import { registerParticleSystem } from "./particleSystem.pure";
-registerParticleSystem();
+import { RegisterParticleSystem } from "./particleSystem.pure";
+RegisterParticleSystem();

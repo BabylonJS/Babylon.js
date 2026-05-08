@@ -194,12 +194,16 @@ export class GeometryCollectionBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryCollectionBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryCollectionBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryCollectionBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryCollectionBlock", GeometryCollectionBlock);
 }

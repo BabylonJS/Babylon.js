@@ -334,12 +334,16 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     }
 }
 
-let _registered = false;
-export function registerInstantiateOnFacesBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for instantiateOnFacesBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterInstantiateOnFacesBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.InstantiateOnFacesBlock", InstantiateOnFacesBlock);
 }

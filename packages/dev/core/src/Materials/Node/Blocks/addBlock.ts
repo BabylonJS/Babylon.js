@@ -4,5 +4,5 @@
  */
 export * from "./addBlock.pure";
 
-import { registerAddBlock } from "./addBlock.pure";
-registerAddBlock();
+import { RegisterAddBlock } from "./addBlock.pure";
+RegisterAddBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./posterizeBlock.pure";
 
-import { registerPosterizeBlock } from "./posterizeBlock.pure";
-registerPosterizeBlock();
+import { RegisterPosterizeBlock } from "./posterizeBlock.pure";
+RegisterPosterizeBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./geometryOptimizeBlock.pure";
 
-import { registerGeometryOptimizeBlock } from "./geometryOptimizeBlock.pure";
-registerGeometryOptimizeBlock();
+import { RegisterGeometryOptimizeBlock } from "./geometryOptimizeBlock.pure";
+RegisterGeometryOptimizeBlock();

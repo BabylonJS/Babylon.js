@@ -501,12 +501,16 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerPerturbNormalBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for perturbNormalBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterPerturbNormalBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.PerturbNormalBlock", PerturbNormalBlock);
 }

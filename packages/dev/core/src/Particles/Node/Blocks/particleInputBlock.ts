@@ -4,5 +4,5 @@
  */
 export * from "./particleInputBlock.pure";
 
-import { registerParticleInputBlock } from "./particleInputBlock.pure";
-registerParticleInputBlock();
+import { RegisterParticleInputBlock } from "./particleInputBlock.pure";
+RegisterParticleInputBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./matrixSplitterBlock.pure";
 
-import { registerMatrixSplitterBlock } from "./matrixSplitterBlock.pure";
-registerMatrixSplitterBlock();
+import { RegisterMatrixSplitterBlock } from "./matrixSplitterBlock.pure";
+RegisterMatrixSplitterBlock();

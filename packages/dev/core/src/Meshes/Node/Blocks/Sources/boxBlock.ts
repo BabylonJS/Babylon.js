@@ -4,5 +4,5 @@
  */
 export * from "./boxBlock.pure";
 
-import { registerBoxBlock } from "./boxBlock.pure";
-registerBoxBlock();
+import { RegisterBoxBlock } from "./boxBlock.pure";
+RegisterBoxBlock();

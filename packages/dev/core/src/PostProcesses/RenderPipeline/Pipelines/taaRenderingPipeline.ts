@@ -4,5 +4,5 @@
  */
 export * from "./taaRenderingPipeline.pure";
 
-import { registerTaaRenderingPipeline } from "./taaRenderingPipeline.pure";
-registerTaaRenderingPipeline();
+import { RegisterTaaRenderingPipeline } from "./taaRenderingPipeline.pure";
+RegisterTaaRenderingPipeline();

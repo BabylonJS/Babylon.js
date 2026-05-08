@@ -4,5 +4,5 @@
  */
 export * from "./fxaaPostProcess.pure";
 
-import { registerFxaaPostProcess } from "./fxaaPostProcess.pure";
-registerFxaaPostProcess();
+import { RegisterFxaaPostProcess } from "./fxaaPostProcess.pure";
+RegisterFxaaPostProcess();

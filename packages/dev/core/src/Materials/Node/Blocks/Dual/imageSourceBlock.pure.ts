@@ -240,12 +240,16 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerImageSourceBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for imageSourceBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterImageSourceBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.ImageSourceBlock", ImageSourceBlock);
 }

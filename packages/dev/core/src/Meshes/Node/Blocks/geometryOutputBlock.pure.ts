@@ -53,12 +53,16 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryOutputBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryOutputBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryOutputBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryOutputBlock", GeometryOutputBlock);
 }

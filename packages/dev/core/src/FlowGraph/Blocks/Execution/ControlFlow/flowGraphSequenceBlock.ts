@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSequenceBlock.pure";
 
-import { registerFlowGraphSequenceBlock } from "./flowGraphSequenceBlock.pure";
-registerFlowGraphSequenceBlock();
+import { RegisterFlowGraphSequenceBlock } from "./flowGraphSequenceBlock.pure";
+RegisterFlowGraphSequenceBlock();

@@ -4,5 +4,5 @@
  */
 export * from "./setPositionsBlock.pure";
 
-import { registerSetPositionsBlock } from "./setPositionsBlock.pure";
-registerSetPositionsBlock();
+import { RegisterSetPositionsBlock } from "./setPositionsBlock.pure";
+RegisterSetPositionsBlock();

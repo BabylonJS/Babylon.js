@@ -4,5 +4,5 @@
  */
 export * from "./computeShaderParticleSystem.pure";
 
-import { registerComputeShaderParticleSystem } from "./computeShaderParticleSystem.pure";
-registerComputeShaderParticleSystem();
+import { RegisterComputeShaderParticleSystem } from "./computeShaderParticleSystem.pure";
+RegisterComputeShaderParticleSystem();

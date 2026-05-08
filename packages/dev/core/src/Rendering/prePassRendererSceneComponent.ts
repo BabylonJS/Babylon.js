@@ -5,5 +5,5 @@ export * from "./prePassRendererSceneComponent.types";
  */
 export * from "./prePassRendererSceneComponent.pure";
 
-import { registerPrePassRendererSceneComponent } from "./prePassRendererSceneComponent.pure";
-registerPrePassRendererSceneComponent();
+import { RegisterPrePassRendererSceneComponent } from "./prePassRendererSceneComponent.pure";
+RegisterPrePassRendererSceneComponent();

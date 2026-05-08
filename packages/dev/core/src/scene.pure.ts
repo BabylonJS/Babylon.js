@@ -5815,7 +5815,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.detachControl();
 
         // Detach cameras
-        const canvas = this._engine.getInputElement();
+        const canvas = this._engine.getInputElement?.();
 
         if (canvas) {
             for (let index = 0; index < this.cameras.length; index++) {
@@ -6782,12 +6782,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
 // Register Class Name
 
-let _registered = false;
-export function registerScene(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for scene.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterScene(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.Scene", Scene);
 }

@@ -4,5 +4,5 @@
  */
 export * from "./transformBlock.pure";
 
-import { registerTransformBlock } from "./transformBlock.pure";
-registerTransformBlock();
+import { RegisterTransformBlock } from "./transformBlock.pure";
+RegisterTransformBlock();

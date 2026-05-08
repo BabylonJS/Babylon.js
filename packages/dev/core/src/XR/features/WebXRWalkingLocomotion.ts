@@ -4,5 +4,5 @@
  */
 export * from "./WebXRWalkingLocomotion.pure";
 
-import { registerWebXRWalkingLocomotion } from "./WebXRWalkingLocomotion.pure";
-registerWebXRWalkingLocomotion();
+import { RegisterWebXRWalkingLocomotion } from "./WebXRWalkingLocomotion.pure";
+RegisterWebXRWalkingLocomotion();

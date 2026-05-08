@@ -239,12 +239,16 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerSheenBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for sheenBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSheenBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.SheenBlock", SheenBlock);
 }

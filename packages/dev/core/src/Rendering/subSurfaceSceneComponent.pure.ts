@@ -94,12 +94,16 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
     }
 }
 
-let _registered = false;
-export function registerSubSurfaceSceneComponent(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for subSurfaceSceneComponent.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSubSurfaceSceneComponent(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Adds the parser to the scene parsers.
     AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: any, scene: Scene) => {

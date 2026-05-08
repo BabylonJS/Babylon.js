@@ -68,12 +68,16 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
     }
 }
 
-let _registered = false;
-export function registerGenerateMipmapsBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for generateMipmapsBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGenerateMipmapsBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphGenerateMipmapsBlock", NodeRenderGraphGenerateMipmapsBlock);
 }

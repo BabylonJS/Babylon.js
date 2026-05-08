@@ -4,5 +4,5 @@
  */
 export * from "./debugBlock.pure";
 
-import { registerMaterialsNodeBlocksDebugBlock } from "./debugBlock.pure";
-registerMaterialsNodeBlocksDebugBlock();
+import { RegisterMaterialsNodeBlocksDebugBlock } from "./debugBlock.pure";
+RegisterMaterialsNodeBlocksDebugBlock();

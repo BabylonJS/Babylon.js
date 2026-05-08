@@ -4,5 +4,5 @@
  */
 export * from "./shadowGeneratorBlock.pure";
 
-import { registerShadowGeneratorBlock } from "./shadowGeneratorBlock.pure";
-registerShadowGeneratorBlock();
+import { RegisterShadowGeneratorBlock } from "./shadowGeneratorBlock.pure";
+RegisterShadowGeneratorBlock();

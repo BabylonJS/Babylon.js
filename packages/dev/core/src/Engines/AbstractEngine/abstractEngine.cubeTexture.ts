@@ -5,5 +5,5 @@ export * from "./abstractEngine.cubeTexture.types";
  */
 export * from "./abstractEngine.cubeTexture.pure";
 
-import { registerAbstractEngineCubeTexture } from "./abstractEngine.cubeTexture.pure";
-registerAbstractEngineCubeTexture();
+import { RegisterAbstractEngineCubeTexture } from "./abstractEngine.cubeTexture.pure";
+RegisterAbstractEngineCubeTexture();

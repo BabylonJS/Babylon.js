@@ -4,5 +4,5 @@
  */
 export * from "./sceneDepthBlock.pure";
 
-import { registerSceneDepthBlock } from "./sceneDepthBlock.pure";
-registerSceneDepthBlock();
+import { RegisterSceneDepthBlock } from "./sceneDepthBlock.pure";
+RegisterSceneDepthBlock();

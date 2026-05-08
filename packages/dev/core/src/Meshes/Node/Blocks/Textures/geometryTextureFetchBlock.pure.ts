@@ -230,12 +230,16 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
     }
 }
 
-let _registered = false;
-export function registerGeometryTextureFetchBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for geometryTextureFetchBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterGeometryTextureFetchBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.GeometryTextureFetchBlock", GeometryTextureFetchBlock);
 }

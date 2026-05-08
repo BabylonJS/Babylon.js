@@ -1402,12 +1402,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 }
 
-let _registered = false;
-export function registerRenderTargetTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for renderTargetTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterRenderTargetTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     /**
      * Sets a depth stencil texture from a render target on the engine to be used in the shader.

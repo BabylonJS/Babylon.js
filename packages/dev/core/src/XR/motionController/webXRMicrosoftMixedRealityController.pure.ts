@@ -510,12 +510,16 @@ const MixedRealityProfile: IMotionControllerLayoutMap = {
     },
 };
 
-let _registered = false;
-export function registerWebXRMicrosoftMixedRealityController(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for webXRMicrosoftMixedRealityController.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterWebXRMicrosoftMixedRealityController(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // register the profile
     WebXRMotionControllerManager.RegisterController("windows-mixed-reality", (xrInput: XRInputSource, scene: Scene) => {

@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphSceneReadyEventBlock.pure";
 
-import { registerFlowGraphSceneReadyEventBlock } from "./flowGraphSceneReadyEventBlock.pure";
-registerFlowGraphSceneReadyEventBlock();
+import { RegisterFlowGraphSceneReadyEventBlock } from "./flowGraphSceneReadyEventBlock.pure";
+RegisterFlowGraphSceneReadyEventBlock();

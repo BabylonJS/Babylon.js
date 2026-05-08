@@ -4,5 +4,5 @@
  */
 export * from "./stepBlock.pure";
 
-import { registerStepBlock } from "./stepBlock.pure";
-registerStepBlock();
+import { RegisterStepBlock } from "./stepBlock.pure";
+RegisterStepBlock();

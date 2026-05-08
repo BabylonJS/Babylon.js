@@ -4,5 +4,5 @@
  */
 export * from "./anaglyphPostProcessBlock.pure";
 
-import { registerAnaglyphPostProcessBlock } from "./anaglyphPostProcessBlock.pure";
-registerAnaglyphPostProcessBlock();
+import { RegisterAnaglyphPostProcessBlock } from "./anaglyphPostProcessBlock.pure";
+RegisterAnaglyphPostProcessBlock();

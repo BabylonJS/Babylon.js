@@ -5,5 +5,5 @@ export * from "./abstractEngine.dom.types";
  */
 export * from "./abstractEngine.dom.pure";
 
-import { registerAbstractEngineDom } from "./abstractEngine.dom.pure";
-registerAbstractEngineDom();
+import { RegisterAbstractEngineDom } from "./abstractEngine.dom.pure";
+RegisterAbstractEngineDom();

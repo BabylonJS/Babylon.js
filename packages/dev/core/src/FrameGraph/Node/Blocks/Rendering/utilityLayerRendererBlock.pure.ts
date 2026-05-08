@@ -102,12 +102,16 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
     }
 }
 
-let _registered = false;
-export function registerUtilityLayerRendererBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for utilityLayerRendererBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterUtilityLayerRendererBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphUtilityLayerRendererBlock", NodeRenderGraphUtilityLayerRendererBlock);
 }

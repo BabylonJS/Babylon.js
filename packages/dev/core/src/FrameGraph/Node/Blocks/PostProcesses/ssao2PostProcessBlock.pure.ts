@@ -334,12 +334,16 @@ export class NodeRenderGraphSSAO2PostProcessBlock extends NodeRenderGraphBasePos
     }
 }
 
-let _registered = false;
-export function registerSsao2PostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for ssao2PostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterSsao2PostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphSSAO2PostProcessBlock", NodeRenderGraphSSAO2PostProcessBlock);
 }

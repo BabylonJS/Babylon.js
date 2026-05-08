@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphDebugBlock.pure";
 
-import { registerFlowGraphDebugBlock } from "./flowGraphDebugBlock.pure";
-registerFlowGraphDebugBlock();
+import { RegisterFlowGraphDebugBlock } from "./flowGraphDebugBlock.pure";
+RegisterFlowGraphDebugBlock();

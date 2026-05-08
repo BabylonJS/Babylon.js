@@ -5,5 +5,5 @@ export * from "./engine.multiview.types";
  */
 export * from "./engine.multiview.pure";
 
-import { registerEngineMultiview } from "./engine.multiview.pure";
-registerEngineMultiview();
+import { RegisterEngineMultiview } from "./engine.multiview.pure";
+RegisterEngineMultiview();

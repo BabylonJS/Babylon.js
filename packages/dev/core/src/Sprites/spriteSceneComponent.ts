@@ -5,5 +5,5 @@ export * from "./spriteSceneComponent.types";
  */
 export * from "./spriteSceneComponent.pure";
 
-import { registerSpriteSceneComponent } from "./spriteSceneComponent.pure";
-registerSpriteSceneComponent();
+import { RegisterSpriteSceneComponent } from "./spriteSceneComponent.pure";
+RegisterSpriteSceneComponent();

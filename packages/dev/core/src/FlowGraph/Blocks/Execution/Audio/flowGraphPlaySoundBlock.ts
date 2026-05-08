@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphPlaySoundBlock.pure";
 
-import { registerFlowGraphPlaySoundBlock } from "./flowGraphPlaySoundBlock.pure";
-registerFlowGraphPlaySoundBlock();
+import { RegisterFlowGraphPlaySoundBlock } from "./flowGraphPlaySoundBlock.pure";
+RegisterFlowGraphPlaySoundBlock();

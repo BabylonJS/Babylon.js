@@ -4,5 +4,5 @@
  */
 export * from "./particleRampGradientBlock.pure";
 
-import { registerParticleRampGradientBlock } from "./particleRampGradientBlock.pure";
-registerParticleRampGradientBlock();
+import { RegisterParticleRampGradientBlock } from "./particleRampGradientBlock.pure";
+RegisterParticleRampGradientBlock();

@@ -39,12 +39,16 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
     protected override _setRigMode = () => _SetStereoscopicAnaglyphRigMode(this);
 }
 
-let _registered = false;
-export function registerAnaglyphArcRotateCamera(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for anaglyphArcRotateCamera.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAnaglyphArcRotateCamera(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
         return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, scene);

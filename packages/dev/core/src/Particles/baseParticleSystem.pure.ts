@@ -1067,12 +1067,16 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     }
 }
 
-let _registered = false;
-export function registerBaseParticleSystem(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for baseParticleSystem.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterBaseParticleSystem(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     // Register Class Name
     RegisterClass("BABYLON.BaseParticleSystem", BaseParticleSystem);

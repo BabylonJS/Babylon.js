@@ -7,12 +7,16 @@ import { IPipelineContext } from "../IPipelineContext";
 import { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 
-let _registered = false;
-export function registerEngineUniformBuffer(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for engineUniformBuffer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEngineUniformBuffer(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
         const ubo = this._gl.createBuffer();

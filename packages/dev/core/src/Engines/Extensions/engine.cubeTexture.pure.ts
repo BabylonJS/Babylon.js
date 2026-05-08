@@ -9,12 +9,16 @@ import { Constants } from "../constants";
 import { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
-let _registered = false;
-export function registerEnginesExtensionsEngineCubeTexture(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for enginesExtensionsEngineCubeTexture.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterEnginesExtensionsEngineCubeTexture(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
         const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);

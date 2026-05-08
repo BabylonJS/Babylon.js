@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphRichTypes.pure";
 
-import { registerFlowGraphRichTypes } from "./flowGraphRichTypes.pure";
-registerFlowGraphRichTypes();
+import { RegisterFlowGraphRichTypes } from "./flowGraphRichTypes.pure";
+RegisterFlowGraphRichTypes();

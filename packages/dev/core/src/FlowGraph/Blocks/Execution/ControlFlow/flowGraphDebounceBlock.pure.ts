@@ -58,12 +58,16 @@ export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal
     }
 }
 
-let _registered = false;
-export function registerFlowGraphDebounceBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphDebounceBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphDebounceBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.Debounce, FlowGraphDebounceBlock);
 }

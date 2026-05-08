@@ -4,5 +4,5 @@
  */
 export * from "./arcTan2Block.pure";
 
-import { registerArcTan2Block } from "./arcTan2Block.pure";
-registerArcTan2Block();
+import { RegisterArcTan2Block } from "./arcTan2Block.pure";
+RegisterArcTan2Block();

@@ -259,12 +259,16 @@ export class NodeRenderGraphImageProcessingPostProcessBlock extends NodeRenderGr
     }
 }
 
-let _registered = false;
-export function registerImageProcessingPostProcessBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for imageProcessingPostProcessBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterImageProcessingPostProcessBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeRenderGraphImageProcessingPostProcessBlock", NodeRenderGraphImageProcessingPostProcessBlock);
 }

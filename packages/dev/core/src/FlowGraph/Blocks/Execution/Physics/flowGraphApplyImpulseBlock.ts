@@ -4,5 +4,5 @@
  */
 export * from "./flowGraphApplyImpulseBlock.pure";
 
-import { registerFlowGraphApplyImpulseBlock } from "./flowGraphApplyImpulseBlock.pure";
-registerFlowGraphApplyImpulseBlock();
+import { RegisterFlowGraphApplyImpulseBlock } from "./flowGraphApplyImpulseBlock.pure";
+RegisterFlowGraphApplyImpulseBlock();

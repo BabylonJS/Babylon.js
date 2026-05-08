@@ -136,12 +136,16 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     }
 }
 
-let _registered = false;
-export function registerMaterialsNodeBlocksDebugBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for materialsNodeBlocksDebugBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMaterialsNodeBlocksDebugBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass("BABYLON.NodeMaterialDebugBlock", NodeMaterialDebugBlock);
 }

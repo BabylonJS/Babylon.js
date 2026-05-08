@@ -137,12 +137,16 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
     }
 }
 
-let _registered = false;
-export function registerFlowGraphConsoleLogBlock(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for flowGraphConsoleLogBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphConsoleLogBlock(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     RegisterClass(FlowGraphBlockNames.ConsoleLog, FlowGraphConsoleLogBlock);
 }

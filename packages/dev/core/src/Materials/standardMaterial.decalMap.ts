@@ -5,5 +5,5 @@ export * from "./standardMaterial.decalMap.types";
  */
 export * from "./standardMaterial.decalMap.pure";
 
-import { registerStandardMaterialDecalMap } from "./standardMaterial.decalMap.pure";
-registerStandardMaterialDecalMap();
+import { RegisterStandardMaterialDecalMap } from "./standardMaterial.decalMap.pure";
+RegisterStandardMaterialDecalMap();

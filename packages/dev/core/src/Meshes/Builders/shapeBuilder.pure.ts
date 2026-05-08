@@ -377,12 +377,16 @@ export const ShapeBuilder = {
     ExtrudeShapeCustom,
 };
 
-let _registered = false;
-export function registerShapeBuilder(): void {
-    if (_registered) {
+let _Registered = false;
+/**
+ * Register side effects for shapeBuilder.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterShapeBuilder(): void {
+    if (_Registered) {
         return;
     }
-    _registered = true;
+    _Registered = true;
 
     Mesh.ExtrudeShape = (
         name: string,

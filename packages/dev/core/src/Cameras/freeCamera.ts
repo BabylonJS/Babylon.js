@@ -4,5 +4,5 @@
  */
 export * from "./freeCamera.pure";
 
-import { registerFreeCamera } from "./freeCamera.pure";
-registerFreeCamera();
+import { RegisterFreeCamera } from "./freeCamera.pure";
+RegisterFreeCamera();

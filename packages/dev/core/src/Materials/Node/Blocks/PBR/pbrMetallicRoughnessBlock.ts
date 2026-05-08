@@ -4,5 +4,5 @@
  */
 export * from "./pbrMetallicRoughnessBlock.pure";
 
-import { registerPbrMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock.pure";
-registerPbrMetallicRoughnessBlock();
+import { RegisterPbrMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock.pure";
+RegisterPbrMetallicRoughnessBlock();

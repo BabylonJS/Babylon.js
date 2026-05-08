@@ -5,5 +5,5 @@ export * from "./freeCameraVirtualJoystickInput.types";
  */
 export * from "./freeCameraVirtualJoystickInput.pure";
 
-import { registerFreeCameraVirtualJoystickInput } from "./freeCameraVirtualJoystickInput.pure";
-registerFreeCameraVirtualJoystickInput();
+import { RegisterFreeCameraVirtualJoystickInput } from "./freeCameraVirtualJoystickInput.pure";
+RegisterFreeCameraVirtualJoystickInput();
