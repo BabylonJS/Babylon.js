@@ -1,21 +1,17 @@
-export { type ISerializedSmartAssetEntry, type ISerializedSmartAssetMap } from "./smartAssetSerializer";
+export { type ISerializedSmartAssetMap } from "./smartAssetSerializer";
 export {
     type SmartAssetManager,
-    type SmartAssetRegistrationOptions,
     GetSmartAssetManager,
     AddSmartAssetManagerCreatedObserver,
-    RegisterSmartAsset,
     SetSmartAssetRefreshCallback,
     RemoveSmartAssetAsync,
     GetAllSmartAssets,
     LoadSmartAssetAsync,
-    LoadAllSmartAssetsAsync,
     LoadSmartAssetTextureAsync,
     UnloadSmartAssetAsync,
     ReloadSmartAssetAsync,
     FindSmartAssetKeyForObject,
     SerializeSmartAssetManagerMap,
     LoadSmartAssetMapAsync,
-    DisposeSmartAssetManager,
     GetSmartAssetTextureExtensions,
 } from "./smartAssetManager";
