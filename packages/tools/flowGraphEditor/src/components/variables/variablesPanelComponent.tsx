@@ -21,12 +21,42 @@ import {
     type IVariableEntry,
     type VariableTypeName,
 } from "../../variableUtils";
-import { Body1, Caption1, Button, Card, Dropdown, Field, Input, Option, OptionGroup, Switch, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
+import {
+    Body1,
+    Caption1,
+    Button,
+    Card,
+    Divider,
+    Dropdown,
+    Field,
+    Input,
+    Option,
+    OptionGroup,
+    Switch,
+    Toolbar,
+    ToolbarButton,
+    Tooltip,
+    makeStyles,
+    tokens,
+} from "@fluentui/react-components";
 import { AddRegular, ChevronDownRegular, ChevronRightRegular, DismissRegular } from "@fluentui/react-icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 
 interface IVariablesPanelProps {
     globalState: GlobalState;
+    /**
+     * "horizontal" (default) lays the variable cards out as a wrapping flex row — used by
+     * the legacy in-canvas strip. "vertical" stacks them top-to-bottom and stretches each
+     * card to the container width — used by the side-pane host so cards fill the pane width.
+     */
+    layout?: "horizontal" | "vertical";
+    /**
+     * When true (default) the panel renders its own header (collapse arrow, "Variables" title,
+     * live badge, add button). When false the header is omitted and only the body is rendered —
+     * use this when the host already provides a title/header (e.g. a side pane's PaneHeader).
+     * The "+" add button moves to a footer in this mode so it remains accessible.
+     */
+    showHeader?: boolean;
 }
 
 interface IVariablesPanelInnerProps extends IVariablesPanelProps {
@@ -56,6 +86,17 @@ const useStyles = makeStyles({
         fontSize: tokens.fontSizeBase200,
         color: tokens.colorNeutralForeground1,
     },
+    stripVertical: {
+        // In side-pane (vertical) layout the panel fills the full pane height; no bottom border
+        // since the pane already has its own boundaries, and no flexShrink so the body region
+        // can expand.
+        borderBottom: "none",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        background: "transparent",
+    },
     header: {
         display: "flex",
         alignItems: "center",
@@ -83,7 +124,19 @@ const useStyles = makeStyles({
         overflowY: "auto",
         overflowX: "hidden",
     },
+    bodyVertical: {
+        // In side-pane (vertical) layout the body fills the available pane height instead of
+        // being capped to ~120px. The host pane is already a flex column with overflow hidden,
+        // so flex-grow lets us claim the leftover space and scroll within it.
+        maxHeight: "none",
+        flex: 1,
+        minHeight: 0,
+    },
     empty: {
+        // `display: block` is necessary because Body1 renders as a span by default, and padding
+        // on inline elements isn't applied uniformly to wrapped lines (the second line would lose
+        // its leading indent). Block makes padding work uniformly across wrap points.
+        display: "block",
         color: tokens.colorNeutralForeground3,
         fontStyle: "italic",
         fontSize: tokens.fontSizeBase300,
@@ -97,6 +150,12 @@ const useStyles = makeStyles({
         rowGap: tokens.spacingVerticalS,
         padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
     },
+    tableVertical: {
+        // Stack cards vertically (one per row) and let each card stretch to fill the side pane width.
+        flexWrap: "nowrap",
+        flexDirection: "column",
+        alignItems: "stretch",
+    },
     cell: {
         // Trim the Fluent Card to fit our compact variables strip. Background, border, radius,
         // and hover treatment all come from Card itself.
@@ -105,11 +164,37 @@ const useStyles = makeStyles({
         padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
         gap: tokens.spacingVerticalXS,
     },
+    cellVertical: {
+        // In vertical layout we don't want a maxWidth that creates whitespace next to the card —
+        // let it span the full pane width.
+        maxWidth: "none",
+        width: "100%",
+    },
+    sideToolbar: {
+        // Fluent <Toolbar> at the top of the side-pane variant. The Toolbar's own padding
+        // already aligns its first item with the left edge of the cards' container padding,
+        // so no extra wrapping styles are needed.
+        flexShrink: 0,
+    },
+    sideToolbarLiveBadge: {
+        color: tokens.colorPaletteGreenForeground1,
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: tokens.fontWeightSemibold,
+        marginLeft: "auto",
+        marginRight: tokens.spacingHorizontalM,
+    },
+    sideToolbarDivider: {
+        // Fluent <Divider> defaults to flex-grow: 1 (vertical fill), which is fine in a column
+        // flex container, but pin its height so it stays the visible 1px line. `inset` adds
+        // horizontal margin on each side so the rule sits flush with the card content padding.
+        flexGrow: 0,
+        flexShrink: 0,
+    },
     nameRow: { display: "flex", alignItems: "center", gap: tokens.spacingHorizontalXS },
     name: {
         flex: 1,
         fontFamily: tokens.fontFamilyMonospace,
-        fontSize: tokens.fontSizeBase100,
+        fontSize: tokens.fontSizeBase200,
         color: tokens.colorNeutralForeground1,
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -800,80 +885,109 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
     /** @internal */
     override render() {
         const { classes } = this.props;
+        const layout = this.props.layout ?? "horizontal";
+        const showHeader = this.props.showHeader ?? true;
+        const isVertical = layout === "vertical";
         const { variables, editingNameIndex, editingName, variableTypes, collapsed } = this.state;
         const varCount = variables.length;
+        // The collapse arrow only does anything when the header is rendered. In headerless mode
+        // (side-pane usage) the host pane is the unit of show/hide, so the body is always visible.
+        const bodyVisible = !showHeader || !collapsed;
+
+        const bodyContent = (
+            <div className={`${classes.body} ${isVertical ? classes.bodyVertical : ""}`}>
+                {variables.length === 0 ? (
+                    <Body1 className={classes.empty}>No variables. Click + to add one, or use GetVariable/SetVariable blocks.</Body1>
+                ) : (
+                    <div className={`${classes.table} ${isVertical ? classes.tableVertical : ""}`}>
+                        {variables.map((v, idx) => {
+                            const typeName = variableTypes.get(v.name) ?? "any";
+                            return (
+                                <Card key={v.name} size="small" className={`${classes.cell} ${isVertical ? classes.cellVertical : ""}`}>
+                                    <div className={classes.nameRow}>
+                                        {editingNameIndex === idx ? (
+                                            <Input
+                                                className={classes.nameInput}
+                                                size="small"
+                                                value={editingName}
+                                                onChange={(_, data) => this.setState({ editingName: data.value })}
+                                                onFocus={() => {
+                                                    this.props.globalState.lockObject.lock = true;
+                                                }}
+                                                onBlur={() => {
+                                                    this.props.globalState.lockObject.lock = false;
+                                                    this._commitNameEditing();
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    e.stopPropagation();
+                                                    if (e.key === "Enter") {
+                                                        this._commitNameEditing();
+                                                    } else if (e.key === "Escape") {
+                                                        this.setState({ editingNameIndex: null });
+                                                    }
+                                                }}
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <Tooltip content={`${v.name} (${v.getCount}G/${v.setCount}S) — double-click to rename`} relationship="description">
+                                                <Body1 className={classes.name} onDoubleClick={() => this._startNameEditing(idx)}>
+                                                    {v.name}
+                                                </Body1>
+                                            </Tooltip>
+                                        )}
+                                        <Tooltip content="Delete variable and its blocks" relationship="label">
+                                            <Button size="small" appearance="subtle" icon={<DismissRegular />} onClick={() => this._deleteVariable(v.name)} />
+                                        </Tooltip>
+                                    </div>
+                                    <div className={classes.typeRow}>{this._renderTypeSelector(v.name, typeName)}</div>
+                                    <div className={classes.valueRow}>{this._renderValueEditor(v.name, typeName, idx)}</div>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
 
         return (
-            <div className={classes.strip}>
-                <div className={classes.header}>
-                    <Tooltip content={collapsed ? "Expand variables" : "Collapse variables"} relationship="label">
-                        <Button
-                            size="small"
-                            appearance="subtle"
-                            icon={collapsed ? <ChevronRightRegular /> : <ChevronDownRegular />}
-                            onClick={() => this.setState({ collapsed: !collapsed })}
-                        />
-                    </Tooltip>
-                    <Body1 className={classes.title}>Variables{varCount > 0 ? ` (${varCount})` : ""}</Body1>
-                    {this.state.isRunning && <Caption1 className={classes.liveBadge}>● Live</Caption1>}
-                    <Tooltip content="Add a new variable" relationship="label">
-                        <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} onClick={() => this._addVariable()} />
-                    </Tooltip>
-                </div>
-                <Collapse visible={!collapsed} orientation="vertical">
-                    <div className={classes.body}>
-                        {variables.length === 0 ? (
-                            <Body1 className={classes.empty}>No variables. Click + to add one, or use GetVariable/SetVariable blocks.</Body1>
-                        ) : (
-                            <div className={classes.table}>
-                                {variables.map((v, idx) => {
-                                    const typeName = variableTypes.get(v.name) ?? "any";
-                                    return (
-                                        <Card key={v.name} size="small" className={classes.cell}>
-                                            <div className={classes.nameRow}>
-                                                {editingNameIndex === idx ? (
-                                                    <Input
-                                                        className={classes.nameInput}
-                                                        size="small"
-                                                        value={editingName}
-                                                        onChange={(_, data) => this.setState({ editingName: data.value })}
-                                                        onFocus={() => {
-                                                            this.props.globalState.lockObject.lock = true;
-                                                        }}
-                                                        onBlur={() => {
-                                                            this.props.globalState.lockObject.lock = false;
-                                                            this._commitNameEditing();
-                                                        }}
-                                                        onKeyDown={(e) => {
-                                                            e.stopPropagation();
-                                                            if (e.key === "Enter") {
-                                                                this._commitNameEditing();
-                                                            } else if (e.key === "Escape") {
-                                                                this.setState({ editingNameIndex: null });
-                                                            }
-                                                        }}
-                                                        autoFocus
-                                                    />
-                                                ) : (
-                                                    <Tooltip content={`${v.name} (${v.getCount}G/${v.setCount}S) — double-click to rename`} relationship="description">
-                                                        <Body1 className={classes.name} onDoubleClick={() => this._startNameEditing(idx)}>
-                                                            {v.name}
-                                                        </Body1>
-                                                    </Tooltip>
-                                                )}
-                                                <Tooltip content="Delete variable and its blocks" relationship="label">
-                                                    <Button size="small" appearance="subtle" icon={<DismissRegular />} onClick={() => this._deleteVariable(v.name)} />
-                                                </Tooltip>
-                                            </div>
-                                            <div className={classes.typeRow}>{this._renderTypeSelector(v.name, typeName)}</div>
-                                            <div className={classes.valueRow}>{this._renderValueEditor(v.name, typeName, idx)}</div>
-                                        </Card>
-                                    );
-                                })}
-                            </div>
-                        )}
+            <div className={`${classes.strip} ${isVertical ? classes.stripVertical : ""}`}>
+                {showHeader && (
+                    <div className={classes.header}>
+                        <Tooltip content={collapsed ? "Expand variables" : "Collapse variables"} relationship="label">
+                            <Button
+                                size="small"
+                                appearance="subtle"
+                                icon={collapsed ? <ChevronRightRegular /> : <ChevronDownRegular />}
+                                onClick={() => this.setState({ collapsed: !collapsed })}
+                            />
+                        </Tooltip>
+                        <Body1 className={classes.title}>Variables{varCount > 0 ? ` (${varCount})` : ""}</Body1>
+                        {this.state.isRunning && <Caption1 className={classes.liveBadge}>● Live</Caption1>}
+                        <Tooltip content="Add a new variable" relationship="label">
+                            <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} onClick={() => this._addVariable()} />
+                        </Tooltip>
                     </div>
-                </Collapse>
+                )}
+                {!showHeader && (
+                    <>
+                        <Toolbar className={classes.sideToolbar} size="small">
+                            <Tooltip content="Add a new variable" relationship="label">
+                                <ToolbarButton icon={<AddRegular />} onClick={() => this._addVariable()}>
+                                    Add variable
+                                </ToolbarButton>
+                            </Tooltip>
+                            {this.state.isRunning && <Caption1 className={classes.sideToolbarLiveBadge}>● Live</Caption1>}
+                        </Toolbar>
+                        <Divider inset className={classes.sideToolbarDivider} />
+                    </>
+                )}
+                {showHeader ? (
+                    <Collapse visible={bodyVisible} orientation="vertical">
+                        {bodyContent}
+                    </Collapse>
+                ) : (
+                    bodyContent
+                )}
             </div>
         );
     }

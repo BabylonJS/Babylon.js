@@ -16,6 +16,7 @@ import { PropertyTabServiceDefinition } from "./services/propertyTabService";
 import { ScenePreviewServiceDefinition } from "./services/scenePreviewService";
 import { ToastBridgeServiceDefinition } from "./services/toastBridgeService";
 import { ToolbarServiceDefinition } from "./services/toolbarService";
+import { VariablesServiceDefinition } from "./services/variablesService";
 
 /**
  * Interface used to specify creation options for the flow graph editor
@@ -98,6 +99,7 @@ export class FlowGraphEditor {
                 ScenePreviewServiceDefinition,
                 ToastBridgeServiceDefinition,
                 ToolbarServiceDefinition,
+                VariablesServiceDefinition,
             ],
             toolbarMode: "full",
             showThemeSelector: true,

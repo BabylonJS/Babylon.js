@@ -16,7 +16,6 @@ import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { VariablesPanelComponent } from "./components/variables/variablesPanelComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
@@ -1399,7 +1398,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 >
                     <div className="diagram-canvas-pane" onContextMenu={this._onContextMenu}>
                         <GraphTabBarComponent globalState={this.props.globalState} />
-                        <VariablesPanelComponent globalState={this.props.globalState} />
                         <GraphCanvasComponent
                             ref={this._graphCanvasRef}
                             stateManager={this.props.globalState.stateManager}
