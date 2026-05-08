@@ -59,6 +59,7 @@ import { SettingsServiceDefinition } from "shared-ui-components/modularTool/serv
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
+import { OverrideCaptureServiceDefinition } from "./services/panes/tools/overrideCaptureService";
 import { SmartAssetsServiceDefinition } from "./services/panes/smartAssetsService";
 import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/import/gltfAnimationImportService";
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
@@ -369,6 +370,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             ExportServiceDefinition,
             SmartAssetPromptServiceDefinition,
             SmartAssetsServiceDefinition,
+            OverrideCaptureServiceDefinition,
             GLTFAnimationImportServiceDefinition,
             GLTFLoaderOptionsServiceDefinition,
             GLTFValidationServiceDefinition,
