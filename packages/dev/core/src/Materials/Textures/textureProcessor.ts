@@ -489,6 +489,11 @@ function _CreateProcessorTexture(
                 await Promise.all([import("../../Shaders/textureProcessor.fragment")]);
             }
         },
+        // Opt out of scene-managed rendering. _shouldRender() would re-render the texture
+        // on the first scene frame regardless of refreshRate (because _currentRefreshId starts
+        // at -1 and is only advanced by _shouldRender() itself, not by a direct render() call).
+        // That re-render would sample already-disposed input textures, producing blank output.
+        skipSceneRegistration: true,
     };
 
     const pt = new ProceduralTexture(name, outputSize, _ShaderName, scene, options);
@@ -504,39 +509,9 @@ function _CreateProcessorTexture(
  */
 async function _RenderAsync(pt: ProceduralTexture): Promise<void> {
     return await new Promise<void>((resolve, reject) => {
-        // Force effect creation by calling isReady() so getEffect() will return non-null.
-        pt.isReady();
-
-        const effect = pt.getEffect();
-        if (!effect) {
-            pt.dispose();
-            reject(new Error(`TextureProcessor: failed to create shader effect for "${pt.name}"`));
-            return;
-        }
-
-        effect.executeWhenCompiled(() => {
-            if (!effect.isReady()) {
-                const errors = effect.getCompilationError();
-                pt.dispose();
-                reject(new Error(`TextureProcessor: shader compilation failed for "${pt.name}"${errors ? `: ${errors}` : ""}`));
-                return;
-            }
+        pt.executeWhenReady(() => {
             try {
                 pt.render();
-                // Remove from scene.proceduralTextures immediately after rendering.
-                // ProceduralTexture's constructor pushes itself onto scene.proceduralTextures,
-                // and with refreshRate = -1, _currentRefreshId stays -1 after our explicit
-                // render() call (render() does not call _shouldRender()). This means the
-                // scene render loop would call _shouldRender() → true, then re-render the
-                // PT on the next frame — potentially with already-disposed input textures,
-                // producing a black result. Removing it here prevents that re-render.
-                const scene = pt.getScene();
-                if (scene) {
-                    const idx = scene.proceduralTextures.indexOf(pt);
-                    if (idx >= 0) {
-                        scene.proceduralTextures.splice(idx, 1);
-                    }
-                }
                 resolve();
             } catch (error) {
                 reject(error instanceof Error ? error : new Error(String(error)));

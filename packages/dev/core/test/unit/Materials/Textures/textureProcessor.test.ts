@@ -90,15 +90,21 @@ function _makeFakePTClass() {
         isReady() {
             return true;
         }
+        executeWhenReady(func: (texture: unknown) => void) {
+            // isReady() always returns true in this mock, so the callback fires immediately.
+            func(this);
+        }
         getEffect() {
             return fakeEffect;
         }
         /**
-         * Return null so _RenderAsync skips the scene.proceduralTextures splice.
-         * @returns null
+         * Return a minimal scene stub so the proceduralTextures splice in _CreateProcessorTexture
+         * runs without error. The texture is not actually added to the list by the mock constructor,
+         * so indexOf returns -1 and the splice is a no-op.
+         * @returns Minimal scene-like object
          */
         getScene() {
-            return null;
+            return { proceduralTextures: [] };
         }
         render() {}
         dispose() {
