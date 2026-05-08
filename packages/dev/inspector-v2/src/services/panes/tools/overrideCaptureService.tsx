@@ -2,7 +2,8 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../properties/propertiesService";
 
-import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { FindSmartAssetKeyForObject, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { AddOverride, RenameOverrideTarget } from "core/SmartAssets/overrideManager";
 import { type OverrideTargetType } from "core/SmartAssets/overrideEntry";
 import { type Scene } from "core/scene";
 import { type Node } from "core/node";
@@ -55,7 +56,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
                 if (key !== null && targetType !== null) {
                     const oldName = previousNames.get(entity as object) ?? "";
                     if (oldName && oldName !== newValue) {
-                        overrides!.renameTarget(key, targetType, oldName, newValue);
+                        RenameOverrideTarget(overrides, key, targetType, oldName, newValue);
                     }
                     previousNames.set(entity as object, newValue);
                 }
@@ -95,7 +96,8 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
                 return;
             }
 
-            overrides!.addOverride(
+            AddOverride(
+                overrides,
                 {
                     key,
                     targetType,
@@ -131,7 +133,7 @@ function _findKeyForEntity(sam: SmartAssetManager, entity: unknown, scene: Scene
     }
 
     // Check if the entity is tracked by SmartAssetManager
-    const key = sam.findKeyForObject(entity as Node | Material | BaseTexture | AnimationGroup);
+    const key = FindSmartAssetKeyForObject(sam, entity as Node | Material | BaseTexture | AnimationGroup);
     if (key !== undefined) {
         return key;
     }
@@ -227,7 +229,7 @@ function _serializeValue(value: unknown, scene?: Scene, sam?: SmartAssetManager)
         if (className.includes("Texture") || className.includes("texture")) {
             // Try to find the smart asset key for this texture
             if (sam) {
-                const texKey = sam.findKeyForObject(value as BaseTexture);
+                const texKey = FindSmartAssetKeyForObject(sam, value as BaseTexture);
                 if (texKey) {
                     return `texture:${texKey}`;
                 }
@@ -296,7 +298,7 @@ function _findParentEntity(
             }
             try {
                 if ((mat as any)[prop] === entity) {
-                    const matKey = sam.findKeyForObject(mat) ?? "";
+                    const matKey = FindSmartAssetKeyForObject(sam, mat) ?? "";
                     return { key: matKey, targetType: "materials", targetName: mat.name, parentProperty: prop };
                 }
             } catch {
@@ -313,7 +315,7 @@ function _findParentEntity(
             }
             try {
                 if ((cam as any)[prop] === entity) {
-                    const camKey = sam.findKeyForObject(cam) ?? "";
+                    const camKey = FindSmartAssetKeyForObject(sam, cam) ?? "";
                     return { key: camKey, targetType: "cameras", targetName: cam.name, parentProperty: prop };
                 }
             } catch {
@@ -330,7 +332,7 @@ function _findParentEntity(
             }
             try {
                 if ((mesh as any)[prop] === entity) {
-                    const meshKey = sam.findKeyForObject(mesh) ?? "";
+                    const meshKey = FindSmartAssetKeyForObject(sam, mesh) ?? "";
                     return { key: meshKey, targetType: "meshes", targetName: mesh.name, parentProperty: prop };
                 }
             } catch {
@@ -347,7 +349,7 @@ function _findParentEntity(
             }
             try {
                 if ((light as any)[prop] === entity) {
-                    const lightKey = sam.findKeyForObject(light) ?? "";
+                    const lightKey = FindSmartAssetKeyForObject(sam, light) ?? "";
                     return { key: lightKey, targetType: "lights", targetName: light.name, parentProperty: prop };
                 }
             } catch {

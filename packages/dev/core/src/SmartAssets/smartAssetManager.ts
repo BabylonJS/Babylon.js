@@ -643,6 +643,29 @@ export function GetSmartAssetTextureExtensions(): ReadonlySet<string> {
 }
 
 /**
+ * Returns true if the smart asset key is registered as a standalone texture.
+ * A key is considered a texture if it was registered with type "texture",
+ * if its extension is a known texture extension, or if its URL has a
+ * texture file extension.
+ * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param key - The smart asset key to check.
+ * @returns True if the key represents a standalone texture asset.
+ */
+export function IsSmartAssetTextureKey(managerOrScene: SmartAssetManagerOrScene, key: string): boolean {
+    const manager = ResolveSmartAssetManager(managerOrScene);
+    const internal = GetSmartAssetInternals(manager);
+    if (internal.textureKeys.has(key)) {
+        return true;
+    }
+    const options = internal.options.get(key);
+    if (options?.type === "texture" || IsTextureExtension(options?.extension)) {
+        return true;
+    }
+    const url = internal.urls.get(key);
+    return url !== undefined && IsTextureUrl(url);
+}
+
+/**
  * Returns true if the URL points to a standalone texture file.
  * @param url - The URL to check.
  * @returns True if the URL has a texture file extension.

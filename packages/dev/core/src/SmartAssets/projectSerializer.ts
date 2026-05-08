@@ -146,7 +146,7 @@ export async function LoadProjectAsync(
             continue;
         }
         const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        RegisterSmartAsset(smartAssetManager, key, resolved, { type: entry.type });
+        RegisterSmartAsset(smartAssetManager, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
     }
 
     await LoadAllSmartAssetsAsync(smartAssetManager);

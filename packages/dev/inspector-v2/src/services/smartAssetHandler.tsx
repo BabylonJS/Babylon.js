@@ -1,4 +1,8 @@
 import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { GetOrCreateSmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { type OverrideManager } from "core/SmartAssets/overrideManager";
+import { GetOrCreateOverrideManager } from "core/SmartAssets/overrideManager";
+import { type Scene } from "core/scene";
 import { Observable } from "core/Misc/observable";
 import { SelectSmartAssetsPane } from "./smartAssetsPaneSelection";
 
@@ -93,4 +97,19 @@ export function installInspectorAssetNotFoundHandler(sam: SmartAssetManager): ()
             sam.onAssetNotFound = previousHandler;
         }
     };
+}
+
+/**
+ * Convenience helper that returns both the SmartAssetManager and OverrideManager
+ * attached to a scene, creating either if it does not already exist. Useful for
+ * Inspector services that need to read or mutate both managers without caring
+ * about their lifecycle.
+ * @param scene - The scene to look up or attach managers to.
+ * @returns The scene's SmartAssetManager and OverrideManager.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function getOrCreateManagers(scene: Scene): { sam: SmartAssetManager; overrides: OverrideManager } {
+    const sam = GetOrCreateSmartAssetManager(scene);
+    const overrides = GetOrCreateOverrideManager(scene);
+    return { sam, overrides };
 }

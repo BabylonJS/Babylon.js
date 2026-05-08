@@ -18,6 +18,7 @@ export {
     UnloadSmartAssetAsync,
     ReloadSmartAssetAsync,
     FindSmartAssetKeyForObject,
+    IsSmartAssetTextureKey,
     SerializeSmartAssetManagerMap,
     LoadSmartAssetMapAsync,
     DisposeSmartAssetManager,
