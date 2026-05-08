@@ -2,7 +2,6 @@ import { useCallback, useRef, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
 import {
-    AddSmartAssetManagerCreatedObserver,
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
     GetSmartAssetManager,
@@ -12,7 +11,6 @@ import {
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
     UnloadSmartAssetAsync,
-    type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
 
 import { type Material } from "core/Materials/material";
@@ -47,52 +45,13 @@ function _isTextureExtension(ext: string): boolean {
 }
 
 /**
- * Inspector pane service that appears when Smart Assets are used in the current scene.
+ * Inspector pane service that hosts the Smart Assets pane.
  */
 export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
     friendlyName: "Smart Assets",
     consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
     factory: (shellService, sceneContext, selectionService) => {
         let paneRegistration: IDisposable | null = null;
-        let selectionRequested = false;
-        let selectionRequestVersion = 0;
-
-        const selectPane = () => {
-            const pane = shellService.sidePanes.find((pane) => pane.key === SmartAssetsPaneKey);
-            if (pane) {
-                pane.select();
-                return true;
-            }
-            return false;
-        };
-
-        const schedulePaneSelection = (requestVersion: number, attempt = 0) => {
-            globalThis.setTimeout(
-                () => {
-                    if (!selectionRequested || requestVersion !== selectionRequestVersion) {
-                        return;
-                    }
-
-                    if (selectPane()) {
-                        selectionRequested = false;
-                        ClearSmartAssetsPaneSelectionRequest();
-                        return;
-                    }
-
-                    if (attempt < 10) {
-                        schedulePaneSelection(requestVersion, attempt + 1);
-                    }
-                },
-                attempt === 0 ? 0 : 16
-            );
-        };
-
-        const requestPaneSelection = () => {
-            selectionRequested = true;
-            selectionRequestVersion++;
-            registerPane();
-            schedulePaneSelection(selectionRequestVersion);
-        };
 
         const registerPane = () => {
             if (paneRegistration) {
@@ -112,43 +71,28 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
                     return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
                 },
             });
-
-            if (selectionRequested) {
-                schedulePaneSelection(selectionRequestVersion);
-            }
         };
 
-        const registerPaneForCurrentScene = () => {
-            if (sceneContext.currentScene) {
-                registerPane();
-            }
+        const selectPane = () => {
+            registerPane();
+            // shellService.onSelectSidePane is sticky (notifyIfTriggered = true), so a single
+            // synchronous select() call handles the "pane not yet mounted" case for us — the
+            // shell replays the cached selection to the SidePaneStrip when it subscribes.
+            shellService.sidePanes.find((pane) => pane.key === SmartAssetsPaneKey)?.select();
+            ClearSmartAssetsPaneSelectionRequest();
         };
 
-        registerPaneForCurrentScene();
+        registerPane();
 
-        const sceneObserver = sceneContext.currentSceneObservable.add(registerPaneForCurrentScene);
-        const selectionObserver = AddSmartAssetsPaneSelectionObserver(() => {
-            requestPaneSelection();
-        });
-
-        const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
-            if (manager.scene === sceneContext.currentScene) {
-                registerPane();
-                if (selectionRequested) {
-                    schedulePaneSelection(selectionRequestVersion);
-                }
-            }
-        });
+        const sceneObserver = sceneContext.currentSceneObservable.add(registerPane);
+        const selectionObserver = AddSmartAssetsPaneSelectionObserver(selectPane);
 
         return {
             dispose: () => {
-                selectionRequested = false;
-                selectionRequestVersion++;
                 paneRegistration?.dispose();
                 sceneObserver.remove();
                 selectionObserver?.remove();
                 EnableSmartAssetsPaneSelectionRequestCache();
-                smartAssetManagerCreatedObserver?.remove();
             },
         };
     },
