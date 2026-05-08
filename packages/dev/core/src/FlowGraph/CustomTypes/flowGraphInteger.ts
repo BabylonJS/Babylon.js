@@ -1,96 +1,11 @@
-import { RegisterClass } from "../../Misc/typeStore";
-
 /**
- * Class that represents an integer value.
+ * Re-exports all pure types and registers them with the serialization system.
+ * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Import flowGraphInteger.pure for tree-shakeable, side-effect-free usage.
  */
-export class FlowGraphInteger {
-    /**
-     * The value of the integer. Its type
-     * is a javascript number. Shouldn't be
-     * directly modified - it is populated by
-     * the constructor.
-     */
-    readonly value: number;
+export * from "./flowGraphInteger.pure";
 
-    constructor(value: number) {
-        this.value = this._toInt(value);
-    }
+import { RegisterClass } from "../../Misc/typeStore";
+import { FlowGraphInteger } from "./flowGraphInteger.pure";
 
-    /**
-     * Converts a float to an integer.
-     * @param n the float to convert
-     * @returns the result of n | 0 - converting it to a int
-     */
-    private _toInt(n: number): number {
-        return n | 0;
-    }
-
-    /**
-     * Adds two integers together.
-     * @param other the other integer to add
-     * @returns a FlowGraphInteger with the result of the addition
-     */
-    public add(other: FlowGraphInteger): FlowGraphInteger {
-        return new FlowGraphInteger(this.value + other.value);
-    }
-
-    /**
-     * Subtracts two integers.
-     * @param other the other integer to subtract
-     * @returns a FlowGraphInteger with the result of the subtraction
-     */
-    public subtract(other: FlowGraphInteger): FlowGraphInteger {
-        return new FlowGraphInteger(this.value - other.value);
-    }
-
-    /**
-     * Multiplies two integers.
-     * @param other the other integer to multiply
-     * @returns a FlowGraphInteger with the result of the multiplication
-     */
-    public multiply(other: FlowGraphInteger): FlowGraphInteger {
-        return new FlowGraphInteger(Math.imul(this.value, other.value));
-    }
-
-    /**
-     * Divides two integers.
-     * @param other the other integer to divide
-     * @returns a FlowGraphInteger with the result of the division
-     */
-    public divide(other: FlowGraphInteger): FlowGraphInteger {
-        return new FlowGraphInteger(this.value / other.value);
-    }
-
-    /**
-     * The class name of this type.
-     * @returns
-     */
-    public getClassName() {
-        return FlowGraphInteger.ClassName;
-    }
-
-    /**
-     * Compares two integers for equality.
-     * @param other the other integer to compare
-     * @returns
-     */
-    public equals(other: FlowGraphInteger): boolean {
-        return this.value === other.value;
-    }
-
-    public static ClassName = "FlowGraphInteger";
-
-    /**
-     * Parses a FlowGraphInteger from a serialization object.
-     * @param value te number to parse
-     * @returns
-     */
-    public static FromValue(value: number): FlowGraphInteger {
-        return new FlowGraphInteger(value);
-    }
-
-    public toString(): string {
-        return this.value.toString();
-    }
-}
 RegisterClass("FlowGraphInteger", FlowGraphInteger);

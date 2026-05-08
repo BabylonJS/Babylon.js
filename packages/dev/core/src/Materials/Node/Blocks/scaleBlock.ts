@@ -1,65 +1,11 @@
-import { NodeMaterialBlock } from "../nodeMaterialBlock";
-import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 /**
- * Block used to scale a vector by a float
+ * Re-exports all pure types and registers them with the serialization system.
+ * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Import scaleBlock.pure for tree-shakeable, side-effect-free usage.
  */
-export class ScaleBlock extends NodeMaterialBlock {
-    /**
-     * Creates a new ScaleBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+export * from "./scaleBlock.pure";
 
-        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("factor", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
-
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
-    }
-
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "ScaleBlock";
-    }
-
-    /**
-     * Gets the input component
-     */
-    public get input(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
-     * Gets the factor input component
-     */
-    public get factor(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
-
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
-
-        const output = this._outputs[0];
-
-        state.compilationString += state._declareOutput(output) + ` = ${this.input.associatedVariableName} * ${this.factor.associatedVariableName};\n`;
-
-        return this;
-    }
-}
+import { RegisterClass } from "../../../Misc/typeStore";
+import { ScaleBlock } from "./scaleBlock.pure";
 
 RegisterClass("BABYLON.ScaleBlock", ScaleBlock);

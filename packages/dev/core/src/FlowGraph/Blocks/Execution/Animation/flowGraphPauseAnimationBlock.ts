@@ -1,37 +1,12 @@
-import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
-import { RichTypeAny } from "../../../flowGraphRichTypes";
-import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { type AnimationGroup } from "core/Animations/animationGroup";
-import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
- * @experimental
- * Block that pauses a running animation
+ * Re-exports all pure types and registers them with the serialization system.
+ * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Import flowGraphPauseAnimationBlock.pure for tree-shakeable, side-effect-free usage.
  */
-export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The animation to pause.
-     */
-    public readonly animationToPause: FlowGraphDataConnection<AnimationGroup>;
+export * from "./flowGraphPauseAnimationBlock.pure";
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(config);
-        this.animationToPause = this.registerDataInput("animationToPause", RichTypeAny);
-    }
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphPauseAnimationBlock } from "./flowGraphPauseAnimationBlock.pure";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
-    public _execute(context: FlowGraphContext): void {
-        const animationToPauseValue = this.animationToPause.getValue(context);
-        animationToPauseValue.pause();
-        this.out._activateSignal(context);
-    }
-
-    /**
-     * @returns class name of the block.
-     */
-    public override getClassName(): string {
-        return FlowGraphBlockNames.PauseAnimation;
-    }
-}
 RegisterClass(FlowGraphBlockNames.PauseAnimation, FlowGraphPauseAnimationBlock);

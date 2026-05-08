@@ -1,31 +1,12 @@
-import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
-import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 /**
- * Block that triggers when a scene is ready.
+ * Re-exports all pure types and registers them with the serialization system.
+ * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Import flowGraphSceneReadyEventBlock.pure for tree-shakeable, side-effect-free usage.
  */
-export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
-    public override initPriority: number = -1;
+export * from "./flowGraphSceneReadyEventBlock.pure";
 
-    public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneReady;
+import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphSceneReadyEventBlock } from "./flowGraphSceneReadyEventBlock.pure";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
-    public override _executeEvent(context: FlowGraphContext, _payload: any): boolean {
-        this._execute(context);
-        return true;
-    }
-    public override _preparePendingTasks(context: FlowGraphContext): void {
-        // no-op
-    }
-    public override _cancelPendingTasks(context: FlowGraphContext): void {
-        // no-op
-    }
-    /**
-     * @returns class name of the block.
-     */
-    public override getClassName() {
-        return FlowGraphBlockNames.SceneReadyEvent;
-    }
-}
 RegisterClass(FlowGraphBlockNames.SceneReadyEvent, FlowGraphSceneReadyEventBlock);

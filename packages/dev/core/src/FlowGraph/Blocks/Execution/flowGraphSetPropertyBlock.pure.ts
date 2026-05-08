@@ -1,0 +1,124 @@
+/** This file must only contain pure code and pure imports */
+
+import { type AssetType, type FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
+import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
+import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+
+export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAssetType> {
+    /**
+     * The name of the property that will be set
+     */
+    propertyName?: string;
+
+    /**
+     * The target asset from which the property will be retrieved
+     */
+    target?: AssetType<O>;
+}
+
+/**
+ * This block will set a property on a given target asset.
+ * The property name can include dots ("."), which will be interpreted as a path to the property.
+ * The target asset is an input and can be changed at any time.
+ * The value of the property is an input and can be changed at any time.
+ *
+ * For example, with an input of a mesh asset, the property name "position.x" will set the x component of the position of the mesh.
+ *
+ * Note that it is recommended to input the object on which you are working on (i.e. a material) than providing a mesh and then getting the material from it.
+ */
+export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphExecutionBlockWithOutSignal {
+    /**
+     * Input connection: The value to set on the property.
+     */
+    public readonly value: FlowGraphDataConnection<P>;
+
+    /**
+     * Input connection: The target asset from which the property will be retrieved
+     */
+    public readonly object: FlowGraphDataConnection<AssetType<O>>;
+
+    /**
+     * Input connection: The name of the property that will be set
+     */
+    public readonly propertyName: FlowGraphDataConnection<string>;
+
+    /**
+     * Input connection: A function that can be used to set the value of the property.
+     * If set it will be used instead of the default set function.
+     */
+    public readonly customSetFunction: FlowGraphDataConnection<(target: AssetType<O>, propertyName: string, value: P, context: FlowGraphContext) => void>;
+
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public override config: IFlowGraphSetPropertyBlockConfiguration<O>
+    ) {
+        super(config);
+        this.object = this.registerDataInput("object", RichTypeAny, config.target);
+        this.value = this.registerDataInput("value", RichTypeAny);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeString, config.propertyName);
+        this.customSetFunction = this.registerDataInput("customSetFunction", RichTypeAny);
+    }
+    public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+        try {
+            const target = this.object.getValue(context);
+            const value = this.value.getValue(context);
+            const propertyName = this.propertyName.getValue(context);
+
+            this._stopRunningAnimations(context, target, propertyName);
+
+            const setFunction = this.customSetFunction.getValue(context);
+            if (setFunction) {
+                setFunction(target, propertyName, value, context);
+            } else {
+                this._setPropertyValue(target, propertyName, value);
+            }
+        } catch (e) {
+            this._reportError(context, e);
+        }
+        this.out._activateSignal(context);
+    }
+
+    private _stopRunningAnimations(context: FlowGraphContext, target: any, propertyName: string) {
+        const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
+        for (const uniqueId of currentlyRunningAnimationGroups) {
+            const animationGroup = context.assetsContext.animationGroups.find((animationGroup) => animationGroup.uniqueId === uniqueId);
+            if (animationGroup) {
+                for (const targetedAnimations of animationGroup.targetedAnimations) {
+                    if (targetedAnimations.target === target && targetedAnimations.animation.targetProperty === propertyName) {
+                        animationGroup.stop(true);
+                        animationGroup.dispose();
+
+                        const index = currentlyRunningAnimationGroups.indexOf(uniqueId);
+                        if (index !== -1) {
+                            currentlyRunningAnimationGroups.splice(index, 1);
+                            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private _setPropertyValue(target: AssetType<O>, propertyName: string, value: P): void {
+        const path = propertyName.split(".");
+        let obj = target as any;
+        for (let i = 0; i < path.length - 1; i++) {
+            const prop = path[i];
+            if (obj[prop] === undefined) {
+                obj[prop] = {};
+            }
+            obj = obj[prop];
+        }
+        obj[path[path.length - 1]] = value;
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.SetProperty;
+    }
+}

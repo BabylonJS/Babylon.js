@@ -1,61 +1,11 @@
-import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type FrameGraph } from "core/index";
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
-import { FrameGraphAnaglyphTask } from "core/FrameGraph/Tasks/PostProcesses/anaglyphTask";
-import { ThinAnaglyphPostProcess } from "core/PostProcesses/thinAnaglyphPostProcess";
-import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
-
 /**
- * Block that implements the anaglyph post process
+ * Re-exports all pure types and registers them with the serialization system.
+ * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Import anaglyphPostProcessBlock.pure for tree-shakeable, side-effect-free usage.
  */
-export class NodeRenderGraphAnaglyphPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
-    protected override _frameGraphTask: FrameGraphAnaglyphTask;
+export * from "./anaglyphPostProcessBlock.pure";
 
-    /**
-     * Gets the frame graph task associated with this block
-     */
-    public override get task() {
-        return this._frameGraphTask;
-    }
-
-    /**
-     * Create a new NodeRenderAnaglyphPostProcessBlock
-     * @param name defines the block name
-     * @param frameGraph defines the hosting frame graph
-     * @param scene defines the hosting scene
-     */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
-        super(name, frameGraph, scene);
-
-        this.registerInput("leftTexture", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
-
-        this.leftTexture.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-
-        this._finalizeInputOutputRegistering();
-
-        this._frameGraphTask = new FrameGraphAnaglyphTask(this.name, frameGraph, new ThinAnaglyphPostProcess(name, scene.getEngine()));
-    }
-
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "NodeRenderGraphAnaglyphPostProcessBlock";
-    }
-
-    /**
-     * Gets the left texture input component
-     */
-    public get leftTexture(): NodeRenderGraphConnectionPoint {
-        return this._inputs[2];
-    }
-
-    protected override _buildBlock(state: NodeRenderGraphBuildState) {
-        super._buildBlock(state);
-
-        this._frameGraphTask.leftTexture = this.leftTexture.connectedPoint?.value as FrameGraphTextureHandle;
-    }
-}
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphAnaglyphPostProcessBlock } from "./anaglyphPostProcessBlock.pure";
 
 RegisterClass("BABYLON.NodeRenderGraphAnaglyphPostProcessBlock", NodeRenderGraphAnaglyphPostProcessBlock);
