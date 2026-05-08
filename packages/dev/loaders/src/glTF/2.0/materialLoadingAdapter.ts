@@ -21,8 +21,13 @@ export interface IMaterialLoadingAdapter {
      * May return a Promise for async work (e.g. GPU texture processing). Any returned
      * Promise is tracked by the loader and awaited before the COMPLETE state is reached,
      * so callers can rely on onCompleteObservable for fully processed materials.
+     *
+     * The loader passes an AbortSignal that is aborted when the loader is disposed.
+     * Implementations should check `signal.aborted` after each await point and, if
+     * aborted, release any intermediate resources and return early.
+     * @param signal An AbortSignal that fires when the loader is disposed mid-flight.
      */
-    finalizeAsync?(): Promise<void> | void;
+    finalizeAsync?(signal: AbortSignal): Promise<void> | void;
 
     /**
      * Whether the material should be treated as unlit

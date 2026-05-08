@@ -197,6 +197,9 @@ export class GLTFLoader implements IGLTFLoader {
     /** @internal */
     public readonly _completePromises = new Array<Promise<unknown>>();
 
+    /** AbortController used to cancel in-flight finalizeAsync() calls when dispose() is called. */
+    private _finalizeController: AbortController | null = null;
+
     /** @internal */
     public _assetContainer: Nullable<AssetContainer> = null;
 
@@ -352,6 +355,9 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         this._disposed = true;
+
+        this._finalizeController?.abort();
+        this._finalizeController = null;
 
         this._completePromises.length = 0;
 
@@ -531,9 +537,13 @@ export class GLTFLoader implements IGLTFLoader {
                     // _completePromises so they are awaited before the COMPLETE state is reached.
                     // Fall back to the deprecated finalize() for third-party adapters that have not
                     // yet migrated, logging a warning so authors know to update.
+                    // An AbortController is created here and aborted in dispose() so that adapters
+                    // can detect mid-flight disposal and clean up intermediate resources early.
+                    this._finalizeController = new AbortController();
+                    const finalizeSignal = this._finalizeController.signal;
                     for (const adapter of Array.from(this._materialAdapters)) {
                         if (adapter.finalizeAsync) {
-                            const finalizePromise = adapter.finalizeAsync();
+                            const finalizePromise = adapter.finalizeAsync(finalizeSignal);
                             if (finalizePromise) {
                                 this._completePromises.push(finalizePromise);
                             }

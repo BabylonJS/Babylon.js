@@ -1254,9 +1254,11 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     *
+     * Finalizes material properties after all loading is complete.
+     * @param signal An AbortSignal that fires when the loader is disposed. Intermediate
+     *   textures are disposed and the method returns early when aborted.
      */
-    public async finalizeAsync(): Promise<void> {
+    public async finalizeAsync(signal: AbortSignal): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
@@ -1273,8 +1275,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     TextureChannel.A,
                     this._diffuseTransmissionTint,
                     this._diffuseTransmissionTintTexture,
-                    true
+                    true,
+                    signal
                 );
+                if (signal.aborted) {
+                    return;
+                }
             }
         }
         // If the material has transmission, we need to use the base color to tint the transmission.
@@ -1285,7 +1291,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
             } else if (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null) {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
-                await this.copySurfaceToCoatAsync(this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture);
+                await this.copySurfaceToCoatAsync(this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture, false, signal);
+                if (signal.aborted) {
+                    return;
+                }
             }
         }
 
@@ -1312,6 +1321,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.Linear,
                 ChannelMask.R
             );
+            if (signal.aborted) {
+                newRoughnessTexture.texture?.dispose();
+                return;
+            }
             this.specularRoughnessTexture = newRoughnessTexture.texture;
             this.specularRoughness = newRoughnessTexture.factor ? newRoughnessTexture.factor.r : 1.0;
 
@@ -1327,6 +1340,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.SRGB,
                 ChannelMask.RGB
             );
+            if (signal.aborted) {
+                newMetallic.texture?.dispose();
+                return;
+            }
             this.baseMetalnessTexture = newMetallic.texture;
             this.baseMetalness = newMetallic.factor ? newMetallic.factor.r : 1.0;
 
@@ -1342,6 +1359,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.SRGB,
                 ChannelMask.RGB
             );
+            if (signal.aborted) {
+                newBaseColor.texture?.dispose();
+                return;
+            }
             const oldBaseColorTexture = this.baseColorTexture;
             oldBaseColorTexture?.dispose();
             this.baseColorTexture = newBaseColor.texture;
@@ -1359,7 +1380,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         weightTextureChannel: TextureChannel,
         color: Color3,
         colorTexture: Nullable<BaseTexture>,
-        diffuseTransmission: boolean = false
+        diffuseTransmission: boolean = false,
+        signal: AbortSignal = new AbortController().signal
     ): Promise<void> {
         // Blend coat properties using:
         // New coat will cover all areas that previously had coat or transmission.
@@ -1400,6 +1422,11 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.SRGB
             ),
         ]);
+        if (signal.aborted) {
+            lerpCoatColor.texture?.dispose();
+            lerpSurfaceColor.texture?.dispose();
+            return;
+        }
 
         const newCoatColor = await MultiplyTexturesAsync(
             "newCoatColor (" + this._material.name + ")",
@@ -1408,6 +1435,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this._material.getScene(),
             TextureColorSpace.SRGB
         );
+        if (signal.aborted) {
+            newCoatColor.texture?.dispose();
+            return;
+        }
 
         if (newCoatColor.texture) {
             this.coatColorTexture = newCoatColor.texture;
@@ -1424,6 +1455,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
             this._material.getScene()
         );
+        if (signal.aborted) {
+            newCoatIor.texture?.dispose();
+            return;
+        }
         this.coatIor = newCoatIor.factor ? newCoatIor.factor.r : this.coatIor;
 
         const newCoatRoughness = await LerpTexturesAsync(
@@ -1437,6 +1472,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
             this._material.getScene()
         );
+        if (signal.aborted) {
+            newCoatRoughness.texture?.dispose();
+            return;
+        }
         this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
         this.coatRoughnessTexture = newCoatRoughness.texture;
 
@@ -1447,6 +1486,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
             this._material.getScene()
         );
+        if (signal.aborted) {
+            newCoatDarkening.texture?.dispose();
+            return;
+        }
         this.coatDarkening = newCoatDarkening.factor ? newCoatDarkening.factor.r : this.coatDarkening;
 
         if (diffuseTransmission) {
@@ -1461,6 +1504,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
                 this._material.getScene()
             );
+            if (signal.aborted) {
+                newSpecularRoughness.texture?.dispose();
+                return;
+            }
             this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
             this.specularRoughnessTexture = newSpecularRoughness.texture;
         }
@@ -1477,6 +1524,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
                 this._material.getScene()
             );
+            if (signal.aborted) {
+                newCoatNormal.texture?.dispose();
+                return;
+            }
             if (newCoatNormal.texture) {
                 this.geometryCoatNormalTexture = newCoatNormal.texture;
             }
