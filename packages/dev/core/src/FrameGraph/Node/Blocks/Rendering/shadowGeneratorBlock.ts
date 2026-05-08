@@ -1,8 +1,33 @@
-/**
- * Re-exports pure implementation and applies runtime side effects.
- * Import shadowGeneratorBlock.pure for tree-shakeable, side-effect-free usage.
- */
-export * from "./shadowGeneratorBlock.pure";
+import { type Scene, type FrameGraph } from "core/index";
+import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { FrameGraphShadowGeneratorTask } from "../../../Tasks/Rendering/shadowGeneratorTask";
 
-import { registerShadowGeneratorBlock } from "./shadowGeneratorBlock.pure";
-registerShadowGeneratorBlock();
+/**
+ * Block that generate shadows through a shadow generator
+ */
+export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBaseShadowGeneratorBlock {
+    /**
+     * Create a new NodeRenderGraphShadowGeneratorBlock
+     * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
+     * @param scene defines the hosting scene
+     */
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
+
+        this._finalizeInputOutputRegistering();
+
+        this._frameGraphTask = new FrameGraphShadowGeneratorTask(this.name, frameGraph);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public override getClassName() {
+        return "NodeRenderGraphShadowGeneratorBlock";
+    }
+}
+
+RegisterClass("BABYLON.NodeRenderGraphShadowGeneratorBlock", NodeRenderGraphShadowGeneratorBlock);

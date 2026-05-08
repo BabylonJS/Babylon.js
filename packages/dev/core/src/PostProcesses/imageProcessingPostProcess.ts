@@ -1,13 +1,13 @@
-import { type Nullable } from "../types"
+/* eslint-disable @typescript-eslint/naming-convention */
+import { type Nullable } from "../types";
 import { serialize } from "../Misc/decorators";
-import { type Color4 } from "../Maths/math.color"
-import { type Camera } from "../Cameras/camera"
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
-import { type ColorCurves } from "../Materials/colorCurves"
-import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration"
-import { type PostProcessOptions } from "./postProcess"
-import { PostProcess } from "./postProcess";
-import { type AbstractEngine } from "../Engines/abstractEngine"
+import { type Color4 } from "../Maths/math.color";
+import { type Camera } from "../Cameras/camera";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type ColorCurves } from "../Materials/colorCurves";
+import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import { ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
 

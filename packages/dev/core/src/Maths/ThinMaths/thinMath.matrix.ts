@@ -1,5 +1,6 @@
-import { type Tuple } from "core/types"
-import { type IMatrixLike } from "../math.like"
+import { type Tuple } from "core/types";
+import { type IMatrixLike } from "../math.like";
+
 /**
  * A thin matrix class that is used for size reasons.
  * The class is identity by default

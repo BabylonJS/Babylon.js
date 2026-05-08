@@ -1,5 +1,7 @@
-import { type Nullable } from "../types"
-import { type Animation } from "./animation"
+import { type Nullable } from "../types";
+
+import { type Animation } from "./animation";
+
 /**
  * Interface containing an array of animations
  */

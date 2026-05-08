@@ -20,9 +20,6 @@ export interface IAccessibilityTag {
      * Learn more about ARIA: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA
      */
     role?: AcceptedRole;
-    /**
-     *
-     */
     aria?: { [key in AcceptedARIA]: any };
 }
 

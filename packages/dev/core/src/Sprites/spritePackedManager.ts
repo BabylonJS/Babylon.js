@@ -1,6 +1,5 @@
-import { type SpriteManagerOptions } from "./spriteManager"
-import { SpriteManager } from "./spriteManager";
-import { type Scene } from "../scene"
+import { type SpriteManagerOptions, SpriteManager } from "./spriteManager";
+import { type Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 
 /**
@@ -8,9 +7,6 @@ import { Texture } from "../Materials/Textures/texture";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 
-/**
- *
- */
 export class SpritePackedManager extends SpriteManager {
     /**
      * Creates a new sprite manager from a packed sprite sheet

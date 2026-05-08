@@ -1,24 +1,15 @@
-import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index"
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * @internal
  */
 export class ThinSSAO2BlurPostProcess extends EffectWrapper {
-    /**
-     *
-     */
     public static readonly FragmentUrl = "ssao2";
 
-    /**
-     *
-     */
     public static readonly Uniforms = ["outSize", "samples", "soften", "tolerance"];
 
-    /**
-     *
-     */
     public static readonly Samplers = ["textureSampler", "depthSampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -34,7 +25,7 @@ export class ThinSSAO2BlurPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSAO2BlurPostProcess.FragmentUrl,
@@ -54,24 +45,12 @@ export class ThinSSAO2BlurPostProcess extends EffectWrapper {
     private readonly _isHorizontal: boolean;
     private _bypassBlur: boolean = false;
 
-    /**
-     *
-     */
     public textureSize: number = 0;
 
-    /**
-     *
-     */
     public bilateralSamples: number = 16;
 
-    /**
-     *
-     */
     public bilateralSoften: number = 0;
 
-    /**
-     *
-     */
     public bilateralTolerance: number = 0;
 
     public set bypassBlur(b: boolean) {

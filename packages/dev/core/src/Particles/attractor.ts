@@ -1,6 +1,7 @@
 import { Vector3 } from "core/Maths/math.vector";
-import { type Particle } from "./particle"
-import { type ThinParticleSystem } from "./thinParticleSystem"
+import { type Particle } from "./particle";
+import { type ThinParticleSystem } from "./thinParticleSystem";
+
 const ToAttractor: Vector3 = Vector3.Zero();
 const Force: Vector3 = Vector3.Zero();
 const ScaledForce: Vector3 = Vector3.Zero();

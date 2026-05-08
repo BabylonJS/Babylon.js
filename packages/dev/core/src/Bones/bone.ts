@@ -1,13 +1,14 @@
-import { type Skeleton } from "./skeleton"
+import { type Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
 import { BuildArray } from "../Misc/arrayTools";
-import { type Nullable } from "../types"
-import { type TransformNode } from "../Meshes/transformNode"
+import { type Nullable } from "../types";
+import { type TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Space } from "../Maths/math.axis";
 
-import { type Animation } from "../Animations/animation"
-import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride"
+import { type Animation } from "../Animations/animation";
+import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+
 /**
  * Class used to store bone information
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
@@ -1199,9 +1200,3 @@ export class Bone extends Node {
         super.dispose();
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
-
-Bone.prototype.copyAnimationRange ??= _MissingSideEffect("Bone", "copyAnimationRange") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

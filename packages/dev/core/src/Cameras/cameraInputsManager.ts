@@ -1,13 +1,13 @@
 import { Logger } from "../Misc/logger";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { Camera } from "./camera";
 /**
  * @ignore
  * This is a list of all the different input types that are available in the application.
  * Fo instance: ArcRotateCameraGamepadInput...
  */
-// eslint-disable-next-line no-var
+// eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var CameraInputTypes = {};
 
 /**

@@ -1,6 +1,6 @@
-import { type IAbstractSoundInstanceOptions } from "./abstractSoundInstance"
-import { _AbstractSoundInstance } from "./abstractSoundInstance";
-import { type IStaticSoundOptionsBase, type IStaticSoundPlayOptions, type IStaticSoundStopOptions } from "./staticSound"
+import { type IAbstractSoundInstanceOptions, _AbstractSoundInstance } from "./abstractSoundInstance";
+import { type IStaticSoundOptionsBase, type IStaticSoundPlayOptions, type IStaticSoundStopOptions } from "./staticSound";
+
 /**
  * Options for creating a static sound instance.
  * @internal

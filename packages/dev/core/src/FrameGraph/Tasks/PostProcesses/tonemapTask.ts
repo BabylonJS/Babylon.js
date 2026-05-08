@@ -1,4 +1,4 @@
-import { type FrameGraph } from "core/FrameGraph/frameGraph"
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { ThinTonemapPostProcess } from "core/PostProcesses/thinTonemapPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task which applies a tonemap post process.
  */
 export class FrameGraphTonemapTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinTonemapPostProcess;
 
     /**

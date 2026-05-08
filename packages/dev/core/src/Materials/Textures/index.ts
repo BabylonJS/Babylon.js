@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./baseTexture";
-
+// eslint-disable-next-line import/export
 export * from "./baseTexture.polynomial";
 export * from "./colorGradingTexture";
 export * from "./cubeTexture";

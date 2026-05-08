@@ -1,7 +1,8 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import { type Node } from "../../../node"
-import { type Nullable } from "../../../types"
-import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType"
+import { type Node } from "../../../node";
+import { type Nullable } from "../../../types";
+import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
+
 export const _SpatialAudioDefaults = {
     coneInnerAngle: 6.28318530718 as number,
     coneOuterAngle: 6.28318530718 as number,

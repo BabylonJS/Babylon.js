@@ -1,4 +1,4 @@
-import { type ArcRotateCamera } from "./arcRotateCamera"
+import { type ArcRotateCamera } from "./arcRotateCamera";
 import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
@@ -45,10 +45,3 @@ export class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateC
         return this;
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
-
-ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation ??= _MissingSideEffect("ArcRotateCameraInputsManager", "addVRDeviceOrientation") as any;
-ArcRotateCameraInputsManager.prototype.addGamepad ??= _MissingSideEffect("ArcRotateCameraInputsManager", "addGamepad") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

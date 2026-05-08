@@ -1,156 +1,64 @@
-import { type Nullable } from "../../types"
-import { type IAnimatable } from "../../Animations/animatable.interface"
+/* eslint-disable @typescript-eslint/naming-convention */
+import { type Nullable } from "../../types";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math.color";
-import { type SmartArray } from "../../Misc/smartArray"
-import { type BaseTexture } from "../../Materials/Textures/baseTexture"
-import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture"
+import { type SmartArray } from "../../Misc/smartArray";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
-import { type UniformBuffer } from "../../Materials/uniformBuffer"
-import { type EffectFallbacks } from "../effectFallbacks"
-import { type CubeTexture } from "../Textures/cubeTexture"
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
+import { type EffectFallbacks } from "../effectFallbacks";
+import { type CubeTexture } from "../Textures/cubeTexture";
 import { TmpVectors } from "../../Maths/math.vector";
-import { type SubMesh } from "../../Meshes/subMesh"
+import { type SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
-import { type Engine } from "../../Engines/engine"
-import { type Scene } from "../../scene"
-import { type PBRBaseMaterial } from "./pbrBaseMaterial"
+import { type Engine } from "../../Engines/engine";
+import { type Scene } from "../../scene";
+import { type PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
  */
 export class MaterialSubSurfaceDefines extends MaterialDefines {
-    /**
-     *
-     */
     public SUBSURFACE = false;
 
-    /**
-     *
-     */
     public SS_REFRACTION = false;
-    /**
-     *
-     */
     public SS_REFRACTION_USE_INTENSITY_FROM_THICKNESS = false;
-    /**
-     *
-     */
     public SS_TRANSLUCENCY = false;
-    /**
-     *
-     */
     public SS_TRANSLUCENCY_USE_INTENSITY_FROM_THICKNESS = false;
-    /**
-     *
-     */
     public SS_SCATTERING = false;
-    /**
-     *
-     */
     public SS_DISPERSION = false;
 
-    /**
-     *
-     */
     public SS_THICKNESSANDMASK_TEXTURE = false;
-    /**
-     *
-     */
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
-    /**
-     *
-     */
     public SS_HAS_THICKNESS = false;
-    /**
-     *
-     */
     public SS_REFRACTIONINTENSITY_TEXTURE = false;
-    /**
-     *
-     */
     public SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
-    /**
-     *
-     */
     public SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
-    /**
-     *
-     */
     public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
-    /**
-     *
-     */
     public SS_TRANSLUCENCYCOLOR_TEXTURE = false;
-    /**
-     *
-     */
     public SS_TRANSLUCENCYCOLOR_TEXTUREDIRECTUV = 0;
-    /**
-     *
-     */
     public SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA = false;
 
-    /**
-     *
-     */
     public SS_REFRACTIONMAP_3D = false;
-    /**
-     *
-     */
     public SS_REFRACTIONMAP_OPPOSITEZ = false;
-    /**
-     *
-     */
     public SS_LODINREFRACTIONALPHA = false;
-    /**
-     *
-     */
     public SS_GAMMAREFRACTION = false;
-    /**
-     *
-     */
     public SS_RGBDREFRACTION = false;
-    /**
-     *
-     */
     public SS_LINEARSPECULARREFRACTION = false;
-    /**
-     *
-     */
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
-    /**
-     *
-     */
     public SS_ALBEDOFORREFRACTIONTINT = false;
-    /**
-     *
-     */
     public SS_ALBEDOFORTRANSLUCENCYTINT = false;
-    /**
-     *
-     */
     public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
-    /**
-     *
-     */
     public SS_USE_THICKNESS_AS_DEPTH = false;
 
-    /**
-     *
-     */
     public SS_USE_GLTF_TEXTURES = false;
-    /**
-     *
-     */
     public SS_APPLY_ALBEDO_AFTER_SUBSURFACE = false;
-    /**
-     *
-     */
     public SS_TRANSLUCENCY_LEGACY = false;
 }
 

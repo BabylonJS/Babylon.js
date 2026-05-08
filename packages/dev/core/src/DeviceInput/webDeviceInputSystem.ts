@@ -1,14 +1,16 @@
-import { type AbstractEngine } from "../Engines/abstractEngine"
-import { type IPointerEvent, type IUIEvent } from "../Events/deviceInputEvents"
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type IPointerEvent, type IUIEvent } from "../Events/deviceInputEvents";
 import { IsNavigatorAvailable } from "../Misc/domManagement";
-import { type Observer } from "../Misc/observable"
+import { type Observer } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";
-import { type IDeviceInputSystem } from "./inputInterfaces"
-const MAX_KEYCODES = 255;
+import { type IDeviceInputSystem } from "./inputInterfaces";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const MAX_KEYCODES = 255;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
 /** @internal */
@@ -124,6 +126,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         const device = this._inputs[deviceType][deviceSlot];
 
         if (!device) {
+            // eslint-disable-next-line no-throw-literal
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
@@ -133,6 +136,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         const currentValue = device[inputIndex];
         if (currentValue === undefined) {
+            // eslint-disable-next-line no-throw-literal
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
         }
 
@@ -305,6 +309,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number): void {
         if (deviceSlot === undefined) {
+            // eslint-disable-next-line no-throw-literal
             throw `Unable to register device ${DeviceType[deviceType]} to undefined slot.`;
         }
 

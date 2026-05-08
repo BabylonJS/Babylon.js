@@ -1,4 +1,5 @@
-import { type DeviceType, type PointerInput, type DualShockInput, type XboxInput, type SwitchInput, type DualSenseInput } from "./deviceEnums"
+import { type DeviceType, type PointerInput, type DualShockInput, type XboxInput, type SwitchInput, type DualSenseInput } from "./deviceEnums";
+
 /**
  * Type to handle enforcement of inputs
  */

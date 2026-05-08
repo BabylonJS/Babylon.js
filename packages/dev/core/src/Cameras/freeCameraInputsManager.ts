@@ -1,10 +1,11 @@
-import { type FreeCamera } from "./freeCamera"
+import { type FreeCamera } from "./freeCamera";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraMouseWheelInput } from "../Cameras/Inputs/freeCameraMouseWheelInput";
 import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
+
 /**
  * Default Inputs manager for the FreeCamera.
  * It groups all the default supported inputs for ease of use.
@@ -100,11 +101,3 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
         this._mouseInput = null;
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
-
-FreeCameraInputsManager.prototype.addDeviceOrientation ??= _MissingSideEffect("FreeCameraInputsManager", "addDeviceOrientation") as any;
-FreeCameraInputsManager.prototype.addVirtualJoystick ??= _MissingSideEffect("FreeCameraInputsManager", "addVirtualJoystick") as any;
-FreeCameraInputsManager.prototype.addGamepad ??= _MissingSideEffect("FreeCameraInputsManager", "addGamepad") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

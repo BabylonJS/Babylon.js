@@ -1,5 +1,6 @@
-import { type DrawWrapper } from "./drawWrapper"
-import { type Effect } from "./effect"
+import { type DrawWrapper } from "./drawWrapper";
+import { type Effect } from "./effect";
+
 /**
  * Detect if the effect is a DrawWrapper
  * @param effect defines the entity to test

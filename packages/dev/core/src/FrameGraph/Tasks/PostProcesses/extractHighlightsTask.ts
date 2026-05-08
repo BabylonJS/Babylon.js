@@ -1,4 +1,4 @@
-import { type FrameGraph } from "core/index"
+import { type FrameGraph } from "core/index";
 import { ThinExtractHighlightsPostProcess } from "core/PostProcesses/thinExtractHighlightsPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task used to extract highlights from a scene.
  */
 export class FrameGraphExtractHighlightsTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinExtractHighlightsPostProcess;
 
     /**

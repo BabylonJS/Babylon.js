@@ -1,4 +1,12 @@
-import { type FrameGraph, type FrameGraphObjectList, type IFrameGraphPass, type Nullable, type FrameGraphTextureHandle, type InternalTexture, type FrameGraphRenderContext } from "core/index"
+import {
+    type FrameGraph,
+    type FrameGraphObjectList,
+    type IFrameGraphPass,
+    type Nullable,
+    type FrameGraphTextureHandle,
+    type InternalTexture,
+    type FrameGraphRenderContext,
+} from "core/index";
 import { FrameGraphObjectListPass } from "./Passes/objectListPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { Observable } from "core/Misc/observable";

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { type Nullable, type Tuple } from "../types"
+import { type Nullable, type Tuple } from "../types";
+
 /**
  * Returns an array of the given size filled with elements built from the given constructor and the parameters.
  * @param size the number of element to construct and put in the array.
@@ -50,7 +51,7 @@ function ObserveArrayFunction(object: { [key: string]: any }, functionName: stri
         const previousLength = object.length;
         const returnValue = newFunction.previous.apply(object, arguments);
         callback(functionName, previousLength);
-
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return returnValue;
     } as any;
 

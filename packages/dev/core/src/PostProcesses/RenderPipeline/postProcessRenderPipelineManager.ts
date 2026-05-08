@@ -1,4 +1,5 @@
-import { type Camera, type IReadonlyObservable, type PostProcessRenderPipeline } from "core/index"
+import { type Camera, type IReadonlyObservable, type PostProcessRenderPipeline } from "core/index";
+
 import { Observable } from "../../Misc/observable";
 
 /**

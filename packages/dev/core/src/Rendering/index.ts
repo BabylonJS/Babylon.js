@@ -90,12 +90,6 @@ export * from "../Shaders/iblVoxelGrid.fragment";
 export * from "../Shaders/iblVoxelGrid.vertex";
 export * from "../ShadersWGSL/iblVoxelGrid.fragment";
 export * from "../ShadersWGSL/iblVoxelGrid.vertex";
-export * from "../Shaders/iblVoxelGrid3dDebug.fragment";
-export * from "../ShadersWGSL/iblVoxelGrid3dDebug.fragment";
-export * from "../Shaders/iblVoxelSlabDebug.vertex";
-export * from "../Shaders/iblVoxelSlabDebug.fragment";
-export * from "../ShadersWGSL/iblVoxelSlabDebug.vertex";
-export * from "../ShadersWGSL/iblVoxelSlabDebug.fragment";
 
 // Depth Peeling Renderer
 export * from "../Shaders/oitBackBlend.fragment";

@@ -1,12 +1,10 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { type IShaderProcessor } from "../Processors/iShaderProcessor"
+import { type IShaderProcessor } from "../Processors/iShaderProcessor";
+
 const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
 
 /** @internal */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
-    /**
-     *
-     */
     public shaderLanguage = ShaderLanguage.GLSL;
 
     public attributeProcessor(attribute: string) {

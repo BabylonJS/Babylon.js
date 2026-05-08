@@ -1,4 +1,13 @@
-import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphObjectRendererTask, type FrameGraphTextureCreationOptions, type Observer, type ObjectRenderer, type FrameGraphTextureHandle, type Scene } from "core/index"
+import {
+    type FrameGraph,
+    type FrameGraphRenderPass,
+    type FrameGraphObjectRendererTask,
+    type FrameGraphTextureCreationOptions,
+    type Observer,
+    type ObjectRenderer,
+    type FrameGraphTextureHandle,
+    type Scene,
+} from "core/index";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { Constants } from "core/Engines/constants";
@@ -7,9 +16,6 @@ import { Constants } from "core/Engines/constants";
  * Task which applies a Temporal Anti-Aliasing post process.
  */
 export class FrameGraphTAATask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinTAAPostProcess;
 
     /**

@@ -98,6 +98,7 @@ export interface EngineCapabilities {
     oculusMultiview?: any;
     /** Function used to let the system compiles shaders in background */
     parallelShaderCompile?: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         COMPLETION_STATUS_KHR: number;
     };
     /** Max number of texture samples for MSAA */
@@ -131,4 +132,6 @@ export interface EngineCapabilities {
     blendParametersPerTarget: boolean;
     /** Defines if dual source blending is supported */
     dualSourceBlending: boolean;
+    /** Defines if read-only and read-write storage textures are supported (WebGPU only, requires the readonly_and_readwrite_storage_textures WGSL language feature) */
+    supportReadWriteStorageTextures: boolean;
 }

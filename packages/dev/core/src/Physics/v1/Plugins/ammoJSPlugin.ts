@@ -1,22 +1,21 @@
 import { Quaternion, Vector3, Matrix } from "../../../Maths/math.vector";
-import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin"
+import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
-import { type IPhysicsEnabledObject } from "../physicsImpostor"
-import { PhysicsImpostor } from "../physicsImpostor";
-import { type IMotorEnabledJoint, type DistanceJointData } from "../physicsJoint"
-import { PhysicsJoint } from "../physicsJoint";
+import { type IPhysicsEnabledObject, PhysicsImpostor } from "../physicsImpostor";
+import { type IMotorEnabledJoint, type DistanceJointData, PhysicsJoint } from "../physicsJoint";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { VertexData } from "../../../Meshes/mesh.vertexData";
-import { type Nullable } from "../../../types"
-import { type AbstractMesh } from "../../../Meshes/abstractMesh"
-import { type Mesh } from "../../../Meshes/mesh"
+import { type Nullable } from "../../../types";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type Mesh } from "../../../Meshes/mesh";
 import { ExtrudeShape } from "../../../Meshes/Builders/shapeBuilder";
 import { CreateLines } from "../../../Meshes/Builders/linesBuilder";
-import { type LinesMesh } from "../../../Meshes/linesMesh"
+import { type LinesMesh } from "../../../Meshes/linesMesh";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Ammo: any;
 
 /**
@@ -1007,6 +1006,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 const childImpostor = childMesh.getPhysicsImpostor();
                 if (childImpostor) {
                     if (childImpostor.type == PhysicsImpostor.MeshImpostor) {
+                        // eslint-disable-next-line no-throw-literal
                         throw "A child MeshImpostor is not supported. Only primitive impostors are supported as children (eg. box or sphere)";
                     }
                     const shape = this._createShape(childImpostor);

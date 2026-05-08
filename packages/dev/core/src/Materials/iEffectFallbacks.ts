@@ -1,4 +1,5 @@
-import { type Effect } from "./effect"
+import { type Effect } from "./effect";
+
 /**
  * Interface used to define common properties for effect fallbacks
  */

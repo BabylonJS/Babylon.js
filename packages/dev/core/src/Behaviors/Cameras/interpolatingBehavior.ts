@@ -1,10 +1,11 @@
-import { type Behavior } from "../behavior"
+import { type Behavior } from "../behavior";
 import { CubicEase, EasingFunction } from "../../Animations/easing";
-import { type Nullable } from "../../types"
-import { type Animatable } from "../../Animations/animatable.core"
+import { type Nullable } from "../../types";
+import { type Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
-import { type Camera } from "../../Cameras/camera"
-import { type IColor3Like, type IColor4Like, type IMatrixLike, type IQuaternionLike, type IVector2Like, type IVector3Like } from "../../Maths/math.like"
+import { type Camera } from "../../Cameras/camera";
+import { type IColor3Like, type IColor4Like, type IMatrixLike, type IQuaternionLike, type IVector2Like, type IVector3Like } from "../../Maths/math.like";
+
 export type AllowedAnimValue = number | IVector2Like | IVector3Like | IQuaternionLike | IMatrixLike | IColor3Like | IColor4Like | SizeLike | undefined;
 
 /**
@@ -180,18 +181,7 @@ function IsColor4Like(v: any): v is IColor4Like {
     return v != null && typeof v.r === "number" && typeof v.g === "number" && typeof v.b === "number" && typeof v.a === "number";
 }
 
-export type SizeLike = {
-    /**
-     *
-     */
-    width: number /**
-     *
-     */;
-    /**
-     *
-     */
-    height: number;
-};
+export type SizeLike = { width: number; height: number };
 
 function IsSizeLike(v: any): v is SizeLike {
     return v != null && typeof v.width === "number" && typeof v.height === "number";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
 import {
@@ -10,30 +11,33 @@ import {
     PhysicsEventType,
     PhysicsPrestepType,
     PhysicsActivationControl,
+    type PhysicsShapeParameters,
+    type IPhysicsEnginePluginV2,
+    type PhysicsMassProperties,
+    type IPhysicsCollisionEvent,
+    type IBasePhysicsCollisionEvent,
+    type ConstrainedBodyPair,
 } from "../IPhysicsEnginePlugin";
-import { type PhysicsShapeParameters, type IPhysicsEnginePluginV2, type PhysicsMassProperties, type IPhysicsCollisionEvent, type IBasePhysicsCollisionEvent, type ConstrainedBodyPair } from "../IPhysicsEnginePlugin"
-import { type IRaycastQuery } from "../../physicsRaycastResult"
-import { PhysicsRaycastResult } from "../../physicsRaycastResult";
+import { type IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
-import { type PhysicsBody } from "../physicsBody"
-import { type PhysicsConstraint, type Physics6DoFConstraint } from "../physicsConstraint"
-import { type PhysicsMaterial } from "../physicsMaterial"
-import { PhysicsMaterialCombineMode } from "../physicsMaterial";
+import { type PhysicsBody } from "../physicsBody";
+import { type PhysicsConstraint, type Physics6DoFConstraint } from "../physicsConstraint";
+import { type PhysicsMaterial, PhysicsMaterialCombineMode } from "../physicsMaterial";
 import { PhysicsShape } from "../physicsShape";
 import { BoundingBox } from "../../../Culling/boundingBox";
-import { type TransformNode } from "../../../Meshes/transformNode"
+import { type TransformNode } from "../../../Meshes/transformNode";
 import { Mesh } from "../../../Meshes/mesh";
 import { InstancedMesh } from "../../../Meshes/instancedMesh";
-import { type Scene } from "../../../scene"
+import { type Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { BuildArray } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
-import { type Nullable, type FloatArray } from "../../../types"
-import { type IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery"
-import { type ProximityCastResult } from "../../proximityCastResult"
-import { type IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery"
-import { type IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery"
-import { type ShapeCastResult } from "../../shapeCastResult"
+import { type Nullable, type FloatArray } from "../../../types";
+import { type IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
+import { type ProximityCastResult } from "../../proximityCastResult";
+import { type IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
+import { type IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery";
+import { type ShapeCastResult } from "../../shapeCastResult";
 import { FloatingOriginCurrentScene } from "../../../Materials/floatingOriginMatrixOverrides";
 declare let HK: any;
 
@@ -242,6 +246,7 @@ class CollisionEvent {
     public impulseApplied: number = 0;
     public type: number = 0;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static readToRef(buffer: any, offset: number, eventOut: CollisionEvent) {
         const intBuf = new Int32Array(buffer, offset);
         const floatBuf = new Float32Array(buffer, offset);
@@ -263,6 +268,7 @@ class TriggerEvent {
     public bodyIdB: bigint = BigInt(0);
     public type: number = 0;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static readToRef(buffer: any, offset: number, eventOut: TriggerEvent) {
         const intBuf = new Int32Array(buffer, offset);
         eventOut.type = intBuf[0];
@@ -271,9 +277,6 @@ class TriggerEvent {
     }
 }
 
-/**
- *
- */
 export interface HavokPluginParameters {
     /**
      * Maximum number of raycast hits to process
@@ -2671,10 +2674,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Return the collision observable for a particular physics body.
      * @param body the physics body
+     * @param instanceIndex - optionally, the index of the instance in the body
      * @returns the collision observable for the body
      */
-    public getCollisionObservable(body: PhysicsBody): Observable<IPhysicsCollisionEvent> {
-        const bodyId = body._pluginData.hpBodyId[0];
+    public getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent> {
+        const pluginRef = this._getPluginReference(body, instanceIndex);
+        const bodyId = pluginRef.hpBodyId[0];
         let observable = this._bodyCollisionObservable.get(bodyId);
         if (!observable) {
             observable = new Observable<IPhysicsCollisionEvent>();
@@ -2686,10 +2691,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Return the collision ended observable for a particular physics body.
      * @param body the physics body
-     * @returns
+     * @param instanceIndex - optionally, the index of the instance in the body
+     * @returns the collision ended observable for the body
      */
-    public getCollisionEndedObservable(body: PhysicsBody): Observable<IBasePhysicsCollisionEvent> {
-        const bodyId = body._pluginData.hpBodyId[0];
+    public getCollisionEndedObservable(body: PhysicsBody, instanceIndex?: number): Observable<IBasePhysicsCollisionEvent> {
+        const pluginRef = this._getPluginReference(body, instanceIndex);
+        const bodyId = pluginRef.hpBodyId[0];
         let observable = this._bodyCollisionEndedObservable.get(bodyId);
         if (!observable) {
             observable = new Observable<IBasePhysicsCollisionEvent>();

@@ -1,5 +1,4 @@
-import { type CubeMapInfo } from "./panoramaToCubemap"
-import { PanoramaToCubeMapTools } from "./panoramaToCubemap";
+import { type CubeMapInfo, PanoramaToCubeMapTools } from "./panoramaToCubemap";
 
 /**
  * Header information of HDR texture files.
@@ -80,6 +79,7 @@ function ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
 export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     let line = ReadStringLine(uint8array, 0);
     if (line[0] != "#" || line[1] != "?") {
+        // eslint-disable-next-line no-throw-literal
         throw "Bad HDR Format.";
     }
 
@@ -99,6 +99,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     } while (!endOfHeader);
 
     if (!findFormat) {
+        // eslint-disable-next-line no-throw-literal
         throw "HDR Bad header format, unsupported FORMAT";
     }
 
@@ -110,12 +111,14 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
 
     // TODO. Support +Y and -X if needed.
     if (!match || match.length < 3) {
+        // eslint-disable-next-line no-throw-literal
         throw "HDR Bad header format, no size";
     }
     const width = parseInt(match[2]);
     const height = parseInt(match[1]);
 
     if (width < 8 || width > 0x7fff) {
+        // eslint-disable-next-line no-throw-literal
         throw "HDR Bad header format, unsupported size";
     }
 
@@ -166,6 +169,7 @@ export function RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float
     return ReadRGBEPixelsRLE(uint8array, hdrInfo);
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
     let numScanlines = hdrInfo.height;
     const scanlineWidth = hdrInfo.width;
@@ -193,6 +197,7 @@ function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
         }
 
         if (((c << 8) | d) != scanlineWidth) {
+            // eslint-disable-next-line no-throw-literal
             throw "HDR Bad header format, wrong scan line width";
         }
 
@@ -210,6 +215,7 @@ function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
                     // a run of the same value
                     count = a - 128;
                     if (count == 0 || count > endIndex - index) {
+                        // eslint-disable-next-line no-throw-literal
                         throw "HDR Bad Format, bad scanline data (run)";
                     }
 
@@ -220,6 +226,7 @@ function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
                     // a non-run
                     count = a;
                     if (count == 0 || count > endIndex - index) {
+                        // eslint-disable-next-line no-throw-literal
                         throw "HDR Bad Format, bad scanline data (non-run)";
                     }
 
@@ -249,6 +256,7 @@ function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
     return resultArray;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function ReadRGBEPixelsNotRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
     // this file is not run length encoded
     // read values sequentially

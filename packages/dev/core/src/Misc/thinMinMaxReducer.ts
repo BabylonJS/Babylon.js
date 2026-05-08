@@ -1,7 +1,8 @@
-import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine, type InternalTexture, type Scene } from "core/index"
+import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine, type InternalTexture, type Scene } from "core/index";
 import { Observable } from "./observable";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "core/Engines/engine";
+import { EngineStore } from "core/Engines/engineStore";
+import { Constants } from "../Engines/constants";
 
 /**
  * @internal
@@ -16,14 +17,8 @@ export const enum DepthTextureType {
  * @internal
  */
 export class ThinMinMaxReducerPostProcess extends EffectWrapper {
-    /**
-     *
-     */
     public static readonly FragmentUrl = "minmaxRedux";
 
-    /**
-     *
-     */
     public static readonly Uniforms = ["texSize"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -35,21 +30,15 @@ export class ThinMinMaxReducerPostProcess extends EffectWrapper {
         }
     }
 
-    /**
-     *
-     */
     public textureWidth = 0;
 
-    /**
-     *
-     */
     public textureHeight = 0;
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, defines = "", options?: EffectWrapperCreationOptions) {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinMinMaxReducerPostProcess.FragmentUrl,
@@ -79,14 +68,8 @@ const MinMax = { min: 0, max: 0 };
  * @internal
  */
 export class ThinMinMaxReducer {
-    /**
-     *
-     */
     public readonly onAfterReductionPerformed = new Observable<{ min: number; max: number }>();
 
-    /**
-     *
-     */
     public readonly reductionSteps: Array<ThinMinMaxReducerPostProcess>;
 
     private _depthRedux: boolean;
@@ -145,7 +128,7 @@ export class ThinMinMaxReducer {
         // in the current frame, whereas in WebGPU, the read is asynchronous and we should normally wait for the promise to be resolved to get the updated values.
         // However, it's safe to avoid waiting for the promise to be resolved in WebGPU as well, because we will simply use the current values until "buffer" is updated later on.
         // Note that it means we can suffer some rendering artifacts in WebGPU because we may use previous min/max values for the current frame.
-        const isFloat = texture.type === Engine.TEXTURETYPE_FLOAT || texture.type === Engine.TEXTURETYPE_HALF_FLOAT;
+        const isFloat = texture.type === Constants.TEXTURETYPE_FLOAT || texture.type === Constants.TEXTURETYPE_HALF_FLOAT;
         const buffer = isFloat ? BufferFloat : BufferUint8;
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

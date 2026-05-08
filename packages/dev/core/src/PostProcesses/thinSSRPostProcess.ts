@@ -1,4 +1,4 @@
-import { type Nullable, type Scene, type CubeTexture, type Camera, type EffectWrapperCreationOptions } from "core/index"
+import { type Nullable, type Scene, type CubeTexture, type Camera, type EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -41,9 +41,6 @@ export class ThinSSRPostProcess extends EffectWrapper {
         "reflectivityThreshold",
     ];
 
-    /**
-     *
-     */
     public static readonly Samplers = ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -55,49 +52,22 @@ export class ThinSSRPostProcess extends EffectWrapper {
         }
     }
 
-    /**
-     *
-     */
     public isSSRSupported = true;
 
-    /**
-     *
-     */
     public maxDistance = 1000.0;
 
-    /**
-     *
-     */
     public step = 1.0;
 
-    /**
-     *
-     */
     public thickness = 0.5;
 
-    /**
-     *
-     */
     public strength = 1;
 
-    /**
-     *
-     */
     public reflectionSpecularFalloffExponent = 1;
 
-    /**
-     *
-     */
     public maxSteps = 1000.0;
 
-    /**
-     *
-     */
     public roughnessFactor = 0.2;
 
-    /**
-     *
-     */
     public selfCollisionNumSkip = 1;
 
     private _reflectivityThreshold = 0.04;
@@ -359,9 +329,6 @@ export class ThinSSRPostProcess extends EffectWrapper {
         this._textureHeight = height;
     }
 
-    /**
-     *
-     */
     public camera: Nullable<Camera> = null;
 
     private _useScreenspaceDepth = false;

@@ -1,6 +1,6 @@
-import { type Nullable } from "core/types"
-import { type DataCursor } from "./exrLoader.core"
-import { ParseUint32, ParseUint8Array } from "./exrLoader.core";
+/* eslint-disable @typescript-eslint/naming-convention */
+import { type Nullable } from "core/types";
+import { type DataCursor, ParseUint32, ParseUint8Array } from "./exrLoader.core";
 import { HUF_DECBITS, HUF_DECMASK, HUF_DECSIZE, HUF_ENCSIZE, LONG_ZEROCODE_RUN, SHORT_ZEROCODE_RUN, SHORTEST_LONG_RUN, USHORT_RANGE } from "./exrLoader.interfaces";
 
 /**

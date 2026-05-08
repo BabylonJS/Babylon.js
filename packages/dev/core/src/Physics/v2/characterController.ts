@@ -1,10 +1,10 @@
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { type Scene } from "../../scene"
-import { type DeepImmutableObject } from "../../types"
+import { type Scene } from "../../scene";
+import { type DeepImmutableObject } from "../../types";
 import { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
-import { type HavokPlugin } from "./Plugins/havokPlugin"
+import { type HavokPlugin } from "./Plugins/havokPlugin";
 import { BuildArray } from "../../Misc/arrayTools";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observable } from "../../Misc/observable";
@@ -825,6 +825,7 @@ export class PhysicsCharacterController {
         let solveSequentially: boolean = false;
         let axisVel: Vector3 | null;
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             // Check for parallel planes
             if (axisLen2 <= eps || solveSequentially) {
@@ -968,6 +969,7 @@ export class PhysicsCharacterController {
     }
 
     protected _simplexSolverExamineActivePlanes(info: SimplexSolverInfo, maxSurfaceVelocity: Vector3, velocityIn: Vector3, velocityOut: Vector3) {
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             switch (info.numSupportPlanes) {
                 case 1: {

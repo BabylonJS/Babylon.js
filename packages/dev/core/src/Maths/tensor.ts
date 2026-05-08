@@ -1,4 +1,4 @@
-import { type DeepImmutable, type Flatten, type FloatArray, type Length, type Tuple } from "../types"
+import { type DeepImmutable, type Flatten, type FloatArray, type Length, type Tuple } from "../types";
 /**
  * Computes the tensor dimension of a multi-dimensional array
  */

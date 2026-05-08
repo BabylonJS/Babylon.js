@@ -1,25 +1,16 @@
-import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Camera } from "core/index"
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Camera } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { TmpVectors } from "core/Maths/math.vector";
 
 /**
  * @internal
  */
 export class ThinSSAO2CombinePostProcess extends EffectWrapper {
-    /**
-     *
-     */
     public static readonly FragmentUrl = "ssaoCombine";
 
-    /**
-     *
-     */
     public static readonly Uniforms = ["viewport"];
 
-    /**
-     *
-     */
     public static readonly Samplers = ["originalColor"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -35,7 +26,7 @@ export class ThinSSAO2CombinePostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSAO2CombinePostProcess.FragmentUrl,
@@ -44,14 +35,8 @@ export class ThinSSAO2CombinePostProcess extends EffectWrapper {
         });
     }
 
-    /**
-     *
-     */
     public camera: Nullable<Camera> = null;
 
-    /**
-     *
-     */
     public useViewportInCombineStage = true;
 
     public override bind(noDefaultBindings = false) {

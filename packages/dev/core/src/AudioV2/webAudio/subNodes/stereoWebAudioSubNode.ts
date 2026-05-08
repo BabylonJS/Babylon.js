@@ -1,12 +1,10 @@
 import { _StereoAudioSubNode } from "../../abstractAudio/subNodes/stereoAudioSubNode";
 import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
-import { type _WebAudioEngine } from "../webAudioEngine"
-import { type IWebAudioInNode } from "../webAudioNode"
-/** @internal */
+import { type _WebAudioEngine } from "../webAudioEngine";
+import { type IWebAudioInNode } from "../webAudioNode";
 
-/**
- *
- */
+/** @internal */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_StereoAudioSubNode> {
     return new _StereoWebAudioSubNode(engine);
 }

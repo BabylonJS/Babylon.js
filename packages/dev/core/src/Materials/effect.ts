@@ -1,22 +1,20 @@
-import { type Observer } from "../Misc/observable"
-import { Observable } from "../Misc/observable";
-import { type FloatArray, type Nullable } from "../types"
+import { type Observer, Observable } from "../Misc/observable";
+import { type FloatArray, type Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { type IDisposable } from "../scene"
-import { type IPipelineContext } from "../Engines/IPipelineContext"
-import { type DataBuffer } from "../Buffers/dataBuffer"
-import { type IShaderProcessor } from "../Engines/Processors/iShaderProcessor"
-import { type _IProcessingOptions, type ShaderCustomProcessingFunction, type _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions"
-import { type IMatrixLike, type IVector2Like, type IVector3Like, type IVector4Like, type IColor3Like, type IColor4Like, type IQuaternionLike } from "../Maths/math.like"
-import { type AbstractEngine } from "../Engines/abstractEngine"
-import { type IEffectFallbacks } from "./iEffectFallbacks"
+import { type IDisposable } from "../scene";
+import { type IPipelineContext } from "../Engines/IPipelineContext";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type IShaderProcessor } from "../Engines/Processors/iShaderProcessor";
+import { type _IProcessingOptions, type ShaderCustomProcessingFunction, type _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
+import { type IMatrixLike, type IVector2Like, type IVector3Like, type IVector4Like, type IColor3Like, type IColor4Like, type IQuaternionLike } from "../Maths/math.like";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "./shaderLanguage";
-import { type InternalTexture } from "../Materials/Textures/internalTexture"
-import { type ThinTexture } from "../Materials/Textures/thinTexture"
-import { type IPipelineGenerationOptions } from "./effect.functions"
-import { _ProcessShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
+import { type ThinTexture } from "../Materials/Textures/thinTexture";
+import { type IPipelineGenerationOptions, _ProcessShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
@@ -1574,11 +1572,3 @@ export class Effect implements IDisposable {
         Effect._BaseCache = {};
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
-
-Effect.prototype.setDepthStencilTexture ??= _MissingSideEffect("Effect", "setDepthStencilTexture") as any;
-Effect.prototype.setTextureFromPostProcess ??= _MissingSideEffect("Effect", "setTextureFromPostProcess") as any;
-Effect.prototype.setTextureFromPostProcessOutput ??= _MissingSideEffect("Effect", "setTextureFromPostProcessOutput") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

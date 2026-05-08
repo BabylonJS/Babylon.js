@@ -534,6 +534,7 @@ export function InterleaveScalar(source: Uint8Array, out: Uint8Array) {
     let s = 0;
     const stop = source.length - 1;
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         if (s > stop) {
             break;

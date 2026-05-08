@@ -1,8 +1,10 @@
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Constants } from "../Engines/constants";
 import { serialize } from "../Misc/decorators";
-import { type IStencilState } from "../States/IStencilState"
-import { type Scene } from "../scene"
+import { type IStencilState } from "../States/IStencilState";
+
+import { type Scene } from "../scene";
+
 /**
  * Class that holds the different stencil states of a material
  * Usage example: https://playground.babylonjs.com/#CW5PRI#10

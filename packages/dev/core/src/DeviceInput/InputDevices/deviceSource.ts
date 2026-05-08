@@ -1,8 +1,9 @@
-import { type DeviceType } from "./deviceEnums"
+import { type DeviceType } from "./deviceEnums";
 import { Observable } from "../../Misc/observable";
-import { type DeviceInput } from "./deviceTypes"
-import { type IDeviceInputSystem } from "../inputInterfaces"
-import { type IKeyboardEvent, type IPointerEvent, type IWheelEvent } from "../../Events/deviceInputEvents"
+import { type DeviceInput } from "./deviceTypes";
+import { type IDeviceInputSystem } from "../inputInterfaces";
+import { type IKeyboardEvent, type IPointerEvent, type IWheelEvent } from "../../Events/deviceInputEvents";
+
 /**
  * Subset of DeviceInput that only handles pointers and keyboard
  */

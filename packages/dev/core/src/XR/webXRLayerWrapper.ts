@@ -1,6 +1,7 @@
-import { type Nullable } from "../types"
-import { type WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider"
-import { type WebXRSessionManager } from "./webXRSessionManager"
+import { type Nullable } from "../types";
+import { type WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import { type WebXRSessionManager } from "./webXRSessionManager";
+
 /** Covers all supported subclasses of WebXR's XRCompositionLayer */
 // TODO (rgerd): Extend for all other subclasses of XRCompositionLayer.
 export type WebXRCompositionLayerType = "XRProjectionLayer";

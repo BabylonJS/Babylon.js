@@ -1,6 +1,7 @@
-import { type Nullable } from "core/types"
-import { type Particle } from "../particle"
-import { type ThinParticleSystem } from "../thinParticleSystem"
+import { type Nullable } from "core/types";
+import { type Particle } from "../particle";
+import { type ThinParticleSystem } from "../thinParticleSystem";
+
 /** @internal */
 export interface _IExecutionQueueItem {
     /** @internal */

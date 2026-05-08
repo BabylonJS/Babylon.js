@@ -1,4 +1,4 @@
-import { type FrameGraph } from "core/FrameGraph/frameGraph"
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { ThinBlackAndWhitePostProcess } from "core/PostProcesses/thinBlackAndWhitePostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task which applies a black and white post process.
  */
 export class FrameGraphBlackAndWhiteTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinBlackAndWhitePostProcess;
 
     /**

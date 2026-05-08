@@ -1,4 +1,4 @@
-import { type FrameGraph } from "core/FrameGraph/frameGraph"
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { ThinColorCorrectionPostProcess } from "core/PostProcesses/thinColorCorrectionPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task which applies a color correction post process.
  */
 export class FrameGraphColorCorrectionTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinColorCorrectionPostProcess;
 
     /**

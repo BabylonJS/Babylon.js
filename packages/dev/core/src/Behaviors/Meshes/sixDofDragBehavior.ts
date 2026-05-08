@@ -1,9 +1,8 @@
-import { type Mesh } from "../../Meshes/mesh"
-import { type Scene } from "../../scene"
-import { type Nullable } from "../../types"
+import { type Mesh } from "../../Meshes/mesh";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { type Observer } from "../../Misc/observable"
-import { Observable } from "../../Misc/observable";
+import { type Observer, Observable } from "../../Misc/observable";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Space } from "../../Maths/math.axis";
@@ -40,10 +39,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      * If `rotateDraggedObject` is set to `true`, this parameter determines if we are only rotating around the y axis (yaw)
      */
-
-    /**
-     *
-     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public rotateAroundYOnly = false;
 
     /**

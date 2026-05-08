@@ -1,4 +1,5 @@
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
+
 /**
  * This class implement a typical dictionary using a string as key and the generic type T as value.
  * The underlying implementation relies on an associative array to ensure the best performances.

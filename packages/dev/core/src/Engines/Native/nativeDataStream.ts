@@ -1,5 +1,6 @@
-import { type DeepImmutable, type FloatArray } from "../../types"
-import { type INative, type INativeDataStream } from "./nativeInterfaces"
+import { type DeepImmutable, type FloatArray } from "../../types";
+import { type INative, type INativeDataStream } from "./nativeInterfaces";
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 

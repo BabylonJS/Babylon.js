@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinMotionBlurPostProcess } from "core/PostProcesses/thinMotionBlurPostProcess";
 
@@ -18,9 +18,6 @@ export class FrameGraphMotionBlurTask extends FrameGraphPostProcessTask {
      */
     public depthTexture?: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public override readonly postProcess: ThinMotionBlurPostProcess;
 
     /**

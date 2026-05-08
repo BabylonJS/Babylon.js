@@ -1,4 +1,4 @@
-import { type Nullable, type Scene, type EffectWrapperCreationOptions } from "core/index"
+import { type Nullable, type Scene, type EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -16,14 +16,8 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     private static readonly PERSPECTIVE_DEPTH_PROJECTION = [0, 0, 0, 0, 0, 0, 1, 1, 1];
 
-    /**
-     *
-     */
     public static readonly FragmentUrl = "ssao2";
 
-    /**
-     *
-     */
     public static readonly Uniforms = [
         "sampleSphere",
         "samplesFactor",
@@ -43,9 +37,6 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         "depthProjection",
     ];
 
-    /**
-     *
-     */
     public static readonly Samplers = ["randomSampler", "depthSampler", "normalSampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -57,9 +48,6 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         }
     }
 
-    /**
-     *
-     */
     public camera: Nullable<Camera> = null;
 
     private _textureWidth = 0;
@@ -99,29 +87,14 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         return this._samples;
     }
 
-    /**
-     *
-     */
     public totalStrength: number = 1.0;
 
-    /**
-     *
-     */
     public radius: number = 2.0;
 
-    /**
-     *
-     */
     public maxZ: number = 100.0;
 
-    /**
-     *
-     */
     public minZAspect: number = 0.2;
 
-    /**
-     *
-     */
     public base: number = 0;
 
     private _epsilon: number = 0.02;

@@ -1,11 +1,11 @@
 import { _WarnImport } from "core/Misc/devTools";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
-import { type IFileRequest } from "core/Misc/fileRequest"
-import { type LoadFileError } from "core/Misc/fileTools"
-import { type IWebRequest } from "core/Misc/interfaces/iWebRequest"
-import { type WebRequest } from "core/Misc/webRequest"
-import { type IOfflineProvider } from "core/Offline/IOfflineProvider"
-import { type Nullable } from "core/types"
+import { type IFileRequest } from "core/Misc/fileRequest";
+import { type LoadFileError } from "core/Misc/fileTools";
+import { type IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import { type WebRequest } from "core/Misc/webRequest";
+import { type IOfflineProvider } from "core/Offline/IOfflineProvider";
+import { type Nullable } from "core/types";
 import { Constants } from "./constants";
 
 export const EngineFunctionContext: {
@@ -81,7 +81,7 @@ export function getHostDocument(renderingCanvas: Nullable<HTMLCanvasElement> = n
 /** @internal */
 export function _GetGlobalDefines(
     defines?: { [key: string]: string },
-
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     isNDCHalfZRange?: boolean,
     useReverseDepthBuffer?: boolean,
     useExactSrgbConversions?: boolean

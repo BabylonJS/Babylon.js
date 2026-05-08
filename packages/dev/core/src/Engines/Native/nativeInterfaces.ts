@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type DeviceType } from "../../DeviceInput/InputDevices/deviceEnums"
-import { type IDeviceInputSystem } from "../../DeviceInput/inputInterfaces"
-import { type InternalTexture } from "../../Materials/Textures/internalTexture"
-import { type Nullable } from "../../types"
-import { type ICanvas, type IImage, type IPath2D } from "../ICanvas"
-import { type NativeData, type NativeDataStream } from "./nativeDataStream"
-import { type Matrix } from "../../Maths/math.vector"
+import { type DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
+import { type IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../types";
+import { type ICanvas, type IImage, type IPath2D } from "../ICanvas";
+import { type NativeData, type NativeDataStream } from "./nativeDataStream";
+import { type Matrix } from "../../Maths/math.vector";
+
 export type NativeTexture = NativeData;
 export type NativeFramebuffer = NativeData;
 export type NativeVertexArrayObject = NativeData;
@@ -423,45 +424,21 @@ export const enum NativeTraceLevel {
 /** @internal */
 export interface INative {
     // NativeEngine plugin
-    /**
-     *
-     */
     Engine: INativeEngineConstructor;
-    /**
-     *
-     */
     NativeDataStream: INativeDataStreamConstructor;
 
     // NativeCamera plugin
-    /**
-     *
-     */
     Camera?: INativeCameraConstructor;
 
     // NativeCanvas plugin
-    /**
-     *
-     */
     Canvas?: INativeCanvasConstructor;
-    /**
-     *
-     */
     Image?: INativeImageConstructor;
-    /**
-     *
-     */
     Path2D?: INativePath2DConstructor;
 
     // Native XMLHttpRequest polyfill
-    /**
-     *
-     */
     XMLHttpRequest?: typeof XMLHttpRequest;
 
     // NativeInput plugin
-    /**
-     *
-     */
     DeviceInputSystem?: IDeviceInputSystemConstructor;
 
     // NativeTracing plugin

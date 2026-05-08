@@ -1,4 +1,4 @@
-import { type FrameGraph, type EffectWrapperCreationOptions, type Observable, type Effect } from "core/index"
+import { type FrameGraph, type EffectWrapperCreationOptions, type Observable, type Effect } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinCustomPostProcess } from "../../../PostProcesses/thinCustomPostProcess";
 
@@ -6,9 +6,6 @@ import { ThinCustomPostProcess } from "../../../PostProcesses/thinCustomPostProc
  * Task which applies a custom post process.
  */
 export class FrameGraphCustomPostProcessTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinCustomPostProcess;
 
     /**

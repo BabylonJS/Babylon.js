@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /** @internal */
-
+// eslint-disable-next-line import/export
 export const enum PowerPreference {
     LowPower = "low-power",
     HighPerformance = "high-performance",
@@ -28,6 +28,8 @@ export const enum FeatureName {
     Subgroups = "subgroups",
     TextureFormatsTier1 = "texture-formats-tier1",
     TextureFormatsTier2 = "texture-formats-tier2",
+    PrimitiveIndex = "primitive-index",
+    TextureComponentSwizzle = "texture-component-swizzle",
 }
 
 /** @internal */
@@ -71,6 +73,7 @@ export const enum TextureUsage {
     TextureBinding = 4,
     StorageBinding = 8,
     RenderAttachment = 16,
+    TransientAttachment = 32,
 }
 
 /** @internal */

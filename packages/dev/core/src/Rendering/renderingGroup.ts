@@ -1,15 +1,16 @@
 import { SmartArray, SmartArrayNoDuplicate } from "../Misc/smartArray";
-import { type SubMesh } from "../Meshes/subMesh"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type Nullable, type DeepImmutable } from "../types"
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Nullable, type DeepImmutable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { type IParticleSystem } from "../Particles/IParticleSystem"
-import { type IEdgesRenderer } from "./edgesRenderer"
-import { type ISpriteManager } from "../Sprites/spriteManager"
+import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { type IEdgesRenderer } from "./edgesRenderer";
+import { type ISpriteManager } from "../Sprites/spriteManager";
 import { Constants } from "../Engines/constants";
-import { type Material } from "../Materials/material"
-import { type Scene } from "../scene"
-import { type Camera } from "../Cameras/camera"
+import { type Material } from "../Materials/material";
+import { type Scene } from "../scene";
+import { type Camera } from "../Cameras/camera";
+
 /**
  * This represents the object necessary to create a rendering group.
  * This is exclusively used and created by the rendering manager.
@@ -42,14 +43,8 @@ export class RenderingGroup {
     /** @internal */
     public _edgesRenderers = new SmartArrayNoDuplicate<IEdgesRenderer>(16);
 
-    /**
-     *
-     */
     public onBeforeTransparentRendering: () => void;
 
-    /**
-     *
-     */
     public disableDepthPrePass = false;
 
     /**

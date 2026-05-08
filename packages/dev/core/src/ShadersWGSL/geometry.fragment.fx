@@ -10,7 +10,7 @@ varying vNormalV: vec3f;
 
 varying vViewPos: vec4f;
 
-#if defined(POSITION) || defined(BUMP)
+#if defined(POSITION) || defined(BUMP) || defined(IRRADIANCE)
 varying vPositionW: vec3f;
 #endif
 
@@ -74,6 +74,40 @@ var diffuseSampler: texture_2d<f32>;
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<helperFunctions>
+
+// IBL includes for irradiance calculation
+#ifdef IRRADIANCE
+    #include<pbrFragmentReflectionDeclaration>
+    #ifdef REFLECTION
+        #ifdef USEIRRADIANCEMAP
+            #include<sceneUboDeclaration>
+            uniform reflectionMatrix: mat4x4f;
+            uniform vReflectionInfos: vec2f;
+            uniform vReflectionDominantDirection: vec3f;
+            #include<pbrBRDFFunctions>
+            #include<openpbrDielectricReflectance>
+            #include<pbrIBLFunctions>
+            #include<reflectionFunction>
+            #include<openpbrGeometryInfo>
+            #include<openpbrIblFunctions>
+        #elif defined(USESPHERICALFROMREFLECTIONMAP)
+            varying vEnvironmentIrradiance: vec3f;
+        #endif
+        #ifdef IBL_SHADOW_TEXTURE
+            var iblShadowSampler: texture_2d<f32>;
+            var iblShadowSamplerSampler: sampler;
+            uniform shadowTextureSize: vec2f;
+        #endif
+        #ifdef IRRADIANCE_SCATTER_MASK
+            uniform vSubsurfaceWeight: f32;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
+            uniform vSubsurfaceScatterAnisotropy: f32;
+            uniform vTransmissionWeight: f32;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
+            uniform vTransmissionScatterAnisotropy: f32;
+        #endif
+    #endif
+#endif
 
 
 @fragment
@@ -207,6 +241,87 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
         #endif
         fragData[REFLECTIVITY_INDEX] = reflectivity;
+    #endif
+
+    #ifdef IRRADIANCE
+        // Calculate environment irradiance for geometry buffer
+        var irradiance: vec3f = vec3f(0.0);
+        var irradiance_alpha: f32 = 1.0;
+        #ifdef REFLECTION
+            #ifdef IRRADIANCE_SCATTER_MASK
+                var vSubsurfaceColor: vec3f = vec3f(1.0);
+                var vSubsurfaceRadius: f32 = 0.0;
+                var vSubsurfaceRadiusScale: vec3f = vec3f(1.0);
+                // Rename uniforms.vSubsurfaceColor to vSubsurfaceColor
+                #include<openpbrSubsurfaceLayerData>(uniforms.vSubsurfaceColor, vSubsurfaceColor, uniforms.vSubsurfaceRadius, vSubsurfaceRadius, uniforms.vSubsurfaceRadiusScale, vSubsurfaceRadiusScale)
+                var vTransmissionDepth: f32 = 1.0;
+                var vTransmissionColor: vec3f = vec3f(1.0);
+                var vTransmissionScatter: vec3f = vec3f(0.0);
+                var vTransmissionDispersionScale: f32 = 0.0;
+                var vTransmissionDispersionAbbeNumber: f32 = 0.0;
+                #include<openpbrTransmissionLayerData>(uniforms.vTransmissionDispersionScale, vTransmissionDispersionScale, uniforms.vTransmissionDispersionAbbeNumber, vTransmissionDispersionAbbeNumber, uniforms.vTransmissionColor, vTransmissionColor, uniforms.vTransmissionDepth, vTransmissionDepth, uniforms.vTransmissionScatter\\., vTransmissionScatter.)
+            #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                #ifdef COLORED_IBL_SHADOWS
+                    let iblShadowValue: vec3f = textureSample(iblShadowSampler, iblShadowSamplerSampler, fragmentInputs.position.xy / uniforms.shadowTextureSize).rgb;
+                #else
+                    let iblShadowValue: vec3f = vec3f(textureSample(iblShadowSampler, iblShadowSamplerSampler, fragmentInputs.position.xy / uniforms.shadowTextureSize).r);
+                #endif
+            #endif
+            #if defined(USEIRRADIANCEMAP)
+            
+                #ifdef IRRADIANCE_SCATTER_MASK
+                    // Bend the normal towards the view direction based on the anisotropy. This is mainly to mimick
+                    // backscattering when the anisotropy is negative.
+                    let bendAmount: f32 = subsurface_weight * -min(subsurface_scatter_anisotropy, 0.0);
+                    let mixedBendAmount: f32 = mix(bendAmount, -min(transmission_scatter_anisotropy, 0.0), transmission_weight);
+                    let viewVector: vec3f = normalize(scene.vEyePosition.xyz - input.vPositionW);
+                    let bentNormal: vec3f = mix(normalOutput, viewVector, mixedBendAmount * dot(normalOutput, viewVector));
+                #else
+                    let bentNormal: vec3f = normalOutput;
+                #endif
+                irradiance = sampleIrradiance(
+                    bentNormal
+                    #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                        , input.vEnvironmentIrradiance
+                    #endif
+                    #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                        , uniforms.reflectionMatrix
+                    #endif
+                    #ifdef USEIRRADIANCEMAP
+                        , irradianceSampler
+                        , irradianceSamplerSampler
+                        #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                            , uniforms.vReflectionDominantDirection
+                        #endif
+                    #endif
+                    #ifdef REALTIME_FILTERING
+                        , uniforms.vReflectionFilteringInfo
+                        #ifdef IBL_CDF_FILTERING
+                            , icdfSampler
+                            , icdfSamplerSampler
+                        #endif
+                    #endif
+                    , uniforms.vReflectionInfos
+                    , input.vViewPos.xyz
+                    , 1.0
+                    , vec3f(1.0)
+                );
+            #elif defined(USESPHERICALFROMREFLECTIONMAP)
+                // Use pre-computed spherical harmonics irradiance from vertex shader
+                irradiance = input.vEnvironmentIrradiance;
+            #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                irradiance *= iblShadowValue;
+            #endif
+            #ifndef BUMP
+                let uvOffset: vec2f = vec2f(0.0);
+            #endif
+            #ifdef IRRADIANCE_SCATTER_MASK
+                irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
+            #endif
+        #endif
+        fragData[IRRADIANCE_INDEX] = vec4f(irradiance, irradiance_alpha);
     #endif
 
     #if SCENE_MRT_COUNT > 0

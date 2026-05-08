@@ -24,23 +24,40 @@
     }
 #endif
 
-#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
+#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+    const F82_COS_THETA_MAX: f32          = 0.142857143;
+    const F82_ONE_MINUS_CTM_POW5: f32     = 0.462664366;
+    const F82_ONE_MINUS_CTM_POW6: f32     = 0.396569457;
+    const F82_B_DENOMINATOR_RECIP: f32    = 17.6512785;
+    const BRDF_Z_SCALE: f32               = 16.0;
+
     fn getF82Specular(NdotV: f32, F0: vec3f, edgeTint: vec3f, roughness: f32) -> vec3f {
         // F82 specular model for metals
         // https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/metal
-        const cos_theta_max: f32 = 0.142857143; // 1 / 7
-        
-        const one_minus_cos_theta_max_to_the_fifth: f32 = 0.462664366; // (1 - cos_theta_max)^5
-        const one_minus_cos_theta_max_to_the_sixth: f32 = 0.396569457; // (1 - cos_theta_max)^6
         let white_minus_F0: vec3f = vec3f(1.0f) - F0;
-        let b_numerator: vec3f = (F0 + white_minus_F0 * one_minus_cos_theta_max_to_the_fifth) * (vec3f(1.0) - edgeTint);
-        const b_denominator: f32 = cos_theta_max * one_minus_cos_theta_max_to_the_sixth;
-        const b_denominator_reciprocal: f32 = 1.0f / b_denominator;
-        let b: vec3f = b_numerator * b_denominator_reciprocal; // analogous to "a" in the "Fresnel Equations Considered Harmful" slides
+        let b_numerator: vec3f = (F0 + white_minus_F0 * F82_ONE_MINUS_CTM_POW5) * (vec3f(1.0) - edgeTint);
+        let b: vec3f = b_numerator * F82_B_DENOMINATOR_RECIP;
         let cos_theta: f32 = max(roughness, NdotV);
         let one_minus_cos_theta: f32 = 1.0 - cos_theta;
         let offset_from_F0: vec3f = (white_minus_F0 - b * cos_theta * one_minus_cos_theta) * pow(one_minus_cos_theta, 5.0f);
         return clamp(F0 + offset_from_F0, vec3f(0.0f), vec3f(1.0f));
+    }
+
+    // Compute the b coefficient (F82 dip strength) from F0 and edge tint.
+    fn getF82B(F0: vec3f, edgeTint: vec3f) -> vec3f {
+        return (F0 + (vec3f(1.0) - F0) * F82_ONE_MINUS_CTM_POW5) * (vec3f(1.0) - edgeTint) * F82_B_DENOMINATOR_RECIP;
+    }
+
+    // F82 directional albedo:  E_F82 = (F90-F0)*brdf.x + F0*brdf.y - b*brdf.z
+    fn getF82DirectionalAlbedo(F0: vec3f, F90: vec3f, b: vec3f, environmentBrdf: vec3f) -> vec3f {
+        return (F90 - F0) * environmentBrdf.x + F0 * environmentBrdf.y - b * environmentBrdf.z;
+    }
+
+    // Cosine-weighted hemisphere average of F82 Fresnel (closed form).
+    //   F_avg = 2*∫₀¹ F82(t)·t dt = F0 + (1-F0)/21 - b/126
+    //   The b/126 comes from 2·Beta(3,7) = 2·Γ(3)Γ(7)/Γ(10) = 2/252 = 1/126.
+    fn getF82AverageFresnel(F0: vec3f, b: vec3f) -> vec3f {
+        return F0 + (vec3f(1.0) - F0) / 21.0 - b / 126.0;
     }
 #endif
 

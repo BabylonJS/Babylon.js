@@ -1,5 +1,6 @@
-import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper"
-import { type Nullable } from "../../types"
+import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { type Nullable } from "../../types";
+
 /** @internal */
 export class WebGLHardwareTexture implements IHardwareTextureWrapper {
     private _webGLTexture: WebGLTexture;
@@ -11,9 +12,6 @@ export class WebGLHardwareTexture implements IHardwareTextureWrapper {
     private _MSAARenderBuffers: Nullable<WebGLRenderbuffer[]> = null;
 
     // Set to true once GPU memory has been allocated for the texture (used only for compressed textures with mipmaps).
-    /**
-     *
-     */
     public memoryAllocated?: boolean;
 
     public get underlyingResource(): Nullable<WebGLTexture> {

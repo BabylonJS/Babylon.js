@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinSharpenPostProcess } from "core/PostProcesses/thinSharpenPostProcess";
 
@@ -6,9 +6,6 @@ import { ThinSharpenPostProcess } from "core/PostProcesses/thinSharpenPostProces
  * Task which applies a sharpen post process.
  */
 export class FrameGraphSharpenTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinSharpenPostProcess;
 
     /**

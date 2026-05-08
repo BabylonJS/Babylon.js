@@ -1,4 +1,16 @@
-import { type Color4, type Scene, type FrameGraphTextureHandle, type Camera, type FrameGraphObjectList, type IShadowLight, type FrameGraphShadowGeneratorTask, type FrameGraphObjectRendererTask, type FrameGraph, type NodeRenderGraphBlock } from "core/index"
+import {
+    type Color4,
+    type Scene,
+    type FrameGraphTextureHandle,
+    type Camera,
+    type FrameGraphObjectList,
+    type IShadowLight,
+    type FrameGraphShadowGeneratorTask,
+    type FrameGraphObjectRendererTask,
+    type FrameGraph,
+    type NodeRenderGraphBlock,
+} from "core/index";
+
 /**
  * Description of a custom block to be used in the node render graph editor
  */

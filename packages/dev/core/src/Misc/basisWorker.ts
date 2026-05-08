@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Nullable } from "core/types"
+import { type Nullable } from "core/types";
 import { Tools } from "./tools";
-import { type BasisFileInfo, type BasisTranscodeConfiguration } from "./basis"
+import { type BasisFileInfo, type BasisTranscodeConfiguration } from "./basis";
+
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
@@ -240,10 +241,7 @@ export function workerFunction(): void {
  * @param moduleUrl the url to the basis transcoder module
  * @returns a promise that resolves when the worker is initialized
  */
-
-/**
- *
- */
+// eslint-disable-next-line no-restricted-syntax
 export async function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
     return await new Promise<Worker>((res, reject) => {
         const initHandler = (msg: any) => {

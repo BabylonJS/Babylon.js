@@ -1,8 +1,8 @@
 import { KhronosTextureContainer } from "../../../Misc/khronosTextureContainer";
 import { KhronosTextureContainer2 } from "../../../Misc/khronosTextureContainer2";
-import { type Nullable } from "../../../types"
-import { type InternalTexture } from "../../../Materials/Textures/internalTexture"
-import { type IInternalTextureLoader } from "./internalTextureLoader"
+import { type Nullable } from "../../../types";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
 
@@ -22,6 +22,32 @@ function MapSRGBToLinear(format: number): Nullable<number> {
             return Constants.TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
             return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10;
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
+            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12;
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
             return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM;
     }
@@ -33,10 +59,7 @@ function MapSRGBToLinear(format: number): Nullable<number> {
  * Implementation of the KTX Texture Loader.
  * @internal
  */
-
-/**
- *
- */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _KTXTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.

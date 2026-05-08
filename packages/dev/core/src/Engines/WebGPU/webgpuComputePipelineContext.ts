@@ -1,29 +1,18 @@
-import { type IComputePipelineContext } from "../../Compute/IComputePipelineContext"
-import { type Nullable } from "../../types"
-import { type WebGPUEngine } from "../webgpuEngine"
+import { type IComputePipelineContext } from "../../Compute/IComputePipelineContext";
+import { type Nullable } from "../../types";
+import { type WebGPUEngine } from "../webgpuEngine";
+
 /** @internal */
 export class WebGPUComputePipelineContext implements IComputePipelineContext {
-    /**
-     *
-     */
     public engine: WebGPUEngine;
 
-    /**
-     *
-     */
     public sources: {
         compute: string;
         rawCompute: string;
     };
 
-    /**
-     *
-     */
     public stage: Nullable<GPUProgrammableStage>;
 
-    /**
-     *
-     */
     public computePipeline: GPUComputePipeline;
 
     // eslint-disable-next-line no-restricted-syntax

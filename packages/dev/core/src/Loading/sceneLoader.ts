@@ -1,26 +1,25 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { type DeepImmutable, type Nullable } from "../types"
+import { type DeepImmutable, type Nullable } from "../types";
 import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type AnimationGroup } from "../Animations/animationGroup"
-import { type AssetContainer } from "../assetContainer"
-import { type IParticleSystem } from "../Particles/IParticleSystem"
-import { type Skeleton } from "../Bones/skeleton"
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type AnimationGroup } from "../Animations/animationGroup";
+import { type AssetContainer } from "../assetContainer";
+import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { type Skeleton } from "../Bones/skeleton";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
-import { type IFileRequest } from "../Misc/fileRequest"
-import { type WebRequest } from "../Misc/webRequest"
-import { type LoadFileError } from "../Misc/fileTools"
-import { IsBase64DataUrl } from "../Misc/fileTools";
-import { type TransformNode } from "../Meshes/transformNode"
-import { type Geometry } from "../Meshes/geometry"
-import { type Light } from "../Lights/light"
+import { type IFileRequest } from "../Misc/fileRequest";
+import { type WebRequest } from "../Misc/webRequest";
+import { type LoadFileError, IsBase64DataUrl } from "../Misc/fileTools";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type Geometry } from "../Meshes/geometry";
+import { type Light } from "../Lights/light";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
-import { type ISpriteManager } from "../Sprites/spriteManager"
+import { type ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { _FetchAsync } from "core/Misc/webRequest.fetch";
@@ -184,7 +183,7 @@ export interface ISceneLoaderPluginBase extends ISceneLoaderPluginMetadata {
      * @param data string containing the data
      * @returns data to pass to the plugin
      */
-
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     directLoad?(scene: Scene, data: string): unknown | Promise<unknown>;
 
     /**
@@ -374,10 +373,7 @@ interface IFileInfo {
 /**
  * Defines options for SceneLoader plugins. This interface is extended by specific plugins.
  */
-
-/**
- *
- */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/naming-convention
 export interface SceneLoaderPluginOptions extends Record<string, Record<string, unknown> | undefined> {}
 
 /**
@@ -577,6 +573,7 @@ async function loadDataAsync(
     const directLoad = getDirectLoad(fileInfo.url);
 
     if (fileInfo.rawData && !pluginExtension) {
+        // eslint-disable-next-line no-throw-literal
         throw "When using ArrayBufferView to load data the file extension must be provided.";
     }
 
@@ -613,6 +610,7 @@ async function loadDataAsync(
     }
 
     if (fileInfo.rawData && !registeredPlugin.isBinary) {
+        // eslint-disable-next-line no-throw-literal
         throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
     }
 
@@ -643,6 +641,7 @@ async function loadDataAsync(
 
     return getPluginInstance((plugin) => {
         if (!plugin) {
+            // eslint-disable-next-line no-throw-literal
             throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
         }
 
@@ -706,6 +705,7 @@ async function loadDataAsync(
             };
 
             if (!plugin.loadFile && fileInfo.rawData) {
+                // eslint-disable-next-line no-throw-literal
                 throw "Plugin does not support loading ArrayBufferView.";
             }
 
@@ -1632,11 +1632,12 @@ export class SceneLoader {
      * Defines the current logging level (while loading the scene)
      * @ignorenaming
      */
-
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static get loggingLevel(): number {
         return SceneLoaderFlags.loggingLevel;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static set loggingLevel(value: number) {
         SceneLoaderFlags.loggingLevel = value;
     }
@@ -1968,10 +1969,10 @@ export class SceneLoader {
         overwriteAnimations?: boolean,
         animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
         targetConverter?: Nullable<(target: any) => any>,
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onSuccess?: Nullable<(scene: Scene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string

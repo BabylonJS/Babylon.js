@@ -1,4 +1,5 @@
-import { type AbstractMesh } from "core/Meshes/abstractMesh"
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+
 /**
  * Interface used to define a platform support for BoundingInfoHelper class
  * @internal

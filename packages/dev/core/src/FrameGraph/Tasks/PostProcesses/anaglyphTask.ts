@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphTextureHandle } from "core/index"
+import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphTextureHandle } from "core/index";
 import { ThinAnaglyphPostProcess } from "core/PostProcesses/thinAnaglyphPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -11,9 +11,6 @@ export class FrameGraphAnaglyphTask extends FrameGraphPostProcessTask {
      */
     public leftTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public override readonly postProcess: ThinAnaglyphPostProcess;
 
     /**

@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { ThinFXAAPostProcess } from "core/PostProcesses/thinFXAAPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task which applies a FXAA post process.
  */
 export class FrameGraphFXAATask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinFXAAPostProcess;
 
     /**

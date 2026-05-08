@@ -1,106 +1,47 @@
-import { type IColor3Like, type IColor4Like, type IMatrixLike, type IVector3Like, type IVector4Like } from "../Maths/math.like"
-import { type Effect } from "./effect"
-import { type UniformBuffer } from "./uniformBuffer"
+import { type IColor3Like, type IColor4Like, type IMatrixLike, type IVector3Like, type IVector4Like } from "../Maths/math.like";
+import { type Effect } from "./effect";
+import { type UniformBuffer } from "./uniformBuffer";
+
 /** @internal */
 export class UniformBufferEffectCommonAccessor {
-    /**
-     *
-     */
     public setMatrix3x3: (name: string, matrix: Float32Array) => void;
 
-    /**
-     *
-     */
     public setMatrix2x2: (name: string, matrix: Float32Array) => void;
 
-    /**
-     *
-     */
     public setFloat: (name: string, x: number) => void;
 
-    /**
-     *
-     */
     public setFloat2: (name: string, x: number, y: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setFloat3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setFloatArray: (name: string, array: Float32Array) => void;
 
-    /**
-     *
-     */
     public setArray: (name: string, array: number[]) => void;
 
-    /**
-     *
-     */
     public setIntArray: (name: string, array: Int32Array) => void;
 
-    /**
-     *
-     */
     public setMatrix: (name: string, mat: IMatrixLike) => void;
 
-    /**
-     *
-     */
     public setMatrices: (name: string, mat: Float32Array) => void;
 
-    /**
-     *
-     */
     public setVector3: (name: string, vector: IVector3Like) => void;
 
-    /**
-     *
-     */
     public setVector4: (name: string, vector: IVector4Like) => void;
 
-    /**
-     *
-     */
     public setColor3: (name: string, color: IColor3Like, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setDirectColor4: (name: string, color: IColor4Like) => void;
 
-    /**
-     *
-     */
     public setInt: (name: string, x: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setInt2: (name: string, x: number, y: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
 
-    /**
-     *
-     */
     public setInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
 
     private _isUbo(uboOrEffect: UniformBuffer | Effect): uboOrEffect is UniformBuffer {

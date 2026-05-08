@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass, type Camera } from "core/index"
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass, type Camera } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { Constants } from "core/Engines/constants";
 import { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
@@ -23,9 +23,6 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
      */
     public camera: Camera;
 
-    /**
-     *
-     */
     public override readonly postProcess: ThinCircleOfConfusionPostProcess;
 
     /**

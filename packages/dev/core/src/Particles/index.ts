@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./baseParticleSystem";
 export * from "./EmitterTypes/index";
@@ -9,7 +10,7 @@ export * from "./particle";
 export * from "./particleHelper";
 export * from "./particleSystem";
 import "./particleSystemComponent";
-
+// eslint-disable-next-line no-duplicate-imports
 export * from "./particleSystemComponent";
 export * from "./particleSystemSet";
 export * from "./solidParticle";

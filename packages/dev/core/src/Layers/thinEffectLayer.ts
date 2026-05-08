@@ -10,8 +10,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
-import { type EffectWrapperCreationOptions } from "core/Materials/effectRenderer";
-import { EffectWrapper } from "core/Materials/effectRenderer";
+import { type EffectWrapperCreationOptions, EffectWrapper } from "core/Materials/effectRenderer";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -25,8 +24,6 @@ import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttrib
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { type Vector2 } from "../Maths/math.vector";
-import { Engine } from "core/Engines/engine";
-import { _IsSideEffectImplemented } from "../Misc/devTools";
 
 /**
  * Special Glow Blur post process only blurring the alpha channel
@@ -54,7 +51,7 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinGlowBlurPostProcess.FragmentUrl,
@@ -73,14 +70,8 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         super._gatherImports(useWebGPU, list);
     }
 
-    /**
-     *
-     */
     public textureWidth: number = 0;
 
-    /**
-     *
-     */
     public textureHeight: number = 0;
 
     public override bind() {
@@ -441,7 +432,7 @@ export class ThinEffectLayer {
         this._objectRenderer.renderList = null;
 
         // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
-        const hasBoundingBoxRenderer = _IsSideEffectImplemented(this._scene.getBoundingBoxRenderer);
+        const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
 
         let boundingBoxRendererEnabled = false;
         if (hasBoundingBoxRenderer) {
@@ -548,7 +539,14 @@ export class ThinEffectLayer {
         }
 
         if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
-            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+            // Enable glow mode during readiness check so the material compiles the
+            // correct shader variant (e.g. the USEADDITIONALCOLOR define / useAdditionalColor
+            // uniform path for NodeMaterial).
+            // This mirrors what _renderSubMesh does when actually rendering.
+            material._glowModeEnabled = true;
+            const isReady = material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+            material._glowModeEnabled = false;
+            return isReady;
         }
 
         const defines: string[] = [];
@@ -706,7 +704,7 @@ export class ThinEffectLayer {
                 "glowColor",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "emissiveMatrix",
                 "opacityMatrix",

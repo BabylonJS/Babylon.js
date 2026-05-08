@@ -1,9 +1,11 @@
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
-import { type PickingInfo } from "../Collisions/pickingInfo"
-import { type IMouseEvent, type IPointerEvent } from "./deviceInputEvents"
-import { type InputManager } from "../Inputs/scene.inputManager"
-import { type Ray } from "../Culling/ray"
+import { type PickingInfo } from "../Collisions/pickingInfo";
+import { type IMouseEvent, type IPointerEvent } from "./deviceInputEvents";
+import { type InputManager } from "../Inputs/scene.inputManager";
+
+import { type Ray } from "../Culling/ray";
+
 /**
  * Gather the list of pointer event types as constants.
  */

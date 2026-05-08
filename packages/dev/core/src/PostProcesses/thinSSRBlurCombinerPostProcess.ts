@@ -1,20 +1,14 @@
-import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Camera } from "core/index"
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Camera } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { TmpVectors } from "../Maths/math.vector";
 
 /**
  * @internal
  */
 export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
-    /**
-     *
-     */
     public static readonly FragmentUrl = "screenSpaceReflection2BlurCombiner";
 
-    /**
-     *
-     */
     public static readonly Uniforms = [
         "strength",
         "reflectionSpecularFalloffExponent",
@@ -26,9 +20,6 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         "view",
     ];
 
-    /**
-     *
-     */
     public static readonly Samplers = ["textureSampler", "depthSampler", "normalSampler", "mainSampler", "reflectivitySampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -44,7 +35,7 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSRBlurCombinerPostProcess.FragmentUrl,
@@ -55,19 +46,10 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         this._updateEffectDefines();
     }
 
-    /**
-     *
-     */
     public strength = 1;
 
-    /**
-     *
-     */
     public reflectionSpecularFalloffExponent = 1;
 
-    /**
-     *
-     */
     public camera: Nullable<Camera> = null;
 
     private _useFresnel = false;

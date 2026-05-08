@@ -1,4 +1,5 @@
-import { type IViewportLike } from "./math.like"
+import { type IViewportLike } from "./math.like";
+
 /**
  * Class used to represent a viewport on screen
  */

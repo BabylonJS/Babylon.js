@@ -6,6 +6,7 @@ struct Scene {
     view : mat4x4<f32>,
     projection : mat4x4<f32>,
     vEyePosition : vec4<f32>,
+    inverseProjection : mat4x4<f32>,
 };
 
 #define SCENE_UBO

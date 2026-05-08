@@ -1,6 +1,6 @@
-import { type Nullable } from "core/types"
-import { type InternalTexture } from "../internalTexture"
-import { type IInternalTextureLoader } from "./internalTextureLoader"
+import { type Nullable } from "core/types";
+import { type InternalTexture } from "../internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { GetExrHeader } from "./EXR/exrLoader.header";
 import { CreateDecoderAsync, ScanData } from "./EXR/exrLoader.decoder";
 import { ExrLoaderGlobalConfiguration, EXROutputType } from "./EXR/exrLoader.configuration";
@@ -85,10 +85,7 @@ import { Logger } from "core/Misc/logger";
  * @see [PXR24 compression](https://playground.babylonjs.com/#4RN0VF#150)
  * @internal
  */
-
-/**
- *
- */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _ExrTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
@@ -111,6 +108,7 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
         _onLoad: Nullable<(data?: any) => void>,
         _onError: Nullable<(message?: string, exception?: any) => void>
     ): void {
+        // eslint-disable-next-line no-throw-literal
         throw ".exr not supported in Cube.";
     }
 
@@ -120,7 +118,7 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public loadData(
         data: ArrayBufferView,
         texture: InternalTexture,

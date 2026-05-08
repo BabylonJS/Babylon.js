@@ -1,64 +1,35 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
-import { type UniformBuffer } from "../../Materials/uniformBuffer"
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { Color3 } from "../../Maths/math.color";
 import { MaterialFlags } from "../../Materials/materialFlags";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture"
-import { type Nullable } from "../../types"
-import { type IAnimatable } from "../../Animations/animatable.interface"
-import { type EffectFallbacks } from "../effectFallbacks"
-import { type SubMesh } from "../../Meshes/subMesh"
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Nullable } from "../../types";
+import { type IAnimatable } from "../../Animations/animatable.interface";
+import { type EffectFallbacks } from "../effectFallbacks";
+import { type SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
-import { type Engine } from "../../Engines/engine"
-import { type Scene } from "../../scene"
-import { type PBRBaseMaterial } from "./pbrBaseMaterial"
+import { type Engine } from "../../Engines/engine";
+import { type Scene } from "../../scene";
+import { type PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
  */
 export class MaterialSheenDefines extends MaterialDefines {
-    /**
-     *
-     */
     public SHEEN = false;
-    /**
-     *
-     */
     public SHEEN_TEXTURE = false;
-    /**
-     *
-     */
     public SHEEN_GAMMATEXTURE = false;
-    /**
-     *
-     */
     public SHEEN_TEXTURE_ROUGHNESS = false;
-    /**
-     *
-     */
     public SHEEN_TEXTUREDIRECTUV = 0;
-    /**
-     *
-     */
     public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
-    /**
-     *
-     */
     public SHEEN_LINKWITHALBEDO = false;
-    /**
-     *
-     */
     public SHEEN_ROUGHNESS = false;
-    /**
-     *
-     */
     public SHEEN_ALBEDOSCALING = false;
-    /**
-     *
-     */
     public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
 }
 

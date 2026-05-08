@@ -1,6 +1,7 @@
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { EngineStore } from "../../Engines/engineStore";
-import { type _WebAudioEngine } from "./webAudioEngine"
+import { type _WebAudioEngine } from "./webAudioEngine";
+
 /**
  * Adds a UI button that starts the audio engine's underlying audio context when the user presses it.
  * @internal

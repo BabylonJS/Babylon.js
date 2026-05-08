@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBlurTask } from "./blurTask";
 import { ThinDepthOfFieldBlurPostProcess } from "core/PostProcesses/thinDepthOfFieldBlurPostProcess";
@@ -8,14 +8,8 @@ import { Vector2 } from "core/Maths/math.vector";
  * @internal
  */
 export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
-    /**
-     *
-     */
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public circleOfConfusionSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldBlurPostProcess) {

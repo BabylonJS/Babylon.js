@@ -1,4 +1,12 @@
-import { type AbstractEngine, type Camera, type EffectWrapperCreationOptions, type FrameGraph, type FrameGraphRenderPass, type FrameGraphTextureHandle, type Nullable } from "core/index"
+import {
+    type AbstractEngine,
+    type Camera,
+    type EffectWrapperCreationOptions,
+    type FrameGraph,
+    type FrameGraphRenderPass,
+    type FrameGraphTextureHandle,
+    type Nullable,
+} from "core/index";
 import { Vector3, Matrix } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
@@ -62,19 +70,10 @@ class VolumetricLightingBlendVolumeThinPostProcess extends ThinPassPostProcess {
  * @internal
  */
 export class FrameGraphVolumetricLightingBlendVolumeTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: VolumetricLightingBlendVolumeThinPostProcess;
 
-    /**
-     *
-     */
     public depthTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public camera: Camera;
 
     constructor(name: string, frameGraph: FrameGraph, enableExtinction = false) {

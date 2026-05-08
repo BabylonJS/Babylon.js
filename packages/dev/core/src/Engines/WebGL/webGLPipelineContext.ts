@@ -1,62 +1,27 @@
-import { type IPipelineContext } from "../IPipelineContext"
-import { type Nullable } from "../../types"
-import { type Effect } from "../../Materials/effect"
-import { type IMatrixLike, type IVector2Like, type IVector3Like, type IVector4Like, type IColor3Like, type IColor4Like, type IQuaternionLike } from "../../Maths/math.like"
-import { type ThinEngine } from "../thinEngine"
-import { type AbstractEngine } from "../abstractEngine"
+import { type IPipelineContext } from "../IPipelineContext";
+import { type Nullable } from "../../types";
+import { type Effect } from "../../Materials/effect";
+import { type IMatrixLike, type IVector2Like, type IVector3Like, type IVector4Like, type IColor3Like, type IColor4Like, type IQuaternionLike } from "../../Maths/math.like";
+import { type ThinEngine } from "../thinEngine";
+import { type AbstractEngine } from "../abstractEngine";
+
 /** @internal */
 export class WebGLPipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
 
-    /**
-     *
-     */
     public engine: ThinEngine;
-    /**
-     *
-     */
     public program: Nullable<WebGLProgram>;
-    /**
-     *
-     */
     public context?: WebGLRenderingContext;
-    /**
-     *
-     */
     public vertexShader?: WebGLShader;
-    /**
-     *
-     */
     public fragmentShader?: WebGLShader;
-    /**
-     *
-     */
     public isParallelCompiled: boolean;
-    /**
-     *
-     */
     public onCompiled?: () => void;
-    /**
-     *
-     */
     public transformFeedback?: WebGLTransformFeedback | null;
 
-    /**
-     *
-     */
     public vertexCompilationError: Nullable<string> = null;
-    /**
-     *
-     */
     public fragmentCompilationError: Nullable<string> = null;
-    /**
-     *
-     */
     public programLinkError: Nullable<string> = null;
-    /**
-     *
-     */
     public programValidationError: Nullable<string> = null;
 
     /** @internal */

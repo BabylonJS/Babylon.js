@@ -1,4 +1,5 @@
-import { type FrameGraph } from "core/index"
+// eslint-disable-next-line import/no-internal-modules
+import { type FrameGraph } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinPassCubePostProcess, ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 
@@ -6,9 +7,6 @@ import { ThinPassCubePostProcess, ThinPassPostProcess } from "core/PostProcesses
  * Task which applies a pass post process.
  */
 export class FrameGraphPassTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinPassPostProcess;
 
     /**
@@ -30,9 +28,6 @@ export class FrameGraphPassTask extends FrameGraphPostProcessTask {
  * Task which applies a pass cube post process.
  */
 export class FrameGraphPassCubeTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinPassCubePostProcess;
 
     /**

@@ -1,16 +1,17 @@
-import { type Skeleton } from "../../Bones/skeleton"
+import { type Skeleton } from "../../Bones/skeleton";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../../Maths/math.vector";
-import { type Scene } from "../../scene"
+import { type Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
-import { type Mesh } from "../../Meshes/mesh"
+import { type Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "../../Maths/math.axis";
 import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IPhysicsEnginePlugin";
-import { type Nullable } from "../../types"
-import { type Bone } from "../../Bones/bone"
+import { type Nullable } from "../../types";
+import { type Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
 import { TransformNode } from "../../Meshes/transformNode";
-import { type Observer } from "../../Misc/observable"
+import { type Observer } from "../../Misc/observable";
+
 /**
  * Ragdoll bone properties
  * @experimental
@@ -330,6 +331,7 @@ export class Ragdoll {
         this._rootBoneName = skeletonRoots[0].name;
         this._rootBoneIndex = this._boneNames.indexOf(this._rootBoneName);
         if (this._rootBoneIndex == -1) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-base-to-string
             Logger.Log("Ragdoll creation failed: the array boneNames doesn't have the root bone. The root bone is " + this._skeleton.getChildren());
             return false;
         }

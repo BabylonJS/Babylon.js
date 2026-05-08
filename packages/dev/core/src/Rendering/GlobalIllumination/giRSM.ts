@@ -1,4 +1,5 @@
-import { type ReflectiveShadowMap } from "../reflectiveShadowMap"
+import { type ReflectiveShadowMap } from "../reflectiveShadowMap";
+
 /**
  * Class used to store the global illumination parameters for a reflective shadow map.
  * Instances of this class are used by the GIRSMManager class to generate global illumination for a scene.

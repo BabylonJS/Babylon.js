@@ -1,4 +1,5 @@
-import { type IKeyboardEvent } from "./deviceInputEvents"
+import { type IKeyboardEvent } from "./deviceInputEvents";
+
 /**
  * Gather the list of keyboard event types as constants.
  */

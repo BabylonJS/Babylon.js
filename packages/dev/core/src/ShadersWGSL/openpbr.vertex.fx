@@ -5,6 +5,7 @@
 #define CUSTOM_VERTEX_BEGIN
 
 // Attributes
+#ifndef USE_VERTEX_PULLING
 attribute position: vec3f;
 #ifdef NORMAL
 attribute normal: vec3f;
@@ -16,10 +17,11 @@ attribute tangent: vec4f;
 attribute uv: vec2f;
 #endif
 #include<uvAttributeDeclaration>[2..7]
-#include<mainUVVaryingDeclaration>[1..7]
 #ifdef VERTEXCOLOR
 attribute color: vec4f;
 #endif
+#endif
+#include<mainUVVaryingDeclaration>[1..7]
 
 #include<helperFunctions>
 #include<pbrBRDFFunctions>
@@ -42,6 +44,9 @@ attribute color: vec4f;
 #include<samplerVertexDeclaration>(_DEFINENAME_,TRANSMISSION_DEPTH,_VARYINGNAME_,TransmissionDepth)
 #include<samplerVertexDeclaration>(_DEFINENAME_,TRANSMISSION_SCATTER,_VARYINGNAME_,TransmissionScatter)
 #include<samplerVertexDeclaration>(_DEFINENAME_,TRANSMISSION_DISPERSION_SCALE,_VARYINGNAME_,TransmissionDispersionScale)
+#include<samplerVertexDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight)
+#include<samplerVertexDeclaration>(_DEFINENAME_,SUBSURFACE_COLOR,_VARYINGNAME_,SubsurfaceColor)
+#include<samplerVertexDeclaration>(_DEFINENAME_,SUBSURFACE_RADIUS_SCALE,_VARYINGNAME_,SubsurfaceRadiusScale)
 #include<samplerVertexDeclaration>(_DEFINENAME_,COAT_WEIGHT,_VARYINGNAME_,CoatWeight)
 #include<samplerVertexDeclaration>(_DEFINENAME_,COAT_COLOR,_VARYINGNAME_,CoatColor)
 #include<samplerVertexDeclaration>(_DEFINENAME_,COAT_ROUGHNESS,_VARYINGNAME_,CoatRoughness)
@@ -98,6 +103,9 @@ varying vDirectionW: vec3f;
 #endif
 
 #include<logDepthDeclaration>
+
+#include<vertexPullingDeclaration>
+
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
@@ -105,22 +113,43 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 	#define CUSTOM_VERTEX_MAIN_BEGIN
 
+#ifdef USE_VERTEX_PULLING
+    var positionUpdated: vec3f = vec3f(0.0);
+    #ifdef NORMAL
+    var normalUpdated: vec3f = vec3f(0.0);
+    #endif
+    #ifdef TANGENT
+    var tangentUpdated: vec4f = vec4f(0.0);
+    #endif
+    #ifdef UV1
+    var uvUpdated: vec2f = vec2f(0.0);
+    #endif
+    #ifdef UV2
+    var uv2Updated: vec2f = vec2f(0.0);
+    #endif
+    #ifdef VERTEXCOLOR
+    var colorUpdated: vec4f = vec4f(0.0);
+    #endif
+#else
     var positionUpdated: vec3f = vertexInputs.position;
-#ifdef NORMAL
+    #ifdef NORMAL
     var normalUpdated: vec3f = vertexInputs.normal;
-#endif
-#ifdef TANGENT
+    #endif
+    #ifdef TANGENT
     var tangentUpdated: vec4f = vertexInputs.tangent;
-#endif
-#ifdef UV1
+    #endif
+    #ifdef UV1
     var uvUpdated: vec2f = vertexInputs.uv;
-#endif
-#ifdef UV2
+    #endif
+    #ifdef UV2
     var uv2Updated: vec2f = vertexInputs.uv2;
-#endif
-#ifdef VERTEXCOLOR
+    #endif
+    #ifdef VERTEXCOLOR
     var colorUpdated: vec4f = vertexInputs.color;
+    #endif
 #endif
+
+#include<vertexPullingVertex>
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -141,8 +170,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * vec4f(positionUpdated, 1.0);
 #endif
 
+#ifdef USE_VERTEX_PULLING
+#include<bonesVertex>(vertexInputs.matricesIndices,vp_matricesIndices,vertexInputs.matricesWeights,vp_matricesWeights,vertexInputs.matricesIndicesExtra,vp_matricesIndicesExtra,vertexInputs.matricesWeightsExtra,vp_matricesWeightsExtra)
+#include<bakedVertexAnimation>(vertexInputs.matricesIndices,vp_matricesIndices,vertexInputs.matricesWeights,vp_matricesWeights,vertexInputs.matricesIndicesExtra,vp_matricesIndicesExtra,vertexInputs.matricesWeightsExtra,vp_matricesWeightsExtra)
+#else
 #include<bonesVertex>
 #include<bakedVertexAnimation>
+#endif
 
     var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
     vertexOutputs.vPositionW =  worldPos.xyz;
@@ -232,6 +266,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #include<samplerVertexImplementation>(_DEFINENAME_,TRANSMISSION_DEPTH,_VARYINGNAME_,TransmissionDepth,_MATRIXNAME_,transmissionDepth,_INFONAME_,TransmissionDepthInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,TRANSMISSION_SCATTER,_VARYINGNAME_,TransmissionScatter,_MATRIXNAME_,transmissionScatter,_INFONAME_,TransmissionScatterInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,TRANSMISSION_DISPERSION_SCALE,_VARYINGNAME_,TransmissionDispersionScale,_MATRIXNAME_,transmissionDispersionScale,_INFONAME_,TransmissionDispersionScaleInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_MATRIXNAME_,subsurfaceWeight,_INFONAME_,SubsurfaceWeightInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SUBSURFACE_COLOR,_VARYINGNAME_,SubsurfaceColor,_MATRIXNAME_,subsurfaceColor,_INFONAME_,SubsurfaceColorInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,SUBSURFACE_RADIUS_SCALE,_VARYINGNAME_,SubsurfaceRadiusScale,_MATRIXNAME_,subsurfaceRadiusScale,_INFONAME_,SubsurfaceRadiusScaleInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,COAT_WEIGHT,_VARYINGNAME_,CoatWeight,_MATRIXNAME_,coatWeight,_INFONAME_,CoatWeightInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,COAT_COLOR,_VARYNAME_,CoatColor,_MATRIXNAME_,coatColor,_INFONAME_,CoatColorInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,COAT_ROUGHNESS,_VARYINGNAME_,CoatRoughness,_MATRIXNAME_,coatRoughness,_INFONAME_,CoatRoughnessInfos.x)

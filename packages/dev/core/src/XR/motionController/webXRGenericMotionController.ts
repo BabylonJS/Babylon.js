@@ -1,7 +1,11 @@
-import { type IMinimalMotionControllerObject, type MotionControllerHandedness, type IMotionControllerLayoutMap } from "./webXRAbstractMotionController"
-import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
-import { type Scene } from "../../scene"
+import {
+    type IMinimalMotionControllerObject,
+    type MotionControllerHandedness,
+    type IMotionControllerLayoutMap,
+    WebXRAbstractMotionController,
+} from "./webXRAbstractMotionController";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Scene } from "../../scene";
 import { Mesh } from "../../Meshes/mesh";
 import { Quaternion } from "../../Maths/math.vector";
 
@@ -14,9 +18,6 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
      */
     public static ProfileId = "generic-trigger";
 
-    /**
-     *
-     */
     public profileId = WebXRGenericTriggerMotionController.ProfileId;
 
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness) {

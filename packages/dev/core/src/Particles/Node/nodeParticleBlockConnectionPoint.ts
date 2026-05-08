@@ -1,9 +1,10 @@
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
-import { type NodeParticleBlock } from "./nodeParticleBlock"
+import { type NodeParticleBlock } from "./nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { type NodeParticleBuildState } from "./nodeParticleBuildState"
-import { type ParticleInputBlock } from "./Blocks/particleInputBlock"
+import { type NodeParticleBuildState } from "./nodeParticleBuildState";
+import { type ParticleInputBlock } from "./Blocks/particleInputBlock";
+
 /**
  * Enum used to define the compatibility state between two connection points
  */
@@ -323,6 +324,7 @@ export class NodeParticleConnectionPoint {
      */
     public connectTo(connectionPoint: NodeParticleConnectionPoint, ignoreConstraints = false): NodeParticleConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
+            // eslint-disable-next-line no-throw-literal
             throw `Cannot connect these two connectors. source: "${this.ownerBlock.name}".${this.name}, target: "${connectionPoint.ownerBlock.name}".${connectionPoint.name}`;
         }
 

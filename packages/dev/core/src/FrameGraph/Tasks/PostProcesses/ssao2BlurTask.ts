@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphTextureHandle } from "core/index"
+import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinSSAO2BlurPostProcess } from "core/PostProcesses/thinSSAO2BlurPostProcess";
@@ -7,14 +7,8 @@ import { ThinSSAO2BlurPostProcess } from "core/PostProcesses/thinSSAO2BlurPostPr
  * @internal
  */
 export class FrameGraphSSAO2BlurTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinSSAO2BlurPostProcess;
 
-    /**
-     *
-     */
     public depthTexture: FrameGraphTextureHandle;
 
     constructor(

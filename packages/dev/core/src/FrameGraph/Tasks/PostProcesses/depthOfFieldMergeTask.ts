@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { ThinDepthOfFieldMergePostProcess } from "core/PostProcesses/thinDepthOfFieldMergePostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { Constants } from "../../../Engines/constants";
@@ -7,14 +7,8 @@ import { Constants } from "../../../Engines/constants";
  * @internal
  */
 export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public blurSteps: FrameGraphTextureHandle[] = [];
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldMergePostProcess) {

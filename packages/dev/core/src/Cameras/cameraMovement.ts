@@ -1,7 +1,8 @@
-import { type Scene } from "../scene"
+import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
-import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior"
+import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+
 const FrameDurationAt60FPS = 1000 / 60;
 /**
  * Holds all logic related to converting input pixel deltas into current frame deltas, taking speed / framerate into account

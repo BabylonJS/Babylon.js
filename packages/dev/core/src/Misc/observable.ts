@@ -1,4 +1,5 @@
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
+
 declare const WeakRef: any;
 
 const IsWeakRefSupported = typeof WeakRef !== "undefined";
@@ -529,11 +530,3 @@ export class Observable<T> implements IReadonlyObservable<T> {
         return false;
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "./devTools";
-
-Observable.prototype.notifyObserversWithPromise ??= _MissingSideEffect("Observable", "notifyObserversWithPromise") as any;
-Observable.prototype.runCoroutineAsync ??= _MissingSideEffect("Observable", "runCoroutineAsync") as any;
-Observable.prototype.cancelAllCoroutines ??= _MissingSideEffect("Observable", "cancelAllCoroutines") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

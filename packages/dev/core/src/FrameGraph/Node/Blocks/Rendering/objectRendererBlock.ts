@@ -1,8 +1,17 @@
-/**
- * Re-exports pure implementation and applies runtime side effects.
- * Import objectRendererBlock.pure for tree-shakeable, side-effect-free usage.
- */
-export * from "./objectRendererBlock.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphBaseObjectRendererBlock } from "./baseObjectRendererBlock";
 
-import { registerObjectRendererBlock } from "./objectRendererBlock.pure";
-registerObjectRendererBlock();
+/**
+ * Block that render objects to a render target
+ */
+export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjectRendererBlock {
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public override getClassName() {
+        return "NodeRenderGraphObjectRendererBlock";
+    }
+}
+
+RegisterClass("BABYLON.NodeRenderGraphObjectRendererBlock", NodeRenderGraphObjectRendererBlock);

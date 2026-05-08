@@ -1,33 +1,16 @@
 import { Constants } from "core/Engines/constants";
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
+
 /**
  * @internal
  **/
 export class AlphaState {
-    /**
-     *
-     */
     public _blendFunctionParameters = new Array<Nullable<number>>(4 * 8);
-    /**
-     *
-     */
     public _blendEquationParameters = new Array<Nullable<number>>(2 * 8);
-    /**
-     *
-     */
     public _blendConstants = new Array<Nullable<number>>(4);
-    /**
-     *
-     */
     public _isBlendConstantsDirty = false;
 
-    /**
-     *
-     */
     public _alphaBlend = Array(8).fill(false);
-    /**
-     *
-     */
     public _numTargetEnabled = 0;
 
     private _isAlphaBlendDirty = false;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { GetDirectStore } from "./decorators.functions";
 import { _WarnImport } from "./devTools";
 
@@ -19,6 +19,7 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
         const key = targetKey || "_" + propertyKey;
         Object.defineProperty(target, propertyKey, {
             get: function (this: any) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this[key];
             },
             set: function (this: any, value) {
@@ -42,93 +43,54 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
     };
 }
 
-/**
- *
- */
 export function expandToProperty(callback: string, targetKey: Nullable<string> = null) {
     return generateExpandMember(callback, targetKey);
 }
 
-/**
- *
- */
 export function serialize(sourceName?: string) {
     return generateSerializableMember(0, sourceName); // value member
 }
 
-/**
- *
- */
 export function serializeAsTexture(sourceName?: string) {
     return generateSerializableMember(1, sourceName); // texture member
 }
 
-/**
- *
- */
 export function serializeAsColor3(sourceName?: string) {
     return generateSerializableMember(2, sourceName); // color3 member
 }
 
-/**
- *
- */
 export function serializeAsFresnelParameters(sourceName?: string) {
     return generateSerializableMember(3, sourceName); // fresnel parameters member
 }
 
-/**
- *
- */
 export function serializeAsVector2(sourceName?: string) {
     return generateSerializableMember(4, sourceName); // vector2 member
 }
 
-/**
- *
- */
 export function serializeAsVector3(sourceName?: string) {
     return generateSerializableMember(5, sourceName); // vector3 member
 }
 
-/**
- *
- */
 export function serializeAsMeshReference(sourceName?: string) {
     return generateSerializableMember(6, sourceName); // mesh reference member
 }
 
-/**
- *
- */
 export function serializeAsColorCurves(sourceName?: string) {
     return generateSerializableMember(7, sourceName); // color curves
 }
 
-/**
- *
- */
 export function serializeAsColor4(sourceName?: string) {
     return generateSerializableMember(8, sourceName); // color 4
 }
 
-/**
- *
- */
 export function serializeAsImageProcessingConfiguration(sourceName?: string) {
     return generateSerializableMember(9, sourceName); // image processing
 }
 
-/**
- *
- */
 export function serializeAsQuaternion(sourceName?: string) {
     return generateSerializableMember(10, sourceName); // quaternion member
 }
 
-/**
- *
- */
 export function serializeAsMatrix(sourceName?: string) {
     return generateSerializableMember(12, sourceName); // matrix member
 }
@@ -188,7 +150,7 @@ export function nativeOverride<T extends (...params: any[]) => boolean>(
 /**
  * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
  * @param predicate
- * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
+ * @example @nativeOverride.filter((arg1: string) => arg1.length > 20)
  *          public someMethod(arg1: string, arg2: number): string {
  * @internal
  */
@@ -209,6 +171,7 @@ export function addAccessorsForMaterialProperty(setCallback: string, targetKey: 
         const newKey = targetKey || "";
         Object.defineProperty(target, newKey, {
             get: function (this: any) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this[key].value;
             },
             set: function (this: any, value) {

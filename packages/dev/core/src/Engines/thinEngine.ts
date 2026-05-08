@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type IEffectCreationOptions, type IShaderPath } from "../Materials/effect";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
 import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { type Nullable, type DataArray, type IndicesArray, type FloatArray, type DeepImmutable } from "../types";
 import { type IColor4Like } from "../Maths/math.like";
@@ -35,7 +35,7 @@ import {
     _isRenderingStateCompiled,
 } from "./thinEngine.functions";
 
-import { type AbstractEngineOptions, type ISceneLike, type PrepareTextureFunction, type PrepareTextureProcessFunction } from "./abstractEngine";
+import { type AbstractEngineOptions, type ISceneLike, type PrepareTextureFunction, type PrepareTextureProcessFunction, AbstractEngine } from "./abstractEngine";
 import { type PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { Logger } from "../Misc/logger";
@@ -44,12 +44,10 @@ import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
@@ -513,7 +511,7 @@ export class ThinEngine extends AbstractEngine {
             astc: this._gl.getExtension("WEBGL_compressed_texture_astc") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_astc"),
             bptc: this._gl.getExtension("EXT_texture_compression_bptc") || this._gl.getExtension("WEBKIT_EXT_texture_compression_bptc"),
             s3tc: this._gl.getExtension("WEBGL_compressed_texture_s3tc") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc"),
-
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             s3tc_srgb: this._gl.getExtension("WEBGL_compressed_texture_s3tc_srgb") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc_srgb"),
             pvrtc: this._gl.getExtension("WEBGL_compressed_texture_pvrtc") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_pvrtc"),
             etc1: this._gl.getExtension("WEBGL_compressed_texture_etc1") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_etc1"),
@@ -563,6 +561,7 @@ export class ThinEngine extends AbstractEngine {
             textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -647,6 +646,19 @@ export class ThinEngine extends AbstractEngine {
         // Compressed formats
         if (this._caps.astc) {
             this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
         }
         if (this._caps.bptc) {
             this._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = this._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
@@ -2067,6 +2079,7 @@ export class ThinEngine extends AbstractEngine {
         return effect;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _ConcatenateShader = _ConcatenateShader;
 
     /**
@@ -3247,6 +3260,7 @@ export class ThinEngine extends AbstractEngine {
      */
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _unpackFlipYCached: Nullable<boolean> = null;
 
     /**
@@ -3254,10 +3268,7 @@ export class ThinEngine extends AbstractEngine {
      * be interested to not cache the unpack flip y state to ensure a consistent
      * value would be set.
      */
-
-    /**
-     *
-     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public enableUnpackFlipYCached = true;
 
     /**
@@ -3390,6 +3401,45 @@ export class ThinEngine extends AbstractEngine {
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {
@@ -3834,7 +3884,7 @@ export class ThinEngine extends AbstractEngine {
             if (texture && texture.isMultiview) {
                 //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
                 Logger.Error(["_bindTextureDirectly called with a multiview texture!", target, texture]);
-
+                // eslint-disable-next-line no-throw-literal
                 throw "_bindTextureDirectly called with a multiview texture!";
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
@@ -4664,16 +4714,3 @@ interface TexImageParameters {
     format: number;
     type: number;
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
-
-ThinEngine.prototype.startTimeQuery ??= _MissingSideEffect("ThinEngine", "startTimeQuery") as any;
-ThinEngine.prototype.endTimeQuery ??= _MissingSideEffect("ThinEngine", "endTimeQuery") as any;
-ThinEngine.prototype.createUniformBuffer ??= _MissingSideEffect("ThinEngine", "createUniformBuffer") as any;
-ThinEngine.prototype.createDynamicUniformBuffer ??= _MissingSideEffect("ThinEngine", "createDynamicUniformBuffer") as any;
-ThinEngine.prototype.updateUniformBuffer ??= _MissingSideEffect("ThinEngine", "updateUniformBuffer") as any;
-ThinEngine.prototype.bindUniformBuffer ??= _MissingSideEffect("ThinEngine", "bindUniformBuffer") as any;
-ThinEngine.prototype.bindUniformBufferBase ??= _MissingSideEffect("ThinEngine", "bindUniformBufferBase") as any;
-ThinEngine.prototype.bindUniformBlock ??= _MissingSideEffect("ThinEngine", "bindUniformBlock") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

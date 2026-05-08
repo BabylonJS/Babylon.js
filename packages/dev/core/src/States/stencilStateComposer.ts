@@ -1,4 +1,5 @@
-import { type IStencilState } from "./IStencilState"
+import { type IStencilState } from "./IStencilState";
+
 /**
  * @internal
  **/
@@ -25,18 +26,9 @@ export class StencilStateComposer {
     protected _backOpDepthFail: number;
     protected _backOpStencilDepthPass: number;
 
-    /**
-     *
-     */
     public stencilGlobal: IStencilState;
-    /**
-     *
-     */
     public stencilMaterial: IStencilState | undefined;
 
-    /**
-     *
-     */
     public useStencilGlobalOnly = false;
 
     public get isDirty(): boolean {

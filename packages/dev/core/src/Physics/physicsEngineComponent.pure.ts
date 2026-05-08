@@ -1,2 +1,0 @@
-// back compat
-export {};

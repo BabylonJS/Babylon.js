@@ -1,31 +1,22 @@
-import { type IPhysicsEnabledObject } from "../physicsImpostor"
-import { PhysicsImpostor } from "../physicsImpostor";
-import { type IMotorEnabledJoint, type DistanceJointData, type SpringJointData } from "../physicsJoint"
-import { PhysicsJoint } from "../physicsJoint";
-import { type AbstractMesh } from "../../../Meshes/abstractMesh"
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
+import { type IPhysicsEnabledObject, PhysicsImpostor } from "../physicsImpostor";
+import { type IMotorEnabledJoint, type DistanceJointData, type SpringJointData, PhysicsJoint } from "../physicsJoint";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
 import { Vector3, Quaternion } from "../../../Maths/math.vector";
-import { type Nullable } from "../../../types"
+import { type Nullable } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
-import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin"
+import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { Epsilon } from "../../../Maths/math.constants";
 
 declare let OIMO: any;
 
 /** @internal */
 export class OimoJSPlugin implements IPhysicsEnginePlugin {
-    /**
-     *
-     */
     public world: any;
-    /**
-     *
-     */
     public name: string = "OimoJSPlugin";
-
-    /**
-     *
-     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public BJSOIMO: any;
     private _raycastResult: PhysicsRaycastResult;
     private _fixedTimeStep: number = 1 / 60;

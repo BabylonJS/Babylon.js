@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphRenderContext } from "core/index"
+import { type FrameGraph, type FrameGraphRenderPass, type FrameGraphRenderContext } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinImageProcessingPostProcess } from "core/PostProcesses/thinImageProcessingPostProcess";
 
@@ -6,9 +6,6 @@ import { ThinImageProcessingPostProcess } from "core/PostProcesses/thinImageProc
  * Task which applies an image processing post process.
  */
 export class FrameGraphImageProcessingTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinImageProcessingPostProcess;
 
     /**

@@ -1,4 +1,5 @@
-import { type FrameGraphTextureHandle, type FrameGraphTextureManager, type IMultiRenderTargetOptions, type RenderTargetWrapper } from "core/index"
+import { type FrameGraphTextureHandle, type FrameGraphTextureManager, type IMultiRenderTargetOptions, type RenderTargetWrapper } from "core/index";
+
 /**
  * @internal
  */
@@ -9,9 +10,6 @@ export class FrameGraphRenderTarget {
     protected _renderTargetWrapper: RenderTargetWrapper | undefined;
     protected _isBackBuffer = false;
 
-    /**
-     *
-     */
     public readonly name: string;
 
     constructor(

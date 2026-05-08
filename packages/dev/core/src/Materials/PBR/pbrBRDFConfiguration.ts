@@ -1,47 +1,22 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Constants } from "../../Engines/constants";
 import { serialize, expandToProperty } from "../../Misc/decorators";
 import { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
-import { type PBRBaseMaterial } from "./pbrBaseMaterial"
+import { type PBRBaseMaterial } from "./pbrBaseMaterial";
+
 /**
  * @internal
  */
 export class MaterialBRDFDefines extends MaterialDefines {
-    /**
-     *
-     */
     BRDF_V_HEIGHT_CORRELATED = false;
-    /**
-     *
-     */
     MS_BRDF_ENERGY_CONSERVATION = false;
-    /**
-     *
-     */
     SPHERICAL_HARMONICS = false;
-    /**
-     *
-     */
     SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
-    /**
-     *
-     */
     MIX_IBL_RADIANCE_WITH_IRRADIANCE = true;
-    /**
-     *
-     */
     LEGACY_SPECULAR_ENERGY_CONSERVATION = false;
-    /**
-     *
-     */
     BASE_DIFFUSE_MODEL = 0;
-    /**
-     *
-     */
     DIELECTRIC_SPECULAR_MODEL = 0;
-    /**
-     *
-     */
     CONDUCTOR_SPECULAR_MODEL = 0;
 }
 
@@ -217,7 +192,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
         defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
-        defines.MIX_IBL_RADIANCE_WITH_IRRADIANCE = this._mixIblRadianceWithIrradiance;
+        defines.MIX_IBL_RADIANCE_WITH_IRRADIANCE = this._mixIblRadianceWithIrradiance && !(this._material as PBRBaseMaterial)._disableLighting;
         defines.LEGACY_SPECULAR_ENERGY_CONSERVATION = this._useLegacySpecularEnergyConservation;
         defines.BASE_DIFFUSE_MODEL = this._baseDiffuseModel;
         defines.DIELECTRIC_SPECULAR_MODEL = this._dielectricSpecularModel;

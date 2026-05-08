@@ -1,23 +1,23 @@
-import { type EventState, type Observable, type Observer } from "../Misc/observable"
+import { type EventState, type Observable, type Observer } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { Vector2, Matrix } from "../Maths/math.vector";
-import { type AbstractMesh } from "../Meshes/abstractMesh"
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
-import { type IKeyboardEvent, type IMouseEvent, type IPointerEvent } from "../Events/deviceInputEvents"
+import { type IKeyboardEvent, type IMouseEvent, type IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
-import { type Scene } from "../scene"
+import { type Scene } from "../scene";
 import { _ImportHelper } from "core/import.helper";
 
 /** @internal */
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 class _ClickInfo {
     private _singleClick = false;
     private _doubleClick = false;
@@ -135,9 +135,6 @@ export class InputManager {
     private _deviceSourceManager: Nullable<DeviceSourceManager> = null;
 
     // origin MouseEvent
-    /**
-     *
-     */
     _originMouseEvent: IMouseEvent;
     /**
      * Creates a new InputManager

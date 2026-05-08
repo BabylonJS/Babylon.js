@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { type EventState, type Observer } from "../../Misc/observable"
+import { type EventState, type Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { type Camera } from "../../Cameras/camera"
-import { type ICameraInput } from "../../Cameras/cameraInputsManager"
-import { type PointerInfo, type PointerTouch } from "../../Events/pointerEvents"
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import { type IPointerEvent } from "../../Events/deviceInputEvents"
+import { type Camera } from "../../Cameras/camera";
+import { type ICameraInput } from "../../Cameras/cameraInputsManager";
+import { type PointerInfo, type PointerTouch, PointerEventTypes } from "../../Events/pointerEvents";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
+
 /**
  * Base class for Camera Pointer Inputs.
  * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
@@ -305,9 +305,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality on POINTERDOUBLETAP event.
      * @param type type of event
      */
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onDoubleTap(type: string) {}
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
      * Override this method to provide functionality.
@@ -327,7 +328,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @param previousMultiTouchPanPosition Previous center point between the points
      * @param multiTouchPanPosition Current center point between the points
      */
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onMultiTouch(
         _pointA: Nullable<PointerTouch>,
         _pointB: Nullable<PointerTouch>,

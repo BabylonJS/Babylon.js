@@ -1,296 +1,107 @@
-import { type Scene } from "./scene"
-import { type SmartArrayNoDuplicate } from "./Misc/smartArray"
-import { type Nullable } from "./types"
-import { type PickingInfo } from "./Collisions/pickingInfo"
-import { type IPointerEvent } from "./Events/deviceInputEvents"
-import { type Mesh } from "./Meshes/mesh"
-import { type Effect } from "./Materials/effect"
-import { type Camera } from "./Cameras/camera"
-import { type AbstractMesh } from "./Meshes/abstractMesh"
-import { type SubMesh } from "./Meshes/subMesh"
-import { type RenderTargetTexture } from "./Materials/Textures/renderTargetTexture"
-import { type IAssetContainer } from "./IAssetContainer"
+import { type Scene } from "./scene";
+import { type SmartArrayNoDuplicate } from "./Misc/smartArray";
+import { type Nullable } from "./types";
+import { type PickingInfo } from "./Collisions/pickingInfo";
+import { type IPointerEvent } from "./Events/deviceInputEvents";
+
+import { type Mesh } from "./Meshes/mesh";
+import { type Effect } from "./Materials/effect";
+import { type Camera } from "./Cameras/camera";
+import { type AbstractMesh } from "./Meshes/abstractMesh";
+import { type SubMesh } from "./Meshes/subMesh";
+import { type RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import { type IAssetContainer } from "./IAssetContainer";
+
 /**
  * Groups all the scene component constants in one place to ease maintenance.
  * @internal
  */
 export class SceneComponentConstants {
-    /**
-     *
-     */
     public static readonly NAME_EFFECTLAYER = "EffectLayer";
-    /**
-     *
-     */
     public static readonly NAME_LAYER = "Layer";
-    /**
-     *
-     */
     public static readonly NAME_LENSFLARESYSTEM = "LensFlareSystem";
-    /**
-     *
-     */
     public static readonly NAME_BOUNDINGBOXRENDERER = "BoundingBoxRenderer";
-    /**
-     *
-     */
     public static readonly NAME_PARTICLESYSTEM = "ParticleSystem";
-    /**
-     *
-     */
     public static readonly NAME_GAMEPAD = "Gamepad";
-    /**
-     *
-     */
     public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
-    /**
-     *
-     */
     public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
-    /**
-     *
-     */
     public static readonly NAME_PREPASSRENDERER = "PrePassRenderer";
-    /**
-     *
-     */
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
-    /**
-     *
-     */
     public static readonly NAME_DEPTHPEELINGRENDERER = "DepthPeelingRenderer";
-    /**
-     *
-     */
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
-    /**
-     *
-     */
     public static readonly NAME_SPRITE = "Sprite";
-    /**
-     *
-     */
     public static readonly NAME_SUBSURFACE = "SubSurface";
-    /**
-     *
-     */
     public static readonly NAME_OUTLINERENDERER = "Outline";
-    /**
-     *
-     */
     public static readonly NAME_PROCEDURALTEXTURE = "ProceduralTexture";
-    /**
-     *
-     */
     public static readonly NAME_SHADOWGENERATOR = "ShadowGenerator";
-    /**
-     *
-     */
     public static readonly NAME_OCTREE = "Octree";
-    /**
-     *
-     */
     public static readonly NAME_PHYSICSENGINE = "PhysicsEngine";
-    /**
-     *
-     */
     public static readonly NAME_AUDIO = "Audio";
-    /**
-     *
-     */
     public static readonly NAME_FLUIDRENDERER = "FluidRenderer";
-    /**
-     *
-     */
     public static readonly NAME_IBLCDFGENERATOR = "iblCDFGenerator";
-    /**
-     *
-     */
     public static readonly NAME_CLUSTEREDLIGHTING = "ClusteredLighting";
 
-    /**
-     *
-     */
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
+    public static readonly STEP_ISREADYFORMESH_DEPTHRENDERER = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFORECAMERADRAW_PREPASS = 0;
-    /**
-     *
-     */
     public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 1;
-    /**
-     *
-     */
     public static readonly STEP_BEFORECAMERADRAW_LAYER = 2;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFORERENDERTARGETDRAW_PREPASS = 0;
-    /**
-     *
-     */
     public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFORERENDERINGMESH_PREPASS = 0;
-    /**
-     *
-     */
     public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERINGMESH_PREPASS = 0;
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
-    /**
-     *
-     */
     public static readonly STEP_BEFORECLEAR_PREPASS = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_BEFORERENDERTARGETCLEAR_PREPASS = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS = 0;
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 1;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERADRAW_PREPASS = 0;
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 1;
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 2;
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERADRAW_FLUIDRENDERER = 5;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERCAMERAPOSTPROCESS_LAYER = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDERTARGETPOSTPROCESS_LAYER = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
-    /**
-     *
-     */
     public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 0;
-    /**
-     *
-     */
     public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 1;
-    /**
-     *
-     */
     public static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR = 2;
-    /**
-     *
-     */
     public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
-    /**
-     *
-     */
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
-    /**
-     *
-     */
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_FLUIDRENDERER = 1;
-    /**
-     *
-     */
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHTING = 2;
 
-    /**
-     *
-     */
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
-    /**
-     *
-     */
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
-    /**
-     *
-     */
     public static readonly STEP_POINTERUP_SPRITE = 0;
 }
 
@@ -430,24 +241,7 @@ export type PointerUpDownStageAction = (
  * Representation of a stage in the scene (Basically a list of ordered steps)
  * @internal
  */
-export class Stage<T extends Function> extends Array<{
-    /**
-     *
-     */
-    index: number /**
-     *
-     */;
-    /**
-     *
-     */
-    component: ISceneComponent /**
-     *
-     */;
-    /**
-     *
-     */
-    action: T;
-}> {
+export class Stage<T extends Function> extends Array<{ index: number; component: ISceneComponent; action: T }> {
     /**
      * Hide ctor from the rest of the world.
      * @param items The items to add.

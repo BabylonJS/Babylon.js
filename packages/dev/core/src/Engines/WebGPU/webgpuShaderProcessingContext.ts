@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
-import { type ShaderLanguage } from "../../Materials/shaderLanguage"
-import { type _IShaderProcessingContext } from "../Processors/shaderProcessingOptions"
+import { type ShaderLanguage } from "../../Materials/shaderLanguage";
+import { type _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+
 const MaxGroups = 4;
 const MaxBindingsPerGroup = 1 << 16;
 
@@ -30,6 +31,7 @@ export interface WebGPUTextureDescription {
     autoBindSampler?: boolean;
     isTextureArray: boolean;
     isStorageTexture: boolean;
+    storageTextureAccess?: GPUStorageTextureAccess; // "write-only", "read-only", or "read-write"
     textures: Array<WebGPUBindingInfo>;
     sampleType?: GPUTextureSampleType; // not used if the texture is a storage texture
 }
@@ -254,6 +256,7 @@ export class WebGPUShaderProcessingContext implements _IShaderProcessingContext 
         }
 
         if (this.freeGroupIndex === MaxGroups) {
+            // eslint-disable-next-line no-throw-literal
             throw "Too many textures or UBOs have been declared and it is not supported in WebGPU.";
         }
 

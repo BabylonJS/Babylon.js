@@ -40,10 +40,7 @@ export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onStep: (step
 /**
  * @internal
  */
-
-/**
- *
- */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
     try {
         const step = coroutine.next();
@@ -52,32 +49,12 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepRe
             onStep(step);
         } else if (!step.value) {
             // NOTE: The properties of step have been narrowed, but the type of step itself is not narrowed, so the cast below is the most type safe way to deal with this without instantiating a new object to hold the values.
-            onStep(
-                step as {
-                    /**
-                     *
-                     */
-                    done: typeof step.done /**
-                     *
-                     */;
-                    value: typeof step.value;
-                }
-            );
+            onStep(step as { done: typeof step.done; value: typeof step.value });
         } else {
             // eslint-disable-next-line github/no-then
             step.value.then(() => {
                 step.value = undefined;
-                onStep(
-                    step as {
-                        /**
-                         *
-                         */
-                        done: typeof step.done /**
-                         *
-                         */;
-                        value: typeof step.value;
-                    }
-                );
+                onStep(step as { done: typeof step.done; value: typeof step.value });
             }, onError);
         }
     } catch (error) {
@@ -90,10 +67,7 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepRe
 /**
  * @internal
  */
-
-/**
- *
- */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function createYieldingScheduler<T>(yieldAfterMS = 25) {
     let startTime: number | undefined;
     return (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
@@ -116,10 +90,7 @@ export function createYieldingScheduler<T>(yieldAfterMS = 25) {
 /**
  * @internal
  */
-
-/**
- *
- */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function runCoroutine<T>(
     coroutine: AsyncCoroutine<T>,
     scheduler: CoroutineScheduler<T>,

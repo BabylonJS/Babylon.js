@@ -1,4 +1,4 @@
-import { type FrameGraphPostProcessTask, type IViewportLike } from "core/index"
+import { type FrameGraphPostProcessTask, type IViewportLike } from "core/index";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 

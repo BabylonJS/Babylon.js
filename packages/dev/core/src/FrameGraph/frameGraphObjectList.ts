@@ -1,4 +1,5 @@
-import { type Nullable, type AbstractMesh, type IParticleSystem } from "core/index"
+import { type Nullable, type AbstractMesh, type IParticleSystem } from "core/index";
+
 /**
  * Structure used by the frame graph to reference objects.
  */

@@ -1,12 +1,12 @@
-import { type Nullable } from "../../types"
-import { type InternalTexture } from "../../Materials/Textures/internalTexture"
+import { type Nullable } from "../../types";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 
-import { type ISize } from "../../Maths/math.size"
-import { Size } from "../../Maths/math.size";
+import { type ISize, Size } from "../../Maths/math.size";
 
-import { type AbstractEngine } from "../../Engines/abstractEngine"
-import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper"
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+
 /**
  * Base class of all the textures in babylon.
  * It groups all the common properties required to work with Thin Engine.
@@ -104,6 +104,7 @@ export class ThinTexture {
         return this._texture.is3D;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set is3D(value: boolean) {
         if (!this._texture) {
             return;
@@ -123,6 +124,7 @@ export class ThinTexture {
         return this._texture.is2DArray;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set is2DArray(value: boolean) {
         if (!this._texture) {
             return;

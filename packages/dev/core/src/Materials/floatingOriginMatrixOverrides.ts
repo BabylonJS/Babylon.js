@@ -1,11 +1,12 @@
 import { Effect } from "../Materials/effect";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { type IMatrixLike, type IVector3Like } from "../Maths/math.like"
+import { type IMatrixLike, type IVector3Like } from "../Maths/math.like";
 import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
-import { type Scene } from "../scene"
-import { type DeepImmutable } from "../types"
+import { type Scene } from "../scene";
+import { type DeepImmutable } from "../types";
 import { UniformBuffer } from "./uniformBuffer";
-import { type Plane } from "../Maths/math.plane"
+import { type Plane } from "../Maths/math.plane";
+
 const TempFinalMat: Matrix = new Matrix();
 const TempMat1: Matrix = new Matrix();
 const TempMat2: Matrix = new Matrix();
@@ -38,9 +39,6 @@ function GetFullOffsetView(offset: IVector3Like, viewMatrix: DeepImmutable<IMatr
     return ref;
 }
 
-/**
- *
- */
 export function OffsetViewToRef(offset: IVector3Like, view: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
     // When eye is not at camera, we cannot assume the translation of view matrix is at origin, so we perform full offset calculation
     if (!FloatingOriginCurrentScene.eyeAtCamera) {
@@ -63,9 +61,6 @@ function OffsetViewProjectionToRef(offset: IVector3Like, view: DeepImmutable<IMa
     return ref;
 }
 
-/**
- *
- */
 export function OffsetClipPlaneToRef(offset: Vector3, plane: Plane, ref: Plane): Plane {
     // Original clipplane is using equation normal.dot(p) + d = 0
     // Assume we have p' = p - offset, that means normal.dot(p') + d' = 0
@@ -79,9 +74,6 @@ export function OffsetClipPlaneToRef(offset: Vector3, plane: Plane, ref: Plane):
     return ref;
 }
 
-/**
- *
- */
 export function GetOffsetTransformMatrices(
     offset: IVector3Like,
     viewMatrices: Array<Matrix>,
@@ -109,9 +101,6 @@ function OffsetWorldViewToRef(offset: IVector3Like, worldView: DeepImmutable<IMa
     return ref;
 }
 
-/**
- *
- */
 export function GetFullOffsetViewProjectionToRef(
     offset: IVector3Like,
     viewMatrix: DeepImmutable<IMatrixLike>,
@@ -195,9 +184,6 @@ const EffectInternal = Effect as any;
 const OriginalUpdateMatrixForUniform = UniformBufferInternal.prototype._updateMatrixForUniform;
 const OriginalSetMatrix = Effect.prototype.setMatrix;
 
-/**
- *
- */
 export function ResetMatrixFunctions() {
     Effect.prototype.setMatrix = OriginalSetMatrix;
     EffectInternal._setMatrixOverride = undefined;
@@ -205,9 +191,6 @@ export function ResetMatrixFunctions() {
     UniformBufferInternal.prototype._updateMatrixForUniformOverride = undefined;
 }
 
-/**
- *
- */
 export function OverrideMatrixFunctions() {
     EffectInternal.prototype._setMatrixOverride = OriginalSetMatrix;
     EffectInternal.prototype.setMatrix = function (uniformName: string, matrix: IMatrixLike) {

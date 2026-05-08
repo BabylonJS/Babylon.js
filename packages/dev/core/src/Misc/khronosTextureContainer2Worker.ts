@@ -1,4 +1,5 @@
-import { type IDecodedData } from "core/Materials/Textures/ktx2decoderTypes"
+import { type IDecodedData } from "core/Materials/Textures/ktx2decoderTypes";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 export type AllowedKeys =
     | "wasmBaseUrl"
@@ -17,9 +18,6 @@ declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
 declare let KTX2DECODER: any;
 
-/**
- *
- */
 export function applyConfig(urls?: { [key in AllowedKeys]: string }, binariesAndModulesContainer?: { [key in AllowedKeys]: ArrayBuffer | any }): void {
     const KTX2DecoderModule = binariesAndModulesContainer?.jsDecoderModule || KTX2DECODER;
 
@@ -95,9 +93,6 @@ export function applyConfig(urls?: { [key in AllowedKeys]: string }, binariesAnd
     }
 }
 
-/**
- *
- */
 export function workerFunction(KTX2DecoderModule: any): void {
     if (typeof KTX2DecoderModule === "undefined" && typeof KTX2DECODER !== "undefined") {
         KTX2DecoderModule = KTX2DECODER;
@@ -153,9 +148,6 @@ export function workerFunction(KTX2DecoderModule: any): void {
     };
 }
 
-/**
- *
- */
 export async function initializeWebWorker(worker: Worker, wasmBinaries?: { [key in AllowedKeys]?: ArrayBuffer }, urls?: { [key in AllowedKeys]: string }): Promise<Worker> {
     return await new Promise((resolve, reject) => {
         const onError = (error: ErrorEvent) => {

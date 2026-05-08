@@ -272,7 +272,7 @@
         fn radiance(alphaG: f32, inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f) -> vec3f
         {
             var n: vec3f = normalize(inputN);
-            var c: vec3f = textureSample(inputTexture, inputSampler, n).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
+            var c: vec3f = textureSampleLevel(inputTexture, inputSampler, n, 0.0).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
 
             if (alphaG == 0.) {
                 #ifdef GAMMA_INPUT

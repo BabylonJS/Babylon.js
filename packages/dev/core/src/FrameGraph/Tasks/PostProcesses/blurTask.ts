@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { Vector2 } from "core/Maths/math.vector";
@@ -7,9 +7,6 @@ import { Vector2 } from "core/Maths/math.vector";
  * Task which applies a blur post process.
  */
 export class FrameGraphBlurTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinBlurPostProcess;
 
     /**

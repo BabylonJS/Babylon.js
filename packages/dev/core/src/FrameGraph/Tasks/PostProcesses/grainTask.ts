@@ -1,4 +1,4 @@
-import { type FrameGraph } from "core/FrameGraph/frameGraph"
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { ThinGrainPostProcess } from "core/PostProcesses/thinGrainPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task which applies a grain post process.
  */
 export class FrameGraphGrainTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinGrainPostProcess;
 
     /**

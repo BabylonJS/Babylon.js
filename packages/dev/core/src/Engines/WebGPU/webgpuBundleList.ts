@@ -1,4 +1,4 @@
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 /** @internal */
@@ -9,21 +9,9 @@ interface IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemViewport implements IWebGPURenderItem {
-    /**
-     *
-     */
     public x: number;
-    /**
-     *
-     */
     public y: number;
-    /**
-     *
-     */
     public w: number;
-    /**
-     *
-     */
     public h: number;
 
     public constructor(x: number, y: number, w: number, h: number) {
@@ -141,9 +129,6 @@ export class WebGPUBundleList {
     private _currentItemIsBundle: boolean;
     private _currentBundleList: GPURenderBundle[];
 
-    /**
-     *
-     */
     public numDrawCalls = 0;
 
     public constructor(device: GPUDevice) {

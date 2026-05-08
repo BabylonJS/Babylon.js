@@ -1,5 +1,6 @@
-import { type IVector3Like, type IColor4Like } from "../Maths/math.like"
-import { type Nullable } from "../types"
+import { type IVector3Like, type IColor4Like } from "../Maths/math.like";
+import { type Nullable } from "../types";
+
 /**
  * ThinSprite Class used to represent a thin sprite
  * This is the base class for sprites but can also directly be used with ThinEngine

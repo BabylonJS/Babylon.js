@@ -158,7 +158,7 @@ export type DataArray = number[] | ArrayBufferLike | ArrayBufferView;
 /**
  * Alias type for primitive types
  */
-
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type Primitive = undefined | null | boolean | string | number | Function | Element;
 
 /**

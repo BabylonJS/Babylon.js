@@ -1,7 +1,8 @@
 import { RenderTargetTexture } from "../Textures/renderTargetTexture";
-import { type Scene } from "../../scene"
+import { type Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
-import { type Engine } from "../../Engines/engine"
+import { type Engine } from "../../Engines/engine";
+
 /**
  * Renders to multiple views with a single draw call
  * Only for WebGL backends

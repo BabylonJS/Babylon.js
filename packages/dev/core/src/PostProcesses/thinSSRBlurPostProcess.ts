@@ -1,25 +1,16 @@
-import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index"
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Vector2 } from "../Maths/math.vector";
 
 /**
  * @internal
  */
 export class ThinSSRBlurPostProcess extends EffectWrapper {
-    /**
-     *
-     */
     public static readonly FragmentUrl = "screenSpaceReflection2Blur";
 
-    /**
-     *
-     */
     public static readonly Uniforms = ["texelOffsetScale"];
 
-    /**
-     *
-     */
     public static readonly Samplers = ["textureSampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
@@ -35,7 +26,7 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSRBlurPostProcess.FragmentUrl,
@@ -52,24 +43,12 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
         }
     }
 
-    /**
-     *
-     */
     public textureWidth: number = 0;
 
-    /**
-     *
-     */
     public textureHeight: number = 0;
 
-    /**
-     *
-     */
     public direction = new Vector2(1, 0);
 
-    /**
-     *
-     */
     public blurStrength = 0.03;
 
     public override bind(noDefaultBindings = false) {

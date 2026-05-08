@@ -1,5 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
-import { type Path2 } from "../Maths/math.path"
+import { type Path2 } from "../Maths/math.path";
+
 /**
  * A cursor which tracks a point on a path
  */
@@ -64,7 +65,7 @@ export class PathCursor {
      */
     public move(step: number): PathCursor {
         if (Math.abs(step) > 1) {
-            throw "step size should be less than 1.";
+            throw new Error("step size should be less than 1.");
         }
 
         this.value += step;

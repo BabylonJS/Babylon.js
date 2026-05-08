@@ -1,5 +1,6 @@
-import { type Nullable } from "../../types"
-import { type Plane } from "../../Maths/math"
+import { type Nullable } from "../../types";
+import { type Plane } from "../../Maths/math";
+
 /**
  * Interface used to define entities containing multiple clip planes
  */

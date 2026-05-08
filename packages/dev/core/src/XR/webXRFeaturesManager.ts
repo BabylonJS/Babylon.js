@@ -3,6 +3,7 @@ import { Tools } from "../Misc/tools";
 import { type IDisposable } from "../scene";
 import { type IWebXRAnchorSystemOptions, type WebXRAnchorSystem } from "./features/WebXRAnchorSystem";
 import { type IWebXRBackgroundRemoverOptions, type WebXRBackgroundRemover } from "./features/WebXRBackgroundRemover";
+import { type IWebXRBodyTrackingOptions, type WebXRBodyTracking } from "./features/WebXRBodyTracking";
 import { type IWebXRControllerMovementOptions, type WebXRControllerMovement } from "./features/WebXRControllerMovement";
 import { type IWebXRControllerPhysicsOptions, type WebXRControllerPhysics } from "./features/WebXRControllerPhysics";
 import { type IWebXRControllerPointerSelectionOptions, type WebXRControllerPointerSelection } from "./features/WebXRControllerPointerSelection";
@@ -22,8 +23,8 @@ import { type IWebXRPlaneDetectorOptions, type WebXRPlaneDetector } from "./feat
 import { type IWebXRRawCameraAccessOptions, type WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
 import { type WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
 import { type IWebXRWalkingLocomotionOptions, type WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
-import { type IWebXRBodyTrackingOptions, type WebXRBodyTracking } from "./features/WebXRBodyTracking";
 import { type WebXRSessionManager } from "./webXRSessionManager";
+
 /**
  * Defining the interface required for a (webxr) feature
  */
@@ -187,97 +188,28 @@ export class WebXRFeatureName {
 
 export type WebXRFeatureNameType = (typeof WebXRFeatureName)[Exclude<keyof typeof WebXRFeatureName, "prototype">];
 
-/**
- *
- */
 export interface IWebXRFeatureNameTypeMap {
-    /**
-     *
-     */
     [WebXRFeatureName.ANCHOR_SYSTEM]: WebXRAnchorSystem;
-    /**
-     *
-     */
     [WebXRFeatureName.BACKGROUND_REMOVER]: WebXRBackgroundRemover;
-    /**
-     *
-     */
     [WebXRFeatureName.DEPTH_SENSING]: WebXRDepthSensing;
-    /**
-     *
-     */
     [WebXRFeatureName.DOM_OVERLAY]: WebXRDomOverlay;
-    /**
-     *
-     */
     [WebXRFeatureName.EYE_TRACKING]: WebXREyeTracking;
-    /**
-     *
-     */
     [WebXRFeatureName.FEATURE_POINTS]: WebXRFeaturePointSystem;
-    /**
-     *
-     */
     [WebXRFeatureName.HAND_TRACKING]: WebXRHandTracking;
-    /**
-     *
-     */
     [WebXRFeatureName.HIT_TEST]: WebXRHitTest;
-    /**
-     *
-     */
     [WebXRFeatureName.IMAGE_TRACKING]: WebXRImageTracking;
-    /**
-     *
-     */
     [WebXRFeatureName.LAYERS]: WebXRLayers;
-    /**
-     *
-     */
     [WebXRFeatureName.LIGHT_ESTIMATION]: WebXRLightEstimation;
-    /**
-     *
-     */
     [WebXRFeatureName.MESH_DETECTION]: WebXRMeshDetector;
-    /**
-     *
-     */
     [WebXRFeatureName.MOVEMENT]: WebXRControllerMovement;
-    /**
-     *
-     */
     [WebXRFeatureName.NEAR_INTERACTION]: WebXRNearInteraction;
-    /**
-     *
-     */
     [WebXRFeatureName.PHYSICS_CONTROLLERS]: WebXRControllerPhysics;
-    /**
-     *
-     */
     [WebXRFeatureName.PLANE_DETECTION]: WebXRPlaneDetector;
-    /**
-     *
-     */
     [WebXRFeatureName.POINTER_SELECTION]: WebXRControllerPointerSelection;
-    /**
-     *
-     */
     [WebXRFeatureName.RAW_CAMERA_ACCESS]: WebXRRawCameraAccess;
-    /**
-     *
-     */
     [WebXRFeatureName.SPACE_WARP]: WebXRSpaceWarp;
-    /**
-     *
-     */
     [WebXRFeatureName.TELEPORTATION]: WebXRMotionControllerTeleportation;
-    /**
-     *
-     */
     [WebXRFeatureName.WALKING_LOCOMOTION]: WebXRWalkingLocomotion;
-    /**
-     *
-     */
     [WebXRFeatureName.BODY_TRACKING]: WebXRBodyTracking;
 }
 
@@ -285,93 +217,27 @@ export interface IWebXRFeatureNameTypeMap {
  * Maps feature names to their corresponding options interfaces.
  */
 export interface IWebXRFeatureNameOptionsMap {
-    /**
-     *
-     */
     [WebXRFeatureName.ANCHOR_SYSTEM]: IWebXRAnchorSystemOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.BACKGROUND_REMOVER]: IWebXRBackgroundRemoverOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.DEPTH_SENSING]: IWebXRDepthSensingOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.DOM_OVERLAY]: IWebXRDomOverlayOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.EYE_TRACKING]: undefined;
-    /**
-     *
-     */
     [WebXRFeatureName.FEATURE_POINTS]: undefined;
-    /**
-     *
-     */
     [WebXRFeatureName.HAND_TRACKING]: IWebXRHandTrackingOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.HIT_TEST]: IWebXRHitTestOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.IMAGE_TRACKING]: IWebXRImageTrackingOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.LAYERS]: IWebXRLayersOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.LIGHT_ESTIMATION]: IWebXRLightEstimationOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.MESH_DETECTION]: IWebXRMeshDetectorOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.MOVEMENT]: IWebXRControllerMovementOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.NEAR_INTERACTION]: IWebXRNearInteractionOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.PHYSICS_CONTROLLERS]: IWebXRControllerPhysicsOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.PLANE_DETECTION]: IWebXRPlaneDetectorOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.POINTER_SELECTION]: IWebXRControllerPointerSelectionOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.RAW_CAMERA_ACCESS]: IWebXRRawCameraAccessOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.SPACE_WARP]: undefined;
-    /**
-     *
-     */
     [WebXRFeatureName.TELEPORTATION]: IWebXRTeleportationOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.WALKING_LOCOMOTION]: IWebXRWalkingLocomotionOptions;
-    /**
-     *
-     */
     [WebXRFeatureName.BODY_TRACKING]: IWebXRBodyTrackingOptions;
 }
 

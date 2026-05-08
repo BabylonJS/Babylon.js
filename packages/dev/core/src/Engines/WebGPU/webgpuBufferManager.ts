@@ -1,11 +1,12 @@
 /* eslint-disable babylonjs/available */
-import { type DataBuffer } from "../../Buffers/dataBuffer"
+import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { allocateAndCopyTypedBuffer } from "../abstractEngine.functions";
 import { Constants } from "../constants";
-import { type WebGPUEngine } from "../webgpuEngine"
+import { type WebGPUEngine } from "../webgpuEngine";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 
 /** @internal */
@@ -124,7 +125,7 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public readDataFromBuffer(
         gpuBuffer: GPUBuffer,
         size: number,

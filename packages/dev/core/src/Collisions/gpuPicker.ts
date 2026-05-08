@@ -1,24 +1,24 @@
-import { type AbstractEngine } from "core/Engines/abstractEngine"
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
-import { type Engine } from "core/Engines/engine"
-import { type WebGPUEngine } from "core/Engines/webgpuEngine"
+import { type Engine } from "core/Engines/engine";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { type Material } from "core/Materials/material"
+import { type Material } from "core/Materials/material";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type IShaderMaterialOptions } from "core/Materials/shaderMaterial"
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { type IShaderMaterialOptions, ShaderMaterial } from "core/Materials/shaderMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
 import { Color4 } from "core/Maths/math.color";
-import { type IVector2Like } from "core/Maths/math.like"
-import { type AbstractMesh } from "core/Meshes/abstractMesh"
+import { type IVector2Like } from "core/Maths/math.like";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
-import { type Mesh } from "core/Meshes/mesh"
-import { type InstancedMesh } from "core/Meshes/instancedMesh"
+import { type Mesh } from "core/Meshes/mesh";
+import { type InstancedMesh } from "core/Meshes/instancedMesh";
 import { Logger } from "core/Misc/logger";
-import { type Scene } from "core/scene"
-import { type Nullable } from "core/types"
-import { type Observer } from "core/Misc/observable"
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+
 /**
  * Class used to store the result of a GPU picking operation
  */
@@ -251,7 +251,7 @@ export class GPUPicker {
                     continue;
                 }
 
-                // Skip thin instance cleanup for GaussianSplattingMesh (their thin instances are for batching, not picking)
+                // Skip thin instance cleanup for GaussianSplattingMesh (thin instances are for batching, not picking)
                 if (className !== "GaussianSplattingMesh") {
                     if (mesh.hasInstances) {
                         (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
@@ -399,6 +399,10 @@ export class GPUPicker {
                 this._meshUniqueIdToPickerId[mesh.uniqueId] = pickId;
                 nextFreeId++;
 
+                if (!mesh.isPickable || !mesh.isVisible) {
+                    continue;
+                }
+
                 // Create a GaussianSplattingMaterial with picking plugin for GPU picking
                 const gsPickingMaterial = this._createGaussianSplattingPickingMaterial(scene, mesh);
                 const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
@@ -496,6 +500,11 @@ export class GPUPicker {
             const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
             plugin.isCompound = true;
             plugin.partMeshIds = partMeshIds;
+            // Only active (included, visible, and pickable) parts should contribute to the depth buffer.
+            const activeParts = group.partEntries
+                .filter((e) => (e.proxy as AbstractMesh).isPickable && (e.proxy as AbstractMesh).isVisible)
+                .map((e) => (e.proxy as any).partIndex as number);
+            plugin.setPartActive(activeParts);
 
             gsPickingMaterial.onBindObservable.add(() => {
                 this._meshRenderingCount++;
@@ -546,6 +555,8 @@ export class GPUPicker {
         // Invert Y
         const invertedY = rttSizeH - adjustedY - 1;
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
+
+        await this._waitForPickingMaterialsReadyAsync();
 
         return await this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
     }
@@ -609,6 +620,8 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
+        await this._waitForPickingMaterialsReadyAsync();
+
         return await this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
@@ -652,6 +665,8 @@ export class GPUPicker {
         const partialCutH = rttSizeH - maxY - 1;
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
+
+        await this._waitForPickingMaterialsReadyAsync();
 
         return await this._executeBoxPickingAsync(minX, partialCutH, w, h, disposeWhenDone);
     }
@@ -873,6 +888,57 @@ export class GPUPicker {
 
         this._meshRenderingCount = 0;
         return false; // Wait for shaders to be ready
+    }
+
+    /**
+     * Polls the picking material variant for every mesh in the render list until every
+     * variant is ready. Picking materials use parallel shader compilation, and a single
+     * ShaderMaterial may produce different effect variants per mesh (instances, thin
+     * instances, vertex colors, ...). If we render the picking texture before all variants
+     * are compiled, the renderer silently skips meshes whose effect is not yet ready, which
+     * can leave the click pixel cleared (0,0,0,0) and cause pickAsync to incorrectly return
+     * null. Once compiled, effects are cached by define string in the engine, so this
+     * polling only blocks on the very first pick (or whenever the render list changes to
+     * include meshes with new define combinations).
+     */
+    private async _waitForPickingMaterialsReadyAsync(): Promise<void> {
+        const renderList = this._pickingTexture?.renderList;
+        if (!renderList || renderList.length === 0) {
+            return;
+        }
+
+        // Cap the number of polling attempts to avoid hanging forever if a shader fails to compile.
+        const maxAttempts = 200;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            let allReady = true;
+            // Iterate every mesh (do not break early): each isReady call kicks off compilation
+            // of that mesh's effect variant if not yet started, so visiting them all on the first
+            // attempt lets the compiles run in parallel (KHR_parallel_shader_compile) instead of
+            // being serialized one variant per render frame.
+            for (let i = 0; i < renderList.length; i++) {
+                const mesh = renderList[i];
+                const material = this._meshMaterialMap.get(mesh);
+                // Match the canonical "uses instanced shader variant" check used elsewhere in this file
+                // (see addPickingList) — InstancedMesh entries report isAnInstance=true while
+                // hasInstances=false, so omitting isAnInstance would validate the wrong shader variant.
+                const useInstances = mesh.hasInstances || mesh.isAnInstance || mesh.hasThinInstances;
+                if (material && !material.isReady(mesh, useInstances)) {
+                    allReady = false;
+                }
+            }
+            if (allReady) {
+                return;
+            }
+            // Wait for the next scene render before re-checking. Effect compilation status
+            // (especially with KHR_parallel_shader_compile) is typically observed between
+            // frames, so tying the poll to the render loop is more efficient than a fixed timer.
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise<void>((resolve) => {
+                this._cachedScene!.onAfterRenderObservable.addOnce(() => resolve());
+            });
+        }
+
+        Logger.Warn(`GPUPicker: gave up waiting for picking materials to compile after ${maxAttempts} attempts; picking results may be incorrect.`);
     }
 
     private _getMeshFromMultiplePoints(x: number, y: number, minX: number, maxY: number, w: number): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {

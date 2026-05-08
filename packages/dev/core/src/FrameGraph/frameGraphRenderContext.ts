@@ -1,4 +1,20 @@
-import { type Nullable, type AbstractEngine, type DrawWrapper, type IColor4Like, type Layer, type FrameGraphTextureHandle, type Effect, type FrameGraphTextureManager, type ObjectRenderer, type Scene, type FrameGraphRenderTarget, type InternalTexture, type UtilityLayerRenderer, type IStencilState, type IStencilStateProperties } from "core/index"
+import {
+    type Nullable,
+    type AbstractEngine,
+    type DrawWrapper,
+    type IColor4Like,
+    type Layer,
+    type FrameGraphTextureHandle,
+    type Effect,
+    type FrameGraphTextureManager,
+    type ObjectRenderer,
+    type Scene,
+    type FrameGraphRenderTarget,
+    type InternalTexture,
+    type UtilityLayerRenderer,
+    type IStencilState,
+    type IStencilStateProperties,
+} from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";

@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { ThinChromaticAberrationPostProcess } from "core/PostProcesses/thinChromaticAberrationPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
@@ -6,9 +6,6 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
  * Task which applies a chromatic aberration post process.
  */
 export class FrameGraphChromaticAberrationTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinChromaticAberrationPostProcess;
 
     /**

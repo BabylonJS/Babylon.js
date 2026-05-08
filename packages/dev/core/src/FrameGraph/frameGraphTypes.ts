@@ -1,4 +1,5 @@
-import { type Nullable, type TextureSize, type FrameGraphContext } from "core/index"
+import { type Nullable, type TextureSize, type FrameGraphContext } from "core/index";
+
 /**
  * Represents a texture handle in the frame graph.
  */

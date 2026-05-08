@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinScreenSpaceCurvaturePostProcess } from "core/PostProcesses/thinScreenSpaceCurvaturePostProcess";
 
@@ -12,9 +12,6 @@ export class FrameGraphScreenSpaceCurvatureTask extends FrameGraphPostProcessTas
      */
     public normalTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public override readonly postProcess: ThinScreenSpaceCurvaturePostProcess;
 
     /**

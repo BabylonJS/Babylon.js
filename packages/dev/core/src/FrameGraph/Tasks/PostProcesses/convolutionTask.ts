@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index"
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinConvolutionPostProcess } from "core/PostProcesses/thinConvolutionPostProcess";
 
@@ -6,9 +6,6 @@ import { ThinConvolutionPostProcess } from "core/PostProcesses/thinConvolutionPo
  * Task which applies a convolution post process.
  */
 export class FrameGraphConvolutionTask extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public override readonly postProcess: ThinConvolutionPostProcess;
 
     /**

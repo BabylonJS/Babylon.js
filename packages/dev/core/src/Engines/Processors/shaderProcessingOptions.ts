@@ -1,6 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import { type IShaderProcessor } from "./iShaderProcessor"
-import { type Nullable } from "../../types"
+import { type IShaderProcessor } from "./iShaderProcessor";
+import { type Nullable } from "../../types";
+
 /**
  * Function for custom code generation
  */
@@ -27,7 +28,7 @@ export interface _IProcessingOptions {
     platformName: string;
     lookForClosingBracketForUniformBuffer?: boolean;
     processingContext: Nullable<_IShaderProcessingContext>;
-
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
     processCodeAfterIncludes?: ShaderCustomProcessingFunction;

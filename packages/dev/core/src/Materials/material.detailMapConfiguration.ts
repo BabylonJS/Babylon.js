@@ -1,34 +1,27 @@
-import { type Nullable } from "../types"
+/* eslint-disable @typescript-eslint/naming-convention */
+import { type Nullable } from "../types";
 import { Material } from "./material";
 import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
 import { MaterialFlags } from "./materialFlags";
-import { type BaseTexture } from "./Textures/baseTexture"
-import { type UniformBuffer } from "./uniformBuffer"
-import { type IAnimatable } from "../Animations/animatable.interface"
+import { type BaseTexture } from "./Textures/baseTexture";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";
 
-import { type Scene } from "../scene"
-import { type StandardMaterial } from "./standardMaterial"
-import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial"
+import { type Scene } from "../scene";
+import { type StandardMaterial } from "./standardMaterial";
+import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
-import { type AbstractEngine } from "core/Engines/abstractEngine"
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+
 /**
  * @internal
  */
 export class MaterialDetailMapDefines extends MaterialDefines {
-    /**
-     *
-     */
     DETAIL = false;
-    /**
-     *
-     */
     DETAILDIRECTUV = 0;
-    /**
-     *
-     */
     DETAIL_NORMALBLENDMETHOD = 0;
 }
 

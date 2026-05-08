@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type InternalTexture } from "./internalTexture"
+import { type InternalTexture } from "./internalTexture";
+
 /**
  * Define options used to create an internal texture
  */

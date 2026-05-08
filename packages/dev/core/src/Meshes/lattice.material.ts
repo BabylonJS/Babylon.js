@@ -1,11 +1,12 @@
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
-import { type Material } from "core/Materials/material"
+import { type Material } from "core/Materials/material";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import { type Lattice } from "./lattice"
-import { type Nullable } from "core/types"
+import { type Lattice } from "./lattice";
+import { type Nullable } from "core/types";
 import { Constants } from "core/Engines/constants";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type UniformBuffer } from "core/Materials/uniformBuffer"
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
+
 /**
  * Material plugin to add hardware accelerated lattice support
  * @see [webgl2](https://playground.babylonjs.com/#HBZD72#5)

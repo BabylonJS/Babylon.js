@@ -1,6 +1,6 @@
-import { type Nullable } from "../types"
-import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture"
-import { type Camera } from "../Cameras/camera"
+import { type Nullable } from "../types";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import { DepthRenderer } from "../Rendering/depthRenderer";
 
@@ -50,7 +50,7 @@ export class DepthReducer extends MinMaxReducer {
                 scene._depthRenderer = {};
             }
 
-            this._depthRendererId = "minmax_" + this._camera.id;
+            this._depthRendererId = "minmax_" + this._camera.uniqueId;
 
             depthRenderer = this._depthRenderer = new DepthRenderer(
                 scene,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type DeepImmutable } from "core/types"
-import { type IMatrixLike } from "../math.like"
+import { type DeepImmutable } from "core/types";
+import { type IMatrixLike } from "../math.like";
+
 /** @internal */
 export class MatrixManagement {
     /** @internal */

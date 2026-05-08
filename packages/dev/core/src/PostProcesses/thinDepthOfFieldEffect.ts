@@ -1,5 +1,5 @@
-import { type Nullable } from "core/types"
-import { type AbstractEngine } from "core/Engines/abstractEngine"
+import { type Nullable } from "core/types";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
@@ -23,9 +23,6 @@ export const enum ThinDepthOfFieldEffectBlurLevel {
     High,
 }
 
-/**
- *
- */
 export class ThinDepthOfFieldEffect {
     /** @internal */
     public readonly _circleOfConfusion: ThinCircleOfConfusionPostProcess;

@@ -1,27 +1,27 @@
 import { serialize, serializeAsColor4, serializeAsCameraReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { type Nullable } from "../types"
-import { type Camera } from "../Cameras/camera"
-import { type Scene } from "../scene"
-import { type ISize } from "../Maths/math.size"
-import { type Color4 } from "../Maths/math.color"
-import { type AbstractEngine } from "../Engines/abstractEngine"
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
+import { type ISize } from "../Maths/math.size";
+import { type Color4 } from "../Maths/math.color";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
-import { type SubMesh } from "../Meshes/subMesh"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type Mesh } from "../Meshes/mesh"
-import { type PostProcess } from "../PostProcesses/postProcess"
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type PostProcess } from "../PostProcesses/postProcess";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { type Effect } from "../Materials/effect"
-import { type Material } from "../Materials/material"
+import { type Effect } from "../Materials/effect";
+import { type Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
 import { _WarnImport } from "../Misc/devTools";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import { type ShaderLanguage } from "core/Materials/shaderLanguage"
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinEffectLayer } from "./thinEffectLayer";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
@@ -585,7 +585,7 @@ export abstract class EffectLayer {
      * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _shouldRenderMesh(mesh: AbstractMesh): boolean {
         return this._internalThinEffectLayer ? true : this._thinEffectLayer._shouldRenderMesh(mesh);
     }
@@ -613,7 +613,7 @@ export abstract class EffectLayer {
      * @param mesh defines the current mesh to render
      * @returns true if the mesh material should be use
      */
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         return this._internalThinEffectLayer ? false : this._thinEffectLayer._useMeshMaterial(mesh);
     }
@@ -687,6 +687,7 @@ export abstract class EffectLayer {
     public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
         const effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
     }
 }

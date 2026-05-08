@@ -1,4 +1,13 @@
-import { type Scene, type NodeRenderGraphBuildState, type FrameGraph, type FrameGraphTextureHandle, type FrameGraphObjectList, type Camera, type NodeRenderGraphResourceContainerBlock, type FrameGraphShadowGeneratorTask } from "core/index"
+import {
+    type Scene,
+    type NodeRenderGraphBuildState,
+    type FrameGraph,
+    type FrameGraphTextureHandle,
+    type FrameGraphObjectList,
+    type Camera,
+    type NodeRenderGraphResourceContainerBlock,
+    type FrameGraphShadowGeneratorTask,
+} from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -12,9 +21,6 @@ import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/ob
 export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphObjectRendererTask;
 
-    /**
-     *
-     */
     public override _additionalConstructionParameters: [boolean, boolean];
 
     /**

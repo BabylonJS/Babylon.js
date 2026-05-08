@@ -1,12 +1,10 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { type Nullable } from "../../types"
-import { type IShaderProcessor } from "../Processors/iShaderProcessor"
-import { type _IShaderProcessingContext } from "../Processors/shaderProcessingOptions"
+import { type Nullable } from "../../types";
+import { type IShaderProcessor } from "../Processors/iShaderProcessor";
+import { type _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+
 /** @internal */
 export class WebGLShaderProcessor implements IShaderProcessor {
-    /**
-     *
-     */
     public shaderLanguage = ShaderLanguage.GLSL;
 
     public postProcessor(

@@ -1,12 +1,13 @@
-import { type DeepImmutable } from "../types"
+import { type DeepImmutable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
-import { type Matrix } from "../Maths/math.vector"
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { type Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
-import { type Plane } from "../Maths/math.plane"
-import { type Collider } from "../Collisions/collider"
+import { type Plane } from "../Maths/math.plane";
+
+import { type Collider } from "../Collisions/collider";
+
 const _Result0 = { min: 0, max: 0 };
 const _Result1 = { min: 0, max: 0 };
 const ComputeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<BoundingBox>, result: { min: number; max: number }) => {

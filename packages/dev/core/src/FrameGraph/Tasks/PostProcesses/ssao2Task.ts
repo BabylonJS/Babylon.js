@@ -1,4 +1,4 @@
-import { type FrameGraph, type FrameGraphRenderPass, type Camera, type FrameGraphTextureHandle } from "core/index"
+import { type FrameGraph, type FrameGraphRenderPass, type Camera, type FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinSSAO2PostProcess } from "core/PostProcesses/thinSSAO2PostProcess";
@@ -7,24 +7,12 @@ import { ThinSSAO2PostProcess } from "core/PostProcesses/thinSSAO2PostProcess";
  * @internal
  */
 export class FrameGraphSSAO2Task extends FrameGraphPostProcessTask {
-    /**
-     *
-     */
     public depthTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public normalTexture: FrameGraphTextureHandle;
 
-    /**
-     *
-     */
     public camera: Camera;
 
-    /**
-     *
-     */
     public override readonly postProcess: ThinSSAO2PostProcess;
 
     private _currentCameraMode = -1;
