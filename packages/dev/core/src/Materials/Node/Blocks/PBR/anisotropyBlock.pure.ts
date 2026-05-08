@@ -1,16 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { TBNBlock } from "../Fragment/TBNBlock";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { TBNBlock } from "../Fragment/TBNBlock.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Effect } from "../../../effect";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
@@ -244,4 +245,15 @@ export class AnisotropyBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerAnisotropyBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AnisotropyBlock", AnisotropyBlock);
 }

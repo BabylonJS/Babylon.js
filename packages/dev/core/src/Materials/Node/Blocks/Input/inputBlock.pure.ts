@@ -7,8 +7,8 @@ import { NodeMaterialBlockConnectionPointMode } from "../../Enums/nodeMaterialBl
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { type Nullable } from "../../../../types";
 import { type Effect } from "../../../../Materials/effect";
-import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
-import { type Scene } from "../../../../scene";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector.pure";
+import { type Scene } from "../../../../scene.pure";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -16,9 +16,10 @@ import { GetClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors, TmpVectors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
-import { type NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterial } from "../../nodeMaterial.pure";
 import { PrecisionDate } from "../../../../Misc/precisionDate";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -957,4 +958,15 @@ export class InputBlock extends NodeMaterialBlock {
             }
         }
     }
+}
+
+
+let _registered = false;
+export function registerMaterialsNodeBlocksInputInputBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.InputBlock", InputBlock);
 }

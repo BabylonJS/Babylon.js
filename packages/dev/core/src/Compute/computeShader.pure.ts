@@ -1,15 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
 import { type UniformBuffer } from "../Materials/uniformBuffer";
-import { type WebGPUEngine } from "../Engines/webgpuEngine";
-import { type Scene } from "../scene";
+import { type WebGPUEngine } from "../Engines/webgpuEngine.pure";
+import { type Scene } from "../scene.pure";
 import { type Nullable } from "../types";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type ComputeEffect, type IComputeEffectCreationOptions, type IComputeShaderPath } from "./computeEffect";
-import { type ComputeBindingMapping, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
-import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
+import { type ComputeBindingMapping, ComputeBindingType } from "../Engines/Extensions/engine.computeShader.pure";
+import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import { type IComputeContext } from "./IComputeContext";
 import { type StorageBuffer } from "../Buffers/storageBuffer";
@@ -17,11 +17,12 @@ import { Logger } from "../Misc/logger";
 import { TextureSampler } from "../Materials/Textures/textureSampler";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { type ExternalTexture } from "core/Materials/Textures/externalTexture";
-import { type VideoTexture } from "core/Materials/Textures/videoTexture";
+import { type VideoTexture } from "core/Materials/Textures/videoTexture.pure";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -541,4 +542,15 @@ export class ComputeShader {
     protected static _BufferIsDataBuffer(buffer: UniformBuffer | StorageBuffer | DataBuffer): buffer is DataBuffer {
         return (buffer as DataBuffer).underlyingResource !== undefined;
     }
+}
+
+
+let _registered = false;
+export function registerComputeShader(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ComputeShader", ComputeShader);
 }

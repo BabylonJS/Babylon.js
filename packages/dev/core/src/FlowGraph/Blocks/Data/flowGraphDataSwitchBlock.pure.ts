@@ -2,10 +2,11 @@
 
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type FlowGraphNumber, getNumericValue, isNumeric } from "core/FlowGraph/utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 export interface IFlowGraphDataSwitchBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
     /**
@@ -90,4 +91,15 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.DataSwitch;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphDataSwitchBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.DataSwitch, FlowGraphDataSwitchBlock);
 }

@@ -5,7 +5,8 @@ import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { Vector2, Vector3 } from "../../../Maths/math.vector";
+import { Vector2, Vector3 } from "../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Type of mappings supported by the mapping block
@@ -176,4 +177,15 @@ export class MappingBlock extends NodeGeometryBlock {
 
         this.mapping = serializationObject.mapping;
     }
+}
+
+
+let _registered = false;
+export function registerMappingBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MappingBlock", MappingBlock);
 }

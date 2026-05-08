@@ -1,19 +1,20 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { MaterialPluginBase } from "./materialPluginBase";
-import { type Scene } from "../scene";
+import { MaterialPluginBase } from "./materialPluginBase.pure";
+import { type Scene } from "../scene.pure";
 import { type UniformBuffer } from "./uniformBuffer";
 import { type FloatArray, type Nullable } from "../types";
 import { MaterialDefines } from "./materialDefines";
-import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
-import { type StandardMaterial } from "./standardMaterial";
+import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial.pure";
+import { type StandardMaterial } from "./standardMaterial.pure";
 import { Color3 } from "core/Maths/math";
-import { type Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh.pure";
 import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize, serializeAsColor3 } from "core/Misc/decorators";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { ShaderLanguage } from "./shaderLanguage";
+import { RegisterClass } from "../Misc/typeStore";
 
 const vertexDefinitions = `#if defined(DBG_ENABLED)
 attribute float dbg_initialPass;
@@ -800,4 +801,15 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
         return rollback;
     }
+}
+
+
+let _registered = false;
+export function registerMeshDebugPluginMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MeshDebugPluginMaterial", MeshDebugPluginMaterial);
 }

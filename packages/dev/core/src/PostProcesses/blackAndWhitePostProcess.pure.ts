@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type Camera } from "../Cameras/camera";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
@@ -8,8 +8,9 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Nullable } from "../types";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { ThinBlackAndWhitePostProcess } from "./thinBlackAndWhitePostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Post process used to render in black and white
@@ -84,4 +85,15 @@ export class BlackAndWhitePostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerBlackAndWhitePostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BlackAndWhitePostProcess", BlackAndWhitePostProcess);
 }

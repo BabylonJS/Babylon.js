@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import cleanGeometryBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./cleanGeometryBlock.pure";
 
-import { RegisterClass } from "../../../Misc/typeStore";
-import { CleanGeometryBlock } from "./cleanGeometryBlock.pure";
-
-RegisterClass("BABYLON.CleanGeometryBlock", CleanGeometryBlock);
+import { registerCleanGeometryBlock } from "./cleanGeometryBlock.pure";
+registerCleanGeometryBlock();

@@ -6,9 +6,10 @@ import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import { type Scene } from "core/scene";
+import { type Scene } from "core/scene.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to repeat code
  */
@@ -151,4 +152,15 @@ export class LoopBlock extends NodeMaterialBlock {
 
         this.iterations = serializationObject.iterations;
     }
+}
+
+
+let _registered = false;
+export function registerLoopBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.LoopBlock", LoopBlock);
 }

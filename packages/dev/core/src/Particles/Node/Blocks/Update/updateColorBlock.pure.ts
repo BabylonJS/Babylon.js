@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
@@ -8,6 +8,7 @@ import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { type Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { type Color4 } from "core/Maths";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to update the color of a particle
@@ -85,4 +86,15 @@ export class UpdateColorBlock extends NodeParticleBlock {
             system._updateQueueStart = colorProcessing;
         }
     }
+}
+
+
+let _registered = false;
+export function registerUpdateColorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.UpdateColorBlock", UpdateColorBlock);
 }

@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
-import { Action } from "./action";
-import { type Condition } from "./condition";
+import { Action } from "./action.pure";
+import { type Condition } from "./condition.pure";
 
 import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
-import { Color3 } from "../Maths/math.color";
-import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
-import { Animation } from "../Animations/animation";
+import { Color3 } from "../Maths/math.color.pure";
+import { Vector3, Matrix, Quaternion } from "../Maths/math.vector.pure";
+import { Animation } from "../Animations/animation.pure";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This defines an action responsible to change the value of a property
@@ -157,4 +158,15 @@ export class InterpolateValueAction extends Action {
             parent
         );
     }
+}
+
+
+let _registered = false;
+export function registerInterpolateValueAction(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.InterpolateValueAction", InterpolateValueAction);
 }

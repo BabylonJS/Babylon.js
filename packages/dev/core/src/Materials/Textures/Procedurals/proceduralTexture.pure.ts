@@ -3,21 +3,21 @@
 import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
 import { type Nullable } from "../../../types";
-import { type Scene } from "../../../scene";
-import { type Matrix, type Vector4, type Vector3, type Vector2 } from "../../../Maths/math.vector";
-import { type Color4, type Color3 } from "../../../Maths/math.color";
+import { type Scene } from "../../../scene.pure";
+import { type Matrix, type Vector4, type Vector3, type Vector2 } from "../../../Maths/math.vector.pure";
+import { type Color4, type Color3 } from "../../../Maths/math.color.pure";
 import { type AbstractEngine } from "../../../Engines/abstractEngine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
 import { Material } from "../../../Materials/material";
 import { type Effect } from "../../../Materials/effect";
-import { Texture } from "../../../Materials/Textures/texture";
-import { type RenderTargetTextureOptions, RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
+import { Texture } from "../../../Materials/Textures/texture.pure";
+import { type RenderTargetTextureOptions, RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
 import { type DataBuffer } from "../../../Buffers/dataBuffer";
-import { type NodeMaterial } from "../../Node/nodeMaterial";
+import { type NodeMaterial } from "../../Node/nodeMaterial.pure";
 import { type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { EngineStore } from "../../../Engines/engineStore";
 import { Constants } from "../../../Engines/constants";
@@ -25,6 +25,7 @@ import { DrawWrapper } from "../../drawWrapper";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type ThinTexture } from "core/Materials/Textures/thinTexture";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Options to create a procedural texture
@@ -854,4 +855,15 @@ export class ProceduralTexture extends Texture {
 
         super.dispose();
     }
+}
+
+
+let _registered = false;
+export function registerProceduralTexture(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ProceduralTexture", ProceduralTexture);
 }

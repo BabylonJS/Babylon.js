@@ -3,10 +3,11 @@
 import { type AssetType, type FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Configuration for the FlowGraphGetPropertyBlock.
@@ -106,4 +107,15 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     public override getClassName(): string {
         return FlowGraphBlockNames.GetProperty;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphGetPropertyBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.GetProperty, FlowGraphGetPropertyBlock);
 }

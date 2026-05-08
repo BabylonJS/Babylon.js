@@ -1,8 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { Action } from "./action";
+import { Action } from "./action.pure";
 
 import { type ActionManager } from "./actionManager";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * A Condition applied to an Action
@@ -287,4 +288,17 @@ export class StateCondition extends Condition {
             properties: [Action._GetTargetProperty(this._target), { name: "value", value: this.value }],
         });
     }
+}
+
+
+let _registered = false;
+export function registerCondition(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ValueCondition", ValueCondition);
+    RegisterClass("BABYLON.PredicateCondition", PredicateCondition);
+    RegisterClass("BABYLON.StateCondition", StateCondition);
 }

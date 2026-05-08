@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
+import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Configuration for the DoN block.
@@ -66,4 +67,15 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     public override getClassName(): string {
         return FlowGraphBlockNames.DoN;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphDoNBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.DoN, FlowGraphDoNBlock);
 }

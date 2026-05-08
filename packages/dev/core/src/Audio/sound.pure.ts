@@ -10,17 +10,18 @@ import { _WebAudioStaticSound } from "../AudioV2/webAudio/webAudioStaticSound";
 import { _WebAudioStreamingSound } from "../AudioV2/webAudio/webAudioStreamingSound";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
-import { Vector3 } from "../Maths/math.vector";
-import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { Vector3 } from "../Maths/math.vector.pure";
+import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type TransformNode } from "../Meshes/transformNode";
 import { _WarnImport } from "../Misc/devTools";
 import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
 import { _RetryWithInterval } from "../Misc/timingTools";
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { type Nullable } from "../types";
-import { type AudioEngine } from "./audioEngine";
+import { type AudioEngine } from "./audioEngine.pure";
 import { type ISoundOptions } from "./Interfaces/ISoundOptions";
+import { RegisterClass } from "../Misc/typeStore";
 
 const TmpRampOptions: IAudioParameterRampOptions = {
     duration: 0,
@@ -1069,3 +1070,14 @@ export class Sound {
 }
 
 // Register Class Name
+
+
+let _registered = false;
+export function registerSound(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.Sound", Sound);
+}

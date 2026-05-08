@@ -5,6 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to subdivide for a geometry using Catmull-Clark algorithm
  */
@@ -108,4 +109,15 @@ export class SubdivideBlock extends NodeGeometryBlock {
         this.flatOnly = serializationObject.flatOnly;
         this.loopWeight = serializationObject.loopWeight;
     }
+}
+
+
+let _registered = false;
+export function registerSubdivideBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SubdivideBlock", SubdivideBlock);
 }

@@ -14,6 +14,7 @@ import { FrameGraphTAATask } from "core/FrameGraph/Tasks/PostProcesses/taaTask";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the TAA post process
@@ -176,4 +177,15 @@ export class NodeRenderGraphTAAPostProcessBlock extends NodeRenderGraphBaseWithP
         this.disableOnCameraMove = serializationObject.disableOnCameraMove;
         this.disableTAA = serializationObject.disableTAA;
     }
+}
+
+
+let _registered = false;
+export function registerTaaPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphTAAPostProcessBlock", NodeRenderGraphTAAPostProcessBlock);
 }

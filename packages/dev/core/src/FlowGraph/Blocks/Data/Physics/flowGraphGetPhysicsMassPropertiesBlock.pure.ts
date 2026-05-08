@@ -2,11 +2,12 @@
 
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "../../../flowGraphBlock";
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "../../../flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "../../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type PhysicsBody } from "../../../../Physics/v2/physicsBody";
-import { type Vector3 } from "../../../../Maths/math.vector";
+import { type Vector3 } from "../../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * @experimental
@@ -72,4 +73,15 @@ export class FlowGraphGetPhysicsMassPropertiesBlock extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.PhysicsGetMassProperties;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphGetPhysicsMassPropertiesBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PhysicsGetMassProperties, FlowGraphGetPhysicsMassPropertiesBlock);
 }

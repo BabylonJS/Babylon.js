@@ -1,9 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to smooth step a value
  */
@@ -101,4 +102,15 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerGeometrySmoothStepBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometrySmoothStepBlock", GeometrySmoothStepBlock);
 }

@@ -2,27 +2,27 @@
 
 /* eslint-disable jsdoc/require-returns-check */
 import { type Observer, Observable } from "../Misc/observable";
-import { Tools, AsyncLoop } from "../Misc/tools";
+import { Tools, AsyncLoop } from "../Misc/tools.pure";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
 import { type Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
 import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
-import { type Scene, ScenePerformancePriority } from "../scene";
-import { type Vector4, Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
-import { type Color4, Color3 } from "../Maths/math.color";
+import { type Scene, ScenePerformancePriority } from "../scene.pure";
+import { type Vector4, Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector.pure";
+import { type Color4, Color3 } from "../Maths/math.color.pure";
 import { Node } from "../node";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { type IGetSetVerticesData, VertexData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
-import { type IMeshDataOptions, AbstractMesh } from "./abstractMesh";
+import { type IMeshDataOptions, AbstractMesh } from "./abstractMesh.pure";
 import { SubMesh } from "./subMesh";
 import { type BoundingSphere } from "../Culling/boundingSphere";
 import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { MultiMaterial } from "../Materials/multiMaterial";
+import { MultiMaterial } from "../Materials/multiMaterial.pure";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { type Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
@@ -38,14 +38,15 @@ import { type TransformNode } from "./transformNode";
 import { type DrawWrapper } from "../Materials/drawWrapper";
 import { type PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
 
-import { type GoldbergMesh } from "./goldbergMesh";
-import { type InstancedMesh } from "./instancedMesh";
-import { type IPhysicsEnabledObject, type PhysicsImpostor } from "../Physics/v1/physicsImpostor";
-import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { type LinesMesh } from "./linesMesh";
-import { type GroundMesh } from "./groundMesh";
+import { type GoldbergMesh } from "./goldbergMesh.pure";
+import { type InstancedMesh } from "./instancedMesh.pure";
+import { type IPhysicsEnabledObject, type PhysicsImpostor } from "../Physics/v1/physicsImpostor.pure";
+import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder.pure";
+import { type LinesMesh } from "./linesMesh.pure";
+import { type GroundMesh } from "./groundMesh.pure";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * @internal
@@ -5985,4 +5986,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static ExtendToGoldberg(_mesh: Mesh): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
+}
+
+
+let _registered = false;
+export function registerMesh(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.Mesh", Mesh);
 }

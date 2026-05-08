@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import fogBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./fogBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { FogBlock } from "./fogBlock.pure";
-
-RegisterClass("BABYLON.FogBlock", FogBlock);
+import { registerFogBlock } from "./fogBlock.pure";
+registerFogBlock();

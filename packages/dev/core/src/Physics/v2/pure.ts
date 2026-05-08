@@ -10,3 +10,4 @@ export * from "./ragdoll";
 export * from "./IPhysicsEnginePlugin";
 export * from "./characterController";
 export * from "./Plugins/pure";
+export * from "./physicsEngineComponent.pure";

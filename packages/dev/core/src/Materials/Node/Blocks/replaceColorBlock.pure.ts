@@ -5,6 +5,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to replace a color by another one
  */
@@ -90,4 +91,15 @@ export class ReplaceColorBlock extends NodeMaterialBlock {
         state.compilationString += `}\n`;
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerReplaceColorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ReplaceColorBlock", ReplaceColorBlock);
 }

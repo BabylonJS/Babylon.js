@@ -4,16 +4,16 @@
 import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentFuzzBRDFTexture, GetOpenPBREnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { type Nullable } from "../../types";
-import { type Scene } from "../../scene";
-import { type Color4, Color3 } from "../../Maths/math.color";
-import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Scene } from "../../scene.pure";
+import { type Color4, Color3 } from "../../Maths/math.color.pure";
+import { ImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
-import { Texture } from "../Textures/texture";
+import { Texture } from "../Textures/texture.pure";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { type Engine } from "../../Engines/engine";
-import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Engine } from "../../Engines/engine.pure";
+import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../materialDefines";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
@@ -61,16 +61,17 @@ import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
 import { EnvironmentLightingDefinesMixin } from "../environmentLighting.defines";
-import { Vector2, Vector4, TmpVectors, type Vector3, type Matrix } from "core/Maths/math.vector";
-import { type Mesh } from "../../Meshes/mesh";
+import { Vector2, Vector4, TmpVectors, type Vector3, type Matrix } from "core/Maths/math.vector.pure";
+import { type Mesh } from "../../Meshes/mesh.pure";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
-import { type RenderTargetTexture } from "../Textures/renderTargetTexture";
+import { type RenderTargetTexture } from "../Textures/renderTargetTexture.pure";
 import { type IAnimatable } from "../../Animations/animatable.interface";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
-import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer.pure";
+import { RegisterClass } from "../../Misc/typeStore";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -3359,4 +3360,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
     }
+}
+
+
+let _registered = false;
+export function registerOpenpbrMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.OpenPBRMaterial", OpenPBRMaterial);
 }

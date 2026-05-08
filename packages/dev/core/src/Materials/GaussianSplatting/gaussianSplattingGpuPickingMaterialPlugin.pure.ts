@@ -1,14 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../../types";
-import { type Scene } from "../../scene";
+import { type Scene } from "../../scene.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type SubMesh } from "../../Meshes/subMesh";
 import { type UniformBuffer } from "../uniformBuffer";
 import { type MaterialDefines } from "../materialDefines";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
-import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
+import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat color output with
@@ -259,4 +260,15 @@ uniform pickingColor: vec3f;
             effect.setFloat3("pickingColor", this._pickingColor[0], this._pickingColor[1], this._pickingColor[2]);
         }
     }
+}
+
+
+let _registered = false;
+export function registerGaussianSplattingGpuPickingMaterialPlugin(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GaussianSplattingGpuPickingMaterialPlugin", GaussianSplattingGpuPickingMaterialPlugin);
 }

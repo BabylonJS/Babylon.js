@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import particleConverterBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./particleConverterBlock.pure";
 
-import { RegisterClass } from "../../../Misc/typeStore";
-import { ParticleConverterBlock } from "./particleConverterBlock.pure";
-
-RegisterClass("BABYLON.ParticleConverterBlock", ParticleConverterBlock);
+import { registerParticleConverterBlock } from "./particleConverterBlock.pure";
+registerParticleConverterBlock();

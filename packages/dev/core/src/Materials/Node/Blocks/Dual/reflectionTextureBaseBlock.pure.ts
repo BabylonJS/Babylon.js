@@ -4,23 +4,24 @@ import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type BaseTexture } from "../../../Textures/baseTexture";
-import { type NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
+import { type NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial.pure";
 import { type Effect } from "../../../effect";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Nullable } from "../../../../types";
-import { type Scene } from "../../../../scene";
-import { InputBlock } from "../Input/inputBlock";
+import { type Scene } from "../../../../scene.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Constants } from "../../../../Engines/constants";
 
-import { CubeTexture } from "../../../Textures/cubeTexture";
-import { Texture } from "../../../Textures/texture";
+import { CubeTexture } from "../../../Textures/cubeTexture.pure";
+import { Texture } from "../../../Textures/texture.pure";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type SubMesh } from "../../../..//Meshes/subMesh";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -636,4 +637,15 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         this._setTarget();
     }
+}
+
+
+let _registered = false;
+export function registerReflectionTextureBaseBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ReflectionTextureBaseBlock", ReflectionTextureBaseBlock);
 }

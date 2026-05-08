@@ -4,12 +4,13 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterial } from "../../nodeMaterial";
-import { InputBlock } from "../Input/inputBlock";
+import { type NodeMaterial } from "../../nodeMaterial.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock";
+import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock.pure";
 import { type NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { Logger } from "core/Misc/logger";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -208,4 +209,15 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerReflectionTextureBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ReflectionTextureBlock", ReflectionTextureBlock);
 }

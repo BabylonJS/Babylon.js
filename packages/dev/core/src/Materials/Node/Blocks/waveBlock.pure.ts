@@ -5,8 +5,9 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { type Scene } from "../../../scene";
+import { type Scene } from "../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Operations supported by the Wave block
@@ -122,4 +123,15 @@ export class WaveBlock extends NodeMaterialBlock {
 
         this.kind = serializationObject.kind;
     }
+}
+
+
+let _registered = false;
+export function registerWaveBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.WaveBlock", WaveBlock);
 }

@@ -1,16 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "core/types";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { type Particle } from "core/Particles/particle";
-import { type INodeParticleTextureData, type ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
+import { type INodeParticleTextureData, type ParticleTextureSourceBlock } from "../particleSourceTextureBlock.pure";
 
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { FlowMap } from "core/Particles/flowMap";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to update particle position based on a flow map
@@ -116,4 +117,15 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
 
         this.output._storedValue = system;
     }
+}
+
+
+let _registered = false;
+export function registerUpdateFlowMapBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.UpdateFlowMapBlock", UpdateFlowMapBlock);
 }

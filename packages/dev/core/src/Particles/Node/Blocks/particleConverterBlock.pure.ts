@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { Color4 } from "core/Maths/math.color";
-import { Vector2, Vector3 } from "../../../Maths/math.vector";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Vector2, Vector3 } from "../../../Maths/math.vector.pure";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to create a Vector2/3 and Color4 out of individual or partial inputs
@@ -296,4 +297,15 @@ export class ParticleConverterBlock extends NodeParticleBlock {
         zOutput._storedFunction = (state) => getData(state).b;
         wOutput._storedFunction = (state) => getData(state).a;
     }
+}
+
+
+let _registered = false;
+export function registerParticleConverterBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleConverterBlock", ParticleConverterBlock);
 }

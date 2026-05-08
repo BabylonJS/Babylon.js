@@ -5,9 +5,10 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { type Scene } from "../../../scene";
+import { type Scene } from "../../../scene.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Types of curves supported by the Curve block
@@ -385,4 +386,15 @@ export class CurveBlock extends NodeMaterialBlock {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.type = BABYLON.CurveBlockTypes.${CurveBlockTypes[this.type]};\n`;
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerCurveBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CurveBlock", CurveBlock);
 }

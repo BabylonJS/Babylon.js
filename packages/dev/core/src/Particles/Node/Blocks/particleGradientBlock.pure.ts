@@ -3,11 +3,12 @@
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import { type ParticleGradientValueBlock } from "./particleGradientValueBlock";
+import { type ParticleGradientValueBlock } from "./particleGradientValueBlock.pure";
 import { type Nullable } from "core/types";
 import { Lerp } from "core/Maths/math.scalar.functions";
-import { Color4 } from "core/Maths/math.color";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to define a list of gradient entries
  */
@@ -183,4 +184,15 @@ export class ParticleGradientBlock extends NodeParticleBlock {
             }
         }
     }
+}
+
+
+let _registered = false;
+export function registerParticleGradientBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleGradientBlock", ParticleGradientBlock);
 }

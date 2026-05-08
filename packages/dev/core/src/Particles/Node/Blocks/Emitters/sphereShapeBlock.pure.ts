@@ -7,10 +7,11 @@ import { type IShapeBlock } from "./IShapeBlock";
 
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { _CreateLocalPositionData } from "./emitters.functions";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to provide a flow of particles emitted from a sphere shape.
@@ -187,4 +188,15 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
         this.isHemispheric = serializationObject.isHemispheric;
     }
+}
+
+
+let _registered = false;
+export function registerSphereShapeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SphereShapeBlock", SphereShapeBlock);
 }

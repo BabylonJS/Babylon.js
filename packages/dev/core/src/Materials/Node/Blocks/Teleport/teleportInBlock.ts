@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import teleportInBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./teleportInBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeMaterialTeleportInBlock } from "./teleportInBlock.pure";
-
-RegisterClass("BABYLON.NodeMaterialTeleportInBlock", NodeMaterialTeleportInBlock);
+import { registerMaterialsNodeBlocksTeleportTeleportInBlock } from "./teleportInBlock.pure";
+registerMaterialsNodeBlocksTeleportTeleportInBlock();

@@ -4,8 +4,9 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { type float } from "core/types";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Types of curves supported by the Curve block
@@ -313,4 +314,15 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.type = BABYLON.GeometryCurveBlockTypes.${GeometryCurveBlockTypes[this.type]};\n`;
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerGeometryCurveBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryCurveBlock", GeometryCurveBlock);
 }

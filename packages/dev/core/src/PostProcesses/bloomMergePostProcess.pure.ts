@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type Nullable } from "../types";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type Effect } from "../Materials/effect";
@@ -9,6 +9,7 @@ import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
 import { ThinBloomMergePostProcess } from "./thinBloomMergePostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -91,4 +92,15 @@ export class BloomMergePostProcess extends PostProcess {
             this.updateEffect();
         }
     }
+}
+
+
+let _registered = false;
+export function registerBloomMergePostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BloomMergePostProcess", BloomMergePostProcess);
 }

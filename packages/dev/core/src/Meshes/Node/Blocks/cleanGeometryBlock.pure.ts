@@ -7,6 +7,7 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorat
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { type VertexData } from "core/Meshes/mesh.vertexData";
 import { FixFlippedFaces } from "core/Maths/math.functions";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to clean a geometry
@@ -102,4 +103,15 @@ export class CleanGeometryBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
     }
+}
+
+
+let _registered = false;
+export function registerCleanGeometryBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CleanGeometryBlock", CleanGeometryBlock);
 }

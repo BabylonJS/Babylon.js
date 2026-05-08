@@ -4,7 +4,8 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import { Matrix, Vector3 } from "../../../../Maths/math.vector";
+import { Matrix, Vector3 } from "../../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to get a align matrix
@@ -67,4 +68,15 @@ export class AlignBlock extends NodeGeometryBlock {
             return result;
         };
     }
+}
+
+
+let _registered = false;
+export function registerAlignBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AlignBlock", AlignBlock);
 }

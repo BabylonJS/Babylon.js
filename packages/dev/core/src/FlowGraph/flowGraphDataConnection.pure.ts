@@ -4,9 +4,10 @@ import { type Nullable } from "core/types";
 import { type FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import { type FlowGraphContext } from "./flowGraphContext";
-import { type RichType } from "./flowGraphRichTypes";
+import { type RichType } from "./flowGraphRichTypes.pure";
 import { Observable } from "core/Misc/observable";
 import { defaultValueSerializationFunction } from "./serialization";
+import { RegisterClass } from "../Misc/typeStore";
 /**
  * Represents a connection point for data.
  * An unconnected input point can have a default value.
@@ -176,4 +177,15 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         serializationObject.optional = this._optional;
         defaultValueSerializationFunction("defaultValue", this._defaultValue, serializationObject);
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphDataConnection(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("FlowGraphDataConnection", FlowGraphDataConnection);
 }

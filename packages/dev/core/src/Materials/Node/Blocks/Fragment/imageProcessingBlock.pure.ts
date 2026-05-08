@@ -5,14 +5,15 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { type Effect } from "../../../effect";
-import { type Mesh } from "../../../../Meshes/mesh";
-import { type Scene } from "../../../../scene";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
+import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to add image processing support to fragment shader
@@ -256,4 +257,15 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
 
         this.convertInputToLinearSpace = serializationObject.convertInputToLinearSpace ?? true;
     }
+}
+
+
+let _registered = false;
+export function registerImageProcessingBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ImageProcessingBlock", ImageProcessingBlock);
 }

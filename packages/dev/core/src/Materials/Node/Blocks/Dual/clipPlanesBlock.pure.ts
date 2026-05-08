@@ -6,11 +6,12 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type Effect } from "../../../effect";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
-import { type Mesh } from "../../../../Meshes/mesh";
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { BindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Block used to implement clip planes
  */
@@ -171,4 +172,15 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerClipPlanesBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ClipPlanesBlock", ClipPlanesBlock);
 }

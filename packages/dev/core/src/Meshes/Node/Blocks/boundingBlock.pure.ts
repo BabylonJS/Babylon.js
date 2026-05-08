@@ -4,6 +4,7 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { extractMinAndMax } from "../../../Maths/math.functions";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to get the bounding info of a geometry
@@ -74,4 +75,15 @@ export class BoundingBlock extends NodeGeometryBlock {
             return boundingInfo.maximum;
         };
     }
+}
+
+
+let _registered = false;
+export function registerBoundingBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BoundingBlock", BoundingBlock);
 }

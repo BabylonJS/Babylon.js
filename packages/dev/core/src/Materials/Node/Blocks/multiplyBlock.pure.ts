@@ -2,6 +2,7 @@
 
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { BaseMathBlock } from "./baseMathBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to multiply 2 values
@@ -32,4 +33,15 @@ export class MultiplyBlock extends BaseMathBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerMultiplyBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MultiplyBlock", MultiplyBlock);
 }

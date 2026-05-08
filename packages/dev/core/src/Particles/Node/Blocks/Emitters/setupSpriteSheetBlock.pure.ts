@@ -6,6 +6,7 @@ import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { type ParticleSystem } from "core/Particles";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Block used as configure the sprite sheet for particles
  */
@@ -127,4 +128,15 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         this.loop = serializationObject.loop;
         this.randomStartCell = serializationObject.randomStartCell;
     }
+}
+
+
+let _registered = false;
+export function registerSetupSpriteSheetBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SetupSpriteSheetBlock", SetupSpriteSheetBlock);
 }

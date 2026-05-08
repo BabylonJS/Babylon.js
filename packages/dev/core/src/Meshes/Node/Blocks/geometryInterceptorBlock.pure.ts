@@ -5,6 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to trigger an observable when traversed
  * It can also be used to execute a function when traversed
@@ -80,4 +81,15 @@ export class GeometryInterceptorBlock extends NodeGeometryBlock {
             return value;
         };
     }
+}
+
+
+let _registered = false;
+export function registerGeometryInterceptorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryInterceptorBlock", GeometryInterceptorBlock);
 }

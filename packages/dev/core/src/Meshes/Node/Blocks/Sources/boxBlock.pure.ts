@@ -4,9 +4,10 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import { GeometryInputBlock } from "../geometryInputBlock";
-import { CreateSegmentedBoxVertexData } from "core/Meshes/Builders/boxBuilder";
+import { GeometryInputBlock } from "../geometryInputBlock.pure";
+import { CreateSegmentedBoxVertexData } from "core/Meshes/Builders/boxBuilder.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to generate box geometry data
@@ -217,4 +218,15 @@ export class BoxBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
     }
+}
+
+
+let _registered = false;
+export function registerBoxBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BoxBlock", BoxBlock);
 }

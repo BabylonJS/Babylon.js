@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import fragCoordBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./fragCoordBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { FragCoordBlock } from "./fragCoordBlock.pure";
-
-RegisterClass("BABYLON.FragCoordBlock", FragCoordBlock);
+import { registerFragCoordBlock } from "./fragCoordBlock.pure";
+registerFragCoordBlock();

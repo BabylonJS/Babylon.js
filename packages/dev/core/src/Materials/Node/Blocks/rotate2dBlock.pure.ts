@@ -5,7 +5,8 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { InputBlock } from "./Input/inputBlock";
+import { InputBlock } from "./Input/inputBlock.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to rotate a 2d vector by a given angle
@@ -74,4 +75,15 @@ export class Rotate2dBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerRotate2dBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.Rotate2dBlock", Rotate2dBlock);
 }

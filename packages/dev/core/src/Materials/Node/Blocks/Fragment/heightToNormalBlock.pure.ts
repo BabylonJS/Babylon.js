@@ -6,8 +6,9 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to convert a height vector to a normal
@@ -198,4 +199,15 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         this.automaticNormalizationNormal = serializationObject.automaticNormalizationNormal;
         this.automaticNormalizationTangent = serializationObject.automaticNormalizationTangent;
     }
+}
+
+
+let _registered = false;
+export function registerHeightToNormalBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.HeightToNormalBlock", HeightToNormalBlock);
 }

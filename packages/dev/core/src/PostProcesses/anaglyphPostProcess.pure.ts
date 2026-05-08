@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type Camera } from "../Cameras/camera";
 import { type Effect } from "../Materials/effect";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinAnaglyphPostProcess } from "./thinAnaglyphPostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Postprocess used to generate anaglyphic rendering
@@ -52,4 +53,15 @@ export class AnaglyphPostProcess extends PostProcess {
             effect.setTextureFromPostProcess("leftSampler", this._passedProcess);
         });
     }
+}
+
+
+let _registered = false;
+export function registerAnaglyphPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AnaglyphPostProcess", AnaglyphPostProcess);
 }

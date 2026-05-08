@@ -19,6 +19,7 @@ import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { Constants } from "../../../Engines/constants";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 export type NodeRenderGraphValueType = InternalTexture | Camera | FrameGraphObjectList | IShadowLight;
 
@@ -314,4 +315,15 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
             this.creationOptions = serializationObject.creationOptions;
         }
     }
+}
+
+
+let _registered = false;
+export function registerFrameGraphNodeBlocksInputBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphInputBlock", NodeRenderGraphInputBlock);
 }

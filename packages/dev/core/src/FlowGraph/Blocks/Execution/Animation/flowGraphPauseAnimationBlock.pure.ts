@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
-import { RichTypeAny } from "../../../flowGraphRichTypes";
+import { RichTypeAny } from "../../../flowGraphRichTypes.pure";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type AnimationGroup } from "core/Animations/animationGroup.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * Block that pauses a running animation
@@ -34,4 +35,15 @@ export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOut
     public override getClassName(): string {
         return FlowGraphBlockNames.PauseAnimation;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphPauseAnimationBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PauseAnimation, FlowGraphPauseAnimationBlock);
 }

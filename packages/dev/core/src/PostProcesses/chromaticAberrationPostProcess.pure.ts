@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Vector2 } from "../Maths/math.vector";
+import { type Vector2 } from "../Maths/math.vector.pure";
 import { type Nullable } from "../types";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type Camera } from "../Cameras/camera";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
@@ -10,8 +10,9 @@ import { Constants } from "../Engines/constants";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { ThinChromaticAberrationPostProcess } from "./thinChromaticAberrationPostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
@@ -165,4 +166,15 @@ export class ChromaticAberrationPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerChromaticAberrationPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ChromaticAberrationPostProcess", ChromaticAberrationPostProcess);
 }

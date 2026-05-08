@@ -1,8 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index.pure";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { FrameGraphShadowGeneratorTask } from "../../../Tasks/Rendering/shadowGeneratorTask";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that generate shadows through a shadow generator
@@ -29,4 +30,15 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBaseShad
     public override getClassName() {
         return "NodeRenderGraphShadowGeneratorBlock";
     }
+}
+
+
+let _registered = false;
+export function registerShadowGeneratorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphShadowGeneratorBlock", NodeRenderGraphShadowGeneratorBlock);
 }

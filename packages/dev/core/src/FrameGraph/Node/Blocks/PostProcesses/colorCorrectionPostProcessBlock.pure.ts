@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphColorCorrectionTask } from "../../../Tasks/PostProcesses/colorCorrectionTask";
 import { ThinColorCorrectionPostProcess } from "../../../../PostProcesses/thinColorCorrectionPostProcess";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the color correction post process
@@ -69,4 +70,15 @@ export class NodeRenderGraphColorCorrectionPostProcessBlock extends NodeRenderGr
     public override getClassName() {
         return "NodeRenderGraphColorCorrectionPostProcessBlock";
     }
+}
+
+
+let _registered = false;
+export function registerColorCorrectionPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphColorCorrectionPostProcessBlock", NodeRenderGraphColorCorrectionPostProcessBlock);
 }

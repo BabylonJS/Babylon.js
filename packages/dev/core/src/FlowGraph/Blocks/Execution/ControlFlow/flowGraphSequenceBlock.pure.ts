@@ -4,7 +4,8 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { type FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Configuration for the sequence block.
@@ -66,4 +67,15 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.Sequence;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphSequenceBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Sequence, FlowGraphSequenceBlock);
 }

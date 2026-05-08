@@ -3,12 +3,13 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { type Nullable } from "../../types";
-import { type Scene } from "../../scene";
-import { Color3 } from "../../Maths/math.color";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { type Scene } from "../../scene.pure";
+import { Color3 } from "../../Maths/math.color.pure";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
+import { PBRBaseMaterial } from "./pbrBaseMaterial.pure";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * The Physically based material of BJS.
@@ -746,4 +747,15 @@ export class PBRMaterial extends PBRBaseMaterial {
 
         return material;
     }
+}
+
+
+let _registered = false;
+export function registerPbrMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PBRMaterial", PBRMaterial);
 }

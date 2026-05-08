@@ -3,13 +3,14 @@
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { type Nullable } from "core/types";
-import { type BaseTexture } from "../../../Materials/Textures/baseTexture";
-import { type ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture";
+import { type BaseTexture } from "../../../Materials/Textures/baseTexture.pure";
+import { type ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture.pure";
 
-import { Texture } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture.pure";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { TextureTools } from "core/Misc/textureTools";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Interface used to define texture data
@@ -459,4 +460,15 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             targetTexture.wAng = sourceTexture.wAng;
         }
     }
+}
+
+
+let _registered = false;
+export function registerParticleSourceTextureBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleTextureSourceBlock", ParticleTextureSourceBlock);
 }

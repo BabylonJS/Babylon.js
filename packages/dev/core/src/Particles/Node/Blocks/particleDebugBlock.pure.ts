@@ -7,6 +7,7 @@ import { NodeParticleBlock } from "../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Observable } from "core/Misc/observable";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Defines a block used to debug values going through it
@@ -137,4 +138,15 @@ export class ParticleDebugBlock extends NodeParticleBlock {
         this.onDataCollectedObservable.clear();
         super.dispose();
     }
+}
+
+
+let _registered = false;
+export function registerParticleDebugBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleDebugBlock", ParticleDebugBlock);
 }

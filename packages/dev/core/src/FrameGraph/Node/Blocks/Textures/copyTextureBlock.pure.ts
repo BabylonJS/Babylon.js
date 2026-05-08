@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type IViewportLike } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type IViewportLike } from "core/index.pure";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { FrameGraphCopyToTextureTask } from "../../../Tasks/Texture/copyToTextureTask";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to copy a texture
@@ -160,4 +161,15 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         this.lodLevel = serializationObject.lodLevel ?? 0;
         this._setViewport();
     }
+}
+
+
+let _registered = false;
+export function registerCopyTextureBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphCopyTextureBlock", NodeRenderGraphCopyTextureBlock);
 }

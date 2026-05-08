@@ -3,7 +3,8 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to clamp a float
@@ -126,4 +127,15 @@ export class GeometryClampBlock extends NodeGeometryBlock {
         this.minimum = serializationObject.minimum;
         this.maximum = serializationObject.maximum;
     }
+}
+
+
+let _registered = false;
+export function registerGeometryClampBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryClampBlock", GeometryClampBlock);
 }

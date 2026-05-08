@@ -2,11 +2,12 @@
 
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { type FlowGraphContext } from "../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes";
-import { TmpVectors, Vector3 } from "../../../Maths/math.vector";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes.pure";
+import { TmpVectors, Vector3 } from "../../../Maths/math.vector.pure";
 import { type TransformNode } from "../../../Meshes/transformNode";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * This blocks transforms a vector from one coordinate system to another.
@@ -70,4 +71,15 @@ export class FlowGraphTransformCoordinatesSystemBlock extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.TransformCoordinatesSystem;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphTransformCoordinatesSystemBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.TransformCoordinatesSystem, FlowGraphTransformCoordinatesSystemBlock);
 }

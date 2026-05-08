@@ -2,6 +2,7 @@
 
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { BaseMathBlock } from "./baseMathBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to add 2 vectors
@@ -32,4 +33,15 @@ export class AddBlock extends BaseMathBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerAddBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AddBlock", AddBlock);
 }

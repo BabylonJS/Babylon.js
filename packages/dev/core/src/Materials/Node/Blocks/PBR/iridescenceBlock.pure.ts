@@ -5,13 +5,14 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { InputBlock } from "../Input/inputBlock";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { type NodeMaterialDefines } from "../../nodeMaterial";
-import { type Scene } from "../../../../scene";
+import { type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type Scene } from "../../../../scene.pure";
 import { type Nullable } from "../../../../types";
 import { PBRIridescenceConfiguration } from "../../../../Materials/PBR/pbrIridescenceConfiguration";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the iridescence module of the PBR material
@@ -177,4 +178,15 @@ export class IridescenceBlock extends NodeMaterialBlock {
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
     }
+}
+
+
+let _registered = false;
+export function registerIridescenceBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.IridescenceBlock", IridescenceBlock);
 }

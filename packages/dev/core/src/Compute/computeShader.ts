@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import computeShader.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./computeShader.pure";
 
-import { RegisterClass } from "../Misc/typeStore";
-import { ComputeShader } from "./computeShader.pure";
-
-RegisterClass("BABYLON.ComputeShader", ComputeShader);
+import { registerComputeShader } from "./computeShader.pure";
+registerComputeShader();

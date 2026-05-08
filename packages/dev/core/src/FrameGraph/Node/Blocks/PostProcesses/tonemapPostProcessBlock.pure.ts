@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphTonemapTask } from "../../../Tasks/PostProcesses/tonemapTask";
 import { ThinTonemapPostProcess, TonemappingOperator } from "../../../../PostProcesses/thinTonemapPostProcess";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the tonemap post process
@@ -101,4 +102,15 @@ export class NodeRenderGraphTonemapPostProcessBlock extends NodeRenderGraphBaseW
         super._deserialize(serializationObject);
         this.exposureAdjustment = serializationObject.exposureAdjustment;
     }
+}
+
+
+let _registered = false;
+export function registerTonemapPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphTonemapPostProcessBlock", NodeRenderGraphTonemapPostProcessBlock);
 }

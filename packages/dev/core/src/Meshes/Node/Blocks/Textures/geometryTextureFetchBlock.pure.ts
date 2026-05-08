@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { Vector4, type Vector2 } from "core/Maths/math.vector";
+import { Vector4, type Vector2 } from "core/Maths/math.vector.pure";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { type INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to fetch a color from texture data
@@ -227,4 +228,15 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
             this.interpolation = serializationObject.interpolation;
         }
     }
+}
+
+
+let _registered = false;
+export function registerGeometryTextureFetchBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryTextureFetchBlock", GeometryTextureFetchBlock);
 }

@@ -3,6 +3,7 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to generate a null geometry data
@@ -44,4 +45,15 @@ export class NullBlock extends NodeGeometryBlock {
         this.geometry._storedValue = null;
         this.vector._storedValue = null;
     }
+}
+
+
+let _registered = false;
+export function registerNullBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NullBlock", NullBlock);
 }

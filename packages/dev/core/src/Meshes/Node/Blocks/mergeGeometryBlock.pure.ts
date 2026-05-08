@@ -6,6 +6,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { type VertexData } from "../../../Meshes/mesh.vertexData";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to merge several geometries
@@ -163,4 +164,15 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
     }
+}
+
+
+let _registered = false;
+export function registerMergeGeometryBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MergeGeometryBlock", MergeGeometryBlock);
 }

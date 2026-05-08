@@ -5,16 +5,17 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Effect } from "../../../effect";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
-import { InputBlock } from "../Input/inputBlock";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
 
 import { type EffectFallbacks } from "../../../effectFallbacks";
 import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -234,4 +235,15 @@ export class BonesBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerBonesBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BonesBlock", BonesBlock);
 }

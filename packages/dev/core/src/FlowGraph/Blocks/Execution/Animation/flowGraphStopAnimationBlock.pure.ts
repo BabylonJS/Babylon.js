@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber } from "../../../flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber } from "../../../flowGraphRichTypes.pure";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type AnimationGroup } from "core/Animations/animationGroup.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
 import { FlowGraphAsyncExecutionBlock } from "core/FlowGraph/flowGraphAsyncExecutionBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * Block that stops a running animation
@@ -128,4 +129,15 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // no-op for now. Probably no need to log anything here.
         }
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphStopAnimationBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.StopAnimation, FlowGraphStopAnimationBlock);
 }

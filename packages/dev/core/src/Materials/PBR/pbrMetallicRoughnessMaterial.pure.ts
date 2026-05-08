@@ -2,11 +2,12 @@
 
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { type Scene } from "../../scene";
-import { type Color3 } from "../../Maths/math.color";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Scene } from "../../scene.pure";
+import { type Color3 } from "../../Maths/math.color.pure";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { type Nullable } from "../../types";
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * The PBR material of BJS following the metal roughness convention.
@@ -158,4 +159,15 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         }
         return material;
     }
+}
+
+
+let _registered = false;
+export function registerPbrMetallicRoughnessMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PBRMetallicRoughnessMaterial", PBRMetallicRoughnessMaterial);
 }

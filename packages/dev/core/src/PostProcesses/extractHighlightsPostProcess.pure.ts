@@ -3,12 +3,13 @@
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
 import { type Effect } from "../Materials/effect";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
 import { ThinExtractHighlightsPostProcess } from "./thinExtractHighlightsPostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -86,4 +87,15 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             }
         });
     }
+}
+
+
+let _registered = false;
+export function registerExtractHighlightsPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ExtractHighlightsPostProcess", ExtractHighlightsPostProcess);
 }

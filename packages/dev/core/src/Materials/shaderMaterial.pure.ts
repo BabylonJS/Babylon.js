@@ -2,14 +2,14 @@
 
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Nullable } from "../types";
-import { Scene } from "../scene";
-import { Matrix, Quaternion } from "../Maths/math.vector";
-import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { type Mesh } from "../Meshes/mesh";
+import { Scene } from "../scene.pure";
+import { Matrix, Quaternion } from "../Maths/math.vector.pure";
+import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
+import { type Mesh } from "../Meshes/mesh.pure";
 import { type SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type Effect, type IEffectCreationOptions, type IShaderPath } from "./effect";
 import { EffectFallbacks } from "./effectFallbacks";
 import { WebRequest } from "../Misc/webRequest";
@@ -21,7 +21,7 @@ import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import { type WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 
 import { type ExternalTexture } from "./Textures/externalTexture";
 import {
@@ -37,6 +37,7 @@ import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Lik
 import { type InternalTexture } from "./Textures/internalTexture";
 
 import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
+import { RegisterClass } from "../Misc/typeStore";
 
 const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1939,4 +1940,15 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a promise that will resolve to the new ShaderMaterial
      */
     public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
+}
+
+
+let _registered = false;
+export function registerShaderMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);
 }

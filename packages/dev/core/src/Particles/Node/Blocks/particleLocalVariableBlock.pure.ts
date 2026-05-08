@@ -5,6 +5,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 export enum ParticleLocalVariableBlockScope {
     Particle = 0,
@@ -136,4 +137,15 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
         this._storage.clear();
         super.dispose();
     }
+}
+
+
+let _registered = false;
+export function registerParticleLocalVariableBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleLocalVariableBlock", ParticleLocalVariableBlock);
 }

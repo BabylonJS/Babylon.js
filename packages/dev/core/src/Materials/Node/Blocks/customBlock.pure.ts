@@ -4,11 +4,12 @@ import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { type Scene } from "../../../scene";
+import { type Scene } from "../../../scene.pure";
 import { type Nullable } from "../../../types";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
-import { ImageSourceBlock } from "./Dual/imageSourceBlock";
+import { ImageSourceBlock } from "./Dual/imageSourceBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Custom block created from user-defined json
@@ -209,4 +210,15 @@ export class CustomBlock extends NodeMaterialBlock {
 
         return null;
     }
+}
+
+
+let _registered = false;
+export function registerCustomBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CustomBlock", CustomBlock);
 }

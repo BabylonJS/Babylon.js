@@ -4,13 +4,14 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "../../flowGraphRichTypes";
-import { type Vector3 } from "../../../Maths/math.vector";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "../../flowGraphRichTypes.pure";
+import { type Vector3 } from "../../../Maths/math.vector.pure";
 import { type PhysicsBody } from "../../../Physics/v2/physicsBody";
 import { type IPhysicsCollisionEvent } from "../../../Physics/v2/IPhysicsEnginePlugin";
 import { type Observer } from "../../../Misc/observable";
 import { type Nullable } from "../../../types";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Configuration for the physics collision event block.
@@ -142,4 +143,15 @@ export class FlowGraphPhysicsCollisionEventBlock extends FlowGraphEventBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.PhysicsCollisionEvent;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphPhysicsCollisionEventBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PhysicsCollisionEvent, FlowGraphPhysicsCollisionEventBlock);
 }

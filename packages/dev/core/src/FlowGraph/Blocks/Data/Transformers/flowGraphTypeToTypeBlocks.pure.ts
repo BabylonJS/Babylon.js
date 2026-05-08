@@ -2,9 +2,10 @@
 
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * A block that converts a boolean to a float.
@@ -86,4 +87,20 @@ export class FlowGraphFloatToInt extends FlowGraphUnaryOperationBlock<number, Fl
             config
         );
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphTypeToTypeBlocks(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.BooleanToFloat, FlowGraphBooleanToFloat);
+    RegisterClass(FlowGraphBlockNames.BooleanToInt, FlowGraphBooleanToInt);
+    RegisterClass(FlowGraphBlockNames.FloatToBoolean, FlowGraphFloatToBoolean);
+    RegisterClass(FlowGraphBlockNames.IntToBoolean, FlowGraphIntToBoolean);
+    RegisterClass(FlowGraphBlockNames.IntToFloat, FlowGraphIntToFloat);
+    RegisterClass(FlowGraphBlockNames.FloatToInt, FlowGraphFloatToInt);
 }

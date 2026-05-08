@@ -5,20 +5,21 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { InputBlock } from "../Input/inputBlock";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
-import { type ReflectionBlock } from "./reflectionBlock";
-import { type Scene } from "../../../../scene";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type ReflectionBlock } from "./reflectionBlock.pure";
+import { type Scene } from "../../../../scene.pure";
 import { type Nullable } from "../../../../types";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Effect } from "../../../effect";
-import { type PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
-import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { type PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock.pure";
+import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock.pure";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { TBNBlock } from "../Fragment/TBNBlock";
+import { TBNBlock } from "../Fragment/TBNBlock.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -454,4 +455,15 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         this.remapF0OnInterfaceChange = serializationObject.remapF0OnInterfaceChange ?? true;
     }
+}
+
+
+let _registered = false;
+export function registerClearCoatBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ClearCoatBlock", ClearCoatBlock);
 }

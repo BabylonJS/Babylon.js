@@ -6,10 +6,11 @@ import { type Particle } from "core/Particles/particle";
 import { type IShapeBlock } from "./IShapeBlock";
 
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { _CreateLocalPositionData } from "./emitters.functions";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to provide a flow of particles emitted from a point.
@@ -104,4 +105,15 @@ export class PointShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
         this.output._storedValue = system;
     }
+}
+
+
+let _registered = false;
+export function registerPointShapeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PointShapeBlock", PointShapeBlock);
 }

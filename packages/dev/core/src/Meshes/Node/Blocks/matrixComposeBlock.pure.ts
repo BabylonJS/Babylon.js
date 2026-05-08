@@ -4,7 +4,8 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import { type Matrix } from "core/Maths/math.vector";
+import { type Matrix } from "core/Maths/math.vector.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to compose two matrices
@@ -67,4 +68,15 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
             return matrix0.multiply(matrix1);
         };
     }
+}
+
+
+let _registered = false;
+export function registerMatrixComposeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MatrixComposeBlock", MatrixComposeBlock);
 }

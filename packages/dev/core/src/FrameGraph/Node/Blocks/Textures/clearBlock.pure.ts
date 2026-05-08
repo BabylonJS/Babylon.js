@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint } from "core/index";
+import { type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint } from "core/index.pure";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
-import { Color4 } from "../../../../Maths/math.color";
+import { Color4 } from "../../../../Maths/math.color.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphClearTextureTask } from "../../../Tasks/Texture/clearTextureTask";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to clear a texture
@@ -171,4 +172,15 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         this.clearDepth = serializationObject.clearDepth;
         this.clearStencil = serializationObject.clearStencil;
     }
+}
+
+
+let _registered = false;
+export function registerClearBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphClearBlock", NodeRenderGraphClearBlock);
 }

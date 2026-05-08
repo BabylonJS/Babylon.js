@@ -3,12 +3,13 @@
 import { type AssetType, type FlowGraphAssetType, GetFlowGraphAssetWithType } from "core/FlowGraph/flowGraphAssetsContext";
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type Nullable } from "core/types";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { type FlowGraphNumber, getNumericValue } from "core/FlowGraph/utils";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Configuration for the get asset block.
@@ -80,4 +81,15 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
     public override getClassName(): string {
         return FlowGraphBlockNames.GetAsset;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphGetAssetBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.GetAsset, FlowGraphGetAssetBlock);
 }

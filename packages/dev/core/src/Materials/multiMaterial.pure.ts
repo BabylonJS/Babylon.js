@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Scene } from "../scene";
-import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene.pure";
+import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type SubMesh } from "../Meshes/subMesh";
-import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * A multi-material is used to apply different materials to different parts of the same object without the need of
@@ -270,4 +271,15 @@ export class MultiMaterial extends Material {
 
         return multiMaterial;
     }
+}
+
+
+let _registered = false;
+export function registerMultiMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MultiMaterial", MultiMaterial);
 }

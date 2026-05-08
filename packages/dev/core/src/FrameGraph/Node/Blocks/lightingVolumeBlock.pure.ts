@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { type FrameGraph, type FrameGraphShadowGeneratorTask, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint, type Scene } from "core/index";
+import { type FrameGraph, type FrameGraphShadowGeneratorTask, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint, type Scene } from "core/index.pure";
 import { FrameGraphLightingVolumeTask } from "core/FrameGraph/Tasks/Misc/lightingVolumeTask";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block that implements the lighting volume
@@ -106,4 +107,15 @@ export class NodeRenderGraphLightingVolumeBlock extends NodeRenderGraphBlock {
         this.tesselation = serializationObject.tesselation;
         this.frequency = serializationObject.frequency;
     }
+}
+
+
+let _registered = false;
+export function registerLightingVolumeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphLightingVolumeBlock", NodeRenderGraphLightingVolumeBlock);
 }

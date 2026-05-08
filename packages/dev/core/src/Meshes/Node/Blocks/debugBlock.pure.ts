@@ -5,6 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Defines a block used to debug values going through it
@@ -101,4 +102,15 @@ export class DebugBlock extends NodeGeometryBlock {
             this.output._storedValue = func(state);
         }
     }
+}
+
+
+let _registered = false;
+export function registerMeshesNodeBlocksDebugBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.DebugBlock", DebugBlock);
 }

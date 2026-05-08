@@ -6,8 +6,9 @@ import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import { type Scene } from "../../../scene";
+import { type Scene } from "../../../scene.pure";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * block used to Generate Fractal Brownian Motion Clouds
  */
@@ -237,4 +238,15 @@ export class CloudBlock extends NodeMaterialBlock {
 
         this.octaves = serializationObject.octaves;
     }
+}
+
+
+let _registered = false;
+export function registerCloudBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CloudBlock", CloudBlock);
 }

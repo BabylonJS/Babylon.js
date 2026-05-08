@@ -4,8 +4,9 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type InputBlock } from "../Input/inputBlock";
-import { type NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
+import { type InputBlock } from "../Input/inputBlock.pure";
+import { type NodeMaterialTeleportOutBlock } from "./teleportOutBlock.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to teleport a value to an endpoint
@@ -164,4 +165,15 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
 
         this._endpoints = [];
     }
+}
+
+
+let _registered = false;
+export function registerMaterialsNodeBlocksTeleportTeleportInBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeMaterialTeleportInBlock", NodeMaterialTeleportInBlock);
 }

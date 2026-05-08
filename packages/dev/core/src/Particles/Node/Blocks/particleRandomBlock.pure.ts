@@ -5,10 +5,11 @@ import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodePartic
 import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
-import { Color4 } from "core/Maths/math.color";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Locks supported by the random block
@@ -209,4 +210,15 @@ export class ParticleRandomBlock extends NodeParticleBlock {
 
         this.lockMode = serializationObject.lockMode;
     }
+}
+
+
+let _registered = false;
+export function registerParticleRandomBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleRandomBlock", ParticleRandomBlock);
 }

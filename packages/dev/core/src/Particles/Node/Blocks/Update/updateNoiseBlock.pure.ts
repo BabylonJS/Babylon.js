@@ -2,17 +2,18 @@
 
 import { type Nullable } from "core/types";
 import { type ISize } from "core/Maths/math.size";
-import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture.pure";
 import { type Particle } from "core/Particles/particle";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import { type ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import { type ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock.pure";
 
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Block used to update particle position based on a noise texture
@@ -187,4 +188,15 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
 
         this.output._storedValue = system;
     }
+}
+
+
+let _registered = false;
+export function registerUpdateNoiseBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.UpdateNoiseBlock", UpdateNoiseBlock);
 }

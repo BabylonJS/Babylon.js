@@ -5,9 +5,10 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { Vector2 } from "../../../Maths/math.vector";
-import { type Scene } from "../../../scene";
+import { Vector2 } from "../../../Maths/math.vector.pure";
+import { type Scene } from "../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to remap a float from a range to a new one
  */
@@ -143,4 +144,15 @@ export class RemapBlock extends NodeMaterialBlock {
         this.sourceRange = Vector2.FromArray(serializationObject.sourceRange);
         this.targetRange = Vector2.FromArray(serializationObject.targetRange);
     }
+}
+
+
+let _registered = false;
+export function registerRemapBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.RemapBlock", RemapBlock);
 }

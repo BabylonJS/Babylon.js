@@ -3,6 +3,7 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Defines a block used to move a value from a range to another
@@ -105,4 +106,15 @@ export class MapRangeBlock extends NodeGeometryBlock {
             return result;
         };
     }
+}
+
+
+let _registered = false;
+export function registerMapRangeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MapRangeBlock", MapRangeBlock);
 }

@@ -5,13 +5,14 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type Scene } from "../../../../scene";
-import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial";
+import { type Scene } from "../../../../scene.pure";
+import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type Effect } from "../../../effect";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { BindLogDepth } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Color spaces supported by the fragment output block
@@ -314,4 +315,15 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
     }
+}
+
+
+let _registered = false;
+export function registerFragmentOutputBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.FragmentOutputBlock", FragmentOutputBlock);
 }

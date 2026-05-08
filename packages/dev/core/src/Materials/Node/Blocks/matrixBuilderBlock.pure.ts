@@ -5,9 +5,10 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { InputBlock } from "./Input/inputBlock";
-import { Vector4 } from "../../../Maths/math.vector";
+import { InputBlock } from "./Input/inputBlock.pure";
+import { Vector4 } from "../../../Maths/math.vector.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to build a matrix from 4 Vector4
@@ -114,4 +115,15 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerMatrixBuilderBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MatrixBuilder", MatrixBuilderBlock);
 }

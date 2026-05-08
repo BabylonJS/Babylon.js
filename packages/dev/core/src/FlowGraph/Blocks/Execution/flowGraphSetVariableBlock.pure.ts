@@ -3,9 +3,10 @@
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
-import { type FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "../../flowGraphSignalConnection.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * The configuration of the FlowGraphGetVariableBlock.
@@ -91,4 +92,15 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
         super.serialize(serializationObject);
         serializationObject.config.variable = this.config?.variable;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphSetVariableBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.SetVariable, FlowGraphSetVariableBlock);
 }

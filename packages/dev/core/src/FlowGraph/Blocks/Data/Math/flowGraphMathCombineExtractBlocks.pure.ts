@@ -13,10 +13,11 @@ import {
     type RichType,
 } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { type Nullable } from "core/types";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
+import { RegisterClass } from "core/Misc/typeStore";
 
 abstract class FlowGraphMathCombineBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
     /**
@@ -420,4 +421,26 @@ export class FlowGraphExtractMatrix3DBlock extends FlowGraphMathExtractBlock<Flo
     public override getClassName(): string {
         return FlowGraphBlockNames.ExtractMatrix3D;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphMathCombineExtractBlocks(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.CombineVector2, FlowGraphCombineVector2Block);
+    RegisterClass(FlowGraphBlockNames.CombineVector3, FlowGraphCombineVector3Block);
+    RegisterClass(FlowGraphBlockNames.CombineVector4, FlowGraphCombineVector4Block);
+    RegisterClass(FlowGraphBlockNames.CombineMatrix, FlowGraphCombineMatrixBlock);
+    RegisterClass(FlowGraphBlockNames.CombineMatrix2D, FlowGraphCombineMatrix2DBlock);
+    RegisterClass(FlowGraphBlockNames.CombineMatrix3D, FlowGraphCombineMatrix3DBlock);
+    RegisterClass(FlowGraphBlockNames.ExtractVector2, FlowGraphExtractVector2Block);
+    RegisterClass(FlowGraphBlockNames.ExtractVector3, FlowGraphExtractVector3Block);
+    RegisterClass(FlowGraphBlockNames.ExtractVector4, FlowGraphExtractVector4Block);
+    RegisterClass(FlowGraphBlockNames.ExtractMatrix, FlowGraphExtractMatrixBlock);
+    RegisterClass(FlowGraphBlockNames.ExtractMatrix2D, FlowGraphExtractMatrix2DBlock);
+    RegisterClass(FlowGraphBlockNames.ExtractMatrix3D, FlowGraphExtractMatrix3DBlock);
 }

@@ -7,8 +7,9 @@ import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { type INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import { type VertexData } from "../../../../Meshes/mesh.vertexData";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { type Nullable } from "core/types";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Conditions supported by the condition block
@@ -240,4 +241,15 @@ export class AggregatorBlock extends NodeGeometryBlock implements INodeGeometryE
             this.aggregation = serializationObject.aggregation;
         }
     }
+}
+
+
+let _registered = false;
+export function registerAggregatorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AggregatorBlock", AggregatorBlock);
 }

@@ -1,12 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import flowGraphGetSoundVolumeBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./flowGraphGetSoundVolumeBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { FlowGraphGetSoundVolumeBlock } from "./flowGraphGetSoundVolumeBlock.pure";
-import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-
-RegisterClass(FlowGraphBlockNames.AudioGetVolume, FlowGraphGetSoundVolumeBlock);
+import { registerFlowGraphGetSoundVolumeBlock } from "./flowGraphGetSoundVolumeBlock.pure";
+registerFlowGraphGetSoundVolumeBlock();

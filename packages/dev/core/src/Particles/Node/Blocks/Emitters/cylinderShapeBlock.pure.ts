@@ -8,8 +8,9 @@ import { type IShapeBlock } from "./IShapeBlock";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { _CreateLocalPositionData } from "./emitters.functions";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to provide a flow of particles emitted from a cylinder shape.
@@ -181,4 +182,15 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
 
         this.output._storedValue = system;
     }
+}
+
+
+let _registered = false;
+export function registerCylinderShapeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CylinderShapeBlock", CylinderShapeBlock);
 }

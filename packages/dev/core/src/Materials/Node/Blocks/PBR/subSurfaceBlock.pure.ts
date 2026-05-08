@@ -5,15 +5,16 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { InputBlock } from "../Input/inputBlock";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { type NodeMaterialDefines } from "../../nodeMaterial";
-import { type ReflectionBlock } from "./reflectionBlock";
+import { type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type ReflectionBlock } from "./reflectionBlock.pure";
 import { type Nullable } from "../../../../types";
-import { RefractionBlock } from "./refractionBlock";
+import { RefractionBlock } from "./refractionBlock.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { PBRSubSurfaceConfiguration } from "core/Materials/PBR/pbrSubSurfaceConfiguration";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the sub surface module of the PBR material
@@ -308,4 +309,15 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerSubSurfaceBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SubSurfaceBlock", SubSurfaceBlock);
 }

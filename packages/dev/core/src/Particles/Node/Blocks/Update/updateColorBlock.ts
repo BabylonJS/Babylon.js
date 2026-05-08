@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import updateColorBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./updateColorBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { UpdateColorBlock } from "./updateColorBlock.pure";
-
-RegisterClass("BABYLON.UpdateColorBlock", UpdateColorBlock);
+import { registerUpdateColorBlock } from "./updateColorBlock.pure";
+registerUpdateColorBlock();

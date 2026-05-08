@@ -4,11 +4,12 @@ import { type Observer } from "../../../Misc/observable";
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type Nullable } from "../../../types";
-import { Tools } from "../../../Misc/tools";
-import { type RichType, getRichTypeByFlowGraphType } from "../../flowGraphRichTypes";
+import { Tools } from "../../../Misc/tools.pure";
+import { type RichType, getRichTypeByFlowGraphType } from "../../flowGraphRichTypes.pure";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
  */
@@ -99,4 +100,15 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.ReceiveCustomEvent;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphReceiveCustomEventBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.ReceiveCustomEvent, FlowGraphReceiveCustomEventBlock);
 }

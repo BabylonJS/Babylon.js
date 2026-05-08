@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import normalizeVectorBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./normalizeVectorBlock.pure";
 
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NormalizeVectorBlock } from "./normalizeVectorBlock.pure";
-
-RegisterClass("BABYLON.NormalizeVectorBlock", NormalizeVectorBlock);
+import { registerNormalizeVectorBlock } from "./normalizeVectorBlock.pure";
+registerNormalizeVectorBlock();

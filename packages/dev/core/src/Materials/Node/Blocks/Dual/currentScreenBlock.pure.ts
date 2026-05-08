@@ -5,14 +5,15 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterialDefines } from "../../nodeMaterial";
-import { type BaseTexture } from "../../../Textures/baseTexture";
+import { type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type Nullable } from "../../../../types";
-import { Texture } from "../../../Textures/texture";
-import { type Scene } from "../../../../scene";
-import { type InputBlock } from "../Input/inputBlock";
+import { Texture } from "../../../Textures/texture.pure";
+import { type Scene } from "../../../../scene.pure";
+import { type InputBlock } from "../Input/inputBlock.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Base block used as input for post process
@@ -348,4 +349,15 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
+}
+
+
+let _registered = false;
+export function registerCurrentScreenBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CurrentScreenBlock", CurrentScreenBlock);
 }

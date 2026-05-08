@@ -5,11 +5,12 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { type Mesh } from "core/Meshes/mesh";
+import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
+import { type Mesh } from "core/Meshes/mesh.pure";
 import { type Effect } from "core/Materials/effect";
-import { type NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterial } from "../../nodeMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used for Reading components of the Gaussian Splatting
@@ -132,4 +133,15 @@ export class SplatReaderBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerSplatReaderBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SplatReaderBlock", SplatReaderBlock);
 }

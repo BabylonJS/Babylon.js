@@ -3,17 +3,18 @@
 import { type FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { FlowGraphPathConverterComponent } from "core/FlowGraph/flowGraphPathConverterComponent";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import { type Animation } from "core/Animations/animation";
+import { type Animation } from "core/Animations/animation.pure";
 import { type EasingFunction } from "core/Animations/easing";
-import { Vector3, Vector4 } from "core/Maths/math.vector";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Vector3, Vector4 } from "core/Maths/math.vector.pure";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Configuration for the JSON pointer parser block.
@@ -192,4 +193,15 @@ function FromColor(value: Color3 | Color4): Vector3 | Vector4 {
         return new Vector4(value.r, value.g, value.b, value.a);
     }
     throw new Error("Invalid color type");
+}
+
+
+let _registered = false;
+export function registerFlowGraphJsonPointerParserBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.JsonPointerParser, FlowGraphJsonPointerParserBlock);
 }

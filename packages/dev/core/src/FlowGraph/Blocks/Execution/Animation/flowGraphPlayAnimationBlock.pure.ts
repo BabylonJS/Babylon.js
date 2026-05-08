@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
-import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes.pure";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { AnimationGroup } from "core/Animations/animationGroup";
-import { type Animation } from "core/Animations/animation";
+import { AnimationGroup } from "core/Animations/animationGroup.pure";
+import { type Animation } from "core/Animations/animation.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * @experimental
@@ -237,4 +238,15 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.PlayAnimation;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphPlayAnimationBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PlayAnimation, FlowGraphPlayAnimationBlock);
 }

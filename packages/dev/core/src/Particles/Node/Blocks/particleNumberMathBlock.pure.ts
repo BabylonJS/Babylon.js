@@ -7,6 +7,7 @@ import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Operations supported by the Number Math block
@@ -190,4 +191,15 @@ export class ParticleNumberMathBlock extends NodeParticleBlock {
 
         this.operation = serializationObject.operation;
     }
+}
+
+
+let _registered = false;
+export function registerParticleNumberMathBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleNumberMathBlock", ParticleNumberMathBlock);
 }

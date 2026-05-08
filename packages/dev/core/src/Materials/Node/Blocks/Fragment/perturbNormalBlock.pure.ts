@@ -5,19 +5,20 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
-import { type Mesh } from "../../../../Meshes/mesh";
-import { InputBlock } from "../Input/inputBlock";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { type Effect } from "../../../effect";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type TextureBlock } from "../Dual/textureBlock";
+import { type TextureBlock } from "../Dual/textureBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { TBNBlock } from "./TBNBlock";
+import { TBNBlock } from "./TBNBlock.pure";
 
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { Constants } from "../../../../Engines/constants";
 import { type Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to perturb normals based on a normal map
@@ -498,4 +499,15 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.parallaxScale._isInactive = this.useParallaxOcclusion;
         this.parallaxHeight._isInactive = this.useParallaxOcclusion;
     }
+}
+
+
+let _registered = false;
+export function registerPerturbNormalBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PerturbNormalBlock", PerturbNormalBlock);
 }

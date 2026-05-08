@@ -1,8 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type NodeRenderGraphBuildState } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type NodeRenderGraphBuildState } from "core/index.pure";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used as a pass through
@@ -53,4 +54,15 @@ export class NodeRenderGraphElbowBlock extends NodeRenderGraphBlock {
 
         this._propagateInputValueToOutput(input, output);
     }
+}
+
+
+let _registered = false;
+export function registerFrameGraphNodeBlocksElbowBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphElbowBlock", NodeRenderGraphElbowBlock);
 }

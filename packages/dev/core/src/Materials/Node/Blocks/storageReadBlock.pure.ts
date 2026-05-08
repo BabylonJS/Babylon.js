@@ -5,8 +5,9 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { LoopBlock } from "./loopBlock";
+import { LoopBlock } from "./loopBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to read from a variable within a loop
  */
@@ -68,4 +69,15 @@ export class StorageReadBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerStorageReadBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.StorageReadBlock", StorageReadBlock);
 }

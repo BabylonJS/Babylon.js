@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphFilterTask } from "core/FrameGraph/Tasks/PostProcesses/filterTask";
 import { ThinFilterPostProcess } from "core/PostProcesses/thinFilterPostProcess";
-import { Matrix } from "../../../../Maths/math.vector";
+import { Matrix } from "../../../../Maths/math.vector.pure";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the kernel filter post process
@@ -68,4 +69,15 @@ export class NodeRenderGraphFilterPostProcessBlock extends NodeRenderGraphBaseWi
         super._deserialize(serializationObject);
         this.kernelMatrix = Matrix.FromArray(serializationObject.kernelMatrix);
     }
+}
+
+
+let _registered = false;
+export function registerFilterPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphFilterPostProcessBlock", NodeRenderGraphFilterPostProcessBlock);
 }

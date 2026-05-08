@@ -3,10 +3,11 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { VertexData } from "../../../../Meshes/mesh.vertexData";
 import { type Nullable } from "../../../../types";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to generate a user defined mesh geometry data
@@ -135,4 +136,15 @@ export class MeshBlock extends NodeGeometryBlock {
         this.serializedCachedData = !!serializationObject.serializedCachedData;
         this.reverseWindingOrder = serializationObject.reverseWindingOrder;
     }
+}
+
+
+let _registered = false;
+export function registerMeshBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MeshBlock", MeshBlock);
 }

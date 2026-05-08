@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { RichTypeBoolean } from "../../../flowGraphRichTypes";
+import { RichTypeBoolean } from "../../../flowGraphRichTypes.pure";
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * A block that evaluates a condition and activates one of two branches.
@@ -48,4 +49,15 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.Branch;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphBranchBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Branch, FlowGraphBranchBlock);
 }

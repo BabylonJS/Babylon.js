@@ -5,8 +5,9 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { InputBlock } from "../Input/inputBlock";
-import { Vector2 } from "../../../../Maths/math.vector";
+import { InputBlock } from "../Input/inputBlock.pure";
+import { Vector2 } from "../../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to generate a twirl
@@ -142,4 +143,15 @@ export class TwirlBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerTwirlBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.TwirlBlock", TwirlBlock);
 }

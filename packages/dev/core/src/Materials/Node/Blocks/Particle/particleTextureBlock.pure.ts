@@ -5,12 +5,13 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial";
-import { InputBlock } from "../Input/inputBlock";
-import { type BaseTexture } from "../../../Textures/baseTexture";
+import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type Nullable } from "../../../../types";
-import { Texture } from "../../../Textures/texture";
-import { type Scene } from "../../../../scene";
+import { Texture } from "../../../Textures/texture.pure";
+import { type Scene } from "../../../../scene.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Base block used for the particle texture
@@ -239,4 +240,15 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
+}
+
+
+let _registered = false;
+export function registerParticleTextureBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleTextureBlock", ParticleTextureBlock);
 }

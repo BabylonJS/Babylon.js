@@ -7,6 +7,7 @@ import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBui
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Operations supported by the FloatToInt block
@@ -133,4 +134,15 @@ export class ParticleFloatToIntBlock extends NodeParticleBlock {
 
         this.operation = serializationObject.operation;
     }
+}
+
+
+let _registered = false;
+export function registerParticleFloatToIntBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleFloatToIntBlock", ParticleFloatToIntBlock);
 }

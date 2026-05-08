@@ -6,10 +6,11 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { VertexBuffer } from "core/Meshes/buffer";
-import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used for the Gaussian Splatting
@@ -185,4 +186,15 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}.xy, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerGaussianSplattingBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GaussianSplattingBlock", GaussianSplattingBlock);
 }

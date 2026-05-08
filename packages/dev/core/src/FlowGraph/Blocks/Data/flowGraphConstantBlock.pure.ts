@@ -2,11 +2,12 @@
 
 import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { getRichTypeFromValue } from "core/FlowGraph/flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { getRichTypeFromValue } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Configuration for a constant block.
  */
@@ -60,4 +61,15 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
         super.serialize(serializationObject);
         valueSerializeFunction("value", this.config.value, serializationObject.config);
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphConstantBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Constant, FlowGraphConstantBlock);
 }

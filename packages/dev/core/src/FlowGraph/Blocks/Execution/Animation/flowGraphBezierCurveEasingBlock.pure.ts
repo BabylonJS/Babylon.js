@@ -3,10 +3,11 @@
 import { type EasingFunction, BezierCurveEase } from "core/Animations/easing";
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector2 } from "core/FlowGraph/flowGraphRichTypes";
-import { type Vector2 } from "core/Maths/math.vector";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber, RichTypeVector2 } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { type Vector2 } from "core/Maths/math.vector.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * An easing block that generates a BezierCurveEase easingFunction object based on the data provided.
@@ -74,4 +75,15 @@ export class FlowGraphBezierCurveEasingBlock extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.BezierCurveEasing;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphBezierCurveEasingBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.BezierCurveEasing, FlowGraphBezierCurveEasingBlock);
 }

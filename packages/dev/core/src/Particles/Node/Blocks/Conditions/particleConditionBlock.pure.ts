@@ -6,6 +6,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Conditions supported by the condition block
@@ -195,4 +196,15 @@ export class ParticleConditionBlock extends NodeParticleBlock {
             this.epsilon = serializationObject.epsilon;
         }
     }
+}
+
+
+let _registered = false;
+export function registerParticleConditionBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleConditionBlock", ParticleConditionBlock);
 }

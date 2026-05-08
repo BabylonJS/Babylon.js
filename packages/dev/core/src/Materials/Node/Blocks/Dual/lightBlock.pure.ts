@@ -5,19 +5,20 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { type Effect } from "../../../effect";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import { InputBlock } from "../Input/inputBlock";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { type Light } from "../../../../Lights/light";
 import { type Nullable } from "../../../../types";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to add light in the fragment shader
@@ -557,4 +558,15 @@ export class LightBlock extends NodeMaterialBlock {
 
         this._setTarget();
     }
+}
+
+
+let _registered = false;
+export function registerLightBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.LightBlock", LightBlock);
 }

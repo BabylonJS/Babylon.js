@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
-import { RichTypeAny } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { RichTypeAny } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type FlowGraphNumber, getNumericValue, isNumeric } from "core/FlowGraph/utils";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Configuration for a switch block.
  */
@@ -114,4 +115,15 @@ export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphEx
         super.serialize(serializationObject);
         serializationObject.cases = this.config.cases;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphSwitchBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Switch, FlowGraphSwitchBlock);
 }

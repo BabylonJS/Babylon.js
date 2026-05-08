@@ -14,6 +14,7 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphSSRRenderingPipelineTask } from "../../../Tasks/PostProcesses/ssrRenderingPipelineTask";
 import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the SSR post process
@@ -552,4 +553,15 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this.inputTextureColorIsInGammaSpace = serializationObject.inputTextureColorIsInGammaSpace;
         this.generateOutputInGammaSpace = serializationObject.generateOutputInGammaSpace;
     }
+}
+
+
+let _registered = false;
+export function registerSsrPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphSSRPostProcessBlock", NodeRenderGraphSSRPostProcessBlock);
 }

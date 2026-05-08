@@ -10,12 +10,13 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { RandomRange } from "../../../../Maths/math.scalar.functions";
 import { RawTexture } from "../../../Textures/rawTexture";
 import { Constants } from "../../../../Engines/constants";
-import { Texture } from "../../../Textures/texture";
+import { Texture } from "../../../Textures/texture.pure";
 import { type Effect } from "../../../effect";
 import { type AbstractEngine } from "../../../../Engines/abstractEngine";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { ImageSourceBlock } from "../Dual/imageSourceBlock";
-import { type DepthSourceBlock } from "../Dual/depthSourceBlock";
+import { ImageSourceBlock } from "../Dual/imageSourceBlock.pure";
+import { type DepthSourceBlock } from "../Dual/depthSourceBlock.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to evaluate screen spaceambient occlusion in a shader
@@ -304,4 +305,15 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         }
         super.dispose();
     }
+}
+
+
+let _registered = false;
+export function registerAmbientOcclusionBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AmbientOcclusionBlock", AmbientOcclusionBlock);
 }

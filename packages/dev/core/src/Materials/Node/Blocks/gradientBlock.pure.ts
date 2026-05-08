@@ -5,9 +5,10 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { Color3 } from "../../../Maths/math.color";
-import { type Scene } from "../../../scene";
+import { Color3 } from "../../../Maths/math.color.pure";
+import { type Scene } from "../../../scene.pure";
 import { Observable } from "../../../Misc/observable";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Class used to store a color step for the GradientBlock
@@ -204,4 +205,15 @@ export class GradientBlock extends NodeMaterialBlock {
 
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerGradientBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GradientBlock", GradientBlock);
 }

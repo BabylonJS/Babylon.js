@@ -1,12 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import flowGraphSetLinearVelocityBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./flowGraphSetLinearVelocityBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { FlowGraphSetLinearVelocityBlock } from "./flowGraphSetLinearVelocityBlock.pure";
-import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-
-RegisterClass(FlowGraphBlockNames.PhysicsSetLinearVelocity, FlowGraphSetLinearVelocityBlock);
+import { registerFlowGraphSetLinearVelocityBlock } from "./flowGraphSetLinearVelocityBlock.pure";
+registerFlowGraphSetLinearVelocityBlock();

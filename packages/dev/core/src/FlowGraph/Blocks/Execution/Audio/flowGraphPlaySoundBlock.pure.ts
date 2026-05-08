@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
-import { RichTypeAny, RichTypeBoolean, RichTypeNumber } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { RichTypeAny, RichTypeBoolean, RichTypeNumber } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { type AbstractSound } from "../../../../AudioV2/abstractAudio/abstractSound";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * @experimental
@@ -69,4 +70,15 @@ export class FlowGraphPlaySoundBlock extends FlowGraphExecutionBlockWithOutSigna
     public override getClassName(): string {
         return FlowGraphBlockNames.AudioPlaySound;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphPlaySoundBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.AudioPlaySound, FlowGraphPlaySoundBlock);
 }

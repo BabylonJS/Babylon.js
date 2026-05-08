@@ -4,6 +4,7 @@ import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to define a gradient entry for a gradient block
  */
@@ -88,4 +89,15 @@ export class ParticleGradientValueBlock extends NodeParticleBlock {
 
         this.reference = serializationObject.reference;
     }
+}
+
+
+let _registered = false;
+export function registerParticleGradientValueBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleGradientValueBlock", ParticleGradientValueBlock);
 }

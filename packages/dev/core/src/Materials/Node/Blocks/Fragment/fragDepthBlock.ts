@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import fragDepthBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./fragDepthBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { FragDepthBlock } from "./fragDepthBlock.pure";
-
-RegisterClass("BABYLON.FragDepthBlock", FragDepthBlock);
+import { registerFragDepthBlock } from "./fragDepthBlock.pure";
+registerFragDepthBlock();

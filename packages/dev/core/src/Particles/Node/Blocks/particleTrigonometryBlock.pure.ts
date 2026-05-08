@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../../../types";
-import { Vector2, Vector3 } from "../../../Maths/math.vector";
+import { Vector2, Vector3 } from "../../../Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Operations supported by the Trigonometry block
@@ -286,4 +287,15 @@ export class ParticleTrigonometryBlock extends NodeParticleBlock {
 
         this.operation = serializationObject.operation;
     }
+}
+
+
+let _registered = false;
+export function registerParticleTrigonometryBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleTrigonometryBlock", ParticleTrigonometryBlock);
 }

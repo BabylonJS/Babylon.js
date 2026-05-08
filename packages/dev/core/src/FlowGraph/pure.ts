@@ -5,6 +5,7 @@ export * from "./flowGraphBlock";
 export * from "./flowGraphSignalConnection.pure";
 export * from "./flowGraphExecutionBlock";
 export * from "./flowGraphEventBlock";
+export * from "./flowGraphRichTypes.pure";
 export * from "./flowGraphContext";
 export * from "./flowGraphCoordinator";
 export * from "./typeDefinitions";

@@ -2,6 +2,7 @@
 
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { BaseMathBlock } from "./baseMathBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to subtract 2 vectors
@@ -32,4 +33,15 @@ export class SubtractBlock extends BaseMathBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerSubtractBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SubtractBlock", SubtractBlock);
 }

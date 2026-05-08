@@ -4,10 +4,11 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { type Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
-import { type Vector3 } from "core/Maths/math.vector";
+import { type Vector3 } from "core/Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to update the position of a particle
@@ -84,4 +85,15 @@ export class UpdatePositionBlock extends NodeParticleBlock {
             system._updateQueueStart = positionProcessing;
         }
     }
+}
+
+
+let _registered = false;
+export function registerUpdatePositionBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.UpdatePositionBlock", UpdatePositionBlock);
 }

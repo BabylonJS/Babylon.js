@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import remapBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./remapBlock.pure";
 
-import { RegisterClass } from "../../../Misc/typeStore";
-import { RemapBlock } from "./remapBlock.pure";
-
-RegisterClass("BABYLON.RemapBlock", RemapBlock);
+import { registerRemapBlock } from "./remapBlock.pure";
+registerRemapBlock();

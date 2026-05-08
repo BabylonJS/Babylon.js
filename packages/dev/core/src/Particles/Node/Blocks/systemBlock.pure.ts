@@ -1,19 +1,20 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "core/types";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
+import { type ParticleSystem } from "core/Particles/particleSystem.pure";
 import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
-import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
+import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
+import { Color4 } from "core/Maths/math.color.pure";
+import { BaseParticleSystem } from "core/Particles/baseParticleSystem.pure";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { RegisterClass } from "core/Misc/typeStore";
 
 type CustomShader = {
     shaderPath: { fragmentElement: string };
@@ -386,4 +387,15 @@ export class SystemBlock extends NodeParticleBlock {
             this.customShader = serializationObject.customShader;
         }
     }
+}
+
+
+let _registered = false;
+export function registerSystemBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SystemBlock", SystemBlock);
 }

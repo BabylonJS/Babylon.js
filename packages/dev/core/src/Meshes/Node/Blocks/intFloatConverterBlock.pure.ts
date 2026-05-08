@@ -3,6 +3,7 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Defines a block used to convert from int to float
@@ -91,4 +92,15 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
             return 0;
         };
     }
+}
+
+
+let _registered = false;
+export function registerIntFloatConverterBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.IntFloatConverterBlock", IntFloatConverterBlock);
 }

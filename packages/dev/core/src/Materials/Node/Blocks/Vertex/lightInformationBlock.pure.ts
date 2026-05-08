@@ -6,15 +6,16 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type Nullable } from "../../../../types";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { type Effect } from "../../../effect";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Light } from "../../../../Lights/light";
-import { PointLight } from "../../../../Lights/pointLight";
+import { PointLight } from "../../../../Lights/pointLight.pure";
 import { type ShadowGenerator } from "../../../../Lights/Shadows/shadowGenerator";
 import { type ShadowLight } from "../../../../Lights";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to get data information from a light
@@ -267,4 +268,15 @@ export class LightInformationBlock extends NodeMaterialBlock {
             this.light = scene.getLightById(serializationObject.lightId);
         }
     }
+}
+
+
+let _registered = false;
+export function registerLightInformationBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.LightInformationBlock", LightInformationBlock);
 }

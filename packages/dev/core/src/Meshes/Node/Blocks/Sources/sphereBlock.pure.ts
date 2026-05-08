@@ -4,10 +4,11 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import { GeometryInputBlock } from "../geometryInputBlock";
-import { type Vector4 } from "../../../../Maths/math.vector";
-import { CreateSphereVertexData } from "core/Meshes/Builders/sphereBuilder";
+import { GeometryInputBlock } from "../geometryInputBlock.pure";
+import { type Vector4 } from "../../../../Maths/math.vector.pure";
+import { CreateSphereVertexData } from "core/Meshes/Builders/sphereBuilder.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to generate sphere geometry data
@@ -172,4 +173,15 @@ export class SphereBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
     }
+}
+
+
+let _registered = false;
+export function registerSphereBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SphereBlock", SphereBlock);
 }

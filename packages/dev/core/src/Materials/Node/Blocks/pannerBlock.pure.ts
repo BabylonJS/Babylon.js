@@ -5,10 +5,11 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { InputBlock } from "./Input/inputBlock";
-import { type NodeMaterial } from "../nodeMaterial";
+import { InputBlock } from "./Input/inputBlock.pure";
+import { type NodeMaterial } from "../nodeMaterial.pure";
 import { AnimatedInputBlockTypes } from "./Input/animatedInputBlockTypes";
 import { NodeMaterialModes } from "../Enums/nodeMaterialModes";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to pan UV coordinates over time (similar to Unreal's Panner node).
@@ -110,4 +111,15 @@ export class PannerBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerPannerBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PannerBlock", PannerBlock);
 }

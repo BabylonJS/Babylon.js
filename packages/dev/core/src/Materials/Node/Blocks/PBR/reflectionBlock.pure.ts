@@ -4,19 +4,20 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock";
+import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock.pure";
 import { type Nullable } from "../../../../types";
-import { Texture } from "../../../Textures/texture";
-import { type BaseTexture } from "../../../Textures/baseTexture";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { Texture } from "../../../Textures/texture.pure";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type SubMesh } from "../../../../Meshes/subMesh";
 import { type Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the reflection module of the PBR material
@@ -540,4 +541,15 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             this.texture.gammaSpace = serializationObject.gammaSpace;
         }
     }
+}
+
+
+let _registered = false;
+export function registerReflectionBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ReflectionBlock", ReflectionBlock);
 }

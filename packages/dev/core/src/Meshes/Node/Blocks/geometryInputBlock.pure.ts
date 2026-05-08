@@ -5,9 +5,10 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { GetClass } from "../../../Misc/typeStore";
-import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector.pure";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to expose an input value
@@ -320,4 +321,15 @@ export class GeometryInputBlock extends NodeGeometryBlock {
             }
         }
     }
+}
+
+
+let _registered = false;
+export function registerGeometryInputBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryInputBlock", GeometryInputBlock);
 }

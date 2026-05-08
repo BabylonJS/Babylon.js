@@ -4,8 +4,9 @@ import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { type VertexData } from "../../../mesh.vertexData";
-import { Vector3 } from "../../../../Maths/math.vector";
+import { Vector3 } from "../../../../Maths/math.vector.pure";
 import { InstantiateBaseBlock } from "./instantiateBaseBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to instantiate a geometry inside a loop
@@ -153,4 +154,15 @@ export class InstantiateBlock extends InstantiateBaseBlock {
             this.output._storedValue = func(state);
         }
     }
+}
+
+
+let _registered = false;
+export function registerInstantiateBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.InstantiateBlock", InstantiateBlock);
 }

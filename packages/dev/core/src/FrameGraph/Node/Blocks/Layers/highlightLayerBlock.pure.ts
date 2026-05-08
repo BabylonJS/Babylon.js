@@ -15,6 +15,7 @@ import { FrameGraphHighlightLayerTask } from "core/FrameGraph/Tasks/Layers/highl
 import { Constants } from "core/Engines/constants";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the highlight layer
@@ -253,4 +254,15 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
         this.blurHorizontalSize = serializationObject.blurHorizontalSize;
         this.blurVerticalSize = serializationObject.blurVerticalSize;
     }
+}
+
+
+let _registered = false;
+export function registerHighlightLayerBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphHighlightLayerBlock", NodeRenderGraphHighlightLayerBlock);
 }

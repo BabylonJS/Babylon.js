@@ -6,8 +6,9 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { type INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import { type VertexData } from "../../../mesh.vertexData";
-import { type Vector4 } from "../../../../Maths/math.vector";
+import { type Vector4 } from "../../../../Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to set tangents for a geometry
@@ -167,4 +168,15 @@ export class SetTangentsBlock extends NodeGeometryBlock implements INodeGeometry
             this.evaluateContext = serializationObject.evaluateContext;
         }
     }
+}
+
+
+let _registered = false;
+export function registerSetTangentsBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SetTangentsBlock", SetTangentsBlock);
 }

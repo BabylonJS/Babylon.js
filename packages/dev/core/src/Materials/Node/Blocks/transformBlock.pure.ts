@@ -5,12 +5,13 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { type Scene } from "../../../scene";
-import { type InputBlock } from "./Input/inputBlock";
-import { type AbstractMesh } from "../../../Meshes/abstractMesh";
-import { type NodeMaterial, type NodeMaterialDefines } from "../nodeMaterial";
+import { type Scene } from "../../../scene.pure";
+import { type InputBlock } from "./Input/inputBlock.pure";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh.pure";
+import { type NodeMaterial, type NodeMaterialDefines } from "../nodeMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -213,4 +214,15 @@ export class TransformBlock extends NodeMaterialBlock {
 
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerTransformBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.TransformBlock", TransformBlock);
 }

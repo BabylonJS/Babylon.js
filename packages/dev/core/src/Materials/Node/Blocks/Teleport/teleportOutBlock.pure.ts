@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../../../../types";
-import { type NodeMaterialTeleportInBlock } from "./teleportInBlock";
+import { type NodeMaterialTeleportInBlock } from "./teleportInBlock.pure";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -193,4 +194,15 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
 
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
     }
+}
+
+
+let _registered = false;
+export function registerMaterialsNodeBlocksTeleportTeleportOutBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeMaterialTeleportOutBlock", NodeMaterialTeleportOutBlock);
 }

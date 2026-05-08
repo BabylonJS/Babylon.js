@@ -1,20 +1,21 @@
 /** This file must only contain pure code and pure imports */
 
 import { Observable } from "../Misc/observable";
-import { Vector2, Vector3 } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
-import { type Condition } from "./condition";
+import { Vector2, Vector3 } from "../Maths/math.vector.pure";
+import { Color3, Color4 } from "../Maths/math.color.pure";
+import { type Condition } from "./condition.pure";
 import { type AbstractActionManager } from "./abstractActionManager";
 import { type Nullable } from "../types";
 import { type Material } from "../Materials/material";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { type ActionManager } from "./actionManager";
 import { type ActionEvent } from "./actionEvent";
-import { type Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh.pure";
 import { type Light } from "../Lights/light";
 import { type Camera } from "../Cameras/camera";
 import { type Node } from "../node";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Interface used to define Action
@@ -327,4 +328,15 @@ export class Action implements IAction {
             value: (<Scene>target)._isScene ? "Scene" : (<Node>target).name,
         };
     };
+}
+
+
+let _registered = false;
+export function registerAction(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.Action", Action);
 }

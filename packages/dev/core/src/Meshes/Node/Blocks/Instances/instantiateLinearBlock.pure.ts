@@ -2,10 +2,11 @@
 
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector.pure";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { type VertexData } from "core/Meshes/mesh.vertexData";
 import { InstantiateBaseBlock } from "./instantiateBaseBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to clone geometry along a line
@@ -118,4 +119,15 @@ export class InstantiateLinearBlock extends InstantiateBaseBlock {
             this.output._storedValue = func(state);
         }
     }
+}
+
+
+let _registered = false;
+export function registerInstantiateLinearBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.InstantiateLinearBlock", InstantiateLinearBlock);
 }

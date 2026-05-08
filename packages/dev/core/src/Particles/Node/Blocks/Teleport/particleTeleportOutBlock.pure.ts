@@ -4,8 +4,9 @@ import { type Nullable } from "../../../../types";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import { type ParticleTeleportInBlock } from "./particleTeleportInBlock";
+import { type ParticleTeleportInBlock } from "./particleTeleportInBlock.pure";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -100,4 +101,15 @@ export class ParticleTeleportOutBlock extends NodeParticleBlock {
 
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
     }
+}
+
+
+let _registered = false;
+export function registerParticleTeleportOutBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleTeleportOutBlock", ParticleTeleportOutBlock);
 }

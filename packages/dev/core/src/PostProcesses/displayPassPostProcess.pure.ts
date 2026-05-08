@@ -2,12 +2,13 @@
 
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * DisplayPassPostProcess which produces an output the same as it's input
@@ -65,4 +66,15 @@ export class DisplayPassPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerDisplayPassPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.DisplayPassPostProcess", DisplayPassPostProcess);
 }

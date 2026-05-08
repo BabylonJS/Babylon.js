@@ -3,16 +3,17 @@
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import { ParticleSystem } from "core/Particles/particleSystem";
+import { ParticleSystem } from "core/Particles/particleSystem.pure";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { type _IExecutionQueueItem, _RemoveFromQueue } from "core/Particles/Queue/executionQueue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { type Particle } from "core/Particles/particle";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import { Color4 } from "core/Maths/math.color";
-import { Vector2 } from "core/Maths/math.vector";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Vector2 } from "core/Maths/math.vector.pure";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
+import { RegisterClass } from "core/Misc/typeStore";
 
 const ColorDiff = new Color4();
 
@@ -163,4 +164,15 @@ export class CreateParticleBlock extends NodeParticleBlock {
 
         this.particle._storedValue = system;
     }
+}
+
+
+let _registered = false;
+export function registerCreateParticleBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.CreateParticleBlock", CreateParticleBlock);
 }

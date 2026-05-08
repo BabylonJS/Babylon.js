@@ -4,20 +4,21 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
-import { InputBlock } from "../Input/inputBlock";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { type Nullable } from "../../../../types";
-import { type BaseTexture } from "../../../Textures/baseTexture";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import { CubeTexture } from "../../../Textures/cubeTexture";
-import { Texture } from "../../../Textures/texture";
+import { CubeTexture } from "../../../Textures/cubeTexture.pure";
+import { Texture } from "../../../Textures/texture.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
@@ -434,4 +435,15 @@ export class RefractionBlock extends NodeMaterialBlock {
         this.invertRefractionY = serializationObject.invertRefractionY;
         this.useThicknessAsDepth = !!serializationObject.useThicknessAsDepth;
     }
+}
+
+
+let _registered = false;
+export function registerRefractionBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.RefractionBlock", RefractionBlock);
 }

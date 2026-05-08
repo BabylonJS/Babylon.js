@@ -2,9 +2,10 @@
 
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * A block that outputs elements from the context
@@ -39,4 +40,15 @@ export class FlowGraphContextBlock extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.Context;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphContextBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Context, FlowGraphContextBlock);
 }

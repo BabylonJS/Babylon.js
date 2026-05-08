@@ -5,23 +5,23 @@ import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, ser
 import { SmartArray } from "../../Misc/smartArray";
 import { Logger } from "../../Misc/logger";
 import { type Nullable, type int, type float } from "../../types";
-import { type Scene } from "../../scene";
-import { type Matrix, TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene.pure";
+import { type Matrix, TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector.pure";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { type SubMesh } from "../../Meshes/subMesh";
-import { type AbstractMesh } from "../../Meshes/abstractMesh";
-import { type Mesh } from "../../Meshes/mesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
+import { type Mesh } from "../../Meshes/mesh.pure";
 import { type IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture";
-import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration.pure";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 import { type IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
 import { MaterialFlags } from "../materialFlags";
-import { Color3 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color.pure";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
@@ -51,6 +51,7 @@ import {
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
 import { ImageProcessingMixin } from "../imageProcessing";
+import { RegisterClass } from "../../Misc/typeStore";
 
 class BackgroundMaterialDefinesBase extends MaterialDefines {}
 
@@ -1153,4 +1154,15 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
     public static override Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial {
         return SerializationHelper.Parse(() => new BackgroundMaterial(source.name, scene), source, scene, rootUrl);
     }
+}
+
+
+let _registered = false;
+export function registerBackgroundMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BackgroundMaterial", BackgroundMaterial);
 }

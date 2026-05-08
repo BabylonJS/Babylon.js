@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type Camera } from "core/index";
+import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type Camera } from "core/index.pure";
 import { Constants } from "core/Engines/constants";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphSSAO2RenderingPipelineTask } from "../../../Tasks/PostProcesses/ssao2RenderingPipelineTask";
 import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the SSAO2 post process
@@ -331,4 +332,15 @@ export class NodeRenderGraphSSAO2PostProcessBlock extends NodeRenderGraphBasePos
         this.bilateralSamples = serializationObject.bilateralSamples;
         this.bilateralTolerance = serializationObject.bilateralTolerance;
     }
+}
+
+
+let _registered = false;
+export function registerSsao2PostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphSSAO2PostProcessBlock", NodeRenderGraphSSAO2PostProcessBlock);
 }

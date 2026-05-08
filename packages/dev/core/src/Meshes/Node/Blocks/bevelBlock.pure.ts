@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import { Vector3 } from "../../../Maths/math.vector";
+import { Vector3 } from "../../../Maths/math.vector.pure";
 import { VertexData, VertexDataMaterialInfo } from "../../mesh.vertexData";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 const PositionEpsilon = 1e-5;
 const OutputPositionEpsilon = 1e-4;
@@ -1846,4 +1847,15 @@ export class BevelBlock extends NodeGeometryBlock {
             this.evaluateContext = serializationObject.evaluateContext;
         }
     }
+}
+
+
+let _registered = false;
+export function registerBevelBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BevelBlock", BevelBlock);
 }

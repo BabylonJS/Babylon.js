@@ -1,18 +1,19 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Vector2 } from "../Maths/math.vector";
+import { type Vector2 } from "../Maths/math.vector.pure";
 import { type Nullable } from "../types";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type Camera } from "../Cameras/camera";
 import { type Effect } from "../Materials/effect";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { Constants } from "../Engines/constants";
 import { serialize, serializeAsVector2 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinBlurPostProcess } from "./thinBlurPostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -168,4 +169,15 @@ export class BlurPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerBlurPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BlurPostProcess", BlurPostProcess);
 }

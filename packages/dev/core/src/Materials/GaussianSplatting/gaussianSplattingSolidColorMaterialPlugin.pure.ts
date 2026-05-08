@@ -1,16 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../../types";
-import { type Scene } from "../../scene";
+import { type Scene } from "../../scene.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type SubMesh } from "../../Meshes/subMesh";
 import { type UniformBuffer } from "../uniformBuffer";
 import { type MaterialDefines } from "../materialDefines";
 import { serialize, expandToProperty } from "../../Misc/decorators";
-import { type Color3 } from "../../Maths/math.color";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { type Color3 } from "../../Maths/math.color.pure";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
-import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
+import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat colors with a
@@ -215,4 +216,15 @@ if (uniforms.solidColorEnabled > 0.5) {
 
         effect.setArray3("partColors", colorArray);
     }
+}
+
+
+let _registered = false;
+export function registerGaussianSplattingSolidColorMaterialPlugin(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GaussianSplattingSolidColorMaterialPlugin", GaussianSplattingSolidColorMaterialPlugin);
 }

@@ -6,16 +6,17 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type Nullable } from "../../../../types";
-import { Texture } from "../../../Textures/texture";
+import { Texture } from "../../../Textures/texture.pure";
 import { ThinTexture } from "../../../Textures/thinTexture";
 import { Constants } from "../../../../Engines/constants";
 import { type AbstractEngine } from "../../../../Engines/abstractEngine";
 import { type Effect } from "../../../effect";
-import { NodeMaterial } from "../../nodeMaterial";
-import { type Scene } from "../../../../scene";
+import { NodeMaterial } from "../../nodeMaterial.pure";
+import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Block used to provide an image for a TextureBlock
  */
@@ -237,4 +238,15 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             }
         }
     }
+}
+
+
+let _registered = false;
+export function registerImageSourceBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ImageSourceBlock", ImageSourceBlock);
 }

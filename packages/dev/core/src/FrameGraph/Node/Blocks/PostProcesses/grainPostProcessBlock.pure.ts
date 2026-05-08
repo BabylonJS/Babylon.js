@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphGrainTask } from "core/FrameGraph/Tasks/PostProcesses/grainTask";
 import { ThinGrainPostProcess } from "core/PostProcesses/thinGrainPostProcess";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the grain post process
@@ -80,4 +81,15 @@ export class NodeRenderGraphGrainPostProcessBlock extends NodeRenderGraphBaseWit
         this.intensity = serializationObject.intensity;
         this.animated = serializationObject.animated;
     }
+}
+
+
+let _registered = false;
+export function registerGrainPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphGrainPostProcessBlock", NodeRenderGraphGrainPostProcessBlock);
 }

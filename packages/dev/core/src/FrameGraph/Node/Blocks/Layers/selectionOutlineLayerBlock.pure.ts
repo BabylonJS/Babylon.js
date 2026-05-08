@@ -15,7 +15,8 @@ import { FrameGraphSelectionOutlineLayerTask } from "core/FrameGraph/Tasks/Layer
 import { Constants } from "core/Engines/constants";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
-import { Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the selection outline layer
@@ -266,4 +267,15 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         this.occlusionStrength = serializationObject.occlusionStrength;
         this.occlusionThreshold = serializationObject.occlusionThreshold;
     }
+}
+
+
+let _registered = false;
+export function registerSelectionOutlineLayerBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphSelectionOutlineLayerBlock", NodeRenderGraphSelectionOutlineLayerBlock);
 }

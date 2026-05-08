@@ -6,12 +6,13 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { type INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import { type VertexData } from "../../../mesh.vertexData";
-import { Vector3 } from "../../../../Maths/math.vector";
+import { Vector3 } from "../../../../Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { type Nullable } from "../../../../types";
-import { Ray } from "../../../../Culling/ray";
+import { Ray } from "../../../../Culling/ray.pure";
 import { extractMinAndMax } from "../../../../Maths/math.functions";
 import { type INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to instance geometry inside a geometry
@@ -357,4 +358,15 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             this.gridMode = serializationObject.gridMode;
         }
     }
+}
+
+
+let _registered = false;
+export function registerInstantiateOnVolumeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.InstantiateOnVolumeBlock", InstantiateOnVolumeBlock);
 }

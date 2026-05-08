@@ -4,9 +4,10 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { type Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to provide the basic update functionality for particle colors.
@@ -78,4 +79,15 @@ export class BasicColorUpdateBlock extends NodeParticleBlock {
 
         this.output._storedValue = system;
     }
+}
+
+
+let _registered = false;
+export function registerBasicColorUpdateBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BasicColorUpdateBlock", BasicColorUpdateBlock);
 }

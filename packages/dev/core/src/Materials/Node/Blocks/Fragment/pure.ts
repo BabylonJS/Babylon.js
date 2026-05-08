@@ -1,5 +1,6 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 export * from "./fragmentOutputBlock.pure";
+export * from "./smartFilterFragmentOutputBlock.pure";
 export * from "./imageProcessingBlock.pure";
 export * from "./perturbNormalBlock.pure";
 export * from "./discardBlock.pure";

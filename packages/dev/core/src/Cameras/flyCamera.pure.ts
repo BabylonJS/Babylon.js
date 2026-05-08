@@ -2,17 +2,18 @@
 
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { type Nullable } from "../types";
-import { type Scene } from "../scene";
-import { type Quaternion, Vector3 } from "../Maths/math.vector";
-import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { TargetCamera } from "./targetCamera";
+import { type Scene } from "../scene.pure";
+import { type Quaternion, Vector3 } from "../Maths/math.vector.pure";
+import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
+import { TargetCamera } from "./targetCamera.pure";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import { type FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import { type FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 
 import { type Collider } from "../Collisions/collider";
 import { AbstractEngine } from "core/Engines/abstractEngine";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This is a flying camera, designed for 3D movement and rotation in all directions,
@@ -453,3 +454,14 @@ export class FlyCamera extends TargetCamera {
 }
 
 // Register Class Name
+
+
+let _registered = false;
+export function registerFlyCamera(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.FlyCamera", FlyCamera);
+}

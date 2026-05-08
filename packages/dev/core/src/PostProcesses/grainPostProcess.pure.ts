@@ -2,15 +2,16 @@
 
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { ThinGrainPostProcess } from "./thinGrainPostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The GrainPostProcess adds noise to the image at mid luminance levels
@@ -109,4 +110,15 @@ export class GrainPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerGrainPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GrainPostProcess", GrainPostProcess);
 }

@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import bloomPostProcessBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./bloomPostProcessBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBloomPostProcessBlock } from "./bloomPostProcessBlock.pure";
-
-RegisterClass("BABYLON.NodeRenderGraphBloomPostProcessBlock", NodeRenderGraphBloomPostProcessBlock);
+import { registerBloomPostProcessBlock } from "./bloomPostProcessBlock.pure";
+registerBloomPostProcessBlock();

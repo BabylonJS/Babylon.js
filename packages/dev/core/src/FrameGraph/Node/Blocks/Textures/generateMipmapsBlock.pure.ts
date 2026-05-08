@@ -1,9 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState } from "core/index.pure";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { FrameGraphGenerateMipMapsTask } from "../../../Tasks/Texture/generateMipMapsTask";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to generate mipmaps for a texture
@@ -65,4 +66,15 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
     }
+}
+
+
+let _registered = false;
+export function registerGenerateMipmapsBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphGenerateMipmapsBlock", NodeRenderGraphGenerateMipmapsBlock);
 }

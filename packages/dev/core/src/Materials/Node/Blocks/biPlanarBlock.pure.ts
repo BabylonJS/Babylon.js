@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import { TriPlanarBlock } from "./triPlanarBlock";
+import { TriPlanarBlock } from "./triPlanarBlock.pure";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 import { Constants } from "../../../Engines/constants";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to read a texture with triplanar mapping (see https://iquilezles.org/articles/biplanar/)
@@ -110,4 +111,15 @@ export class BiPlanarBlock extends TriPlanarBlock {
             ${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = (${x}*${w}.x + ${y}*${w}.y) / (${w}.x + ${w}.y);
         `;
     }
+}
+
+
+let _registered = false;
+export function registerBiPlanarBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.BiPlanarBlock", BiPlanarBlock);
 }

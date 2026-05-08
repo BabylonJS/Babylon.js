@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { Camera } from "../Cameras/camera";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
@@ -10,7 +10,8 @@ import { type Nullable } from "../types";
 
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type ThinTonemapPostProcessOptions, type TonemappingOperator, ThinTonemapPostProcess } from "./thinTonemapPostProcess";
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
+import { RegisterClass } from "../Misc/typeStore";
 
 export type ToneMapPostProcessOptions = ThinTonemapPostProcessOptions & PostProcessOptions;
 
@@ -114,4 +115,15 @@ export class TonemapPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerTonemapPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.TonemapPostProcess", TonemapPostProcess);
 }

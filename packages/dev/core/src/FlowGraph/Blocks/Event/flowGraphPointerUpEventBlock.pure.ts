@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type PointerInfo } from "core/Events/pointerEvents";
 import { type IPointerEvent } from "core/Events/deviceInputEvents";
@@ -8,11 +8,12 @@ import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { _IsDescendantOf } from "core/FlowGraph/utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
-import { type Vector3 } from "core/Maths/math.vector";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { type Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { type Nullable } from "core/types";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Configuration for the pointer up event block.
@@ -105,4 +106,15 @@ export class FlowGraphPointerUpEventBlock extends FlowGraphEventBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.PointerUpEvent;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphPointerUpEventBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PointerUpEvent, FlowGraphPointerUpEventBlock);
 }

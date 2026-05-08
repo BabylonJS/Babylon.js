@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type FrameGraphTextureHandle, type NodeRenderGraphBuildState } from "core/index";
+import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type FrameGraphTextureHandle, type NodeRenderGraphBuildState } from "core/index.pure";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCascadedShadowGeneratorTask } from "../../../Tasks/Rendering/csmShadowGeneratorTask";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { DepthTextureType } from "core/Misc/thinMinMaxReducer";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that generates shadows through a shadow generator
@@ -213,4 +214,15 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         this.autoCalcDepthBoundsRefreshRate = serializationObject.autoCalcDepthBoundsRefreshRate ?? 1;
         this.shadowMaxZ = serializationObject.shadowMaxZ;
     }
+}
+
+
+let _registered = false;
+export function registerCsmShadowGeneratorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphCascadedShadowGeneratorBlock", NodeRenderGraphCascadedShadowGeneratorBlock);
 }

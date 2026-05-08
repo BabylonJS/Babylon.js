@@ -4,10 +4,11 @@ import { type EasingFunction } from "core/Animations/easing";
 import { Constants } from "core/Engines/constants";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { type FlowGraphTypes, getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
-import { Animation } from "core/Animations/animation";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { type FlowGraphTypes, getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { Animation } from "core/Animations/animation.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Configuration for the interpolation block.
@@ -179,3 +180,14 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 }
 
 // #L54P2C
+
+
+let _registered = false;
+export function registerFlowGraphInterpolationBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.ValueInterpolation, FlowGraphInterpolationBlock);
+}

@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import multiplyBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./multiplyBlock.pure";
 
-import { RegisterClass } from "../../../Misc/typeStore";
-import { MultiplyBlock } from "./multiplyBlock.pure";
-
-RegisterClass("BABYLON.MultiplyBlock", MultiplyBlock);
+import { registerMultiplyBlock } from "./multiplyBlock.pure";
+registerMultiplyBlock();

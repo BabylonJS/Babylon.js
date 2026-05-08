@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import updateNoiseBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./updateNoiseBlock.pure";
 
-import { RegisterClass } from "core/Misc/typeStore";
-import { UpdateNoiseBlock } from "./updateNoiseBlock.pure";
-
-RegisterClass("BABYLON.UpdateNoiseBlock", UpdateNoiseBlock);
+import { registerUpdateNoiseBlock } from "./updateNoiseBlock.pure";
+registerUpdateNoiseBlock();

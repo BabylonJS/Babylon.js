@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import alignBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./alignBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { AlignBlock } from "./alignBlock.pure";
-
-RegisterClass("BABYLON.AlignBlock", AlignBlock);
+import { registerAlignBlock } from "./alignBlock.pure";
+registerAlignBlock();

@@ -1,16 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Matrix } from "../Maths/math.vector";
+import { type Matrix } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 import { serializeAsMatrix } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { ThinFilterPostProcess } from "./thinFilterPostProcess";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Applies a kernel filter to the image
@@ -94,4 +95,15 @@ export class FilterPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerFilterPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.FilterPostProcess", FilterPostProcess);
 }

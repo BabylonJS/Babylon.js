@@ -2,12 +2,13 @@
 
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeAny, RichTypeVector3 } from "../../../flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeVector3 } from "../../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 import { type PhysicsBody } from "../../../../Physics/v2/physicsBody";
-import { Vector3 } from "../../../../Maths/math.vector";
+import { Vector3 } from "../../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * @experimental
@@ -51,4 +52,15 @@ export class FlowGraphGetAngularVelocityBlock extends FlowGraphCachedOperationBl
     public override getClassName(): string {
         return FlowGraphBlockNames.PhysicsGetAngularVelocity;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphGetAngularVelocityBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PhysicsGetAngularVelocity, FlowGraphGetAngularVelocityBlock);
 }

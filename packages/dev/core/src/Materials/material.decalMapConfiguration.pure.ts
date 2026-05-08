@@ -2,17 +2,18 @@
 
 import { serialize, expandToProperty } from "../Misc/decorators";
 import { MaterialDefines } from "./materialDefines";
-import { MaterialPluginBase } from "./materialPluginBase";
+import { MaterialPluginBase } from "./materialPluginBase.pure";
 import { Constants } from "../Engines/constants";
 import { MaterialFlags } from "./materialFlags";
-import { type Scene } from "core/scene";
-import { type Engine } from "core/Engines/engine";
+import { type Scene } from "core/scene.pure";
+import { type Engine } from "core/Engines/engine.pure";
 import { type SubMesh } from "core/Meshes/subMesh";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type UniformBuffer } from "./uniformBuffer";
-import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
-import { type StandardMaterial } from "./standardMaterial";
+import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial.pure";
+import { type StandardMaterial } from "./standardMaterial.pure";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * @internal
@@ -145,4 +146,15 @@ export class DecalMapConfiguration extends MaterialPluginBase {
             ],
         };
     }
+}
+
+
+let _registered = false;
+export function registerMaterialDecalMapConfiguration(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.DecalMapConfiguration", DecalMapConfiguration);
 }

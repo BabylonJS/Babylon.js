@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
-import { type Scene } from "../../scene";
-import { type Color3 } from "../../Maths/math.color";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Scene } from "../../scene.pure";
+import { type Color3 } from "../../Maths/math.color.pure";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { type Nullable } from "../../types";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * The PBR material of BJS following the specular glossiness convention.
@@ -155,4 +156,15 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         }
         return material;
     }
+}
+
+
+let _registered = false;
+export function registerPbrSpecularGlossinessMaterial(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PBRSpecularGlossinessMaterial", PBRSpecularGlossinessMaterial);
 }

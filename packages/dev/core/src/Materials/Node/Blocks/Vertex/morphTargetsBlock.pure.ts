@@ -5,15 +5,16 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { type Effect } from "../../../effect";
-import { type Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { VertexBuffer } from "../../../../Buffers/buffer";
-import { InputBlock } from "../Input/inputBlock";
+import { InputBlock } from "../Input/inputBlock.pure";
 
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to add morph targets support to vertex shader
@@ -530,4 +531,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerMorphTargetsBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MorphTargetsBlock", MorphTargetsBlock);
 }

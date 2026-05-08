@@ -2,9 +2,10 @@
 
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypeBoolean, RichTypeAny } from "../../flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
+import { RichTypeBoolean, RichTypeAny } from "../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block that returns a value based on a condition.
@@ -59,4 +60,15 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.Conditional;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphConditionalDataBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Conditional, FlowGraphConditionalDataBlock);
 }

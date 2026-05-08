@@ -1,14 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
-import { RichTypeAny, RichTypeVector3 } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { RichTypeAny, RichTypeVector3 } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { type PhysicsBody } from "../../../../Physics/v2/physicsBody";
-import { type Vector3 } from "../../../../Maths/math.vector";
+import { type Vector3 } from "../../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * @experimental
@@ -55,4 +56,15 @@ export class FlowGraphSetLinearVelocityBlock extends FlowGraphExecutionBlockWith
     public override getClassName(): string {
         return FlowGraphBlockNames.PhysicsSetLinearVelocity;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphSetLinearVelocityBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PhysicsSetLinearVelocity, FlowGraphSetLinearVelocityBlock);
 }

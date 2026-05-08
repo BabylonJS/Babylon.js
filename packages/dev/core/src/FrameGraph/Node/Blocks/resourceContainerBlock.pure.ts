@@ -1,8 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph } from "core/index.pure";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used as a resource (textures, buffers) container
@@ -124,4 +125,15 @@ export class NodeRenderGraphResourceContainerBlock extends NodeRenderGraphBlock 
     public get output(): NodeRenderGraphConnectionPoint {
         return this._outputs[0];
     }
+}
+
+
+let _registered = false;
+export function registerResourceContainerBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphResourceContainerBlock", NodeRenderGraphResourceContainerBlock);
 }

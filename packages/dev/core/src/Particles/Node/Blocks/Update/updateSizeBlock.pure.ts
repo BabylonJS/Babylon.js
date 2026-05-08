@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Particle } from "core/Particles/particle";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Block used to update the size of a particle
@@ -85,4 +86,15 @@ export class UpdateSizeBlock extends NodeParticleBlock {
             system._updateQueueStart = sizeProcessing;
         }
     }
+}
+
+
+let _registered = false;
+export function registerUpdateSizeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.UpdateSizeBlock", UpdateSizeBlock);
 }

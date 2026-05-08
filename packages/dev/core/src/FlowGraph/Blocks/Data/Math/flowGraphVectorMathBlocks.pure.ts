@@ -15,13 +15,14 @@ import {
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { Quaternion, Vector3, Vector4, type Matrix, type Vector2 } from "core/Maths/math.vector";
+import { Quaternion, Vector3, Vector4, type Matrix, type Vector2 } from "core/Maths/math.vector.pure";
 import { type FlowGraphMatrix2D, type FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import { type FlowGraphMatrix, type FlowGraphVector, _GetClassNameOf } from "core/FlowGraph/utils";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { type FlowGraphContext } from "../../../flowGraphContext";
 import { type Nullable } from "../../../../types";
 import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "core/FlowGraph/flowGraphMath";
+import { RegisterClass } from "core/Misc/typeStore";
 
 const AxisCacheName = "cachedOperationAxis";
 const AngleCacheName = "cachedOperationAngle";
@@ -297,4 +298,26 @@ export class FlowGraphQuaternionFromDirectionsBlock extends FlowGraphBinaryOpera
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeVector3, RichTypeVector3, RichTypeQuaternion, (a, b) => GetQuaternionFromDirections(a, b), FlowGraphBlockNames.QuaternionFromDirections, config);
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphVectorMathBlocks(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Length, FlowGraphLengthBlock);
+    RegisterClass(FlowGraphBlockNames.Normalize, FlowGraphNormalizeBlock);
+    RegisterClass(FlowGraphBlockNames.Dot, FlowGraphDotBlock);
+    RegisterClass(FlowGraphBlockNames.Cross, FlowGraphCrossBlock);
+    RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
+    RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
+    RegisterClass(FlowGraphBlockNames.TransformVector, FlowGraphTransformBlock);
+    RegisterClass(FlowGraphBlockNames.TransformCoordinates, FlowGraphTransformCoordinatesBlock);
+    RegisterClass(FlowGraphBlockNames.Conjugate, FlowGraphConjugateBlock);
+    RegisterClass(FlowGraphBlockNames.AngleBetween, FlowGraphAngleBetweenBlock);
+    RegisterClass(FlowGraphBlockNames.QuaternionFromAxisAngle, FlowGraphQuaternionFromAxisAngleBlock);
+    RegisterClass(FlowGraphBlockNames.AxisAngleFromQuaternion, FlowGraphAxisAngleFromQuaternionBlock);
 }

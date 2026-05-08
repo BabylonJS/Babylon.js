@@ -8,9 +8,10 @@ import { type Particle } from "core/Particles/particle";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { _CreateLocalPositionData } from "./emitters.functions";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Block used to provide a flow of particles emitted from a cone shape.
@@ -220,4 +221,15 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
         this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly;
     }
+}
+
+
+let _registered = false;
+export function registerConeShapeBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ConeShapeBlock", ConeShapeBlock);
 }

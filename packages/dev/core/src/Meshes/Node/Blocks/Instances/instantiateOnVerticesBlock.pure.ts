@@ -6,11 +6,12 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { type INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import { type VertexData } from "../../../mesh.vertexData";
-import { Vector3 } from "../../../../Maths/math.vector";
+import { Vector3 } from "../../../../Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { Epsilon } from "../../../../Maths/math.constants";
 import { type Nullable } from "../../../../types";
 import { type INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to instance geometry on every vertex of a geometry
@@ -294,4 +295,15 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             this.evaluateContext = serializationObject.evaluateContext;
         }
     }
+}
+
+
+let _registered = false;
+export function registerInstantiateOnVerticesBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.InstantiateOnVerticesBlock", InstantiateOnVerticesBlock);
 }

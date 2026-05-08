@@ -4,10 +4,11 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import { GeometryInputBlock } from "../geometryInputBlock";
-import { type Vector4 } from "../../../../Maths/math.vector";
-import { CreateIcoSphereVertexData } from "core/Meshes/Builders/icoSphereBuilder";
+import { GeometryInputBlock } from "../geometryInputBlock.pure";
+import { type Vector4 } from "../../../../Maths/math.vector.pure";
+import { CreateIcoSphereVertexData } from "core/Meshes/Builders/icoSphereBuilder.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to generate icosphere geometry data
@@ -153,4 +154,15 @@ export class IcoSphereBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
     }
+}
+
+
+let _registered = false;
+export function registerIcoSphereBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.IcoSphereBlock", IcoSphereBlock);
 }

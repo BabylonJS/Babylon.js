@@ -1,9 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type NodeRenderGraphBuildState, type FrameGraphTextureHandle } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type NodeRenderGraphBuildState, type FrameGraphTextureHandle } from "core/index.pure";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { FrameGraphCopyToBackbufferColorTask } from "../../Tasks/Texture/copyToBackbufferColorTask";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to generate the final graph
@@ -61,4 +62,15 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
             this._frameGraphTask.sourceTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
         }
     }
+}
+
+
+let _registered = false;
+export function registerOutputBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphOutputBlock", NodeRenderGraphOutputBlock);
 }

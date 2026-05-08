@@ -4,6 +4,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used as a pass through
  */
@@ -60,4 +61,15 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
             return input.getConnectedValue(state);
         };
     }
+}
+
+
+let _registered = false;
+export function registerGeometryElbowBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryElbowBlock", GeometryElbowBlock);
 }

@@ -11,8 +11,9 @@ import {
 } from "core/index";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import { FrameGraphIblShadowsRendererTask } from "core/FrameGraph/Tasks/Rendering/iblShadowsRendererTask";
+import { FrameGraphIblShadowsRendererTask } from "core/FrameGraph/Tasks/Rendering/iblShadowsRendererTask.pure";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements IBL (image-based lighting) shadows using voxel tracing.
@@ -347,4 +348,15 @@ export class NodeRenderGraphIblShadowsRendererBlock extends NodeRenderGraphBlock
         this.refreshRate = serializationObject.refreshRate;
         this.triPlanarVoxelization = serializationObject.triPlanarVoxelization;
     }
+}
+
+
+let _registered = false;
+export function registerIblShadowsRendererBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphIblShadowsRendererBlock", NodeRenderGraphIblShadowsRendererBlock);
 }

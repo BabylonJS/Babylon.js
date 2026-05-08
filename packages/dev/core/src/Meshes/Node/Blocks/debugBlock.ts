@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import debugBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./debugBlock.pure";
 
-import { RegisterClass } from "../../../Misc/typeStore";
-import { DebugBlock } from "./debugBlock.pure";
-
-RegisterClass("BABYLON.DebugBlock", DebugBlock);
+import { registerMeshesNodeBlocksDebugBlock } from "./debugBlock.pure";
+registerMeshesNodeBlocksDebugBlock();

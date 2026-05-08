@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh.pure";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type PointerInfo, PointerEventTypes } from "../../../Events/pointerEvents";
 import { type IPointerEvent } from "../../../Events/deviceInputEvents";
@@ -8,10 +8,11 @@ import { type FlowGraphContext } from "../../flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { _IsDescendantOf } from "../../utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
-import { type Vector3 } from "core/Maths/math.vector";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { type Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Configuration for the mesh pick event block.
  */
@@ -138,4 +139,15 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.MeshPickEvent;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphMeshPickEventBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.MeshPickEvent, FlowGraphMeshPickEventBlock);
 }

@@ -1,10 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to normalize lerp between 2 values
@@ -112,4 +113,15 @@ export class ParticleNLerpBlock extends NodeParticleBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerParticleNLerpBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleNLerpBlock", ParticleNLerpBlock);
 }

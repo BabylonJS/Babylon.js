@@ -5,8 +5,9 @@ import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { Vector3 } from "../../../Maths/math.vector";
+import { Vector3 } from "../../../Maths/math.vector.pure";
 import { VertexData } from "../../mesh.vertexData";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Cap mode for the extrusion
@@ -336,4 +337,15 @@ export class ExtrudeGeometryBlock extends NodeGeometryBlock {
             this.cap = serializationObject.cap;
         }
     }
+}
+
+
+let _registered = false;
+export function registerExtrudeGeometryBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ExtrudeGeometryBlock", ExtrudeGeometryBlock);
 }

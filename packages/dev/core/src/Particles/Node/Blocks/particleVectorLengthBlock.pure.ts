@@ -3,6 +3,7 @@
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to compute vector length
@@ -55,4 +56,15 @@ export class ParticleVectorLengthBlock extends NodeParticleBlock {
             return input.length();
         };
     }
+}
+
+
+let _registered = false;
+export function registerParticleVectorLengthBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleVectorLengthBlock", ParticleVectorLengthBlock);
 }

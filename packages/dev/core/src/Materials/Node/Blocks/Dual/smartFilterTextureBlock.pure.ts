@@ -2,18 +2,19 @@
 
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { CurrentScreenBlock } from "./currentScreenBlock";
-import { InputBlock } from "../Input/inputBlock";
+import { CurrentScreenBlock } from "./currentScreenBlock.pure";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { type NodeMaterialBlock } from "../../nodeMaterialBlock";
-import { type NodeMaterial } from "../../nodeMaterial";
-import { type Scene } from "core/scene";
-import { SfeModeDefine } from "../Fragment/smartFilterFragmentOutputBlock";
+import { type NodeMaterial } from "../../nodeMaterial.pure";
+import { type Scene } from "core/scene.pure";
+import { SfeModeDefine } from "../Fragment/smartFilterFragmentOutputBlock.pure";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type Nullable } from "../../../../types";
-import { type BaseTexture } from "../../../Textures/baseTexture";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { ImageSourceBlock } from "./imageSourceBlock";
+import { ImageSourceBlock } from "./imageSourceBlock.pure";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Base block used for creating Smart Filter shader blocks for the SFE framework.
@@ -167,4 +168,15 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         super._deserialize(serializationObject, scene, rootUrl);
         this.isMainInput = serializationObject.isMainInput;
     }
+}
+
+
+let _registered = false;
+export function registerSmartFilterTextureBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SmartFilterTextureBlock", SmartFilterTextureBlock);
 }

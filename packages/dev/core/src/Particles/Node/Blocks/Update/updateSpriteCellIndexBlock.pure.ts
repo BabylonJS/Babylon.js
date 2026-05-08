@@ -4,9 +4,10 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem.pure";
 import { type Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to update the sprite cell index of a particle
@@ -86,4 +87,15 @@ export class UpdateSpriteCellIndexBlock extends NodeParticleBlock {
             system._updateQueueStart = spriteCellIndexProcessing;
         }
     }
+}
+
+
+let _registered = false;
+export function registerUpdateSpriteCellIndexBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.UpdateSpriteCellIndexBlock", UpdateSpriteCellIndexBlock);
 }

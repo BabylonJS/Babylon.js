@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBuildState, type FrameGraph } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBuildState, type FrameGraph } from "core/index.pure";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { FrameGraphCullObjectsTask } from "../../Tasks/Misc/cullObjectsTask";
 import { type Camera } from "../../../Cameras/camera";
 import { type FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block that culls a list of objects
@@ -89,4 +90,15 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
     }
+}
+
+
+let _registered = false;
+export function registerCullObjectsBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphCullObjectsBlock", NodeRenderGraphCullObjectsBlock);
 }

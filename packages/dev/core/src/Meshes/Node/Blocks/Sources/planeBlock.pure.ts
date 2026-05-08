@@ -4,10 +4,11 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import { GeometryInputBlock } from "../geometryInputBlock";
-import { Matrix } from "../../../../Maths/math.vector";
+import { GeometryInputBlock } from "../geometryInputBlock.pure";
+import { Matrix } from "../../../../Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
-import { CreateGroundVertexData } from "core/Meshes/Builders/groundBuilder";
+import { CreateGroundVertexData } from "core/Meshes/Builders/groundBuilder.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Defines a block used to generate plane geometry data
@@ -188,4 +189,15 @@ export class PlaneBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
     }
+}
+
+
+let _registered = false;
+export function registerPlaneBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PlaneBlock", PlaneBlock);
 }

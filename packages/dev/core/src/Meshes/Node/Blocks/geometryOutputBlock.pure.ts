@@ -6,6 +6,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { type VertexData } from "core/Meshes/mesh.vertexData";
 import { type Nullable } from "../../../types";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to generate the final geometry
@@ -50,4 +51,15 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
         state.vertexData = this.geometry.getConnectedValue(state);
         this._vertexData = state.vertexData;
     }
+}
+
+
+let _registered = false;
+export function registerGeometryOutputBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryOutputBlock", GeometryOutputBlock);
 }

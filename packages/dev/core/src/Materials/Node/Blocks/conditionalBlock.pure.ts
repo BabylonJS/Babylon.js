@@ -5,10 +5,11 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { type Scene } from "../../../scene";
+import { type Scene } from "../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import { type NodeMaterial } from "../nodeMaterial";
-import { InputBlock } from "./Input/inputBlock";
+import { type NodeMaterial } from "../nodeMaterial.pure";
+import { InputBlock } from "./Input/inputBlock.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Operations supported by the ConditionalBlock block
@@ -235,4 +236,15 @@ export class ConditionalBlock extends NodeMaterialBlock {
             super._dumpPropertiesCode() + `${this._codeVariableName}.condition = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\n`;
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerConditionalBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ConditionalBlock", ConditionalBlock);
 }

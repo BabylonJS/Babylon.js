@@ -4,8 +4,9 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import { GeometryInputBlock } from "../geometryInputBlock";
-import { Matrix, Vector3 } from "../../../../Maths/math.vector";
+import { GeometryInputBlock } from "../geometryInputBlock.pure";
+import { Matrix, Vector3 } from "../../../../Maths/math.vector.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to get a translation matrix
@@ -61,4 +62,15 @@ export class TranslationBlock extends NodeGeometryBlock {
             return Matrix.Translation(value.x, value.y, value.z);
         };
     }
+}
+
+
+let _registered = false;
+export function registerTranslationBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.TranslationBlock", TranslationBlock);
 }

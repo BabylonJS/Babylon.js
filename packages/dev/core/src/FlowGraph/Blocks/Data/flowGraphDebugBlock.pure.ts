@@ -2,10 +2,11 @@
 
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "../../flowGraphBlock";
-import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypeAny } from "../../flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
+import { RichTypeAny } from "../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { type Nullable } from "../../../types";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Maximum number of log entries stored by the debug block.
@@ -114,4 +115,15 @@ export class FlowGraphDebugBlock extends FlowGraphBlock {
     public override getClassName(): string {
         return FlowGraphBlockNames.DebugBlock;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphDebugBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.DebugBlock, FlowGraphDebugBlock);
 }

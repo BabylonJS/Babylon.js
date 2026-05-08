@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import twirlBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./twirlBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { TwirlBlock } from "./twirlBlock.pure";
-
-RegisterClass("BABYLON.TwirlBlock", TwirlBlock);
+import { registerTwirlBlock } from "./twirlBlock.pure";
+registerTwirlBlock();

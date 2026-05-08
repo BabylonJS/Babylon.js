@@ -2,6 +2,7 @@
 
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { BaseMathBlock } from "./baseMathBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to divide 2 vectors
@@ -32,4 +33,15 @@ export class DivideBlock extends BaseMathBlock {
 
         return this;
     }
+}
+
+
+let _registered = false;
+export function registerDivideBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.DivideBlock", DivideBlock);
 }

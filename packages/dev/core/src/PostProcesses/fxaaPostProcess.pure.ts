@@ -3,15 +3,16 @@
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
 import { type Effect } from "../Materials/effect";
-import { Texture } from "../Materials/Textures/texture";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ThinFXAAPostProcess } from "./thinFXAAPostProcess";
 
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
+import { RegisterClass } from "../Misc/typeStore";
 /**
  * Fxaa post process
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#fxaa
@@ -77,4 +78,15 @@ export class FxaaPostProcess extends PostProcess {
             rootUrl
         );
     }
+}
+
+
+let _registered = false;
+export function registerFxaaPostProcess(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.FxaaPostProcess", FxaaPostProcess);
 }

@@ -4,6 +4,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used as a pass through
  */
@@ -53,4 +54,15 @@ export class ParticleElbowBlock extends NodeParticleBlock {
             return input.getConnectedValue(state);
         };
     }
+}
+
+
+let _registered = false;
+export function registerParticleElbowBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.ParticleElbowBlock", ParticleElbowBlock);
 }

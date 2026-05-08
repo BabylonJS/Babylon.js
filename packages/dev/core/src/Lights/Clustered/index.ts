@@ -1,5 +1,4 @@
-export * from "./clusteredLightContainer";
-export * from "./clusteredLightingSceneComponent";
+export * from "./index.pure";
 
 import "../../Shaders/lightProxy.fragment";
 import "../../Shaders/lightProxy.vertex";

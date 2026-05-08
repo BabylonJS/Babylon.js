@@ -5,6 +5,7 @@ import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type VertexData } from "../../mesh.vertexData";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to get information about a geometry
@@ -113,4 +114,15 @@ export class GeometryInfoBlock extends NodeGeometryBlock {
             return this._currentVertexData.indices ? this._currentVertexData.indices.length / 3 : 0;
         };
     }
+}
+
+
+let _registered = false;
+export function registerGeometryInfoBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryInfoBlock", GeometryInfoBlock);
 }

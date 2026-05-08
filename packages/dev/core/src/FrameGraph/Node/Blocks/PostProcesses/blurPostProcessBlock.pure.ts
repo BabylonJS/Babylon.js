@@ -1,11 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the blur post process
@@ -81,4 +82,15 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBaseWith
         this.direction.fromArray(serializationObject.direction);
         this.kernel = serializationObject.kernel;
     }
+}
+
+
+let _registered = false;
+export function registerBlurPostProcessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphBlurPostProcessBlock", NodeRenderGraphBlurPostProcessBlock);
 }

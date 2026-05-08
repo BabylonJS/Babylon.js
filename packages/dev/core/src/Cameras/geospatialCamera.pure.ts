@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
-import { Vector3, Matrix, TmpVectors, type Vector2 } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, type Vector2 } from "../Maths/math.vector.pure";
 import { Epsilon } from "../Maths/math.constants";
 import { Camera } from "./camera";
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { type MeshPredicate } from "../Culling/ray.core";
 import { type DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
@@ -16,7 +16,8 @@ import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
 import { type AllowedAnimValue, InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import { type Collider } from "../Collisions/collider";
 import { type EasingFunction } from "../Animations/easing";
-import { type Animation } from "../Animations/animation";
+import { type Animation } from "../Animations/animation.pure";
+import { RegisterClass } from "../Misc/typeStore";
 
 export type GeospatialCameraOptions = {
     /**
@@ -707,4 +708,15 @@ export function ComputeYawPitchFromLookAtToRef(
     result.x = Math.atan2(sinYaw, cosYaw);
     result.y = pitch;
     return result;
+}
+
+
+let _registered = false;
+export function registerGeospatialCamera(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeospatialCamera", GeospatialCamera);
 }

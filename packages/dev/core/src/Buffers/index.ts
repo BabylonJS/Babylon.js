@@ -1,5 +1,3 @@
-export * from "./buffer";
-export * from "./bufferUtils";
-export * from "./dataBuffer";
-export * from "./storageBuffer";
+export * from "./index.pure";
+
 import "./buffer.align";

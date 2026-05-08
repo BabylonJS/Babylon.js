@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * This block debounces the execution of a input, i.e. ensures that the input is only executed once every X times
@@ -55,4 +56,15 @@ export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal
     public override getClassName(): string {
         return FlowGraphBlockNames.Debounce;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphDebounceBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.Debounce, FlowGraphDebounceBlock);
 }

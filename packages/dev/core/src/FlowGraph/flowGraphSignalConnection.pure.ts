@@ -4,6 +4,7 @@ import { type FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphAction } from "./flowGraphLogger";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Represents a connection point for a signal.
@@ -68,4 +69,15 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
             }
         }
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphSignalConnection(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("FlowGraphSignalConnection", FlowGraphSignalConnection);
 }

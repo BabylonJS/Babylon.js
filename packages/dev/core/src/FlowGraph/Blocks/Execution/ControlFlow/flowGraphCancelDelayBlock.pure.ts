@@ -3,13 +3,14 @@
 import { type AdvancedTimer } from "../../../../Misc/timer";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
-import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import { type FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { type FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { getNumericValue } from "core/FlowGraph/utils";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * This block cancels a delay that was previously scheduled.
@@ -43,4 +44,15 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
     public override getClassName(): string {
         return FlowGraphBlockNames.CancelDelay;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphCancelDelayBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.CancelDelay, FlowGraphCancelDelayBlock);
 }

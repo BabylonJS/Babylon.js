@@ -1,11 +1,8 @@
 /**
- * Re-exports all pure types and registers them with the serialization system.
- * Import this file (or the barrel) when you need serialization support (RegisterClass).
+ * Re-exports pure implementation and applies runtime side effects.
  * Import rotationZBlock.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./rotationZBlock.pure";
 
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { RotationZBlock } from "./rotationZBlock.pure";
-
-RegisterClass("BABYLON.RotationZBlock", RotationZBlock);
+import { registerRotationZBlock } from "./rotationZBlock.pure";
+registerRotationZBlock();

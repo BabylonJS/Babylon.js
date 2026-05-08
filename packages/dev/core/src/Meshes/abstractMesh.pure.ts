@@ -3,8 +3,8 @@
 import { Observable } from "../Misc/observable";
 import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
 import { type Camera } from "../Cameras/camera";
-import { type Scene, type IDisposable, ScenePerformancePriority } from "../scene";
-import { type Vector2, Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
+import { type Scene, type IDisposable, ScenePerformancePriority } from "../scene.pure";
+import { type Vector2, Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
 import { type Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
 import { type IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
@@ -19,7 +19,7 @@ import { type Light } from "../Lights/light";
 import { type Skeleton } from "../Bones/skeleton";
 import { type MorphTargetManager } from "../Morph/morphTargetManager";
 import { type IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
-import { type IEdgesRenderer, type IEdgesRendererOptions } from "../Rendering/edgesRenderer";
+import { type IEdgesRenderer, type IEdgesRendererOptions } from "../Rendering/edgesRenderer.pure";
 import { type SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { type AbstractActionManager } from "../Actions/abstractActionManager";
@@ -28,19 +28,20 @@ import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport } from "../Misc/devTools";
 import { type RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
-import { Color3, Color4 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color.pure";
 import { Epsilon } from "../Maths/math.constants";
 import { type Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import { type IParticleSystem } from "../Particles/IParticleSystem";
 
-import { type Ray, type TrianglePickingPredicate } from "../Culling/ray";
+import { type Ray, type TrianglePickingPredicate } from "../Culling/ray.pure";
 import { type Collider } from "../Collisions/collider";
 import { type RenderingGroup } from "../Rendering/renderingGroup";
 import { type MorphTarget } from "../Morph/morphTarget";
 import { type Geometry } from "./geometry";
 import { nativeOverride } from "../Misc/decorators";
 import { AbstractEngine } from "core/Engines/abstractEngine";
+import { RegisterClass } from "../Misc/typeStore";
 
 function ApplyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTargetManager): void {
     let getTargetData: Nullable<(target: MorphTarget) => Nullable<FloatArray>>;
@@ -2832,4 +2833,15 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public getConnectedParticleSystems(): IParticleSystem[] {
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
+}
+
+
+let _registered = false;
+export function registerAbstractMesh(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.AbstractMesh", AbstractMesh);
 }

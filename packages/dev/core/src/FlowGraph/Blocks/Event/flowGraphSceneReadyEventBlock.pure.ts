@@ -4,6 +4,7 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block that triggers when a scene is ready.
  */
@@ -28,4 +29,15 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     public override getClassName() {
         return FlowGraphBlockNames.SceneReadyEvent;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphSceneReadyEventBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.SceneReadyEvent, FlowGraphSceneReadyEventBlock);
 }

@@ -15,6 +15,7 @@ import { FrameGraphGlowLayerTask } from "core/FrameGraph/Tasks/Layers/glowLayerT
 import { Constants } from "core/Engines/constants";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block that implements the glow layer
@@ -237,4 +238,15 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
         this.blurKernelSize = serializationObject.blurKernelSize;
         this.intensity = serializationObject.intensity;
     }
+}
+
+
+let _registered = false;
+export function registerGlowLayerBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NodeRenderGraphGlowLayerBlock", NodeRenderGraphGlowLayerBlock);
 }

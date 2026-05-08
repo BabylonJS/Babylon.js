@@ -5,31 +5,31 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import { InputBlock } from "../Input/inputBlock";
+import { InputBlock } from "../Input/inputBlock.pure";
 import { type Light } from "../../../../Lights/light";
 import { type Nullable } from "../../../../types";
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { type Effect } from "../../../effect";
-import { type Mesh } from "../../../../Meshes/mesh";
-import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
-import { type Scene } from "../../../../scene";
+import { type Mesh } from "../../../../Meshes/mesh.pure";
+import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial.pure";
+import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { SheenBlock } from "./sheenBlock";
-import { type BaseTexture } from "../../../Textures/baseTexture";
+import { SheenBlock } from "./sheenBlock.pure";
+import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { GetEnvironmentBRDFTexture } from "../../../../Misc/brdfTextureTools";
 import { MaterialFlags } from "../../../materialFlags";
-import { AnisotropyBlock } from "./anisotropyBlock";
-import { ReflectionBlock } from "./reflectionBlock";
-import { ClearCoatBlock } from "./clearCoatBlock";
-import { IridescenceBlock } from "./iridescenceBlock";
-import { SubSurfaceBlock } from "./subSurfaceBlock";
-import { type RefractionBlock } from "./refractionBlock";
-import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { AnisotropyBlock } from "./anisotropyBlock.pure";
+import { ReflectionBlock } from "./reflectionBlock.pure";
+import { ClearCoatBlock } from "./clearCoatBlock.pure";
+import { IridescenceBlock } from "./iridescenceBlock.pure";
+import { SubSurfaceBlock } from "./subSurfaceBlock.pure";
+import { type RefractionBlock } from "./refractionBlock.pure";
+import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock.pure";
 import { Constants } from "../../../../Engines/constants";
-import { Color3 } from "../../../../Maths/math.color";
+import { Color3 } from "../../../../Maths/math.color.pure";
 import { Logger } from "core/Misc/logger";
 import {
     BindLight,
@@ -40,6 +40,7 @@ import {
     PrepareUniformsAndSamplersForLight,
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 const MapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
@@ -1657,4 +1658,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         this._setTarget();
     }
+}
+
+
+let _registered = false;
+export function registerPbrMetallicRoughnessBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.PBRMetallicRoughnessBlock", PBRMetallicRoughnessBlock);
 }

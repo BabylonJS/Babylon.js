@@ -7,11 +7,12 @@ import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection 
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { type NodeMaterialDefines } from "../../nodeMaterial";
-import { type ReflectionBlock } from "./reflectionBlock";
-import { type Scene } from "../../../../scene";
+import { type NodeMaterialDefines } from "../../nodeMaterial.pure";
+import { type ReflectionBlock } from "./reflectionBlock.pure";
+import { type Scene } from "../../../../scene.pure";
 import { type Nullable } from "../../../../types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to implement the sheen module of the PBR material
@@ -236,4 +237,15 @@ export class SheenBlock extends NodeMaterialBlock {
         this.albedoScaling = serializationObject.albedoScaling;
         this.linkSheenWithAlbedo = serializationObject.linkSheenWithAlbedo;
     }
+}
+
+
+let _registered = false;
+export function registerSheenBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.SheenBlock", SheenBlock);
 }

@@ -5,8 +5,9 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Operations supported by the Trigonometry block
@@ -289,4 +290,15 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\n`;
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerGeometryTrigonometryBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.GeometryTrigonometryBlock", GeometryTrigonometryBlock);
 }

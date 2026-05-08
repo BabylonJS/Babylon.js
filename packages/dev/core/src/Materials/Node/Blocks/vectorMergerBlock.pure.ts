@@ -5,7 +5,8 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { type Scene } from "../../../scene";
+import { type Scene } from "../../../scene.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
@@ -348,4 +349,15 @@ export class VectorMergerBlock extends NodeMaterialBlock {
 
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerVectorMergerBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.VectorMergerBlock", VectorMergerBlock);
 }

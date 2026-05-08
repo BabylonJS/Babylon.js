@@ -5,10 +5,11 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { InputBlock } from "./Input/inputBlock";
-import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
+import { InputBlock } from "./Input/inputBlock.pure";
+import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { type Scene } from "core/scene";
+import { type Scene } from "core/scene.pure";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 export const enum MeshAttributeExistsBlockTypes {
     None,
@@ -228,4 +229,15 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
 
         return codeString;
     }
+}
+
+
+let _registered = false;
+export function registerMeshAttributeExistsBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.MeshAttributeExistsBlock", MeshAttributeExistsBlock);
 }

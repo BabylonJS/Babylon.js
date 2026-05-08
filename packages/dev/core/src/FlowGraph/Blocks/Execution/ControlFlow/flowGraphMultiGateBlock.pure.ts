@@ -1,13 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
-import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Configuration for the multi gate block.
  */
@@ -134,4 +135,15 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         serializationObject.config.loop = this.config.isLoop;
         serializationObject.config.startIndex = this.config.startIndex;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphMultiGateBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.MultiGate, FlowGraphMultiGateBlock);
 }

@@ -2,12 +2,13 @@
 
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeAny, RichTypeBoolean } from "../../../flowGraphRichTypes";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { RichTypeAny, RichTypeBoolean } from "../../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 import { type AbstractSound } from "../../../../AudioV2/abstractAudio/abstractSound";
 import { SoundState } from "../../../../AudioV2/soundState";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * @experimental
@@ -45,4 +46,15 @@ export class FlowGraphIsSoundPlayingBlock extends FlowGraphCachedOperationBlock<
     public override getClassName(): string {
         return FlowGraphBlockNames.AudioIsSoundPlaying;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphIsSoundPlayingBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.AudioIsSoundPlaying, FlowGraphIsSoundPlayingBlock);
 }

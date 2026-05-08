@@ -4,6 +4,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to normalize vectors
  */
@@ -58,4 +59,15 @@ export class NormalizeVectorBlock extends NodeGeometryBlock {
 
         this.output._storedFunction = (state) => this.input.getConnectedValue(state).normalize();
     }
+}
+
+
+let _registered = false;
+export function registerNormalizeVectorBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass("BABYLON.NormalizeVectorBlock", NormalizeVectorBlock);
 }

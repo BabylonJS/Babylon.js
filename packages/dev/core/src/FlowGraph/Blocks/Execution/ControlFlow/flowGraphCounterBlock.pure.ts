@@ -1,12 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { type FlowGraphContext } from "../../../flowGraphContext";
-import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeNumber } from "../../../flowGraphRichTypes";
-import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { RichTypeNumber } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * A block that counts the number of times it has been called.
  * Afterwards it activates its out signal.
@@ -47,4 +48,15 @@ export class FlowGraphCallCounterBlock extends FlowGraphExecutionBlockWithOutSig
     public override getClassName(): string {
         return FlowGraphBlockNames.CallCounter;
     }
+}
+
+
+let _registered = false;
+export function registerFlowGraphCounterBlock(): void {
+    if (_registered) {
+        return;
+    }
+    _registered = true;
+
+    RegisterClass(FlowGraphBlockNames.CallCounter, FlowGraphCallCounterBlock);
 }
