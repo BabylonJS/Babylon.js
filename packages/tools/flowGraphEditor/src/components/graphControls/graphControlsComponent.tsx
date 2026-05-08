@@ -66,6 +66,21 @@ const useStyles = makeStyles({
         letterSpacing: "0.03em",
         textTransform: "uppercase",
     },
+    stateStack: {
+        // CSS grid stack: all four labels share grid cell 1/1 so the container's intrinsic
+        // width equals the widest label. Only the currently-active label is visible — the
+        // others reserve the same space with `visibility: hidden`. This eliminates horizontal
+        // shift of subsequent toolbar items as the graph state changes.
+        display: "inline-grid",
+        marginLeft: tokens.spacingHorizontalS,
+    },
+    stateStackChild: {
+        gridArea: "1 / 1",
+        marginLeft: 0,
+    },
+    stateHidden: {
+        visibility: "hidden",
+    },
     stateStopped: { color: tokens.colorNeutralForeground3 },
     stateRunning: { color: tokens.colorPaletteGreenForeground1 },
     statePaused: { color: tokens.colorPaletteYellowForeground1 },
@@ -347,8 +362,17 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
     const canContinue = breakpointPaused;
     const canStep = breakpointPaused;
 
-    const stateLabel = breakpointPaused ? "Breakpoint" : isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
-    const stateClass = breakpointPaused ? classes.stateBreakpoint : isStopped ? classes.stateStopped : isStarted ? classes.stateRunning : classes.statePaused;
+    // Render all four state labels stacked in the same grid cell so the container reserves
+    // space for the widest one ("Breakpoint"). Only the active label is visible; the others are
+    // visibility: hidden so they still contribute to the cell's intrinsic width and prevent the
+    // surrounding toolbar items from shifting horizontally as state transitions happen.
+    const activeStateKey = breakpointPaused ? "Breakpoint" : isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
+    const stateEntries: { key: string; label: string; className: string }[] = [
+        { key: "Stopped", label: "Stopped", className: classes.stateStopped },
+        { key: "Running", label: "Running", className: classes.stateRunning },
+        { key: "Paused", label: "Paused", className: classes.statePaused },
+        { key: "Breakpoint", label: "Breakpoint", className: classes.stateBreakpoint },
+    ];
 
     const validationSummary: ReactNode = (() => {
         if (!validationResult || validationResult.issues.length === 0) {
@@ -411,7 +435,16 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
             <Tooltip content="Step (execute one block)" relationship="label">
                 <Button size="small" appearance="subtle" icon={<NextRegular />} onClick={onStep} disabled={!canStep} />
             </Tooltip>
-            <Body1 className={mergeClasses(classes.state, stateClass)}>{stateLabel}</Body1>
+            <div className={classes.stateStack}>
+                {stateEntries.map((entry) => (
+                    <Body1
+                        key={entry.key}
+                        className={mergeClasses(classes.state, classes.stateStackChild, entry.className, entry.key !== activeStateKey ? classes.stateHidden : undefined)}
+                    >
+                        {entry.label}
+                    </Body1>
+                ))}
+            </div>
             <Divider vertical className={classes.separator} />
             <div className={classes.contextGroup}>
                 <Caption1 className={classes.label}>Ctx</Caption1>
