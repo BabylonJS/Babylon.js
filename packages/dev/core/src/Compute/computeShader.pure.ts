@@ -19,7 +19,7 @@ import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { type ExternalTexture } from "core/Materials/Textures/externalTexture";
 import { type VideoTexture } from "core/Materials/Textures/videoTexture.pure";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { RegisterClass } from "../Misc/typeStore";
@@ -543,7 +543,6 @@ export class ComputeShader {
         return (buffer as DataBuffer).underlyingResource !== undefined;
     }
 }
-
 
 let _registered = false;
 export function registerComputeShader(): void {

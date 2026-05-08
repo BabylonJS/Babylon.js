@@ -9,8 +9,8 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
-import { Observable } from "../../Misc/observable";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
+import { Observable } from "../../Misc/observable.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**

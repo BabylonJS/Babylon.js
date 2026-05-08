@@ -5,7 +5,7 @@ import { Scene } from "../scene.pure";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { Collider } from "./collider";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { AbstractEngine } from "core/Engines/abstractEngine";
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 
 /** @internal */
 export interface ICollisionCoordinator {
@@ -119,7 +119,6 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, slideOnCollide, excludedMesh);
     }
 }
-
 
 let _registered = false;
 export function registerCollisionCoordinator(): void {

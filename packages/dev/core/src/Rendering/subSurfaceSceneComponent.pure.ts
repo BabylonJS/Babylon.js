@@ -8,30 +8,6 @@ import { Color3 } from "../Maths/math.color.pure";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
 
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal (Backing field) */
-        _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
-
-        /**
-         * Gets or Sets the current prepass renderer associated to the scene.
-         */
-        subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
-
-        /**
-         * Enables the subsurface effect for prepass
-         * @returns the SubSurfaceConfiguration
-         */
-        enableSubSurfaceForPrePass(): Nullable<SubSurfaceConfiguration>;
-
-        /**
-         * Disables the subsurface effect for prepass
-         */
-        disableSubSurfaceForPrePass(): void;
-    }
-}
-
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
  * in several rendering techniques.

@@ -125,7 +125,6 @@ export class WaveBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerWaveBlock(): void {
     if (_registered) {

@@ -6,12 +6,12 @@ import { ThinWebGPUEngine } from "./thinWebGPUEngine";
 import { type Nullable, type DataArray, type IndicesArray, type Immutable, type FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect.pure";
 import { type EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type IWebGPURenderPipelineStageDescriptor, WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
 import { type IPipelineContext } from "./IPipelineContext";
 import { type DataBuffer } from "../Buffers/dataBuffer";
@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools.pure";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { AbstractEngine, type ISceneLike, type AbstractEngineOptions } from "./abstractEngine";
+import { AbstractEngine, type ISceneLike, type AbstractEngineOptions } from "./abstractEngine.pure";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";

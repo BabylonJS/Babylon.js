@@ -1,3 +1,4 @@
+export * from "./nativeEngine.cubeTexture.types";
 /**
  * Re-exports pure implementation and applies runtime side effects.
  * Import nativeEngine.cubeTexture.pure for tree-shakeable, side-effect-free usage.

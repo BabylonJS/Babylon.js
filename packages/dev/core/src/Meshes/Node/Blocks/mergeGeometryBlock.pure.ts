@@ -166,7 +166,6 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMergeGeometryBlock(): void {
     if (_registered) {

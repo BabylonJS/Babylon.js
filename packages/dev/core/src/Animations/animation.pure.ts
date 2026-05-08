@@ -1689,7 +1689,6 @@ export class Animation {
     public static CreateFromSnippetAsync = Animation.ParseFromSnippetAsync;
 }
 
-
 let _registered = false;
 export function registerAnimation(): void {
     if (_registered) {

@@ -60,7 +60,6 @@ export class ReciprocalBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerReciprocalBlock(): void {
     if (_registered) {

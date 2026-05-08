@@ -2,13 +2,13 @@
 
 import { serialize } from "../Misc/decorators";
 import { Scene } from "../scene.pure";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { type Effect } from "../Materials/effect";
-import { type Material } from "../Materials/material";
+import { type Effect } from "../Materials/effect.pure";
+import { type Material } from "../Materials/material.pure";
 import { type PostProcess } from "../PostProcesses/postProcess.pure";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess.pure";
 import { ThinGlowLayer } from "./thinGlowLayer";
@@ -21,20 +21,6 @@ import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { type ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /**
-         * Return the first glow layer of the scene with a given name.
-         * @param name The name of the glow layer to look for.
-         * @returns The glow layer if found otherwise null.
-         */
-        getGlowLayerByName(name: string): Nullable<GlowLayer>;
-    }
-}
 
 /**
  * Glow layer options. This helps customizing the behaviour

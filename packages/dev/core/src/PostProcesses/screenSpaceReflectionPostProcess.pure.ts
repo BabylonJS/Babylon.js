@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { PostProcess } from "./postProcess.pure";
 import type { PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
@@ -11,13 +11,10 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type PrePassRenderer } from "../Rendering/prePassRenderer.pure";
 import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceReflectionsConfiguration";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Scene } from "../scene.pure";
 import { Logger } from "core/Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 /**
  * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
@@ -307,7 +304,6 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerScreenSpaceReflectionPostProcess(): void {

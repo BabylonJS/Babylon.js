@@ -113,7 +113,6 @@ export class AlignAngleBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerAlignAngleBlock(): void {
     if (_registered) {

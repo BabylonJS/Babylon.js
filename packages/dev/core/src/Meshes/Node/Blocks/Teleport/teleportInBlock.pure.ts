@@ -153,7 +153,6 @@ export class TeleportInBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMeshesNodeBlocksTeleportTeleportInBlock(): void {
     if (_registered) {

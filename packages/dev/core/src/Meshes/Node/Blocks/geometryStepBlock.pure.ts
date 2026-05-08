@@ -96,7 +96,6 @@ export class GeometryStepBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryStepBlock(): void {
     if (_registered) {

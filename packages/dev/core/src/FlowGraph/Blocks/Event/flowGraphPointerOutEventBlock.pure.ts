@@ -96,7 +96,6 @@ export class FlowGraphPointerOutEventBlock extends FlowGraphEventBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphPointerOutEventBlock(): void {
     if (_registered) {

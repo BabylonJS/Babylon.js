@@ -35,7 +35,6 @@ export class SubtractBlock extends BaseMathBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSubtractBlock(): void {
     if (_registered) {

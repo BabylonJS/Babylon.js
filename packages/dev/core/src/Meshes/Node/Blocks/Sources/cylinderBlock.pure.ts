@@ -196,7 +196,6 @@ export class CylinderBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCylinderBlock(): void {
     if (_registered) {

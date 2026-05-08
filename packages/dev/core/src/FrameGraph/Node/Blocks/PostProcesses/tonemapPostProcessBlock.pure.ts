@@ -104,7 +104,6 @@ export class NodeRenderGraphTonemapPostProcessBlock extends NodeRenderGraphBaseW
     }
 }
 
-
 let _registered = false;
 export function registerTonemapPostProcessBlock(): void {
     if (_registered) {

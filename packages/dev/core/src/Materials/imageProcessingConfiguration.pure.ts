@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
 import { ColorCurves } from "../Materials/colorCurves.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { Mix } from "../Misc/tools.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
@@ -655,7 +655,6 @@ export class ImageProcessingConfiguration {
         return this._VIGNETTEMODE_OPAQUE;
     }
 }
-
 
 let _registered = false;
 export function registerImageProcessingConfiguration(): void {

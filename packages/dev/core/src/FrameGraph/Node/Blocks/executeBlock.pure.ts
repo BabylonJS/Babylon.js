@@ -75,7 +75,6 @@ export class NodeRenderGraphExecuteBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerExecuteBlock(): void {
     if (_registered) {

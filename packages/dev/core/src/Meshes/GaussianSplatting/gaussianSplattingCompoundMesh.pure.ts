@@ -89,7 +89,6 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
     }
 }
 
-
 let _registered = false;
 export function registerGaussianSplattingCompoundMesh(): void {
     if (_registered) {

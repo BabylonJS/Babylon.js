@@ -72,7 +72,6 @@ export class ModBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerModBlock(): void {
     if (_registered) {

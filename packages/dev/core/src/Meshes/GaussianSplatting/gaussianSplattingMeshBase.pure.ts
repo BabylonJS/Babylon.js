@@ -3,7 +3,7 @@
 import { type Scene } from "core/scene.pure";
 import { type DeepImmutable, type Nullable } from "core/types";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture.pure";
-import { SubMesh } from "../subMesh";
+import { SubMesh } from "../subMesh.pure";
 import { type AbstractMesh } from "../abstractMesh.pure";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
@@ -15,12 +15,12 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import { ToHalfFloat } from "core/Misc/textureTools";
-import { type Material } from "core/Materials/material";
-import { type Effect } from "core/Materials/effect";
+import { type Material } from "core/Materials/material.pure";
+import { type Effect } from "core/Materials/effect.pure";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
-import { type Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera.pure";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import { type INative } from "core/Engines/Native/nativeInterfaces";
 

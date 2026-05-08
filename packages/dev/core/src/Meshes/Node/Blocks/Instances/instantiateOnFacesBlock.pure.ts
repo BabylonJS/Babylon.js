@@ -334,7 +334,6 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     }
 }
 
-
 let _registered = false;
 export function registerInstantiateOnFacesBlock(): void {
     if (_registered) {

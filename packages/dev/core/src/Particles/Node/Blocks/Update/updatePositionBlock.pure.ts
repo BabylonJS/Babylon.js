@@ -87,7 +87,6 @@ export class UpdatePositionBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdatePositionBlock(): void {
     if (_registered) {

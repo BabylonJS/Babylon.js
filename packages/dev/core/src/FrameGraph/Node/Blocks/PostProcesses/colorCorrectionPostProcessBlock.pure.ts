@@ -72,7 +72,6 @@ export class NodeRenderGraphColorCorrectionPostProcessBlock extends NodeRenderGr
     }
 }
 
-
 let _registered = false;
 export function registerColorCorrectionPostProcessBlock(): void {
     if (_registered) {

@@ -89,7 +89,6 @@ export class FlowGraphFloatToInt extends FlowGraphUnaryOperationBlock<number, Fl
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphTypeToTypeBlocks(): void {
     if (_registered) {

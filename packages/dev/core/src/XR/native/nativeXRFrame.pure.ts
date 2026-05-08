@@ -1,7 +1,6 @@
 import { RegisterNativeTypeAsync } from "../../Engines/thinNativeEngine.pure";
 /** This file must only contain pure code and pure imports */
 
-
 /** @internal */
 interface INativeXRFrame extends XRFrame {
     // Native-only helper functions
@@ -88,7 +87,6 @@ export class NativeXRFrame implements XRFrame {
         // return this._nativeImpl.getDepthInformation(view);
     }
 }
-
 
 let _registered = false;
 export function registerNativeXRFrame(): void {

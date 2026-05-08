@@ -5,18 +5,15 @@ import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader.pure";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { type Buffer, type VertexBuffer } from "../Buffers/buffer";
+import { type Buffer, type VertexBuffer } from "../Buffers/buffer.pure";
 import { type GPUParticleSystem } from "./gpuParticleSystem.pure";
 import { type DataArray, type Nullable } from "../types";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { type ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 /** @internal */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
@@ -247,7 +244,6 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._renderVertexBuffers.length = 0;
     }
 }
-
 
 let _registered = false;
 export function registerComputeShaderParticleSystem(): void {

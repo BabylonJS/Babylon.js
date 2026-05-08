@@ -174,7 +174,6 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerClearBlock(): void {
     if (_registered) {

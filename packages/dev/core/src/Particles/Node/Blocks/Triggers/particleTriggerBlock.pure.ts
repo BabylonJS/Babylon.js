@@ -159,7 +159,6 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleTriggerBlock(): void {
     if (_registered) {

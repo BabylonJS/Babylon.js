@@ -145,7 +145,6 @@ export class TwirlBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerTwirlBlock(): void {
     if (_registered) {

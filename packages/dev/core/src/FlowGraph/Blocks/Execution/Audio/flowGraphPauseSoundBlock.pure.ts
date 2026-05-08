@@ -56,7 +56,6 @@ export class FlowGraphPauseSoundBlock extends FlowGraphExecutionBlockWithOutSign
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphPauseSoundBlock(): void {
     if (_registered) {

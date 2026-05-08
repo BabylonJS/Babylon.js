@@ -1,6 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type Nullable, type FrameGraph, type NodeRenderGraphTeleportInBlock, type NodeRenderGraphBuildState } from "core/index.pure";
+import {
+    type NodeRenderGraphConnectionPoint,
+    type Scene,
+    type Nullable,
+    type FrameGraph,
+    type NodeRenderGraphTeleportInBlock,
+    type NodeRenderGraphBuildState,
+} from "core/index.pure";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -130,7 +137,6 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
     }
 }
-
 
 let _registered = false;
 export function registerFrameGraphNodeBlocksTeleportTeleportOutBlock(): void {

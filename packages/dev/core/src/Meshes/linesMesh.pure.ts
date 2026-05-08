@@ -3,14 +3,14 @@
 import { type Nullable } from "../types";
 import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type Node } from "../node";
-import { VertexBuffer } from "../Buffers/buffer";
-import { type SubMesh } from "../Meshes/subMesh";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { Mesh } from "../Meshes/mesh.pure";
 import { InstancedMesh } from "../Meshes/instancedMesh.pure";
-import { Material } from "../Materials/material";
+import { Material } from "../Materials/material.pure";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
 import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { type MeshCreationOptions } from "./mesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Scene } from "../scene.pure";

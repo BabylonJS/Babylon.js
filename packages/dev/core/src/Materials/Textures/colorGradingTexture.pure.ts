@@ -6,7 +6,7 @@ import { Matrix } from "../../Maths/math.vector.pure";
 import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { Constants } from "../../Engines/constants";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { RegisterClass } from "../../Misc/typeStore";
 
 /**
@@ -312,7 +312,6 @@ export class ColorGradingTexture extends BaseTexture {
         return serializationObject;
     }
 }
-
 
 let _registered = false;
 export function registerColorGradingTexture(): void {

@@ -94,7 +94,6 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSetVariableBlock(): void {
     if (_registered) {

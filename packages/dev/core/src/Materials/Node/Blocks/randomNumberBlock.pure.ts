@@ -66,7 +66,6 @@ export class RandomNumberBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerRandomNumberBlock(): void {
     if (_registered) {

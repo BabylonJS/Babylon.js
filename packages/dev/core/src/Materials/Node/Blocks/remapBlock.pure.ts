@@ -146,7 +146,6 @@ export class RemapBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerRemapBlock(): void {
     if (_registered) {

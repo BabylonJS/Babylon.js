@@ -5,7 +5,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Scene } from "../../../../scene.pure";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -109,7 +109,6 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerScreenSizeBlock(): void {

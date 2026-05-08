@@ -77,7 +77,6 @@ export class FlowGraphBezierCurveEasingBlock extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphBezierCurveEasingBlock(): void {
     if (_registered) {

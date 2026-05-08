@@ -1,17 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize } from "../../../Misc/decorators";
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable.pure";
 import { type Nullable } from "../../../types";
 import { type Scene } from "../../../scene.pure";
 import { type Matrix, type Vector4, type Vector3, type Vector2 } from "../../../Maths/math.vector.pure";
 import { type Color4, type Color3 } from "../../../Maths/math.color.pure";
-import { type AbstractEngine } from "../../../Engines/abstractEngine";
-import { VertexBuffer } from "../../../Buffers/buffer";
+import { type AbstractEngine } from "../../../Engines/abstractEngine.pure";
+import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
-import { Material } from "../../../Materials/material";
-import { type Effect } from "../../../Materials/effect";
+import { Material } from "../../../Materials/material.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { type RenderTargetTextureOptions, RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
@@ -856,7 +856,6 @@ export class ProceduralTexture extends Texture {
         super.dispose();
     }
 }
-
 
 let _registered = false;
 export function registerProceduralTexture(): void {

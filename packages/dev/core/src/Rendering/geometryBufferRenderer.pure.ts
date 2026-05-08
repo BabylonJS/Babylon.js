@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { Matrix } from "../Maths/math.vector.pure";
-import { VertexBuffer } from "../Buffers/buffer";
-import { type SubMesh } from "../Meshes/subMesh";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { Constants } from "../Engines/constants";
 import { type SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture.pure";
@@ -13,10 +13,10 @@ import { type Scene } from "../scene.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Color4 } from "../Maths/math.color.pure";
 import { _WarnImport } from "../Misc/devTools";
-import { type Observer } from "../Misc/observable";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Observer } from "../Misc/observable.pure";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Nullable } from "../types";
-import { Material } from "../Materials/material";
+import { Material } from "../Materials/material.pure";
 import { MaterialFlags } from "../Materials/materialFlags";
 import { BindClipPlane, PrepareStringDefinesForClipPlanes, AddClipPlaneUniforms } from "../Materials/clipPlaneMaterialHelper";
 import {

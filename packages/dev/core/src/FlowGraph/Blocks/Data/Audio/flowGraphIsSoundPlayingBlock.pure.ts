@@ -48,7 +48,6 @@ export class FlowGraphIsSoundPlayingBlock extends FlowGraphCachedOperationBlock<
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphIsSoundPlayingBlock(): void {
     if (_registered) {

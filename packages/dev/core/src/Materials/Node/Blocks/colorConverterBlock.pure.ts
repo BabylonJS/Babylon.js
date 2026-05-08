@@ -224,7 +224,6 @@ export class ColorConverterBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerColorConverterBlock(): void {
     if (_registered) {

@@ -2,9 +2,9 @@
 
 import { type Nullable } from "../types";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { ThinAnaglyphPostProcess } from "./thinAnaglyphPostProcess";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -54,7 +54,6 @@ export class AnaglyphPostProcess extends PostProcess {
         });
     }
 }
-
 
 let _registered = false;
 export function registerAnaglyphPostProcess(): void {

@@ -4,13 +4,13 @@ import { serializeAsVector3, serialize, serializeAsMeshReference } from "../Misc
 import { type SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
 import { Vector2, Vector3, Matrix } from "../Maths/math.vector.pure";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
-import { type Camera } from "../Cameras/camera";
-import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
-import { Material } from "../Materials/material";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect.pure";
+import { Material } from "../Materials/material.pure";
 import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
@@ -22,13 +22,9 @@ import { Color4, Color3 } from "../Maths/math.color.pure";
 import { Viewport } from "../Maths/math.viewport";
 import { type Nullable } from "../types";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
-
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
@@ -650,7 +646,6 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         return mesh;
     }
 }
-
 
 let _registered = false;
 export function registerVolumetricLightScatteringPostProcess(): void {

@@ -75,7 +75,6 @@ export class ReflectBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerReflectBlock(): void {
     if (_registered) {

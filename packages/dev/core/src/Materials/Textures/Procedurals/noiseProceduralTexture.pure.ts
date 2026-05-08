@@ -136,7 +136,6 @@ export class NoiseProceduralTexture extends ProceduralTexture {
     }
 }
 
-
 let _registered = false;
 export function registerNoiseProceduralTexture(): void {
     if (_registered) {

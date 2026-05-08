@@ -154,7 +154,6 @@ export class CapsuleBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCapsuleBlock(): void {
     if (_registered) {

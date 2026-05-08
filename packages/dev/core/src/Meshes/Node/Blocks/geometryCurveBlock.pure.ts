@@ -316,7 +316,6 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryCurveBlock(): void {
     if (_registered) {

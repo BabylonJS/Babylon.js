@@ -83,7 +83,6 @@ export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseW
     }
 }
 
-
 let _registered = false;
 export function registerSharpenPostProcessBlock(): void {
     if (_registered) {

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Observer } from "../../../Misc/observable";
+import { type Observer } from "../../../Misc/observable.pure";
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type Nullable } from "../../../types";
@@ -101,7 +101,6 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         return FlowGraphBlockNames.ReceiveCustomEvent;
     }
 }
-
 
 let _registered = false;
 export function registerFlowGraphReceiveCustomEventBlock(): void {

@@ -223,7 +223,6 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 }
 
-
 let _registered = false;
 export function registerConeShapeBlock(): void {
     if (_registered) {

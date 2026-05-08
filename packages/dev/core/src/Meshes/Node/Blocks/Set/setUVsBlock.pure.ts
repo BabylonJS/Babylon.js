@@ -210,7 +210,6 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     }
 }
 
-
 let _registered = false;
 export function registerSetUVsBlock(): void {
     if (_registered) {

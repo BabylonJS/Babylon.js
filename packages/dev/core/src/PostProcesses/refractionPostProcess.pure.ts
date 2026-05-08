@@ -1,20 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Color3 } from "../Maths/math.color.pure";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { PostProcess } from "./postProcess.pure";
 import type { PostProcessOptions } from "./postProcess";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 /**
  * Post process which applies a refraction texture
@@ -150,7 +147,6 @@ export class RefractionPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerRefractionPostProcess(): void {

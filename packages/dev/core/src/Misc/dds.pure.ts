@@ -8,7 +8,7 @@ import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html

@@ -135,7 +135,6 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
     }
 }
 
-
 let _registered = false;
 export function registerBloomPostProcessBlock(): void {
     if (_registered) {

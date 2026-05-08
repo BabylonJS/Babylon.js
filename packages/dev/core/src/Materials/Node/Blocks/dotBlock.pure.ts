@@ -68,7 +68,6 @@ export class DotBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerDotBlock(): void {
     if (_registered) {

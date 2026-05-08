@@ -78,7 +78,6 @@ export class FragDepthBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFragDepthBlock(): void {
     if (_registered) {

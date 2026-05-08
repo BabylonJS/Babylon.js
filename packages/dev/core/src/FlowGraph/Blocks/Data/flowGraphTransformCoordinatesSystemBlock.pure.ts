@@ -5,7 +5,7 @@ import { type FlowGraphContext } from "../../flowGraphContext";
 import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
 import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes.pure";
 import { TmpVectors, Vector3 } from "../../../Maths/math.vector.pure";
-import { type TransformNode } from "../../../Meshes/transformNode";
+import { type TransformNode } from "../../../Meshes/transformNode.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "../../../Misc/typeStore";
 
@@ -72,7 +72,6 @@ export class FlowGraphTransformCoordinatesSystemBlock extends FlowGraphBlock {
         return FlowGraphBlockNames.TransformCoordinatesSystem;
     }
 }
-
 
 let _registered = false;
 export function registerFlowGraphTransformCoordinatesSystemBlock(): void {

@@ -54,7 +54,6 @@ export class FlowGraphGetLinearVelocityBlock extends FlowGraphCachedOperationBlo
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphGetLinearVelocityBlock(): void {
     if (_registered) {

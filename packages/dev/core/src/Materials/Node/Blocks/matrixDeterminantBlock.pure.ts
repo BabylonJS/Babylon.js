@@ -56,7 +56,6 @@ export class MatrixDeterminantBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMatrixDeterminantBlock(): void {
     if (_registered) {

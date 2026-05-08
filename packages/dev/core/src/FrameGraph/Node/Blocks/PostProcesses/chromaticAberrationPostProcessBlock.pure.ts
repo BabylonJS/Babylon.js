@@ -97,7 +97,6 @@ export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRend
     }
 }
 
-
 let _registered = false;
 export function registerChromaticAberrationPostProcessBlock(): void {
     if (_registered) {

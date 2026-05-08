@@ -77,7 +77,6 @@ export class LerpBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerLerpBlock(): void {
     if (_registered) {

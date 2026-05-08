@@ -4,9 +4,9 @@ import { type Nullable, type IndicesArray, type FloatArray } from "../../types";
 import { Vector3, Matrix, Vector2, TmpVectors } from "../../Maths/math.vector.pure";
 import { Lerp } from "../../Maths/math.scalar.functions";
 import { Mesh } from "../mesh.pure";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { VertexData } from "../mesh.vertexData";
-import { type Camera } from "../../Cameras/camera";
+import { type Camera } from "../../Cameras/camera.pure";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { AbstractMesh } from "../abstractMesh.pure";
 

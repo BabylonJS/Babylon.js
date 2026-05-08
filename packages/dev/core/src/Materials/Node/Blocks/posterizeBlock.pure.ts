@@ -72,7 +72,6 @@ export class PosterizeBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPosterizeBlock(): void {
     if (_registered) {

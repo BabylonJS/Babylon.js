@@ -1849,7 +1849,6 @@ export class BevelBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBevelBlock(): void {
     if (_registered) {

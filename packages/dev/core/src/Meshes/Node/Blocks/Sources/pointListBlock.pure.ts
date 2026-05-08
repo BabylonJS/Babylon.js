@@ -94,7 +94,6 @@ export class PointListBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPointListBlock(): void {
     if (_registered) {

@@ -161,7 +161,6 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-
 let _registered = false;
 export function registerPbrMetallicRoughnessMaterial(): void {
     if (_registered) {

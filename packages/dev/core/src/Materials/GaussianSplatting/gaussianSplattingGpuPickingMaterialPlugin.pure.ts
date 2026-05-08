@@ -2,8 +2,8 @@
 
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
-import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { type UniformBuffer } from "../uniformBuffer";
 import { type MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
@@ -261,7 +261,6 @@ uniform pickingColor: vec3f;
         }
     }
 }
-
 
 let _registered = false;
 export function registerGaussianSplattingGpuPickingMaterialPlugin(): void {

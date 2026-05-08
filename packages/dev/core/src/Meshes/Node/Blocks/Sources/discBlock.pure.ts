@@ -134,7 +134,6 @@ export class DiscBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerDiscBlock(): void {
     if (_registered) {

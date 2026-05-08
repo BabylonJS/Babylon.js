@@ -31,7 +31,6 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSceneReadyEventBlock(): void {
     if (_registered) {

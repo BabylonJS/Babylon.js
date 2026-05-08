@@ -2,8 +2,8 @@
 
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import { type Camera } from "../../../Cameras/camera";
-import { type Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { PostProcess } from "../../postProcess.pure";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
@@ -18,7 +18,6 @@ import { Logger } from "core/Misc/logger";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
 
 class TAAEffectConfiguration implements PrePassEffectConfiguration {
     public name = "taa";
@@ -436,7 +435,6 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         return SerializationHelper.Parse(() => new TAARenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
     }
 }
-
 
 let _registered = false;
 export function registerTaaRenderingPipeline(): void {

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material.pure";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager.pure";
@@ -10,7 +10,6 @@ import { Vector2 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene.pure";
 import { type Nullable } from "core/types";
 import { RegisterClass } from "../../../Misc/typeStore";
-
 
 class TAAJitterMaterialDefines extends MaterialDefines {
     TAA_JITTER = false;
@@ -182,7 +181,6 @@ export class TAAMaterialManager {
         return plugin;
     }
 }
-
 
 let _registered = false;
 export function registerTaaMaterialManager(): void {

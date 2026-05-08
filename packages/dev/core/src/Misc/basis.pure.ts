@@ -6,7 +6,7 @@ import { Texture } from "../Materials/Textures/texture.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Constants } from "../Engines/constants";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type Engine } from "core/Engines/engine.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */

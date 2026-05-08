@@ -5,7 +5,7 @@ import { type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { Color3 } from "../Maths/math.color.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { Light } from "./light";
 import { type IShadowGenerator } from "./Shadows/shadowGenerator";
 import { Node } from "../node";
@@ -129,7 +129,6 @@ export class HemisphericLight extends Light {
         defines["HEMILIGHT" + lightIndex] = true;
     }
 }
-
 
 let _registered = false;
 export function registerHemisphericLight(): void {

@@ -5,7 +5,7 @@ import { IsWindowObjectExist } from "./domManagement";
 import { type Nullable } from "../types";
 import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { type IFileRequest } from "./fileRequest";
-import { Observable } from "./observable";
+import { Observable } from "./observable.pure";
 import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
@@ -16,7 +16,7 @@ import { TimingTools } from "./timingTools";
 import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 import { _FunctionContainer } from "../Engines/Processors/shaderProcessor";
 import { EngineFunctionContext } from "core/Engines/abstractEngine.functions";
-import { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine.pure";
 
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -1029,7 +1029,6 @@ export const _injectLTSFileTools = (
     });
 };
 
-
 let _registered = false;
 export function registerFileTools(): void {
     if (_registered) {
@@ -1043,9 +1042,18 @@ export function registerFileTools(): void {
         _FunctionContainer.loadFile = LoadFile;
     };
 
-
     initSideEffects();
 
-
-    _injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);
+    _injectLTSFileTools(
+        DecodeBase64UrlToBinary,
+        DecodeBase64UrlToString,
+        FileToolsOptions,
+        IsBase64DataUrl,
+        IsFileURL,
+        LoadFile,
+        LoadImage,
+        ReadFile,
+        RequestFile,
+        SetCorsBehavior
+    );
 }

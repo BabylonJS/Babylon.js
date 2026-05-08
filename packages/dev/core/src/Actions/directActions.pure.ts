@@ -570,7 +570,6 @@ export class SetParentAction extends Action {
     }
 }
 
-
 let _registered = false;
 export function registerDirectActions(): void {
     if (_registered) {

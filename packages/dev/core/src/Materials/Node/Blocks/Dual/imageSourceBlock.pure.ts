@@ -9,8 +9,8 @@ import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture.pure";
 import { ThinTexture } from "../../../Textures/thinTexture";
 import { Constants } from "../../../../Engines/constants";
-import { type AbstractEngine } from "../../../../Engines/abstractEngine";
-import { type Effect } from "../../../effect";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine.pure";
+import { type Effect } from "../../../effect.pure";
 import { NodeMaterial } from "../../nodeMaterial.pure";
 import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
@@ -239,7 +239,6 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerImageSourceBlock(): void {

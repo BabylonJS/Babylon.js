@@ -1,24 +1,24 @@
 /** This file must only contain pure code and pure imports */
 
-import { type SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Mesh } from "../../Meshes/mesh.pure";
-import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect.pure";
 import { type Scene } from "../../scene.pure";
 import { type Matrix } from "../../Maths/math.vector.pure";
 import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Logger } from "../../Misc/logger";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
-import { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera.pure";
 import { ShadowDepthWrapper } from "../../Materials/shadowDepthWrapper";
 import { ShaderMaterial } from "../../Materials/shaderMaterial.pure";
 import { MaterialPluginEvent } from "../materialPluginEvent";
-import { Material } from "../material";
+import { Material } from "../material.pure";
 import {
     BindFogParameters,
     BindLogDepth,
@@ -827,7 +827,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
         return material;
     }
 }
-
 
 let _registered = false;
 export function registerGaussianSplattingMaterial(): void {

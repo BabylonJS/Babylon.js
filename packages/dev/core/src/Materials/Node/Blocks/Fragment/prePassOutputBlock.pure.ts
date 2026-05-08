@@ -257,7 +257,6 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPrePassOutputBlock(): void {
     if (_registered) {

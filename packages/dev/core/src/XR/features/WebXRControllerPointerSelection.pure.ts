@@ -3,7 +3,7 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable.pure";
 import { type WebXRInput } from "../webXRInput";
 import { type WebXRInputSource } from "../webXRInputSource";
 import { type Scene } from "../../scene.pure";

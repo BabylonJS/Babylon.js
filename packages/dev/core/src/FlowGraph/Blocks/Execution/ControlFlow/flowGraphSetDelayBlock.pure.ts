@@ -131,7 +131,6 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSetDelayBlock(): void {
     if (_registered) {

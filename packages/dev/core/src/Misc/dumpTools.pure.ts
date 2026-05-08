@@ -1,19 +1,18 @@
 /** This file must only contain pure code and pure imports */
 
 import { _WarnImport } from "./devTools";
-import { type ThinEngine } from "../Engines/thinEngine";
+import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer.pure";
 import { Tools } from "./tools.pure";
 import { Clamp } from "../Maths/math.scalar.functions";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { EncodeArrayBufferToBase64 } from "./stringTools";
 import { nativeOverride } from "./decorators";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 
 type DumpResources = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -325,7 +324,6 @@ export const DumpTools = {
  * @internal
  */
 
-
 let _registered = false;
 export function registerDumpTools(): void {
     if (_registered) {
@@ -339,7 +337,6 @@ export function registerDumpTools(): void {
         Tools.DumpDataAsync = DumpDataAsync;
         Tools.DumpFramebuffer = DumpFramebuffer;
     };
-
 
     InitSideEffects();
 }

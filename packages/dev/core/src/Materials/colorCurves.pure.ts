@@ -2,7 +2,7 @@
 
 import { serialize } from "../Misc/decorators";
 import { Color4 } from "../Maths/math.color.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { PrepareUniformsForColorCurves } from "./colorCurves.functions";
 
@@ -560,7 +560,6 @@ export class ColorCurves {
         return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
     }
 }
-
 
 let _registered = false;
 export function registerColorCurves(): void {

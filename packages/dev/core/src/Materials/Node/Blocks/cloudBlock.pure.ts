@@ -240,7 +240,6 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCloudBlock(): void {
     if (_registered) {

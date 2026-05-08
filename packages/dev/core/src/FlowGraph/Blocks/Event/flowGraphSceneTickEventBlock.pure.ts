@@ -76,7 +76,6 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSceneTickEventBlock(): void {
     if (_registered) {

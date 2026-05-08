@@ -139,7 +139,6 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleLocalVariableBlock(): void {
     if (_registered) {

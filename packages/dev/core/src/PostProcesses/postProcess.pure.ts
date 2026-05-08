@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { SmartArray } from "../Misc/smartArray";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import type { Observer } from "../Misc/observable";
 import { Vector2 } from "../Maths/math.vector.pure";
-import { type Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { Effect } from "../Materials/effect.pure";
 import { Constants } from "../Engines/constants";
 import { type RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { type IInspectable } from "../Misc/iInspectable";
@@ -21,53 +21,12 @@ import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type Animation } from "../Animations/animation.pure";
 import { type PrePassRenderer } from "../Rendering/prePassRenderer.pure";
 import { type PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
-import { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOptions } from "../Materials/effectRenderer";
 import { Nullable } from "../types";
-
-declare module "../Engines/abstractEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractEngine {
-        /**
-         * Sets a texture to the context from a postprocess
-         * @param channel defines the channel to use
-         * @param postProcess defines the source postprocess
-         * @param name name of the channel
-         */
-        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
-
-        /**
-         * Binds the output of the passed in post process to the texture channel specified
-         * @param channel The channel the texture should be bound to
-         * @param postProcess The post process which's output should be bound
-         * @param name name of the channel
-         */
-        setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
-    }
-}
-
-declare module "../Materials/effect" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Effect {
-        /**
-         * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
-         * @param channel Name of the sampler variable.
-         * @param postProcess Post process to get the input texture from.
-         */
-        setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void;
-
-        /**
-         * (Warning! setTextureFromPostProcessOutput may be desired instead)
-         * Sets the input texture of the passed in post process to be input of this effect. (To use the output of the passed in post process use setTextureFromPostProcessOutput)
-         * @param channel Name of the sampler variable.
-         * @param postProcess Post process to get the output texture from.
-         */
-        setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void;
-    }
-}
 
 /**
  * Options for the PostProcess constructor

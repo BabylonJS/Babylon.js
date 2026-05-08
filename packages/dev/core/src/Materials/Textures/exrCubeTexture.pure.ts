@@ -3,7 +3,7 @@
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
 import { EnvCubeTexture } from "./envCubeTexture.pure";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import type { CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { ReadExrDataAsync } from "./Loaders/exrTextureLoader";
@@ -114,7 +114,6 @@ export class EXRCubeTexture extends EnvCubeTexture {
         return texture;
     }
 }
-
 
 let _registered = false;
 export function registerExrCubeTexture(): void {

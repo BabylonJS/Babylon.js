@@ -181,7 +181,6 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 
 // #L54P2C
 
-
 let _registered = false;
 export function registerFlowGraphInterpolationBlock(): void {
     if (_registered) {

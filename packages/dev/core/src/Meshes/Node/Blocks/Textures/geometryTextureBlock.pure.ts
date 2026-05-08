@@ -224,7 +224,6 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryTextureBlock(): void {
     if (_registered) {

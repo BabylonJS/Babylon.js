@@ -6,7 +6,7 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
@@ -227,7 +227,6 @@ export class FogBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerFogBlock(): void {

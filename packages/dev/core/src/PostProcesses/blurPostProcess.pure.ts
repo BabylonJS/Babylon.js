@@ -3,15 +3,15 @@
 import { type Vector2 } from "../Maths/math.vector.pure";
 import { type Nullable } from "../types";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { Constants } from "../Engines/constants";
 import { serialize, serializeAsVector2 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import { type Scene } from "../scene.pure";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { ThinBlurPostProcess } from "./thinBlurPostProcess";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -170,7 +170,6 @@ export class BlurPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerBlurPostProcess(): void {

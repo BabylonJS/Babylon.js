@@ -3,14 +3,14 @@
 import { type Nullable } from "../../../types";
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable.pure";
 import type { Observer } from "../../../Misc/observable";
 import { type IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
-import { type Camera } from "../../../Cameras/camera";
+import { type Camera } from "../../../Cameras/camera.pure";
 import { type ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration.pure";
 import { Texture } from "../../../Materials/Textures/texture.pure";
-import { type AbstractEngine } from "../../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../../Engines/abstractEngine.pure";
 import { Constants } from "../../../Engines/constants";
 import { type IDisposable, type Scene } from "../../../scene.pure";
 import { GlowLayer } from "../../../Layers/glowLayer.pure";
@@ -30,9 +30,6 @@ import { type Animation } from "../../../Animations/animation.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
-
-
 
 /**
  * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
@@ -870,7 +867,6 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
     }
 }
-
 
 let _registered = false;
 export function registerDefaultRenderingPipeline(): void {

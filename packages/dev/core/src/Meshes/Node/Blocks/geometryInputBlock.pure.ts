@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable.pure";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";

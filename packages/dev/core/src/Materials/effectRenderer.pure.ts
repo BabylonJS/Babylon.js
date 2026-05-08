@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { type NonNullableFields, type Nullable } from "../types";
-import { type AbstractEngine } from "../Engines/abstractEngine";
-import { VertexBuffer } from "../Buffers/buffer";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Viewport } from "../Maths/math.viewport";
 import { Constants } from "../Engines/constants";
-import { type Observer, Observable } from "../Misc/observable";
-import { type IShaderPath, Effect } from "./effect";
+import { type Observer, Observable } from "../Misc/observable.pure";
+import { type IShaderPath, Effect } from "./effect.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
 import { type IRenderTargetTexture, type RenderTargetWrapper } from "../Engines/renderTargetWrapper";

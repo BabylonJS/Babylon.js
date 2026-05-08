@@ -1,8 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type InternalTexture, type Mesh, type Nullable, type Observer } from "core/index.pure";
+import {
+    type Camera,
+    type FrameGraph,
+    type FrameGraphObjectList,
+    type FrameGraphTextureHandle,
+    type InternalTexture,
+    type Mesh,
+    type Nullable,
+    type Observer,
+} from "core/index.pure";
 import { Constants } from "core/Engines/constants";
-import { type Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material.pure";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { StandardMaterial } from "core/Materials/standardMaterial.pure";
@@ -14,7 +23,7 @@ import { FrameGraphIblShadowsVoxelizationTask } from "./iblShadows/iblShadowsVox
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture.pure";
 import { Tools } from "core/Misc/tools.pure";
-import { Observable } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable.pure";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { _RetryWithInterval } from "../../../Misc/timingTools";
 

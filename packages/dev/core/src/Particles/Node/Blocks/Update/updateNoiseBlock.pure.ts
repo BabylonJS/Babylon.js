@@ -190,7 +190,6 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateNoiseBlock(): void {
     if (_registered) {

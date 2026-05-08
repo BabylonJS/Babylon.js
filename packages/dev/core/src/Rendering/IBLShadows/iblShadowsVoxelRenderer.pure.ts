@@ -9,12 +9,12 @@ import { type TextureSize } from "../../Materials/Textures/textureCreationOption
 import { Color4 } from "../../Maths/math.color.pure";
 import { Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { type Mesh } from "../../Meshes/mesh.pure";
-import { type SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { type Scene } from "../../scene.pure";
 import { type SmartArray } from "../../Misc/smartArray";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Logger } from "../../Misc/logger";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture.pure";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer.pure";
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline.pure";

@@ -156,7 +156,6 @@ export class IcoSphereBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerIcoSphereBlock(): void {
     if (_registered) {

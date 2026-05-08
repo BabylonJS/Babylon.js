@@ -1,31 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
 import { Tools } from "../../Misc/tools.pure";
 
-import { Observable } from "../../Misc/observable";
-import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
-
-// Module augmentation to abstract orientation inputs from camera.
-declare module "../../Cameras/freeCameraInputsManager" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface FreeCameraInputsManager {
-        /**
-         * @internal
-         */
-        _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
-        /**
-         * Add orientation input support to the input manager.
-         * @param smoothFactor deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
-         * @returns the current input manager
-         */
-        addDeviceOrientation(smoothFactor?: number): FreeCameraInputsManager;
-    }
-}
+import { Observable } from "../../Misc/observable.pure";
+import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager.pure";
 
 /**
  * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
@@ -238,7 +220,6 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 }
 
 (<any>CameraInputTypes)["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
-
 
 let _registered = false;
 export function registerFreeCameraDeviceOrientationInput(): void {

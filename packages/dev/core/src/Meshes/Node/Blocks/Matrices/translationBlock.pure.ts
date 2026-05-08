@@ -64,7 +64,6 @@ export class TranslationBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerTranslationBlock(): void {
     if (_registered) {

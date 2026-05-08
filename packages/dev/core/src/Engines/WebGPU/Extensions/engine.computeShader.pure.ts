@@ -13,31 +13,6 @@ import { WebGPUPerfCounter } from "../webgpuPerfCounter";
 import { DataBuffer } from "../../../Buffers/dataBuffer";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
 
-declare module "../../webgpuEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface WebGPUEngine {
-        /** @internal */
-        _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
-        /** @internal
-         * Either all of x,y,z or buffer and offset should be defined.
-         */
-        _computeDispatch(
-            effect: ComputeEffect,
-            context: IComputeContext,
-            bindings: ComputeBindingList,
-            x?: number,
-            y?: number,
-            z?: number,
-            buffer?: DataBuffer,
-            offset?: number,
-            bindingsMapping?: ComputeBindingMapping,
-            gpuPerfCounter?: WebGPUPerfCounter
-        ): void;
-    }
-}
-
-export {};
-
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineComputeShader(): void {
     if (_registered) {

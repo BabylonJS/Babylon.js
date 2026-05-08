@@ -303,7 +303,6 @@ export class ArcFollowCamera extends TargetCamera {
     }
 }
 
-
 let _registered = false;
 export function registerFollowCamera(): void {
     if (_registered) {

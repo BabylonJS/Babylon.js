@@ -6,7 +6,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Nullable } from "../../../../types";
 import { type Scene } from "../../../../scene.pure";
@@ -18,7 +18,7 @@ import { CubeTexture } from "../../../Textures/cubeTexture.pure";
 import { Texture } from "../../../Textures/texture.pure";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type SubMesh } from "../../../..//Meshes/subMesh";
+import { type SubMesh } from "../../../..//Meshes/subMesh.pure";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -638,7 +638,6 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._setTarget();
     }
 }
-
 
 let _registered = false;
 export function registerReflectionTextureBaseBlock(): void {

@@ -105,7 +105,6 @@ export class CleanGeometryBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCleanGeometryBlock(): void {
     if (_registered) {

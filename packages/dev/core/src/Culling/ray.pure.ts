@@ -4,7 +4,7 @@ import { Nullable } from "../types";
 import { Matrix } from "../Maths/math.vector.pure";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { Scene } from "../scene.pure";
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import {
     MeshPredicate,
     TrianglePickingPredicate,

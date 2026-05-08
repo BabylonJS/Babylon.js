@@ -56,7 +56,6 @@ export interface NativeEngine extends Omit<ThinNativeEngine, keyof Engine> {}
  * Applies the functionality of one or more base constructors to a derived constructor.
  */
 
-
 let _registered = false;
 export function registerNativeEngine(): void {
     if (_registered) {

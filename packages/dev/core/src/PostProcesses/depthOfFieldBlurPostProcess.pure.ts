@@ -2,14 +2,14 @@
 
 import { type Nullable } from "../types";
 import { type Vector2 } from "../Maths/math.vector.pure";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { type PostProcess, type PostProcessOptions } from "./postProcess.pure";
 import { BlurPostProcess } from "./blurPostProcess.pure";
 import { type Scene } from "../scene.pure";
 import { Constants } from "../Engines/constants";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -90,7 +90,6 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         });
     }
 }
-
 
 let _registered = false;
 export function registerDepthOfFieldBlurPostProcess(): void {

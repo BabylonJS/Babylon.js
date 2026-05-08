@@ -88,7 +88,6 @@ export class UpdateDirectionBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateDirectionBlock(): void {
     if (_registered) {

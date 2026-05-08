@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Effect } from "core/Materials/effect";
-import { type ThinEngine } from "core/Engines/thinEngine";
-import { VertexBuffer, Buffer } from "core/Buffers/buffer";
+import { type Effect } from "core/Materials/effect.pure";
+import { type ThinEngine } from "core/Engines/thinEngine.pure";
+import { VertexBuffer, Buffer } from "core/Buffers/buffer.pure";
 import { type Engine } from "core/Engines/engine.pure";
 import { Constants } from "core/Engines/constants";
 import { type Nullable } from "core/types";

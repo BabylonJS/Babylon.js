@@ -5,20 +5,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera.pure";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
-import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
-
-
-// Module augmentation to abstract virtual joystick from camera.
-declare module "../../Cameras/freeCameraInputsManager" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface FreeCameraInputsManager {
-        /**
-         * Add virtual joystick input support to the input manager.
-         * @returns the current input manager
-         */
-        addVirtualJoystick(): FreeCameraInputsManager;
-    }
-}
+import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager.pure";
 
 /**
  * Manage the Virtual Joystick inputs to control the movement of a free camera.
@@ -117,7 +104,6 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
 }
 
 (<any>CameraInputTypes)["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
-
 
 let _registered = false;
 export function registerFreeCameraVirtualJoystickInput(): void {

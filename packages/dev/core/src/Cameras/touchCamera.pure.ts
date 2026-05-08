@@ -91,7 +91,6 @@ export class TouchCamera extends FreeCamera {
     }
 }
 
-
 let _registered = false;
 export function registerTouchCamera(): void {
     if (_registered) {

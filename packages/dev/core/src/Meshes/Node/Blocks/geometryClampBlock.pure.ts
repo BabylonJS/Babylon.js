@@ -129,7 +129,6 @@ export class GeometryClampBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryClampBlock(): void {
     if (_registered) {

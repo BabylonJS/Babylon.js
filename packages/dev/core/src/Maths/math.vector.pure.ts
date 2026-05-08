@@ -7,7 +7,7 @@ import { BuildTuple } from "../Misc/arrayTools";
 import { type Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
-import { type TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode.pure";
 import { type Dimension, type Tensor, type TensorLike, type TensorStatic } from "./tensor";
 import { type IVector2Like, type IVector3Like, type IVector4Like, type IQuaternionLike, type IMatrixLike, type IPlaneLike, type IVector3LikeInternal } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
@@ -8856,7 +8856,6 @@ export class TmpVectors {
 }
 
 const mtxConvertNDCToHalfZRange = Matrix.FromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1);
-
 
 let _registered = false;
 export function registerMathVector(): void {

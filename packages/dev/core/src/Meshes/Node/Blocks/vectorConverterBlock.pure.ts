@@ -298,7 +298,6 @@ export class VectorConverterBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerVectorConverterBlock(): void {
     if (_registered) {

@@ -2,8 +2,8 @@
 
 import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { PostProcess } from "./postProcess.pure";
 import type { PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
@@ -11,13 +11,10 @@ import { type GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer
 import { EngineStore } from "../Engines/engineStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Scene } from "../scene.pure";
 import { ThinScreenSpaceCurvaturePostProcess } from "./thinScreenSpaceCurvaturePostProcess";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 /**
  * The Screen Space curvature effect can help highlighting ridge and valley of a model.
@@ -153,7 +150,6 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerScreenSpaceCurvaturePostProcess(): void {

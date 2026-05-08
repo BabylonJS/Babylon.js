@@ -121,7 +121,6 @@ export class NodeRenderGraphConvolutionPostProcessBlock extends NodeRenderGraphB
     }
 }
 
-
 let _registered = false;
 export function registerConvolutionPostProcessBlock(): void {
     if (_registered) {

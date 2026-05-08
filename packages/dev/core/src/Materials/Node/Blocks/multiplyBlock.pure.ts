@@ -35,7 +35,6 @@ export class MultiplyBlock extends BaseMathBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMultiplyBlock(): void {
     if (_registered) {

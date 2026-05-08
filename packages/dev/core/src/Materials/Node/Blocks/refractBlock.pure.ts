@@ -85,7 +85,6 @@ export class RefractBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerRefractBlock(): void {
     if (_registered) {

@@ -111,7 +111,6 @@ export class SubdivideBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSubdivideBlock(): void {
     if (_registered) {

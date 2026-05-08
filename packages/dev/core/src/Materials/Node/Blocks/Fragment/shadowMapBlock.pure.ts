@@ -172,7 +172,6 @@ export class ShadowMapBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerShadowMapBlock(): void {
     if (_registered) {

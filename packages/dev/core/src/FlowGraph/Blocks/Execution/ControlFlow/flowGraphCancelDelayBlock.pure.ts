@@ -46,7 +46,6 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphCancelDelayBlock(): void {
     if (_registered) {

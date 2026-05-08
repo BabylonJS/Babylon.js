@@ -2,7 +2,7 @@
 
 import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { type Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
@@ -354,7 +354,6 @@ export class ParticleMathBlock extends NodeParticleBlock {
         this.operation = serializationObject.operation;
     }
 }
-
 
 let _registered = false;
 export function registerParticleMathBlock(): void {

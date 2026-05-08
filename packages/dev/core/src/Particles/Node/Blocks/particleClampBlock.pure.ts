@@ -135,7 +135,6 @@ export class ParticleClampBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleClampBlock(): void {
     if (_registered) {

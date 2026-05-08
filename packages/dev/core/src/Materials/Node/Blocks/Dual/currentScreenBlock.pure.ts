@@ -351,7 +351,6 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCurrentScreenBlock(): void {
     if (_registered) {

@@ -3,24 +3,24 @@
 import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
-import { type SubMesh } from "../Meshes/subMesh";
-import { VertexBuffer } from "../Buffers/buffer";
+import { type SubMesh } from "../Meshes/subMesh.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type SmartArray } from "../Misc/smartArray";
 import { type Scene } from "../scene.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
 
 import { _WarnImport } from "../Misc/devTools";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-import { type Material } from "../Materials/material";
+import { type Material } from "../Materials/material.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { type IEffectCreationOptions } from "core/Materials/effect";
+import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { type GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { type GaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 

@@ -216,7 +216,6 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
     }
 }
 
-
 let _registered = false;
 export function registerCsmShadowGeneratorBlock(): void {
     if (_registered) {

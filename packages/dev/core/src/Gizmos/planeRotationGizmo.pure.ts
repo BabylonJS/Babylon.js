@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Observer, Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { type PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
@@ -14,12 +14,12 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type RotationGizmo } from "./rotationGizmo";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
-import { Effect } from "../Materials/effect";
+import { Effect } from "../Materials/effect.pure";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder.pure";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder.pure";
 import { Epsilon } from "../Maths/math.constants";
 import { Logger } from "../Misc/logger";
-import { type TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode.pure";
 
 /**
  * Interface for plane rotation gizmo

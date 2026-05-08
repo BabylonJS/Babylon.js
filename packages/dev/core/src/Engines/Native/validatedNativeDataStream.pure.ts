@@ -57,7 +57,6 @@ export class ValidatedNativeDataStream extends NativeDataStream {
     }
 }
 
-
 let _registered = false;
 export function registerValidatedNativeDataStream(): void {
     if (_registered) {

@@ -56,7 +56,6 @@ export class NodeRenderGraphElbowBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFrameGraphNodeBlocksElbowBlock(): void {
     if (_registered) {

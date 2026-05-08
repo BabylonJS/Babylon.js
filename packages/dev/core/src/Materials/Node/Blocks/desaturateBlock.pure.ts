@@ -72,7 +72,6 @@ export class DesaturateBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerDesaturateBlock(): void {
     if (_registered) {

@@ -116,7 +116,6 @@ export class GeometryInfoBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryInfoBlock(): void {
     if (_registered) {

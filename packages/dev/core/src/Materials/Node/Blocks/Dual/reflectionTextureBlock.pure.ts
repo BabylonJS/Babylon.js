@@ -211,7 +211,6 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 }
 
-
 let _registered = false;
 export function registerReflectionTextureBlock(): void {
     if (_registered) {

@@ -7,7 +7,7 @@ import { type Scene } from "../../scene.pure";
 import { Color3 } from "../../Maths/math.color.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseMaterial } from "./pbrBaseMaterial.pure";
-import { Material } from "../material";
+import { Material } from "../material.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { RegisterClass } from "../../Misc/typeStore";
 
@@ -748,7 +748,6 @@ export class PBRMaterial extends PBRBaseMaterial {
         return material;
     }
 }
-
 
 let _registered = false;
 export function registerPbrMaterial(): void {

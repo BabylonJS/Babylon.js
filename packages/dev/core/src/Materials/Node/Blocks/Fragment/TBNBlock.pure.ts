@@ -238,7 +238,6 @@ export class TBNBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerTBNBlock(): void {
     if (_registered) {

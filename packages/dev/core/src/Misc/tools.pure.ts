@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { Observable } from "./observable";
+import { Observable } from "./observable.pure";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
 import { DeepCopier } from "./deepCopier";
@@ -10,17 +10,25 @@ import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
 import { type IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import { FileToolsOptions, DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFile as FileToolsLoadFile, LoadImage as FileToolLoadImage, ReadFile as FileToolsReadFile, SetCorsBehavior } from "./fileTools.pure";
+import {
+    FileToolsOptions,
+    DecodeBase64UrlToBinary,
+    IsBase64DataUrl,
+    LoadFile as FileToolsLoadFile,
+    LoadImage as FileToolLoadImage,
+    ReadFile as FileToolsReadFile,
+    SetCorsBehavior,
+} from "./fileTools.pure";
 import type { ReadFileError } from "./fileTools";
 import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import { type IScreenshotSize } from "./interfaces/screenshotSize";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
 import type { INative } from "../Engines/Native/nativeInterfaces";
@@ -1727,7 +1735,6 @@ export class AsyncLoop {
     }
 }
 
-
 let _registered = false;
 export function registerTools(): void {
     if (_registered) {
@@ -1738,7 +1745,6 @@ export function registerTools(): void {
     Tools.Mix = Mix;
 
     Tools.IsExponentOfTwo = IsExponentOfTwo;
-
 
     // Will only be define if Tools is imported freeing up some space when only engine is required
     EngineStore.FallbackTexture =

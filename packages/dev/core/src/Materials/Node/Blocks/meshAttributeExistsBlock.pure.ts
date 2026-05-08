@@ -231,7 +231,6 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMeshAttributeExistsBlock(): void {
     if (_registered) {

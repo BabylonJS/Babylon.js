@@ -95,7 +95,6 @@ export class StopSoundAction extends Action {
     }
 }
 
-
 let _registered = false;
 export function registerDirectAudioActions(): void {
     if (_registered) {

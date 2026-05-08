@@ -58,7 +58,6 @@ export class FlowGraphSetSoundVolumeBlock extends FlowGraphExecutionBlockWithOut
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSetSoundVolumeBlock(): void {
     if (_registered) {

@@ -2,8 +2,8 @@
 
 import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { PostProcess } from "./postProcess.pure";
 import type { PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
@@ -13,13 +13,10 @@ import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
 import { type PrePassRenderer } from "../Rendering/prePassRenderer.pure";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Scene } from "../scene.pure";
 import { ThinMotionBlurPostProcess } from "./thinMotionBlurPostProcess";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 /**
  * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
@@ -324,7 +321,6 @@ export class MotionBlurPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerMotionBlurPostProcess(): void {

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera.pure";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera.pure";
 import { VRCameraMetrics } from "./vrCameraMetrics";
 import { type Scene } from "../../scene.pure";
@@ -52,7 +52,6 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
 
     protected override _setRigMode = (rigParams: any) => _SetVrRigMode(this, rigParams);
 }
-
 
 let _registered = false;
 export function registerVrDeviceOrientationArcRotateCamera(): void {

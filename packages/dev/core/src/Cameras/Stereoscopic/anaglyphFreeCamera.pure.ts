@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera.pure";
 import { FreeCamera } from "../../Cameras/freeCamera.pure";
 import { type Scene } from "../../scene.pure";
 import { Vector3 } from "../../Maths/math.vector.pure";
@@ -35,7 +35,6 @@ export class AnaglyphFreeCamera extends FreeCamera {
 
     protected override _setRigMode = () => _SetStereoscopicAnaglyphRigMode(this);
 }
-
 
 let _registered = false;
 export function registerAnaglyphFreeCamera(): void {

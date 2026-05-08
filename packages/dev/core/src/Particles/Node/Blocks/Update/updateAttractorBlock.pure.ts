@@ -102,7 +102,6 @@ export class UpdateAttractorBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateAttractorBlock(): void {
     if (_registered) {

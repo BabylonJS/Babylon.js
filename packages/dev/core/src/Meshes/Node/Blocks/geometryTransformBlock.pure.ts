@@ -195,7 +195,6 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryTransformBlock(): void {
     if (_registered) {

@@ -175,7 +175,6 @@ export class SphereBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSphereBlock(): void {
     if (_registered) {

@@ -53,7 +53,6 @@ export class RotationXBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerRotationXBlock(): void {
     if (_registered) {

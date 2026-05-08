@@ -1,10 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
@@ -88,7 +88,6 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         });
     }
 }
-
 
 let _registered = false;
 export function registerExtractHighlightsPostProcess(): void {

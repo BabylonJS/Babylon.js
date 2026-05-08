@@ -2,17 +2,17 @@
 
 import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 import { type Scene } from "../scene.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
 import { type PostProcess } from "../PostProcesses/postProcess.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { _WarnImport } from "../Misc/devTools";
 import { Color4 } from "../Maths/math.color.pure";
 import { type Nullable } from "../types";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type Camera } from "../Cameras/camera";
-import { Material } from "../Materials/material";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type Camera } from "../Cameras/camera.pure";
+import { Material } from "../Materials/material.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer.pure";

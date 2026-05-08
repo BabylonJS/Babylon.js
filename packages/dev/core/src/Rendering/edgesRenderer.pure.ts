@@ -1,17 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Immutable, type Nullable } from "../types";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 
 import { Vector3, TmpVectors } from "../Maths/math.vector.pure";
 import type { Matrix } from "../Maths/math.vector";
 import { type IDisposable, type Scene } from "../scene.pure";
-import { type Observer } from "../Misc/observable";
-import { Material } from "../Materials/material";
+import { type Observer } from "../Misc/observable.pure";
+import { Material } from "../Materials/material.pure";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
 import { type Node } from "../node";
 import { type DataBuffer } from "../Buffers/dataBuffer";
@@ -19,56 +19,6 @@ import { SmartArray } from "../Misc/smartArray";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh.pure";
-
-
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal */
-        _edgeRenderLineShader: Nullable<ShaderMaterial>;
-    }
-}
-
-declare module "../Meshes/abstractMesh" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractMesh {
-        /**
-         * Gets the edgesRenderer associated with the mesh
-         */
-        edgesRenderer: Nullable<EdgesRenderer>;
-    }
-}
-
-declare module "../Meshes/linesMesh" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface LinesMesh {
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-    }
-}
-
-declare module "../Meshes/linesMesh" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface InstancedLinesMesh {
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the current InstancedLinesMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedLinesMesh;
-    }
-}
 
 /**
  * FaceAdjacencies Helper class to generate edges
@@ -1067,7 +1017,6 @@ export class LineEdgesRenderer extends EdgesRenderer {
     }
 }
 
-
 let _registered = false;
 export function registerEdgesRenderer(): void {
     if (_registered) {
@@ -1083,13 +1032,11 @@ export function registerEdgesRenderer(): void {
         return this;
     };
 
-
     AbstractMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false, options?: IEdgesRendererOptions): AbstractMesh {
         this.disableEdgesRendering();
         this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices, true, options);
         return this;
     };
-
 
     Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
         get: function (this: AbstractMesh) {
@@ -1104,7 +1051,6 @@ export function registerEdgesRenderer(): void {
         this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         return this;
     };
-
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {

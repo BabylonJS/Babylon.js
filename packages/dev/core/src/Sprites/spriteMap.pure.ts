@@ -9,7 +9,7 @@ import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { type PickingInfo } from "../Collisions/pickingInfo";
 import { type ISpriteJSONSprite, type ISpriteJSONAtlas } from "./ISprites";
-import { Effect } from "../Materials/effect";
+import { Effect } from "../Materials/effect.pure";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder.pure";
 import { Constants } from "core/Engines/constants";

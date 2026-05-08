@@ -2,7 +2,7 @@
 
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector.pure";
 import { type Nullable } from "../../types";

@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type Scene } from "../scene.pure";
-import { type Effect } from "./effect";
+import { type Effect } from "./effect.pure";
 
 // All non-type imports must be pure
 

@@ -2,14 +2,14 @@
 
 import { type IDisposable } from "../scene.pure";
 import { DeviceType } from "./InputDevices/deviceEnums";
-import { type Observable } from "../Misc/observable";
+import { type Observable } from "../Misc/observable.pure";
 import { type IDeviceInputSystem } from "./inputInterfaces";
 import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
 import { WebDeviceInputSystem } from "./webDeviceInputSystem";
 import { DeviceSource } from "./InputDevices/deviceSource";
 import { type INative } from "../Engines/Native/nativeInterfaces";
 import { type IUIEvent } from "../Events/deviceInputEvents";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 
 type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
 
@@ -17,14 +17,6 @@ export type DeviceSourceType = Distribute<DeviceType>;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
-
-declare module "../Engines/abstractEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    interface AbstractEngine {
-        /** @internal */
-        _deviceSourceManager?: InternalDeviceSourceManager;
-    }
-}
 
 /** @internal */
 export interface IObservableManager {

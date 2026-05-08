@@ -7,7 +7,7 @@ import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
 import { PolygonMeshBuilder } from "../polygonMesh";
 import { type FloatArray, type IndicesArray, type Nullable } from "../../types";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { EngineStore } from "../../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { Scene } from "../../scene.pure";

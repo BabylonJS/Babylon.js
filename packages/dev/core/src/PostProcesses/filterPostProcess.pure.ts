@@ -2,9 +2,9 @@
 
 import { type Nullable } from "../types";
 import { type Matrix } from "../Maths/math.vector.pure";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 
 import { serializeAsMatrix } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -96,7 +96,6 @@ export class FilterPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerFilterPostProcess(): void {

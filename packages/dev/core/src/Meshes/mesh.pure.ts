@@ -1,27 +1,27 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable jsdoc/require-returns-check */
-import { type Observer, Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable.pure";
 import { Tools, AsyncLoop } from "../Misc/tools.pure";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
 import { type Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
 import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import { type Scene, ScenePerformancePriority } from "../scene.pure";
 import { type Vector4, Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector.pure";
 import { type Color4, Color3 } from "../Maths/math.color.pure";
 import { Node } from "../node";
-import { VertexBuffer, Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 import { type IGetSetVerticesData, VertexData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
 import { type IMeshDataOptions, AbstractMesh } from "./abstractMesh.pure";
-import { SubMesh } from "./subMesh";
+import { SubMesh } from "./subMesh.pure";
 import { type BoundingSphere } from "../Culling/boundingSphere";
-import { type Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
+import { type Effect } from "../Materials/effect.pure";
+import { Material } from "../Materials/material.pure";
 import { MultiMaterial } from "../Materials/multiMaterial.pure";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { type Skeleton } from "../Bones/skeleton";
@@ -34,7 +34,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
 import { type Path3D } from "../Maths/math.path";
 import { type Plane } from "../Maths/math.plane";
-import { type TransformNode } from "./transformNode";
+import { type TransformNode } from "./transformNode.pure";
 import { type DrawWrapper } from "../Materials/drawWrapper";
 import { type PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
 
@@ -45,7 +45,7 @@ import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder.pure";
 import { type LinesMesh } from "./linesMesh.pure";
 import { type GroundMesh } from "./groundMesh.pure";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 
 /**
  * @internal

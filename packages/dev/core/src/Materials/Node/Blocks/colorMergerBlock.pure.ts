@@ -217,7 +217,6 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerColorMergerBlock(): void {
     if (_registered) {

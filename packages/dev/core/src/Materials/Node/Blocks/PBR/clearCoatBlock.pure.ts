@@ -12,7 +12,7 @@ import { type ReflectionBlock } from "./reflectionBlock.pure";
 import { type Scene } from "../../../../scene.pure";
 import { type Nullable } from "../../../../types";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock.pure";
 import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock.pure";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
@@ -456,7 +456,6 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.remapF0OnInterfaceChange = serializationObject.remapF0OnInterfaceChange ?? true;
     }
 }
-
 
 let _registered = false;
 export function registerClearCoatBlock(): void {

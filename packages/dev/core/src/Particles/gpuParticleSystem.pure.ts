@@ -3,11 +3,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Immutable, type Nullable, type float, type DataArray } from "../types";
 import { type Color3Gradient, type IValueGradient, type FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { Color4, TmpColors } from "../Maths/math.color.pure";
 import { Lerp } from "../Maths/math.scalar.functions";
-import { VertexBuffer, Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
 import { type IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem.pure";
@@ -16,14 +16,14 @@ import { Attractor } from "./attractor";
 import { Logger } from "../Misc/logger";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { type IDisposable, Scene } from "../scene.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
-import { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";

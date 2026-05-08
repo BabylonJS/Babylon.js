@@ -1,17 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "core/scene.pure";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import type { FloatArray } from "core/types";
-import { type Observer } from "core/Misc/observable";
-import { type Camera } from "core/Cameras/camera";
+import { type Observer } from "core/Misc/observable.pure";
+import { type Camera } from "core/Cameras/camera.pure";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { SceneComponentConstants } from "core/sceneComponent";
 import type { ISceneComponent } from "core/sceneComponent";
 import { type SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { Constants } from "core/Engines/constants";
-import { type Buffer } from "core/Buffers/buffer";
+import { type Buffer } from "core/Buffers/buffer.pure";
 import { type FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
 import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
@@ -19,30 +19,6 @@ import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCusto
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Nullable } from "core/types";
-
-declare module "../../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal (Backing field) */
-        _fluidRenderer: Nullable<FluidRenderer>;
-
-        /**
-         * Gets or Sets the fluid renderer associated to the scene.
-         */
-        fluidRenderer: Nullable<FluidRenderer>;
-
-        /**
-         * Enables the fluid renderer and associates it with the scene
-         * @returns the FluidRenderer
-         */
-        enableFluidRenderer(): Nullable<FluidRenderer>;
-
-        /**
-         * Disables the fluid renderer associated with the scene
-         */
-        disableFluidRenderer(): void;
-    }
-}
 
 type CameraMapForFluidRendering = [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }];
 

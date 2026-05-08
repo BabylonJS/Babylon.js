@@ -3,14 +3,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
-import { type VertexBuffer } from "../Buffers/buffer";
+import { type VertexBuffer } from "../Buffers/buffer.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import { type Observer, Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable.pure";
 import {
     type RenderTargetCreationOptions,
     type TextureSize,
@@ -21,8 +21,8 @@ import { type IPipelineContext } from "./IPipelineContext";
 import { type IColor3Like, type IColor4Like, type IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import { AbstractEngine, type ISceneLike } from "./abstractEngine";
-import { ThinEngine } from "./thinEngine";
+import { AbstractEngine, type ISceneLike } from "./abstractEngine.pure";
+import { ThinEngine } from "./thinEngine.pure";
 import { type IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
@@ -68,15 +68,6 @@ import { type WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { PerfCounter } from "../Misc/perfCounter";
 import { DecodeBase64UrlToBinary } from "../Misc/fileTools.pure";
-
-// REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
-declare module "../Materials/effect" {
-    /** internal */
-    export interface Effect {
-        /** internal */
-        _checkedNonFloatVertexBuffers?: boolean;
-    }
-}
 
 declare const _native: INative;
 

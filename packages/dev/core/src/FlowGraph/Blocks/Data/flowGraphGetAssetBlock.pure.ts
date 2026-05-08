@@ -83,7 +83,6 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphGetAssetBlock(): void {
     if (_registered) {

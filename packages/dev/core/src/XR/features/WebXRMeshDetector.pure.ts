@@ -3,11 +3,11 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type WebXRSessionManager } from "../webXRSessionManager";
-import { type TransformNode } from "../../Meshes/transformNode";
+import { type TransformNode } from "../../Meshes/transformNode.pure";
 import { Matrix, Quaternion } from "../../Maths/math";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
-import { VertexBuffer } from "core/Buffers/buffer";
+import { VertexBuffer } from "core/Buffers/buffer.pure";
 import { Logger } from "core/Misc/logger";
 
 /**

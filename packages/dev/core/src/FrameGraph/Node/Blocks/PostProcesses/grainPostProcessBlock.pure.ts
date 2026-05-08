@@ -83,7 +83,6 @@ export class NodeRenderGraphGrainPostProcessBlock extends NodeRenderGraphBaseWit
     }
 }
 
-
 let _registered = false;
 export function registerGrainPostProcessBlock(): void {
     if (_registered) {

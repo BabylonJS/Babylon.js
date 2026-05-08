@@ -79,7 +79,6 @@ export class NLerpBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerNLerpBlock(): void {
     if (_registered) {

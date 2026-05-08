@@ -68,7 +68,6 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryRotate2dBlock(): void {
     if (_registered) {

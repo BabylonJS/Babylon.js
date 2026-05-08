@@ -4,7 +4,7 @@ import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBu
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { FrameGraphCullObjectsTask } from "../../Tasks/Misc/cullObjectsTask";
-import { type Camera } from "../../../Cameras/camera";
+import { type Camera } from "../../../Cameras/camera.pure";
 import { type FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 import { RegisterClass } from "../../../Misc/typeStore";
 
@@ -91,7 +91,6 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
     }
 }
-
 
 let _registered = false;
 export function registerCullObjectsBlock(): void {

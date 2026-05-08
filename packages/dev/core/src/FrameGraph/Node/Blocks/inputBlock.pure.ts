@@ -13,7 +13,7 @@ import {
     type FrameGraphObjectList,
     type IShadowLight,
 } from "core/index";
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable.pure";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
@@ -316,7 +316,6 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerFrameGraphNodeBlocksInputBlock(): void {

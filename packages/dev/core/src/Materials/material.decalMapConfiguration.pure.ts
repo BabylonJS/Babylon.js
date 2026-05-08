@@ -7,7 +7,7 @@ import { Constants } from "../Engines/constants";
 import { MaterialFlags } from "./materialFlags";
 import { type Scene } from "core/scene.pure";
 import { type Engine } from "core/Engines/engine.pure";
-import { type SubMesh } from "core/Meshes/subMesh";
+import { type SubMesh } from "core/Meshes/subMesh.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type UniformBuffer } from "./uniformBuffer";
 import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial.pure";
@@ -147,7 +147,6 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         };
     }
 }
-
 
 let _registered = false;
 export function registerMaterialDecalMapConfiguration(): void {

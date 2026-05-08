@@ -2,14 +2,14 @@
 
 import { type Nullable } from "../types";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ThinCircleOfConfusionPostProcessOptions, ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -140,7 +140,6 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         this._depthTexture = value;
     }
 }
-
 
 let _registered = false;
 export function registerCircleOfConfusionPostProcess(): void {

@@ -7,7 +7,7 @@ import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { InputBlock } from "../Input/inputBlock.pure";
@@ -236,7 +236,6 @@ export class BonesBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerBonesBlock(): void {

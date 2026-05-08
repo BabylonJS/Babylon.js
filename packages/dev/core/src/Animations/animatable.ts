@@ -1,3 +1,4 @@
+export * from "./animatable.types";
 /**
  * Re-exports pure implementation and applies runtime side effects.
  * Import animatable.pure for tree-shakeable, side-effect-free usage.

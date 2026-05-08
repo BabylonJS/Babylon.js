@@ -229,7 +229,6 @@ export class FlowGraphMatrixComposeBlock extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphMatrixMathBlocks(): void {
     if (_registered) {

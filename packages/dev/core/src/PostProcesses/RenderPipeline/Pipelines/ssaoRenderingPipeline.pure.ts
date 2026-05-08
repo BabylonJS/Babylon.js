@@ -2,8 +2,8 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Vector2, TmpVectors } from "../../../Maths/math.vector.pure";
-import { type Camera } from "../../../Cameras/camera";
-import { type Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { PostProcess } from "../../../PostProcesses/postProcess.pure";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";

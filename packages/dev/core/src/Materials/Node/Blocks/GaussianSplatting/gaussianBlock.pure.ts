@@ -107,7 +107,6 @@ export class GaussianBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGaussianBlock(): void {
     if (_registered) {

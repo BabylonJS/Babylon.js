@@ -216,7 +216,6 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerTransformBlock(): void {
     if (_registered) {

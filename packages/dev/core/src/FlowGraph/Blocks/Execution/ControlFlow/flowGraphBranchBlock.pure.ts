@@ -51,7 +51,6 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphBranchBlock(): void {
     if (_registered) {

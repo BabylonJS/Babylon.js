@@ -136,7 +136,6 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMaterialsNodeBlocksDebugBlock(): void {
     if (_registered) {

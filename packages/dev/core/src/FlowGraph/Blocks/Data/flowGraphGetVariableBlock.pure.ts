@@ -67,7 +67,6 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphGetVariableBlock(): void {
     if (_registered) {

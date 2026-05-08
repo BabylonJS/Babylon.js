@@ -300,7 +300,6 @@ export class FlowGraphQuaternionFromDirectionsBlock extends FlowGraphBinaryOpera
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphVectorMathBlocks(): void {
     if (_registered) {

@@ -8,7 +8,7 @@ import { EngineStore } from "./engineStore";
 import { type WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import { type IPipelineContext } from "./IPipelineContext";
 import { type ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
-import { type EngineOptions, ThinEngine } from "./thinEngine";
+import { type EngineOptions, ThinEngine } from "./thinEngine.pure";
 import { Constants } from "./constants";
 import { type IViewportLike, type IColor4Like } from "../Maths/math.like";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -19,7 +19,7 @@ import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import { type PostProcess } from "../PostProcesses/postProcess.pure";
-import { AbstractEngine } from "./abstractEngine";
+import { AbstractEngine } from "./abstractEngine.pure";
 import {
     CreateImageBitmapFromSource,
     ExitFullscreen,

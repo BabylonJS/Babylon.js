@@ -82,7 +82,6 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerVertexOutputBlock(): void {
     if (_registered) {

@@ -4,7 +4,7 @@ import { type Nullable } from "core/types";
 import { type Scene } from "core/scene.pure";
 import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import type { Matrix, Vector2 } from "core/Maths/math.vector";
-import { type Effect } from "core/Materials/effect";
+import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -1172,7 +1172,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         return GaussianSplattingMesh._ParseInternal(parsedMesh, scene, GaussianSplattingMesh);
     }
 }
-
 
 let _registered = false;
 export function registerGaussianSplattingMesh(): void {

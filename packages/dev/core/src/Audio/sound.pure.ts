@@ -8,14 +8,14 @@ import { SoundState } from "../AudioV2/soundState";
 import { _WebAudioSoundSource } from "../AudioV2/webAudio/webAudioSoundSource";
 import { _WebAudioStaticSound } from "../AudioV2/webAudio/webAudioStaticSound";
 import { _WebAudioStreamingSound } from "../AudioV2/webAudio/webAudioStreamingSound";
-import { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode.pure";
 import { _WarnImport } from "../Misc/devTools";
 import { Logger } from "../Misc/logger";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { _RetryWithInterval } from "../Misc/timingTools";
 import { type Scene } from "../scene.pure";
 import { type Nullable } from "../types";
@@ -1070,7 +1070,6 @@ export class Sound {
 }
 
 // Register Class Name
-
 
 let _registered = false;
 export function registerSound(): void {

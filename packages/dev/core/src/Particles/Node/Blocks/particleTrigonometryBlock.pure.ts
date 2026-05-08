@@ -289,7 +289,6 @@ export class ParticleTrigonometryBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleTrigonometryBlock(): void {
     if (_registered) {

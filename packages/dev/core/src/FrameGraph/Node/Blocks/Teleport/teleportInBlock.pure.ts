@@ -158,7 +158,6 @@ export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFrameGraphNodeBlocksTeleportTeleportInBlock(): void {
     if (_registered) {

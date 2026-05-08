@@ -2,7 +2,7 @@
 
 import { Vector3 } from "core/Maths/math.vector.pure";
 import { Light } from "core/Lights/light";
-import { type Effect } from "core/Materials/effect";
+import { type Effect } from "core/Materials/effect.pure";
 import { serialize } from "core/Misc/decorators";
 import { type Scene } from "core/scene.pure";
 import { AreaLight } from "core/Lights/areaLight.pure";
@@ -215,7 +215,6 @@ export class RectAreaLight extends AreaLight {
         defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex] = this._emissionTextureTexture && this._emissionTextureTexture.isReady() ? true : false;
     }
 }
-
 
 let _registered = false;
 export function registerRectAreaLight(): void {

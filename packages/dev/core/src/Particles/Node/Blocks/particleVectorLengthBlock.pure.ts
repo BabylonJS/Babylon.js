@@ -58,7 +58,6 @@ export class ParticleVectorLengthBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleVectorLengthBlock(): void {
     if (_registered) {

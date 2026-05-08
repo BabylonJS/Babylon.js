@@ -35,7 +35,6 @@ export class VirtualJoysticksCamera extends FreeCamera {
     }
 }
 
-
 let _registered = false;
 export function registerVirtualJoysticksCamera(): void {
     if (_registered) {

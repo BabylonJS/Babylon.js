@@ -2,7 +2,7 @@
 
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { Tools } from "../../Misc/tools.pure";
 import { type Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";

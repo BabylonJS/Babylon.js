@@ -7,7 +7,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -258,7 +258,6 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         this.convertInputToLinearSpace = serializationObject.convertInputToLinearSpace ?? true;
     }
 }
-
 
 let _registered = false;
 export function registerImageProcessingBlock(): void {

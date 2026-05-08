@@ -71,7 +71,6 @@ export class NodeRenderGraphFilterPostProcessBlock extends NodeRenderGraphBaseWi
     }
 }
 
-
 let _registered = false;
 export function registerFilterPostProcessBlock(): void {
     if (_registered) {

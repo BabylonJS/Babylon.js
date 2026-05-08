@@ -75,7 +75,6 @@ export class GeometryDotBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryDotBlock(): void {
     if (_registered) {

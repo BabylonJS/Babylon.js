@@ -121,7 +121,6 @@ export class NodeRenderGraphMotionBlurPostProcessBlock extends NodeRenderGraphBa
     }
 }
 
-
 let _registered = false;
 export function registerMotionBlurPostProcessBlock(): void {
     if (_registered) {

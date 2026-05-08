@@ -107,7 +107,6 @@ export class PointShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPointShapeBlock(): void {
     if (_registered) {

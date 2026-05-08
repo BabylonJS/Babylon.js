@@ -1,20 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Camera } from "../Cameras/camera";
-import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { PostProcess } from "./postProcess.pure";
 import type { PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Scene } from "../scene.pure";
 import { ThinSharpenPostProcess } from "./thinSharpenPostProcess";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
 
 /**
  * The SharpenPostProcess applies a sharpen kernel to every pixel
@@ -121,7 +118,6 @@ export class SharpenPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerSharpenPostProcess(): void {

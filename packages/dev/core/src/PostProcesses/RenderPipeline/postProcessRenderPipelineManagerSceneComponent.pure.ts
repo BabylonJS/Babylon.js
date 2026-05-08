@@ -6,22 +6,6 @@ import type { ISceneComponent } from "../../sceneComponent";
 import { Scene } from "../../scene.pure";
 import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
 
-
-declare module "../../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal (Backing field) */
-        _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
-
-        /**
-         * Gets the postprocess render pipeline manager
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/defaultRenderingPipeline
-         */
-        readonly postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
-    }
-}
-
 /**
  * Defines the Render Pipeline scene component responsible to rendering pipelines
  */
@@ -76,7 +60,6 @@ export class PostProcessRenderPipelineManagerSceneComponent implements ISceneCom
         }
     }
 }
-
 
 let _registered = false;
 export function registerPostProcessRenderPipelineManagerSceneComponent(): void {

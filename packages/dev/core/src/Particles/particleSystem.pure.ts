@@ -9,10 +9,10 @@ import { type IParticleSystem } from "./IParticleSystem";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
-import { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { GetClass } from "../Misc/typeStore";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { type Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -29,7 +29,6 @@ import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
 import type { _IExecutionQueueItem } from "./Queue/executionQueue";
 import { type FlowMap } from "./flowMap";
 import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
-
 
 /**
  * This represents a particle system in Babylon.
@@ -1128,7 +1127,6 @@ export class ParticleSystem extends ThinParticleSystem {
         return result;
     }
 }
-
 
 let _registered = false;
 export function registerParticleSystem(): void {

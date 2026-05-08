@@ -110,7 +110,6 @@ export class GeometryPosterizeBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryPosterizeBlock(): void {
     if (_registered) {

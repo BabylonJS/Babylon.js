@@ -119,7 +119,6 @@ export class SmartFilterFragmentOutputBlock extends FragmentOutputBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSmartFilterFragmentOutputBlock(): void {
     if (_registered) {

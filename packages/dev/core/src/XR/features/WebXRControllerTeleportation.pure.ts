@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type IWebXRFeature, WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import type { Observer } from "../../Misc/observable";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type Nullable } from "../../types";
@@ -12,7 +12,7 @@ import type { IWebXRMotionControllerAxesValue } from "../motionController/webXRC
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Vector3, Quaternion } from "../../Maths/math.vector.pure";
 import { Ray } from "../../Culling/ray.pure";
-import { type Material } from "../../Materials/material";
+import { type Material } from "../../Materials/material.pure";
 import { DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder.pure";
 import { SineEase, EasingFunction } from "../../Animations/easing";

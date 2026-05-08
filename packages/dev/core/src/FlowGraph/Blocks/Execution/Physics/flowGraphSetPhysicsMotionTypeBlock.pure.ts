@@ -63,7 +63,6 @@ export class FlowGraphSetPhysicsMotionTypeBlock extends FlowGraphExecutionBlockW
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSetPhysicsMotionTypeBlock(): void {
     if (_registered) {

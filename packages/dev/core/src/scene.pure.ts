@@ -5,7 +5,7 @@ import { type Nullable } from "./types";
 import { Tools } from "./Misc/tools.pure";
 import { type IAnimatable } from "./Animations/animatable.interface";
 import { PrecisionDate } from "./Misc/precisionDate";
-import { type Observer, Observable } from "./Misc/observable";
+import { type Observer, Observable } from "./Misc/observable.pure";
 import { type ISmartArrayLike, SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
@@ -61,8 +61,8 @@ import { type IAction } from "./Actions/action.pure";
 import { type AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
 import { type AnimationGroup } from "./Animations/animationGroup.pure";
 import { type Skeleton } from "./Bones/skeleton";
-import { type Bone } from "./Bones/bone";
-import { type Camera } from "./Cameras/camera";
+import { type Bone } from "./Bones/bone.pure";
+import { type Camera } from "./Cameras/camera.pure";
 import { type Collider } from "./Collisions/collider";
 import { type Ray, type MeshPredicate, type TrianglePickingPredicate } from "./Culling/ray.core";
 import { type Light } from "./Lights/light";
@@ -70,23 +70,23 @@ import { type PerformanceViewerCollector } from "./Misc/PerformanceViewer/perfor
 import { type MorphTarget } from "./Morph/morphTarget";
 import { type MorphTargetManager } from "./Morph/morphTargetManager";
 import { type PostProcess } from "./PostProcesses/postProcess.pure";
-import { type Material } from "./Materials/material";
+import { type Material } from "./Materials/material.pure";
 import { type BaseTexture } from "./Materials/Textures/baseTexture.pure";
 import { type Geometry } from "./Meshes/geometry";
-import { type TransformNode } from "./Meshes/transformNode";
+import { type TransformNode } from "./Meshes/transformNode.pure";
 import { type AbstractMesh } from "./Meshes/abstractMesh.pure";
 import { type MultiMaterial } from "./Materials/multiMaterial.pure";
-import { type Effect } from "./Materials/effect";
+import { type Effect } from "./Materials/effect.pure";
 import { type RenderTargetTexture } from "./Materials/Textures/renderTargetTexture.pure";
 import { type Mesh } from "./Meshes/mesh.pure";
-import { type SubMesh } from "./Meshes/subMesh";
+import { type SubMesh } from "./Meshes/subMesh.pure";
 import { type Node } from "./node";
 import { type Animation } from "./Animations/animation.pure";
 import { type Animatable } from "./Animations/animatable.core";
 import { type Texture } from "./Materials/Textures/texture.pure";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
-import { type AbstractEngine } from "./Engines/abstractEngine";
+import { type AbstractEngine } from "./Engines/abstractEngine.pure";
 import { type FrameGraph } from "./FrameGraph/frameGraph";
 import { type IAssetContainer } from "./IAssetContainer";
 
@@ -6781,7 +6781,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 }
 
 // Register Class Name
-
 
 let _registered = false;
 export function registerScene(): void {

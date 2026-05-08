@@ -221,7 +221,6 @@ export class NodeRenderGraphVolumetricLightingBlock extends NodeRenderGraphBlock
     }
 }
 
-
 let _registered = false;
 export function registerVolumetricLightingBlock(): void {
     if (_registered) {

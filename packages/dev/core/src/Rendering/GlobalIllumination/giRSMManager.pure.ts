@@ -2,12 +2,12 @@
 
 import { type Scene } from "core/scene.pure";
 import { type GIRSM } from "./giRSM";
-import { type Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { PostProcess } from "core/PostProcesses/postProcess.pure";
-import { Observable } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable.pure";
 import type { Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector.pure";
@@ -18,7 +18,7 @@ import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { type StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { GeometryBufferRenderer } from "../geometryBufferRenderer.pure";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
 import { type WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
@@ -34,8 +34,6 @@ import { RegisterClass } from "core/Misc/typeStore";
  * - C++ implementation by Luis Angel: https://github.com/imyoungmin/RSM
  * - Javascript implementation by Erkaman: https://github.com/Erkaman/webgl-rsm
  */
-
-
 
 /**
  * Class used to manage the global illumination contribution calculated from reflective shadow maps (RSM).
@@ -1055,7 +1053,6 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         return shaderType === "vertex" ? null : frag;
     }
 }
-
 
 let _registered = false;
 export function registerGiRSMManager(): void {

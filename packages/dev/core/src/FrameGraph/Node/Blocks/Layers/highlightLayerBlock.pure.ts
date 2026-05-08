@@ -256,7 +256,6 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerHighlightLayerBlock(): void {
     if (_registered) {

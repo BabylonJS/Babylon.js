@@ -3,7 +3,7 @@
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
-import { type Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material.pure";
 import { Constants } from "core/Engines/constants";
 import { type StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
@@ -12,7 +12,6 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { RegisterClass } from "core/Misc/typeStore";
-
 
 /**
  * @internal
@@ -314,7 +313,6 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         return shaderType === "vertex" ? null : frag;
     }
 }
-
 
 let _registered = false;
 export function registerIblShadowsPluginMaterial(): void {

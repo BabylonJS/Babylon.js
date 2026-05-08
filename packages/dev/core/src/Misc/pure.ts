@@ -11,7 +11,7 @@ export * from "./meshExploder";
 export * from "./filesInput";
 export * from "./HighDynamicRange/pure";
 export * from "./khronosTextureContainer";
-export * from "./observable";
+export * from "./observable.pure";
 export * from "./observable.extensions.pure";
 export * from "./performanceMonitor";
 export * from "./sceneOptimizer";

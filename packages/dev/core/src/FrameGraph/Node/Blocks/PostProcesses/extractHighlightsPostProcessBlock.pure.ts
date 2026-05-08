@@ -70,7 +70,6 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
     }
 }
 
-
 let _registered = false;
 export function registerExtractHighlightsPostProcessBlock(): void {
     if (_registered) {

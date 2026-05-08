@@ -3,8 +3,8 @@
 import { type Vector2 } from "../Maths/math.vector.pure";
 import { type Nullable } from "../types";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type Camera } from "../Cameras/camera";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Camera } from "../Cameras/camera.pure";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
@@ -167,7 +167,6 @@ export class ChromaticAberrationPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerChromaticAberrationPostProcess(): void {

@@ -200,7 +200,6 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
     }
 }
 
-
 let _registered = false;
 export function registerDepthOfFieldPostProcessBlock(): void {
     if (_registered) {

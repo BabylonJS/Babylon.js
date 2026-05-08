@@ -56,7 +56,6 @@ export class MatrixTransposeBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMatrixTransposeBlock(): void {
     if (_registered) {

@@ -8,7 +8,7 @@ import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection 
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { InputBlock } from "../Input/inputBlock.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type TextureBlock } from "../Dual/textureBlock.pure";
@@ -500,7 +500,6 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.parallaxHeight._isInactive = this.useParallaxOcclusion;
     }
 }
-
 
 let _registered = false;
 export function registerPerturbNormalBlock(): void {

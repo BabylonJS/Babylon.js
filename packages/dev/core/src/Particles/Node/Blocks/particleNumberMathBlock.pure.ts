@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable.pure";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 
@@ -192,7 +192,6 @@ export class ParticleNumberMathBlock extends NodeParticleBlock {
         this.operation = serializationObject.operation;
     }
 }
-
 
 let _registered = false;
 export function registerParticleNumberMathBlock(): void {

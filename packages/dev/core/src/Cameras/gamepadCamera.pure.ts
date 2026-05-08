@@ -33,7 +33,6 @@ export class GamepadCamera extends UniversalCamera {
     }
 }
 
-
 let _registered = false;
 export function registerGamepadCamera(): void {
     if (_registered) {

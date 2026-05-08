@@ -99,7 +99,6 @@ export class NodeRenderGraphScreenSpaceCurvaturePostProcessBlock extends NodeRen
     }
 }
 
-
 let _registered = false;
 export function registerScreenSpaceCurvaturePostProcessBlock(): void {
     if (_registered) {

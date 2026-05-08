@@ -167,7 +167,6 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMaterialsNodeBlocksTeleportTeleportInBlock(): void {
     if (_registered) {

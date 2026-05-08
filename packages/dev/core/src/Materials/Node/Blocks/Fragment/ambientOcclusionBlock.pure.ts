@@ -11,8 +11,8 @@ import { RandomRange } from "../../../../Maths/math.scalar.functions";
 import { RawTexture } from "../../../Textures/rawTexture";
 import { Constants } from "../../../../Engines/constants";
 import { Texture } from "../../../Textures/texture.pure";
-import { type Effect } from "../../../effect";
-import { type AbstractEngine } from "../../../../Engines/abstractEngine";
+import { type Effect } from "../../../effect.pure";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { ImageSourceBlock } from "../Dual/imageSourceBlock.pure";
 import { type DepthSourceBlock } from "../Dual/depthSourceBlock.pure";
@@ -306,7 +306,6 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         super.dispose();
     }
 }
-
 
 let _registered = false;
 export function registerAmbientOcclusionBlock(): void {

@@ -1,32 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { ThinEngine } from "../../Engines/thinEngine";
+import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { DataBuffer } from "../../Buffers/dataBuffer";
 import { IndicesArray, DataArray } from "../../types";
-
-declare module "../../Engines/abstractEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractEngine {
-        /**
-         * Update a dynamic index buffer
-         * @param indexBuffer defines the target index buffer
-         * @param indices defines the data to update
-         * @param offset defines the offset in the target index buffer where update should start
-         */
-        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
-
-        /**
-         * Updates a dynamic vertex buffer.
-         * @param vertexBuffer the vertex buffer to update
-         * @param data the data used to update the vertex buffer
-         * @param byteOffset the byte offset of the data
-         * @param byteLength the byte length of the data
-         */
-        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-    }
-}
-
-export {};
 
 let _registered = false;
 export function registerEngineDynamicBuffer(): void {

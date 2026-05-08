@@ -64,7 +64,6 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerOutputBlock(): void {
     if (_registered) {

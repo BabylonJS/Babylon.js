@@ -3,7 +3,7 @@
 import { type Nullable, type FloatArray } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../../Maths/math.vector.pure";
-import { VertexBuffer } from "../../../Buffers/buffer";
+import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { type AbstractMesh } from "../../../Meshes/abstractMesh.pure";
 import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { PhysicsImpostor } from "../physicsImpostor.pure";
@@ -11,7 +11,7 @@ import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsJoint } from "../physicsJoint";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
-import { type TransformNode } from "../../../Meshes/transformNode";
+import { type TransformNode } from "../../../Meshes/transformNode.pure";
 import { Epsilon } from "../../../Maths/math.constants";
 import { PhysicsEngine } from "../physicsEngine";
 
@@ -797,7 +797,6 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 }
-
 
 let _registered = false;
 export function registerCannonJSPlugin(): void {

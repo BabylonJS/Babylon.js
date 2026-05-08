@@ -4,7 +4,7 @@ import { Vector3 } from "../../Maths/math.vector.pure";
 import type { Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { type Ray, type TrianglePickingPredicate } from "../../Culling/ray.pure";
-import { Buffer, VertexBuffer } from "../../Buffers/buffer";
+import { Buffer, VertexBuffer } from "../../Buffers/buffer.pure";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { type Nullable, type FloatArray } from "../../types";
 import { type Node } from "../../node";

@@ -47,7 +47,6 @@ export class FlowGraphGetSoundVolumeBlock extends FlowGraphCachedOperationBlock<
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphGetSoundVolumeBlock(): void {
     if (_registered) {

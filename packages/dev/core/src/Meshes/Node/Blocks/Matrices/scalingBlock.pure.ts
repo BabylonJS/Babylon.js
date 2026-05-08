@@ -64,7 +64,6 @@ export class ScalingBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerScalingBlock(): void {
     if (_registered) {

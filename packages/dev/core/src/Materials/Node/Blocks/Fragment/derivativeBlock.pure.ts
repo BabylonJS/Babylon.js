@@ -83,7 +83,6 @@ export class DerivativeBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerDerivativeBlock(): void {
     if (_registered) {

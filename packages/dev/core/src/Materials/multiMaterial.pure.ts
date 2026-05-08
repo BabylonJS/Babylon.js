@@ -3,9 +3,9 @@
 import { type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
-import { Material } from "../Materials/material";
+import { Material } from "../Materials/material.pure";
 import { Tags } from "../Misc/tags";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -272,7 +272,6 @@ export class MultiMaterial extends Material {
         return multiMaterial;
     }
 }
-
 
 let _registered = false;
 export function registerMultiMaterial(): void {

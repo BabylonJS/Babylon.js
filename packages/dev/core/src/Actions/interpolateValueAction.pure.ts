@@ -4,7 +4,7 @@ import { Action } from "./action.pure";
 import { type Condition } from "./condition.pure";
 
 import { Logger } from "../Misc/logger";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { Color3 } from "../Maths/math.color.pure";
 import { Vector3, Matrix, Quaternion } from "../Maths/math.vector.pure";
 import { Animation } from "../Animations/animation.pure";
@@ -159,7 +159,6 @@ export class InterpolateValueAction extends Action {
         );
     }
 }
-
 
 let _registered = false;
 export function registerInterpolateValueAction(): void {

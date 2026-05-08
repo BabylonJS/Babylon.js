@@ -103,7 +103,6 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryLerpBlock(): void {
     if (_registered) {

@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
@@ -111,7 +111,6 @@ export class GrainPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerGrainPostProcess(): void {

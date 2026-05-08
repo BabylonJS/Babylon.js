@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { type TransformNode } from "../../Meshes/transformNode";
+import { type TransformNode } from "../../Meshes/transformNode.pure";
 import { type WebXRSessionManager } from "../webXRSessionManager";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { Vector3, Matrix } from "../../Maths/math.vector.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 

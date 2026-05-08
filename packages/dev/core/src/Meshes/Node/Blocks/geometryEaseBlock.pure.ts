@@ -342,7 +342,6 @@ export class GeometryEaseBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryEaseBlock(): void {
     if (_registered) {

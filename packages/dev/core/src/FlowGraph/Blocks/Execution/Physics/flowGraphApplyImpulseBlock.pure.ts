@@ -68,7 +68,6 @@ export class FlowGraphApplyImpulseBlock extends FlowGraphExecutionBlockWithOutSi
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphApplyImpulseBlock(): void {
     if (_registered) {

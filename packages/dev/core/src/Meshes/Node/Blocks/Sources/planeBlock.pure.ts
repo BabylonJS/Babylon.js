@@ -191,7 +191,6 @@ export class PlaneBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPlaneBlock(): void {
     if (_registered) {

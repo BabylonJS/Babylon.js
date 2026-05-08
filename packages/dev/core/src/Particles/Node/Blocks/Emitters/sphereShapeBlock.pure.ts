@@ -190,7 +190,6 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSphereShapeBlock(): void {
     if (_registered) {

@@ -93,7 +93,6 @@ export class GeometryPowBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryPowBlock(): void {
     if (_registered) {

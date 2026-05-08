@@ -972,7 +972,7 @@ const plugin: IPlugin = {
                 schema: [],
             },
             create(context: eslint.Rule.RuleContext) {
-                const filename = (context as unknown as any).getFilename();
+                const filename = (context as unknown as any).filename ?? (context as unknown as any).getFilename?.() ?? "";
 
                 // Only applies to files ending in .pure.ts or named pure.ts
                 const isPureFile = /\.pure\.[tj]sx?$/.test(filename) || /[/\\]pure\.[tj]sx?$/.test(filename);

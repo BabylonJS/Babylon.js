@@ -63,7 +63,6 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphConstantBlock(): void {
     if (_registered) {

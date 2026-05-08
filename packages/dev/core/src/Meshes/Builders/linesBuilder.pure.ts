@@ -6,9 +6,9 @@ import { _CreationDataStorage, Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
 import type { FloatArray } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh.pure";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { Logger } from "../../Misc/logger";
-import { type Material } from "../../Materials/material";
+import { type Material } from "../../Materials/material.pure";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
 

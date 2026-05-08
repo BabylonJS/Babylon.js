@@ -240,7 +240,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphPlayAnimationBlock(): void {
     if (_registered) {

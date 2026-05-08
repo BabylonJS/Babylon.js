@@ -11,7 +11,7 @@ import { InputBlock } from "../Input/inputBlock.pure";
 import { type Light } from "../../../../Lights/light";
 import { type Nullable } from "../../../../types";
 import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial.pure";
 import { type Scene } from "../../../../scene.pure";
@@ -1659,7 +1659,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._setTarget();
     }
 }
-
 
 let _registered = false;
 export function registerPbrMetallicRoughnessBlock(): void {

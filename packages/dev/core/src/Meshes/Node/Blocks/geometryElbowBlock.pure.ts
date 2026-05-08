@@ -63,7 +63,6 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryElbowBlock(): void {
     if (_registered) {

@@ -71,7 +71,6 @@ export class StorageReadBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerStorageReadBlock(): void {
     if (_registered) {

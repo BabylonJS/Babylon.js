@@ -2,7 +2,7 @@
 
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type Effect } from "../../../../Materials/effect";
+import { type Effect } from "../../../../Materials/effect.pure";
 import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -290,7 +290,6 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerPrePassTextureBlock(): void {

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type IPipelineGenerationOptions, _ProcessShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 import { type IPipelineContext } from "core/Engines/IPipelineContext";
 import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";

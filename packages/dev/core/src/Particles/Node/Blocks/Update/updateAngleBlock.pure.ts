@@ -87,7 +87,6 @@ export class UpdateAngleBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateAngleBlock(): void {
     if (_registered) {

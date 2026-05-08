@@ -93,7 +93,6 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleRampGradientBlock(): void {
     if (_registered) {

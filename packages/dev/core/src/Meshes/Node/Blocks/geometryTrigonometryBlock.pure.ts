@@ -292,7 +292,6 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryTrigonometryBlock(): void {
     if (_registered) {

@@ -1,3 +1,4 @@
+export * from "./abstractEngine.renderPass.types";
 /**
  * Re-exports pure implementation and applies runtime side effects.
  * Import abstractEngine.renderPass.pure for tree-shakeable, side-effect-free usage.

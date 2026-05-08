@@ -134,7 +134,6 @@ export class TorusBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerTorusBlock(): void {
     if (_registered) {

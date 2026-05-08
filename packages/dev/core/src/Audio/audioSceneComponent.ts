@@ -1,3 +1,4 @@
+export * from "./audioSceneComponent.types";
 /**
  * Re-exports pure implementation and applies runtime side effects.
  * Import audioSceneComponent.pure for tree-shakeable, side-effect-free usage.

@@ -84,7 +84,6 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBaseWith
     }
 }
 
-
 let _registered = false;
 export function registerBlurPostProcessBlock(): void {
     if (_registered) {

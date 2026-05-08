@@ -56,7 +56,6 @@ export class NegateBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerNegateBlock(): void {
     if (_registered) {

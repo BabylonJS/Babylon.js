@@ -170,7 +170,6 @@ export class SetTangentsBlock extends NodeGeometryBlock implements INodeGeometry
     }
 }
 
-
 let _registered = false;
 export function registerSetTangentsBlock(): void {
     if (_registered) {

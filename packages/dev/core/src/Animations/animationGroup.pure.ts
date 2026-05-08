@@ -5,7 +5,7 @@ import { Animation, type IMakeAnimationAdditiveOptions } from "./animation.pure"
 import { type IAnimationKey } from "./animationKey";
 
 import { type Scene, type IDisposable } from "../scene.pure";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 

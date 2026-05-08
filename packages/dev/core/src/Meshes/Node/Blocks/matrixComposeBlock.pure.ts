@@ -70,7 +70,6 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMatrixComposeBlock(): void {
     if (_registered) {

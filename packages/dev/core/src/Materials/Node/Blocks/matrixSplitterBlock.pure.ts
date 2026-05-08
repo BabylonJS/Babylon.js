@@ -151,7 +151,6 @@ export class MatrixSplitterBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMatrixSplitterBlock(): void {
     if (_registered) {

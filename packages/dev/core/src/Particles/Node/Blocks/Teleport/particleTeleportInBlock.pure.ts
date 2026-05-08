@@ -118,7 +118,6 @@ export class ParticleTeleportInBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleTeleportInBlock(): void {
     if (_registered) {

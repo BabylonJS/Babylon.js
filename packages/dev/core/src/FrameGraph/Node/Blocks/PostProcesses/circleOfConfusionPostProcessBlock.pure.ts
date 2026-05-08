@@ -151,7 +151,6 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     }
 }
 
-
 let _registered = false;
 export function registerCircleOfConfusionPostProcessBlock(): void {
     if (_registered) {

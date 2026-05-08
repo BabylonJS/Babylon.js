@@ -57,7 +57,6 @@ export class LengthBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerLengthBlock(): void {
     if (_registered) {

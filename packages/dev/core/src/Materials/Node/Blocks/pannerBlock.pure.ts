@@ -113,7 +113,6 @@ export class PannerBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPannerBlock(): void {
     if (_registered) {

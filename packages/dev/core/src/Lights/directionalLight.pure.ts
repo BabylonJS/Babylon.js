@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize } from "../Misc/decorators";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type Scene } from "../scene.pure";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { type Nullable } from "../types";
 import { Constants } from "core/Engines/constants";
 import { Node } from "../node";
@@ -348,7 +348,6 @@ export class DirectionalLight extends ShadowLight {
         defines["DIRLIGHT" + lightIndex] = true;
     }
 }
-
 
 let _registered = false;
 export function registerDirectionalLight(): void {

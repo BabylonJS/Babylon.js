@@ -77,7 +77,6 @@ export class BoundingBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBoundingBlock(): void {
     if (_registered) {

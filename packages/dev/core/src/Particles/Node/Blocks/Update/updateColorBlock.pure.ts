@@ -88,7 +88,6 @@ export class UpdateColorBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateColorBlock(): void {
     if (_registered) {

@@ -5,13 +5,13 @@ import { type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { type ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture.pure";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { Constants } from "core/Engines/constants";
 import { Node } from "../node";
 import { RegisterClass } from "../Misc/typeStore";
@@ -531,7 +531,6 @@ export class SpotLight extends ShadowLight {
         defines["IESLIGHTTEXTURE" + lightIndex] = this._iesProfileTexture && this._iesProfileTexture.isReady() ? true : false;
     }
 }
-
 
 let _registered = false;
 export function registerSpotLight(): void {

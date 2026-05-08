@@ -360,7 +360,6 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 }
 
-
 let _registered = false;
 export function registerInstantiateOnVolumeBlock(): void {
     if (_registered) {

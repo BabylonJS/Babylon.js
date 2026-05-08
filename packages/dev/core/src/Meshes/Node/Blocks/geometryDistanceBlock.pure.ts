@@ -76,7 +76,6 @@ export class GeometryDistanceBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryDistanceBlock(): void {
     if (_registered) {

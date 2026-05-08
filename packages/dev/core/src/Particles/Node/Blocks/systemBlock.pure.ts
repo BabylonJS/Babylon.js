@@ -389,7 +389,6 @@ export class SystemBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSystemBlock(): void {
     if (_registered) {

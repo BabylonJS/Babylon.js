@@ -32,7 +32,6 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBaseShad
     }
 }
 
-
 let _registered = false;
 export function registerShadowGeneratorBlock(): void {
     if (_registered) {

@@ -2,7 +2,7 @@
 
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { Mesh } from "../mesh.pure";
-import { Buffer } from "../../Buffers/buffer";
+import { Buffer } from "../../Buffers/buffer.pure";
 import { type Nullable } from "../../types";
 import { type Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";

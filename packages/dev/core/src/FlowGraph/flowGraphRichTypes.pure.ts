@@ -230,7 +230,6 @@ export function getRichTypeByAnimationType(animationType: number): RichType<any>
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphRichTypes(): void {
     if (_registered) {

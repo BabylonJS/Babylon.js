@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { Constants } from "../Engines/constants";
 
@@ -8,7 +8,7 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Nullable } from "../types";
 
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ThinTonemapPostProcessOptions, type TonemappingOperator, ThinTonemapPostProcess } from "./thinTonemapPostProcess";
 import { type Scene } from "../scene.pure";
 import { RegisterClass } from "../Misc/typeStore";
@@ -116,7 +116,6 @@ export class TonemapPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerTonemapPostProcess(): void {

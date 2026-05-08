@@ -334,7 +334,6 @@ export class NodeRenderGraphSSAO2PostProcessBlock extends NodeRenderGraphBasePos
     }
 }
 
-
 let _registered = false;
 export function registerSsao2PostProcessBlock(): void {
     if (_registered) {

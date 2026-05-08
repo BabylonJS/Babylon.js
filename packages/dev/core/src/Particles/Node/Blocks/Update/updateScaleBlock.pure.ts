@@ -88,7 +88,6 @@ export class UpdateScaleBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateScaleBlock(): void {
     if (_registered) {

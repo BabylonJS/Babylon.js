@@ -65,7 +65,6 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphFlipFlopBlock(): void {
     if (_registered) {

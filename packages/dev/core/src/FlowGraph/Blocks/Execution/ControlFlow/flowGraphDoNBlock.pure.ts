@@ -69,7 +69,6 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphDoNBlock(): void {
     if (_registered) {

@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVector2 } from "../Misc/decorators";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
 import { Matrix, Vector3, Vector2, TmpVectors, Quaternion } from "../Maths/math.vector.pure";
@@ -11,16 +11,16 @@ import { Mesh } from "../Meshes/mesh.pure";
 import { AutoRotationBehavior } from "../Behaviors/Cameras/autoRotationBehavior";
 import { BouncingBehavior } from "../Behaviors/Cameras/bouncingBehavior";
 import { FramingBehavior } from "../Behaviors/Cameras/framingBehavior";
-import { Camera } from "./camera";
+import { Camera } from "./camera.pure";
 import { TargetCamera } from "./targetCamera.pure";
 import { type ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
 import { type ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { type ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
-import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
+import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager.pure";
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools.pure";
 import { type Collider } from "../Collisions/collider";
-import { type TransformNode } from "core/Meshes/transformNode";
+import { type TransformNode } from "core/Meshes/transformNode.pure";
 import { Node } from "../node";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -1593,7 +1593,6 @@ export class ArcRotateCamera extends TargetCamera {
         return "ArcRotateCamera";
     }
 }
-
 
 let _registered = false;
 export function registerArcRotateCamera(): void {

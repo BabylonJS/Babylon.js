@@ -388,7 +388,6 @@ export class CurveBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCurveBlock(): void {
     if (_registered) {

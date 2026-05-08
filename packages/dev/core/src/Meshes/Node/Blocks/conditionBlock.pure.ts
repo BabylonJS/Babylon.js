@@ -230,7 +230,6 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerConditionBlock(): void {
     if (_registered) {

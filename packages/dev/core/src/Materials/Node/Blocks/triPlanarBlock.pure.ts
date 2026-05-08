@@ -8,7 +8,7 @@ import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnec
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterial } from "../nodeMaterial.pure";
 import type { NodeMaterialDefines } from "../nodeMaterial";
-import { type Effect } from "../../effect";
+import { type Effect } from "../../effect.pure";
 import { type Nullable } from "../../../types";
 import { Texture } from "../../Textures/texture.pure";
 import { type Scene } from "../../../scene.pure";
@@ -616,7 +616,6 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerTriPlanarBlock(): void {

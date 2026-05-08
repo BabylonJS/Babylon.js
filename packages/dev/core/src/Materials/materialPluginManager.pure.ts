@@ -2,7 +2,7 @@
 
 import { type _IProcessingOptions, type ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 import { type Nullable } from "../types";
-import { Material } from "./material";
+import { Material } from "./material.pure";
 import {
     type MaterialPluginPrepareEffect,
     type MaterialPluginBindForSubMesh,
@@ -19,25 +19,15 @@ import {
     type MaterialPluginFillRenderTargetTextures,
     MaterialPluginEvent,
 } from "./materialPluginEvent";
-import { type Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable.pure";
 import { EngineStore } from "../Engines/engineStore";
 
 import { type Scene } from "../scene.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type MaterialPluginBase } from "./materialPluginBase.pure";
 import { ProcessIncludes } from "../Engines/Processors/shaderProcessor";
 import { ShaderLanguage } from "./shaderLanguage";
 import { ShaderStore } from "../Engines/shaderStore";
-
-declare module "./material" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Material {
-        /**
-         * Plugin manager for this material
-         */
-        pluginManager?: MaterialPluginManager;
-    }
-}
 
 const RxOption = new RegExp("^([gimus]+)!");
 

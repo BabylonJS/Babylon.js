@@ -54,7 +54,6 @@ export class FlowGraphGetAngularVelocityBlock extends FlowGraphCachedOperationBl
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphGetAngularVelocityBlock(): void {
     if (_registered) {

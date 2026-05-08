@@ -9,7 +9,7 @@ import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock.pure";
-import { type SubMesh } from "../../../../Meshes/subMesh";
+import { type SubMesh } from "../../../../Meshes/subMesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
@@ -217,7 +217,6 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerInstancesBlock(): void {

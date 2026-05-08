@@ -211,7 +211,6 @@ export class RandomBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerRandomBlock(): void {
     if (_registered) {

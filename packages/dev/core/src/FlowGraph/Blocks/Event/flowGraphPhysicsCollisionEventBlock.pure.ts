@@ -9,7 +9,7 @@ import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "../../flowGraphRic
 import { type Vector3 } from "../../../Maths/math.vector.pure";
 import { type PhysicsBody } from "../../../Physics/v2/physicsBody";
 import { type IPhysicsCollisionEvent } from "../../../Physics/v2/IPhysicsEnginePlugin";
-import { type Observer } from "../../../Misc/observable";
+import { type Observer } from "../../../Misc/observable.pure";
 import { type Nullable } from "../../../types";
 import { RegisterClass } from "../../../Misc/typeStore";
 
@@ -144,7 +144,6 @@ export class FlowGraphPhysicsCollisionEventBlock extends FlowGraphEventBlock {
         return FlowGraphBlockNames.PhysicsCollisionEvent;
     }
 }
-
 
 let _registered = false;
 export function registerFlowGraphPhysicsCollisionEventBlock(): void {

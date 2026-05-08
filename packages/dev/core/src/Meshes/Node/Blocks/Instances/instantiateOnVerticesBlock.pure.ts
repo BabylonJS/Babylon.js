@@ -297,7 +297,6 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 }
 
-
 let _registered = false;
 export function registerInstantiateOnVerticesBlock(): void {
     if (_registered) {

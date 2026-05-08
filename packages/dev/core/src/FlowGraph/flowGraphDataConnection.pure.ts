@@ -5,7 +5,7 @@ import { type FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import { type FlowGraphContext } from "./flowGraphContext";
 import { type RichType } from "./flowGraphRichTypes.pure";
-import { Observable } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable.pure";
 import { defaultValueSerializationFunction } from "./serialization";
 import { RegisterClass } from "../Misc/typeStore";
 /**
@@ -178,7 +178,6 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         defaultValueSerializationFunction("defaultValue", this._defaultValue, serializationObject);
     }
 }
-
 
 let _registered = false;
 export function registerFlowGraphDataConnection(): void {

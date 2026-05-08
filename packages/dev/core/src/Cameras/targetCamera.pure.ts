@@ -2,7 +2,7 @@
 
 import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
 import { type Nullable } from "../types";
-import { Camera } from "./camera";
+import { Camera } from "./camera.pure";
 import { type Scene } from "../scene.pure";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector.pure";
 import { Epsilon } from "../Maths/math.constants";
@@ -595,7 +595,6 @@ export class TargetCamera extends Camera {
         return "TargetCamera";
     }
 }
-
 
 let _registered = false;
 export function registerTargetCamera(): void {

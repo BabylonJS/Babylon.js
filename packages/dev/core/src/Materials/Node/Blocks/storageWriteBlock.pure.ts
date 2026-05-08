@@ -83,7 +83,6 @@ export class StorageWriteBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerStorageWriteBlock(): void {
     if (_registered) {

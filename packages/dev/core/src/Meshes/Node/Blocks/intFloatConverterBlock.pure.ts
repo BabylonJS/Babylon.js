@@ -94,7 +94,6 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerIntFloatConverterBlock(): void {
     if (_registered) {

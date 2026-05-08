@@ -1,6 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
-import { type AbstractEngine, type Engine, type InternalTexture, type Nullable, type RenderTargetWrapper, type Scene, type ShadowGenerator, type WebGPUEngine } from "core/index.pure";
+import {
+    type AbstractEngine,
+    type Engine,
+    type InternalTexture,
+    type Nullable,
+    type RenderTargetWrapper,
+    type Scene,
+    type ShadowGenerator,
+    type WebGPUEngine,
+} from "core/index.pure";
 import { AbortError } from "core/Misc/error";
 import { Constants } from "core/Engines/constants";
 import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector.pure";
@@ -11,7 +20,7 @@ import { CopyTextureToTexture } from "core/Misc/copyTextureToTexture";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { StorageBuffer } from "core/Buffers/storageBuffer";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
-import { VertexBuffer } from "core/Buffers/buffer";
+import { VertexBuffer } from "core/Buffers/buffer.pure";
 
 const TmpVec3 = new Vector3();
 

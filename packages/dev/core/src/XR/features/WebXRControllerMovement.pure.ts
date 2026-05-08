@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { type Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable.pure";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type Nullable } from "../../types";
 import { type WebXRInput } from "../webXRInput";

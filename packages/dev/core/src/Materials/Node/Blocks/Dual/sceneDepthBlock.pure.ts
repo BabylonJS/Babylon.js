@@ -9,7 +9,7 @@ import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type Scene } from "../../../../scene.pure";
 import { type InputBlock } from "../Input/inputBlock.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type NodeMaterial } from "../../nodeMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
@@ -306,7 +306,6 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         this.force32itsFloat = serializationObject.force32itsFloat;
     }
 }
-
 
 let _registered = false;
 export function registerSceneDepthBlock(): void {

@@ -117,7 +117,6 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMatrixBuilderBlock(): void {
     if (_registered) {

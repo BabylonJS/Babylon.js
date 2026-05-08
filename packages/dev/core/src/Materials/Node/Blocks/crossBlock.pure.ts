@@ -71,7 +71,6 @@ export class CrossBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerCrossBlock(): void {
     if (_registered) {

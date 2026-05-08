@@ -60,7 +60,6 @@ export class NormalizeBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerNormalizeBlock(): void {
     if (_registered) {

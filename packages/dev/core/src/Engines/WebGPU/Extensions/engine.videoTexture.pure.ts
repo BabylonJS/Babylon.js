@@ -6,21 +6,6 @@ import { WebGPUEngine } from "../../webgpuEngine.pure";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
-declare module "../../abstractEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractEngine {
-        /**
-         * Update a video texture
-         * @param texture defines the texture to update
-         * @param video defines the video element to use
-         * @param invertY defines if data must be stored with Y axis inverted
-         */
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement | Nullable<ExternalTexture>, invertY: boolean): void;
-    }
-}
-
-export {};
-
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineVideoTexture(): void {
     if (_registered) {

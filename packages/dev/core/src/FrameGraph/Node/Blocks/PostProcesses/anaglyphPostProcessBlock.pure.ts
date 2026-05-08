@@ -60,7 +60,6 @@ export class NodeRenderGraphAnaglyphPostProcessBlock extends NodeRenderGraphBase
     }
 }
 
-
 let _registered = false;
 export function registerAnaglyphPostProcessBlock(): void {
     if (_registered) {

@@ -339,7 +339,6 @@ export class ExtrudeGeometryBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerExtrudeGeometryBlock(): void {
     if (_registered) {

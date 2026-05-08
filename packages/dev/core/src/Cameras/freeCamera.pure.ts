@@ -6,13 +6,13 @@ import { Vector3, Vector2 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Scene } from "../scene.pure";
 import { TargetCamera } from "./targetCamera.pure";
-import { FreeCameraInputsManager } from "./freeCameraInputsManager";
+import { FreeCameraInputsManager } from "./freeCameraInputsManager.pure";
 import { type FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { type FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools.pure";
 
 import { type Collider } from "../Collisions/collider";
-import { AbstractEngine } from "core/Engines/abstractEngine";
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**
@@ -458,7 +458,6 @@ export class FreeCamera extends TargetCamera {
 }
 
 // Register Class Name
-
 
 let _registered = false;
 export function registerFreeCamera(): void {

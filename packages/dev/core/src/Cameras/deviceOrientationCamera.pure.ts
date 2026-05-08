@@ -124,7 +124,6 @@ export class DeviceOrientationCamera extends FreeCamera {
     }
 }
 
-
 let _registered = false;
 export function registerDeviceOrientationCamera(): void {
     if (_registered) {

@@ -47,7 +47,6 @@ export class NullBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerNullBlock(): void {
     if (_registered) {

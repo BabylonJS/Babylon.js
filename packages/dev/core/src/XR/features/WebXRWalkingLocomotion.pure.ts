@@ -2,9 +2,9 @@
 
 import { type Engine } from "../../Engines/engine.pure";
 import { TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector.pure";
-import { type TransformNode } from "../../Meshes/transformNode";
+import { type TransformNode } from "../../Meshes/transformNode.pure";
 import { Logger } from "../../Misc/logger";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { type Nullable } from "../../types";
 import { type WebXRCamera } from "../webXRCamera";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";

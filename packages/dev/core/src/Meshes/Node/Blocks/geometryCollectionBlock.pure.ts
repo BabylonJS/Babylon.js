@@ -194,7 +194,6 @@ export class GeometryCollectionBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryCollectionBlock(): void {
     if (_registered) {

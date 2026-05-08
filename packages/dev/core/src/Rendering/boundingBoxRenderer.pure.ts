@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { Buffer, VertexBuffer } from "../Buffers/buffer";
-import { type SubMesh } from "../Meshes/subMesh";
+import { Buffer, VertexBuffer } from "../Buffers/buffer.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { SmartArray } from "../Misc/smartArray";
@@ -10,12 +10,12 @@ import { type Nullable, type FloatArray, type IndicesArray } from "../types";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
 import { BoundingBox } from "../Culling/boundingBox";
-import { type Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
+import { type Effect } from "../Materials/effect.pure";
+import { Material } from "../Materials/material.pure";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color.pure";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder.pure";
@@ -23,42 +23,6 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../Engines/constants";
 import { _RetryWithInterval } from "../Misc/timingTools";
 import { Logger } from "../Misc/logger";
-
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal (Backing field) */
-        _boundingBoxRenderer: BoundingBoxRenderer;
-
-        /** @internal (Backing field) */
-        _forceShowBoundingBoxes: boolean;
-
-        /**
-         * Gets or sets a boolean indicating if all bounding boxes must be rendered
-         */
-        forceShowBoundingBoxes: boolean;
-
-        /**
-         * Gets the bounding box renderer associated with the scene
-         * @returns a BoundingBoxRenderer
-         */
-        getBoundingBoxRenderer(): BoundingBoxRenderer;
-    }
-}
-
-declare module "../Meshes/abstractMesh" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractMesh {
-        /** @internal (Backing field) */
-        _showBoundingBox: boolean;
-
-        /**
-         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
-         */
-        showBoundingBox: boolean;
-    }
-}
 
 const TempMatrix = Matrix.Identity();
 const TempMatrix2 = new Matrix();
@@ -802,7 +766,6 @@ export class BoundingBoxRenderer implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerBoundingBoxRenderer(): void {
     if (_registered) {
@@ -825,7 +788,6 @@ export function registerBoundingBoxRenderer(): void {
         configurable: true,
     });
 
-
     Scene.prototype.getBoundingBoxRenderer = function (): BoundingBoxRenderer {
         if (!this._boundingBoxRenderer) {
             this._boundingBoxRenderer = new BoundingBoxRenderer(this);
@@ -833,7 +795,6 @@ export function registerBoundingBoxRenderer(): void {
 
         return this._boundingBoxRenderer;
     };
-
 
     Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
         get: function (this: AbstractMesh) {

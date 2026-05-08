@@ -5,19 +5,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 
 import { Tools } from "../../Misc/tools.pure";
-import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
-
-// Module augmentation to abstract orientation inputs from camera.
-declare module "../../Cameras/arcRotateCameraInputsManager" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface ArcRotateCameraInputsManager {
-        /**
-         * Add orientation input support to the input manager.
-         * @returns the current input manager
-         */
-        addVRDeviceOrientation(): ArcRotateCameraInputsManager;
-    }
-}
+import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager.pure";
 
 /**
  * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
@@ -142,7 +130,6 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 }
 
 (<any>CameraInputTypes)["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
-
 
 let _registered = false;
 export function registerArcRotateCameraVRDeviceOrientationInput(): void {

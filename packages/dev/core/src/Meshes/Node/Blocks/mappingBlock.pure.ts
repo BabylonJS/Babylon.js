@@ -179,7 +179,6 @@ export class MappingBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMappingBlock(): void {
     if (_registered) {

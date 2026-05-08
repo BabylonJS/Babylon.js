@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
-import { type Camera } from "../Cameras/camera";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
+import { type Camera } from "../Cameras/camera.pure";
 
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -95,7 +95,6 @@ export class ColorCorrectionPostProcess extends PostProcess {
         );
     }
 }
-
 
 let _registered = false;
 export function registerColorCorrectionPostProcess(): void {

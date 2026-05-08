@@ -100,7 +100,6 @@ export class NodeRenderGraphComputeShaderBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerComputeShaderBlock(): void {
     if (_registered) {

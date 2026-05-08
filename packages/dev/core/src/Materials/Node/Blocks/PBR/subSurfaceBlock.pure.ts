@@ -311,7 +311,6 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSubSurfaceBlock(): void {
     if (_registered) {

@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { Tools } from "../Misc/tools.pure";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneSerializableComponent } from "../sceneComponent";
@@ -11,47 +11,6 @@ import { Nullable } from "../types";
 import { AssetContainer } from "../assetContainer";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 import { LensFlareSystem } from "./lensFlareSystem";
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /**
-         * Removes the given lens flare system from this scene.
-         * @param toRemove The lens flare system to remove
-         * @returns The index of the removed lens flare system
-         */
-        removeLensFlareSystem(toRemove: LensFlareSystem): number;
-
-        /**
-         * Adds the given lens flare system to this scene
-         * @param newLensFlareSystem The lens flare system to add
-         */
-        addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void;
-
-        /**
-         * Gets a lens flare system using its name
-         * @param name defines the name to look for
-         * @returns the lens flare system or null if not found
-         */
-        getLensFlareSystemByName(name: string): Nullable<LensFlareSystem>;
-
-        /**
-         * Gets a lens flare system using its Id
-         * @param id defines the Id to look for
-         * @returns the lens flare system or null if not found
-         * @deprecated Please use getLensFlareSystemById instead
-         */
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        getLensFlareSystemByID(id: string): Nullable<LensFlareSystem>;
-
-        /**
-         * Gets a lens flare system using its Id
-         * @param id defines the Id to look for
-         * @returns the lens flare system or null if not found
-         */
-        getLensFlareSystemById(id: string): Nullable<LensFlareSystem>;
-    }
-}
 
 /**
  * Defines the lens flare scene component responsible to manage any lens flares

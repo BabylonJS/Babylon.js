@@ -350,7 +350,6 @@ export class NodeRenderGraphIblShadowsRendererBlock extends NodeRenderGraphBlock
     }
 }
 
-
 let _registered = false;
 export function registerIblShadowsRendererBlock(): void {
     if (_registered) {

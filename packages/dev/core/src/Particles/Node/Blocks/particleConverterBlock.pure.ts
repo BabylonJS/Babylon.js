@@ -299,7 +299,6 @@ export class ParticleConverterBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleConverterBlock(): void {
     if (_registered) {

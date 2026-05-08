@@ -75,7 +75,6 @@ export class FlowGraphGetPhysicsMassPropertiesBlock extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphGetPhysicsMassPropertiesBlock(): void {
     if (_registered) {

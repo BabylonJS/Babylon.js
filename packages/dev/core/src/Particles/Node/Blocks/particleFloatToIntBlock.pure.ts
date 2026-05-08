@@ -136,7 +136,6 @@ export class ParticleFloatToIntBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleFloatToIntBlock(): void {
     if (_registered) {

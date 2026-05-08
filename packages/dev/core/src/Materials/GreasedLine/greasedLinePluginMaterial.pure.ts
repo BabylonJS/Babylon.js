@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { RawTexture } from "../Textures/rawTexture";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { type Scene } from "../../scene.pure";
@@ -8,7 +8,7 @@ import { type UniformBuffer } from "../uniformBuffer";
 import { Vector2, TmpVectors } from "../../Maths/math.vector.pure";
 import { type Color3 } from "../../Maths/math.color.pure";
 import { type Nullable } from "../../types";
-import { type Material } from "../material";
+import { type Material } from "../material.pure";
 import { MaterialDefines } from "../materialDefines";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type BaseTexture } from "../Textures/baseTexture.pure";
@@ -651,7 +651,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         return shaderLanguage === ShaderLanguage.GLSL || this._forceGLSL;
     }
 }
-
 
 let _registered = false;
 export function registerGreasedLinePluginMaterial(): void {

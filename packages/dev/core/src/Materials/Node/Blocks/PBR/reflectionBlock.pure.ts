@@ -11,8 +11,8 @@ import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture.pure";
 import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { type SubMesh } from "../../../../Meshes/subMesh";
-import { type Effect } from "../../../effect";
+import { type SubMesh } from "../../../../Meshes/subMesh.pure";
+import { type Effect } from "../../../effect.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type Scene } from "../../../../scene.pure";
 import { Logger } from "core/Misc/logger";
@@ -542,7 +542,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerReflectionBlock(): void {

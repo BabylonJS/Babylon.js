@@ -136,7 +136,6 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerVoronoiNoiseBlock(): void {
     if (_registered) {

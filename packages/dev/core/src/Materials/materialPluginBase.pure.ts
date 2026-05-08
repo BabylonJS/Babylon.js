@@ -6,15 +6,15 @@ import { MaterialPluginManager } from "./materialPluginManager.pure";
 import { type SmartArray } from "../Misc/smartArray";
 import { Constants } from "../Engines/constants";
 
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Scene } from "../scene.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { type UniformBuffer } from "./uniformBuffer";
 import { type EffectFallbacks } from "./effectFallbacks";
 import { type MaterialDefines } from "./materialDefines";
-import { type Material } from "./material";
+import { type Material } from "./material.pure";
 import { type BaseTexture } from "./Textures/baseTexture.pure";
 import { type RenderTargetTexture } from "./Textures/renderTargetTexture.pure";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -323,7 +323,6 @@ export class MaterialPluginBase {
 }
 
 // Register Class Name
-
 
 let _registered = false;
 export function registerMaterialPluginBase(): void {

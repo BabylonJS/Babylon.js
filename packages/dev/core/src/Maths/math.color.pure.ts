@@ -1904,7 +1904,6 @@ export class TmpColors {
     public static Color4: Color4[] = BuildArray(3, () => new Color4(0, 0, 0, 0));
 }
 
-
 let _registered = false;
 export function registerMathColor(): void {
     if (_registered) {

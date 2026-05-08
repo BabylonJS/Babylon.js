@@ -93,7 +93,6 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryArcTan2Block(): void {
     if (_registered) {

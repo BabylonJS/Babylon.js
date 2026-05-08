@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { Tools } from "../Misc/tools.pure";
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { Scene } from "../scene.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type IInspectable } from "../Misc/iInspectable";
-import { type Camera } from "../Cameras/camera";
-import { AbstractEngine } from "core/Engines/abstractEngine";
+import { type Camera } from "../Cameras/camera.pure";
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 
 // declare INSPECTOR namespace for compilation issue
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -167,23 +167,6 @@ export interface IInspectorOptions {
      * Should the default font loading be skipped
      */
     skipDefaultFontLoading?: boolean;
-}
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /**
-         * @internal
-         * Backing field
-         */
-        _debugLayer?: DebugLayer;
-
-        /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see https://doc.babylonjs.com/toolsAndResources/inspector
-         */
-        debugLayer: DebugLayer;
-    }
 }
 
 /**
@@ -457,7 +440,6 @@ export class DebugLayer {
         });
     }
 }
-
 
 let _registered = false;
 export function registerDebugLayer(): void {

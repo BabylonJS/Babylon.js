@@ -66,7 +66,6 @@ export class FlowGraphApplyForceBlock extends FlowGraphExecutionBlockWithOutSign
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphApplyForceBlock(): void {
     if (_registered) {

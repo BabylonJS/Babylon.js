@@ -150,7 +150,6 @@ export class GridBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGridBlock(): void {
     if (_registered) {

@@ -75,7 +75,6 @@ export class BasicSpriteUpdateBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBasicSpriteUpdateBlock(): void {
     if (_registered) {

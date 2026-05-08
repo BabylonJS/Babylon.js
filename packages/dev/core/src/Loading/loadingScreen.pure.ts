@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "../types";
-import { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { type Observer } from "../Misc/observable";
+import { type Observer } from "../Misc/observable.pure";
 
 /**
  * Interface used to present a loading screen while loading a scene
@@ -344,7 +344,6 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         });
     };
 }
-
 
 let _registered = false;
 export function registerLoadingScreen(): void {

@@ -122,7 +122,6 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerSetMaterialIDBlock(): void {
     if (_registered) {

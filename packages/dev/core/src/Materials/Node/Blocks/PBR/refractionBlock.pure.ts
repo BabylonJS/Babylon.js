@@ -10,7 +10,7 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { type Nullable } from "../../../../types";
 import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
@@ -436,7 +436,6 @@ export class RefractionBlock extends NodeMaterialBlock {
         this.useThicknessAsDepth = !!serializationObject.useThicknessAsDepth;
     }
 }
-
 
 let _registered = false;
 export function registerRefractionBlock(): void {

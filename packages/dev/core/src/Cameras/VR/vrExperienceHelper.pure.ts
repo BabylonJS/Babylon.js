@@ -3,9 +3,9 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { Logger } from "../../Misc/logger";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { type Nullable } from "../../types";
-import { type Camera } from "../../Cameras/camera";
+import { type Camera } from "../../Cameras/camera.pure";
 import { FreeCamera } from "../../Cameras/freeCamera.pure";
 import { TargetCamera } from "../../Cameras/targetCamera.pure";
 import { DeviceOrientationCamera } from "../../Cameras/deviceOrientationCamera.pure";

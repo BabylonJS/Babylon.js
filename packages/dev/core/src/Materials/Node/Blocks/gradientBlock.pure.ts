@@ -7,7 +7,7 @@ import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { Color3 } from "../../../Maths/math.color.pure";
 import { type Scene } from "../../../scene.pure";
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -206,7 +206,6 @@ export class GradientBlock extends NodeMaterialBlock {
         return codeString;
     }
 }
-
 
 let _registered = false;
 export function registerGradientBlock(): void {

@@ -2,11 +2,11 @@
 
 import { type Immutable, type Nullable } from "../types";
 import { type FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
-import { type Observer, Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable.pure";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
-import { VertexBuffer, Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { type IDisposable, type Scene } from "../scene.pure";
@@ -21,7 +21,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Color4, Color3, TmpColors } from "../Maths/math.color.pure";
 import { type ISize } from "../Maths/math.size";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 
 import { AddClipPlaneUniforms, PrepareStringDefinesForClipPlanes, BindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
@@ -31,7 +31,7 @@ import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.fun
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
-import { type ThinEngine } from "../Engines/thinEngine";
+import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import {
     _CreateAngleData,

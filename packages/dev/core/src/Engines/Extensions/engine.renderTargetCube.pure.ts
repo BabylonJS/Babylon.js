@@ -3,25 +3,10 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import { Constants } from "../constants";
-import { ThinEngine } from "../thinEngine";
+import { ThinEngine } from "../thinEngine.pure";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
-
-declare module "../../Engines/abstractEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractEngine {
-        /**
-         * Creates a new render target cube wrapper
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target cube wrapper
-         */
-        createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper;
-    }
-}
-
-export {};
 
 let _registered = false;
 export function registerEnginesExtensionsEngineRenderTargetCube(): void {

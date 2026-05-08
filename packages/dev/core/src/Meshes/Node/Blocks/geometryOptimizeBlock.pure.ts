@@ -244,7 +244,6 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeo
     }
 }
 
-
 let _registered = false;
 export function registerGeometryOptimizeBlock(): void {
     if (_registered) {

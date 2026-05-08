@@ -77,7 +77,6 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphThrottleBlock(): void {
     if (_registered) {

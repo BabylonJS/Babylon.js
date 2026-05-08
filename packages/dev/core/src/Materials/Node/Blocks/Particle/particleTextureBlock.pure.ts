@@ -242,7 +242,6 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleTextureBlock(): void {
     if (_registered) {

@@ -35,7 +35,6 @@ export class AddBlock extends BaseMathBlock {
     }
 }
 
-
 let _registered = false;
 export function registerAddBlock(): void {
     if (_registered) {

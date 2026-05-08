@@ -42,7 +42,6 @@ export class NodeRenderGraphFXAAPostProcessBlock extends NodeRenderGraphBaseWith
     }
 }
 
-
 let _registered = false;
 export function registerFxaaPostProcessBlock(): void {
     if (_registered) {

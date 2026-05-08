@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess.pure";
@@ -11,7 +11,7 @@ import { type IScreenshotSize } from "./interfaces/screenshotSize";
 import { DumpData } from "./dumpTools.pure";
 import { type Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { _RetryWithInterval } from "./timingTools";
 import { type FrameGraph } from "../FrameGraph/frameGraph";
 import { backbufferColorTextureHandle } from "../FrameGraph/frameGraphTypes";
@@ -20,7 +20,6 @@ import { FrameGraphPassTask } from "../FrameGraph/Tasks/PostProcesses/passTask";
 import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -1016,7 +1015,6 @@ export const ScreenshotTools = {
  * @internal
  */
 
-
 let _registered = false;
 export function registerScreenshotTools(): void {
     if (_registered) {
@@ -1031,7 +1029,6 @@ export function registerScreenshotTools(): void {
         Tools.CreateScreenshotUsingRenderTarget = CreateScreenshotUsingRenderTarget;
         Tools.CreateScreenshotUsingRenderTargetAsync = CreateScreenshotUsingRenderTargetAsync;
     };
-
 
     initSideEffects();
 }

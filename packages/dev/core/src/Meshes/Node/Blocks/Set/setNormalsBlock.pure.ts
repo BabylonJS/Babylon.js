@@ -170,7 +170,6 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
     }
 }
 
-
 let _registered = false;
 export function registerSetNormalsBlock(): void {
     if (_registered) {

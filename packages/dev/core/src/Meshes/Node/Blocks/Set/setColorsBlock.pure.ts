@@ -186,7 +186,6 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
     }
 }
 
-
 let _registered = false;
 export function registerSetColorsBlock(): void {
     if (_registered) {

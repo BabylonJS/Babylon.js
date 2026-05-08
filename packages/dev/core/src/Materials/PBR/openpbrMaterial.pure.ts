@@ -10,11 +10,11 @@ import { ImageProcessingConfiguration } from "../imageProcessingConfiguration.pu
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { Texture } from "../Textures/texture.pure";
-import { Material } from "../material";
+import { Material } from "../material.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { type Engine } from "../../Engines/engine.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect.pure";
 import { MaterialDefines } from "../materialDefines";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { EffectFallbacks } from "../effectFallbacks";
@@ -49,14 +49,14 @@ import {
     AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { Constants } from "../../Engines/constants";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { PrePassConfiguration } from "../prePassConfiguration";
-import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material";
+import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialFlags } from "../materialFlags";
-import { type SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
@@ -3361,7 +3361,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._callbackPluginEventPrepareDefines(this._eventInfo);
     }
 }
-
 
 let _registered = false;
 export function registerOpenpbrMaterial(): void {

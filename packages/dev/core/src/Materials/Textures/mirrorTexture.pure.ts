@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable.pure";
 import { type Nullable } from "../../types";
-import { type Camera } from "../../Cameras/camera";
+import { type Camera } from "../../Cameras/camera.pure";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";

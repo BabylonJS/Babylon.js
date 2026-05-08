@@ -111,7 +111,6 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFresnelBlock(): void {
     if (_registered) {

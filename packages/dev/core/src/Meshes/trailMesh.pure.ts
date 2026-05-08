@@ -3,12 +3,12 @@
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Mesh } from "../Meshes/mesh.pure";
 import { type Nullable } from "../types";
-import { type Observer } from "../Misc/observable";
+import { type Observer } from "../Misc/observable.pure";
 import { Vector3 } from "../Maths/math.vector.pure";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Lerp } from "../Maths/math.scalar.functions";
-import { type TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode.pure";
 import { Scene } from "../scene.pure";
 
 /**

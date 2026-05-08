@@ -89,7 +89,6 @@ export class UpdateSpriteCellIndexBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateSpriteCellIndexBlock(): void {
     if (_registered) {

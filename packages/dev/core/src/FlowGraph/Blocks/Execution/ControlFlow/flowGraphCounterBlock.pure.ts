@@ -50,7 +50,6 @@ export class FlowGraphCallCounterBlock extends FlowGraphExecutionBlockWithOutSig
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphCounterBlock(): void {
     if (_registered) {

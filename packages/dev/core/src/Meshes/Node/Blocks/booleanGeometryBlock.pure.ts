@@ -220,7 +220,6 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBooleanGeometryBlock(): void {
     if (_registered) {

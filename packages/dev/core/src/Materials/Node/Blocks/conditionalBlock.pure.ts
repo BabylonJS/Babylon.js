@@ -238,7 +238,6 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerConditionalBlock(): void {
     if (_registered) {

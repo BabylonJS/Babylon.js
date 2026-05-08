@@ -1,11 +1,13 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 export * from "./index.pure";
 export * from "./colorCurves.pure";
+export * from "./effect.pure";
 export * from "./effect.webgl.functions.pure";
 export * from "./effectRenderer.pure";
 export * from "./fresnelParameters.pure";
 export * from "./imageProcessingConfiguration.pure";
 export * from "./material.decalMapConfiguration.pure";
+export * from "./material.pure";
 export * from "./materialHelper.functions.pure";
 export * from "./materialPluginBase.pure";
 export * from "./materialPluginManager.pure";

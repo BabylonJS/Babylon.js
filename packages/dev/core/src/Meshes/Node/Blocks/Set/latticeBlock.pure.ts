@@ -229,7 +229,6 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
     }
 }
 
-
 let _registered = false;
 export function registerLatticeBlock(): void {
     if (_registered) {

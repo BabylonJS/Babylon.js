@@ -7,15 +7,15 @@ import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
 import { type Matrix } from "../Maths/math.vector.pure";
 import { Color3, TmpColors } from "../Maths/math.color.pure";
-import { VertexBuffer } from "../Buffers/buffer";
-import { type SubMesh } from "../Meshes/subMesh";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { PrePassConfiguration } from "./prePassConfiguration";
 import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
 import { type FresnelParameters } from "./fresnelParameters.pure";
-import { Material } from "../Materials/material";
+import { Material } from "../Materials/material.pure";
 import type { ICustomShaderNameResolveOptions } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
@@ -26,7 +26,7 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { MaterialFlags } from "./materialFlags";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
-import { type Effect, type IEffectCreationOptions } from "./effect";
+import { type Effect, type IEffectCreationOptions } from "./effect.pure";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
 import { PrepareVertexPullingUniforms, BindVertexPullingUniforms } from "./vertexPullingHelper.functions";
@@ -1982,7 +1982,6 @@ export class StandardMaterial extends StandardMaterialBase {
         MaterialFlags.FresnelEnabled = value;
     }
 }
-
 
 let _registered = false;
 export function registerStandardMaterial(): void {

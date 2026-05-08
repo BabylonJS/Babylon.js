@@ -7,9 +7,9 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { VertexBuffer } from "../../../../Buffers/buffer";
+import { VertexBuffer } from "../../../../Buffers/buffer.pure";
 import { InputBlock } from "../Input/inputBlock.pure";
 
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
@@ -532,7 +532,6 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerMorphTargetsBlock(): void {

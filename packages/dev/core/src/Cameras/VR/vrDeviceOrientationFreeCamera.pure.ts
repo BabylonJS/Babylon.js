@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera.pure";
 import { DeviceOrientationCamera } from "../../Cameras/deviceOrientationCamera.pure";
 import { VRCameraMetrics } from "./vrCameraMetrics";
 import { type Scene } from "../../scene.pure";
@@ -38,7 +38,6 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
 
     protected override _setRigMode = (rigParams: any) => _SetVrRigMode(this, rigParams);
 }
-
 
 let _registered = false;
 export function registerVrDeviceOrientationFreeCamera(): void {

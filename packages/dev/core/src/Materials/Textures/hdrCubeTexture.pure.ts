@@ -4,7 +4,7 @@ import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
 import { EnvCubeTexture } from "./envCubeTexture.pure";
 import { GetCubeMapTextureData } from "../../Misc/HighDynamicRange/hdr";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { RegisterClass } from "../../Misc/typeStore";
 
@@ -126,7 +126,6 @@ export class HDRCubeTexture extends EnvCubeTexture {
         return texture;
     }
 }
-
 
 let _registered = false;
 export function registerHdrCubeTexture(): void {

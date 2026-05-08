@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable.pure";
 import { GetClass, RegisterClass } from "../../../Misc/typeStore";
 import { Matrix, Vector2, Vector3 } from "../../../Maths/math.vector.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";

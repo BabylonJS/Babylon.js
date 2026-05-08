@@ -132,7 +132,6 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerScreenSpaceBlock(): void {
     if (_registered) {

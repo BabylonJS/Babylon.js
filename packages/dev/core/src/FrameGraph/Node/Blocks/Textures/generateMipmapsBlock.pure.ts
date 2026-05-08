@@ -68,7 +68,6 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGenerateMipmapsBlock(): void {
     if (_registered) {

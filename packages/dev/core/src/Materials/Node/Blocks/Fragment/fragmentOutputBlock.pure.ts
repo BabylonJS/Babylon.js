@@ -8,7 +8,7 @@ import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { type Scene } from "../../../../scene.pure";
 import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { BindLogDepth } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -316,7 +316,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
     }
 }
-
 
 let _registered = false;
 export function registerFragmentOutputBlock(): void {

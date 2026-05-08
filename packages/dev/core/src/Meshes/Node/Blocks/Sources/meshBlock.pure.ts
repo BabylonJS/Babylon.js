@@ -138,7 +138,6 @@ export class MeshBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMeshBlock(): void {
     if (_registered) {

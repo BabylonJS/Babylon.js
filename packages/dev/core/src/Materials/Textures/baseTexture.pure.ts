@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize, serializeAsTexture } from "../../Misc/decorators";
-import { type Observer, Observable } from "../../Misc/observable";
+import { type Observer, Observable } from "../../Misc/observable.pure";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
 import { Matrix, type Vector3 } from "../../Maths/math.vector.pure";
@@ -11,7 +11,7 @@ import { Constants } from "../../Engines/constants";
 import { type IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { ThinTexture } from "./thinTexture";
 
 import { type Animation } from "../../Animations/animation.pure";

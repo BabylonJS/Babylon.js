@@ -1,16 +1,16 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize } from "../Misc/decorators";
-import { Observable } from "../Misc/observable";
-import { type Camera } from "../Cameras/camera";
+import { Observable } from "../Misc/observable.pure";
+import { type Camera } from "../Cameras/camera.pure";
 import { Scene } from "../scene.pure";
 import { Vector2 } from "../Maths/math.vector.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
-import { type Effect } from "../Materials/effect";
-import { type Material } from "../Materials/material";
+import { type Effect } from "../Materials/effect.pure";
+import { type Material } from "../Materials/material.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { PostProcess } from "../PostProcesses/postProcess.pure";
@@ -31,20 +31,6 @@ import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
 import { Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /**
-         * Return a the first highlight layer of the scene with a given name.
-         * @param name The name of the highlight layer to look for.
-         * @returns The highlight layer if found otherwise null.
-         */
-        getHighlightLayerByName(name: string): Nullable<HighlightLayer>;
-    }
-}
 
 interface IBlurPostProcess extends PostProcess {
     kernel: number;

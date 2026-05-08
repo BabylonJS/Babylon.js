@@ -9,7 +9,7 @@ import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type Scene } from "core/scene.pure";
 import { type WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
-import { type Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material.pure";
 import { type StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { type SpotLight } from "core/Lights/spotLight.pure";
@@ -536,7 +536,6 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         };
     }
 }
-
 
 let _registered = false;
 export function registerReflectiveShadowMap(): void {

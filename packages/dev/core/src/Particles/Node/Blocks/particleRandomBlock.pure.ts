@@ -212,7 +212,6 @@ export class ParticleRandomBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleRandomBlock(): void {
     if (_registered) {

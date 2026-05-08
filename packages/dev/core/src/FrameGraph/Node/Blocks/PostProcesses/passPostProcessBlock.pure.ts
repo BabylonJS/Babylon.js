@@ -78,7 +78,6 @@ export class NodeRenderGraphPassCubePostProcessBlock extends NodeRenderGraphBase
     }
 }
 
-
 let _registered = false;
 export function registerPassPostProcessBlock(): void {
     if (_registered) {

@@ -6,7 +6,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { type NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Observable } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -139,7 +139,6 @@ export class ParticleDebugBlock extends NodeParticleBlock {
         super.dispose();
     }
 }
-
 
 let _registered = false;
 export function registerParticleDebugBlock(): void {

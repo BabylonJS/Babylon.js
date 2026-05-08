@@ -7,7 +7,7 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
 import { RichTypeAny } from "../../flowGraphRichTypes.pure";
 import { type AbstractSound } from "../../../AudioV2/abstractAudio/abstractSound";
-import { type Observer } from "../../../Misc/observable";
+import { type Observer } from "../../../Misc/observable.pure";
 import { type Nullable } from "../../../types";
 import { RegisterClass } from "../../../Misc/typeStore";
 
@@ -80,7 +80,6 @@ export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
         return FlowGraphBlockNames.AudioSoundEndedEvent;
     }
 }
-
 
 let _registered = false;
 export function registerFlowGraphSoundEndedEventBlock(): void {

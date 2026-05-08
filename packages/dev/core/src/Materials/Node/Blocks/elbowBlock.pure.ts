@@ -83,7 +83,6 @@ export class ElbowBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMaterialsNodeBlocksElbowBlock(): void {
     if (_registered) {

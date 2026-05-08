@@ -121,7 +121,6 @@ export class InstantiateLinearBlock extends InstantiateBaseBlock {
     }
 }
 
-
 let _registered = false;
 export function registerInstantiateLinearBlock(): void {
     if (_registered) {

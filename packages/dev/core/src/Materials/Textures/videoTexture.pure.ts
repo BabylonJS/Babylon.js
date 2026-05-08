@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { Tools } from "../../Misc/tools.pure";
 import { Logger } from "../../Misc/logger";
 import { Texture } from "../../Materials/Textures/texture.pure";

@@ -7,7 +7,7 @@ import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type Nullable } from "../../../../types";
 import { type Scene } from "../../../../scene.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Light } from "../../../../Lights/light";
@@ -269,7 +269,6 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerLightInformationBlock(): void {

@@ -158,7 +158,6 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-
 let _registered = false;
 export function registerPbrSpecularGlossinessMaterial(): void {
     if (_registered) {

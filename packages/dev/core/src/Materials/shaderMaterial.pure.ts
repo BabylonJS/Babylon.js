@@ -6,11 +6,11 @@ import { Scene } from "../scene.pure";
 import { Matrix, Quaternion } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
-import { type SubMesh } from "../Meshes/subMesh";
-import { VertexBuffer } from "../Buffers/buffer";
+import { type SubMesh } from "../Meshes/subMesh.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
-import { type Effect, type IEffectCreationOptions, type IShaderPath } from "./effect";
+import { type Effect, type IEffectCreationOptions, type IShaderPath } from "./effect.pure";
 import { EffectFallbacks } from "./effectFallbacks";
 import { WebRequest } from "../Misc/webRequest";
 import { type ShaderLanguage } from "./shaderLanguage";
@@ -1941,7 +1941,6 @@ export class ShaderMaterial extends PushMaterial {
      */
     public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
 }
-
 
 let _registered = false;
 export function registerShaderMaterial(): void {

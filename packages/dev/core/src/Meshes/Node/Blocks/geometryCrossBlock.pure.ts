@@ -88,7 +88,6 @@ export class GeometryCrossBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryCrossBlock(): void {
     if (_registered) {

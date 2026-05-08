@@ -306,7 +306,6 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerWorleyNoise3DBlock(): void {
     if (_registered) {

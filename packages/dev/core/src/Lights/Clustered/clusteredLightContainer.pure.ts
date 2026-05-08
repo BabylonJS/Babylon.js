@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { StorageBuffer } from "core/Buffers/storageBuffer";
-import { type Camera } from "core/Cameras/camera";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type Camera } from "core/Cameras/camera.pure";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { Constants } from "core/Engines/constants";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine.pure";
-import { type Effect } from "core/Materials/effect";
+import { type Effect } from "core/Materials/effect.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -680,7 +680,6 @@ export class ClusteredLightContainer extends Light {
         }
     }
 }
-
 
 let _registered = false;
 export function registerClusteredLightContainer(): void {

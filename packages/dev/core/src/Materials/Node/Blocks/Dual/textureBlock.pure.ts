@@ -9,14 +9,14 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterial } from "../../nodeMaterial.pure";
 import type { NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture.pure";
 import { ThinTexture } from "../../../Textures/thinTexture";
 import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { Constants } from "../../../../Engines/constants";
-import { type AbstractEngine } from "../../../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine.pure";
 import { ImageSourceBlock } from "./imageSourceBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
@@ -788,7 +788,6 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 }
-
 
 let _registered = false;
 export function registerTextureBlock(): void {

@@ -7,12 +7,12 @@ import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector.pure";
 import { type Nullable } from "../../types";
 import { type IDisposable, type Scene } from "../../scene.pure";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import type { Observer } from "../../Misc/observable";
-import { TransformNode } from "../../Meshes/transformNode";
+import { TransformNode } from "../../Meshes/transformNode.pure";
 import { type Node } from "../../node";
 import { Logger } from "../../Misc/logger";
-import { type Bone } from "../../Bones/bone";
+import { type Bone } from "../../Bones/bone.pure";
 
 /**
  * All 83 body joint names as defined by the WebXR Body Tracking specification.

@@ -104,7 +104,6 @@ export class DebugBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMeshesNodeBlocksDebugBlock(): void {
     if (_registered) {

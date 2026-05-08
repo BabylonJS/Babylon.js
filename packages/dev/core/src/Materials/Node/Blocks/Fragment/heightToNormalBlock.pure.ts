@@ -201,7 +201,6 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerHeightToNormalBlock(): void {
     if (_registered) {

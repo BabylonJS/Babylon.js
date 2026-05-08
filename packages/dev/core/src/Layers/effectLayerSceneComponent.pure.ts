@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { Camera } from "../Cameras/camera";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { Camera } from "../Cameras/camera.pure";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { SceneComponentConstants } from "../sceneComponent";

@@ -11,7 +11,7 @@ import { type BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEm
 import { Constants } from "../Engines/constants";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Color4 } from "../Maths/math.color.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 import { type Plane } from "../Maths/math.plane";
 import { type Animation } from "../Animations/animation.pure";
@@ -26,10 +26,19 @@ import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } fr
 import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { type MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { type Attractor } from "./attractor";
-import { CreateBoxEmitter, CreateConeEmitter, CreateCylinderEmitter, CreateDirectedConeEmitter, CreateDirectedCylinderEmitter, CreateDirectedSphereEmitter, CreateHemisphericEmitter, CreateMeshEmitter, CreatePointEmitter, CreateSphereEmitter } from "./particleSystem.functions";
+import {
+    CreateBoxEmitter,
+    CreateConeEmitter,
+    CreateCylinderEmitter,
+    CreateDirectedConeEmitter,
+    CreateDirectedCylinderEmitter,
+    CreateDirectedSphereEmitter,
+    CreateHemisphericEmitter,
+    CreateMeshEmitter,
+    CreatePointEmitter,
+    CreateSphereEmitter,
+} from "./particleSystem.functions";
 import { RegisterClass } from "../Misc/typeStore";
-
-
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -1057,7 +1066,6 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         return particleEmitter;
     }
 }
-
 
 let _registered = false;
 export function registerBaseParticleSystem(): void {

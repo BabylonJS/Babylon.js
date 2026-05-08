@@ -4,21 +4,21 @@ import type { FloatArray, IndicesArray } from "../types";
 import { Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import type { Vector3 } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import type { IMeshDataOptions } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh.pure";
-import { type Material } from "../Materials/material";
+import { type Material } from "../Materials/material.pure";
 import { type Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
-import { TransformNode } from "./transformNode";
+import { TransformNode } from "./transformNode.pure";
 import { type Light } from "../Lights/light";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Tools } from "../Misc/tools.pure";
 import { type Geometry } from "./geometry";
 import { Nullable } from "../types";
-import { ThinEngine } from "../Engines/thinEngine";
+import { ThinEngine } from "../Engines/thinEngine.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**
@@ -650,60 +650,6 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         return clone;
-    }
-}
-
-declare module "./mesh" {
-    /** @internal */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Mesh {
-        /**
-         * Register a custom buffer that will be instanced
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers
-         * @param kind defines the buffer kind
-         * @param stride defines the stride in floats
-         */
-        registerInstancedBuffer(kind: string, stride: number): void;
-
-        /**
-         * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
-         */
-        _invalidateInstanceVertexArrayObject(): void;
-
-        /**
-         * true to use the edge renderer for all instances of this mesh
-         */
-        edgesShareWithInstances: boolean;
-
-        /** @internal */
-        _userInstancedBuffersStorage: {
-            /** @internal */
-            data: { [key: string]: Float32Array };
-            /** @internal */
-            sizes: { [key: string]: number };
-            /** @internal */
-            vertexBuffers: { [key: string]: Nullable<VertexBuffer> };
-            /** @internal */
-            strides: { [key: string]: number };
-            /** @internal */
-            vertexArrayObjects?: { [key: string]: WebGLVertexArrayObject };
-            /** @internal */
-            renderPasses?: {
-                [renderPassId: number]: { [kind: string]: Nullable<VertexBuffer> };
-            };
-        };
-    }
-}
-
-declare module "./abstractMesh" {
-    /** @internal */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractMesh {
-        /**
-         * Object used to store instanced buffers defined by user
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers
-         */
-        instancedBuffers: { [key: string]: any };
     }
 }
 

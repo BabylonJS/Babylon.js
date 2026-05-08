@@ -114,7 +114,6 @@ export class FragCoordBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFragCoordBlock(): void {
     if (_registered) {

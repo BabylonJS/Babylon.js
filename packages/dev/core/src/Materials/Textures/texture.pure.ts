@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { serialize } from "../../Misc/decorators";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { type Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
@@ -9,7 +9,7 @@ import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import { type IInspectable } from "../../Misc/iInspectable";
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";

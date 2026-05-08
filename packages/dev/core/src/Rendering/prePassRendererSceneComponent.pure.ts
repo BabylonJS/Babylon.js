@@ -5,51 +5,14 @@ import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
 
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type _InstancesBatch } from "../Meshes/mesh.pure";
-import { type Effect } from "../Materials/effect";
-import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect.pure";
+import { type Camera } from "../Cameras/camera.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { type PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { PrePassRenderer } from "./prePassRenderer.pure";
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal (Backing field) */
-        _prePassRenderer: Nullable<PrePassRenderer>;
-
-        /**
-         * Gets or Sets the current prepass renderer associated to the scene.
-         */
-        prePassRenderer: Nullable<PrePassRenderer>;
-
-        /**
-         * Enables the prepass and associates it with the scene
-         * @returns the PrePassRenderer
-         */
-        enablePrePassRenderer(): Nullable<PrePassRenderer>;
-
-        /**
-         * Disables the prepass associated with the scene
-         */
-        disablePrePassRenderer(): void;
-    }
-}
-
-declare module "../Materials/Textures/renderTargetTexture" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface RenderTargetTexture {
-        /**
-         * Gets or sets a boolean indicating that the prepass renderer should not be used with this render target
-         */
-        noPrePassRenderer: boolean;
-        /** @internal */
-        _prePassRenderTarget: Nullable<PrePassRenderTarget>;
-    }
-}
 
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful

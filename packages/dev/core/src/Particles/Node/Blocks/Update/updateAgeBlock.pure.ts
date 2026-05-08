@@ -87,7 +87,6 @@ export class UpdateAgeBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerUpdateAgeBlock(): void {
     if (_registered) {

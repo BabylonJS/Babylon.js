@@ -8,7 +8,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
-import { type Effect } from "../../../effect";
+import { type Effect } from "../../../effect.pure";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -246,7 +246,6 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerAnisotropyBlock(): void {

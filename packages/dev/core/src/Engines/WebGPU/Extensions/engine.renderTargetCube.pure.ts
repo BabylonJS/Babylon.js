@@ -6,21 +6,6 @@ import { RenderTargetCreationOptions } from "../../../Materials/Textures/texture
 import { Constants } from "../../constants";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 
-declare module "../../abstractEngine" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractEngine {
-        /**
-         * Creates a new render target cube wrapper
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target cube wrapper
-         */
-        createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper;
-    }
-}
-
-export {};
-
 let _registered = false;
 export function registerEnginesWebGPUExtensionsEngineRenderTargetCube(): void {
     if (_registered) {

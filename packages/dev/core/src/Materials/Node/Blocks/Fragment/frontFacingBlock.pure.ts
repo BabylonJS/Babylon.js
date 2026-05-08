@@ -54,7 +54,6 @@ export class FrontFacingBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFrontFacingBlock(): void {
     if (_registered) {

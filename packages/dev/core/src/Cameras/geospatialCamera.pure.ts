@@ -3,7 +3,7 @@
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
 import { Vector3, Matrix, TmpVectors, type Vector2 } from "../Maths/math.vector.pure";
 import { Epsilon } from "../Maths/math.constants";
-import { Camera } from "./camera";
+import { Camera } from "./camera.pure";
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { type Scene } from "../scene.pure";
 import { type MeshPredicate } from "../Culling/ray.core";
@@ -709,7 +709,6 @@ export function ComputeYawPitchFromLookAtToRef(
     result.y = pitch;
     return result;
 }
-
 
 let _registered = false;
 export function registerGeospatialCamera(): void {

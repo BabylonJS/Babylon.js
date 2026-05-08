@@ -177,7 +177,6 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerVectorSplitterBlock(): void {
     if (_registered) {

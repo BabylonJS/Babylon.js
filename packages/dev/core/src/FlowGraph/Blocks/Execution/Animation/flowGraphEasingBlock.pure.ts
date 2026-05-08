@@ -125,7 +125,6 @@ export class FlowGraphEasingBlock extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphEasingBlock(): void {
     if (_registered) {

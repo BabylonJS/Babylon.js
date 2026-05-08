@@ -7,8 +7,8 @@ import { type IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
 import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector.pure";
 import { Clamp } from "../../../Maths/math.scalar.functions";
-import { type Camera } from "../../../Cameras/camera";
-import { type Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { PostProcess } from "../../../PostProcesses/postProcess.pure";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
@@ -26,11 +26,6 @@ import { type Animation } from "../../../Animations/animation.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
-
-
-
-
 
 /**
  * Standard rendering pipeline
@@ -1691,7 +1686,6 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     public static LuminanceSteps: number = 6;
 }
-
 
 let _registered = false;
 export function registerStandardRenderingPipeline(): void {

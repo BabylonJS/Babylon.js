@@ -156,7 +156,6 @@ export class InstantiateBlock extends InstantiateBaseBlock {
     }
 }
 
-
 let _registered = false;
 export function registerInstantiateBlock(): void {
     if (_registered) {

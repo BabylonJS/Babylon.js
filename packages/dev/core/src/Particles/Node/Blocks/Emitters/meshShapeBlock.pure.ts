@@ -291,7 +291,6 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMeshShapeBlock(): void {
     if (_registered) {

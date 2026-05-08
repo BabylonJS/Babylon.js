@@ -81,7 +81,6 @@ export class BasicColorUpdateBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBasicColorUpdateBlock(): void {
     if (_registered) {

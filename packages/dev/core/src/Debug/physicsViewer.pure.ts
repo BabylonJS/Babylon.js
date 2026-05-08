@@ -8,7 +8,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder.pure";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { Color3, Color4 } from "../Maths/math.color.pure";
-import { type Material } from "../Materials/material";
+import { type Material } from "../Materials/material.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePlugin";
@@ -23,7 +23,7 @@ import { VertexData } from "../Meshes/mesh.vertexData";
 import { MeshBuilder } from "../Meshes/meshBuilder";
 import { type PhysicsConstraint } from "../Physics/v2/physicsConstraint";
 import { AxesViewer } from "./axesViewer";
-import { TransformNode } from "../Meshes/transformNode";
+import { TransformNode } from "../Meshes/transformNode.pure";
 import { Epsilon } from "../Maths/math.constants";
 
 /**

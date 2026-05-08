@@ -188,7 +188,6 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGaussianSplattingBlock(): void {
     if (_registered) {

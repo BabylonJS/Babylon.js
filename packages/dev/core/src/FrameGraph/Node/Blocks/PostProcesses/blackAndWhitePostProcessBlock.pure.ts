@@ -70,7 +70,6 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
     }
 }
 
-
 let _registered = false;
 export function registerBlackAndWhitePostProcessBlock(): void {
     if (_registered) {

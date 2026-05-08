@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Camera } from "../../../Cameras/camera";
-import { type Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { type RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { PostProcess } from "../../../PostProcesses/postProcess.pure";

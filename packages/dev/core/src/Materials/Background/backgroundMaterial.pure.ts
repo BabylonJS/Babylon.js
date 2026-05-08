@@ -7,11 +7,11 @@ import { Logger } from "../../Misc/logger";
 import { type Nullable, type int, type float } from "../../types";
 import { type Scene } from "../../scene.pure";
 import { type Matrix, TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector.pure";
-import { VertexBuffer } from "../../Buffers/buffer";
-import { type SubMesh } from "../../Meshes/subMesh";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Mesh } from "../../Meshes/mesh.pure";
-import { type IEffectCreationOptions } from "../../Materials/effect";
+import { type IEffectCreationOptions } from "../../Materials/effect.pure";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
@@ -1155,7 +1155,6 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
         return SerializationHelper.Parse(() => new BackgroundMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
-
 
 let _registered = false;
 export function registerBackgroundMaterial(): void {

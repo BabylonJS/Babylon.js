@@ -102,7 +102,6 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
     }
 }
 
-
 let _registered = false;
 export function registerUtilityLayerRendererBlock(): void {
     if (_registered) {

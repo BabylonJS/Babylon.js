@@ -170,7 +170,6 @@ export class InstantiateRadialBlock extends InstantiateBaseBlock {
     }
 }
 
-
 let _registered = false;
 export function registerInstantiateRadialBlock(): void {
     if (_registered) {

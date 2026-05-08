@@ -2,8 +2,8 @@
 
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import { type Camera } from "../../../Cameras/camera";
-import { type Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { PostProcess } from "../../postProcess.pure";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
@@ -23,7 +23,6 @@ import { ThinSSRBlurCombinerPostProcess } from "core/PostProcesses/thinSSRBlurCo
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
 
 /**
  * Render pipeline to produce Screen Space Reflections (SSR) effect
@@ -1038,7 +1037,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         return SerializationHelper.Parse(() => new SSRRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
     }
 }
-
 
 let _registered = false;
 export function registerSsrRenderingPipeline(): void {

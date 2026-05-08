@@ -1,6 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type IViewportLike } from "core/index.pure";
+import {
+    type NodeRenderGraphConnectionPoint,
+    type Scene,
+    type FrameGraphTextureHandle,
+    type FrameGraph,
+    type NodeRenderGraphBuildState,
+    type IViewportLike,
+} from "core/index.pure";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { FrameGraphCopyToTextureTask } from "../../../Tasks/Texture/copyToTextureTask";
@@ -162,7 +169,6 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         this._setViewport();
     }
 }
-
 
 let _registered = false;
 export function registerCopyTextureBlock(): void {

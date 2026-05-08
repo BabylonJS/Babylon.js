@@ -58,7 +58,6 @@ export class FlowGraphSetLinearVelocityBlock extends FlowGraphExecutionBlockWith
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSetLinearVelocityBlock(): void {
     if (_registered) {

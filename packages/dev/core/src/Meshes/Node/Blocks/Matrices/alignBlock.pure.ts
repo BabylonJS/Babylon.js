@@ -70,7 +70,6 @@ export class AlignBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerAlignBlock(): void {
     if (_registered) {

@@ -243,7 +243,6 @@ export class TrigonometryBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerTrigonometryBlock(): void {
     if (_registered) {

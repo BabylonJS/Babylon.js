@@ -2,14 +2,14 @@
 
 import { type Nullable } from "../types";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
-import { type Observer } from "./observable";
-import { type Effect } from "../Materials/effect";
+import { type Observer } from "./observable.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { PostProcess } from "../PostProcesses/postProcess.pure";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
 
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { ThinMinMaxReducer, ThinMinMaxReducerPostProcess } from "./thinMinMaxReducer";
 
 /**

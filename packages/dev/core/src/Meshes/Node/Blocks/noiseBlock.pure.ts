@@ -214,7 +214,6 @@ export class NoiseBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerNoiseBlock(): void {
     if (_registered) {

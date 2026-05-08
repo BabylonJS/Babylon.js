@@ -69,7 +69,6 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSequenceBlock(): void {
     if (_registered) {

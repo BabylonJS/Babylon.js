@@ -134,7 +134,6 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerColorSplitterBlock(): void {
     if (_registered) {

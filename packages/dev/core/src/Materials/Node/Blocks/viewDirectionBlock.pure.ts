@@ -84,7 +84,6 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerViewDirectionBlock(): void {
     if (_registered) {

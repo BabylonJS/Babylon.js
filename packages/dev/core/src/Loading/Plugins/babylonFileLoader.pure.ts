@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { Logger } from "../../Misc/logger";
-import { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { Geometry } from "../../Meshes/geometry";
-import { TransformNode } from "../../Meshes/transformNode";
-import { Material } from "../../Materials/material";
+import { TransformNode } from "../../Meshes/transformNode.pure";
+import { Material } from "../../Materials/material.pure";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
 import { CubeTexture } from "../../Materials/Textures/cubeTexture.pure";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture.pure";
@@ -23,7 +23,7 @@ import { Tools } from "../../Misc/tools.pure";
 import { PostProcess } from "../../PostProcesses/postProcess.pure";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { Parse, GetIndividualParser } from "./babylonFileParser.function";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { type MorphTarget } from "../../Morph/morphTarget";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";

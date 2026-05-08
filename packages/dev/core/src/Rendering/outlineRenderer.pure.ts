@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
-import { VertexBuffer } from "../Buffers/buffer";
-import { type SubMesh } from "../Meshes/subMesh";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { Mesh } from "../Meshes/mesh.pure";
 import type { _InstancesBatch } from "../Meshes/mesh";
 import { Scene } from "../scene.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { ISceneComponent } from "../sceneComponent";
@@ -13,45 +13,8 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { type IEffectCreationOptions } from "core/Materials/effect";
+import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-
-
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /** @internal */
-        _outlineRenderer: OutlineRenderer;
-
-        /**
-         * Gets the outline renderer associated with the scene
-         * @returns a OutlineRenderer
-         */
-        getOutlineRenderer(): OutlineRenderer;
-    }
-}
-
-declare module "../Meshes/abstractMesh" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface AbstractMesh {
-        /** @internal (Backing field) */
-        _renderOutline: boolean;
-        /**
-         * Gets or sets a boolean indicating if the outline must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#3
-         */
-        renderOutline: boolean;
-
-        /** @internal (Backing field) */
-        _renderOverlay: boolean;
-        /**
-         * Gets or sets a boolean indicating if the overlay must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#2
-         */
-        renderOverlay: boolean;
-    }
-}
 
 /**
  * This class is responsible to draw the outline/overlay of meshes.
@@ -463,7 +426,6 @@ export class OutlineRenderer implements ISceneComponent {
     }
 }
 
-
 let _registered = false;
 export function registerOutlineRenderer(): void {
     if (_registered) {
@@ -482,7 +444,6 @@ export function registerOutlineRenderer(): void {
         return this._outlineRenderer;
     };
 
-
     Object.defineProperty(Mesh.prototype, "renderOutline", {
         get: function (this: Mesh) {
             return this._renderOutline;
@@ -497,7 +458,6 @@ export function registerOutlineRenderer(): void {
         enumerable: true,
         configurable: true,
     });
-
 
     Object.defineProperty(Mesh.prototype, "renderOverlay", {
         get: function (this: Mesh) {

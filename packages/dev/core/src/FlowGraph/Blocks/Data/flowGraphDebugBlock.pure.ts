@@ -117,7 +117,6 @@ export class FlowGraphDebugBlock extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphDebugBlock(): void {
     if (_registered) {

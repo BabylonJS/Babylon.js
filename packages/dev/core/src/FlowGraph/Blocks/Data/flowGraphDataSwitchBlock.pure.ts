@@ -93,7 +93,6 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphDataSwitchBlock(): void {
     if (_registered) {

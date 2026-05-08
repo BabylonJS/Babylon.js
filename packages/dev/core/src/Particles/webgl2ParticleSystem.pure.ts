@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { type VertexBuffer, type Buffer } from "../Buffers/buffer";
-import { type ThinEngine } from "../Engines/thinEngine";
-import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
+import { type VertexBuffer, type Buffer } from "../Buffers/buffer.pure";
+import { type ThinEngine } from "../Engines/thinEngine.pure";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect.pure";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { type GPUParticleSystem } from "./gpuParticleSystem.pure";
@@ -12,10 +12,6 @@ import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEff
 import { Constants } from "../Engines/constants";
 import { type Engine } from "../Engines/engine.pure";
 import { RegisterClass } from "../Misc/typeStore";
-
-
-
-
 
 /** @internal */
 export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
@@ -358,7 +354,6 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         return vao;
     }
 }
-
 
 let _registered = false;
 export function registerWebgl2ParticleSystem(): void {

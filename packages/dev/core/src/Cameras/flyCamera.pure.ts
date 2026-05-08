@@ -12,7 +12,7 @@ import { type FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboard
 import { Tools } from "../Misc/tools.pure";
 
 import { type Collider } from "../Collisions/collider";
-import { AbstractEngine } from "core/Engines/abstractEngine";
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**
@@ -454,7 +454,6 @@ export class FlyCamera extends TargetCamera {
 }
 
 // Register Class Name
-
 
 let _registered = false;
 export function registerFlyCamera(): void {

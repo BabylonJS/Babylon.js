@@ -77,7 +77,6 @@ export class Rotate2dBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerRotate2dBlock(): void {
     if (_registered) {

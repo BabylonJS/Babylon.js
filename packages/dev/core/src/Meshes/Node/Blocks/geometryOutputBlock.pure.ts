@@ -53,7 +53,6 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerGeometryOutputBlock(): void {
     if (_registered) {

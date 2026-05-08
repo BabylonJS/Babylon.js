@@ -1,19 +1,19 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type Scene, type IDisposable, ScenePerformancePriority } from "../scene.pure";
 import { type Vector2, Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
 import { type Node } from "../node";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
-import { TransformNode } from "../Meshes/transformNode";
-import { type SubMesh } from "../Meshes/subMesh";
+import { TransformNode } from "../Meshes/transformNode.pure";
+import { type SubMesh } from "../Meshes/subMesh.pure";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { type IntersectionInfo } from "../Collisions/intersectionInfo";
 import { type ICullable, BoundingInfo } from "../Culling/boundingInfo";
-import { type Material } from "../Materials/material";
+import { type Material } from "../Materials/material.pure";
 import { type MaterialDefines } from "../Materials/materialDefines";
 import { type Light } from "../Lights/light";
 import { type Skeleton } from "../Bones/skeleton";
@@ -40,7 +40,7 @@ import { type RenderingGroup } from "../Rendering/renderingGroup";
 import { type MorphTarget } from "../Morph/morphTarget";
 import { type Geometry } from "./geometry";
 import { nativeOverride } from "../Misc/decorators";
-import { AbstractEngine } from "core/Engines/abstractEngine";
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
 function ApplyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTargetManager): void {
@@ -2834,7 +2834,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
 }
-
 
 let _registered = false;
 export function registerAbstractMesh(): void {

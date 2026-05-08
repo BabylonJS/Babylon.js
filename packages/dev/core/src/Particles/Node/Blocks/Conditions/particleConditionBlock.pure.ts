@@ -198,7 +198,6 @@ export class ParticleConditionBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleConditionBlock(): void {
     if (_registered) {

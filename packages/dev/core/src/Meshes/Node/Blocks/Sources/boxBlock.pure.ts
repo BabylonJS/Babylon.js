@@ -220,7 +220,6 @@ export class BoxBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBoxBlock(): void {
     if (_registered) {

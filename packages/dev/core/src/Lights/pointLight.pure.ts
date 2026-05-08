@@ -6,7 +6,7 @@ import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { type Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect.pure";
 import { Node } from "../node";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -221,7 +221,6 @@ export class PointLight extends ShadowLight {
         defines["POINTLIGHT" + lightIndex] = true;
     }
 }
-
 
 let _registered = false;
 export function registerPointLight(): void {

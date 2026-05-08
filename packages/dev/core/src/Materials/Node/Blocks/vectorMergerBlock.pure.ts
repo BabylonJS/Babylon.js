@@ -351,7 +351,6 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerVectorMergerBlock(): void {
     if (_registered) {

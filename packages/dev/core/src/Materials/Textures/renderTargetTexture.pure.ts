@@ -1,43 +1,31 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import type { Observer } from "../../Misc/observable";
 import { type SmartArray } from "../../Misc/smartArray";
 import type { Immutable } from "../../types";
-import { type Camera } from "../../Cameras/camera";
+import { type Camera } from "../../Cameras/camera.pure";
 import { Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { type Color4 } from "../../Maths/math.color.pure";
 import { type RenderTargetCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import { type PostProcess } from "../../PostProcesses/postProcess.pure";
 import { Constants } from "../../Engines/constants";
 import { type IRenderTargetTexture, type RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
-import { type Material } from "../material";
+import { type Material } from "../material.pure";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 
-import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
-import { Effect } from "../effect";
-
-declare module "../effect" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Effect {
-        /**
-         * Sets a depth stencil texture from a render target on the engine to be used in the shader.
-         * @param channel Name of the sampler variable.
-         * @param texture Texture to set.
-         */
-        setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void;
-    }
-}
+import { Effect } from "../effect.pure";
 
 /**
  * Options for the RenderTargetTexture constructor

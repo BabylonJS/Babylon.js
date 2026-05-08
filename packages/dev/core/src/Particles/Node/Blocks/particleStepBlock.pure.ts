@@ -96,7 +96,6 @@ export class ParticleStepBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleStepBlock(): void {
     if (_registered) {

@@ -16,7 +16,6 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
     }
 }
 
-
 let _registered = false;
 export function registerObjectRendererBlock(): void {
     if (_registered) {

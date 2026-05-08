@@ -265,7 +265,6 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
     }
 }
 
-
 let _registered = false;
 export function registerSetPositionsBlock(): void {
     if (_registered) {

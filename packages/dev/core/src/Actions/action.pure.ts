@@ -1,19 +1,19 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable.pure";
 import { Vector2, Vector3 } from "../Maths/math.vector.pure";
 import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type Condition } from "./condition.pure";
 import { type AbstractActionManager } from "./abstractActionManager";
 import { type Nullable } from "../types";
-import { type Material } from "../Materials/material";
+import { type Material } from "../Materials/material.pure";
 
 import { type Scene } from "../scene.pure";
 import { type ActionManager } from "./actionManager";
 import { type ActionEvent } from "./actionEvent";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { type Light } from "../Lights/light";
-import { type Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera.pure";
 import { type Node } from "../node";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -329,7 +329,6 @@ export class Action implements IAction {
         };
     };
 }
-
 
 let _registered = false;
 export function registerAction(): void {

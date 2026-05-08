@@ -2,7 +2,7 @@
 
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
-import { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable.pure";
 import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector.pure";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { type IWebXRLegacyHitTestOptions, type IWebXRLegacyHitResult, type IWebXRHitTestFeature } from "./WebXRHitTestLegacy";

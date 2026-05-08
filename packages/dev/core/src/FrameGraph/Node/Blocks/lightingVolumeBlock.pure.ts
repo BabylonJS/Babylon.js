@@ -109,7 +109,6 @@ export class NodeRenderGraphLightingVolumeBlock extends NodeRenderGraphBlock {
     }
 }
 
-
 let _registered = false;
 export function registerLightingVolumeBlock(): void {
     if (_registered) {

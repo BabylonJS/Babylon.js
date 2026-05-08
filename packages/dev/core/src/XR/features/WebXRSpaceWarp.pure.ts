@@ -14,9 +14,9 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { Constants } from "../../Engines/constants";
 import { ShaderMaterial } from "../../Materials/shaderMaterial.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { type Material } from "../../Materials/material";
-import { type Observer } from "../../Misc/observable";
-import { type ThinEngine } from "../../Engines/thinEngine";
+import { type Material } from "../../Materials/material.pure";
+import { type Observer } from "../../Misc/observable.pure";
+import { type ThinEngine } from "../../Engines/thinEngine.pure";
 
 /**
  * Used for Space Warp render process

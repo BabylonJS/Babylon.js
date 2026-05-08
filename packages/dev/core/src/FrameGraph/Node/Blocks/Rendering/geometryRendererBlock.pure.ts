@@ -544,7 +544,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 }
 
-
 let _registered = false;
 export function registerGeometryRendererBlock(): void {
     if (_registered) {

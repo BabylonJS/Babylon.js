@@ -71,7 +71,6 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSignalConnection(): void {
     if (_registered) {

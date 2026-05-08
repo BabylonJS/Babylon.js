@@ -113,7 +113,6 @@ export class BiPlanarBlock extends TriPlanarBlock {
     }
 }
 
-
 let _registered = false;
 export function registerBiPlanarBlock(): void {
     if (_registered) {

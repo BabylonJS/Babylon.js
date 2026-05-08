@@ -5,20 +5,10 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { Constants } from "core/Engines/constants";
 import { Light } from "core/Lights/light";
-import { type Effect } from "core/Materials/effect";
-import { type ILTCTextures, DecodeLTCTextureDataAsync } from "core/Lights/LTC/ltcTextureTool";
+import { type Effect } from "core/Materials/effect.pure";
+import { DecodeLTCTextureDataAsync } from "core/Lights/LTC/ltcTextureTool";
 import { type Scene } from "core/scene.pure";
 import { Logger } from "core/Misc/logger";
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /**
-         * @internal
-         */
-        _ltcTextures?: ILTCTextures;
-    }
-}
 
 function CreateSceneLTCTextures(scene: Scene): void {
     const useDelayedTextureLoading = scene.useDelayedTextureLoading;

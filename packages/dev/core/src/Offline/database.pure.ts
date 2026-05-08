@@ -6,8 +6,7 @@ import { Logger } from "../Misc/logger";
 import { GetTGAHeader } from "../Misc/tga";
 import { type IOfflineProvider } from "./IOfflineProvider";
 import { WebRequest } from "../Misc/webRequest";
-import { AbstractEngine } from "core/Engines/abstractEngine";
-
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 
 /**
  * Class used to enable access to IndexedDB
@@ -750,7 +749,6 @@ export class Database implements IOfflineProvider {
         return false;
     }
 }
-
 
 let _registered = false;
 export function registerDatabase(): void {

@@ -4,7 +4,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { type DeepImmutable } from "../types";
 import { Color3 } from "../Maths/math.color.pure";
 import { Constants } from "../Engines/constants";
-import { AbstractEngine } from "core/Engines/abstractEngine";
+import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 /**
@@ -182,7 +182,6 @@ export class FresnelParameters {
         });
     }
 }
-
 
 let _registered = false;
 export function registerFresnelParameters(): void {

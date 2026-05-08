@@ -122,7 +122,6 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphWaitAllBlock(): void {
     if (_registered) {

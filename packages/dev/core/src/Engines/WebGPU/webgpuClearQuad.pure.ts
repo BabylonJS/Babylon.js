@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Effect } from "../../Materials/effect";
+import { type Effect } from "../../Materials/effect.pure";
 import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { type IColor4Like } from "../../Maths/math.like";
-import { type VertexBuffer } from "../../Buffers/buffer";
+import { type VertexBuffer } from "../../Buffers/buffer.pure";
 import { type WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { type Nullable } from "../../types";
 import { Constants } from "../constants";

@@ -290,7 +290,6 @@ export class StateCondition extends Condition {
     }
 }
 
-
 let _registered = false;
 export function registerCondition(): void {
     if (_registered) {

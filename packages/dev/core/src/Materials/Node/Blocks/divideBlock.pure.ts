@@ -35,7 +35,6 @@ export class DivideBlock extends BaseMathBlock {
     }
 }
 
-
 let _registered = false;
 export function registerDivideBlock(): void {
     if (_registered) {

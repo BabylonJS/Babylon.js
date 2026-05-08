@@ -3,8 +3,8 @@
 import { Logger } from "../../../Misc/logger";
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import { type Camera } from "../../../Cameras/camera";
-import { type Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera.pure";
+import { type Effect } from "../../../Materials/effect.pure";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { PostProcess } from "../../../PostProcesses/postProcess.pure";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
@@ -25,7 +25,6 @@ import { ThinSSAO2CombinePostProcess } from "../../thinSSAO2CombinePostProcess";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
 
 /**
  * Render pipeline to produce ssao effect
@@ -620,7 +619,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         );
     }
 }
-
 
 let _registered = false;
 export function registerSsao2RenderingPipeline(): void {

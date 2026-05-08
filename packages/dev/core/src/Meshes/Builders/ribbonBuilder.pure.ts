@@ -5,7 +5,7 @@ import { TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import type { Vector2, Vector4 } from "../../Maths/math.vector";
 import { type Color4 } from "../../Maths/math.color.pure";
 import { Mesh, _CreationDataStorage } from "../mesh.pure";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { Scene } from "../../scene.pure";

@@ -115,7 +115,6 @@ export class ParticleNLerpBlock extends NodeParticleBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleNLerpBlock(): void {
     if (_registered) {

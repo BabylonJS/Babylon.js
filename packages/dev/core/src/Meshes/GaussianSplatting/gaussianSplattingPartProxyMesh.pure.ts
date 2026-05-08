@@ -261,7 +261,6 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
     }
 }
 
-
 let _registered = false;
 export function registerGaussianSplattingPartProxyMesh(): void {
     if (_registered) {

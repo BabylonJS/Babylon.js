@@ -51,7 +51,6 @@ export class FlowGraphStopSoundBlock extends FlowGraphExecutionBlockWithOutSigna
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphStopSoundBlock(): void {
     if (_registered) {

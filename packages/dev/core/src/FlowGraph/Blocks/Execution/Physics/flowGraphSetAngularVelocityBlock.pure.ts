@@ -58,7 +58,6 @@ export class FlowGraphSetAngularVelocityBlock extends FlowGraphExecutionBlockWit
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphSetAngularVelocityBlock(): void {
     if (_registered) {

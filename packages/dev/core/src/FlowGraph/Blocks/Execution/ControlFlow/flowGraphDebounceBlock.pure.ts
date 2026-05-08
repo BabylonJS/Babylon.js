@@ -58,7 +58,6 @@ export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal
     }
 }
 
-
 let _registered = false;
 export function registerFlowGraphDebounceBlock(): void {
     if (_registered) {

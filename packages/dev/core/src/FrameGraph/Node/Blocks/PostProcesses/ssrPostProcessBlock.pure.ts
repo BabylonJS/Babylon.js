@@ -555,7 +555,6 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 }
 
-
 let _registered = false;
 export function registerSsrPostProcessBlock(): void {
     if (_registered) {

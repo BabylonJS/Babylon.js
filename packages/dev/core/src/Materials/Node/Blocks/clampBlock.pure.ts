@@ -105,7 +105,6 @@ export class ClampBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerClampBlock(): void {
     if (_registered) {

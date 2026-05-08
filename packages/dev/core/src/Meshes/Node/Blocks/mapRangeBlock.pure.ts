@@ -108,7 +108,6 @@ export class MapRangeBlock extends NodeGeometryBlock {
     }
 }
 
-
 let _registered = false;
 export function registerMapRangeBlock(): void {
     if (_registered) {

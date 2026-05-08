@@ -243,7 +243,6 @@ export class AggregatorBlock extends NodeGeometryBlock implements INodeGeometryE
     }
 }
 
-
 let _registered = false;
 export function registerAggregatorBlock(): void {
     if (_registered) {

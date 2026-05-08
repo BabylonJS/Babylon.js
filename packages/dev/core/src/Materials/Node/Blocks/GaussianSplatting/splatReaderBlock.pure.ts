@@ -7,7 +7,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { type Mesh } from "core/Meshes/mesh.pure";
-import { type Effect } from "core/Materials/effect";
+import { type Effect } from "core/Materials/effect.pure";
 import { type NodeMaterial } from "../../nodeMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -134,7 +134,6 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
 
 let _registered = false;
 export function registerSplatReaderBlock(): void {

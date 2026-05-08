@@ -195,7 +195,6 @@ function FromColor(value: Color3 | Color4): Vector3 | Vector4 {
     throw new Error("Invalid color type");
 }
 
-
 let _registered = false;
 export function registerFlowGraphJsonPointerParserBlock(): void {
     if (_registered) {

@@ -127,7 +127,6 @@ export class NodeRenderGraphResourceContainerBlock extends NodeRenderGraphBlock 
     }
 }
 
-
 let _registered = false;
 export function registerResourceContainerBlock(): void {
     if (_registered) {

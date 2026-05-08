@@ -92,7 +92,6 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerParticleBlendMultiplyBlock(): void {
     if (_registered) {

@@ -65,7 +65,6 @@ export class PowBlock extends NodeMaterialBlock {
     }
 }
 
-
 let _registered = false;
 export function registerPowBlock(): void {
     if (_registered) {
