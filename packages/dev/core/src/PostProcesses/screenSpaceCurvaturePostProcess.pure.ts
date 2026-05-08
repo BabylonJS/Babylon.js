@@ -5,7 +5,7 @@ import { Logger } from "../Misc/logger";
 import { type Camera } from "../Cameras/camera.pure";
 import { type Effect } from "../Materials/effect.pure";
 import { PostProcess } from "./postProcess.pure";
-import type { PostProcessOptions } from "./postProcess";
+import { type PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { type GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";

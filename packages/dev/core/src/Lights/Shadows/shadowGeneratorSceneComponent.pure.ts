@@ -2,10 +2,10 @@
 
 import { type SmartArrayNoDuplicate } from "../../Misc/smartArray";
 import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
-import { SceneComponentConstants } from "../../sceneComponent";
-import type { ISceneSerializableComponent } from "../../sceneComponent";
+import { SceneComponentConstants, type ISceneSerializableComponent } from "../../sceneComponent";
+
 import { type IAssetContainer } from "core/IAssetContainer";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";

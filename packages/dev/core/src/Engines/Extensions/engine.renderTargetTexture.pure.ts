@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 
 let _Registered = false;
 /**

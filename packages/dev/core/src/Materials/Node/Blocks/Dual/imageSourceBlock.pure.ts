@@ -21,7 +21,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * Block used to provide an image for a TextureBlock
  */
 export class ImageSourceBlock extends NodeMaterialBlock {
-    private static _DefaultTextureByEngine = new WeakMap<AbstractEngine, ThinTexture>();
+    private static _DefaultTextureByEngine = /*#__PURE__*/ new WeakMap<AbstractEngine, ThinTexture>();
 
     private _samplerName: string;
     protected _texture: Nullable<Texture>;

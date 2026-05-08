@@ -4,9 +4,9 @@ import { InternalTexture, InternalTextureSource } from "../../Materials/Textures
 import { Logger } from "../../Misc/logger";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine.pure";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
-import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetWrapper } from "../renderTargetWrapper";
+import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { type RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 
 let _Registered = false;
 /**

@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes, type ICameraInput } from "../../Cameras/cameraInputsManager";
+
 import { type FreeCamera } from "../../Cameras/freeCamera.pure";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager.pure";

@@ -9,7 +9,7 @@ import { SceneComponentConstants } from "../../sceneComponent";
 
 import { EngineStore } from "../../Engines/engineStore";
 import { type Collider } from "../../Collisions/collider";
-import { SubMesh } from "../../Meshes/subMesh.pure";
+import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { Octree } from "./octree";
 
 /**

@@ -2,8 +2,8 @@
 
 import { allocateAndCopyTypedBuffer } from "../../Engines/abstractEngine.functions";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { Nullable } from "../../types";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../types";
 
 // back-compat
 export { allocateAndCopyTypedBuffer };

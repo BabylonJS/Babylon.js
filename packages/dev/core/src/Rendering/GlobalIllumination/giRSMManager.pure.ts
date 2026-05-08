@@ -8,7 +8,7 @@ import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { PostProcess } from "core/PostProcesses/postProcess.pure";
 import { Observable } from "core/Misc/observable.pure";
-import type { Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";

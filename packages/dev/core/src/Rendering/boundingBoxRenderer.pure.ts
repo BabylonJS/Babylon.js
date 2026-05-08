@@ -7,8 +7,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { SmartArray } from "../Misc/smartArray";
 import { type Nullable, type FloatArray, type IndicesArray } from "../types";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { BoundingBox } from "../Culling/boundingBox";
 import { type Effect } from "../Materials/effect.pure";
 import { Material } from "../Materials/material.pure";
@@ -24,15 +24,15 @@ import { Constants } from "../Engines/constants";
 import { _RetryWithInterval } from "../Misc/timingTools";
 import { Logger } from "../Misc/logger";
 
-const TempMatrix = Matrix.Identity();
-const TempMatrix2 = new Matrix();
-const TempVec1 = new Vector3();
-const TempVec2 = new Vector3();
+const TempMatrix = /*#__PURE__*/ Matrix.Identity();
+const TempMatrix2 = /*#__PURE__*/ new Matrix();
+const TempVec1 = /*#__PURE__*/ new Vector3();
+const TempVec2 = /*#__PURE__*/ new Vector3();
 // `Matrix.asArray` returns its internal array, so it can be directly updated
-const TempMatrixArray = TempMatrix.asArray();
+const TempMatrixArray = /*#__PURE__*/ TempMatrix.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
-const DummyBoundingBox = new BoundingBox(TempVec1, TempVec1);
+const DummyBoundingBox = /*#__PURE__*/ new BoundingBox(TempVec1, TempVec1);
 
 /**
  * Component responsible of rendering the bounding box of the meshes in a scene.

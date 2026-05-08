@@ -4,13 +4,13 @@ import { Camera } from "../Cameras/camera.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneSerializableComponent } from "../sceneComponent";
+
 import { EngineStore } from "../Engines/engineStore";
 import { type IAssetContainer } from "core/IAssetContainer";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 import { EffectLayer } from "./effectLayer";
-import { AssetContainer } from "../assetContainer";
+import { type AssetContainer } from "../assetContainer";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 /**

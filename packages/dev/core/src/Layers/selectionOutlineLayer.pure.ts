@@ -10,10 +10,10 @@ import { type Material } from "../Materials/material.pure";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { ThinSelectionOutlineLayer } from "./thinSelectionOutlineLayer";
-import type { IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLayer";
+import { ThinSelectionOutlineLayer, type IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLayer";
+
 import { type Color3 } from "../Maths/math.color.pure";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**

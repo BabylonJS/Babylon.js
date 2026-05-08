@@ -2,12 +2,12 @@
 
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetCreationOptions, type DepthTextureCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../thinEngine.pure";
-import { Nullable } from "../../types";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
+import { type Nullable } from "../../types";
+import { type RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
+import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 import { Constants } from "../constants";
 

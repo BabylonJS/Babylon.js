@@ -29,7 +29,7 @@ import { ProcessIncludes } from "../Engines/Processors/shaderProcessor";
 import { ShaderLanguage } from "./shaderLanguage";
 import { ShaderStore } from "../Engines/shaderStore";
 
-const RxOption = new RegExp("^([gimus]+)!");
+const RxOption = /*#__PURE__*/ new RegExp("^([gimus]+)!");
 
 /**
  * Class that manages the plugins of a material

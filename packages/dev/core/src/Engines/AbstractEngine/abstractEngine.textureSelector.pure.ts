@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine.pure";
 
 let _Registered = false;

@@ -1,15 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget.pure";
+import { type IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget.pure";
 import { Logger } from "../../../Misc/logger";
-import { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
-import { RenderTargetWrapper } from "../../renderTargetWrapper";
+import { type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
-import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
-import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 let _Registered = false;
 /**

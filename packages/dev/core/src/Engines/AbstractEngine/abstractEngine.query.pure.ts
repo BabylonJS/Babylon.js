@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { AbstractMesh } from "core/Meshes/abstractMesh.pure";
-import { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine.pure";
 
 /** @internal */

@@ -19,7 +19,7 @@ import {
     ReadFile as FileToolsReadFile,
     SetCorsBehavior,
 } from "./fileTools.pure";
-import type { ReadFileError } from "./fileTools";
+import { type ReadFileError } from "./fileTools";
 import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
@@ -30,8 +30,7 @@ import { type IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
-import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
-import type { INative } from "../Engines/Native/nativeInterfaces";
+import { NativeTraceLevel, type INative } from "../Engines/Native/nativeInterfaces";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -1378,7 +1377,7 @@ export class Tools {
 
     private static _Performance: Performance;
 
-    private static readonly _NativePerformanceCounterHandles = new Map<string, unknown>();
+    private static readonly _NativePerformanceCounterHandles = /*#__PURE__*/ new Map<string, unknown>();
 
     /**
      * Sets the current performance log level

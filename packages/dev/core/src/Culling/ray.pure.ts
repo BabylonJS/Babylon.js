@@ -1,14 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../types";
-import { Matrix } from "../Maths/math.vector.pure";
-import { PickingInfo } from "../Collisions/pickingInfo";
+import { type Nullable } from "../types";
+import { type Matrix } from "../Maths/math.vector.pure";
+import { type PickingInfo } from "../Collisions/pickingInfo";
 import { Scene } from "../scene.pure";
 import { Camera } from "../Cameras/camera.pure";
 import {
-    MeshPredicate,
-    TrianglePickingPredicate,
-    Ray,
+    type MeshPredicate,
+    type TrianglePickingPredicate,
+    type Ray,
     AddRayExtensions,
     CreatePickingRayInCameraSpace,
     CreatePickingRayInCameraSpaceToRef,

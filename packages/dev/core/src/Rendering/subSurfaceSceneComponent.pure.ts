@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneSerializableComponent } from "../sceneComponent";
-import { Nullable } from "../types";
+import { SceneComponentConstants, type ISceneSerializableComponent } from "../sceneComponent";
+
+import { type Nullable } from "../types";
 import { Color3 } from "../Maths/math.color.pure";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";

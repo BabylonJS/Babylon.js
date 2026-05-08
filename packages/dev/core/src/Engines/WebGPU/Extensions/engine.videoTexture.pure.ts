@@ -1,10 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { Nullable } from "../../../types";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
-import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
-import { ExternalTexture } from "../../../Materials/Textures/externalTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
 let _Registered = false;
 /**

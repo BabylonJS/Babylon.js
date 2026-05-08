@@ -2,7 +2,7 @@
 
 import { type Nullable } from "../types";
 import { Observable } from "./observable.pure";
-import type { Observer, EventState } from "./observable";
+import { type Observer, type EventState } from "./observable";
 
 /**
  * Represent a list of observers registered to multiple Observables object.

@@ -3,13 +3,13 @@
 import { Scene } from "../scene.pure";
 import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera.pure";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { DepthRenderer } from "./depthRenderer.pure";
 
 /**

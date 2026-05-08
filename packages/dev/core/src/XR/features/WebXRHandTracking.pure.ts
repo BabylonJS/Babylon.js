@@ -14,10 +14,10 @@ import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
 import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 import { type IDisposable, type Scene } from "../../scene.pure";
 import { Observable } from "../../Misc/observable.pure";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 import { type InstancedMesh } from "../../Meshes/instancedMesh.pure";
-import { SceneLoader } from "../../Loading/sceneLoader";
-import type { ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
+import { SceneLoader, type ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
+
 import { Color3 } from "../../Maths/math.color.pure";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial.pure";
 import { type InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock.pure";

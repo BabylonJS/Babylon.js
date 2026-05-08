@@ -2,15 +2,15 @@
 
 import * as WebGPUConstants from "../webgpuConstants";
 import { Logger } from "core/Misc/logger";
-import { IComputeEffectCreationOptions, IComputeShaderPath, ComputeEffect } from "../../../Compute/computeEffect";
-import { IComputeContext } from "../../../Compute/IComputeContext";
-import { IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
-import { Nullable } from "../../../types";
-import { ComputeBindingList, ComputeBindingMapping, ComputeCompilationMessages } from "../../Extensions/engine.computeShader.pure";
+import { type IComputeEffectCreationOptions, type IComputeShaderPath, ComputeEffect } from "../../../Compute/computeEffect";
+import { type IComputeContext } from "../../../Compute/IComputeContext";
+import { type IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
+import { type Nullable } from "../../../types";
+import { type ComputeBindingList, type ComputeBindingMapping, type ComputeCompilationMessages } from "../../Extensions/engine.computeShader.pure";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
-import { WebGPUPerfCounter } from "../webgpuPerfCounter";
-import { DataBuffer } from "../../../Buffers/dataBuffer";
+import { type WebGPUPerfCounter } from "../webgpuPerfCounter";
+import { type DataBuffer } from "../../../Buffers/dataBuffer";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
 
 let _Registered = false;

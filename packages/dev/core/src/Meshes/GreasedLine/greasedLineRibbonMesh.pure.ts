@@ -7,10 +7,17 @@ import { type Nullable } from "../../types";
 import { type Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import { GreasedLineBaseMesh, GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
-import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
+import {
+    GreasedLineBaseMesh,
+    GreasedLineRibbonAutoDirectionMode,
+    GreasedLineRibbonFacesMode,
+    GreasedLineRibbonPointsMode,
+    type GreasedLineMeshOptions,
+    type GreasedLineRibbonOptions,
+} from "./greasedLineBaseMesh";
+
 import { type VertexData } from "../mesh.vertexData";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * GreasedLineRibbonMesh
@@ -22,9 +29,9 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      */
     public static DEFAULT_WIDTH = 0.1;
 
-    private static _RightHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.RightHandedForwardReadOnly, Math.PI / 2);
-    private static _LeftHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI / 2);
-    private static _LeftReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftReadOnly, Math.PI / 2);
+    private static _RightHandedForwardReadOnlyQuaternion = /*#__PURE__*/ Quaternion.RotationAxis(Vector3.RightHandedForwardReadOnly, Math.PI / 2);
+    private static _LeftHandedForwardReadOnlyQuaternion = /*#__PURE__*/ Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI / 2);
+    private static _LeftReadOnlyQuaternion = /*#__PURE__*/ Quaternion.RotationAxis(Vector3.LeftReadOnly, Math.PI / 2);
 
     /**
      * Direction which the line segment will be thickened if drawn on the XY plane

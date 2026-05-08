@@ -2,7 +2,7 @@
 
 import { SmartArray } from "../Misc/smartArray";
 import { Observable } from "../Misc/observable.pure";
-import type { Observer } from "../Misc/observable";
+import { type Observer } from "../Misc/observable";
 import { Vector2 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera.pure";
 import { Effect } from "../Materials/effect.pure";
@@ -25,8 +25,8 @@ import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
-import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOptions } from "../Materials/effectRenderer";
-import { Nullable } from "../types";
+import { type EffectWrapperCustomShaderCodeProcessing, type EffectWrapperCreationOptions } from "../Materials/effectRenderer";
+import { type Nullable } from "../types";
 
 /**
  * Options for the PostProcess constructor

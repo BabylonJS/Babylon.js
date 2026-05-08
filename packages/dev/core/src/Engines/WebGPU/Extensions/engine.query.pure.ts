@@ -2,8 +2,8 @@
 
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
-import { PerfCounter } from "../../../Misc/perfCounter";
-import { OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.query.pure";
+import { type PerfCounter } from "../../../Misc/perfCounter";
+import { type OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.query.pure";
 
 // eslint-disable-next-line import/no-duplicates
 

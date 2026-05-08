@@ -1,16 +1,16 @@
 /** This file must only contain pure code and pure imports */
 
 import { Observable } from "../Misc/observable.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { Scene } from "../scene.pure";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { Vector3 } from "../Maths/math.vector.pure";
-import { AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { IPhysicsEngine } from "./IPhysicsEngine";
-import { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
-import { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
+import { type Vector3 } from "../Maths/math.vector.pure";
+import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
+import { type IPhysicsEngine } from "./IPhysicsEngine";
+import { type IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
+import { type IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
 import { PhysicsEngine as PhysicsEngineV1 } from "./v1/physicsEngine";
 import { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
 

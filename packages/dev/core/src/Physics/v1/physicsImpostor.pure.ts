@@ -4,17 +4,17 @@ import { type Nullable, type IndicesArray, type FloatArray } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { BuildArray } from "../../Misc/arrayTools";
 import { Vector3, Quaternion } from "../../Maths/math.vector.pure";
-import type { Matrix } from "../../Maths/math.vector";
+import { type Matrix } from "../../Maths/math.vector";
 import { type TransformNode } from "../../Meshes/transformNode.pure";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Bone } from "../../Bones/bone.pure";
 import { type BoundingInfo } from "../../Culling/boundingInfo";
 import { type PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
-import { PhysicsJoint } from "./physicsJoint";
-import type { PhysicsJointData } from "./physicsJoint";
+import { PhysicsJoint, type PhysicsJointData } from "./physicsJoint";
+
 import { Space } from "../../Maths/math.axis";
 import { Mesh } from "../../Meshes/mesh.pure";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
@@ -198,12 +198,12 @@ export class PhysicsImpostor {
     /**
      * The default object size of the imposter
      */
-    public static DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
+    public static DEFAULT_OBJECT_SIZE: Vector3 = /*#__PURE__*/ new Vector3(1, 1, 1);
 
     /**
      * The identity quaternion of the imposter
      */
-    public static IDENTITY_QUATERNION = Quaternion.Identity();
+    public static IDENTITY_QUATERNION = /*#__PURE__*/ Quaternion.Identity();
 
     /** @internal */
     public _pluginData: any = {};
@@ -233,8 +233,8 @@ export class PhysicsImpostor {
 
     private _isDisposed = false;
 
-    private static _TmpVecs: Vector3[] = BuildArray(3, Vector3.Zero);
-    private static _TmpQuat: Quaternion = Quaternion.Identity();
+    private static _TmpVecs: Vector3[] = /*#__PURE__*/ BuildArray(3, Vector3.Zero);
+    private static _TmpQuat: Quaternion = /*#__PURE__*/ Quaternion.Identity();
 
     /**
      * Specifies if the physics imposter is disposed

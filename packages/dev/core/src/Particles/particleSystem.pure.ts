@@ -25,8 +25,8 @@ import { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterT
 import { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { Attractor } from "./attractor";
-import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
-import type { _IExecutionQueueItem } from "./Queue/executionQueue";
+import { _ConnectAfter, _RemoveFromQueue, type _IExecutionQueueItem } from "./Queue/executionQueue";
+
 import { type FlowMap } from "./flowMap";
 import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
 

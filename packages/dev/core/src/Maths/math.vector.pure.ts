@@ -115,8 +115,8 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * But the original Vector2 instances are unchanged and has a "deprecated map".
      * If we keep using the Vector2 instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
      */
-    static _V8PerformanceHack = new Vector2(0.5, 0.5) as DeepImmutable<Vector2>;
-    private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
+    static _V8PerformanceHack = /*#__PURE__*/ new Vector2(0.5, 0.5) as DeepImmutable<Vector2>;
+    private static _ZeroReadOnly = /*#__PURE__*/ Vector2.Zero() as DeepImmutable<Vector2>;
 
     /**
      * @see Tensor.dimension
@@ -1191,17 +1191,17 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * But the original Vector3 instances are unchanged and has a "deprecated map".
      * If we keep using the Vector3 instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
      */
-    static _V8PerformanceHack = new Vector3(0.5, 0.5, 0.5) as DeepImmutable<Vector3>;
-    private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
-    private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
-    private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
-    private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
-    private static _LeftHandedBackwardReadOnly = Vector3.Backward(false) as DeepImmutable<Vector3>;
-    private static _RightHandedBackwardReadOnly = Vector3.Backward(true) as DeepImmutable<Vector3>;
-    private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
-    private static _LeftReadOnly = Vector3.Left() as DeepImmutable<Vector3>;
-    private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
-    private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
+    static _V8PerformanceHack = /*#__PURE__*/ new Vector3(0.5, 0.5, 0.5) as DeepImmutable<Vector3>;
+    private static _UpReadOnly = /*#__PURE__*/ Vector3.Up() as DeepImmutable<Vector3>;
+    private static _DownReadOnly = /*#__PURE__*/ Vector3.Down() as DeepImmutable<Vector3>;
+    private static _LeftHandedForwardReadOnly = /*#__PURE__*/ Vector3.Forward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedForwardReadOnly = /*#__PURE__*/ Vector3.Forward(true) as DeepImmutable<Vector3>;
+    private static _LeftHandedBackwardReadOnly = /*#__PURE__*/ Vector3.Backward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedBackwardReadOnly = /*#__PURE__*/ Vector3.Backward(true) as DeepImmutable<Vector3>;
+    private static _RightReadOnly = /*#__PURE__*/ Vector3.Right() as DeepImmutable<Vector3>;
+    private static _LeftReadOnly = /*#__PURE__*/ Vector3.Left() as DeepImmutable<Vector3>;
+    private static _ZeroReadOnly = /*#__PURE__*/ Vector3.Zero() as DeepImmutable<Vector3>;
+    private static _OneReadOnly = /*#__PURE__*/ Vector3.One() as DeepImmutable<Vector3>;
 
     /**
      * @see Tensor.dimension
@@ -3401,8 +3401,8 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * But the original Vector4 instances are unchanged and has a "deprecated map".
      * If we keep using the Vector4 instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
      */
-    static _V8PerformanceHack = new Vector4(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Vector4>;
-    private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
+    static _V8PerformanceHack = /*#__PURE__*/ new Vector4(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Vector4>;
+    private static _ZeroReadOnly = /*#__PURE__*/ Vector4.Zero() as DeepImmutable<Vector4>;
 
     /**
      * @see Tensor.dimension
@@ -4488,7 +4488,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * But the original quaternion instances are unchanged and has a "deprecated map".
      * If we keep using the quaternion instances from step 1, it will now be a poison pill which will mess up optimizations in any code it touches.
      */
-    static _V8PerformanceHack = new Quaternion(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Quaternion>;
+    static _V8PerformanceHack = /*#__PURE__*/ new Quaternion(0.5, 0.5, 0.5, 0.5) as DeepImmutable<Quaternion>;
     /** @internal */
     public _x: number;
 
@@ -6120,7 +6120,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         return PerformanceConfigurator.MatrixUse64Bits;
     }
 
-    private static _IdentityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
+    private static _IdentityReadOnly = /*#__PURE__*/ Matrix.Identity() as DeepImmutable<Matrix>;
 
     private _isIdentity = false;
     private _isIdentityDirty = true;
@@ -8826,13 +8826,13 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
  */
 class MathTmp {
     // Temporary Vector3s
-    public static Vector3 = BuildTuple(11, Vector3.Zero);
+    public static Vector3 = /*#__PURE__*/ BuildTuple(11, Vector3.Zero);
 
     // Temporary Matricies
-    public static Matrix = BuildTuple(2, Matrix.Identity);
+    public static Matrix = /*#__PURE__*/ BuildTuple(2, Matrix.Identity);
 
     // Temporary Quaternions
-    public static Quaternion = BuildTuple(3, Quaternion.Zero);
+    public static Quaternion = /*#__PURE__*/ BuildTuple(3, Quaternion.Zero);
 }
 
 /**
@@ -8840,22 +8840,22 @@ class MathTmp {
  */
 export class TmpVectors {
     /** 3 temp Vector2 at once should be enough */
-    public static Vector2 = BuildTuple(3, Vector2.Zero);
+    public static Vector2 = /*#__PURE__*/ BuildTuple(3, Vector2.Zero);
 
     /** 13 temp Vector3 at once should be enough */
-    public static Vector3 = BuildTuple(13, Vector3.Zero);
+    public static Vector3 = /*#__PURE__*/ BuildTuple(13, Vector3.Zero);
 
     /** 3 temp Vector4 at once should be enough */
-    public static Vector4 = BuildTuple(3, Vector4.Zero);
+    public static Vector4 = /*#__PURE__*/ BuildTuple(3, Vector4.Zero);
 
     /** 3 temp Quaternion at once should be enough */
-    public static Quaternion = BuildTuple(3, Quaternion.Zero);
+    public static Quaternion = /*#__PURE__*/ BuildTuple(3, Quaternion.Zero);
 
     /** 8 temp Matrices at once should be enough */
-    public static Matrix = BuildTuple(8, Matrix.Identity);
+    public static Matrix = /*#__PURE__*/ BuildTuple(8, Matrix.Identity);
 }
 
-const mtxConvertNDCToHalfZRange = Matrix.FromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1);
+const mtxConvertNDCToHalfZRange = /*#__PURE__*/ Matrix.FromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1);
 
 let _Registered = false;
 /**

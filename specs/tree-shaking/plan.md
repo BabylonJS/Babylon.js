@@ -386,12 +386,27 @@ Color3.FromArray = Color3FromArray;
 - [x] **6.1** — Custom ESLint rule: `no-side-effect-imports-in-pure` (in `eslintBabylonPlugin`)
     - Flags bare (side-effect) imports in `.pure.ts` files (45 existing instances)
     - Verifies barrel `pure.ts` files only re-export from side-effect-free modules (manifest-aware)
+    - **Enhanced**: now flags ALL value imports from side-effect modules in ANY `.pure.ts` file
+      (not just barrel `pure.ts` files). New message ID: `unsafeValueImport`.
+    - Three message IDs:
+        - `bareImport` — bare `import "foo"` in a `.pure.ts` file
+        - `unsafeBarrelReExport` — re-export from side-effect module in barrel `pure.ts`
+        - `unsafeValueImport` — value import from side-effect module in any `.pure.ts` file
     - Configured as `warn` in `eslint.config.mjs` for `**/*.pure.ts` and `**/pure.ts`
+    - Current genuine violations: 9 (5 from `sphericalPolynomial.pure.ts`, 3 barrel re-exports, 1 pre-existing)
 - [x] **6.2** — Bundle-size smoke tests (Rollup + Webpack, 16 test cases — all passing)
     - `npm run test:treeshaking` → `scripts/treeshaking/bundleSmokeTest.mjs`
 - [x] **6.3** — CI step: audit script output must match committed manifest
     - `npm run check:manifest-drift` → `scripts/treeshaking/checkManifestDrift.mjs`
     - Regenerates manifest from source, diffs against committed copy, reports added/removed files
+    - **Also wired into `lint:check` and `lint:check-ci`** via `&& npm run check:manifest-drift`,
+      so manifest drift is caught by the local lint workflow as well as CI
+- [x] **6.4** — Fix `auditSideEffects.mjs` false positive for `RegisterClass` function definitions
+    - The audit script incorrectly classified `typeStore.ts` as having side effects because it
+      matched the `RegisterClass(` pattern on the function _definition_ (`export function RegisterClass(...)`)
+    - Fix: added exclusion for function definitions:
+      `&& !/^\s*(export\s+)?function\s+RegisterClass\b/.test(trimmed)`
+    - After fix: `typeStore.ts` correctly classified as pure; manifest stats updated to 1786 pure files
 
 ---
 
@@ -562,8 +577,10 @@ chain stays side-effect-free.
 
 - [x] **7.2a** — Create script to rewrite `.pure.ts` import specifiers (`fixPureImports.mjs`)
 - [x] **7.2b** — Run on all `.pure.ts` files (162 imports in 106 files), verify compilation (0 errors)
-- [ ] **7.2c** — Upgrade ESLint rule `no-side-effect-imports-in-pure` to also flag value imports
+- [x] **7.2c** — Upgrade ESLint rule `no-side-effect-imports-in-pure` to also flag value imports
       from non-pure specifiers (when a `.pure` alternative exists)
+      — **DONE**: The enhanced rule now uses the `unsafeValueImport` message ID to flag value
+      imports from side-effect modules in ANY `.pure.ts` file (not just barrels). See Phase 6.1.
 - [x] **7.2d** — Verify bundle smoke tests still pass (all pass)
 
 ### 7.3 — Add `exports` field to public `package.json`
@@ -851,20 +868,33 @@ component.ts         — backward-compatible wrapper:
 
 #### Naming Convention
 
-Registration functions use **`register` + PascalCase(filename)**:
+Registration functions use **`Register` + PascalCase(filename)** (capital R):
 
 | File                              | Function Name                            |
 | --------------------------------- | ---------------------------------------- |
-| `joinedPhysicsEngineComponent.ts` | `registerJoinedPhysicsEngineComponent()` |
-| `engine.videoTexture.ts`          | `registerEngineVideoTexture()`           |
-| `depthRendererSceneComponent.ts`  | `registerDepthRendererSceneComponent()`  |
-| `engine.multiRender.ts`           | `registerEngineMultiRender()`            |
-| `boundingBoxRenderer.ts`          | `registerBoundingBoxRenderer()`          |
-| `engine.uniformBuffer.ts`         | `registerEngineUniformBuffer()`          |
+| `joinedPhysicsEngineComponent.ts` | `RegisterJoinedPhysicsEngineComponent()` |
+| `engine.videoTexture.ts`          | `RegisterEngineVideoTexture()`           |
+| `depthRendererSceneComponent.ts`  | `RegisterDepthRendererSceneComponent()`  |
+| `engine.multiRender.ts`           | `RegisterEngineMultiRender()`            |
+| `boundingBoxRenderer.ts`          | `RegisterBoundingBoxRenderer()`          |
+| `engine.uniformBuffer.ts`         | `RegisterEngineUniformBuffer()`          |
 
-**Rationale**: Typing `register` in an IDE lists all available registration functions.
+**Rationale**: Typing `Register` in an IDE lists all available registration functions.
 The name maps 1:1 to the filename, so existing knowledge of side-effect import paths transfers
 directly. The pattern is fully automatable — no human-curated names needed.
+
+**Documentation**: Every registration function has a JSDoc comment:
+
+```ts
+/** Register side effects for xxx. Safe to call multiple times; only the first call has an effect. */
+```
+
+**Idempotency guard**: Uses `let _Registered = false;` with early return.
+
+**Rename automation**: `scripts/treeshaking/fixRegisterFunctions.mjs` renames all `registerXxx()` →
+`RegisterXxx()` safely. Only processes `.pure.ts` files, matching wrappers, and script `.mjs` files.
+Uses `(?<![a-zA-Z0-9_.])` lookbehind to avoid renaming class methods like `registerAction()`.
+Result: 628 functions renamed across 1259 files (629 pure + 628 wrappers + 2 scripts).
 
 #### Pattern: Prototype Augmentation (e.g., `joinedPhysicsEngineComponent`)
 
@@ -1025,7 +1055,7 @@ scene.enablePhysics(); // ❌ TypeScript error — .types.ts was never imported
 - [x] **9.6** — Update pure barrels (`generatePureBarrels.mjs`)
     - Regenerated 118 barrel files, 672 exports rewritten to `.pure`
     - Pure barrels now export the registration functions (but NOT `.types.ts`)
-    - Consumers of `@babylonjs/core/pure` see `registerXxx` in autocomplete
+    - Consumers of `@babylonjs/core/pure` see `RegisterXxx` in autocomplete
     - Consumers of `@babylonjs/core` (non-pure) get everything as before
 - [x] **9.7** — Update `sideEffects` manifest and sync
     - Re-ran `auditSideEffects.mjs`, regenerated manifest
@@ -1037,7 +1067,7 @@ scene.enablePhysics(); // ❌ TypeScript error — .types.ts was never imported
     - Import `.types.js` alone → **1 byte / 0 bytes** (type-only) ✅
 - [x] **9.9** — Update `.github/instructions/side-effect-imports.instructions.md`
     - Added "Pure path with registration functions" section
-    - Documented the `registerXxx()` + `.pure` import pattern
+    - Documented the `RegisterXxx()` + `.pure` import pattern
 
 ### Phase 9b — ALL Remaining Side Effects (Steps 9.10–9.13)
 
@@ -1162,7 +1192,7 @@ Three options were evaluated:
 | Option         | Approach                                                      | Source Changes     | Risk                             |
 | -------------- | ------------------------------------------------------------- | ------------------ | -------------------------------- |
 | **A** (chosen) | Post-build `/*#__PURE__*/` injection                          | 0                  | Low — recognized by all bundlers |
-| B              | Move decorators into `registerXxx()` functions                | ~1,220 sites       | High — semantic change           |
+| B              | Move decorators into `RegisterXxx()` functions                | ~1,220 sites       | High — semantic change           |
 | C              | Switch to TC39 decorators (`"experimentalDecorators": false`) | tsconfig + runtime | High — different semantics       |
 
 **Option A** was chosen: extend the existing `scripts/treeshaking/injectPureAnnotations.mjs`
@@ -1503,15 +1533,15 @@ import { registerBar } from "./bar.pure";
 export function registerAllXxxBlocks(): void {
     if (_registered) return;
     _registered = true;
-    registerXxxCategoryABlocks();
-    registerXxxCategoryBBlocks();
+    RegisterXxxCategoryABlocks();
+    RegisterXxxCategoryBBlocks();
     // ...
 }
 
-export function registerXxxCategoryABlocks(): void {
+export function RegisterXxxCategoryABlocks(): void {
     /* ... */
 }
-export function registerXxxCategoryBBlocks(): void {
+export function RegisterXxxCategoryBBlocks(): void {
     /* ... */
 }
 
@@ -1606,3 +1636,43 @@ High-level registration bundles for common use cases:
 - `registerMaterialSerialization()` — all material-related parsers
 - `registerMeshSerialization()` — all mesh type parsers
 - `registerSceneComponents()` — all scene component registrations
+
+---
+
+## Current State Summary (as of latest fresh run)
+
+### File Counts
+
+| Metric                                           | Count |
+| ------------------------------------------------ | ----- |
+| Total files in manifest                          | 3,094 |
+| Files WITH side effects                          | 1,308 |
+| Files WITHOUT side effects (pure)                | 1,786 |
+| `.pure.ts` files (with matching wrappers)        | 700   |
+| Files without `.pure.ts` variant (already pure)  | 812   |
+| `.types.ts` files (declare module augmentations) | 91    |
+| Registration functions                           | 628   |
+
+### Quality Status
+
+| Check                   | Status               | Notes                                                                              |
+| ----------------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| TypeScript compilation  | ✅ PASS              | 0 errors                                                                           |
+| `@babylonjs/core` build | ✅ PASS              |                                                                                    |
+| `babylonjs` (UMD) build | ✅ PASS              |                                                                                    |
+| ESLint                  | 577 errors           | All pre-existing (naming-convention, consistent-type-imports, no-duplicates, etc.) |
+| Unit tests              | 421 failures         | Pre-existing, identical on committed HEAD — not caused by tree-shaking changes     |
+| Pure import enforcement | 9 genuine violations | 5 sphericalPolynomial.pure.ts, 3 barrel re-exports, 1 consistent-type-imports      |
+
+### Key Scripts
+
+| Script                        | Command                              | Purpose                                          |
+| ----------------------------- | ------------------------------------ | ------------------------------------------------ |
+| `auditSideEffects.mjs`        | `npm run audit:side-effects`         | Scan files for side effects, generate manifest   |
+| `checkManifestDrift.mjs`      | `npm run check:manifest-drift`       | Verify committed manifest matches source         |
+| `syncSideEffects.mjs`         | `npm run sync:side-effects`          | Sync manifest → package.json sideEffects field   |
+| `generatePureBarrels.mjs`     | `npm run generate:pure-barrels`      | Generate pure.ts barrel files alongside index.ts |
+| `generateSideEffectStubs.mjs` | `npm run generate:side-effect-stubs` | Generate \_MissingSideEffect warning stubs       |
+| `fixRegisterFunctions.mjs`    | —                                    | Rename registerXxx→RegisterXxx safely            |
+| `fixPureImports.mjs`          | —                                    | Rewrite .pure.ts imports to .pure specifiers     |
+| `bundleSmokeTest.mjs`         | `npm run test:treeshaking`           | Rollup+Webpack smoke tests                       |

@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial.pure";
+import { type SphericalPolynomial } from "../../Maths/sphericalPolynomial.pure";
 import { BaseTexture } from "./baseTexture.pure";
 
 let _Registered = false;

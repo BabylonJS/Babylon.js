@@ -2,7 +2,7 @@
 
 import { Constants } from "../Engines/constants";
 import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
-import { IndicesArray } from "../types";
+import { type IndicesArray } from "../types";
 import { SubMesh } from "./subMesh.pure";
 
 let _Registered = false;

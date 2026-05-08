@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { ICreateSceneUboOptions, Scene } from "../../scene.pure";
+import { type ICreateSceneUboOptions, Scene } from "../../scene.pure";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { TmpVectors, Matrix } from "../../Maths/math.vector.pure";
 import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderTarget";
 import { Frustum } from "../../Maths/math.frustum";
-import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
-import { AbstractEngine } from "../abstractEngine.pure";
+import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { type RenderTargetWrapper } from "../renderTargetWrapper";
+import { type AbstractEngine } from "../abstractEngine.pure";
 import { Camera } from "../../Cameras/camera.pure";
 import { Engine } from "../../Engines/engine.pure";
 import { UniformBuffer } from "../../Materials/uniformBuffer";

@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { Vector3 } from "../../Maths/math.vector.pure";
-import type { Vector4 } from "../../Maths/math.vector";
+import { type Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
 /**

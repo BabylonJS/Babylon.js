@@ -1,10 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { FloatArray, Nullable } from "../../types";
-import { DataBuffer } from "../../Buffers/dataBuffer";
+import { type FloatArray, type Nullable } from "../../types";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
-import { IPipelineContext } from "../IPipelineContext";
-import { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
+import { type IPipelineContext } from "../IPipelineContext";
+import { type WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 
 let _Registered = false;

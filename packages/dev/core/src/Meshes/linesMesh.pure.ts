@@ -9,11 +9,11 @@ import { Mesh } from "../Meshes/mesh.pure";
 import { InstancedMesh } from "../Meshes/instancedMesh.pure";
 import { Material } from "../Materials/material.pure";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
-import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
+import { type IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { type Effect } from "../Materials/effect.pure";
 import { type MeshCreationOptions } from "./mesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 
 /**
  * Line mesh

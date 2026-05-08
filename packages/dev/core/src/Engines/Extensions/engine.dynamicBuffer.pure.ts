@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { ThinEngine } from "../../Engines/thinEngine.pure";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { IndicesArray, DataArray } from "../../types";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
+import { type IndicesArray, type DataArray } from "../../types";
 
 let _Registered = false;
 /**

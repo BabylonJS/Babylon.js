@@ -6,7 +6,7 @@ import { VertexData } from "../mesh.vertexData";
 import { type Nullable } from "../../types";
 import { type Plane } from "../../Maths/math.plane";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates the VertexData for a Plane

@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { Observable } from "../../Misc/observable.pure";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 import { type SmartArray } from "../../Misc/smartArray";
-import type { Immutable } from "../../types";
+import { type Immutable, type Nullable } from "../../types";
 import { type Camera } from "../../Cameras/camera.pure";
 import { Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { type Color4 } from "../../Maths/math.color.pure";
@@ -23,8 +23,8 @@ import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+
+import { type Scene } from "../../scene.pure";
 import { Effect } from "../effect.pure";
 
 /**

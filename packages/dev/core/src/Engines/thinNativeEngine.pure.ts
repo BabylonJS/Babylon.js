@@ -71,7 +71,7 @@ import { DecodeBase64UrlToBinary } from "../Misc/fileTools.pure";
 
 declare const _native: INative;
 
-const onNativeObjectInitialized = new Observable<INative>();
+const onNativeObjectInitialized = /*#__PURE__*/ new Observable<INative>();
 if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self, "_native")) {
     let __native: INative;
     Object.defineProperty(self, "_native", {

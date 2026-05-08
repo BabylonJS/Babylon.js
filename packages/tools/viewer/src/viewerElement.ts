@@ -1,11 +1,23 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, Observable } from "core/index";
-import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, SSAOOptions, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
-import type { CanvasViewerOptions } from "./viewerFactory";
+import { type Nullable, type Observable } from "core/index";
+import { type CSSResultGroup, type PropertyValues, type TemplateResult, LitElement, css, html } from "lit";
+import {
+    type CameraOrbit,
+    type EnvironmentOptions,
+    type HotSpot,
+    type ResetFlag,
+    type ShadowQuality,
+    type SSAOOptions,
+    type ToneMapping,
+    type ViewerDetails,
+    type ViewerHotSpotResult,
+    IsShadowQuality,
+    IsToneMapping,
+    Viewer,
+} from "./viewer";
+import { type CanvasViewerOptions, CreateViewerForCanvas } from "./viewerFactory";
 
-import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";
 
@@ -14,8 +26,6 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsShadowQuality, IsToneMapping, Viewer } from "./viewer";
-import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =

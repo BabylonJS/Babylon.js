@@ -2,11 +2,11 @@
 
 import { type Nullable } from "../../types";
 import { Vector3, TmpVectors, Matrix } from "../../Maths/math.vector.pure";
-import type { Vector4 } from "../../Maths/math.vector";
+import { type Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { CreateRibbon } from "./ribbonBuilder.pure";
 import { Path3D } from "../../Maths/math.path";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates a tube mesh.

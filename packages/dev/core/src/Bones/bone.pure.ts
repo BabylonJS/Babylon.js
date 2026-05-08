@@ -16,9 +16,9 @@ import { type AnimationPropertiesOverride } from "../Animations/animationPropert
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
  */
 export class Bone extends Node {
-    private static _TmpVecs: Vector3[] = BuildArray(2, Vector3.Zero);
-    private static _TmpQuat = Quaternion.Identity();
-    private static _TmpMats: Matrix[] = BuildArray(5, Matrix.Identity);
+    private static _TmpVecs: Vector3[] = /*#__PURE__*/ BuildArray(2, Vector3.Zero);
+    private static _TmpQuat = /*#__PURE__*/ Quaternion.Identity();
+    private static _TmpMats: Matrix[] = /*#__PURE__*/ BuildArray(5, Matrix.Identity);
 
     /**
      * Gets the list of child bones

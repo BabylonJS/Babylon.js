@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { Vector3 } from "../Maths/math.vector.pure";
-import type { Vector2 } from "../Maths/math.vector";
+import { type Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Mesh } from "../Meshes/mesh.pure";
 import { Color4 } from "../Maths/math.color.pure";
 import { Logger } from "../Misc/logger";
 import { type FloatArray } from "../types";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 
 /**
  * Defines the set of goldberg data used to create the polygon

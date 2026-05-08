@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput";
 import { ArcRotateCameraGamepadInput } from "../Cameras/Inputs/arcRotateCameraGamepadInput";
 import { GamepadManager } from "./gamepadManager";

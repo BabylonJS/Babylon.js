@@ -12,7 +12,7 @@ import { Constants } from "../../Engines/constants";
 import { Plane } from "../../Maths/math.plane";
 import { type UniformBuffer } from "../uniformBuffer";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.

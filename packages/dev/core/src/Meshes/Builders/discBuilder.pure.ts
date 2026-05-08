@@ -4,8 +4,8 @@ import { type Vector4 } from "../../Maths/math.vector.pure";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates the VertexData of the Disc or regular Polygon

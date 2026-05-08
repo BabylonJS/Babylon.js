@@ -4,7 +4,7 @@ import { TouchCamera } from "./touchCamera.pure";
 import { type FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { Node } from "../node";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 import { Camera } from "./camera.pure";
 
 /**

@@ -5,8 +5,8 @@ import { Vector2, Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration.pure";
 import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
-import { FactorGradient } from "../Misc/gradients";
-import type { ColorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
+import { FactorGradient, type ColorGradient, type Color3Gradient, type IValueGradient } from "../Misc/gradients";
+
 import { type BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Constants } from "../Engines/constants";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";

@@ -6,8 +6,8 @@ import { Color3, Color4 } from "../Maths/math.color.pure";
 import { Hermite, Lerp } from "../Maths/math.scalar.functions";
 import { type DeepImmutable, type Nullable } from "../types";
 import { type Scene } from "../scene.pure";
-import { AnimationKeyInterpolation } from "./animationKey";
-import type { IAnimationKey } from "./animationKey";
+import { AnimationKeyInterpolation, type IAnimationKey } from "./animationKey";
+
 import { AnimationRange } from "./animationRange";
 import { type AnimationEvent } from "./animationEvent";
 import { Node } from "../node";

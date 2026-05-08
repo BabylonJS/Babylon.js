@@ -3,15 +3,15 @@
 import { Sound } from "./sound.pure";
 import { SoundTrack } from "./soundTrack";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneSerializableComponent } from "../sceneComponent";
+
 import { Scene } from "../scene.pure";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type IAssetContainer } from "core/IAssetContainer";
-import { Nullable } from "../types";
-import { AssetContainer } from "../assetContainer";
+import { type Nullable } from "../types";
+import { type AssetContainer } from "../assetContainer";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 /**
@@ -20,7 +20,7 @@ import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
  * @deprecated please use AudioEngineV2 instead
  */
 export class AudioSceneComponent implements ISceneSerializableComponent {
-    private static _CameraDirection = new Vector3(0, 0, -1);
+    private static _CameraDirection = /*#__PURE__*/ new Vector3(0, 0, -1);
 
     /**
      * The component name helpful to identify the component in the list of scene components.

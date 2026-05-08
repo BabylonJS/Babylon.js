@@ -111,8 +111,8 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
  * The base engine class (root of all engines)
  */
 export class ThinEngine extends AbstractEngine {
-    private static _TempClearColorUint32 = new Uint32Array(4);
-    private static _TempClearColorInt32 = new Int32Array(4);
+    private static _TempClearColorUint32 = /*#__PURE__*/ new Uint32Array(4);
+    private static _TempClearColorInt32 = /*#__PURE__*/ new Int32Array(4);
 
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [

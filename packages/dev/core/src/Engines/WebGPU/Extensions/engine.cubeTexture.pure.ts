@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { InternalTextureSource, InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
-import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPUTextureHelper } from "../webgpuTextureHelper";
-import { Scene } from "../../../scene.pure";
+import { type Scene } from "../../../scene.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 let _Registered = false;

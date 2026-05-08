@@ -1,8 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera.pure";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes, type ICameraInput } from "../../Cameras/cameraInputsManager";
 
 import { Tools } from "../../Misc/tools.pure";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager.pure";

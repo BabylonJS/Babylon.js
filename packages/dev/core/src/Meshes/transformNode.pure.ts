@@ -49,11 +49,11 @@ export class TransformNode extends Node {
      */
     public static BillboardUseParentOrientation: boolean = false;
 
-    private static _TmpRotation = Quaternion.Zero();
-    private static _TmpScaling = Vector3.Zero();
-    private static _TmpTranslation = Vector3.Zero();
+    private static _TmpRotation = /*#__PURE__*/ Quaternion.Zero();
+    private static _TmpScaling = /*#__PURE__*/ Vector3.Zero();
+    private static _TmpTranslation = /*#__PURE__*/ Vector3.Zero();
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static _TmpRHRestore = Matrix.Scaling(1, 1, -1);
+    private static _TmpRHRestore = /*#__PURE__*/ Matrix.Scaling(1, 1, -1);
 
     private _forward = new Vector3(0, 0, 1);
     private _up = new Vector3(0, 1, 0);
@@ -586,7 +586,7 @@ export class TransformNode extends Node {
         return this;
     }
 
-    private static _LookAtVectorCache = new Vector3(0, 0, 0);
+    private static _LookAtVectorCache = /*#__PURE__*/ new Vector3(0, 0, 0);
 
     /**
      * Orients a mesh towards a target point. Mesh must be drawn facing user.
@@ -924,7 +924,7 @@ export class TransformNode extends Node {
         return this;
     }
 
-    private static _RotationAxisCache = new Quaternion();
+    private static _RotationAxisCache = /*#__PURE__*/ new Quaternion();
     /**
      * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
      * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.

@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../../types";
-import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
+import { type Nullable } from "../../../types";
+import { type RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 let _Registered = false;

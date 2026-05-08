@@ -3,7 +3,7 @@
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector.pure";
 import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Mesh } from "../Meshes/mesh.pure";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 
 /**
  * Mesh representing the ground

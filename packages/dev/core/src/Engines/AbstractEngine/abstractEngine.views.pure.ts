@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { Camera } from "../../Cameras/camera.pure";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Camera } from "../../Cameras/camera.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 import { Observable } from "../../Misc/observable.pure";
 import { AbstractEngine } from "../abstractEngine.pure";
 

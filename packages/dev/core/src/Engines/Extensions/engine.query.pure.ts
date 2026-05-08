@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable, int } from "../../types";
+import { type Nullable, type int } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
-import { OcclusionQuery } from "../AbstractEngine/abstractEngine.query.pure";
+import { type OcclusionQuery } from "../AbstractEngine/abstractEngine.query.pure";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 

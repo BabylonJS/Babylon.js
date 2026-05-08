@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
-import { DataBuffer } from "../../Buffers/dataBuffer";
+import { type Nullable } from "../../types";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { Engine } from "../../Engines/engine.pure";
 
 /** @internal */

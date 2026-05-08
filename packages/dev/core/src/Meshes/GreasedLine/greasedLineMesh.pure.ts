@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { Vector3 } from "../../Maths/math.vector.pure";
-import type { Matrix } from "../../Maths/math.vector";
+import { type Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { type Ray, type TrianglePickingPredicate } from "../../Culling/ray.pure";
 import { Buffer, VertexBuffer } from "../../Buffers/buffer.pure";
@@ -10,10 +10,10 @@ import { type Nullable, type FloatArray } from "../../types";
 import { type Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
-import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
+import { GreasedLineBaseMesh, type GreasedLineMeshOptions } from "./greasedLineBaseMesh";
+
 import { type VertexData } from "../mesh.vertexData";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * GreasedLineMesh
@@ -23,10 +23,10 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     private _previousAndSide: FloatArray;
     private _nextAndCounters: FloatArray;
 
-    private static _V_START = new Vector3();
-    private static _V_END = new Vector3();
-    private static _V_OFFSET_START = new Vector3();
-    private static _V_OFFSET_END = new Vector3();
+    private static _V_START = /*#__PURE__*/ new Vector3();
+    private static _V_END = /*#__PURE__*/ new Vector3();
+    private static _V_OFFSET_START = /*#__PURE__*/ new Vector3();
+    private static _V_OFFSET_END = /*#__PURE__*/ new Vector3();
 
     /**
      * Treshold used to pick the mesh

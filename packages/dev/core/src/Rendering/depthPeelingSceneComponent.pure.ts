@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
 import { Constants } from "../Engines/constants";
-import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
+import { type ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
 
 /**
  * Scene component to render order independent transparency with depth peeling

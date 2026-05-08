@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine.pure";
-import { IWebRequest } from "../../Misc/interfaces/iWebRequest";
+import { type IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { IsExponentOfTwo } from "../../Misc/tools.functions";
 
 /**

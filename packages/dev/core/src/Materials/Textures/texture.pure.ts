@@ -93,7 +93,7 @@ export class Texture extends BaseTexture {
     /**
      * This observable will notify when any texture had a loading error
      */
-    public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
+    public static OnTextureLoadErrorObservable = /*#__PURE__*/ new Observable<BaseTexture>();
 
     /** @internal */
     public static _SerializeInternalTextureUniqueId = false;

@@ -53,10 +53,10 @@ function Int32ToFourCC(value: number) {
     return String.fromCharCode(value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
 }
 
-const FOURCC_DXT1 = FourCCToInt32("DXT1");
-const FOURCC_DXT3 = FourCCToInt32("DXT3");
-const FOURCC_DXT5 = FourCCToInt32("DXT5");
-const FOURCC_DX10 = FourCCToInt32("DX10");
+const FOURCC_DXT1 = /*#__PURE__*/ FourCCToInt32("DXT1");
+const FOURCC_DXT3 = /*#__PURE__*/ FourCCToInt32("DXT3");
+const FOURCC_DXT5 = /*#__PURE__*/ FourCCToInt32("DXT5");
+const FOURCC_DX10 = /*#__PURE__*/ FourCCToInt32("DX10");
 const FOURCC_D3DFMT_R16G16B16A16F = 113;
 const FOURCC_D3DFMT_R32G32B32A32F = 116;
 

@@ -97,7 +97,7 @@ const ViewDescriptorSwapChain: GPUTextureViewDescriptor = {
     mipLevelCount: 1,
     arrayLayerCount: 1,
 };
-const TempColor4 = new Color4();
+const TempColor4 = /*#__PURE__*/ new Color4();
 
 /** @internal */
 interface IWebGPURenderPassWrapper {

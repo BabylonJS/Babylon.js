@@ -11,8 +11,8 @@ import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Node } from "../node";
 
 // Temporary cache variables to avoid allocations.
-const TmpMatrix = Matrix.Zero();
-const TmpQuaternion = Quaternion.Identity();
+const TmpMatrix = /*#__PURE__*/ Matrix.Zero();
+const TmpQuaternion = /*#__PURE__*/ Quaternion.Identity();
 
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
@@ -20,9 +20,9 @@ const TmpQuaternion = Quaternion.Identity();
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class TargetCamera extends Camera {
-    private static _RigCamTransformMatrix = new Matrix();
-    private static _TargetTransformMatrix = new Matrix();
-    private static _TargetFocalPoint = new Vector3();
+    private static _RigCamTransformMatrix = /*#__PURE__*/ new Matrix();
+    private static _TargetTransformMatrix = /*#__PURE__*/ new Matrix();
+    private static _TargetFocalPoint = /*#__PURE__*/ new Vector3();
 
     /**
      * Define the current direction the camera is moving to

@@ -14,22 +14,22 @@ import { type Material } from "../Materials/material.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { PostProcess } from "../PostProcesses/postProcess.pure";
-import type { PostProcessOptions } from "../PostProcesses/postProcess";
+import { type PostProcessOptions } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess.pure";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess.pure";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { Color3 } from "../Maths/math.color.pure";
-import type { Color4 } from "../Maths/math.color";
+import { type Color4 } from "../Maths/math.color";
 import { type ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import { type ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
-import { ThinHighlightLayer } from "./thinHighlightLayer";
-import type { IThinHighlightLayerOptions } from "./thinHighlightLayer";
+import { ThinHighlightLayer, type IThinHighlightLayerOptions } from "./thinHighlightLayer";
+
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
 
 interface IBlurPostProcess extends PostProcess {

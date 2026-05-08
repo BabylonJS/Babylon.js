@@ -1,12 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
 
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Observer } from "../Misc/observable.pure";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { IblCdfGenerator } from "./iblCdfGenerator";
 
 /**

@@ -7,7 +7,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Observable } from "../../Misc/observable.pure";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 import { type Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
@@ -95,7 +95,7 @@ const ShaderViewport = { x: 0, y: 0, width: 1, height: 1 };
 let GlobalRawValueToMeters = 1;
 let ViewIndex = 0;
 let EnableDiscard = true;
-const UvTransform = Matrix.Identity();
+const UvTransform = /*#__PURE__*/ Matrix.Identity();
 const ManagedMaterialPlugins: WebXRDepthSensingMaterialPlugin[] = [];
 
 /**

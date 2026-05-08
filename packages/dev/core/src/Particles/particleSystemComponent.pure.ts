@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { IParticleSystem } from "./IParticleSystem";
+import { type IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem.pure";
-import { Effect } from "../Materials/effect.pure";
+import { type Effect } from "../Materials/effect.pure";
 import { ParticleSystem } from "./particleSystem.pure";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 import { SceneComponentConstants } from "../sceneComponent";
-import { AssetContainer } from "../assetContainer";
-import { EffectFallbacks } from "../Materials/effectFallbacks";
+import { type AssetContainer } from "../assetContainer";
+import { type EffectFallbacks } from "../Materials/effectFallbacks";
 import { AddParser, AddIndividualParser, GetIndividualParser } from "core/Loading/Plugins/babylonFileParser.function";
 import { Mesh } from "../Meshes/mesh.pure";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";

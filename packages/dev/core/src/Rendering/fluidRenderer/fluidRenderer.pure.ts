@@ -2,12 +2,12 @@
 
 import { Scene } from "core/scene.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
-import type { FloatArray } from "core/types";
+import { type FloatArray, type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable.pure";
 import { type Camera } from "core/Cameras/camera.pure";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
-import { SceneComponentConstants } from "core/sceneComponent";
-import type { ISceneComponent } from "core/sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "core/sceneComponent";
+
 import { type SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { Constants } from "core/Engines/constants";
@@ -18,7 +18,6 @@ import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
 import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCustomParticles";
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Nullable } from "core/types";
 
 type CameraMapForFluidRendering = [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }];
 

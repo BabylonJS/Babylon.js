@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
 import { InternalTextureSource, InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { ImageSource, Nullable } from "../../../types";
+import { type ImageSource, type Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
-import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { GetExponentOfTwo } from "../../../Misc/tools.functions";
 
 let _Registered = false;

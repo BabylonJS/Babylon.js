@@ -123,8 +123,8 @@ export interface IDisposable {
 }
 
 // Defining Temps for the file to avoid misuse of shared TmpVectors
-const TempVect1 = new Vector4();
-const TempVect2 = new Vector4();
+const TempVect1 = /*#__PURE__*/ new Vector4();
+const TempVect2 = /*#__PURE__*/ new Vector4();
 
 /** Interface defining initialization parameters for Scene class */
 // eslint-disable-next-line @typescript-eslint/naming-convention

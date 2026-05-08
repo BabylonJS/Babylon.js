@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { InternalTextureSource, InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
-import { Nullable } from "../../../types";
+import { type IWebRequest } from "../../../Misc/interfaces/iWebRequest";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { Logger } from "../../../Misc/logger";
-import { Scene } from "../../../scene.pure";
+import { type Scene } from "../../../scene.pure";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 /**

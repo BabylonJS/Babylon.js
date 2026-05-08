@@ -220,8 +220,8 @@ function analyzeFile(filePath) {
             });
         }
 
-        // 1. RegisterClass(...)
-        if (/\bRegisterClass\s*\(/.test(trimmed)) {
+        // 1. RegisterClass(...) — skip function definitions
+        if (/\bRegisterClass\s*\(/.test(trimmed) && !/^\s*(export\s+)?function\s+RegisterClass\b/.test(trimmed)) {
             sideEffects.push({
                 type: "RegisterClass",
                 line: lineNum,

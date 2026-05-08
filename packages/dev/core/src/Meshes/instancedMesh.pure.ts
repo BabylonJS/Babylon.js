@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import type { FloatArray, IndicesArray } from "../types";
+import { type FloatArray, type IndicesArray, type Nullable } from "../types";
 import { Matrix, TmpVectors } from "../Maths/math.vector.pure";
-import type { Vector3 } from "../Maths/math.vector";
+import { type Vector3 } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
 import { type Camera } from "../Cameras/camera.pure";
 import { type Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
-import type { IMeshDataOptions } from "../Meshes/abstractMesh";
+import { type IMeshDataOptions } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh.pure";
 import { type Material } from "../Materials/material.pure";
 import { type Skeleton } from "../Bones/skeleton";
@@ -17,8 +17,8 @@ import { type Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Tools } from "../Misc/tools.pure";
 import { type Geometry } from "./geometry";
-import { Nullable } from "../types";
-import { ThinEngine } from "../Engines/thinEngine.pure";
+
+import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**

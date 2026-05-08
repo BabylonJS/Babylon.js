@@ -6,7 +6,7 @@ import { Observable } from "../Misc/observable.pure";
 import { type Analyser } from "./analyser";
 import { type IAudioEngine } from "./Interfaces/IAudioEngine";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 
 /**
  * This represents the default audio engine used in babylon.

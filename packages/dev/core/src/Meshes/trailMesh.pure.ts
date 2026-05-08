@@ -9,7 +9,7 @@ import { VertexBuffer } from "../Buffers/buffer.pure";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { type TransformNode } from "../Meshes/transformNode.pure";
-import { Scene } from "../scene.pure";
+import { type Scene } from "../scene.pure";
 
 /**
  * Options to be used when creating a trail mesh

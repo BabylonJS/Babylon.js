@@ -3,7 +3,7 @@
 import { Mesh } from "../mesh.pure";
 import { CreateSphere } from "../Builders/sphereBuilder.pure";
 import { CreateDisc } from "./discBuilder.pure";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates a hemisphere mesh

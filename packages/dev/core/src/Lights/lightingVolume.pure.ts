@@ -22,7 +22,7 @@ import { StorageBuffer } from "core/Buffers/storageBuffer";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
 import { VertexBuffer } from "core/Buffers/buffer.pure";
 
-const TmpVec3 = new Vector3();
+const TmpVec3 = /*#__PURE__*/ new Vector3();
 
 /**
  * Class used to create a lighting volume from a directional light's shadow generator.

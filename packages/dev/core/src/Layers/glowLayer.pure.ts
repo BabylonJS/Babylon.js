@@ -11,15 +11,15 @@ import { type Effect } from "../Materials/effect.pure";
 import { type Material } from "../Materials/material.pure";
 import { type PostProcess } from "../PostProcesses/postProcess.pure";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess.pure";
-import { ThinGlowLayer } from "./thinGlowLayer";
-import type { IThinGlowLayerOptions } from "./thinGlowLayer";
+import { ThinGlowLayer, type IThinGlowLayerOptions } from "./thinGlowLayer";
+
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { type Color4 } from "core/Maths/math.color.pure";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { type ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**

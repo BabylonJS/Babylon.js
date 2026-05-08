@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../types";
-import { MeshUVSpaceRenderer } from "./meshUVSpaceRenderer.pure";
+import { type Nullable } from "../types";
+import { type MeshUVSpaceRenderer } from "./meshUVSpaceRenderer.pure";
 import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 
 let _Registered = false;

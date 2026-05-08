@@ -3,12 +3,11 @@
 import { Tools } from "../Misc/tools.pure";
 import { type Camera } from "../Cameras/camera.pure";
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneSerializableComponent } from "../sceneComponent";
 
 import { type IAssetContainer } from "core/IAssetContainer";
-import { Nullable } from "../types";
-import { AssetContainer } from "../assetContainer";
+import { type Nullable } from "../types";
+import { type AssetContainer } from "../assetContainer";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 import { LensFlareSystem } from "./lensFlareSystem";
 

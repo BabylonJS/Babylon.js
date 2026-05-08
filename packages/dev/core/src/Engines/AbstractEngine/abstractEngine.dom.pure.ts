@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { IViewportLike } from "../../Maths/math.like";
-import { Nullable } from "../../types";
+import { type IViewportLike } from "../../Maths/math.like";
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine.pure";
 
 /**

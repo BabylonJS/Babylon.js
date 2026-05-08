@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable, DeepImmutableObject } from "../types";
+import { type Nullable, type DeepImmutableObject } from "../types";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector.pure";
 import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";

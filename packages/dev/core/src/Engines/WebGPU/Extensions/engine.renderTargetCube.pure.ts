@@ -2,9 +2,9 @@
 
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { Constants } from "../../constants";
-import { RenderTargetWrapper } from "../../renderTargetWrapper";
+import { type RenderTargetWrapper } from "../../renderTargetWrapper";
 
 let _Registered = false;
 /**

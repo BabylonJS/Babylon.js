@@ -5,7 +5,7 @@ import { type Camera } from "../Cameras/camera.pure";
 import { type Effect } from "../Materials/effect.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { PostProcess } from "./postProcess.pure";
-import type { PostProcessOptions } from "./postProcess";
+import { type PostProcessOptions } from "./postProcess";
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";

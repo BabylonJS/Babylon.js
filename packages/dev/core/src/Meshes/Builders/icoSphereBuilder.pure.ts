@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
 import { Vector3, Vector2 } from "../../Maths/math.vector.pure";
-import type { Vector4 } from "../../Maths/math.vector";
+import { type Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
 import { type Nullable } from "../../types";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates the VertexData of the IcoSphere

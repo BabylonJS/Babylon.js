@@ -8,8 +8,8 @@ import { Constants } from "../../Engines/constants";
 import { type ExternalTexture } from "./externalTexture";
 import { type WebGPUEngine } from "core/Engines";
 import { serialize } from "core/Misc/decorators";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 import { RegisterClass } from "core/Misc/typeStore";
 
 function RemoveSource(video: HTMLVideoElement): void {

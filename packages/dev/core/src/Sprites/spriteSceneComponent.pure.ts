@@ -4,15 +4,15 @@ import { Observable } from "../Misc/observable.pure";
 import { Scene } from "../scene.pure";
 import { Ray, CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef } from "../Culling/ray.core";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { ActionEvent } from "../Actions/actionEvent";
 import { Constants } from "../Engines/constants";
 import { type IPointerEvent } from "../Events/deviceInputEvents";
-import { Nullable } from "../types";
-import { Sprite } from "./sprite";
-import { ISpriteManager } from "./spriteManager";
-import { Camera } from "../Cameras/camera.pure";
+import { type Nullable } from "../types";
+import { type Sprite } from "./sprite";
+import { type ISpriteManager } from "./spriteManager";
+import { type Camera } from "../Cameras/camera.pure";
 
 /** @internal */
 export type InternalSpriteAugmentedScene = Scene & {

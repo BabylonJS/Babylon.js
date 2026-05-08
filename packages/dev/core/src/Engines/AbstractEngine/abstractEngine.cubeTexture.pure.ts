@@ -2,11 +2,11 @@
 
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 import { LoadImage } from "../../Misc/fileTools.pure";
 import { RandomGUID } from "../../Misc/guid";
-import { IWebRequest } from "../../Misc/interfaces/iWebRequest";
+import { type IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { AbstractEngine } from "../abstractEngine.pure";

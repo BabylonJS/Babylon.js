@@ -4,13 +4,13 @@ import { Vector3 } from "../../Maths/math.vector.pure";
 import { type Color4 } from "../../Maths/math.color.pure";
 import { _CreationDataStorage, Mesh } from "../mesh.pure";
 import { VertexData } from "../mesh.vertexData";
-import type { FloatArray } from "../../types";
+import { type FloatArray, type Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh.pure";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { Logger } from "../../Misc/logger";
 import { type Material } from "../../Materials/material.pure";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+
+import { type Scene } from "../../scene.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

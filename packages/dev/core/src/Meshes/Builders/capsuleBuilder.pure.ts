@@ -4,8 +4,8 @@ import { VertexData } from "../mesh.vertexData";
 import { Vector2, Vector3, Matrix } from "../../Maths/math.vector.pure";
 import { Mesh } from "../mesh.pure";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js

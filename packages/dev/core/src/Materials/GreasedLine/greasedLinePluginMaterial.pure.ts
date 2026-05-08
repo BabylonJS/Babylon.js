@@ -13,8 +13,8 @@ import { MaterialDefines } from "../materialDefines";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type BaseTexture } from "../Textures/baseTexture.pure";
 import { ShaderLanguage } from "../shaderLanguage";
-import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
-import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
+import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode, type GreasedLineMaterialOptions, type IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
+
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GetCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";

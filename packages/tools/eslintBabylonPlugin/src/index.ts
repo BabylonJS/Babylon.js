@@ -882,8 +882,12 @@ const plugin: IPlugin = {
                  * underlying CallExpression or NewExpression.
                  */
                 function findCallOrNew(node: any): any {
-                    if (!node) return null;
-                    if (node.type === "NewExpression" || node.type === "CallExpression") return node;
+                    if (!node) {
+                        return null;
+                    }
+                    if (node.type === "NewExpression" || node.type === "CallExpression") {
+                        return node;
+                    }
                     if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression") {
                         return findCallOrNew(node.expression);
                     }
@@ -895,12 +899,16 @@ const plugin: IPlugin = {
                     // getCommentsBefore returns leading comments attached to the node
                     const comments = sourceCode.getCommentsBefore?.(node) ?? [];
                     for (const c of comments) {
-                        if (c.type === "Block" && c.value.trim() === "#__PURE__") return true;
+                        if (c.type === "Block" && c.value.trim() === "#__PURE__") {
+                            return true;
+                        }
                     }
                     // Also check the immediately preceding token (comment) in case
                     // ESLint attached it differently
                     const prev = sourceCode.getTokenBefore?.(node, { includeComments: true });
-                    if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") return true;
+                    if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") {
+                        return true;
+                    }
                     return false;
                 }
 
@@ -968,6 +976,9 @@ const plugin: IPlugin = {
                         'Bare import "{{source}}" introduces side effects in a .pure.ts file. ' + "Move it to the non-pure counterpart or guard with an eslint-disable comment.",
                     unsafeBarrelReExport:
                         'Re-export from "{{source}}" in a pure barrel file pulls in a module with side effects. ' + "Only re-export from side-effect-free modules.",
+                    unsafeValueImport:
+                        'Import from "{{source}}" in a .pure.ts file pulls in a module with side effects. ' +
+                        "Import from the .pure counterpart instead, or use a type-only import.",
                 },
                 schema: [],
             },
@@ -999,7 +1010,7 @@ const plugin: IPlugin = {
                         return null; // external / absolute — skip
                     }
                     const dir = path.dirname(filename);
-                    let resolved = path.resolve(dir, source);
+                    const resolved = path.resolve(dir, source);
 
                     // Find core/src/ anchor
                     const anchor = path.sep + path.join("packages", "dev", "core", "src") + path.sep;
@@ -1070,15 +1081,14 @@ const plugin: IPlugin = {
                             return;
                         }
 
-                        // In a barrel pure.ts file, check that value imports come
-                        // from side-effect-free sources
-                        if (isBarrelPure && hasSideEffects(source)) {
+                        // Check that value imports come from side-effect-free sources
+                        if (hasSideEffects(source)) {
                             // Check if ALL specifiers are type-only
                             const allTypeOnly = node.specifiers.every((s: any) => s.importKind === "type");
                             if (!allTypeOnly) {
                                 context.report({
                                     node,
-                                    messageId: "unsafeBarrelReExport",
+                                    messageId: isBarrelPure ? "unsafeBarrelReExport" : "unsafeValueImport",
                                     data: { source },
                                 });
                             }
@@ -1159,7 +1169,9 @@ function loadSideEffectsSet(): Set<string> {
                 break;
             }
             const parent = path.dirname(dir);
-            if (parent === dir) break;
+            if (parent === dir) {
+                break;
+            }
             dir = parent;
         }
     } catch {

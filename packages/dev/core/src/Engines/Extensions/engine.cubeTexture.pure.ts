@@ -3,10 +3,10 @@
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 import { Constants } from "../constants";
-import { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { type DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
 let _Registered = false;

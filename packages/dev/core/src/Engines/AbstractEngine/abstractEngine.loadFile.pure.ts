@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { IOfflineProvider } from "../../Offline/IOfflineProvider";
+import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { AbstractEngine } from "../../Engines/abstractEngine.pure";
 
 let _Registered = false;

@@ -1,11 +1,11 @@
 /** This file must only contain pure code and pure imports */
 
 import { Vector3 } from "../../Maths/math.vector.pure";
-import type { Vector4 } from "../../Maths/math.vector";
+import { type Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh.pure";
 import { CreateRibbon } from "./ribbonBuilder.pure";
 import { type Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates lathe mesh.

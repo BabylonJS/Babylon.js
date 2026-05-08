@@ -3,12 +3,12 @@
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene.pure";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene.pure";
 import { Constants } from "../constants";
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial.pure";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
-import { DDSInfo } from "core/Misc/dds.pure";
+import { type DDSInfo } from "core/Misc/dds.pure";
 
 let _Registered = false;
 /**

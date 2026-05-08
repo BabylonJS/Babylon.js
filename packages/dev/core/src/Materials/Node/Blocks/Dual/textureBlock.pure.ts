@@ -4,10 +4,10 @@ import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+
 import { NodeMaterial } from "../../nodeMaterial.pure";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock.pure";
 import { type Effect } from "../../../effect.pure";
 import { type Nullable } from "../../../../types";
@@ -28,7 +28,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * Block used to read a texture from a sampler
  */
 export class TextureBlock extends NodeMaterialBlock {
-    private static _DefaultTextureByEngine = new WeakMap<AbstractEngine, ThinTexture>();
+    private static _DefaultTextureByEngine = /*#__PURE__*/ new WeakMap<AbstractEngine, ThinTexture>();
 
     private _defineName: string;
     private _linearDefineName: string;

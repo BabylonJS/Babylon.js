@@ -1,9 +1,9 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math.vector.pure";
-import { Mesh } from "../../Meshes/mesh.pure";
-import { PhysicsImpostor } from "./physicsImpostor.pure";
+import { type Nullable } from "../../types";
+import { type Vector3 } from "../../Maths/math.vector.pure";
+import { type Mesh } from "../../Meshes/mesh.pure";
+import { type PhysicsImpostor } from "./physicsImpostor.pure";
 import { PhysicsJoint } from "./physicsJoint";
 import { AbstractMesh } from "../../Meshes/abstractMesh.pure";
 

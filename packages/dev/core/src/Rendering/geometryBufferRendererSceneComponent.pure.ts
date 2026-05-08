@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { GeometryBufferRenderer, IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer.pure";
+import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer.pure";
 
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful

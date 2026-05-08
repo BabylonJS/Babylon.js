@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Vector2, Vector4, Vector3 } from "../../Maths/math.vector.pure";
+import { Vector2, Vector4, type Vector3 } from "../../Maths/math.vector.pure";
 
 import { Color4 } from "../../Maths/math.color.pure";
 import { Mesh } from "../mesh.pure";
@@ -10,7 +10,7 @@ import { type FloatArray, type IndicesArray, type Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { EngineStore } from "../../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

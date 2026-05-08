@@ -8,7 +8,7 @@ import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector.pure";
 import { type Nullable } from "../../types";
 import { type IDisposable, type Scene } from "../../scene.pure";
 import { Observable } from "../../Misc/observable.pure";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 import { type Node } from "../../node";
 import { Logger } from "../../Misc/logger";
@@ -307,7 +307,7 @@ const BodyJointReferenceArray: WebXRBodyJoint[] = [
  * Reverse lookup: {@link WebXRBodyJoint} → index in {@link BodyJointReferenceArray}.
  * Used for O(1) name-based access where previously `indexOf` was called in hot paths.
  */
-const BodyJointNameToIndex: ReadonlyMap<WebXRBodyJoint, number> = new Map<WebXRBodyJoint, number>(BodyJointReferenceArray.map((j, i) => [j, i]));
+const BodyJointNameToIndex: ReadonlyMap<WebXRBodyJoint, number> = /*#__PURE__*/ new Map<WebXRBodyJoint, number>(BodyJointReferenceArray.map((j, i) => [j, i]));
 
 /**
  * The total number of joints in the body tracking spec.

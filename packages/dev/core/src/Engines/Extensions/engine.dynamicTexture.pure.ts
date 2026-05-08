@@ -3,7 +3,7 @@
 import { GetExponentOfTwo } from "core/Misc/tools.functions";
 import { ThinEngine } from "../../Engines/thinEngine.pure";
 import { InternalTextureSource, InternalTexture } from "../../Materials/Textures/internalTexture";
-import { ImageSource, Nullable } from "../../types";
+import { type ImageSource, type Nullable } from "../../types";
 
 let _Registered = false;
 /**

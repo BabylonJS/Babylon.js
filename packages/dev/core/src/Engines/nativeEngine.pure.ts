@@ -3,7 +3,7 @@
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { Engine } from "./engine.pure";
 import { ThinNativeEngine } from "./thinNativeEngine.pure";
-import type { ThinNativeEngineOptions } from "./thinNativeEngine";
+import { type ThinNativeEngineOptions } from "./thinNativeEngine";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

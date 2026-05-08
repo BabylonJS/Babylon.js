@@ -1,8 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Scene } from "core/scene.pure";
-import { SceneComponentConstants } from "core/sceneComponent";
-import type { RenderTargetsStageAction, ISceneComponent } from "core/sceneComponent";
+import { SceneComponentConstants, type RenderTargetsStageAction, type ISceneComponent } from "core/sceneComponent";
 import { ClusteredLightContainer } from "./clusteredLightContainer.pure";
 import { LightConstants } from "../lightConstants";
 

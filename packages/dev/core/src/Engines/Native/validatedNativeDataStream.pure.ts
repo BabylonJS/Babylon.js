@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { NativeDataStream } from "./nativeDataStream";
-import type { NativeData } from "./nativeDataStream";
+import { NativeDataStream, type NativeData } from "./nativeDataStream";
+
 import { type INative } from "./nativeInterfaces";
 import { ThinNativeEngine } from "../thinNativeEngine.pure";
 

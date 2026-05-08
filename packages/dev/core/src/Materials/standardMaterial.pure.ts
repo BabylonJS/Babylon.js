@@ -16,7 +16,7 @@ import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defi
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
 import { type FresnelParameters } from "./fresnelParameters.pure";
 import { Material } from "../Materials/material.pure";
-import type { ICustomShaderNameResolveOptions } from "../Materials/material";
+import { type ICustomShaderNameResolveOptions } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
@@ -29,8 +29,8 @@ import { EffectFallbacks } from "./effectFallbacks";
 import { type Effect, type IEffectCreationOptions } from "./effect.pure";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
-import { PrepareVertexPullingUniforms, BindVertexPullingUniforms } from "./vertexPullingHelper.functions";
-import type { IVertexPullingMetadata } from "./vertexPullingHelper.functions";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
+
 import {
     BindBonesParameters,
     BindFogParameters,

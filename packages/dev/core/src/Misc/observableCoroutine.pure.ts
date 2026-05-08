@@ -1,4 +1,4 @@
-import { CoroutineStep, inlineScheduler, AsyncCoroutine, CoroutineScheduler, runCoroutineAsync } from "./coroutine";
+import { type CoroutineStep, inlineScheduler, type AsyncCoroutine, type CoroutineScheduler, runCoroutineAsync } from "./coroutine";
 import { Observable } from "./observable.pure";
 let _Registered = false;
 /**

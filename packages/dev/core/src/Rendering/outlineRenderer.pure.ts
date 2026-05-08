@@ -3,12 +3,12 @@
 import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type SubMesh } from "../Meshes/subMesh.pure";
 import { Mesh } from "../Meshes/mesh.pure";
-import type { _InstancesBatch } from "../Meshes/mesh";
+import { type _InstancesBatch } from "../Meshes/mesh";
 import { Scene } from "../scene.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
+
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";

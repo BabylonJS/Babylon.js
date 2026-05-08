@@ -1,14 +1,14 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable, type FloatArray } from "../../types";
-import { TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
-import type { Vector2, Vector4 } from "../../Maths/math.vector";
+import { TmpVectors, type Vector3 } from "../../Maths/math.vector.pure";
+import { type Vector2, type Vector4 } from "../../Maths/math.vector";
 import { type Color4 } from "../../Maths/math.color.pure";
 import { Mesh, _CreationDataStorage } from "../mesh.pure";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * Creates the VertexData for a Ribbon

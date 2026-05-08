@@ -6,7 +6,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 
 import { Vector3, TmpVectors } from "../Maths/math.vector.pure";
-import type { Matrix } from "../Maths/math.vector";
+import { type Matrix } from "../Maths/math.vector";
 import { type IDisposable, type Scene } from "../scene.pure";
 import { type Observer } from "../Misc/observable.pure";
 import { Material } from "../Materials/material.pure";

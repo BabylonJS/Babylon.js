@@ -4,7 +4,7 @@ import { type Nullable } from "../../../types";
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
 import { Observable } from "../../../Misc/observable.pure";
-import type { Observer } from "../../../Misc/observable";
+import { type Observer } from "../../../Misc/observable";
 import { type IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
 import { type Camera } from "../../../Cameras/camera.pure";

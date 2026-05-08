@@ -4,10 +4,10 @@ import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+
 import { NodeMaterial } from "../nodeMaterial.pure";
-import type { NodeMaterialDefines } from "../nodeMaterial";
+import { type NodeMaterialDefines } from "../nodeMaterial";
 import { type Effect } from "../../effect.pure";
 import { type Nullable } from "../../../types";
 import { Texture } from "../../Textures/texture.pure";

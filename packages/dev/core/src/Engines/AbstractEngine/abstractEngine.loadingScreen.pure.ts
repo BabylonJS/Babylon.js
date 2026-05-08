@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { IsWindowObjectExist } from "../../Misc/domManagement";
-import { ILoadingScreen } from "../../Loading/loadingScreen.pure";
+import { type ILoadingScreen } from "../../Loading/loadingScreen.pure";
 import { AbstractEngine } from "../abstractEngine.pure";
 
 let _Registered = false;

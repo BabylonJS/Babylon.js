@@ -6,7 +6,7 @@ import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
 import { type Nullable } from "../../types";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionController";
-import { Scene } from "../../scene.pure";
+import { type Scene } from "../../scene.pure";
 
 /**
  * A construction function type to create a new controller based on an xrInput object

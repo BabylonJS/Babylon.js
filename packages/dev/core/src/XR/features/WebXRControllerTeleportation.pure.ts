@@ -2,13 +2,13 @@
 
 import { type IWebXRFeature, WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { Observable } from "../../Misc/observable.pure";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type Nullable } from "../../types";
 import { type WebXRInput } from "../webXRInput";
 import { type WebXRInputSource } from "../webXRInputSource";
-import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
-import type { IWebXRMotionControllerAxesValue } from "../motionController/webXRControllerComponent";
+import { WebXRControllerComponent, type IWebXRMotionControllerAxesValue } from "../motionController/webXRControllerComponent";
+
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Vector3, Quaternion } from "../../Maths/math.vector.pure";
 import { Ray } from "../../Culling/ray.pure";

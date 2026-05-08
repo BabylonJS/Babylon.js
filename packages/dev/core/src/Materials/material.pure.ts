@@ -225,7 +225,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Event observable which raises global events common to all materials (like MaterialPluginEvent.Created)
      */
-    public static OnEventObservable = new Observable<Material>();
+    public static OnEventObservable = /*#__PURE__*/ new Observable<Material>();
 
     /**
      * If true, all materials will have their vertex output set to invariant (see the vertexOutputInvariant property).

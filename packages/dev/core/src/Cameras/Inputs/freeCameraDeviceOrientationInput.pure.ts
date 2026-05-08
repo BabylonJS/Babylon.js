@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes, type ICameraInput } from "../../Cameras/cameraInputsManager";
+
 import { type FreeCamera } from "../../Cameras/freeCamera.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
 import { Tools } from "../../Misc/tools.pure";

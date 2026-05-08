@@ -1,8 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-import { Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math.vector.pure";
-import { PhysicsBody } from "./physicsBody";
+import { type Nullable } from "../../types";
+import { type Vector3 } from "../../Maths/math.vector.pure";
+import { type PhysicsBody } from "./physicsBody";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 
 let _Registered = false;

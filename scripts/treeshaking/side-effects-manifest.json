@@ -1,15 +1,14 @@
 {
   "stats": {
-    "totalFiles": 3094,
-    "filesWithSideEffects": 1412,
-    "filesWithoutSideEffects": 1682,
+    "totalFiles": 3197,
+    "filesWithSideEffects": 1411,
+    "filesWithoutSideEffects": 1786,
     "byType": {
-      "top-level-call": 629,
+      "top-level-call": 633,
       "declare-module": 108,
-      "bare-import": 143,
+      "bare-import": 144,
       "static-property-assignment": 1,
       "prototype-assignment": 6,
-      "RegisterClass": 1,
       "shader-store-write": 633
     },
     "filesByType": {
@@ -18,7 +17,6 @@
       "bare-import": 54,
       "static-property-assignment": 1,
       "prototype-assignment": 3,
-      "RegisterClass": 1,
       "shader-store-write": 633
     }
   },
@@ -29,7 +27,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAction();"
+          "text": "RegisterAction();"
         }
       ]
     },
@@ -39,7 +37,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCondition();"
+          "text": "RegisterCondition();"
         }
       ]
     },
@@ -49,7 +47,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDirectActions();"
+          "text": "RegisterDirectActions();"
         }
       ]
     },
@@ -59,7 +57,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDirectAudioActions();"
+          "text": "RegisterDirectAudioActions();"
         }
       ]
     },
@@ -69,22 +67,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInterpolateValueAction();"
-        }
-      ]
-    },
-    {
-      "file": "Animations/animatable.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 16,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 190,
-          "text": "declare module \"../Bones/bone\" {"
+          "text": "RegisterInterpolateValueAction();"
         }
       ]
     },
@@ -93,8 +76,23 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAnimatable();"
+          "line": 9,
+          "text": "RegisterAnimatable();"
+        }
+      ]
+    },
+    {
+      "file": "Animations/animatable.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 179,
+          "text": "declare module \"../Bones/bone.pure\" {"
         }
       ]
     },
@@ -104,7 +102,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnimation();"
+          "text": "RegisterAnimation();"
         }
       ]
     },
@@ -124,17 +122,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAudioEngine();"
-        }
-      ]
-    },
-    {
-      "file": "Audio/audioSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 19,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterAudioEngine();"
         }
       ]
     },
@@ -143,8 +131,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAudioSceneComponent();"
+          "line": 9,
+          "text": "RegisterAudioSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Audio/audioSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 5,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -154,17 +152,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSound();"
-        }
-      ]
-    },
-    {
-      "file": "Buffers/buffer.align.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"./buffer\" {"
+          "text": "RegisterSound();"
         }
       ]
     },
@@ -173,8 +161,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerBufferAlign();"
+          "line": 9,
+          "text": "RegisterBufferAlign();"
+        }
+      ]
+    },
+    {
+      "file": "Buffers/buffer.align.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"./buffer.pure\" {"
         }
       ]
     },
@@ -194,7 +192,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerArcRotateCamera();"
+          "text": "RegisterArcRotateCamera();"
         }
       ]
     },
@@ -204,7 +202,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDeviceOrientationCamera();"
+          "text": "RegisterDeviceOrientationCamera();"
         }
       ]
     },
@@ -214,7 +212,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlyCamera();"
+          "text": "RegisterFlyCamera();"
         }
       ]
     },
@@ -224,7 +222,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFollowCamera();"
+          "text": "RegisterFollowCamera();"
         }
       ]
     },
@@ -234,7 +232,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFreeCamera();"
+          "text": "RegisterFreeCamera();"
         }
       ]
     },
@@ -244,7 +242,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGamepadCamera();"
+          "text": "RegisterGamepadCamera();"
         }
       ]
     },
@@ -254,17 +252,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeospatialCamera();"
-        }
-      ]
-    },
-    {
-      "file": "Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 11,
-          "text": "declare module \"../../Cameras/arcRotateCameraInputsManager\" {"
+          "text": "RegisterGeospatialCamera();"
         }
       ]
     },
@@ -273,18 +261,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerArcRotateCameraVRDeviceOrientationInput();"
+          "line": 9,
+          "text": "RegisterArcRotateCameraVRDeviceOrientationInput();"
         }
       ]
     },
     {
-      "file": "Cameras/Inputs/freeCameraDeviceOrientationInput.pure.ts",
+      "file": "Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../../Cameras/freeCameraInputsManager\" {"
+          "line": 4,
+          "text": "declare module \"../../Cameras/arcRotateCameraInputsManager.pure\" {"
         }
       ]
     },
@@ -293,18 +281,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerFreeCameraDeviceOrientationInput();"
+          "line": 9,
+          "text": "RegisterFreeCameraDeviceOrientationInput();"
         }
       ]
     },
     {
-      "file": "Cameras/Inputs/freeCameraVirtualJoystickInput.pure.ts",
+      "file": "Cameras/Inputs/freeCameraDeviceOrientationInput.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 12,
-          "text": "declare module \"../../Cameras/freeCameraInputsManager\" {"
+          "line": 4,
+          "text": "declare module \"../../Cameras/freeCameraInputsManager.pure\" {"
         }
       ]
     },
@@ -313,8 +301,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerFreeCameraVirtualJoystickInput();"
+          "line": 9,
+          "text": "RegisterFreeCameraVirtualJoystickInput();"
+        }
+      ]
+    },
+    {
+      "file": "Cameras/Inputs/freeCameraVirtualJoystickInput.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"../../Cameras/freeCameraInputsManager.pure\" {"
         }
       ]
     },
@@ -324,7 +322,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnaglyphArcRotateCamera();"
+          "text": "RegisterAnaglyphArcRotateCamera();"
         }
       ]
     },
@@ -334,7 +332,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnaglyphFreeCamera();"
+          "text": "RegisterAnaglyphFreeCamera();"
         }
       ]
     },
@@ -344,7 +342,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnaglyphGamepadCamera();"
+          "text": "RegisterAnaglyphGamepadCamera();"
         }
       ]
     },
@@ -354,7 +352,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnaglyphUniversalCamera();"
+          "text": "RegisterAnaglyphUniversalCamera();"
         }
       ]
     },
@@ -364,7 +362,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStereoscopicArcRotateCamera();"
+          "text": "RegisterStereoscopicArcRotateCamera();"
         }
       ]
     },
@@ -374,7 +372,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStereoscopicFreeCamera();"
+          "text": "RegisterStereoscopicFreeCamera();"
         }
       ]
     },
@@ -384,7 +382,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStereoscopicGamepadCamera();"
+          "text": "RegisterStereoscopicGamepadCamera();"
         }
       ]
     },
@@ -394,7 +392,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStereoscopicUniversalCamera();"
+          "text": "RegisterStereoscopicUniversalCamera();"
         }
       ]
     },
@@ -404,7 +402,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTargetCamera();"
+          "text": "RegisterTargetCamera();"
         }
       ]
     },
@@ -414,7 +412,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTouchCamera();"
+          "text": "RegisterTouchCamera();"
         }
       ]
     },
@@ -424,7 +422,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUniversalCamera();"
+          "text": "RegisterUniversalCamera();"
         }
       ]
     },
@@ -434,7 +432,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVirtualJoysticksCamera();"
+          "text": "RegisterVirtualJoysticksCamera();"
         }
       ]
     },
@@ -444,7 +442,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVrDeviceOrientationArcRotateCamera();"
+          "text": "RegisterVrDeviceOrientationArcRotateCamera();"
         }
       ]
     },
@@ -454,7 +452,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVrDeviceOrientationFreeCamera();"
+          "text": "RegisterVrDeviceOrientationFreeCamera();"
         }
       ]
     },
@@ -464,7 +462,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVrDeviceOrientationGamepadCamera();"
+          "text": "RegisterVrDeviceOrientationGamepadCamera();"
         }
       ]
     },
@@ -489,7 +487,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCollisionCoordinator();"
+          "text": "RegisterCollisionCoordinator();"
         }
       ]
     },
@@ -499,7 +497,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerComputeShader();"
+          "text": "RegisterComputeShader();"
         }
       ]
     },
@@ -529,27 +527,27 @@
       ]
     },
     {
-      "file": "Culling/Octrees/octreeSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 16,
-          "text": "declare module \"../../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 42,
-          "text": "declare module \"../../Meshes/abstractMesh\" {"
-        }
-      ]
-    },
-    {
       "file": "Culling/Octrees/octreeSceneComponent.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerOctreeSceneComponent();"
+          "line": 9,
+          "text": "RegisterOctreeSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Culling/Octrees/octreeSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"../../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 29,
+          "text": "declare module \"../../Meshes/abstractMesh.pure\" {"
         }
       ]
     },
@@ -559,17 +557,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRay();"
-        }
-      ]
-    },
-    {
-      "file": "Debug/debugLayer.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 172,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterRay();"
         }
       ]
     },
@@ -578,8 +566,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerDebugLayer();"
+          "line": 9,
+          "text": "RegisterDebugLayer();"
+        }
+      ]
+    },
+    {
+      "file": "Debug/debugLayer.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 2,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -594,22 +592,12 @@
       ]
     },
     {
-      "file": "DeviceInput/internalDeviceSourceManager.pure.ts",
+      "file": "DeviceInput/internalDeviceSourceManager.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 21,
-          "text": "declare module \"../Engines/abstractEngine\" {"
-        }
-      ]
-    },
-    {
-      "file": "Engines/AbstractEngine/abstractEngine.alpha.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 7,
-          "text": "declare module \"../abstractEngine\" {"
+          "line": 2,
+          "text": "declare module \"../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -618,18 +606,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineAlpha();"
+          "line": 9,
+          "text": "RegisterAbstractEngineAlpha();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.cubeTexture.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.alpha.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 20,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../abstractEngine.pure\" {"
         }
       ]
     },
@@ -638,18 +626,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineCubeTexture();"
+          "line": 9,
+          "text": "RegisterAbstractEngineCubeTexture();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.dom.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.cubeTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -658,18 +646,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineDom();"
+          "line": 9,
+          "text": "RegisterAbstractEngineDom();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.loadFile.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.dom.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 8,
-          "text": "declare module \"../abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -678,18 +666,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineLoadFile();"
+          "line": 9,
+          "text": "RegisterAbstractEngineLoadFile();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.loadingScreen.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.loadFile.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 2,
+          "text": "declare module \"../abstractEngine.pure\" {"
         }
       ]
     },
@@ -698,23 +686,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineLoadingScreen();"
+          "line": 9,
+          "text": "RegisterAbstractEngineLoadingScreen();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.query.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.loadingScreen.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 40,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 83,
-          "text": "declare module \"../../Meshes/abstractMesh\" {"
+          "line": 2,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -723,18 +706,23 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineQuery();"
+          "line": 9,
+          "text": "RegisterAbstractEngineQuery();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.renderPass.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.query.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 6,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 45,
+          "text": "declare module \"../../Meshes/abstractMesh.pure\" {"
         }
       ]
     },
@@ -743,18 +731,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineRenderPass();"
+          "line": 9,
+          "text": "RegisterAbstractEngineRenderPass();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.states.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.renderPass.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -763,18 +751,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineStates();"
+          "line": 9,
+          "text": "RegisterAbstractEngineStates();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.stencil.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.states.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 6,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 2,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -783,18 +771,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineStencil();"
+          "line": 9,
+          "text": "RegisterAbstractEngineStencil();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.texture.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.stencil.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 12,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -803,8 +791,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineTexture();"
+          "line": 9,
+          "text": "RegisterAbstractEngineTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/AbstractEngine/abstractEngine.texture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -819,32 +817,22 @@
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.textureSelector.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 8,
-          "text": "declare module \"../abstractEngine\" {"
-        }
-      ]
-    },
-    {
       "file": "Engines/AbstractEngine/abstractEngine.textureSelector.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineTextureSelector();"
+          "line": 9,
+          "text": "RegisterAbstractEngineTextureSelector();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.timeQuery.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.textureSelector.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 2,
+          "text": "declare module \"../abstractEngine.pure\" {"
         }
       ]
     },
@@ -853,18 +841,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineTimeQuery();"
+          "line": 9,
+          "text": "RegisterAbstractEngineTimeQuery();"
         }
       ]
     },
     {
-      "file": "Engines/AbstractEngine/abstractEngine.views.pure.ts",
+      "file": "Engines/AbstractEngine/abstractEngine.timeQuery.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 38,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -873,8 +861,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractEngineViews();"
+          "line": 9,
+          "text": "RegisterAbstractEngineViews();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/AbstractEngine/abstractEngine.views.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 5,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -984,32 +982,22 @@
       ]
     },
     {
-      "file": "Engines/Extensions/engine.alpha.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 5,
-          "text": "declare module \"../abstractEngine\" {"
-        }
-      ]
-    },
-    {
       "file": "Engines/Extensions/engine.alpha.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineAlpha();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineAlpha();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.computeShader.pure.ts",
+      "file": "Engines/Extensions/engine.alpha.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 75,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 5,
+          "text": "declare module \"../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1018,18 +1006,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineComputeShader();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineComputeShader();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.cubeTexture.pure.ts",
+      "file": "Engines/Extensions/engine.computeShader.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 17,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 8,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1038,18 +1026,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineCubeTexture();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineCubeTexture();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.debugging.pure.ts",
+      "file": "Engines/Extensions/engine.cubeTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 13,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 5,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1058,18 +1046,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEngineDebugging();"
+          "line": 9,
+          "text": "RegisterEngineDebugging();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.dynamicBuffer.pure.ts",
+      "file": "Engines/Extensions/engine.debugging.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 10,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1078,18 +1066,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEngineDynamicBuffer();"
+          "line": 9,
+          "text": "RegisterEngineDynamicBuffer();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.dynamicTexture.pure.ts",
+      "file": "Engines/Extensions/engine.dynamicBuffer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 12,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1098,18 +1086,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineDynamicTexture();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineDynamicTexture();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.multiRender.pure.ts",
+      "file": "Engines/Extensions/engine.dynamicTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 20,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1118,28 +1106,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineMultiRender();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineMultiRender();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.multiview.pure.ts",
+      "file": "Engines/Extensions/engine.multiRender.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 26,
-          "text": "declare module \"../../Engines/engine\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 51,
-          "text": "declare module \"../../Cameras/camera\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 81,
-          "text": "declare module \"../../scene\" {"
+          "line": 5,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1148,18 +1126,28 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEngineMultiview();"
+          "line": 9,
+          "text": "RegisterEngineMultiview();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.prefilteredCubeTexture.pure.ts",
+      "file": "Engines/Extensions/engine.multiview.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 18,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 7,
+          "text": "declare module \"../../Engines/engine.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 31,
+          "text": "declare module \"../../Cameras/camera.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 60,
+          "text": "declare module \"../../scene.pure\" {"
         }
       ]
     },
@@ -1168,18 +1156,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginePrefilteredCubeTexture();"
+          "line": 9,
+          "text": "RegisterEnginePrefilteredCubeTexture();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.query.pure.ts",
+      "file": "Engines/Extensions/engine.prefilteredCubeTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 19,
-          "text": "declare module \"../../Engines/thinEngine\" {"
+          "line": 4,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1188,18 +1176,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineQuery();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineQuery();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.rawTexture.pure.ts",
+      "file": "Engines/Extensions/engine.query.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 17,
-          "text": "declare module \"../abstractEngine\" {"
+          "line": 9,
+          "text": "declare module \"../../Engines/thinEngine.pure\" {"
         }
       ]
     },
@@ -1208,18 +1196,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineRawTexture();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineRawTexture();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.readTexture.pure.ts",
+      "file": "Engines/Extensions/engine.rawTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 10,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1228,18 +1216,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineReadTexture();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineReadTexture();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.renderTarget.pure.ts",
+      "file": "Engines/Extensions/engine.readTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 26,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1248,18 +1236,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineRenderTarget();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineRenderTarget();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.renderTargetCube.pure.ts",
+      "file": "Engines/Extensions/engine.renderTarget.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 5,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1268,18 +1256,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineRenderTargetCube();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineRenderTargetCube();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.renderTargetTexture.pure.ts",
+      "file": "Engines/Extensions/engine.renderTargetCube.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1288,8 +1276,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineRenderTargetTexture();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineRenderTargetTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/Extensions/engine.renderTargetTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1304,32 +1302,22 @@
       ]
     },
     {
-      "file": "Engines/Extensions/engine.transformFeedback.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../../Engines/engine\" {"
-        }
-      ]
-    },
-    {
       "file": "Engines/Extensions/engine.transformFeedback.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEngineTransformFeedback();"
+          "line": 9,
+          "text": "RegisterEngineTransformFeedback();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.uniformBuffer.pure.ts",
+      "file": "Engines/Extensions/engine.transformFeedback.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 15,
-          "text": "declare module \"../../Engines/thinEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../Engines/engine.pure\" {"
         }
       ]
     },
@@ -1338,18 +1326,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEngineUniformBuffer();"
+          "line": 9,
+          "text": "RegisterEngineUniformBuffer();"
         }
       ]
     },
     {
-      "file": "Engines/Extensions/engine.videoTexture.pure.ts",
+      "file": "Engines/Extensions/engine.uniformBuffer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 11,
-          "text": "declare module \"../../Engines/abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../../Engines/thinEngine.pure\" {"
         }
       ]
     },
@@ -1358,8 +1346,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesExtensionsEngineVideoTexture();"
+          "line": 9,
+          "text": "RegisterEnginesExtensionsEngineVideoTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/Extensions/engine.videoTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"../../Engines/abstractEngine.pure\" {"
         }
       ]
     },
@@ -1374,22 +1372,22 @@
       ]
     },
     {
-      "file": "Engines/Native/Extensions/nativeEngine.cubeTexture.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 20,
-          "text": "declare module \"../../../Engines/thinNativeEngine\" {"
-        }
-      ]
-    },
-    {
       "file": "Engines/Native/Extensions/nativeEngine.cubeTexture.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerNativeEngineCubeTexture();"
+          "line": 9,
+          "text": "RegisterNativeEngineCubeTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/Native/Extensions/nativeEngine.cubeTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"../../../Engines/thinNativeEngine.pure\" {"
         }
       ]
     },
@@ -1399,7 +1397,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerValidatedNativeDataStream();"
+          "text": "RegisterValidatedNativeDataStream();"
         }
       ]
     },
@@ -1409,7 +1407,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNativeEngine();"
+          "text": "RegisterNativeEngine();"
         }
       ]
     },
@@ -1425,16 +1423,11 @@
           "type": "bare-import",
           "line": 4,
           "text": "import \"./AbstractEngine/abstractEngine.textureLoaders\";"
-        }
-      ]
-    },
-    {
-      "file": "Engines/thinNativeEngine.pure.ts",
-      "sideEffects": [
+        },
         {
-          "type": "declare-module",
-          "line": 73,
-          "text": "declare module \"../Materials/effect\" {"
+          "type": "bare-import",
+          "line": 5,
+          "text": "import \"./AbstractEngine/abstractEngine.renderPass\";"
         }
       ]
     },
@@ -1443,18 +1436,18 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 4,
           "text": "import \"../Buffers/buffer.align\";"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.alpha.pure.ts",
+      "file": "Engines/thinNativeEngine.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 8,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../Materials/effect.pure\" {"
         }
       ]
     },
@@ -1463,18 +1456,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineAlpha();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineAlpha();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.computeShader.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.alpha.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 25,
-          "text": "declare module \"../../webgpuEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1483,18 +1476,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineComputeShader();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineComputeShader();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.cubeTexture.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.computeShader.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 18,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 7,
+          "text": "declare module \"../../webgpuEngine.pure\" {"
         }
       ]
     },
@@ -1503,8 +1496,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineCubeTexture();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineCubeTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/WebGPU/Extensions/engine.cubeTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 5,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1529,32 +1532,22 @@
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.dynamicTexture.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../../abstractEngine\" {"
-        }
-      ]
-    },
-    {
       "file": "Engines/WebGPU/Extensions/engine.dynamicTexture.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineDynamicTexture();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineDynamicTexture();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.multiRender.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.dynamicTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 20,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1563,8 +1556,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineMultiRender();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineMultiRender();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/WebGPU/Extensions/engine.multiRender.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 5,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1574,17 +1577,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineQuery();"
-        }
-      ]
-    },
-    {
-      "file": "Engines/WebGPU/Extensions/engine.rawTexture.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 18,
-          "text": "declare module \"../../abstractEngine\" {"
+          "text": "RegisterEnginesWebGPUExtensionsEngineQuery();"
         }
       ]
     },
@@ -1593,18 +1586,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineRawTexture();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineRawTexture();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.readTexture.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.rawTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 11,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 4,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1613,18 +1606,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineReadTexture();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineReadTexture();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.renderTarget.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.readTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 19,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1633,18 +1626,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineRenderTarget();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineRenderTarget();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.renderTargetCube.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.renderTarget.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 11,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 5,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1653,18 +1646,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineRenderTargetCube();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineRenderTargetCube();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.renderTargetTexture.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.renderTargetCube.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1673,18 +1666,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineRenderTargetTexture();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineRenderTargetTexture();"
         }
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.videoTexture.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.renderTargetTexture.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 13,
-          "text": "declare module \"../../abstractEngine\" {"
+          "line": 3,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1693,8 +1686,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEnginesWebGPUExtensionsEngineVideoTexture();"
+          "line": 9,
+          "text": "RegisterEnginesWebGPUExtensionsEngineVideoTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Engines/WebGPU/Extensions/engine.videoTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"../../abstractEngine.pure\" {"
         }
       ]
     },
@@ -1929,7 +1932,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetSoundVolumeBlock();"
+          "text": "RegisterFlowGraphGetSoundVolumeBlock();"
         }
       ]
     },
@@ -1939,7 +1942,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphIsSoundPlayingBlock();"
+          "text": "RegisterFlowGraphIsSoundPlayingBlock();"
         }
       ]
     },
@@ -1949,7 +1952,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphConditionalDataBlock();"
+          "text": "RegisterFlowGraphConditionalDataBlock();"
         }
       ]
     },
@@ -1959,7 +1962,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphConstantBlock();"
+          "text": "RegisterFlowGraphConstantBlock();"
         }
       ]
     },
@@ -1969,7 +1972,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphDataSwitchBlock();"
+          "text": "RegisterFlowGraphDataSwitchBlock();"
         }
       ]
     },
@@ -1979,7 +1982,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphDebugBlock();"
+          "text": "RegisterFlowGraphDebugBlock();"
         }
       ]
     },
@@ -1989,7 +1992,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetAssetBlock();"
+          "text": "RegisterFlowGraphGetAssetBlock();"
         }
       ]
     },
@@ -1999,7 +2002,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetPropertyBlock();"
+          "text": "RegisterFlowGraphGetPropertyBlock();"
         }
       ]
     },
@@ -2009,7 +2012,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetVariableBlock();"
+          "text": "RegisterFlowGraphGetVariableBlock();"
         }
       ]
     },
@@ -2019,7 +2022,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphTransformCoordinatesSystemBlock();"
+          "text": "RegisterFlowGraphTransformCoordinatesSystemBlock();"
         }
       ]
     },
@@ -2029,7 +2032,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphMathBlocks();"
+          "text": "RegisterFlowGraphMathBlocks();"
         }
       ]
     },
@@ -2039,7 +2042,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphMathCombineExtractBlocks();"
+          "text": "RegisterFlowGraphMathCombineExtractBlocks();"
         }
       ]
     },
@@ -2049,7 +2052,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphMatrixMathBlocks();"
+          "text": "RegisterFlowGraphMatrixMathBlocks();"
         }
       ]
     },
@@ -2059,7 +2062,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphVectorMathBlocks();"
+          "text": "RegisterFlowGraphVectorMathBlocks();"
         }
       ]
     },
@@ -2069,7 +2072,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetAngularVelocityBlock();"
+          "text": "RegisterFlowGraphGetAngularVelocityBlock();"
         }
       ]
     },
@@ -2079,7 +2082,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetLinearVelocityBlock();"
+          "text": "RegisterFlowGraphGetLinearVelocityBlock();"
         }
       ]
     },
@@ -2089,7 +2092,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphGetPhysicsMassPropertiesBlock();"
+          "text": "RegisterFlowGraphGetPhysicsMassPropertiesBlock();"
         }
       ]
     },
@@ -2099,7 +2102,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphJsonPointerParserBlock();"
+          "text": "RegisterFlowGraphJsonPointerParserBlock();"
         }
       ]
     },
@@ -2109,7 +2112,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphTypeToTypeBlocks();"
+          "text": "RegisterFlowGraphTypeToTypeBlocks();"
         }
       ]
     },
@@ -2119,7 +2122,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphArrayIndexBlock();"
+          "text": "RegisterFlowGraphArrayIndexBlock();"
         }
       ]
     },
@@ -2129,7 +2132,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphContextBlock();"
+          "text": "RegisterFlowGraphContextBlock();"
         }
       ]
     },
@@ -2139,7 +2142,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphFunctionReferenceBlock();"
+          "text": "RegisterFlowGraphFunctionReferenceBlock();"
         }
       ]
     },
@@ -2149,7 +2152,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphIndexOfBlock();"
+          "text": "RegisterFlowGraphIndexOfBlock();"
         }
       ]
     },
@@ -2159,7 +2162,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphMeshPickEventBlock();"
+          "text": "RegisterFlowGraphMeshPickEventBlock();"
         }
       ]
     },
@@ -2169,7 +2172,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPhysicsCollisionEventBlock();"
+          "text": "RegisterFlowGraphPhysicsCollisionEventBlock();"
         }
       ]
     },
@@ -2179,7 +2182,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPointerDownEventBlock();"
+          "text": "RegisterFlowGraphPointerDownEventBlock();"
         }
       ]
     },
@@ -2189,7 +2192,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPointerMoveEventBlock();"
+          "text": "RegisterFlowGraphPointerMoveEventBlock();"
         }
       ]
     },
@@ -2199,7 +2202,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPointerOutEventBlock();"
+          "text": "RegisterFlowGraphPointerOutEventBlock();"
         }
       ]
     },
@@ -2209,7 +2212,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPointerOverEventBlock();"
+          "text": "RegisterFlowGraphPointerOverEventBlock();"
         }
       ]
     },
@@ -2219,7 +2222,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPointerUpEventBlock();"
+          "text": "RegisterFlowGraphPointerUpEventBlock();"
         }
       ]
     },
@@ -2229,7 +2232,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphReceiveCustomEventBlock();"
+          "text": "RegisterFlowGraphReceiveCustomEventBlock();"
         }
       ]
     },
@@ -2239,7 +2242,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSceneReadyEventBlock();"
+          "text": "RegisterFlowGraphSceneReadyEventBlock();"
         }
       ]
     },
@@ -2249,7 +2252,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSceneTickEventBlock();"
+          "text": "RegisterFlowGraphSceneTickEventBlock();"
         }
       ]
     },
@@ -2259,7 +2262,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSendCustomEventBlock();"
+          "text": "RegisterFlowGraphSendCustomEventBlock();"
         }
       ]
     },
@@ -2269,7 +2272,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSoundEndedEventBlock();"
+          "text": "RegisterFlowGraphSoundEndedEventBlock();"
         }
       ]
     },
@@ -2279,7 +2282,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphBezierCurveEasingBlock();"
+          "text": "RegisterFlowGraphBezierCurveEasingBlock();"
         }
       ]
     },
@@ -2289,7 +2292,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphEasingBlock();"
+          "text": "RegisterFlowGraphEasingBlock();"
         }
       ]
     },
@@ -2299,7 +2302,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphInterpolationBlock();"
+          "text": "RegisterFlowGraphInterpolationBlock();"
         }
       ]
     },
@@ -2309,7 +2312,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPauseAnimationBlock();"
+          "text": "RegisterFlowGraphPauseAnimationBlock();"
         }
       ]
     },
@@ -2319,7 +2322,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPlayAnimationBlock();"
+          "text": "RegisterFlowGraphPlayAnimationBlock();"
         }
       ]
     },
@@ -2329,7 +2332,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphStopAnimationBlock();"
+          "text": "RegisterFlowGraphStopAnimationBlock();"
         }
       ]
     },
@@ -2339,7 +2342,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPauseSoundBlock();"
+          "text": "RegisterFlowGraphPauseSoundBlock();"
         }
       ]
     },
@@ -2349,7 +2352,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphPlaySoundBlock();"
+          "text": "RegisterFlowGraphPlaySoundBlock();"
         }
       ]
     },
@@ -2359,7 +2362,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetSoundVolumeBlock();"
+          "text": "RegisterFlowGraphSetSoundVolumeBlock();"
         }
       ]
     },
@@ -2369,7 +2372,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphStopSoundBlock();"
+          "text": "RegisterFlowGraphStopSoundBlock();"
         }
       ]
     },
@@ -2379,7 +2382,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphBranchBlock();"
+          "text": "RegisterFlowGraphBranchBlock();"
         }
       ]
     },
@@ -2389,7 +2392,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphCancelDelayBlock();"
+          "text": "RegisterFlowGraphCancelDelayBlock();"
         }
       ]
     },
@@ -2399,7 +2402,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphCounterBlock();"
+          "text": "RegisterFlowGraphCounterBlock();"
         }
       ]
     },
@@ -2409,7 +2412,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphDebounceBlock();"
+          "text": "RegisterFlowGraphDebounceBlock();"
         }
       ]
     },
@@ -2419,7 +2422,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphDoNBlock();"
+          "text": "RegisterFlowGraphDoNBlock();"
         }
       ]
     },
@@ -2429,7 +2432,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphFlipFlopBlock();"
+          "text": "RegisterFlowGraphFlipFlopBlock();"
         }
       ]
     },
@@ -2439,7 +2442,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphForLoopBlock();"
+          "text": "RegisterFlowGraphForLoopBlock();"
         }
       ]
     },
@@ -2449,7 +2452,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphMultiGateBlock();"
+          "text": "RegisterFlowGraphMultiGateBlock();"
         }
       ]
     },
@@ -2459,7 +2462,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSequenceBlock();"
+          "text": "RegisterFlowGraphSequenceBlock();"
         }
       ]
     },
@@ -2469,7 +2472,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetDelayBlock();"
+          "text": "RegisterFlowGraphSetDelayBlock();"
         }
       ]
     },
@@ -2479,7 +2482,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSwitchBlock();"
+          "text": "RegisterFlowGraphSwitchBlock();"
         }
       ]
     },
@@ -2489,7 +2492,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphThrottleBlock();"
+          "text": "RegisterFlowGraphThrottleBlock();"
         }
       ]
     },
@@ -2499,7 +2502,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphWaitAllBlock();"
+          "text": "RegisterFlowGraphWaitAllBlock();"
         }
       ]
     },
@@ -2509,7 +2512,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphWhileLoopBlock();"
+          "text": "RegisterFlowGraphWhileLoopBlock();"
         }
       ]
     },
@@ -2519,7 +2522,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphConsoleLogBlock();"
+          "text": "RegisterFlowGraphConsoleLogBlock();"
         }
       ]
     },
@@ -2529,7 +2532,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetPropertyBlock();"
+          "text": "RegisterFlowGraphSetPropertyBlock();"
         }
       ]
     },
@@ -2539,7 +2542,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetVariableBlock();"
+          "text": "RegisterFlowGraphSetVariableBlock();"
         }
       ]
     },
@@ -2549,7 +2552,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphApplyForceBlock();"
+          "text": "RegisterFlowGraphApplyForceBlock();"
         }
       ]
     },
@@ -2559,7 +2562,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphApplyImpulseBlock();"
+          "text": "RegisterFlowGraphApplyImpulseBlock();"
         }
       ]
     },
@@ -2569,7 +2572,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetAngularVelocityBlock();"
+          "text": "RegisterFlowGraphSetAngularVelocityBlock();"
         }
       ]
     },
@@ -2579,7 +2582,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetLinearVelocityBlock();"
+          "text": "RegisterFlowGraphSetLinearVelocityBlock();"
         }
       ]
     },
@@ -2589,7 +2592,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSetPhysicsMotionTypeBlock();"
+          "text": "RegisterFlowGraphSetPhysicsMotionTypeBlock();"
         }
       ]
     },
@@ -2599,7 +2602,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphInteger();"
+          "text": "RegisterFlowGraphInteger();"
         }
       ]
     },
@@ -2609,7 +2612,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphDataConnection();"
+          "text": "RegisterFlowGraphDataConnection();"
         }
       ]
     },
@@ -2619,7 +2622,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphRichTypes();"
+          "text": "RegisterFlowGraphRichTypes();"
         }
       ]
     },
@@ -2629,7 +2632,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFlowGraphSignalConnection();"
+          "text": "RegisterFlowGraphSignalConnection();"
         }
       ]
     },
@@ -2639,7 +2642,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerComputeShaderBlock();"
+          "text": "RegisterComputeShaderBlock();"
         }
       ]
     },
@@ -2649,7 +2652,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCullObjectsBlock();"
+          "text": "RegisterCullObjectsBlock();"
         }
       ]
     },
@@ -2659,7 +2662,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFrameGraphNodeBlocksElbowBlock();"
+          "text": "RegisterFrameGraphNodeBlocksElbowBlock();"
         }
       ]
     },
@@ -2669,7 +2672,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerExecuteBlock();"
+          "text": "RegisterExecuteBlock();"
         }
       ]
     },
@@ -2679,7 +2682,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFrameGraphNodeBlocksInputBlock();"
+          "text": "RegisterFrameGraphNodeBlocksInputBlock();"
         }
       ]
     },
@@ -2689,7 +2692,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGlowLayerBlock();"
+          "text": "RegisterGlowLayerBlock();"
         }
       ]
     },
@@ -2699,7 +2702,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerHighlightLayerBlock();"
+          "text": "RegisterHighlightLayerBlock();"
         }
       ]
     },
@@ -2709,7 +2712,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSelectionOutlineLayerBlock();"
+          "text": "RegisterSelectionOutlineLayerBlock();"
         }
       ]
     },
@@ -2719,7 +2722,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLightingVolumeBlock();"
+          "text": "RegisterLightingVolumeBlock();"
         }
       ]
     },
@@ -2729,7 +2732,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerOutputBlock();"
+          "text": "RegisterOutputBlock();"
         }
       ]
     },
@@ -2739,7 +2742,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnaglyphPostProcessBlock();"
+          "text": "RegisterAnaglyphPostProcessBlock();"
         }
       ]
     },
@@ -2749,7 +2752,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBlackAndWhitePostProcessBlock();"
+          "text": "RegisterBlackAndWhitePostProcessBlock();"
         }
       ]
     },
@@ -2759,7 +2762,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBloomPostProcessBlock();"
+          "text": "RegisterBloomPostProcessBlock();"
         }
       ]
     },
@@ -2769,7 +2772,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBlurPostProcessBlock();"
+          "text": "RegisterBlurPostProcessBlock();"
         }
       ]
     },
@@ -2779,7 +2782,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerChromaticAberrationPostProcessBlock();"
+          "text": "RegisterChromaticAberrationPostProcessBlock();"
         }
       ]
     },
@@ -2789,7 +2792,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCircleOfConfusionPostProcessBlock();"
+          "text": "RegisterCircleOfConfusionPostProcessBlock();"
         }
       ]
     },
@@ -2799,7 +2802,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorCorrectionPostProcessBlock();"
+          "text": "RegisterColorCorrectionPostProcessBlock();"
         }
       ]
     },
@@ -2809,7 +2812,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerConvolutionPostProcessBlock();"
+          "text": "RegisterConvolutionPostProcessBlock();"
         }
       ]
     },
@@ -2819,7 +2822,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDepthOfFieldPostProcessBlock();"
+          "text": "RegisterDepthOfFieldPostProcessBlock();"
         }
       ]
     },
@@ -2829,7 +2832,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerExtractHighlightsPostProcessBlock();"
+          "text": "RegisterExtractHighlightsPostProcessBlock();"
         }
       ]
     },
@@ -2839,7 +2842,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFilterPostProcessBlock();"
+          "text": "RegisterFilterPostProcessBlock();"
         }
       ]
     },
@@ -2849,7 +2852,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFxaaPostProcessBlock();"
+          "text": "RegisterFxaaPostProcessBlock();"
         }
       ]
     },
@@ -2859,7 +2862,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGrainPostProcessBlock();"
+          "text": "RegisterGrainPostProcessBlock();"
         }
       ]
     },
@@ -2869,7 +2872,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerImageProcessingPostProcessBlock();"
+          "text": "RegisterImageProcessingPostProcessBlock();"
         }
       ]
     },
@@ -2879,7 +2882,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMotionBlurPostProcessBlock();"
+          "text": "RegisterMotionBlurPostProcessBlock();"
         }
       ]
     },
@@ -2889,7 +2892,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPassPostProcessBlock();"
+          "text": "RegisterPassPostProcessBlock();"
         }
       ]
     },
@@ -2899,7 +2902,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScreenSpaceCurvaturePostProcessBlock();"
+          "text": "RegisterScreenSpaceCurvaturePostProcessBlock();"
         }
       ]
     },
@@ -2909,7 +2912,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSharpenPostProcessBlock();"
+          "text": "RegisterSharpenPostProcessBlock();"
         }
       ]
     },
@@ -2919,7 +2922,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSsao2PostProcessBlock();"
+          "text": "RegisterSsao2PostProcessBlock();"
         }
       ]
     },
@@ -2929,7 +2932,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSsrPostProcessBlock();"
+          "text": "RegisterSsrPostProcessBlock();"
         }
       ]
     },
@@ -2939,7 +2942,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTaaPostProcessBlock();"
+          "text": "RegisterTaaPostProcessBlock();"
         }
       ]
     },
@@ -2949,7 +2952,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTonemapPostProcessBlock();"
+          "text": "RegisterTonemapPostProcessBlock();"
         }
       ]
     },
@@ -2959,7 +2962,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVolumetricLightingBlock();"
+          "text": "RegisterVolumetricLightingBlock();"
         }
       ]
     },
@@ -2969,7 +2972,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCsmShadowGeneratorBlock();"
+          "text": "RegisterCsmShadowGeneratorBlock();"
         }
       ]
     },
@@ -2979,7 +2982,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryRendererBlock();"
+          "text": "RegisterGeometryRendererBlock();"
         }
       ]
     },
@@ -2989,7 +2992,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerIblShadowsRendererBlock();"
+          "text": "RegisterIblShadowsRendererBlock();"
         }
       ]
     },
@@ -2999,7 +3002,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerObjectRendererBlock();"
+          "text": "RegisterObjectRendererBlock();"
         }
       ]
     },
@@ -3009,7 +3012,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerShadowGeneratorBlock();"
+          "text": "RegisterShadowGeneratorBlock();"
         }
       ]
     },
@@ -3019,7 +3022,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUtilityLayerRendererBlock();"
+          "text": "RegisterUtilityLayerRendererBlock();"
         }
       ]
     },
@@ -3029,7 +3032,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerResourceContainerBlock();"
+          "text": "RegisterResourceContainerBlock();"
         }
       ]
     },
@@ -3039,7 +3042,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFrameGraphNodeBlocksTeleportTeleportInBlock();"
+          "text": "RegisterFrameGraphNodeBlocksTeleportTeleportInBlock();"
         }
       ]
     },
@@ -3049,7 +3052,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFrameGraphNodeBlocksTeleportTeleportOutBlock();"
+          "text": "RegisterFrameGraphNodeBlocksTeleportTeleportOutBlock();"
         }
       ]
     },
@@ -3059,7 +3062,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerClearBlock();"
+          "text": "RegisterClearBlock();"
         }
       ]
     },
@@ -3069,7 +3072,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCopyTextureBlock();"
+          "text": "RegisterCopyTextureBlock();"
         }
       ]
     },
@@ -3079,7 +3082,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGenerateMipmapsBlock();"
+          "text": "RegisterGenerateMipmapsBlock();"
         }
       ]
     },
@@ -3094,32 +3097,32 @@
       ]
     },
     {
-      "file": "Gamepads/gamepadSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 15,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 29,
-          "text": "declare module \"../Cameras/freeCameraInputsManager\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 43,
-          "text": "declare module \"../Cameras/arcRotateCameraInputsManager\" {"
-        }
-      ]
-    },
-    {
       "file": "Gamepads/gamepadSceneComponent.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerGamepadSceneComponent();"
+          "line": 9,
+          "text": "RegisterGamepadSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Gamepads/gamepadSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 16,
+          "text": "declare module \"../Cameras/freeCameraInputsManager.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 29,
+          "text": "declare module \"../Cameras/arcRotateCameraInputsManager.pure\" {"
         }
       ]
     },
@@ -3134,22 +3137,22 @@
       ]
     },
     {
-      "file": "Helpers/sceneHelpers.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 33,
-          "text": "declare module \"../scene\" {"
-        }
-      ]
-    },
-    {
       "file": "Helpers/sceneHelpers.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerSceneHelpers();"
+          "line": 9,
+          "text": "RegisterSceneHelpers();"
+        }
+      ]
+    },
+    {
+      "file": "Helpers/sceneHelpers.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 7,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -3169,17 +3172,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerEffectLayerSceneComponent();"
-        }
-      ]
-    },
-    {
-      "file": "Layers/glowLayer.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 28,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterEffectLayerSceneComponent();"
         }
       ]
     },
@@ -3188,18 +3181,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerGlowLayer();"
+          "line": 9,
+          "text": "RegisterGlowLayer();"
         }
       ]
     },
     {
-      "file": "Layers/highlightLayer.pure.ts",
+      "file": "Layers/glowLayer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 38,
-          "text": "declare module \"../scene\" {"
+          "line": 5,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -3208,18 +3201,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerHighlightLayer();"
+          "line": 9,
+          "text": "RegisterHighlightLayer();"
         }
       ]
     },
     {
-      "file": "Layers/selectionOutlineLayer.pure.ts",
+      "file": "Layers/highlightLayer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 20,
-          "text": "declare module \"../scene\" {"
+          "line": 5,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -3228,18 +3221,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerSelectionOutlineLayer();"
+          "line": 9,
+          "text": "RegisterSelectionOutlineLayer();"
         }
       ]
     },
     {
-      "file": "LensFlares/lensFlareSystemSceneComponent.pure.ts",
+      "file": "Layers/selectionOutlineLayer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 17,
-          "text": "declare module \"../scene\" {"
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -3248,18 +3241,28 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerLensFlareSystemSceneComponent();"
+          "line": 9,
+          "text": "RegisterLensFlareSystemSceneComponent();"
         }
       ]
     },
     {
-      "file": "Lights/areaLight.pure.ts",
+      "file": "LensFlares/lensFlareSystemSceneComponent.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 13,
-          "text": "declare module \"../scene\" {"
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
+        }
+      ]
+    },
+    {
+      "file": "Lights/areaLight.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 2,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -3269,7 +3272,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerClusteredLightContainer();"
+          "text": "RegisterClusteredLightContainer();"
         }
       ]
     },
@@ -3279,7 +3282,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerClusteredLightingSceneComponent();"
+          "text": "RegisterClusteredLightingSceneComponent();"
         }
       ]
     },
@@ -3314,7 +3317,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDirectionalLight();"
+          "text": "RegisterDirectionalLight();"
         }
       ]
     },
@@ -3324,7 +3327,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerHemisphericLight();"
+          "text": "RegisterHemisphericLight();"
         }
       ]
     },
@@ -3344,7 +3347,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPointLight();"
+          "text": "RegisterPointLight();"
         }
       ]
     },
@@ -3354,7 +3357,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRectAreaLight();"
+          "text": "RegisterRectAreaLight();"
         }
       ]
     },
@@ -3364,7 +3367,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerShadowGeneratorSceneComponent();"
+          "text": "RegisterShadowGeneratorSceneComponent();"
         }
       ]
     },
@@ -3374,7 +3377,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSpotLight();"
+          "text": "RegisterSpotLight();"
         }
       ]
     },
@@ -3384,7 +3387,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLoadingScreen();"
+          "text": "RegisterLoadingScreen();"
         }
       ]
     },
@@ -3394,7 +3397,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBabylonFileLoader();"
+          "text": "RegisterBabylonFileLoader();"
         }
       ]
     },
@@ -3404,7 +3407,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBackgroundMaterial();"
+          "text": "RegisterBackgroundMaterial();"
         }
       ]
     },
@@ -3414,7 +3417,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorCurves();"
+          "text": "RegisterColorCurves();"
         }
       ]
     },
@@ -3454,7 +3457,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFresnelParameters();"
+          "text": "RegisterFresnelParameters();"
         }
       ]
     },
@@ -3464,7 +3467,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingGpuPickingMaterialPlugin();"
+          "text": "RegisterGaussianSplattingGpuPickingMaterialPlugin();"
         }
       ]
     },
@@ -3474,7 +3477,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingMaterial();"
+          "text": "RegisterGaussianSplattingMaterial();"
         }
       ]
     },
@@ -3484,7 +3487,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingSolidColorMaterialPlugin();"
+          "text": "RegisterGaussianSplattingSolidColorMaterialPlugin();"
         }
       ]
     },
@@ -3494,7 +3497,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGreasedLinePluginMaterial();"
+          "text": "RegisterGreasedLinePluginMaterial();"
         }
       ]
     },
@@ -3504,7 +3507,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerImageProcessingConfiguration();"
+          "text": "RegisterImageProcessingConfiguration();"
         }
       ]
     },
@@ -3544,7 +3547,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialDecalMapConfiguration();"
+          "text": "RegisterMaterialDecalMapConfiguration();"
         }
       ]
     },
@@ -3554,17 +3557,17 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialPluginBase();"
+          "text": "RegisterMaterialPluginBase();"
         }
       ]
     },
     {
-      "file": "Materials/materialPluginManager.pure.ts",
+      "file": "Materials/materialPluginManager.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 32,
-          "text": "declare module \"./material\" {"
+          "line": 2,
+          "text": "declare module \"./material.pure\" {"
         }
       ]
     },
@@ -3574,7 +3577,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshDebugPluginMaterial();"
+          "text": "RegisterMeshDebugPluginMaterial();"
         }
       ]
     },
@@ -3584,7 +3587,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMultiMaterial();"
+          "text": "RegisterMultiMaterial();"
         }
       ]
     },
@@ -3594,7 +3597,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAddBlock();"
+          "text": "RegisterAddBlock();"
         }
       ]
     },
@@ -3604,7 +3607,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerArcTan2Block();"
+          "text": "RegisterArcTan2Block();"
         }
       ]
     },
@@ -3614,7 +3617,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBiPlanarBlock();"
+          "text": "RegisterBiPlanarBlock();"
         }
       ]
     },
@@ -3624,7 +3627,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerClampBlock();"
+          "text": "RegisterClampBlock();"
         }
       ]
     },
@@ -3634,7 +3637,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCloudBlock();"
+          "text": "RegisterCloudBlock();"
         }
       ]
     },
@@ -3644,7 +3647,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorConverterBlock();"
+          "text": "RegisterColorConverterBlock();"
         }
       ]
     },
@@ -3654,7 +3657,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorMergerBlock();"
+          "text": "RegisterColorMergerBlock();"
         }
       ]
     },
@@ -3664,7 +3667,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorSplitterBlock();"
+          "text": "RegisterColorSplitterBlock();"
         }
       ]
     },
@@ -3674,7 +3677,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerConditionalBlock();"
+          "text": "RegisterConditionalBlock();"
         }
       ]
     },
@@ -3684,7 +3687,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCrossBlock();"
+          "text": "RegisterCrossBlock();"
         }
       ]
     },
@@ -3694,7 +3697,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCurveBlock();"
+          "text": "RegisterCurveBlock();"
         }
       ]
     },
@@ -3704,7 +3707,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCustomBlock();"
+          "text": "RegisterCustomBlock();"
         }
       ]
     },
@@ -3714,7 +3717,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialsNodeBlocksDebugBlock();"
+          "text": "RegisterMaterialsNodeBlocksDebugBlock();"
         }
       ]
     },
@@ -3724,7 +3727,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDesaturateBlock();"
+          "text": "RegisterDesaturateBlock();"
         }
       ]
     },
@@ -3734,7 +3737,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDistanceBlock();"
+          "text": "RegisterDistanceBlock();"
         }
       ]
     },
@@ -3744,7 +3747,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDivideBlock();"
+          "text": "RegisterDivideBlock();"
         }
       ]
     },
@@ -3754,7 +3757,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDotBlock();"
+          "text": "RegisterDotBlock();"
         }
       ]
     },
@@ -3764,7 +3767,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerClipPlanesBlock();"
+          "text": "RegisterClipPlanesBlock();"
         }
       ]
     },
@@ -3774,7 +3777,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCurrentScreenBlock();"
+          "text": "RegisterCurrentScreenBlock();"
         }
       ]
     },
@@ -3784,7 +3787,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDepthSourceBlock();"
+          "text": "RegisterDepthSourceBlock();"
         }
       ]
     },
@@ -3794,7 +3797,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFogBlock();"
+          "text": "RegisterFogBlock();"
         }
       ]
     },
@@ -3804,7 +3807,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerImageSourceBlock();"
+          "text": "RegisterImageSourceBlock();"
         }
       ]
     },
@@ -3814,7 +3817,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLightBlock();"
+          "text": "RegisterLightBlock();"
         }
       ]
     },
@@ -3824,7 +3827,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReflectionTextureBaseBlock();"
+          "text": "RegisterReflectionTextureBaseBlock();"
         }
       ]
     },
@@ -3834,7 +3837,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReflectionTextureBlock();"
+          "text": "RegisterReflectionTextureBlock();"
         }
       ]
     },
@@ -3844,7 +3847,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSceneDepthBlock();"
+          "text": "RegisterSceneDepthBlock();"
         }
       ]
     },
@@ -3854,7 +3857,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSmartFilterTextureBlock();"
+          "text": "RegisterSmartFilterTextureBlock();"
         }
       ]
     },
@@ -3864,7 +3867,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTextureBlock();"
+          "text": "RegisterTextureBlock();"
         }
       ]
     },
@@ -3874,7 +3877,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialsNodeBlocksElbowBlock();"
+          "text": "RegisterMaterialsNodeBlocksElbowBlock();"
         }
       ]
     },
@@ -3884,7 +3887,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAmbientOcclusionBlock();"
+          "text": "RegisterAmbientOcclusionBlock();"
         }
       ]
     },
@@ -3894,7 +3897,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDerivativeBlock();"
+          "text": "RegisterDerivativeBlock();"
         }
       ]
     },
@@ -3904,7 +3907,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDiscardBlock();"
+          "text": "RegisterDiscardBlock();"
         }
       ]
     },
@@ -3914,7 +3917,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFragCoordBlock();"
+          "text": "RegisterFragCoordBlock();"
         }
       ]
     },
@@ -3924,7 +3927,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFragDepthBlock();"
+          "text": "RegisterFragDepthBlock();"
         }
       ]
     },
@@ -3934,7 +3937,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFragmentOutputBlock();"
+          "text": "RegisterFragmentOutputBlock();"
         }
       ]
     },
@@ -3944,7 +3947,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFrontFacingBlock();"
+          "text": "RegisterFrontFacingBlock();"
         }
       ]
     },
@@ -3954,7 +3957,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerHeightToNormalBlock();"
+          "text": "RegisterHeightToNormalBlock();"
         }
       ]
     },
@@ -3964,7 +3967,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerImageProcessingBlock();"
+          "text": "RegisterImageProcessingBlock();"
         }
       ]
     },
@@ -3974,7 +3977,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPerturbNormalBlock();"
+          "text": "RegisterPerturbNormalBlock();"
         }
       ]
     },
@@ -3984,7 +3987,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPrePassOutputBlock();"
+          "text": "RegisterPrePassOutputBlock();"
         }
       ]
     },
@@ -3994,7 +3997,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScreenSizeBlock();"
+          "text": "RegisterScreenSizeBlock();"
         }
       ]
     },
@@ -4004,7 +4007,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScreenSpaceBlock();"
+          "text": "RegisterScreenSpaceBlock();"
         }
       ]
     },
@@ -4014,7 +4017,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerShadowMapBlock();"
+          "text": "RegisterShadowMapBlock();"
         }
       ]
     },
@@ -4024,7 +4027,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSmartFilterFragmentOutputBlock();"
+          "text": "RegisterSmartFilterFragmentOutputBlock();"
         }
       ]
     },
@@ -4034,7 +4037,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTBNBlock();"
+          "text": "RegisterTBNBlock();"
         }
       ]
     },
@@ -4044,7 +4047,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTwirlBlock();"
+          "text": "RegisterTwirlBlock();"
         }
       ]
     },
@@ -4054,7 +4057,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFresnelBlock();"
+          "text": "RegisterFresnelBlock();"
         }
       ]
     },
@@ -4064,7 +4067,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianBlock();"
+          "text": "RegisterGaussianBlock();"
         }
       ]
     },
@@ -4074,7 +4077,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingBlock();"
+          "text": "RegisterGaussianSplattingBlock();"
         }
       ]
     },
@@ -4084,7 +4087,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSplatReaderBlock();"
+          "text": "RegisterSplatReaderBlock();"
         }
       ]
     },
@@ -4094,7 +4097,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGradientBlock();"
+          "text": "RegisterGradientBlock();"
         }
       ]
     },
@@ -4104,7 +4107,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialsNodeBlocksInputInputBlock();"
+          "text": "RegisterMaterialsNodeBlocksInputInputBlock();"
         }
       ]
     },
@@ -4114,7 +4117,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPrePassTextureBlock();"
+          "text": "RegisterPrePassTextureBlock();"
         }
       ]
     },
@@ -4124,7 +4127,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLengthBlock();"
+          "text": "RegisterLengthBlock();"
         }
       ]
     },
@@ -4134,7 +4137,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLerpBlock();"
+          "text": "RegisterLerpBlock();"
         }
       ]
     },
@@ -4144,7 +4147,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLoopBlock();"
+          "text": "RegisterLoopBlock();"
         }
       ]
     },
@@ -4154,7 +4157,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMatrixBuilderBlock();"
+          "text": "RegisterMatrixBuilderBlock();"
         }
       ]
     },
@@ -4164,7 +4167,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMatrixDeterminantBlock();"
+          "text": "RegisterMatrixDeterminantBlock();"
         }
       ]
     },
@@ -4174,7 +4177,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMatrixSplitterBlock();"
+          "text": "RegisterMatrixSplitterBlock();"
         }
       ]
     },
@@ -4184,7 +4187,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMatrixTransposeBlock();"
+          "text": "RegisterMatrixTransposeBlock();"
         }
       ]
     },
@@ -4194,7 +4197,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaxBlock();"
+          "text": "RegisterMaxBlock();"
         }
       ]
     },
@@ -4204,7 +4207,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshAttributeExistsBlock();"
+          "text": "RegisterMeshAttributeExistsBlock();"
         }
       ]
     },
@@ -4214,7 +4217,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMinBlock();"
+          "text": "RegisterMinBlock();"
         }
       ]
     },
@@ -4224,7 +4227,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerModBlock();"
+          "text": "RegisterModBlock();"
         }
       ]
     },
@@ -4234,7 +4237,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMultiplyBlock();"
+          "text": "RegisterMultiplyBlock();"
         }
       ]
     },
@@ -4244,7 +4247,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNegateBlock();"
+          "text": "RegisterNegateBlock();"
         }
       ]
     },
@@ -4254,7 +4257,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNLerpBlock();"
+          "text": "RegisterNLerpBlock();"
         }
       ]
     },
@@ -4264,7 +4267,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNormalBlendBlock();"
+          "text": "RegisterNormalBlendBlock();"
         }
       ]
     },
@@ -4274,7 +4277,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNormalizeBlock();"
+          "text": "RegisterNormalizeBlock();"
         }
       ]
     },
@@ -4284,7 +4287,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerOneMinusBlock();"
+          "text": "RegisterOneMinusBlock();"
         }
       ]
     },
@@ -4294,7 +4297,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPannerBlock();"
+          "text": "RegisterPannerBlock();"
         }
       ]
     },
@@ -4304,7 +4307,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleBlendMultiplyBlock();"
+          "text": "RegisterParticleBlendMultiplyBlock();"
         }
       ]
     },
@@ -4314,7 +4317,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleRampGradientBlock();"
+          "text": "RegisterParticleRampGradientBlock();"
         }
       ]
     },
@@ -4324,7 +4327,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleTextureBlock();"
+          "text": "RegisterParticleTextureBlock();"
         }
       ]
     },
@@ -4334,7 +4337,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnisotropyBlock();"
+          "text": "RegisterAnisotropyBlock();"
         }
       ]
     },
@@ -4344,7 +4347,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerClearCoatBlock();"
+          "text": "RegisterClearCoatBlock();"
         }
       ]
     },
@@ -4354,7 +4357,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerIridescenceBlock();"
+          "text": "RegisterIridescenceBlock();"
         }
       ]
     },
@@ -4364,7 +4367,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPbrMetallicRoughnessBlock();"
+          "text": "RegisterPbrMetallicRoughnessBlock();"
         }
       ]
     },
@@ -4374,7 +4377,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReflectionBlock();"
+          "text": "RegisterReflectionBlock();"
         }
       ]
     },
@@ -4384,7 +4387,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRefractionBlock();"
+          "text": "RegisterRefractionBlock();"
         }
       ]
     },
@@ -4394,7 +4397,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSheenBlock();"
+          "text": "RegisterSheenBlock();"
         }
       ]
     },
@@ -4404,7 +4407,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSubSurfaceBlock();"
+          "text": "RegisterSubSurfaceBlock();"
         }
       ]
     },
@@ -4414,7 +4417,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPosterizeBlock();"
+          "text": "RegisterPosterizeBlock();"
         }
       ]
     },
@@ -4424,7 +4427,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPowBlock();"
+          "text": "RegisterPowBlock();"
         }
       ]
     },
@@ -4434,7 +4437,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRandomNumberBlock();"
+          "text": "RegisterRandomNumberBlock();"
         }
       ]
     },
@@ -4444,7 +4447,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReciprocalBlock();"
+          "text": "RegisterReciprocalBlock();"
         }
       ]
     },
@@ -4454,7 +4457,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReflectBlock();"
+          "text": "RegisterReflectBlock();"
         }
       ]
     },
@@ -4464,7 +4467,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRefractBlock();"
+          "text": "RegisterRefractBlock();"
         }
       ]
     },
@@ -4474,7 +4477,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRemapBlock();"
+          "text": "RegisterRemapBlock();"
         }
       ]
     },
@@ -4484,7 +4487,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReplaceColorBlock();"
+          "text": "RegisterReplaceColorBlock();"
         }
       ]
     },
@@ -4494,7 +4497,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRotate2dBlock();"
+          "text": "RegisterRotate2dBlock();"
         }
       ]
     },
@@ -4504,7 +4507,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScaleBlock();"
+          "text": "RegisterScaleBlock();"
         }
       ]
     },
@@ -4514,7 +4517,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSimplexPerlin3DBlock();"
+          "text": "RegisterSimplexPerlin3DBlock();"
         }
       ]
     },
@@ -4524,7 +4527,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSmoothStepBlock();"
+          "text": "RegisterSmoothStepBlock();"
         }
       ]
     },
@@ -4534,7 +4537,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStepBlock();"
+          "text": "RegisterStepBlock();"
         }
       ]
     },
@@ -4544,7 +4547,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStorageReadBlock();"
+          "text": "RegisterStorageReadBlock();"
         }
       ]
     },
@@ -4554,7 +4557,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStorageWriteBlock();"
+          "text": "RegisterStorageWriteBlock();"
         }
       ]
     },
@@ -4564,7 +4567,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSubtractBlock();"
+          "text": "RegisterSubtractBlock();"
         }
       ]
     },
@@ -4574,7 +4577,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialsNodeBlocksTeleportTeleportInBlock();"
+          "text": "RegisterMaterialsNodeBlocksTeleportTeleportInBlock();"
         }
       ]
     },
@@ -4584,7 +4587,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMaterialsNodeBlocksTeleportTeleportOutBlock();"
+          "text": "RegisterMaterialsNodeBlocksTeleportTeleportOutBlock();"
         }
       ]
     },
@@ -4594,7 +4597,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTransformBlock();"
+          "text": "RegisterTransformBlock();"
         }
       ]
     },
@@ -4604,7 +4607,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTrigonometryBlock();"
+          "text": "RegisterTrigonometryBlock();"
         }
       ]
     },
@@ -4614,7 +4617,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTriPlanarBlock();"
+          "text": "RegisterTriPlanarBlock();"
         }
       ]
     },
@@ -4624,7 +4627,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVectorMergerBlock();"
+          "text": "RegisterVectorMergerBlock();"
         }
       ]
     },
@@ -4634,7 +4637,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVectorSplitterBlock();"
+          "text": "RegisterVectorSplitterBlock();"
         }
       ]
     },
@@ -4644,7 +4647,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBonesBlock();"
+          "text": "RegisterBonesBlock();"
         }
       ]
     },
@@ -4654,7 +4657,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstancesBlock();"
+          "text": "RegisterInstancesBlock();"
         }
       ]
     },
@@ -4664,7 +4667,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLightInformationBlock();"
+          "text": "RegisterLightInformationBlock();"
         }
       ]
     },
@@ -4674,7 +4677,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMorphTargetsBlock();"
+          "text": "RegisterMorphTargetsBlock();"
         }
       ]
     },
@@ -4684,7 +4687,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVertexOutputBlock();"
+          "text": "RegisterVertexOutputBlock();"
         }
       ]
     },
@@ -4694,7 +4697,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerViewDirectionBlock();"
+          "text": "RegisterViewDirectionBlock();"
         }
       ]
     },
@@ -4704,7 +4707,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVoronoiNoiseBlock();"
+          "text": "RegisterVoronoiNoiseBlock();"
         }
       ]
     },
@@ -4714,7 +4717,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWaveBlock();"
+          "text": "RegisterWaveBlock();"
         }
       ]
     },
@@ -4724,7 +4727,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWorleyNoise3DBlock();"
+          "text": "RegisterWorleyNoise3DBlock();"
         }
       ]
     },
@@ -4734,7 +4737,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNodeMaterial();"
+          "text": "RegisterNodeMaterial();"
         }
       ]
     },
@@ -4759,7 +4762,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerOpenpbrMaterial();"
+          "text": "RegisterOpenpbrMaterial();"
         }
       ]
     },
@@ -4774,22 +4777,22 @@
       ]
     },
     {
-      "file": "Materials/PBR/pbrMaterial.decalMap.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"./pbrBaseMaterial\" {"
-        }
-      ]
-    },
-    {
       "file": "Materials/PBR/pbrMaterial.decalMap.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerPbrMaterialDecalMap();"
+          "line": 9,
+          "text": "RegisterPbrMaterialDecalMap();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/PBR/pbrMaterial.decalMap.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"./pbrBaseMaterial.pure\" {"
         }
       ]
     },
@@ -4799,7 +4802,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPbrMaterial();"
+          "text": "RegisterPbrMaterial();"
         }
       ]
     },
@@ -4809,7 +4812,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPbrMetallicRoughnessMaterial();"
+          "text": "RegisterPbrMetallicRoughnessMaterial();"
         }
       ]
     },
@@ -4819,7 +4822,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPbrSpecularGlossinessMaterial();"
+          "text": "RegisterPbrSpecularGlossinessMaterial();"
         }
       ]
     },
@@ -4829,17 +4832,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerShaderMaterial();"
-        }
-      ]
-    },
-    {
-      "file": "Materials/standardMaterial.decalMap.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"./standardMaterial\" {"
+          "text": "RegisterShaderMaterial();"
         }
       ]
     },
@@ -4848,8 +4841,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerStandardMaterialDecalMap();"
+          "line": 9,
+          "text": "RegisterStandardMaterialDecalMap();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/standardMaterial.decalMap.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"./standardMaterial.pure\" {"
         }
       ]
     },
@@ -4859,17 +4862,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStandardMaterial();"
-        }
-      ]
-    },
-    {
-      "file": "Materials/Textures/baseTexture.polynomial.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 11,
-          "text": "declare module \"./baseTexture\" {"
+          "text": "RegisterStandardMaterial();"
         }
       ]
     },
@@ -4878,8 +4871,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerBaseTexturePolynomial();"
+          "line": 9,
+          "text": "RegisterBaseTexturePolynomial();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Textures/baseTexture.polynomial.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"./baseTexture.pure\" {"
         }
       ]
     },
@@ -4899,7 +4902,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorGradingTexture();"
+          "text": "RegisterColorGradingTexture();"
         }
       ]
     },
@@ -4909,7 +4912,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCubeTexture();"
+          "text": "RegisterCubeTexture();"
         }
       ]
     },
@@ -4949,7 +4952,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerExrCubeTexture();"
+          "text": "RegisterExrCubeTexture();"
         }
       ]
     },
@@ -4959,7 +4962,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerHdrCubeTexture();"
+          "text": "RegisterHdrCubeTexture();"
         }
       ]
     },
@@ -4984,7 +4987,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMirrorTexture();"
+          "text": "RegisterMirrorTexture();"
         }
       ]
     },
@@ -5004,7 +5007,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNoiseProceduralTexture();"
+          "text": "RegisterNoiseProceduralTexture();"
         }
       ]
     },
@@ -5014,17 +5017,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerProceduralTexture();"
-        }
-      ]
-    },
-    {
-      "file": "Materials/Textures/renderTargetTexture.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 31,
-          "text": "declare module \"../effect\" {"
+          "text": "RegisterProceduralTexture();"
         }
       ]
     },
@@ -5033,8 +5026,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerRenderTargetTexture();"
+          "line": 9,
+          "text": "RegisterRenderTargetTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Textures/renderTargetTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../effect.pure\" {"
         }
       ]
     },
@@ -5044,7 +5047,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTexture();"
+          "text": "RegisterTexture();"
         }
       ]
     },
@@ -5054,7 +5057,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVideoTexture();"
+          "text": "RegisterVideoTexture();"
         }
       ]
     },
@@ -5064,7 +5067,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMathColor();"
+          "text": "RegisterMathColor();"
         }
       ]
     },
@@ -5074,27 +5077,37 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMathVector();"
+          "text": "RegisterMathVector();"
         }
       ]
     },
     {
-      "file": "Maths/sphericalPolynomial.ts",
+      "file": "Maths/sphericalPolynomial.pure.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerSphericalPolynomial();"
-        }
-      ]
-    },
-    {
-      "file": "Meshes/abstractMesh.decalMap.pure.ts",
-      "sideEffects": [
+          "line": 46,
+          "text": "Math.sqrt(1 / (4 * Math.PI)), // l00"
+        },
         {
-          "type": "declare-module",
-          "line": 10,
-          "text": "declare module \"./abstractMesh\" {"
+          "type": "top-level-call",
+          "line": 49,
+          "text": "Math.sqrt(3 / (4 * Math.PI)), // l10"
+        },
+        {
+          "type": "top-level-call",
+          "line": 52,
+          "text": "Math.sqrt(15 / (4 * Math.PI)), // l2_2"
+        },
+        {
+          "type": "top-level-call",
+          "line": 54,
+          "text": "Math.sqrt(5 / (16 * Math.PI)), // l20"
+        },
+        {
+          "type": "top-level-call",
+          "line": 56,
+          "text": "Math.sqrt(15 / (16 * Math.PI)), // l22"
         }
       ]
     },
@@ -5103,8 +5116,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerAbstractMeshDecalMap();"
+          "line": 9,
+          "text": "RegisterAbstractMeshDecalMap();"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/abstractMesh.decalMap.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"./abstractMesh.pure\" {"
         }
       ]
     },
@@ -5114,7 +5137,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAbstractMesh();"
+          "text": "RegisterAbstractMesh();"
         }
       ]
     },
@@ -5124,7 +5147,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBoxBuilder();"
+          "text": "RegisterBoxBuilder();"
         }
       ]
     },
@@ -5134,7 +5157,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCapsuleBuilder();"
+          "text": "RegisterCapsuleBuilder();"
         }
       ]
     },
@@ -5144,7 +5167,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCylinderBuilder();"
+          "text": "RegisterCylinderBuilder();"
         }
       ]
     },
@@ -5154,7 +5177,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDecalBuilder();"
+          "text": "RegisterDecalBuilder();"
         }
       ]
     },
@@ -5164,7 +5187,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDiscBuilder();"
+          "text": "RegisterDiscBuilder();"
         }
       ]
     },
@@ -5174,7 +5197,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGroundBuilder();"
+          "text": "RegisterGroundBuilder();"
         }
       ]
     },
@@ -5184,7 +5207,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerHemisphereBuilder();"
+          "text": "RegisterHemisphereBuilder();"
         }
       ]
     },
@@ -5194,7 +5217,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerIcoSphereBuilder();"
+          "text": "RegisterIcoSphereBuilder();"
         }
       ]
     },
@@ -5204,7 +5227,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLatheBuilder();"
+          "text": "RegisterLatheBuilder();"
         }
       ]
     },
@@ -5214,7 +5237,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLinesBuilder();"
+          "text": "RegisterLinesBuilder();"
         }
       ]
     },
@@ -5224,7 +5247,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPlaneBuilder();"
+          "text": "RegisterPlaneBuilder();"
         }
       ]
     },
@@ -5234,7 +5257,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPolygonBuilder();"
+          "text": "RegisterPolygonBuilder();"
         }
       ]
     },
@@ -5244,7 +5267,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPolyhedronBuilder();"
+          "text": "RegisterPolyhedronBuilder();"
         }
       ]
     },
@@ -5254,7 +5277,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRibbonBuilder();"
+          "text": "RegisterRibbonBuilder();"
         }
       ]
     },
@@ -5264,7 +5287,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerShapeBuilder();"
+          "text": "RegisterShapeBuilder();"
         }
       ]
     },
@@ -5274,7 +5297,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSphereBuilder();"
+          "text": "RegisterSphereBuilder();"
         }
       ]
     },
@@ -5284,7 +5307,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTorusBuilder();"
+          "text": "RegisterTorusBuilder();"
         }
       ]
     },
@@ -5294,7 +5317,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTorusKnotBuilder();"
+          "text": "RegisterTorusKnotBuilder();"
         }
       ]
     },
@@ -5304,7 +5327,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTubeBuilder();"
+          "text": "RegisterTubeBuilder();"
         }
       ]
     },
@@ -5314,7 +5337,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingCompoundMesh();"
+          "text": "RegisterGaussianSplattingCompoundMesh();"
         }
       ]
     },
@@ -5324,7 +5347,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingMesh();"
+          "text": "RegisterGaussianSplattingMesh();"
         }
       ]
     },
@@ -5344,7 +5367,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGaussianSplattingPartProxyMesh();"
+          "text": "RegisterGaussianSplattingPartProxyMesh();"
         }
       ]
     },
@@ -5354,7 +5377,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGoldbergMesh();"
+          "text": "RegisterGoldbergMesh();"
         }
       ]
     },
@@ -5364,7 +5387,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGreasedLineMesh();"
+          "text": "RegisterGreasedLineMesh();"
         }
       ]
     },
@@ -5374,7 +5397,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGreasedLineRibbonMesh();"
+          "text": "RegisterGreasedLineRibbonMesh();"
         }
       ]
     },
@@ -5384,7 +5407,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGroundMesh();"
+          "text": "RegisterGroundMesh();"
         }
       ]
     },
@@ -5404,27 +5427,27 @@
       ]
     },
     {
-      "file": "Meshes/instancedMesh.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 657,
-          "text": "declare module \"./mesh\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 699,
-          "text": "declare module \"./abstractMesh\" {"
-        }
-      ]
-    },
-    {
       "file": "Meshes/instancedMesh.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerInstancedMesh();"
+          "line": 9,
+          "text": "RegisterInstancedMesh();"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/instancedMesh.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"./mesh.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 44,
+          "text": "declare module \"./abstractMesh.pure\" {"
         }
       ]
     },
@@ -5434,7 +5457,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLinesMesh();"
+          "text": "RegisterLinesMesh();"
         }
       ]
     },
@@ -5444,22 +5467,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMesh();"
-        }
-      ]
-    },
-    {
-      "file": "Meshes/meshSimplificationSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 12,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 27,
-          "text": "declare module \"../Meshes/mesh\" {"
+          "text": "RegisterMesh();"
         }
       ]
     },
@@ -5468,18 +5476,33 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerMeshSimplificationSceneComponent();"
+          "line": 9,
+          "text": "RegisterMeshSimplificationSceneComponent();"
         }
       ]
     },
     {
-      "file": "Meshes/meshUVSpaceRenderer.pure.ts",
+      "file": "Meshes/meshSimplificationSceneComponent.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 18,
-          "text": "declare module \"../scene\" {"
+          "line": 2,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 16,
+          "text": "declare module \"../Meshes/mesh.pure\" {"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/meshUVSpaceRenderer.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -5489,7 +5512,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBevelBlock();"
+          "text": "RegisterBevelBlock();"
         }
       ]
     },
@@ -5499,7 +5522,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBooleanGeometryBlock();"
+          "text": "RegisterBooleanGeometryBlock();"
         }
       ]
     },
@@ -5509,7 +5532,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBoundingBlock();"
+          "text": "RegisterBoundingBlock();"
         }
       ]
     },
@@ -5519,7 +5542,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCleanGeometryBlock();"
+          "text": "RegisterCleanGeometryBlock();"
         }
       ]
     },
@@ -5529,7 +5552,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerComputeNormalsBlock();"
+          "text": "RegisterComputeNormalsBlock();"
         }
       ]
     },
@@ -5539,7 +5562,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerConditionBlock();"
+          "text": "RegisterConditionBlock();"
         }
       ]
     },
@@ -5549,7 +5572,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshesNodeBlocksDebugBlock();"
+          "text": "RegisterMeshesNodeBlocksDebugBlock();"
         }
       ]
     },
@@ -5559,7 +5582,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerExtrudeGeometryBlock();"
+          "text": "RegisterExtrudeGeometryBlock();"
         }
       ]
     },
@@ -5569,7 +5592,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryArcTan2Block();"
+          "text": "RegisterGeometryArcTan2Block();"
         }
       ]
     },
@@ -5579,7 +5602,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryClampBlock();"
+          "text": "RegisterGeometryClampBlock();"
         }
       ]
     },
@@ -5589,7 +5612,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryCollectionBlock();"
+          "text": "RegisterGeometryCollectionBlock();"
         }
       ]
     },
@@ -5599,7 +5622,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryCrossBlock();"
+          "text": "RegisterGeometryCrossBlock();"
         }
       ]
     },
@@ -5609,7 +5632,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryCurveBlock();"
+          "text": "RegisterGeometryCurveBlock();"
         }
       ]
     },
@@ -5619,7 +5642,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryDesaturateBlock();"
+          "text": "RegisterGeometryDesaturateBlock();"
         }
       ]
     },
@@ -5629,7 +5652,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryDistanceBlock();"
+          "text": "RegisterGeometryDistanceBlock();"
         }
       ]
     },
@@ -5639,7 +5662,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryDotBlock();"
+          "text": "RegisterGeometryDotBlock();"
         }
       ]
     },
@@ -5649,7 +5672,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryEaseBlock();"
+          "text": "RegisterGeometryEaseBlock();"
         }
       ]
     },
@@ -5659,7 +5682,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryElbowBlock();"
+          "text": "RegisterGeometryElbowBlock();"
         }
       ]
     },
@@ -5669,7 +5692,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryInfoBlock();"
+          "text": "RegisterGeometryInfoBlock();"
         }
       ]
     },
@@ -5679,7 +5702,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryInputBlock();"
+          "text": "RegisterGeometryInputBlock();"
         }
       ]
     },
@@ -5689,7 +5712,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryInterceptorBlock();"
+          "text": "RegisterGeometryInterceptorBlock();"
         }
       ]
     },
@@ -5699,7 +5722,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryLengthBlock();"
+          "text": "RegisterGeometryLengthBlock();"
         }
       ]
     },
@@ -5709,7 +5732,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryLerpBlock();"
+          "text": "RegisterGeometryLerpBlock();"
         }
       ]
     },
@@ -5719,7 +5742,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryModBlock();"
+          "text": "RegisterGeometryModBlock();"
         }
       ]
     },
@@ -5729,7 +5752,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryNLerpBlock();"
+          "text": "RegisterGeometryNLerpBlock();"
         }
       ]
     },
@@ -5739,7 +5762,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryOptimizeBlock();"
+          "text": "RegisterGeometryOptimizeBlock();"
         }
       ]
     },
@@ -5749,7 +5772,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryOutputBlock();"
+          "text": "RegisterGeometryOutputBlock();"
         }
       ]
     },
@@ -5759,7 +5782,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryPosterizeBlock();"
+          "text": "RegisterGeometryPosterizeBlock();"
         }
       ]
     },
@@ -5769,7 +5792,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryPowBlock();"
+          "text": "RegisterGeometryPowBlock();"
         }
       ]
     },
@@ -5779,7 +5802,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryReplaceColorBlock();"
+          "text": "RegisterGeometryReplaceColorBlock();"
         }
       ]
     },
@@ -5789,7 +5812,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryRotate2dBlock();"
+          "text": "RegisterGeometryRotate2dBlock();"
         }
       ]
     },
@@ -5799,7 +5822,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometrySmoothStepBlock();"
+          "text": "RegisterGeometrySmoothStepBlock();"
         }
       ]
     },
@@ -5809,7 +5832,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryStepBlock();"
+          "text": "RegisterGeometryStepBlock();"
         }
       ]
     },
@@ -5819,7 +5842,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryTransformBlock();"
+          "text": "RegisterGeometryTransformBlock();"
         }
       ]
     },
@@ -5829,7 +5852,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryTrigonometryBlock();"
+          "text": "RegisterGeometryTrigonometryBlock();"
         }
       ]
     },
@@ -5839,7 +5862,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstantiateBlock();"
+          "text": "RegisterInstantiateBlock();"
         }
       ]
     },
@@ -5849,7 +5872,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstantiateLinearBlock();"
+          "text": "RegisterInstantiateLinearBlock();"
         }
       ]
     },
@@ -5859,7 +5882,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstantiateOnFacesBlock();"
+          "text": "RegisterInstantiateOnFacesBlock();"
         }
       ]
     },
@@ -5869,7 +5892,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstantiateOnVerticesBlock();"
+          "text": "RegisterInstantiateOnVerticesBlock();"
         }
       ]
     },
@@ -5879,7 +5902,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstantiateOnVolumeBlock();"
+          "text": "RegisterInstantiateOnVolumeBlock();"
         }
       ]
     },
@@ -5889,7 +5912,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerInstantiateRadialBlock();"
+          "text": "RegisterInstantiateRadialBlock();"
         }
       ]
     },
@@ -5899,7 +5922,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerIntFloatConverterBlock();"
+          "text": "RegisterIntFloatConverterBlock();"
         }
       ]
     },
@@ -5909,7 +5932,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMappingBlock();"
+          "text": "RegisterMappingBlock();"
         }
       ]
     },
@@ -5919,7 +5942,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMapRangeBlock();"
+          "text": "RegisterMapRangeBlock();"
         }
       ]
     },
@@ -5929,7 +5952,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMathBlock();"
+          "text": "RegisterMathBlock();"
         }
       ]
     },
@@ -5939,7 +5962,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAlignBlock();"
+          "text": "RegisterAlignBlock();"
         }
       ]
     },
@@ -5949,7 +5972,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRotationXBlock();"
+          "text": "RegisterRotationXBlock();"
         }
       ]
     },
@@ -5959,7 +5982,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRotationYBlock();"
+          "text": "RegisterRotationYBlock();"
         }
       ]
     },
@@ -5969,7 +5992,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRotationZBlock();"
+          "text": "RegisterRotationZBlock();"
         }
       ]
     },
@@ -5979,7 +6002,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScalingBlock();"
+          "text": "RegisterScalingBlock();"
         }
       ]
     },
@@ -5989,7 +6012,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTranslationBlock();"
+          "text": "RegisterTranslationBlock();"
         }
       ]
     },
@@ -5999,7 +6022,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMatrixComposeBlock();"
+          "text": "RegisterMatrixComposeBlock();"
         }
       ]
     },
@@ -6009,7 +6032,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMergeGeometryBlock();"
+          "text": "RegisterMergeGeometryBlock();"
         }
       ]
     },
@@ -6019,7 +6042,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNoiseBlock();"
+          "text": "RegisterNoiseBlock();"
         }
       ]
     },
@@ -6029,7 +6052,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNormalizeVectorBlock();"
+          "text": "RegisterNormalizeVectorBlock();"
         }
       ]
     },
@@ -6039,7 +6062,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRandomBlock();"
+          "text": "RegisterRandomBlock();"
         }
       ]
     },
@@ -6049,7 +6072,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAggregatorBlock();"
+          "text": "RegisterAggregatorBlock();"
         }
       ]
     },
@@ -6059,7 +6082,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerLatticeBlock();"
+          "text": "RegisterLatticeBlock();"
         }
       ]
     },
@@ -6069,7 +6092,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetColorsBlock();"
+          "text": "RegisterSetColorsBlock();"
         }
       ]
     },
@@ -6079,7 +6102,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetMaterialIDBlock();"
+          "text": "RegisterSetMaterialIDBlock();"
         }
       ]
     },
@@ -6089,7 +6112,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetNormalsBlock();"
+          "text": "RegisterSetNormalsBlock();"
         }
       ]
     },
@@ -6099,7 +6122,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetPositionsBlock();"
+          "text": "RegisterSetPositionsBlock();"
         }
       ]
     },
@@ -6109,7 +6132,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetTangentsBlock();"
+          "text": "RegisterSetTangentsBlock();"
         }
       ]
     },
@@ -6119,7 +6142,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetUVsBlock();"
+          "text": "RegisterSetUVsBlock();"
         }
       ]
     },
@@ -6129,7 +6152,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBoxBlock();"
+          "text": "RegisterBoxBlock();"
         }
       ]
     },
@@ -6139,7 +6162,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCapsuleBlock();"
+          "text": "RegisterCapsuleBlock();"
         }
       ]
     },
@@ -6149,7 +6172,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCylinderBlock();"
+          "text": "RegisterCylinderBlock();"
         }
       ]
     },
@@ -6159,7 +6182,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDiscBlock();"
+          "text": "RegisterDiscBlock();"
         }
       ]
     },
@@ -6169,7 +6192,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGridBlock();"
+          "text": "RegisterGridBlock();"
         }
       ]
     },
@@ -6179,7 +6202,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerIcoSphereBlock();"
+          "text": "RegisterIcoSphereBlock();"
         }
       ]
     },
@@ -6189,7 +6212,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshBlock();"
+          "text": "RegisterMeshBlock();"
         }
       ]
     },
@@ -6199,7 +6222,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNullBlock();"
+          "text": "RegisterNullBlock();"
         }
       ]
     },
@@ -6209,7 +6232,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPlaneBlock();"
+          "text": "RegisterPlaneBlock();"
         }
       ]
     },
@@ -6219,7 +6242,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPointListBlock();"
+          "text": "RegisterPointListBlock();"
         }
       ]
     },
@@ -6229,7 +6252,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSphereBlock();"
+          "text": "RegisterSphereBlock();"
         }
       ]
     },
@@ -6239,7 +6262,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTorusBlock();"
+          "text": "RegisterTorusBlock();"
         }
       ]
     },
@@ -6249,7 +6272,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSubdivideBlock();"
+          "text": "RegisterSubdivideBlock();"
         }
       ]
     },
@@ -6259,7 +6282,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshesNodeBlocksTeleportTeleportInBlock();"
+          "text": "RegisterMeshesNodeBlocksTeleportTeleportInBlock();"
         }
       ]
     },
@@ -6269,7 +6292,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshesNodeBlocksTeleportTeleportOutBlock();"
+          "text": "RegisterMeshesNodeBlocksTeleportTeleportOutBlock();"
         }
       ]
     },
@@ -6279,7 +6302,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryTextureBlock();"
+          "text": "RegisterGeometryTextureBlock();"
         }
       ]
     },
@@ -6289,7 +6312,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryTextureFetchBlock();"
+          "text": "RegisterGeometryTextureFetchBlock();"
         }
       ]
     },
@@ -6299,17 +6322,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVectorConverterBlock();"
-        }
-      ]
-    },
-    {
-      "file": "Meshes/subMesh.project.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 13,
-          "text": "declare module \"./subMesh\" {"
+          "text": "RegisterVectorConverterBlock();"
         }
       ]
     },
@@ -6318,18 +6331,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerSubMeshProject();"
+          "line": 9,
+          "text": "RegisterSubMeshProject();"
         }
       ]
     },
     {
-      "file": "Meshes/thinInstanceMesh.pure.ts",
+      "file": "Meshes/subMesh.project.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"./mesh\" {"
+          "line": 3,
+          "text": "declare module \"./subMesh.pure\" {"
         }
       ]
     },
@@ -6338,8 +6351,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerThinInstanceMesh();"
+          "line": 9,
+          "text": "RegisterThinInstanceMesh();"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/thinInstanceMesh.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"./mesh.pure\" {"
         }
       ]
     },
@@ -6349,7 +6372,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTrailMesh();"
+          "text": "RegisterTrailMesh();"
         }
       ]
     },
@@ -6359,7 +6382,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBasis();"
+          "text": "RegisterBasis();"
         }
       ]
     },
@@ -6379,7 +6402,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDumpTools();"
+          "text": "RegisterDumpTools();"
         }
       ]
     },
@@ -6409,7 +6432,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFileTools();"
+          "text": "RegisterFileTools();"
         }
       ]
     },
@@ -6429,32 +6452,22 @@
       ]
     },
     {
-      "file": "Misc/observable.extensions.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 54,
-          "text": "declare module \"./observable\" {"
-        }
-      ]
-    },
-    {
       "file": "Misc/observable.extensions.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerObservableExtensions();"
+          "line": 9,
+          "text": "RegisterObservableExtensions();"
         }
       ]
     },
     {
-      "file": "Misc/observableCoroutine.pure.ts",
+      "file": "Misc/observable.extensions.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 9,
-          "text": "declare module \"./observable\" {"
+          "line": 2,
+          "text": "declare module \"./observable.pure\" {"
         }
       ]
     },
@@ -6463,8 +6476,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerObservableCoroutine();"
+          "line": 9,
+          "text": "RegisterObservableCoroutine();"
+        }
+      ]
+    },
+    {
+      "file": "Misc/observableCoroutine.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"./observable.pure\" {"
         }
       ]
     },
@@ -6484,7 +6507,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScreenshotTools();"
+          "text": "RegisterScreenshotTools();"
         }
       ]
     },
@@ -6494,17 +6517,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTools();"
-        }
-      ]
-    },
-    {
-      "file": "Misc/typeStore.ts",
-      "sideEffects": [
-        {
-          "type": "RegisterClass",
-          "line": 8,
-          "text": "export function RegisterClass(className: string, type: object) {"
+          "text": "RegisterTools();"
         }
       ]
     },
@@ -6514,7 +6527,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDatabase();"
+          "text": "RegisterDatabase();"
         }
       ]
     },
@@ -6524,7 +6537,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBaseParticleSystem();"
+          "text": "RegisterBaseParticleSystem();"
         }
       ]
     },
@@ -6534,7 +6547,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerComputeShaderParticleSystem();"
+          "text": "RegisterComputeShaderParticleSystem();"
         }
       ]
     },
@@ -6574,7 +6587,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleConditionBlock();"
+          "text": "RegisterParticleConditionBlock();"
         }
       ]
     },
@@ -6584,7 +6597,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBoxShapeBlock();"
+          "text": "RegisterBoxShapeBlock();"
         }
       ]
     },
@@ -6594,7 +6607,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerConeShapeBlock();"
+          "text": "RegisterConeShapeBlock();"
         }
       ]
     },
@@ -6604,7 +6617,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCreateParticleBlock();"
+          "text": "RegisterCreateParticleBlock();"
         }
       ]
     },
@@ -6614,7 +6627,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCustomShapeBlock();"
+          "text": "RegisterCustomShapeBlock();"
         }
       ]
     },
@@ -6624,7 +6637,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCylinderShapeBlock();"
+          "text": "RegisterCylinderShapeBlock();"
         }
       ]
     },
@@ -6634,7 +6647,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMeshShapeBlock();"
+          "text": "RegisterMeshShapeBlock();"
         }
       ]
     },
@@ -6644,7 +6657,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPointShapeBlock();"
+          "text": "RegisterPointShapeBlock();"
         }
       ]
     },
@@ -6654,7 +6667,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSetupSpriteSheetBlock();"
+          "text": "RegisterSetupSpriteSheetBlock();"
         }
       ]
     },
@@ -6664,7 +6677,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSphereShapeBlock();"
+          "text": "RegisterSphereShapeBlock();"
         }
       ]
     },
@@ -6674,7 +6687,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleClampBlock();"
+          "text": "RegisterParticleClampBlock();"
         }
       ]
     },
@@ -6684,7 +6697,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleConverterBlock();"
+          "text": "RegisterParticleConverterBlock();"
         }
       ]
     },
@@ -6694,7 +6707,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleDebugBlock();"
+          "text": "RegisterParticleDebugBlock();"
         }
       ]
     },
@@ -6704,7 +6717,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleElbowBlock();"
+          "text": "RegisterParticleElbowBlock();"
         }
       ]
     },
@@ -6714,7 +6727,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleFloatToIntBlock();"
+          "text": "RegisterParticleFloatToIntBlock();"
         }
       ]
     },
@@ -6724,7 +6737,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleGradientBlock();"
+          "text": "RegisterParticleGradientBlock();"
         }
       ]
     },
@@ -6734,7 +6747,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleGradientValueBlock();"
+          "text": "RegisterParticleGradientValueBlock();"
         }
       ]
     },
@@ -6744,7 +6757,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleInputBlock();"
+          "text": "RegisterParticleInputBlock();"
         }
       ]
     },
@@ -6754,7 +6767,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleLerpBlock();"
+          "text": "RegisterParticleLerpBlock();"
         }
       ]
     },
@@ -6764,7 +6777,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleLocalVariableBlock();"
+          "text": "RegisterParticleLocalVariableBlock();"
         }
       ]
     },
@@ -6774,7 +6787,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleMathBlock();"
+          "text": "RegisterParticleMathBlock();"
         }
       ]
     },
@@ -6784,7 +6797,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleNLerpBlock();"
+          "text": "RegisterParticleNLerpBlock();"
         }
       ]
     },
@@ -6794,7 +6807,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleNumberMathBlock();"
+          "text": "RegisterParticleNumberMathBlock();"
         }
       ]
     },
@@ -6804,7 +6817,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleRandomBlock();"
+          "text": "RegisterParticleRandomBlock();"
         }
       ]
     },
@@ -6814,7 +6827,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleSmoothStepBlock();"
+          "text": "RegisterParticleSmoothStepBlock();"
         }
       ]
     },
@@ -6824,7 +6837,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleSourceTextureBlock();"
+          "text": "RegisterParticleSourceTextureBlock();"
         }
       ]
     },
@@ -6834,7 +6847,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleStepBlock();"
+          "text": "RegisterParticleStepBlock();"
         }
       ]
     },
@@ -6844,7 +6857,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleTrigonometryBlock();"
+          "text": "RegisterParticleTrigonometryBlock();"
         }
       ]
     },
@@ -6854,7 +6867,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleVectorLengthBlock();"
+          "text": "RegisterParticleVectorLengthBlock();"
         }
       ]
     },
@@ -6864,7 +6877,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleVectorMathBlock();"
+          "text": "RegisterParticleVectorMathBlock();"
         }
       ]
     },
@@ -6874,7 +6887,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSystemBlock();"
+          "text": "RegisterSystemBlock();"
         }
       ]
     },
@@ -6884,7 +6897,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleTeleportInBlock();"
+          "text": "RegisterParticleTeleportInBlock();"
         }
       ]
     },
@@ -6894,7 +6907,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleTeleportOutBlock();"
+          "text": "RegisterParticleTeleportOutBlock();"
         }
       ]
     },
@@ -6904,7 +6917,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleTriggerBlock();"
+          "text": "RegisterParticleTriggerBlock();"
         }
       ]
     },
@@ -6914,7 +6927,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAlignAngleBlock();"
+          "text": "RegisterAlignAngleBlock();"
         }
       ]
     },
@@ -6924,7 +6937,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBasicColorUpdateBlock();"
+          "text": "RegisterBasicColorUpdateBlock();"
         }
       ]
     },
@@ -6934,7 +6947,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBasicPositionUpdateBlock();"
+          "text": "RegisterBasicPositionUpdateBlock();"
         }
       ]
     },
@@ -6944,7 +6957,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBasicSpriteUpdateBlock();"
+          "text": "RegisterBasicSpriteUpdateBlock();"
         }
       ]
     },
@@ -6954,7 +6967,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateAgeBlock();"
+          "text": "RegisterUpdateAgeBlock();"
         }
       ]
     },
@@ -6964,7 +6977,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateAngleBlock();"
+          "text": "RegisterUpdateAngleBlock();"
         }
       ]
     },
@@ -6974,7 +6987,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateAttractorBlock();"
+          "text": "RegisterUpdateAttractorBlock();"
         }
       ]
     },
@@ -6984,7 +6997,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateColorBlock();"
+          "text": "RegisterUpdateColorBlock();"
         }
       ]
     },
@@ -6994,7 +7007,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateDirectionBlock();"
+          "text": "RegisterUpdateDirectionBlock();"
         }
       ]
     },
@@ -7004,7 +7017,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateFlowMapBlock();"
+          "text": "RegisterUpdateFlowMapBlock();"
         }
       ]
     },
@@ -7014,7 +7027,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateNoiseBlock();"
+          "text": "RegisterUpdateNoiseBlock();"
         }
       ]
     },
@@ -7024,7 +7037,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdatePositionBlock();"
+          "text": "RegisterUpdatePositionBlock();"
         }
       ]
     },
@@ -7034,7 +7047,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateScaleBlock();"
+          "text": "RegisterUpdateScaleBlock();"
         }
       ]
     },
@@ -7044,7 +7057,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateSizeBlock();"
+          "text": "RegisterUpdateSizeBlock();"
         }
       ]
     },
@@ -7054,7 +7067,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerUpdateSpriteCellIndexBlock();"
+          "text": "RegisterUpdateSpriteCellIndexBlock();"
         }
       ]
     },
@@ -7064,22 +7077,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerParticleSystem();"
-        }
-      ]
-    },
-    {
-      "file": "Particles/particleSystemComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 24,
-          "text": "declare module \"../Engines/abstractEngine\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 58,
-          "text": "declare module \"../Meshes/mesh\" {"
+          "text": "RegisterParticleSystem();"
         }
       ]
     },
@@ -7088,8 +7086,23 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerParticleSystemComponent();"
+          "line": 9,
+          "text": "RegisterParticleSystemComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Particles/particleSystemComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 5,
+          "text": "declare module \"../Engines/abstractEngine.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 38,
+          "text": "declare module \"../Meshes/mesh.pure\" {"
         }
       ]
     },
@@ -7109,17 +7122,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebgl2ParticleSystem();"
-        }
-      ]
-    },
-    {
-      "file": "Physics/joinedPhysicsEngineComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 24,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterWebgl2ParticleSystem();"
         }
       ]
     },
@@ -7128,8 +7131,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerJoinedPhysicsEngineComponent();"
+          "line": 9,
+          "text": "RegisterJoinedPhysicsEngineComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Physics/joinedPhysicsEngineComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 7,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -7154,22 +7167,22 @@
       ]
     },
     {
-      "file": "Physics/v1/physicsEngineComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 18,
-          "text": "declare module \"../../Meshes/abstractMesh\" {"
-        }
-      ]
-    },
-    {
       "file": "Physics/v1/physicsEngineComponent.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerPhysicsV1PhysicsEngineComponent();"
+          "line": 9,
+          "text": "RegisterPhysicsV1PhysicsEngineComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Physics/v1/physicsEngineComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 7,
+          "text": "declare module \"../../Meshes/abstractMesh.pure\" {"
         }
       ]
     },
@@ -7179,7 +7192,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPhysicsImpostor();"
+          "text": "RegisterPhysicsImpostor();"
         }
       ]
     },
@@ -7189,17 +7202,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCannonJSPlugin();"
-        }
-      ]
-    },
-    {
-      "file": "Physics/v2/physicsEngineComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 16,
-          "text": "declare module \"../../Meshes/transformNode\" {"
+          "text": "RegisterCannonJSPlugin();"
         }
       ]
     },
@@ -7208,8 +7211,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerPhysicsV2PhysicsEngineComponent();"
+          "line": 9,
+          "text": "RegisterPhysicsV2PhysicsEngineComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Physics/v2/physicsEngineComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"../../Meshes/transformNode.pure\" {"
         }
       ]
     },
@@ -7219,7 +7232,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerAnaglyphPostProcess();"
+          "text": "RegisterAnaglyphPostProcess();"
         }
       ]
     },
@@ -7229,7 +7242,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBlackAndWhitePostProcess();"
+          "text": "RegisterBlackAndWhitePostProcess();"
         }
       ]
     },
@@ -7239,7 +7252,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBloomMergePostProcess();"
+          "text": "RegisterBloomMergePostProcess();"
         }
       ]
     },
@@ -7249,7 +7262,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerBlurPostProcess();"
+          "text": "RegisterBlurPostProcess();"
         }
       ]
     },
@@ -7259,7 +7272,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerChromaticAberrationPostProcess();"
+          "text": "RegisterChromaticAberrationPostProcess();"
         }
       ]
     },
@@ -7269,7 +7282,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerCircleOfConfusionPostProcess();"
+          "text": "RegisterCircleOfConfusionPostProcess();"
         }
       ]
     },
@@ -7279,7 +7292,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerColorCorrectionPostProcess();"
+          "text": "RegisterColorCorrectionPostProcess();"
         }
       ]
     },
@@ -7289,7 +7302,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerConvolutionPostProcess();"
+          "text": "RegisterConvolutionPostProcess();"
         }
       ]
     },
@@ -7299,7 +7312,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDepthOfFieldBlurPostProcess();"
+          "text": "RegisterDepthOfFieldBlurPostProcess();"
         }
       ]
     },
@@ -7309,7 +7322,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDisplayPassPostProcess();"
+          "text": "RegisterDisplayPassPostProcess();"
         }
       ]
     },
@@ -7319,7 +7332,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerExtractHighlightsPostProcess();"
+          "text": "RegisterExtractHighlightsPostProcess();"
         }
       ]
     },
@@ -7329,7 +7342,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFilterPostProcess();"
+          "text": "RegisterFilterPostProcess();"
         }
       ]
     },
@@ -7339,7 +7352,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerFxaaPostProcess();"
+          "text": "RegisterFxaaPostProcess();"
         }
       ]
     },
@@ -7349,7 +7362,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGrainPostProcess();"
+          "text": "RegisterGrainPostProcess();"
         }
       ]
     },
@@ -7359,7 +7372,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerMotionBlurPostProcess();"
+          "text": "RegisterMotionBlurPostProcess();"
         }
       ]
     },
@@ -7369,22 +7382,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerPassPostProcess();"
-        }
-      ]
-    },
-    {
-      "file": "PostProcesses/postProcess.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 36,
-          "text": "declare module \"../Engines/abstractEngine\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 57,
-          "text": "declare module \"../Materials/effect\" {"
+          "text": "RegisterPassPostProcess();"
         }
       ]
     },
@@ -7393,8 +7391,23 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerPostProcess();"
+          "line": 9,
+          "text": "RegisterPostProcess();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/postProcess.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../Engines/abstractEngine.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 23,
+          "text": "declare module \"../Materials/effect.pure\" {"
         }
       ]
     },
@@ -7404,7 +7417,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerRefractionPostProcess();"
+          "text": "RegisterRefractionPostProcess();"
         }
       ]
     },
@@ -7414,7 +7427,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerDefaultRenderingPipeline();"
+          "text": "RegisterDefaultRenderingPipeline();"
         }
       ]
     },
@@ -7469,7 +7482,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSsao2RenderingPipeline();"
+          "text": "RegisterSsao2RenderingPipeline();"
         }
       ]
     },
@@ -7504,7 +7517,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSsrRenderingPipeline();"
+          "text": "RegisterSsrRenderingPipeline();"
         }
       ]
     },
@@ -7514,7 +7527,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerStandardRenderingPipeline();"
+          "text": "RegisterStandardRenderingPipeline();"
         }
       ]
     },
@@ -7524,7 +7537,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTaaMaterialManager();"
+          "text": "RegisterTaaMaterialManager();"
         }
       ]
     },
@@ -7534,17 +7547,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTaaRenderingPipeline();"
-        }
-      ]
-    },
-    {
-      "file": "PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 10,
-          "text": "declare module \"../../scene\" {"
+          "text": "RegisterTaaRenderingPipeline();"
         }
       ]
     },
@@ -7553,8 +7556,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerPostProcessRenderPipelineManagerSceneComponent();"
+          "line": 9,
+          "text": "RegisterPostProcessRenderPipelineManagerSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 2,
+          "text": "declare module \"../../scene.pure\" {"
         }
       ]
     },
@@ -7564,7 +7577,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScreenSpaceCurvaturePostProcess();"
+          "text": "RegisterScreenSpaceCurvaturePostProcess();"
         }
       ]
     },
@@ -7574,7 +7587,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScreenSpaceReflectionPostProcess();"
+          "text": "RegisterScreenSpaceReflectionPostProcess();"
         }
       ]
     },
@@ -7584,7 +7597,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerSharpenPostProcess();"
+          "text": "RegisterSharpenPostProcess();"
         }
       ]
     },
@@ -7639,7 +7652,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerTonemapPostProcess();"
+          "text": "RegisterTonemapPostProcess();"
         }
       ]
     },
@@ -7649,7 +7662,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerVolumetricLightScatteringPostProcess();"
+          "text": "RegisterVolumetricLightScatteringPostProcess();"
         }
       ]
     },
@@ -7669,37 +7682,22 @@
       ]
     },
     {
-      "file": "Probes/reflectionProbe.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 15,
-          "text": "declare module \"../scene\" {"
-        }
-      ]
-    },
-    {
       "file": "Probes/reflectionProbe.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerReflectionProbe();"
+          "line": 9,
+          "text": "RegisterReflectionProbe();"
         }
       ]
     },
     {
-      "file": "Rendering/boundingBoxRenderer.pure.ts",
+      "file": "Probes/reflectionProbe.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 28,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 50,
-          "text": "declare module \"../Meshes/abstractMesh\" {"
+          "line": 2,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -7708,18 +7706,23 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerBoundingBoxRenderer();"
+          "line": 9,
+          "text": "RegisterBoundingBoxRenderer();"
         }
       ]
     },
     {
-      "file": "Rendering/depthPeelingSceneComponent.pure.ts",
+      "file": "Rendering/boundingBoxRenderer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 13,
-          "text": "declare module \"../scene\" {"
+          "line": 2,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 23,
+          "text": "declare module \"../Meshes/abstractMesh.pure\" {"
         }
       ]
     },
@@ -7728,8 +7731,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerDepthPeelingSceneComponent();"
+          "line": 9,
+          "text": "RegisterDepthPeelingSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/depthPeelingSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -7749,47 +7762,22 @@
       ]
     },
     {
-      "file": "Rendering/depthRendererSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 19,
-          "text": "declare module \"../scene\" {"
-        }
-      ]
-    },
-    {
       "file": "Rendering/depthRendererSceneComponent.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerDepthRendererSceneComponent();"
+          "line": 9,
+          "text": "RegisterDepthRendererSceneComponent();"
         }
       ]
     },
     {
-      "file": "Rendering/edgesRenderer.pure.ts",
+      "file": "Rendering/depthRendererSceneComponent.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 25,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 33,
-          "text": "declare module \"../Meshes/abstractMesh\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 43,
-          "text": "declare module \"../Meshes/linesMesh\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 58,
-          "text": "declare module \"../Meshes/linesMesh\" {"
+          "line": 5,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -7798,18 +7786,33 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerEdgesRenderer();"
+          "line": 9,
+          "text": "RegisterEdgesRenderer();"
         }
       ]
     },
     {
-      "file": "Rendering/fluidRenderer/fluidRenderer.pure.ts",
+      "file": "Rendering/edgesRenderer.types.ts",
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 25,
-          "text": "declare module \"../../scene\" {"
+          "line": 5,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 12,
+          "text": "declare module \"../Meshes/abstractMesh.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 21,
+          "text": "declare module \"../Meshes/linesMesh.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 35,
+          "text": "declare module \"../Meshes/linesMesh.pure\" {"
         }
       ]
     },
@@ -7818,8 +7821,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerFluidRenderer();"
+          "line": 9,
+          "text": "RegisterFluidRenderer();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/fluidRenderer/fluidRenderer.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../../scene.pure\" {"
         }
       ]
     },
@@ -7829,17 +7842,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGeometryBufferRenderer();"
-        }
-      ]
-    },
-    {
-      "file": "Rendering/geometryBufferRendererSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 15,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterGeometryBufferRenderer();"
         }
       ]
     },
@@ -7848,8 +7851,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerGeometryBufferRendererSceneComponent();"
+          "line": 9,
+          "text": "RegisterGeometryBufferRendererSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/geometryBufferRendererSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -7859,17 +7872,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerGiRSMManager();"
-        }
-      ]
-    },
-    {
-      "file": "Rendering/iblCdfGeneratorSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterGiRSMManager();"
         }
       ]
     },
@@ -7878,8 +7881,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerIblCdfGeneratorSceneComponent();"
+          "line": 9,
+          "text": "RegisterIblCdfGeneratorSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/iblCdfGeneratorSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -7889,7 +7902,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerIblShadowsPluginMaterial();"
+          "text": "RegisterIblShadowsPluginMaterial();"
         }
       ]
     },
@@ -7919,27 +7932,27 @@
       ]
     },
     {
-      "file": "Rendering/outlineRenderer.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 21,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 35,
-          "text": "declare module \"../Meshes/abstractMesh\" {"
-        }
-      ]
-    },
-    {
       "file": "Rendering/outlineRenderer.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerOutlineRenderer();"
+          "line": 9,
+          "text": "RegisterOutlineRenderer();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/outlineRenderer.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 2,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 15,
+          "text": "declare module \"../Meshes/abstractMesh.pure\" {"
         }
       ]
     },
@@ -7959,27 +7972,27 @@
       ]
     },
     {
-      "file": "Rendering/prePassRendererSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 20,
-          "text": "declare module \"../scene\" {"
-        },
-        {
-          "type": "declare-module",
-          "line": 44,
-          "text": "declare module \"../Materials/Textures/renderTargetTexture\" {"
-        }
-      ]
-    },
-    {
       "file": "Rendering/prePassRendererSceneComponent.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerPrePassRendererSceneComponent();"
+          "line": 9,
+          "text": "RegisterPrePassRendererSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/prePassRendererSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 4,
+          "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 27,
+          "text": "declare module \"../Materials/Textures/renderTargetTexture.pure\" {"
         }
       ]
     },
@@ -7989,17 +8002,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerReflectiveShadowMap();"
-        }
-      ]
-    },
-    {
-      "file": "Rendering/subSurfaceSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 14,
-          "text": "declare module \"../scene\" {"
+          "text": "RegisterReflectiveShadowMap();"
         }
       ]
     },
@@ -8008,8 +8011,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "registerSubSurfaceSceneComponent();"
+          "line": 9,
+          "text": "RegisterSubSurfaceSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Rendering/subSurfaceSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 3,
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -8029,7 +8042,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerScene();"
+          "text": "RegisterScene();"
         }
       ]
     },
@@ -14379,22 +14392,22 @@
       ]
     },
     {
-      "file": "Sprites/spriteSceneComponent.pure.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 24,
-          "text": "declare module \"../scene\" {"
-        }
-      ]
-    },
-    {
       "file": "Sprites/spriteSceneComponent.ts",
       "sideEffects": [
         {
           "type": "top-level-call",
+          "line": 9,
+          "text": "RegisterSpriteSceneComponent();"
+        }
+      ]
+    },
+    {
+      "file": "Sprites/spriteSceneComponent.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
           "line": 8,
-          "text": "registerSpriteSceneComponent();"
+          "text": "declare module \"../scene.pure\" {"
         }
       ]
     },
@@ -14404,7 +14417,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRAnchorSystem();"
+          "text": "RegisterWebXRAnchorSystem();"
         }
       ]
     },
@@ -14414,7 +14427,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRBackgroundRemover();"
+          "text": "RegisterWebXRBackgroundRemover();"
         }
       ]
     },
@@ -14424,7 +14437,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRBodyTracking();"
+          "text": "RegisterWebXRBodyTracking();"
         }
       ]
     },
@@ -14434,7 +14447,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRControllerMovement();"
+          "text": "RegisterWebXRControllerMovement();"
         }
       ]
     },
@@ -14444,7 +14457,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRControllerPhysics();"
+          "text": "RegisterWebXRControllerPhysics();"
         }
       ]
     },
@@ -14454,7 +14467,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRControllerPointerSelection();"
+          "text": "RegisterWebXRControllerPointerSelection();"
         }
       ]
     },
@@ -14464,7 +14477,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRControllerTeleportation();"
+          "text": "RegisterWebXRControllerTeleportation();"
         }
       ]
     },
@@ -14474,7 +14487,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRDepthSensing();"
+          "text": "RegisterWebXRDepthSensing();"
         }
       ]
     },
@@ -14484,7 +14497,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRDOMOverlay();"
+          "text": "RegisterWebXRDOMOverlay();"
         }
       ]
     },
@@ -14494,7 +14507,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXREyeTracking();"
+          "text": "RegisterWebXREyeTracking();"
         }
       ]
     },
@@ -14504,7 +14517,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRFeaturePointSystem();"
+          "text": "RegisterWebXRFeaturePointSystem();"
         }
       ]
     },
@@ -14514,7 +14527,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRHandTracking();"
+          "text": "RegisterWebXRHandTracking();"
         }
       ]
     },
@@ -14524,7 +14537,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRHitTest();"
+          "text": "RegisterWebXRHitTest();"
         }
       ]
     },
@@ -14534,7 +14547,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRImageTracking();"
+          "text": "RegisterWebXRImageTracking();"
         }
       ]
     },
@@ -14544,7 +14557,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRLayers();"
+          "text": "RegisterWebXRLayers();"
         }
       ]
     },
@@ -14554,7 +14567,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRLightEstimation();"
+          "text": "RegisterWebXRLightEstimation();"
         }
       ]
     },
@@ -14564,7 +14577,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRMeshDetector();"
+          "text": "RegisterWebXRMeshDetector();"
         }
       ]
     },
@@ -14574,7 +14587,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRNearInteraction();"
+          "text": "RegisterWebXRNearInteraction();"
         }
       ]
     },
@@ -14584,7 +14597,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRPlaneDetector();"
+          "text": "RegisterWebXRPlaneDetector();"
         }
       ]
     },
@@ -14594,7 +14607,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRRawCameraAccess();"
+          "text": "RegisterWebXRRawCameraAccess();"
         }
       ]
     },
@@ -14604,7 +14617,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRSpaceWarp();"
+          "text": "RegisterWebXRSpaceWarp();"
         }
       ]
     },
@@ -14614,7 +14627,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRWalkingLocomotion();"
+          "text": "RegisterWebXRWalkingLocomotion();"
         }
       ]
     },
@@ -14624,7 +14637,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRGenericHandController();"
+          "text": "RegisterWebXRGenericHandController();"
         }
       ]
     },
@@ -14634,7 +14647,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRHTCViveMotionController();"
+          "text": "RegisterWebXRHTCViveMotionController();"
         }
       ]
     },
@@ -14644,7 +14657,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRMicrosoftMixedRealityController();"
+          "text": "RegisterWebXRMicrosoftMixedRealityController();"
         }
       ]
     },
@@ -14654,7 +14667,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXRMotionControllerManager();"
+          "text": "RegisterWebXRMotionControllerManager();"
         }
       ]
     },
@@ -14664,7 +14677,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXROculusHandController();"
+          "text": "RegisterWebXROculusHandController();"
         }
       ]
     },
@@ -14674,7 +14687,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerWebXROculusTouchMotionController();"
+          "text": "RegisterWebXROculusTouchMotionController();"
         }
       ]
     },
@@ -14684,7 +14697,7 @@
         {
           "type": "top-level-call",
           "line": 8,
-          "text": "registerNativeXRFrame();"
+          "text": "RegisterNativeXRFrame();"
         }
       ]
     }

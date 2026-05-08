@@ -1,8 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { Scene } from "../scene.pure";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
 
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type SubMesh } from "../Meshes/subMesh.pure";
@@ -10,7 +9,7 @@ import { type _InstancesBatch } from "../Meshes/mesh.pure";
 import { type Effect } from "../Materials/effect.pure";
 import { type Camera } from "../Cameras/camera.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { PrePassRenderer } from "./prePassRenderer.pure";
 

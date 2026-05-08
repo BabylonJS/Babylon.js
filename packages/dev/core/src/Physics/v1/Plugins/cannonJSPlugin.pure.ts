@@ -7,9 +7,9 @@ import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { type AbstractMesh } from "../../../Meshes/abstractMesh.pure";
 import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { PhysicsImpostor } from "../physicsImpostor.pure";
-import type { IPhysicsEnabledObject } from "../physicsImpostor";
-import { PhysicsJoint } from "../physicsJoint";
-import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
+import { type IPhysicsEnabledObject } from "../physicsImpostor";
+import { PhysicsJoint, type IMotorEnabledJoint, type DistanceJointData, type SpringJointData } from "../physicsJoint";
+
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { type TransformNode } from "../../../Meshes/transformNode.pure";
 import { Epsilon } from "../../../Maths/math.constants";

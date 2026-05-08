@@ -21,7 +21,7 @@ import { AbstractEngine } from "../Engines/abstractEngine.pure";
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
+const Base64DataUrlRegEx = /*#__PURE__*/ new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
 /** @ignore */
 export class LoadFileError extends RuntimeError {
