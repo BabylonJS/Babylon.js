@@ -18,10 +18,13 @@
  *   ClassName.field = Ctor.Method(...)
  *   ClassName.field = FunctionName(...)
  *
- * 2. __decorate calls (at column 0, from experimentalDecorators):
- *   __decorate([
- *       serialize()
- *   ], ClassName.prototype, "prop", void 0);
+ * NOTE: __decorate calls are intentionally NOT annotated. Property decorators
+ * (e.g. @serialize()) emit __decorate([...], Proto, "prop", void 0) which
+ * mutates the prototype (defining getters/setters). The return value is void 0
+ * (unused), so /*#__PURE__*‍/ would tell Rollup to remove them — breaking
+ * property access at runtime. File-level tree-shaking (via sideEffects:false
+ * on pure barrels) is sufficient: if the class is unused, the whole .pure.js
+ * file is excluded.
  *
  * Usage:
  *   node scripts/treeshaking/injectPureAnnotations.mjs [--dry-run] [--verbose]
@@ -71,20 +74,6 @@ if (pureFiles.length === 0) {
  */
 const STATIC_FIELD_RHS = /^(\w+\.\w+\s*=\s*)(?!\/\*#__PURE__\*\/\s*)(new\s+\w+|[A-Z]\w*\.\w+\(|[A-Z]\w*\()/gm;
 
-/**
- * Matches top-level __decorate([ calls that don't already have a PURE annotation.
- *
- * TypeScript's experimentalDecorators compiles @serialize() etc. to:
- *   __decorate([
- *       serialize()
- *   ], ClassName.prototype, "prop", void 0);
- *
- * These are top-level calls that bundlers treat as side effects.
- * Adding /*#__PURE__*‍/ tells the bundler the call is safe to remove
- * if the decorated class is unused.
- */
-const DECORATE_CALL = /^(?!\/\*#__PURE__\*\/\s*)(__decorate\()/gm;
-
 let totalAnnotations = 0;
 let totalFiles = 0;
 
@@ -97,12 +86,6 @@ for (const filePath of pureFiles) {
     patched = patched.replace(STATIC_FIELD_RHS, (match, lhs, rhs) => {
         fileAnnotations++;
         return `${lhs}/*#__PURE__*/ ${rhs}`;
-    });
-
-    // 2. Annotate __decorate calls
-    patched = patched.replace(DECORATE_CALL, (match, call) => {
-        fileAnnotations++;
-        return `/*#__PURE__*/ ${call}`;
     });
 
     if (fileAnnotations > 0) {
