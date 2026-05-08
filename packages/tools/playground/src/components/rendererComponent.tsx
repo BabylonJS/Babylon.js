@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
 import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
@@ -77,7 +79,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!this._engine) {
                 return;
             }
-            void this._downloadManager.downloadAsync();
+            this._downloadManager.downloadAsync();
         });
 
         this.props.globalState.onInspectorRequiredObservable.add(async () => {
@@ -121,7 +123,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onThemeChangedObservable.add(() => {
             if (this._inspectorV2Token) {
                 void this._inspectorV2Token.dispose();
-                void this._showInspectorAsync();
+                this._showInspectorAsync();
             }
         });
 
@@ -285,7 +287,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             return;
         }
 
-        void this._compileAndRunAsync();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._compileAndRunAsync();
     }
 
     private _finishRun() {
