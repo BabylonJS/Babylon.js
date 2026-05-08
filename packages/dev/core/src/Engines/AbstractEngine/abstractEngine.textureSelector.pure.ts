@@ -14,6 +14,7 @@ export function RegisterAbstractEngineTextureSelector(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function TransformTextureUrl(this: AbstractEngine, url: string): string {
         const excludeFn = (entry: string) => {
             const strRegExPattern: string = "\\b" + entry + "\\b";

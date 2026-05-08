@@ -24,6 +24,7 @@ export function RegisterEnginesWebGPUExtensionsEngineRawTexture(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function ConvertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
         // Create new RGBA data container.
         let rgbaData: any;

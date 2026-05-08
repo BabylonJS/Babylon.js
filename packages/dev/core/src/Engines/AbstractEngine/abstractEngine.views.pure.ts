@@ -41,8 +41,10 @@ export function RegisterAbstractEngineViews(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const OnBeforeViewRenderObservable = new Observable<EngineView>();
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const OnAfterViewRenderObservable = new Observable<EngineView>();
 
     Object.defineProperty(AbstractEngine.prototype, "onBeforeViewRenderObservable", {

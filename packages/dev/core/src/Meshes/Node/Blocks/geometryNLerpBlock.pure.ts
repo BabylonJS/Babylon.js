@@ -118,6 +118,7 @@ let _Registered = false;
  * Register side effects for geometryNLerpBlock.
  * Safe to call multiple times; only the first call has an effect.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterGeometryNLerpBlock(): void {
     if (_Registered) {
         return;

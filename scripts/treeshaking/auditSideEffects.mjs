@@ -95,6 +95,9 @@ function analyzeFile(filePath) {
     // Depth 0 = top-level module scope.
     // We track template literals and strings to avoid counting braces inside them.
     let braceDepth = 0;
+    // Also track bracket depth so expressions inside array literals
+    // (e.g. `const x = [Math.sqrt(...)]`) are not flagged as top-level calls.
+    let bracketDepth = 0;
     let inBlockComment = false;
     let inDeclareModule = false;
     let inTemplateLiteral = false;
@@ -144,6 +147,7 @@ function analyzeFile(filePath) {
         // Count braces for depth tracking, skipping braces inside strings and template literals.
         // This is a simplified scanner that handles the most common cases.
         const prevDepth = braceDepth;
+        const prevBracketDepth = bracketDepth;
         let inSingleQuote = false;
         let inDoubleQuote = false;
         for (let c = 0; c < line.length; c++) {
@@ -179,6 +183,12 @@ function analyzeFile(filePath) {
                 if (ch === "}") {
                     braceDepth = Math.max(0, braceDepth - 1);
                 }
+                if (ch === "[") {
+                    bracketDepth++;
+                }
+                if (ch === "]") {
+                    bracketDepth = Math.max(0, bracketDepth - 1);
+                }
             }
         }
         // Reset string state at end of line (single/double quotes don't span lines)
@@ -203,8 +213,8 @@ function analyzeFile(filePath) {
             continue;
         }
 
-        // Only detect side effects at top-level (braceDepth was 0 before this line opened a brace)
-        if (prevDepth !== 0) {
+        // Only detect side effects at top-level (braceDepth and bracketDepth were 0 before this line)
+        if (prevDepth !== 0 || prevBracketDepth !== 0) {
             continue;
         }
 

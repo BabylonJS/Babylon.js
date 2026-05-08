@@ -17,6 +17,7 @@ export function RegisterEnginesWebGPUExtensionsEngineVideoTexture(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function IsExternalTexture(texture: Nullable<ExternalTexture> | HTMLVideoElement): texture is ExternalTexture {
         return texture && (texture as ExternalTexture).underlyingResource !== undefined ? true : false;
     }

@@ -37,6 +37,7 @@ export function RegisterEnginesExtensionsEngineRawTexture(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function ConvertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
         // Create new RGBA data container.
         let rgbaData: any;
@@ -71,6 +72,7 @@ export function RegisterEnginesExtensionsEngineRawTexture(): void {
         return rgbaData;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function MakeCreateRawTextureFunction(is3D: boolean) {
         return function (
             this: ThinEngine,
@@ -133,6 +135,7 @@ export function RegisterEnginesExtensionsEngineRawTexture(): void {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function MakeUpdateRawTextureFunction(is3D: boolean) {
         return function (
             this: ThinEngine,

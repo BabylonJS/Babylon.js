@@ -11,6 +11,7 @@ export function RegisterObservableCoroutine(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function CreateObservableScheduler<T>(observable: Observable<any>): { scheduler: CoroutineScheduler<T>; dispose: () => void } {
         const coroutines = new Array<AsyncCoroutine<T>>();
         const onSteps = new Array<(stepResult: CoroutineStep<T>) => void>();

@@ -851,7 +851,7 @@ const plugin: IPlugin = {
         },
 
         /**
-         * Require `/*#__PURE__*​/` annotations on top-level call / new expressions
+         * Require `#__PURE__` annotations on top-level call / new expressions
          * and static field initializers inside `.pure.ts` files.
          *
          * These annotations tell bundlers (Rollup, Webpack) that the call has no
@@ -880,6 +880,8 @@ const plugin: IPlugin = {
                 /**
                  * Unwrap TS type assertions (e.g. `new Foo() as Bar`) to find the
                  * underlying CallExpression or NewExpression.
+                 * @param node - The AST node to unwrap.
+                 * @returns The unwrapped CallExpression/NewExpression, or null.
                  */
                 function findCallOrNew(node: any): any {
                     if (!node) {
@@ -894,7 +896,11 @@ const plugin: IPlugin = {
                     return null;
                 }
 
-                /** Check whether the node is preceded by a PURE block comment. */
+                /**
+                 * Check whether the node is preceded by a PURE block comment.
+                 * @param node - The AST node to check.
+                 * @returns True if a #__PURE__ annotation precedes the node.
+                 */
                 function hasPureAnnotation(node: any): boolean {
                     // getCommentsBefore returns leading comments attached to the node
                     const comments = sourceCode.getCommentsBefore?.(node) ?? [];
@@ -1004,6 +1010,8 @@ const plugin: IPlugin = {
                  * Resolve an import source relative to the current file and
                  * return the manifest-style path (relative to packages/dev/core/src/).
                  * Returns null if the file is outside core/src.
+                 * @param source - The import specifier to resolve.
+                 * @returns The manifest-relative path if the source has side effects, or null.
                  */
                 function resolveToManifestPath(source: string): string | null {
                     if (!source.startsWith(".")) {
@@ -1038,6 +1046,8 @@ const plugin: IPlugin = {
                  * Check whether an import source is known to have side effects
                  * according to the manifest.  Falls back to naming-convention
                  * heuristics when the manifest is unavailable.
+                 * @param source - The import specifier to check.
+                 * @returns True if the source has side effects.
                  */
                 function hasSideEffects(source: string): boolean {
                     if (sideEffectFiles.size > 0) {

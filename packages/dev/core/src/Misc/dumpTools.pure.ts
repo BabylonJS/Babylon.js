@@ -335,6 +335,7 @@ export function RegisterDumpTools(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const InitSideEffects = () => {
         // References the dependencies.
         Tools.DumpData = DumpData;

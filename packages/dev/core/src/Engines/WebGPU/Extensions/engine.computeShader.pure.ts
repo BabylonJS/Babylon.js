@@ -24,6 +24,7 @@ export function RegisterEnginesWebGPUExtensionsEngineComputeShader(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const ComputePassDescriptor: GPUComputePassDescriptor = {};
 
     WebGPUEngine.prototype.createComputeContext = function (): IComputeContext | undefined {

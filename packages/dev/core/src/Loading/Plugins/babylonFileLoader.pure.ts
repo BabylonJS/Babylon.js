@@ -804,6 +804,7 @@ export function RegisterBabylonFileLoader(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
         if (!parsedData.materials) {
             return null;
@@ -818,6 +819,7 @@ export function RegisterBabylonFileLoader(): void {
         return null;
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const IsDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>) => {
         for (const i in names) {
             if (mesh.name === names[i]) {

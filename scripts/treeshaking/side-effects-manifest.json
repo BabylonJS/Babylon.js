@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalFiles": 3197,
-    "filesWithSideEffects": 1411,
-    "filesWithoutSideEffects": 1786,
+    "filesWithSideEffects": 1410,
+    "filesWithoutSideEffects": 1787,
     "byType": {
-      "top-level-call": 633,
+      "top-level-call": 628,
       "declare-module": 108,
       "bare-import": 144,
       "static-property-assignment": 1,
@@ -12,7 +12,7 @@
       "shader-store-write": 633
     },
     "filesByType": {
-      "top-level-call": 629,
+      "top-level-call": 628,
       "declare-module": 91,
       "bare-import": 54,
       "static-property-assignment": 1,
@@ -5078,36 +5078,6 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterMathVector();"
-        }
-      ]
-    },
-    {
-      "file": "Maths/sphericalPolynomial.pure.ts",
-      "sideEffects": [
-        {
-          "type": "top-level-call",
-          "line": 46,
-          "text": "Math.sqrt(1 / (4 * Math.PI)), // l00"
-        },
-        {
-          "type": "top-level-call",
-          "line": 49,
-          "text": "Math.sqrt(3 / (4 * Math.PI)), // l10"
-        },
-        {
-          "type": "top-level-call",
-          "line": 52,
-          "text": "Math.sqrt(15 / (4 * Math.PI)), // l2_2"
-        },
-        {
-          "type": "top-level-call",
-          "line": 54,
-          "text": "Math.sqrt(5 / (16 * Math.PI)), // l20"
-        },
-        {
-          "type": "top-level-call",
-          "line": 56,
-          "text": "Math.sqrt(15 / (16 * Math.PI)), // l22"
         }
       ]
     },

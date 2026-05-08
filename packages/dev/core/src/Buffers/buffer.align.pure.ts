@@ -14,6 +14,7 @@ export function RegisterBufferAlign(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const IsLittleEndian = (() => {
         const array = new Uint8Array(4);
         const view = new Uint32Array(array.buffer);

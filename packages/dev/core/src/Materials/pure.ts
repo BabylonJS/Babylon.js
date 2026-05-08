@@ -2,6 +2,7 @@
 export * from "./index.pure";
 export * from "./colorCurves.pure";
 export * from "./effect.pure";
+// eslint-disable-next-line babylonjs/no-side-effect-imports-in-pure -- TODO: wrap effect.webgl.functions.pure side effects in register function
 export * from "./effect.webgl.functions.pure";
 export * from "./effectRenderer.pure";
 export * from "./fresnelParameters.pure";

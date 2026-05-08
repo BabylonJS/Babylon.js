@@ -23,6 +23,7 @@ export function RegisterEngineMultiview(): void {
     }
     _Registered = true;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     function CreateMultiviewUbo(engine: AbstractEngine, name?: string, trackUBOsInFrame?: boolean) {
         const ubo = new UniformBuffer(engine, undefined, true, name, undefined, trackUBOsInFrame);
         ubo.addUniform("viewProjection", 16);
@@ -34,6 +35,7 @@ export function RegisterEngineMultiview(): void {
         return ubo;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const CurrentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer;
 
     Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number, colorTexture?: WebGLTexture, depthStencilTexture?: WebGLTexture) {
