@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type FrameGraph } from "core/index.pure";
+import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type FrameGraph } from "core/index";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphMotionBlurTask } from "core/FrameGraph/Tasks/PostProcesses/motionBlurTask";

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index.pure";
+import { type Scene, type FrameGraph } from "core/index";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphBlackAndWhiteTask } from "core/FrameGraph/Tasks/PostProcesses/blackAndWhiteTask";
 import { ThinBlackAndWhitePostProcess } from "core/PostProcesses/thinBlackAndWhitePostProcess";

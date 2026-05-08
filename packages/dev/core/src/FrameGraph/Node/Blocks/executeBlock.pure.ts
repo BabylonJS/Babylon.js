@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type FrameGraphContext } from "core/index.pure";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type FrameGraphContext } from "core/index";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { FrameGraphExecuteTask } from "../../Tasks/Misc/executeTask";

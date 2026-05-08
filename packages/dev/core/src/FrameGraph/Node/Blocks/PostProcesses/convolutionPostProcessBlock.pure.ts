@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index.pure";
+import { type Scene, type FrameGraph } from "core/index";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphConvolutionTask } from "../../../Tasks/PostProcesses/convolutionTask";
 import { ThinConvolutionPostProcess } from "../../../../PostProcesses/thinConvolutionPostProcess";

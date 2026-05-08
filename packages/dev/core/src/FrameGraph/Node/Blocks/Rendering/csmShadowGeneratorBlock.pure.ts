@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type FrameGraphTextureHandle, type NodeRenderGraphBuildState } from "core/index.pure";
+import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type FrameGraphTextureHandle, type NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCascadedShadowGeneratorTask } from "../../../Tasks/Rendering/csmShadowGeneratorTask";

@@ -1,12 +1,12 @@
 {
   "stats": {
-    "totalFiles": 3207,
+    "totalFiles": 3198,
     "filesWithSideEffects": 1415,
-    "filesWithoutSideEffects": 1792,
+    "filesWithoutSideEffects": 1783,
     "byType": {
       "top-level-call": 633,
       "declare-module": 108,
-      "bare-import": 150,
+      "bare-import": 160,
       "static-property-assignment": 1,
       "prototype-assignment": 6,
       "shader-store-write": 633
@@ -181,7 +181,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 6,
           "text": "import \"./buffer.align\";"
         }
       ]
@@ -881,7 +881,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 19,
           "text": "import \"./abstractEngine.textureSelector\";"
         }
       ]
@@ -1366,7 +1366,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 25,
           "text": "import \"./engine.textureSelector\";"
         }
       ]
@@ -3196,7 +3196,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 51,
           "text": "import \"./Shaders/ShadersInclude/sceneFragmentDeclaration\";"
         }
       ]
@@ -3326,22 +3326,22 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 4,
           "text": "import \"../../Shaders/lightProxy.fragment\";"
         },
         {
           "type": "bare-import",
-          "line": 4,
+          "line": 5,
           "text": "import \"../../Shaders/lightProxy.vertex\";"
         },
         {
           "type": "bare-import",
-          "line": 5,
+          "line": 6,
           "text": "import \"../../ShadersWGSL/lightProxy.fragment\";"
         },
         {
           "type": "bare-import",
-          "line": 6,
+          "line": 7,
           "text": "import \"../../ShadersWGSL/lightProxy.vertex\";"
         }
       ]
@@ -3556,7 +3556,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 64,
           "text": "import \"./material.decalMap\";"
         }
       ]
@@ -5446,12 +5446,12 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 62,
           "text": "import \"./abstractMesh.decalMap\";"
         },
         {
           "type": "bare-import",
-          "line": 4,
+          "line": 63,
           "text": "import \"./thinInstanceMesh\";"
         }
       ]
@@ -6616,7 +6616,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 29,
           "text": "import \"./particleSystemComponent\";"
         }
       ]
@@ -7486,12 +7486,62 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 10,
+          "text": "import \"../../../Shaders/ssao2.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 11,
+          "text": "import \"../../../Shaders/ssaoCombine.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 12,
+          "text": "import \"../../../ShadersWGSL/ssao2.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 13,
+          "text": "import \"../../../ShadersWGSL/ssaoCombine.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 16,
+          "text": "import \"../../../Shaders/screenSpaceReflection2.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 17,
+          "text": "import \"../../../Shaders/screenSpaceReflection2Blur.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 18,
+          "text": "import \"../../../Shaders/screenSpaceReflection2BlurCombiner.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 19,
+          "text": "import \"../../../ShadersWGSL/screenSpaceReflection2.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 20,
+          "text": "import \"../../../ShadersWGSL/screenSpaceReflection2Blur.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 21,
+          "text": "import \"../../../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 24,
           "text": "import \"../../../Shaders/taa.fragment\";"
         },
         {
           "type": "bare-import",
-          "line": 4,
+          "line": 25,
           "text": "import \"../../../ShadersWGSL/taa.fragment\";"
         }
       ]

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint } from "core/index.pure";
+import { type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { Color4 } from "../../../../Maths/math.color.pure";

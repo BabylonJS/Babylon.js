@@ -1,15 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import {
-    type Camera,
-    type FrameGraph,
-    type FrameGraphObjectList,
-    type FrameGraphTextureHandle,
-    type InternalTexture,
-    type Mesh,
-    type Nullable,
-    type Observer,
-} from "core/index.pure";
+import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type InternalTexture, type Mesh, type Nullable, type Observer } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { type Material } from "core/Materials/material.pure";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";

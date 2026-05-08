@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index.pure";
+import { type Scene, type FrameGraph } from "core/index";
 import { FrameGraphPassCubeTask, FrameGraphPassTask } from "core/FrameGraph/Tasks/PostProcesses/passTask";
 import { ThinPassCubePostProcess, ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "././baseWithPropertiesPostProcessBlock";

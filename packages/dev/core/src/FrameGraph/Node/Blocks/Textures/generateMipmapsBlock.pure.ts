@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState } from "core/index.pure";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraphTextureHandle, type FrameGraph, type NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { FrameGraphGenerateMipMapsTask } from "../../../Tasks/Texture/generateMipMapsTask";

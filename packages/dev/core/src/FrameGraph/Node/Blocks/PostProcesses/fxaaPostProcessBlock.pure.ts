@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph } from "core/index.pure";
+import { type Scene, type FrameGraph } from "core/index";
 import { FrameGraphFXAATask } from "core/FrameGraph/Tasks/PostProcesses/fxaaTask";
 import { ThinFXAAPostProcess } from "core/PostProcesses/thinFXAAPostProcess";
 import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type Camera } from "core/index.pure";
+import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type NodeRenderGraphBuildState, type FrameGraphTextureHandle, type Camera } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";

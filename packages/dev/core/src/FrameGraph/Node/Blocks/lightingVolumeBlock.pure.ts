@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type FrameGraph, type FrameGraphShadowGeneratorTask, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint, type Scene } from "core/index.pure";
+import { type FrameGraph, type FrameGraphShadowGeneratorTask, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint, type Scene } from "core/index";
 import { FrameGraphLightingVolumeTask } from "core/FrameGraph/Tasks/Misc/lightingVolumeTask";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";

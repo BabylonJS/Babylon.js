@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeRenderGraphConnectionPoint, type Scene, type Nullable, type FrameGraph, type NodeRenderGraphTeleportOutBlock } from "core/index.pure";
+import { type NodeRenderGraphConnectionPoint, type Scene, type Nullable, type FrameGraph, type NodeRenderGraphTeleportOutBlock } from "core/index";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";

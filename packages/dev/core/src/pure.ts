@@ -1,9 +1,8 @@
 /** Pure barrel — re-exports only side-effect-free modules */
-export * from "./types";
-export * from "./sceneComponent";
-export * from "./scene.pure";
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Actions/pure";
 export * from "./Animations/pure";
+export * from "./assetContainer";
 export * from "./Audio/pure";
 export * from "./AudioV2/pure";
 export * from "./BakedVertexAnimation/pure";
@@ -35,6 +34,7 @@ export * from "./Meshes/pure";
 export * from "./Misc/pure";
 export * from "./Morph/pure";
 export * from "./Navigation/pure";
+export * from "./node";
 export * from "./ObjectModel/pure";
 export * from "./Offline/pure";
 export * from "./Particles/pure";
@@ -42,6 +42,9 @@ export * from "./Physics/pure";
 export * from "./PostProcesses/pure";
 export * from "./Probes/pure";
 export * from "./Rendering/pure";
+export * from "./scene.pure";
+export * from "./sceneComponent";
 export * from "./Sprites/pure";
 export * from "./States/pure";
+export * from "./types";
 export * from "./XR/pure";
