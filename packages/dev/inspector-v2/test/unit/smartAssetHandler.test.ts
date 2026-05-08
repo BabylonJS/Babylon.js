@@ -1,40 +1,25 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { AddSmartAssetsPaneSelectionObserver, ClearSmartAssetsPaneSelectionRequest } from "../../src/services/smartAssetsPaneSelection";
 import { inspectorAssetNotFoundHandler, SetInspectorAssetNotFoundPromptHandler } from "../../src/services/smartAssetHandler";
 
 describe("inspectorAssetNotFoundHandler", () => {
-    beforeEach(() => {
-        ClearSmartAssetsPaneSelectionRequest();
-    });
-
     afterEach(() => {
         SetInspectorAssetNotFoundPromptHandler(null);
-        ClearSmartAssetsPaneSelectionRequest();
     });
 
-    it("requests Smart Assets pane selection again after the missing asset prompt resolves", async () => {
+    it("delegates the missing-asset prompt to the registered handler and returns its result", async () => {
         let resolvePrompt: ((value: string | File | null) => void) | undefined;
-        let markPromptReady: () => void;
-        const promptReady = new Promise<void>((resolve) => {
-            markPromptReady = resolve;
+        const promptReady = new Promise<void>((resolveReady) => {
+            SetInspectorAssetNotFoundPromptHandler(
+                async () =>
+                    await new Promise<string | File | null>((resolve) => {
+                        resolvePrompt = resolve;
+                        resolveReady();
+                    })
+            );
         });
-        let selectionRequestCount = 0;
-        const selectionObserver = AddSmartAssetsPaneSelectionObserver(() => {
-            selectionRequestCount++;
-        });
-
-        SetInspectorAssetNotFoundPromptHandler(
-            async () =>
-                await new Promise<string | File | null>((resolve) => {
-                    resolvePrompt = resolve;
-                    markPromptReady();
-                })
-        );
 
         const resultPromise = inspectorAssetNotFoundHandler("missing-asset", "missing-asset.glb");
-
-        expect(selectionRequestCount).toBe(1);
 
         await promptReady;
         if (!resolvePrompt) {
@@ -43,9 +28,5 @@ describe("inspectorAssetNotFoundHandler", () => {
 
         resolvePrompt("resolved-local-asset.glb");
         await expect(resultPromise).resolves.toBe("resolved-local-asset.glb");
-
-        expect(selectionRequestCount).toBe(2);
-
-        selectionObserver?.remove();
     });
 });

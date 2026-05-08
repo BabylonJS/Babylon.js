@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type FunctionComponent } from "react";
 
-import { type Scene, type IDisposable } from "core/scene";
+import { type Scene } from "core/scene";
 import {
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
@@ -26,7 +26,6 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
-import { AddSmartAssetsPaneSelectionObserver, ClearSmartAssetsPaneSelectionRequest, EnableSmartAssetsPaneSelectionRequestCache } from "../smartAssetsPaneSelection";
 import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -51,48 +50,23 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
     friendlyName: "Smart Assets",
     consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
     factory: (shellService, sceneContext, selectionService) => {
-        let paneRegistration: IDisposable | null = null;
-
-        const registerPane = () => {
-            if (paneRegistration) {
-                return;
-            }
-
-            paneRegistration = shellService.addSidePane({
-                key: SmartAssetsPaneKey,
-                title: SmartAssetsPaneKey,
-                icon: CubeRegular,
-                horizontalLocation: "right",
-                verticalLocation: "top",
-                order: 395,
-                teachingMoment: false,
-                content: () => {
-                    const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                    return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
-                },
-            });
-        };
-
-        const selectPane = () => {
-            registerPane();
-            // shellService.onSelectSidePane is sticky (notifyIfTriggered = true), so a single
-            // synchronous select() call handles the "pane not yet mounted" case for us — the
-            // shell replays the cached selection to the SidePaneStrip when it subscribes.
-            shellService.sidePanes.find((pane) => pane.key === SmartAssetsPaneKey)?.select();
-            ClearSmartAssetsPaneSelectionRequest();
-        };
-
-        registerPane();
-
-        const sceneObserver = sceneContext.currentSceneObservable.add(registerPane);
-        const selectionObserver = AddSmartAssetsPaneSelectionObserver(selectPane);
+        const paneRegistration = shellService.addSidePane({
+            key: SmartAssetsPaneKey,
+            title: SmartAssetsPaneKey,
+            icon: CubeRegular,
+            horizontalLocation: "right",
+            verticalLocation: "top",
+            order: 395,
+            teachingMoment: false,
+            content: () => {
+                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
+            },
+        });
 
         return {
             dispose: () => {
-                paneRegistration?.dispose();
-                sceneObserver.remove();
-                selectionObserver?.remove();
-                EnableSmartAssetsPaneSelectionRequestCache();
+                paneRegistration.dispose();
             },
         };
     },

@@ -1,6 +1,5 @@
 import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { Observable } from "core/Misc/observable";
-import { SelectSmartAssetsPane } from "./smartAssetsPaneSelection";
 
 type InspectorAssetNotFoundPromptHandlerCallback = (key: string, expectedUrl: string) => Promise<string | File | null>;
 
@@ -64,18 +63,14 @@ async function RunQueuedMissingAssetPromptAsync(key: string, expectedUrl: string
 
 /**
  * Default handler for missing assets. Delegates to the Inspector UI when it is open.
+ * Pane focus is handled by the prompt host itself once the user picks a file.
  * @param key - The smart asset key that was not found.
  * @param expectedUrl - The URL that failed to load.
  * @returns A promise resolving to a new URL, File, or null to skip.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
-    SelectSmartAssetsPane();
-    const replacementAsset = await RunQueuedMissingAssetPromptAsync(key, expectedUrl);
-    if (replacementAsset) {
-        SelectSmartAssetsPane();
-    }
-    return replacementAsset;
+    return await RunQueuedMissingAssetPromptAsync(key, expectedUrl);
 }
 
 /**
