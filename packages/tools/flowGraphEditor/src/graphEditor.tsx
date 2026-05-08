@@ -212,6 +212,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _blockToNodeMap = new Map<FlowGraphBlock, GraphNode>();
 
     private _onDocumentKeyDown = (evt: KeyboardEvent) => {
+        // Don't process editor shortcuts (Delete, Backspace, Ctrl+Z, Ctrl+A, Ctrl+F, etc.) while
+        // the user is typing in a text input, textarea, or contentEditable element. Without this
+        // guard, pressing Delete inside a property-panel input would delete the selected node,
+        // and Ctrl+A would select all canvas nodes instead of all the input's text.
+        const target = evt.target as HTMLElement | null;
+        if (target) {
+            const tag = target.tagName;
+            if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable) {
+                return;
+            }
+        }
+
         if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
             return;
         }
