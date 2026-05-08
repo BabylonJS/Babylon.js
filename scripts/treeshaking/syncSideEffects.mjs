@@ -84,6 +84,7 @@ function updatePackageJson(pkgPath, sideEffects) {
 function main() {
     const args = process.argv.slice(2);
     const dryRun = args.includes("--dry-run");
+    const check = args.includes("--check");
     const verbose = args.includes("--verbose");
 
     // Read manifest
@@ -141,6 +142,22 @@ function main() {
         console.log("\n=== @babylonjs/core sideEffects ===");
         console.log(JSON.stringify(entries, null, 2));
         return;
+    }
+
+    if (check) {
+        // Compare expected entries to what's currently in package.json
+        const raw = readFileSync(PUBLIC_PKG_JSON, "utf-8");
+        const pkg = JSON.parse(raw);
+        const current = JSON.stringify(pkg.sideEffects ?? [], null, 2);
+        const expected = JSON.stringify(entries, null, 2);
+        if (current === expected) {
+            console.log("✅ @babylonjs/core package.json sideEffects is up-to-date.\n");
+            process.exit(0);
+        } else {
+            console.error("❌ @babylonjs/core package.json sideEffects is out of date!");
+            console.error("To fix: node scripts/treeshaking/syncSideEffects.mjs\n");
+            process.exit(1);
+        }
     }
 
     // Write to @babylonjs/core package.json only
