@@ -2,7 +2,7 @@
 
 import { AddAnimationExtensions } from "./animatable.core";
 import { Bone } from "../Bones/bone.pure";
-import { Scene } from "core/scene.pure";
+import { Scene } from "../scene.pure";
 
 export * from "./animatable.core";
 

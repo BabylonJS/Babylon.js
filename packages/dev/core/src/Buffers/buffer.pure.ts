@@ -7,6 +7,7 @@ import { type Mesh } from "../Meshes/mesh.pure";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 import { EnumerateFloatValues, GetFloatData, GetTypeByteLength } from "./bufferUtils";
+import { RegisterEngineDynamicBuffer } from "../Engines/Extensions/engine.dynamicBuffer.pure";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -58,6 +59,7 @@ export class Buffer {
         divisor?: number,
         label?: string
     ) {
+        RegisterEngineDynamicBuffer();
         if (engine && (engine as unknown as Mesh).getScene) {
             // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
             this._engine = (engine as unknown as Mesh).getScene().getEngine();

@@ -22,6 +22,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import { type IAnimatable } from "../Animations/animatable.interface";
+import { RegisterAnimatable } from "../Animations/animatable.pure";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
@@ -964,6 +965,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         customEffect: Nullable<Effect> = null,
         isAnimationSheetEnabled: boolean = false
     ) {
+        RegisterAnimatable();
         super(name);
 
         if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {

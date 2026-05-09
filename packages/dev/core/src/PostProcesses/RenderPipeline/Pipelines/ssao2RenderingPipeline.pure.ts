@@ -23,6 +23,8 @@ import { type ISize } from "../../../Maths/math.size";
 import { ThinSSAO2BlurPostProcess } from "../../thinSSAO2BlurPostProcess";
 import { ThinSSAO2CombinePostProcess } from "../../thinSSAO2CombinePostProcess";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { RegisterPrePassRendererSceneComponent } from "../../../Rendering/prePassRendererSceneComponent.pure";
+import { RegisterGeometryBufferRendererSceneComponent } from "../../../Rendering/geometryBufferRendererSceneComponent.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -334,6 +336,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         forceGeometryBuffer: boolean | GeometryBufferRenderer = false,
         textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
+        RegisterPrePassRendererSceneComponent();
+        RegisterGeometryBufferRendererSceneComponent();
         super(scene.getEngine(), name);
 
         this._thinSSAORenderingPipeline = new ThinSSAO2RenderingPipeline(name, scene);

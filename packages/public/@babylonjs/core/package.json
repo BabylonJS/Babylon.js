@@ -55,6 +55,7 @@
     "esnext": "index.js",
     "type": "module",
     "sideEffects": [
+        "**/index.js",
         "Shaders/**",
         "ShadersWGSL/**",
         "Actions/action.js",
@@ -351,6 +352,7 @@
         "Lights/Clustered/clusteredLightContainer.js",
         "Lights/Clustered/clusteredLightingSceneComponent.js",
         "Lights/Clustered/index.js",
+        "Lights/Shadows/cascadedShadowGenerator.js",
         "Lights/Shadows/shadowGeneratorSceneComponent.js",
         "Lights/areaLight.types.js",
         "Lights/directionalLight.js",

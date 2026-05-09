@@ -4,5 +4,7 @@
  */
 export * from "./noiseProceduralTexture.pure";
 
+import "../../../Shaders/noise.fragment";
+
 import { RegisterNoiseProceduralTexture } from "./noiseProceduralTexture.pure";
 RegisterNoiseProceduralTexture();

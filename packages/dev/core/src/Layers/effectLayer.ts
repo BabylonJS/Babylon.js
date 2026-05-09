@@ -8,6 +8,7 @@ import { type ISize } from "../Maths/math.size";
 import { type Color4 } from "../Maths/math.color";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
+import { RegisterEffectLayerSceneComponent } from "./effectLayerSceneComponent.pure";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
@@ -318,6 +319,7 @@ export abstract class EffectLayer {
         this.name = name;
 
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
+        RegisterEffectLayerSceneComponent();
         EffectLayer._SceneComponentInitialization(this._scene);
 
         this._engine = this._scene.getEngine();

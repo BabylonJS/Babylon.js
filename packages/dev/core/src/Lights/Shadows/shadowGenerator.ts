@@ -20,6 +20,7 @@ import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Observable } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
+import { RegisterShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent.pure";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
@@ -874,6 +875,13 @@ export class ShadowGenerator implements IShadowGenerator {
     };
 
     /**
+     * @internal
+     * Used by the scene component parser to parse cascaded shadow generators without a direct import
+     * (avoids circular dependency between shadowGeneratorSceneComponent and cascadedShadowGenerator).
+     */
+    public static _CascadedShadowGeneratorParser: ((parsedShadowGenerator: any, scene: Scene) => ShadowGenerator) | null = null;
+
+    /**
      * Gets or sets the size of the texture what stores the shadows
      */
     public get mapSize(): number {
@@ -993,6 +1001,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._sceneUBOs = [this._scene.createSceneUniformBuffer(`Scene for Shadow Generator (light "${this._light.name}")`, { forceMono: true })];
         }
 
+        RegisterShadowGeneratorSceneComponent();
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
         // Texture type fallback from float to int if not supported.

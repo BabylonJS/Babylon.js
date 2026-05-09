@@ -7,7 +7,6 @@ import { SceneComponentConstants, type ISceneSerializableComponent } from "../..
 import { type IAssetContainer } from "core/IAssetContainer";
 import { type Scene } from "../../scene.pure";
 import { ShadowGenerator } from "./shadowGenerator";
-import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 /**
@@ -141,8 +140,8 @@ export function RegisterShadowGeneratorSceneComponent(): void {
         if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
             for (let index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                 const parsedShadowGenerator = parsedData.shadowGenerators[index];
-                if (parsedShadowGenerator.className === CascadedShadowGenerator.CLASSNAME) {
-                    CascadedShadowGenerator.Parse(parsedShadowGenerator, scene);
+                if (ShadowGenerator._CascadedShadowGeneratorParser && parsedShadowGenerator.className === "CascadedShadowGenerator") {
+                    ShadowGenerator._CascadedShadowGeneratorParser(parsedShadowGenerator, scene);
                 } else {
                     ShadowGenerator.Parse(parsedShadowGenerator, scene);
                 }

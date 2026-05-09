@@ -16,6 +16,7 @@ import { BaseParticleSystem } from "./baseParticleSystem.pure";
 import { Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import { type IAnimatable } from "../Animations/animatable.interface";
+import { RegisterAnimatable } from "../Animations/animatable.pure";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import { type DataBuffer } from "../Buffers/dataBuffer";
@@ -568,6 +569,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         epsilon: number = 0.01,
         noUpdateQueue: boolean = false
     ) {
+        RegisterAnimatable();
         super(name);
 
         this._capacity = capacity;

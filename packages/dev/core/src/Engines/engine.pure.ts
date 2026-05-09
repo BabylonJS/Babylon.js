@@ -33,6 +33,8 @@ import {
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
 import { _RetryWithInterval } from "core/Misc/timingTools";
+import { RegisterAbstractEngineDom } from "./AbstractEngine/abstractEngine.dom.pure";
+import { RegisterAbstractEngineRenderPass } from "./AbstractEngine/abstractEngine.renderPass.pure";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -359,6 +361,8 @@ export class Engine extends ThinEngine {
         options?: EngineOptions,
         adaptToDeviceRatio: boolean = false
     ) {
+        RegisterAbstractEngineDom();
+        RegisterAbstractEngineRenderPass();
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
         this._drawCalls = new PerfCounter();

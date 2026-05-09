@@ -18,6 +18,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
 import { type Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
+import { RegisterAbstractEngineRenderPass } from "../Engines/AbstractEngine/abstractEngine.renderPass.pure";
 
 import { type PostProcess } from "../PostProcesses/postProcess.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
@@ -473,6 +474,7 @@ export class Camera extends Node {
      * @param setActiveOnSceneIfNoneActive Defines if the camera should be set as active after creation if no other camera have been defined in the scene
      */
     constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
+        RegisterAbstractEngineRenderPass();
         super(name, scene, false);
 
         this.layerMask = this.getScene().defaultCameraLayerMask;

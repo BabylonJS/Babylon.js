@@ -13,6 +13,7 @@ import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess.pure";
 import { Constants } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import { type Scene } from "../../../scene.pure";
+import { RegisterDepthRendererSceneComponent } from "../../../Rendering/depthRendererSceneComponent.pure";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
 import { RandomRange } from "../../../Maths/math.scalar.functions";
 
@@ -109,6 +110,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras - The array of cameras that the rendering pipeline will be attached to
      */
     constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
+        RegisterDepthRendererSceneComponent();
         super(scene.getEngine(), name);
 
         this._scene = scene;

@@ -77,6 +77,8 @@ import {
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { PerfCounter } from "../Misc/perfCounter";
 import { resetCachedPipeline } from "../Materials/effect.functions";
+import { RegisterAbstractEngineDom } from "./AbstractEngine/abstractEngine.dom.pure";
+import { RegisterAbstractEngineRenderPass } from "./AbstractEngine/abstractEngine.renderPass.pure";
 
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import { type TextureSampler } from "../Materials/Textures/textureSampler";
@@ -626,6 +628,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
     public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
+        RegisterAbstractEngineDom();
+        RegisterAbstractEngineRenderPass();
         super(options.antialias ?? true, options);
         this._name = "WebGPU";
 

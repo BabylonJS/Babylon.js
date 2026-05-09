@@ -117,6 +117,10 @@ function main() {
     // Build the sideEffects list for the public package
     const entries = [];
 
+    // 0. All barrel index files are side-effectful (they re-export wrappers
+    //    that call Register* functions, so bundlers must traverse them)
+    entries.push("**/index.js");
+
     // 1. Glob patterns for fully side-effectful directories
     for (const dir of [...globDirs].sort()) {
         entries.push(`${dir}/**`);
