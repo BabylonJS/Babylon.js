@@ -32,6 +32,13 @@ const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
+const IS_ADO = !!process.env.TF_BUILD;
+
+function adoError(msg) {
+    if (IS_ADO) {
+        console.log(`##vso[task.logissue type=error]${msg}`);
+    }
+}
 
 const HEADER = `/** Pure barrel — re-exports only side-effect-free modules */\n`;
 const writtenFiles = [];
@@ -594,6 +601,7 @@ if (CHECK) {
         }
         console.error(`\n❌ ${driftCount} pure barrel(s) are out of date.`);
         console.error(`To fix: npm run generate:pure-barrels\n`);
+        adoError(`${driftCount} pure barrel(s) are out of date. Run: npm run generate:pure-barrels`);
         process.exit(1);
     } else {
         console.log(`\n✅ All pure barrels are up-to-date.\n`);

@@ -25,6 +25,13 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const COMMITTED_MANIFEST = resolve(__dirname, "side-effects-manifest.json");
 const TMP_MANIFEST = resolve(__dirname, ".tmp-manifest-check.json");
+const IS_ADO = !!process.env.TF_BUILD;
+
+function adoError(msg) {
+    if (IS_ADO) {
+        console.log(`##vso[task.logissue type=error]${msg}`);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Main
@@ -47,7 +54,9 @@ function main() {
     try {
         committed = readFileSync(COMMITTED_MANIFEST, "utf-8");
     } catch {
-        console.error(`Committed manifest not found at ${COMMITTED_MANIFEST}.\n` + "Run: npm run update:manifest");
+        const msg = `Committed manifest not found at ${COMMITTED_MANIFEST}. Run: npm run update:manifest`;
+        console.error(msg);
+        adoError(msg);
         process.exit(2);
     }
 
@@ -75,6 +84,7 @@ function main() {
 
     // Diff: report what changed
     console.error("❌ Manifest drift detected!\n");
+    adoError("Side-effects manifest drift detected. Run: npm run update:manifest");
 
     const cFiles = new Set(committedObj.manifest.map((e) => e.file));
     const rFiles = new Set(regeneratedObj.manifest.map((e) => e.file));

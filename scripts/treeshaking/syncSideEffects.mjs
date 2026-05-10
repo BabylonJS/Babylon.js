@@ -160,6 +160,9 @@ function main() {
         } else {
             console.error("❌ @babylonjs/core package.json sideEffects is out of date!");
             console.error("To fix: node scripts/treeshaking/syncSideEffects.mjs\n");
+            if (process.env.TF_BUILD) {
+                console.log("##vso[task.logissue type=error]@babylonjs/core package.json sideEffects is out of date. Run: node scripts/treeshaking/syncSideEffects.mjs");
+            }
             process.exit(1);
         }
     }

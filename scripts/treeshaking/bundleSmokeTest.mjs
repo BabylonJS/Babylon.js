@@ -25,6 +25,13 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const TMP_DIR = join(REPO_ROOT, "scripts/treeshaking/.tmp");
 const CORE_DIST = join(REPO_ROOT, "packages/dev/core/dist");
+const IS_ADO = !!process.env.TF_BUILD;
+
+function adoError(msg) {
+    if (IS_ADO) {
+        console.log(`##vso[task.logissue type=error]${msg}`);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -373,7 +380,9 @@ async function main() {
     try {
         statSync(join(CORE_DIST, "Maths/ThinMaths/index.js"));
     } catch {
-        console.error("ERROR: packages/dev/core/dist/ not found. Run `npm run build:source` first.");
+        const msg = "packages/dev/core/dist/ not found. Run `npm run build:source` first.";
+        console.error(`ERROR: ${msg}`);
+        adoError(msg);
         process.exit(1);
     }
 
@@ -411,6 +420,12 @@ async function main() {
 
         if (!rollupResult.passed || !webpackResult.passed) {
             allPassed = false;
+            if (!rollupResult.passed) {
+                adoError(`Tree-shaking smoke test FAILED: ${tc.name} (Rollup) — ${rollupResult.size} bytes, max ${rollupResult.maxSize}`);
+            }
+            if (!webpackResult.passed) {
+                adoError(`Tree-shaking smoke test FAILED: ${tc.name} (Webpack) — ${webpackResult.size} bytes, max ${webpackResult.maxSize}`);
+            }
         }
     }
 
