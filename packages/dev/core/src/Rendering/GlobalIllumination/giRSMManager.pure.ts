@@ -984,6 +984,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
      * @param samplers the list of samplers to update
      */
     public override getSamplers(samplers: string[]) {
+        samplers.push("girsmTextureGIContrib");
     }
 
     /**
@@ -991,6 +992,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
      * @param uniformBuffer the uniform buffer to update
      */
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
+        if (this._isEnabled) {
             uniformBuffer.bindTexture("girsmTextureGIContrib", this.textureGIContrib);
             uniformBuffer.updateFloat2("girsmTextureOutputSize", this.outputTextureWidth, this.outputTextureHeight);
         }
@@ -1003,6 +1005,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
      * @returns the custom shader code
      */
     public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage) {
+        let frag: { [name: string]: string };
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
             frag = {

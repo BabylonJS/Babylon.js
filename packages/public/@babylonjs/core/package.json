@@ -353,7 +353,6 @@
         "Lights/Clustered/clusteredLightingSceneComponent.js",
         "Lights/Clustered/index.js",
         "Lights/Shadows/cascadedShadowGenerator.js",
-        "Lights/Shadows/shadowGeneratorSceneComponent.js",
         "Lights/areaLight.types.js",
         "Lights/directionalLight.js",
         "Lights/hemisphericLight.js",

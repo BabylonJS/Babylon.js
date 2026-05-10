@@ -1,17 +1,17 @@
 {
   "stats": {
     "totalFiles": 3198,
-    "filesWithSideEffects": 1415,
-    "filesWithoutSideEffects": 1783,
+    "filesWithSideEffects": 1414,
+    "filesWithoutSideEffects": 1784,
     "byType": {
-      "top-level-call": 635,
+      "top-level-call": 634,
       "declare-module": 108,
       "bare-import": 250,
       "static-property-assignment": 2,
       "shader-store-write": 633
     },
     "filesByType": {
-      "top-level-call": 635,
+      "top-level-call": 634,
       "declare-module": 91,
       "bare-import": 111,
       "static-property-assignment": 2,
@@ -3401,16 +3401,6 @@
           "type": "static-property-assignment",
           "line": 1157,
           "text": "ShadowGenerator._CascadedShadowGeneratorParser = (parsedShadowGenerator: any, scene: Scene) => CascadedShadowGenerator.P"
-        }
-      ]
-    },
-    {
-      "file": "Lights/Shadows/shadowGeneratorSceneComponent.ts",
-      "sideEffects": [
-        {
-          "type": "top-level-call",
-          "line": 8,
-          "text": "RegisterShadowGeneratorSceneComponent();"
         }
       ]
     },
