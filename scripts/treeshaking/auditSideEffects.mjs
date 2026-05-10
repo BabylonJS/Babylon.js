@@ -240,7 +240,8 @@ function analyzeFile(filePath) {
         }
 
         // 2. Prototype augmentation: SomeClass.prototype.method = ...
-        if (/\w+\.prototype\.\w+\s*=/.test(trimmed)) {
+        //    Skip `typeof X.prototype.y` (type references, not assignments).
+        if (/\w+\.prototype\.\w+\s*=/.test(trimmed) && !/\btypeof\s+\w+\.prototype\./.test(trimmed)) {
             sideEffects.push({
                 type: "prototype-assignment",
                 line: lineNum,

@@ -4,5 +4,7 @@
  */
 export * from "./refractionPostProcess.pure";
 
+import "../Shaders/refraction.fragment";
+
 import { RegisterRefractionPostProcess } from "./refractionPostProcess.pure";
 RegisterRefractionPostProcess();

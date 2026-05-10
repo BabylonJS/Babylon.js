@@ -2602,3 +2602,9 @@ export class ThinNativeEngine extends ThinEngine {
         return this._frameStats.gpuTimeNs;
     }
 }
+
+// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
+import { _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
+
+ThinNativeEngine.prototype.createCubeTexture ??= _MissingSideEffect("ThinNativeEngine", "createCubeTexture") as any;
+// #endregion GENERATED_SIDE_EFFECT_STUBS

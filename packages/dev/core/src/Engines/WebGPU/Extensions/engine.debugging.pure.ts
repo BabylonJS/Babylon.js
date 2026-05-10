@@ -91,90 +91,102 @@
 import { Logger } from "../../../Misc/logger";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
 
-WebGPUEngine.prototype._debugPushGroup = function (groupName: string): void {
-    if (!this._enableGPUDebugMarkers) {
+let _Registered = false;
+/**
+ * Register WebGPU debug marker methods on WebGPUEngine.
+ * @internal
+ */
+export function RegisterWebGPUDebugging(): void {
+    if (_Registered) {
         return;
     }
+    _Registered = true;
 
-    const debugCommands = this._currentRenderPass ?? this._renderEncoder;
+    WebGPUEngine.prototype._debugPushGroup = function (groupName: string): void {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
 
-    debugCommands.pushDebugGroup(groupName);
+        const debugCommands = this._currentRenderPass ?? this._renderEncoder;
 
-    if (this._currentRenderPass) {
-        this._debugMarkersPassGroups.push(groupName);
-    } else {
-        this._debugMarkersEncoderGroups.push(groupName);
-    }
+        debugCommands.pushDebugGroup(groupName);
 
-    if (this._showGPUDebugMarkersLog) {
-        Logger.Log(
-            `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Pushing debug group '${groupName}' on '${debugCommands.label}'.`
-        );
-    }
-};
+        if (this._currentRenderPass) {
+            this._debugMarkersPassGroups.push(groupName);
+        } else {
+            this._debugMarkersEncoderGroups.push(groupName);
+        }
 
-WebGPUEngine.prototype._debugPopGroup = function (): void {
-    if (!this._enableGPUDebugMarkers) {
-        return;
-    }
+        if (this._showGPUDebugMarkersLog) {
+            Logger.Log(
+                `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Pushing debug group '${groupName}' on '${debugCommands.label}'.`
+            );
+        }
+    };
 
-    const debugCommands = this._currentRenderPass ?? this._renderEncoder;
+    WebGPUEngine.prototype._debugPopGroup = function (): void {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
 
-    if (this._currentRenderPass) {
-        if (this._debugMarkersPassGroups.length > 0) {
-            // Normal case: pop the most-recent pass-level group from the active render pass.
-            const groupName = this._debugMarkersPassGroups.pop();
-            debugCommands.popDebugGroup();
-            if (this._showGPUDebugMarkersLog) {
-                Logger.Log(
-                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Popping debug group '${groupName}' on '${debugCommands.label}'.`
-                );
+        const debugCommands = this._currentRenderPass ?? this._renderEncoder;
+
+        if (this._currentRenderPass) {
+            if (this._debugMarkersPassGroups.length > 0) {
+                // Normal case: pop the most-recent pass-level group from the active render pass.
+                const groupName = this._debugMarkersPassGroups.pop();
+                debugCommands.popDebugGroup();
+                if (this._showGPUDebugMarkersLog) {
+                    Logger.Log(
+                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Popping debug group '${groupName}' on '${debugCommands.label}'.`
+                    );
+                }
+            } else {
+                // The group was pushed on the render encoder (before this pass started); we cannot pop
+                // it while the pass is active, so defer it until the pass ends.
+                this._debugMarkersPendingEncoderPops++;
+                if (this._showGPUDebugMarkersLog) {
+                    Logger.Log(
+                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Deferring pop of encoder-level group on '${debugCommands.label}' (pending: ${this._debugMarkersPendingEncoderPops}).`
+                    );
+                }
             }
         } else {
-            // The group was pushed on the render encoder (before this pass started); we cannot pop
-            // it while the pass is active, so defer it until the pass ends.
-            this._debugMarkersPendingEncoderPops++;
-            if (this._showGPUDebugMarkersLog) {
-                Logger.Log(
-                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Deferring pop of encoder-level group on '${debugCommands.label}' (pending: ${this._debugMarkersPendingEncoderPops}).`
-                );
+            if (this._debugMarkersPassGroups.length > 0) {
+                // The group was pushed during a render pass that has since ended (floating). No GPU
+                // object currently holds this push, so we just discard the name without any GPU call.
+                const groupName = this._debugMarkersPassGroups.pop();
+                if (this._showGPUDebugMarkersLog) {
+                    Logger.Log(
+                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Popping floating pass-level debug group '${groupName}' (no GPU pop needed).`
+                    );
+                }
+            } else {
+                // Normal case: pop the most-recent encoder-level group from the render encoder.
+                const groupName = this._debugMarkersEncoderGroups.pop();
+                debugCommands.popDebugGroup();
+                if (this._showGPUDebugMarkersLog) {
+                    Logger.Log(
+                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Popping debug group '${groupName}' on '${debugCommands.label}'.`
+                    );
+                }
             }
         }
-    } else {
-        if (this._debugMarkersPassGroups.length > 0) {
-            // The group was pushed during a render pass that has since ended (floating). No GPU
-            // object currently holds this push, so we just discard the name without any GPU call.
-            const groupName = this._debugMarkersPassGroups.pop();
-            if (this._showGPUDebugMarkersLog) {
-                Logger.Log(
-                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Popping floating pass-level debug group '${groupName}' (no GPU pop needed).`
-                );
-            }
-        } else {
-            // Normal case: pop the most-recent encoder-level group from the render encoder.
-            const groupName = this._debugMarkersEncoderGroups.pop();
-            debugCommands.popDebugGroup();
-            if (this._showGPUDebugMarkersLog) {
-                Logger.Log(
-                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Popping debug group '${groupName}' on '${debugCommands.label}'.`
-                );
-            }
+    };
+
+    WebGPUEngine.prototype._debugInsertMarker = function (text: string): void {
+        if (!this._enableGPUDebugMarkers) {
+            return;
         }
-    }
-};
 
-WebGPUEngine.prototype._debugInsertMarker = function (text: string): void {
-    if (!this._enableGPUDebugMarkers) {
-        return;
-    }
+        const debugCommands = this._currentRenderPass ?? this._renderEncoder;
 
-    const debugCommands = this._currentRenderPass ?? this._renderEncoder;
+        if (this._showGPUDebugMarkersLog) {
+            Logger.Log(
+                `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Inserting debug marker '${text}' on '${debugCommands.label}'`
+            );
+        }
 
-    if (this._showGPUDebugMarkersLog) {
-        Logger.Log(
-            `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] Inserting debug marker '${text}' on '${debugCommands.label}'`
-        );
-    }
-
-    debugCommands.insertDebugMarker(text);
-};
+        debugCommands.insertDebugMarker(text);
+    };
+} // end RegisterWebGPUDebugging

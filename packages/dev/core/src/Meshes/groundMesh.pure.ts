@@ -3,6 +3,7 @@
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector.pure";
 import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Mesh } from "../Meshes/mesh.pure";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { type Scene } from "../scene.pure";
 
 /**
@@ -79,7 +80,7 @@ export class GroundMesh extends Mesh {
 
         // Call the octree system optimization if it is defined.
         const thisAsAny = this as any;
-        if (thisAsAny.createOrUpdateSubmeshesOctree) {
+        if (_IsSideEffectImplemented(thisAsAny.createOrUpdateSubmeshesOctree)) {
             thisAsAny.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         }
     }

@@ -4,5 +4,7 @@
  */
 export * from "./computeShaderParticleSystem.pure";
 
+import "../ShadersWGSL/gpuUpdateParticles.compute";
+
 import { RegisterComputeShaderParticleSystem } from "./computeShaderParticleSystem.pure";
 RegisterComputeShaderParticleSystem();

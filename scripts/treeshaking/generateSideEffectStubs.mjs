@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve, dirname, relative, posix } from "path";
 import { globSync } from "glob";
+import { execFileSync } from "child_process";
 
 const ROOT = resolve(import.meta.dirname, "../../packages/dev/core/src");
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -241,7 +242,90 @@ for (const typesFile of typesFiles) {
     }
 }
 
+// ── Step 3.5: Prune child-class stubs inherited from a parent ───────────────
+
+// Build class hierarchy by scanning target files for `class X extends Y`
+/** @type {Map<string, string>} className -> parentClassName */
+const classHierarchy = new Map();
+for (const [targetFile] of stubsByFile) {
+    const src = readFileSync(targetFile, "utf-8");
+    const classRe = /export\s+(?:abstract\s+)?class\s+(\w+)\s+extends\s+(\w+)/g;
+    let m;
+    while ((m = classRe.exec(src)) !== null) {
+        classHierarchy.set(m[1], m[2]);
+    }
+}
+
+// Build flat map: className → Set of stubbed member names
+/** @type {Map<string, Set<string>>} */
+const allStubsByClass = new Map();
+for (const [, classMap] of stubsByFile) {
+    for (const [className, stubs] of classMap) {
+        if (!allStubsByClass.has(className)) allStubsByClass.set(className, new Set());
+        const set = allStubsByClass.get(className);
+        for (const [name] of stubs.methods) set.add(name);
+        for (const [name] of stubs.properties) set.add(name);
+    }
+}
+
+/**
+ * Get all ancestor class names (walking up the `extends` chain).
+ * @param {string} className
+ * @returns {string[]}
+ */
+function getAncestors(className) {
+    const ancestors = [];
+    let current = className;
+    while (classHierarchy.has(current)) {
+        const parent = classHierarchy.get(current);
+        ancestors.push(parent);
+        current = parent;
+    }
+    return ancestors;
+}
+
+// Remove stubs from child classes when a parent already has the same stub.
+// The parent stub is inherited via the prototype chain, so the child's ??= is
+// redundant at best and dangerous at worst (can shadow a real registration on
+// the parent if module load order changes).
+let prunedCount = 0;
+for (const [, classMap] of stubsByFile) {
+    for (const [className, stubs] of classMap) {
+        const ancestors = getAncestors(className);
+        if (ancestors.length === 0) continue;
+
+        for (const [methodName] of [...stubs.methods]) {
+            for (const ancestor of ancestors) {
+                const ancestorStubs = allStubsByClass.get(ancestor);
+                if (ancestorStubs && ancestorStubs.has(methodName)) {
+                    stubs.methods.delete(methodName);
+                    totalMethods--;
+                    prunedCount++;
+                    if (VERBOSE) console.log(`  PRUNED: ${className}.${methodName}() — inherited from ${ancestor}`);
+                    break;
+                }
+            }
+        }
+
+        for (const [propName] of [...stubs.properties]) {
+            for (const ancestor of ancestors) {
+                const ancestorStubs = allStubsByClass.get(ancestor);
+                if (ancestorStubs && ancestorStubs.has(propName)) {
+                    stubs.properties.delete(propName);
+                    totalProperties--;
+                    prunedCount++;
+                    if (VERBOSE) console.log(`  PRUNED: ${className}.${propName} — inherited from ${ancestor}`);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 // ── Step 4: Generate stub code and inject into target files ─────────────────
+
+/** @type {string[]} files written in normal mode, for post-formatting */
+const writtenFiles = [];
 
 let filesModified = 0;
 
@@ -251,10 +335,59 @@ for (const [targetFile, classMap] of stubsByFile) {
     let relPath = posix.normalize(relative(targetDir, resolve(ROOT, "Misc/devTools")).split("\\").join("/"));
     if (!relPath.startsWith(".")) relPath = "./" + relPath;
 
+    // Read target file first so we can detect its line endings
+    let content = readFileSync(targetFile, "utf-8");
+    const eol = content.includes("\r\n") ? "\r\n" : "\n";
+
+    // Strip existing stub region before searching for imports (so we don't match
+    // an import that lives inside the old region and would be removed anyway).
+    const regionStartIdx = content.indexOf(REGION_START);
+    const regionEndIdx = content.indexOf(REGION_END);
+    let contentWithoutRegion = content;
+    if (regionStartIdx !== -1 && regionEndIdx !== -1) {
+        let endSkip = regionEndIdx + REGION_END.length;
+        if (content[endSkip] === "\r") endSkip++;
+        if (content[endSkip] === "\n") endSkip++;
+        contentWithoutRegion = content.slice(0, regionStartIdx) + content.slice(endSkip);
+    }
+
+    // Determine which devTools symbols this file's stubs need
+    let needsMissingSideEffect = false;
+    let needsMissingSideEffectProperty = false;
+    for (const [, stubs] of classMap) {
+        if (stubs.methods.size > 0) needsMissingSideEffect = true;
+        if (stubs.properties.size > 0) needsMissingSideEffectProperty = true;
+    }
+    const neededSymbols = [];
+    if (needsMissingSideEffect) neededSymbols.push("_MissingSideEffect");
+    if (needsMissingSideEffectProperty) neededSymbols.push("_MissingSideEffectProperty");
+
+    // Check if there's an existing import from devTools OUTSIDE the stub region
+    const devToolsImportRe = new RegExp(`import\\s*\\{([^}]*)\\}\\s*from\\s*["']${relPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']\\s*;`);
+    const existingImportMatch = contentWithoutRegion.match(devToolsImportRe);
+    let stubImportLine = "";
+
+    if (existingImportMatch) {
+        // Merge: parse existing symbols and add missing ones
+        const existingSymbols = existingImportMatch[1]
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        const allSymbols = [...new Set([...existingSymbols, ...neededSymbols])];
+        const newImport = `import { ${allSymbols.join(", ")} } from "${relPath}";`;
+        // Replace in the original content (not contentWithoutRegion)
+        content = content.replace(existingImportMatch[0], newImport);
+    } else {
+        // No existing import — add import line inside the stub block
+        stubImportLine = `import { ${neededSymbols.join(", ")} } from "${relPath}";`;
+    }
+
     // Build stub code lines
     const lines = [];
     lines.push(REGION_START);
-    lines.push(`import { _MissingSideEffect, _MissingSideEffectProperty } from "${relPath}";`);
+    if (stubImportLine) {
+        lines.push(stubImportLine);
+    }
     lines.push("");
 
     let fileStubCount = 0;
@@ -278,20 +411,22 @@ for (const [targetFile, classMap] of stubsByFile) {
 
     if (fileStubCount === 0) continue;
 
-    const stubBlock = lines.join("\n") + "\n";
+    const stubBlock = lines.join(eol) + eol;
 
-    // Read target file and inject/replace stub block
-    let content = readFileSync(targetFile, "utf-8");
-    const regionStartIdx = content.indexOf(REGION_START);
-    const regionEndIdx = content.indexOf(REGION_END);
+    // Re-find region markers in the (possibly import-merged) content
+    const finalRegionStartIdx = content.indexOf(REGION_START);
+    const finalRegionEndIdx = content.indexOf(REGION_END);
 
-    if (regionStartIdx !== -1 && regionEndIdx !== -1) {
-        // Replace existing region
-        content = content.slice(0, regionStartIdx) + stubBlock + content.slice(regionEndIdx + REGION_END.length + 1);
+    if (finalRegionStartIdx !== -1 && finalRegionEndIdx !== -1) {
+        // Replace existing region (skip trailing newline, which may be \r\n or \n)
+        let endSkip = finalRegionEndIdx + REGION_END.length;
+        if (content[endSkip] === "\r") endSkip++;
+        if (content[endSkip] === "\n") endSkip++;
+        content = content.slice(0, finalRegionStartIdx) + stubBlock + content.slice(endSkip);
     } else {
         // Append at end of file
-        if (!content.endsWith("\n")) content += "\n";
-        content += "\n" + stubBlock;
+        if (!content.endsWith("\n")) content += eol;
+        content += eol + stubBlock;
     }
 
     if (DRY_RUN) {
@@ -300,6 +435,7 @@ for (const [targetFile, classMap] of stubsByFile) {
         expectedContents.set(targetFile, content);
     } else {
         writeFileSync(targetFile, content, "utf-8");
+        writtenFiles.push(targetFile);
     }
 
     filesModified++;
@@ -319,11 +455,35 @@ console.log(`  .types.ts files parsed:  ${typesFiles.length}`);
 console.log(`  Method stubs generated:  ${totalMethods}`);
 console.log(`  Property stubs generated: ${totalProperties}`);
 console.log(`  Internal members skipped: ${totalSkipped}`);
+console.log(`  Inherited stubs pruned:  ${prunedCount}`);
 console.log(`  Target files modified:    ${filesModified}`);
 if (DRY_RUN) console.log(`  (dry run — no files written)`);
 
+// ── Post-format: run prettier on written files ──────────────────────────────
+if (writtenFiles.length > 0) {
+    try {
+        execFileSync("npx", ["prettier", "--write", ...writtenFiles], { cwd: REPO_ROOT, stdio: "ignore" });
+    } catch {
+        // prettier not available — skip silently
+    }
+}
+
 // ── Check mode: compare expected vs on-disk ─────────────────────────────────
 if (CHECK) {
+    // Format expected content through prettier for a fair comparison
+    /** @param {string} filePath @param {string} content */
+    function formatContent(filePath, content) {
+        try {
+            return execFileSync("npx", ["prettier", "--stdin-filepath", filePath], {
+                cwd: REPO_ROOT,
+                input: content,
+                encoding: "utf-8",
+                stdio: ["pipe", "pipe", "ignore"],
+            });
+        } catch {
+            return content;
+        }
+    }
     let driftCount = 0;
     for (const [filePath, expected] of expectedContents) {
         let actual = "";
@@ -332,7 +492,7 @@ if (CHECK) {
         } catch {
             // File doesn't exist on disk
         }
-        if (actual !== expected) {
+        if (actual !== formatContent(filePath, expected)) {
             driftCount++;
             if (driftCount <= 10) {
                 console.error(`  DRIFT: ${relative(REPO_ROOT, filePath)}`);

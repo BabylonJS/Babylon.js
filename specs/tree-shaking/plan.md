@@ -1700,6 +1700,100 @@ imports from the appropriate pure source files:
 
 ---
 
+## Phase 15 — Runtime Validation & Fixes
+
+Verified tree-shaking in an external consuming project. Found and fixed several categories
+of runtime failures that only surface when a bundler actually drops unused side-effect modules.
+
+### 15.1 — Constructor-Time Registration Calls ✅
+
+Some classes unconditionally call methods from augmented prototypes in their constructors.
+When tree-shaken, these methods are undefined because no side-effect module is loaded.
+**Fix**: Call the required `Register*()` function at the top of the constructor.
+
+| File                                               | Registration Added                                                                                   |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `Cameras/camera.pure.ts`                           | `RegisterAbstractEngineRenderPass()` (calls `createRenderPassId()`)                                  |
+| `Engines/engine.pure.ts`                           | `RegisterAbstractEngineDom()` + `RegisterAbstractEngineRenderPass()`                                 |
+| `Engines/webgpuEngine.pure.ts`                     | `RegisterAbstractEngineDom()` + `RegisterAbstractEngineRenderPass()`                                 |
+| `Buffers/buffer.pure.ts`                           | `RegisterEngineDynamicBuffer()` (calls `engine.updateDynamicVertexBuffer()`)                         |
+| `Particles/thinParticleSystem.pure.ts`             | `RegisterAnimatable()` (for `scene.beginAnimation()`)                                                |
+| `Particles/gpuParticleSystem.pure.ts`              | `RegisterAnimatable()` (same)                                                                        |
+| `Layers/effectLayer.ts`                            | `RegisterEffectLayerSceneComponent()`                                                                |
+| `Lights/Shadows/shadowGenerator.ts`                | `RegisterShadowGeneratorSceneComponent()`                                                            |
+| `PostProcesses/.../ssao2RenderingPipeline.pure.ts` | `RegisterGeometryBufferRendererSceneComponent()`                                                     |
+| `PostProcesses/.../ssrRenderingPipeline.pure.ts`   | `RegisterGeometryBufferRendererSceneComponent()`                                                     |
+| Rendering pipelines (5 files)                      | `RegisterDepthRendererSceneComponent()` / `RegisterPostProcessRenderPipelineManagerSceneComponent()` |
+
+### 15.2 — Path Alias Bug Fix ✅
+
+`animatable.pure.ts` imported Scene from `"core/scene.pure"` — a TypeScript path alias
+(`"core/*"` → `packages/dev/core/src/*`) that `tsc` does NOT rewrite in output. In
+`@dev/core/dist`, this resolved to `undefined`, causing `AddAnimationExtensions(undefined, Bone)`
+to silently fail — `beginAnimation` was never registered. **Fixed** by changing to relative
+path `"../scene.pure"`.
+
+### 15.3 — Shader Import Pattern ✅
+
+`NoiseProceduralTexture` was missing its shader import. Shader imports go in the thin wrapper
+`.ts` file, NOT in `.pure.ts`. Added `import "../../../Shaders/noise.fragment"` to
+`noiseProceduralTexture.ts`.
+
+### 15.4 — Circular Dependency Fix ✅
+
+`ShadowGeneratorSceneComponent.pure.ts` imported `CascadedShadowGenerator` directly,
+creating a circular dependency. Replaced with a late-bound parser pattern:
+`ShadowGenerator._CascadedShadowGeneratorParser` is set by `cascadedShadowGenerator.ts`.
+
+### 15.5 — sideEffects Index.js Fix ✅
+
+`syncSideEffects.mjs` regenerates `@babylonjs/core/package.json`'s `sideEffects` array
+from the manifest. Barrel `index.js` files were missing because they have no side effects
+of their own, but bundlers need them marked as side-effectful to traverse re-exports.
+**Fixed** by adding `"**/index.js"` as a hardcoded first entry in `syncSideEffects.mjs`.
+
+### 15.6 — Feature Detection with `_IsSideEffectImplemented()` ✅
+
+Code that feature-detects augmented methods by truthiness (`if (scene.getPhysicsEngine)`)
+breaks with stubs because stubs are truthy functions. Added `_IsSideEffectImplemented()`
+utility to `devTools.ts` — checks for `__isSideEffectStub` marker. Applied at 12 locations:
+
+| File                                        | Method Checked                    |
+| ------------------------------------------- | --------------------------------- |
+| `scene.pure.ts`                             | `stopAllAnimations`               |
+| `Meshes/mesh.pure.ts`                       | `scene.getPhysicsEngine`          |
+| `Meshes/groundMesh.pure.ts`                 | `createOrUpdateSubmeshesOctree`   |
+| `Misc/sceneOptimizer.ts`                    | `createOrUpdateSelectionOctree`   |
+| `Misc/sceneSerializer.ts`                   | `scene.isPhysicsEnabled`          |
+| `Layers/thinEffectLayer.ts`                 | `scene.getBoundingBoxRenderer`    |
+| `Particles/particleSystem.pure.ts` (×2)     | `engine.createEffectForParticles` |
+| `Particles/gpuParticleSystem.pure.ts` (×2)  | `engine.createEffectForParticles` |
+| `Particles/Node/Blocks/systemBlock.pure.ts` | `engine.createEffectForParticles` |
+| `Actions/actionManager.ts`                  | `scene.getSoundByName`            |
+
+### 15.7 — `CheckMissingImports()` Updated ✅
+
+`Misc/checkMissingImports.ts` now tests BOTH stub patterns:
+
+- **Throw-style** (`throw _WarnImport(...)`) — caught via try/catch
+- **Tagged stubs** (`_MissingSideEffect(...)`) — detected via `__isSideEffectStub` marker
+
+Covers ~32 stubs: SerializationHelper parsers (4), Scene factories/picking (3),
+Texture factories (4), Mesh parsers (11), Node factories (1), + 9 Scene prototype stubs
+(beginAnimation, stopAllAnimations, createDefaultEnvironment, enablePhysics,
+enableDepthRenderer, enablePrePassRenderer, getBoundingBoxRenderer, getOutlineRenderer,
+getSoundByName).
+
+### 15.8 — Stub Shadowing Bug ✅
+
+`Engine.prototype.setTextureFormatToUse ??= _MissingSideEffect(...)` shadowed the real
+registration on `AbstractEngine.prototype`. When `??=` runs before the real `=` assignment
+on the parent prototype, the child's own-property stub hides the parent's value permanently.
+**Fixed** by removing `setTextureFormatToUse` and `setCompressedTextureExclusions` stubs
+from `engine.pure.ts` (they belong on `AbstractEngine`, where they're already covered).
+
+---
+
 ## Current State Summary (as of latest fresh run)
 
 ### File Counts
@@ -1722,7 +1816,7 @@ imports from the appropriate pure source files:
 | `@babylonjs/core` build | ✅ PASS              |                                                                                    |
 | `babylonjs` (UMD) build | ✅ PASS              |                                                                                    |
 | ESLint                  | 577 errors           | All pre-existing (naming-convention, consistent-type-imports, no-duplicates, etc.) |
-| Unit tests              | 421 failures         | Pre-existing, identical on committed HEAD — not caused by tree-shaking changes     |
+| Unit tests              | ✅ 3061/3061 PASS    | All passing (143 files)                                                            |
 | Pure import enforcement | 9 genuine violations | 5 sphericalPolynomial.pure.ts, 3 barrel re-exports, 1 consistent-type-imports      |
 
 ### Key Scripts

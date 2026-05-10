@@ -4,5 +4,10 @@
  */
 export * from "./volumetricLightScatteringPostProcess.pure";
 
+import "../Shaders/depth.vertex";
+import "../Shaders/volumetricLightScattering.fragment";
+import "../Shaders/volumetricLightScatteringPass.vertex";
+import "../Shaders/volumetricLightScatteringPass.fragment";
+
 import { RegisterVolumetricLightScatteringPostProcess } from "./volumetricLightScatteringPostProcess.pure";
 RegisterVolumetricLightScatteringPostProcess();

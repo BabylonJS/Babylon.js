@@ -4,5 +4,7 @@
  */
 export * from "./screenSpaceReflectionPostProcess.pure";
 
+import "../Shaders/screenSpaceReflection.fragment";
+
 import { RegisterScreenSpaceReflectionPostProcess } from "./screenSpaceReflectionPostProcess.pure";
 RegisterScreenSpaceReflectionPostProcess();

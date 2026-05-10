@@ -4,5 +4,7 @@
  */
 export * from "./sharpenPostProcess.pure";
 
+import "../Shaders/sharpen.fragment";
+
 import { RegisterSharpenPostProcess } from "./sharpenPostProcess.pure";
 RegisterSharpenPostProcess();

@@ -21,7 +21,7 @@ import { type DevPackageName } from "./packageMapping.js";
  */
 const TsShaderIncludeTemplate = `// Do not edit.
 import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
-const name = "##NAME_PLACEHOLDER##";
+##NESTED_INCLUDES_PLACEHOLDER##const name = "##NAME_PLACEHOLDER##";
 const shader = \`##SHADER_PLACEHOLDER##\`;
 // Sideeffect
 if (!ShaderStore.##INCLUDESSTORE_PLACEHOLDER##[name]) {
@@ -217,6 +217,27 @@ export function BuildShader(filePath: string, basePackageName: string | undefine
 
     if (isInclude) {
         // === INCLUDE FILE: Self-registers (backwards compat) + exports pure data (named imports from main shaders) ===
+
+        // Generate bare side-effect imports for any nested #include directives.
+        // This ensures nested includes get registered at runtime (e.g. ltcHelperFunctions inside lightsFragmentFunctions).
+        const nestedIncludes = GetIncludes(fxData);
+        let nestedIncludeImports = "";
+        for (const entry of nestedIncludes) {
+            const isCoreInclude = entry.startsWith("core/");
+            const actualEntry = entry.replace(/^core\//, "");
+            if (isCore) {
+                nestedIncludeImports += `import "./${actualEntry}";\n`;
+            } else {
+                const basePackageNameForImport = isCoreInclude ? "core" : basePackageName === undefined ? DetermineBasePackageNameForShaderInclude(filePath) : basePackageName;
+                nestedIncludeImports += `import "${basePackageNameForImport}/Shaders${appendDirName}/ShadersInclude/${actualEntry}";\n`;
+            }
+        }
+
+        // Strip "core/" prefix from #include directives in the shader content.
+        // The .fx source uses core/ as a build-time directive for cross-package resolution,
+        // but at runtime the shader processor looks up includes by bare name.
+        fxData = fxData.replace(/#include<core\/([^>]+)>/g, "#include<$1>");
+
         const exportName = shaderName + (isWGSL ? "WGSL" : "");
         const appendDirNameInclude = isWGSL ? "WGSL" : "";
         const includesStore = `IncludesShadersStore${appendDirNameInclude}`;
@@ -232,14 +253,11 @@ export function BuildShader(filePath: string, basePackageName: string | undefine
         let tsContent = TsShaderIncludeTemplate;
         tsContent = tsContent
             .replace("##SHADERSTORELOCATION_PLACEHOLDER##", includeStoreLocation)
+            .replace("##NESTED_INCLUDES_PLACEHOLDER##", nestedIncludeImports)
             .replace("##NAME_PLACEHOLDER##", shaderName)
             .replace("##SHADER_PLACEHOLDER##", fxData)
             .replace(new RegExp("##INCLUDESSTORE_PLACEHOLDER##", "g"), includesStore)
-            .replace(
-                "##EXPORT_PLACEHOLDER##",
-                `/** @internal */
-export const ${exportName} = { name, shader };`
-            );
+            .replace("##EXPORT_PLACEHOLDER##", `/** @internal */\nexport const ${exportName} = { name, shader };`);
 
         // Go to disk.
         const tsShaderFilename = path.join(directory, tsFilename);

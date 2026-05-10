@@ -1,22 +1,20 @@
 {
   "stats": {
-    "totalFiles": 3197,
-    "filesWithSideEffects": 1416,
-    "filesWithoutSideEffects": 1781,
+    "totalFiles": 3198,
+    "filesWithSideEffects": 1415,
+    "filesWithoutSideEffects": 1783,
     "byType": {
-      "top-level-call": 633,
+      "top-level-call": 635,
       "declare-module": 108,
-      "bare-import": 161,
+      "bare-import": 181,
       "static-property-assignment": 2,
-      "prototype-assignment": 6,
       "shader-store-write": 633
     },
     "filesByType": {
-      "top-level-call": 633,
+      "top-level-call": 635,
       "declare-module": 91,
-      "bare-import": 59,
+      "bare-import": 69,
       "static-property-assignment": 2,
-      "prototype-assignment": 3,
       "shader-store-write": 633
     }
   },
@@ -1517,22 +1515,12 @@
       ]
     },
     {
-      "file": "Engines/WebGPU/Extensions/engine.debugging.pure.ts",
+      "file": "Engines/WebGPU/Extensions/engine.debugging.ts",
       "sideEffects": [
         {
-          "type": "prototype-assignment",
-          "line": 94,
-          "text": "WebGPUEngine.prototype._debugPushGroup = function (groupName: string): void {"
-        },
-        {
-          "type": "prototype-assignment",
-          "line": 116,
-          "text": "WebGPUEngine.prototype._debugPopGroup = function (): void {"
-        },
-        {
-          "type": "prototype-assignment",
-          "line": 166,
-          "text": "WebGPUEngine.prototype._debugInsertMarker = function (text: string): void {"
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterWebGPUDebugging();"
         }
       ]
     },
@@ -1847,86 +1835,96 @@
         {
           "type": "bare-import",
           "line": 3,
-          "text": "import \"../Buffers/buffer.align\";"
+          "text": "import \"../ShadersWGSL/clearQuad.vertex\";"
         },
         {
           "type": "bare-import",
           "line": 4,
-          "text": "import \"./AbstractEngine/abstractEngine.loadingScreen\";"
+          "text": "import \"../ShadersWGSL/clearQuad.fragment\";"
         },
         {
           "type": "bare-import",
           "line": 5,
-          "text": "import \"./AbstractEngine/abstractEngine.dom\";"
+          "text": "import \"../Buffers/buffer.align\";"
         },
         {
           "type": "bare-import",
           "line": 6,
-          "text": "import \"./AbstractEngine/abstractEngine.states\";"
+          "text": "import \"./AbstractEngine/abstractEngine.loadingScreen\";"
         },
         {
           "type": "bare-import",
           "line": 7,
-          "text": "import \"./AbstractEngine/abstractEngine.stencil\";"
+          "text": "import \"./AbstractEngine/abstractEngine.dom\";"
         },
         {
           "type": "bare-import",
           "line": 8,
-          "text": "import \"./AbstractEngine/abstractEngine.renderPass\";"
+          "text": "import \"./AbstractEngine/abstractEngine.states\";"
         },
         {
           "type": "bare-import",
           "line": 9,
-          "text": "import \"./AbstractEngine/abstractEngine.loadFile\";"
+          "text": "import \"./AbstractEngine/abstractEngine.stencil\";"
         },
         {
           "type": "bare-import",
           "line": 10,
-          "text": "import \"./AbstractEngine/abstractEngine.textureLoaders\";"
+          "text": "import \"./AbstractEngine/abstractEngine.renderPass\";"
         },
         {
           "type": "bare-import",
           "line": 11,
-          "text": "import \"../Audio/audioEngine\";"
+          "text": "import \"./AbstractEngine/abstractEngine.loadFile\";"
         },
         {
           "type": "bare-import",
           "line": 12,
-          "text": "import \"./WebGPU/Extensions/engine.alpha\";"
+          "text": "import \"./AbstractEngine/abstractEngine.textureLoaders\";"
         },
         {
           "type": "bare-import",
           "line": 13,
-          "text": "import \"./WebGPU/Extensions/engine.rawTexture\";"
+          "text": "import \"../Audio/audioEngine\";"
         },
         {
           "type": "bare-import",
           "line": 14,
-          "text": "import \"./WebGPU/Extensions/engine.readTexture\";"
+          "text": "import \"./WebGPU/Extensions/engine.alpha\";"
         },
         {
           "type": "bare-import",
           "line": 15,
-          "text": "import \"./WebGPU/Extensions/engine.cubeTexture\";"
+          "text": "import \"./WebGPU/Extensions/engine.rawTexture\";"
         },
         {
           "type": "bare-import",
           "line": 16,
-          "text": "import \"./WebGPU/Extensions/engine.renderTarget\";"
+          "text": "import \"./WebGPU/Extensions/engine.readTexture\";"
         },
         {
           "type": "bare-import",
           "line": 17,
-          "text": "import \"./WebGPU/Extensions/engine.renderTargetTexture\";"
+          "text": "import \"./WebGPU/Extensions/engine.cubeTexture\";"
         },
         {
           "type": "bare-import",
           "line": 18,
-          "text": "import \"./WebGPU/Extensions/engine.renderTargetCube\";"
+          "text": "import \"./WebGPU/Extensions/engine.renderTarget\";"
         },
         {
           "type": "bare-import",
           "line": 19,
+          "text": "import \"./WebGPU/Extensions/engine.renderTargetTexture\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 20,
+          "text": "import \"./WebGPU/Extensions/engine.renderTargetCube\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 21,
           "text": "import \"./WebGPU/Extensions/engine.query\";"
         }
       ]
@@ -3467,21 +3465,6 @@
       ]
     },
     {
-      "file": "Materials/effect.webgl.functions.pure.ts",
-      "sideEffects": [
-        {
-          "type": "prototype-assignment",
-          "line": 27,
-          "text": "createPipelineContextInjection: typeof AbstractEngine.prototype.createPipelineContext = createPipelineContext.bind(null,"
-        },
-        {
-          "type": "prototype-assignment",
-          "line": 28,
-          "text": "_preparePipelineContextInjection: typeof AbstractEngine.prototype._preparePipelineContextAsync = _preparePipelineContext"
-        }
-      ]
-    },
-    {
       "file": "Materials/effectRenderer.ts",
       "sideEffects": [
         {
@@ -3520,8 +3503,28 @@
       "file": "Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
       "sideEffects": [
         {
-          "type": "top-level-call",
+          "type": "bare-import",
           "line": 8,
+          "text": "import \"../../Shaders/gaussianSplattingDepth.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 9,
+          "text": "import \"../../Shaders/gaussianSplattingDepth.vertex\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 10,
+          "text": "import \"../../ShadersWGSL/gaussianSplattingDepth.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 11,
+          "text": "import \"../../ShadersWGSL/gaussianSplattingDepth.vertex\";"
+        },
+        {
+          "type": "top-level-call",
+          "line": 14,
           "text": "RegisterGaussianSplattingMaterial();"
         }
       ]
@@ -6547,12 +6550,12 @@
       ]
     },
     {
-      "file": "Misc/PerformanceViewer/performanceViewerSceneExtension.pure.ts",
+      "file": "Misc/PerformanceViewer/performanceViewerSceneExtension.ts",
       "sideEffects": [
         {
-          "type": "prototype-assignment",
-          "line": 6,
-          "text": "Scene.prototype.getPerfCollector = function (this: Scene): PerformanceViewerCollector {"
+          "type": "top-level-call",
+          "line": 4,
+          "text": "RegisterPerformanceViewerSceneExtension();"
         }
       ]
     },
@@ -6600,8 +6603,13 @@
       "file": "Particles/computeShaderParticleSystem.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../ShadersWGSL/gpuUpdateParticles.compute\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 10,
           "text": "RegisterComputeShaderParticleSystem();"
         }
       ]
@@ -7185,8 +7193,18 @@
       "file": "Particles/webgl2ParticleSystem.ts",
       "sideEffects": [
         {
-          "type": "top-level-call",
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../Shaders/gpuUpdateParticles.fragment\";"
+        },
+        {
+          "type": "bare-import",
           "line": 8,
+          "text": "import \"../Shaders/gpuUpdateParticles.vertex\";"
+        },
+        {
+          "type": "top-level-call",
+          "line": 11,
           "text": "RegisterWebgl2ParticleSystem();"
         }
       ]
@@ -7480,8 +7498,13 @@
       "file": "PostProcesses/refractionPostProcess.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../Shaders/refraction.fragment\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 10,
           "text": "RegisterRefractionPostProcess();"
         }
       ]
@@ -7640,8 +7663,13 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../../../Shaders/standard.fragment\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 10,
           "text": "RegisterStandardRenderingPipeline();"
         }
       ]
@@ -7690,8 +7718,13 @@
       "file": "PostProcesses/screenSpaceCurvaturePostProcess.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../Shaders/screenSpaceCurvature.fragment\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 10,
           "text": "RegisterScreenSpaceCurvaturePostProcess();"
         }
       ]
@@ -7700,8 +7733,13 @@
       "file": "PostProcesses/screenSpaceReflectionPostProcess.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../Shaders/screenSpaceReflection.fragment\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 10,
           "text": "RegisterScreenSpaceReflectionPostProcess();"
         }
       ]
@@ -7710,8 +7748,13 @@
       "file": "PostProcesses/sharpenPostProcess.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../Shaders/sharpen.fragment\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 10,
           "text": "RegisterSharpenPostProcess();"
         }
       ]
@@ -7775,8 +7818,28 @@
       "file": "PostProcesses/volumetricLightScatteringPostProcess.ts",
       "sideEffects": [
         {
-          "type": "top-level-call",
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../Shaders/depth.vertex\";"
+        },
+        {
+          "type": "bare-import",
           "line": 8,
+          "text": "import \"../Shaders/volumetricLightScattering.fragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 9,
+          "text": "import \"../Shaders/volumetricLightScatteringPass.vertex\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 10,
+          "text": "import \"../Shaders/volumetricLightScatteringPass.fragment\";"
+        },
+        {
+          "type": "top-level-call",
+          "line": 13,
           "text": "RegisterVolumetricLightScatteringPostProcess();"
         }
       ]
@@ -14730,8 +14793,18 @@
       "file": "XR/features/WebXRSpaceWarp.ts",
       "sideEffects": [
         {
-          "type": "top-level-call",
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../../Shaders/velocity.fragment\";"
+        },
+        {
+          "type": "bare-import",
           "line": 8,
+          "text": "import \"../../Shaders/velocity.vertex\";"
+        },
+        {
+          "type": "top-level-call",
+          "line": 11,
           "text": "RegisterWebXRSpaceWarp();"
         }
       ]

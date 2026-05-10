@@ -26,6 +26,7 @@ import { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./Emit
 import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { Attractor } from "./attractor";
 import { _ConnectAfter, _RemoveFromQueue, type _IExecutionQueueItem } from "./Queue/executionQueue";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 
 import { type FlowMap } from "./flowMap";
 import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
@@ -654,7 +655,7 @@ export class ParticleSystem extends ThinParticleSystem {
             engine = scene.getEngine();
         }
 
-        if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
+        if (parsedParticleSystem.customShader && _IsSideEffectImplemented((engine as any).createEffectForParticles)) {
             program = parsedParticleSystem.customShader;
             const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
             custom = (engine as any).createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
@@ -1092,7 +1093,7 @@ export class ParticleSystem extends ThinParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine;
-        if (engine.createEffectForParticles) {
+        if (_IsSideEffectImplemented(engine.createEffectForParticles)) {
             if (this.customShader != null) {
                 program = this.customShader;
                 const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";

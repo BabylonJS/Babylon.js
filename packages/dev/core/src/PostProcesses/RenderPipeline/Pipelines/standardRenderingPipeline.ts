@@ -4,5 +4,7 @@
  */
 export * from "./standardRenderingPipeline.pure";
 
+import "../../../Shaders/standard.fragment";
+
 import { RegisterStandardRenderingPipeline } from "./standardRenderingPipeline.pure";
 RegisterStandardRenderingPipeline();

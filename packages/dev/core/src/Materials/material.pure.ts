@@ -2159,3 +2159,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
     }
 }
+
+// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
+import { _MissingSideEffectProperty } from "../Misc/devTools";
+
+if (!Object.getOwnPropertyDescriptor(Material.prototype, "pluginManager")) {
+    Object.defineProperty(Material.prototype, "pluginManager", _MissingSideEffectProperty("Material", "pluginManager"));
+}
+// #endregion GENERATED_SIDE_EFFECT_STUBS

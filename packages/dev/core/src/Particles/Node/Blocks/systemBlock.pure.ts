@@ -7,6 +7,7 @@ import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodePartic
 import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { Constants } from "../../../Engines/constants";
+import { _IsSideEffectImplemented } from "../../../Misc/devTools";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { Color4 } from "core/Maths/math.color.pure";
@@ -265,7 +266,7 @@ export class SystemBlock extends NodeParticleBlock {
         // Apply custom shader if defined
         if (this.customShader) {
             const engine = particleSystem.getScene()?.getEngine();
-            if (engine?.createEffectForParticles) {
+            if (engine && _IsSideEffectImplemented(engine.createEffectForParticles)) {
                 const defines: string = this.customShader.shaderOptions.defines.length > 0 ? this.customShader.shaderOptions.defines.join("\n") : "";
                 const effect = engine.createEffectForParticles(
                     this.customShader.shaderPath.fragmentElement,

@@ -4,5 +4,7 @@
  */
 export * from "./screenSpaceCurvaturePostProcess.pure";
 
+import "../Shaders/screenSpaceCurvature.fragment";
+
 import { RegisterScreenSpaceCurvaturePostProcess } from "./screenSpaceCurvaturePostProcess.pure";
 RegisterScreenSpaceCurvaturePostProcess();

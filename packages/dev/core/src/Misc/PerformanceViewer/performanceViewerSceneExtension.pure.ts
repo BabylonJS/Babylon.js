@@ -3,10 +3,22 @@
 import { Scene } from "../../scene.pure";
 import { PerformanceViewerCollector } from "./performanceViewerCollector";
 
-Scene.prototype.getPerfCollector = function (this: Scene): PerformanceViewerCollector {
-    if (!this._perfCollector) {
-        this._perfCollector = new PerformanceViewerCollector(this);
+let _Registered = false;
+/**
+ * Register the getPerfCollector method on Scene.
+ * @internal
+ */
+export function RegisterPerformanceViewerSceneExtension(): void {
+    if (_Registered) {
+        return;
     }
+    _Registered = true;
 
-    return this._perfCollector;
-};
+    Scene.prototype.getPerfCollector = function (this: Scene): PerformanceViewerCollector {
+        if (!this._perfCollector) {
+            this._perfCollector = new PerformanceViewerCollector(this);
+        }
+
+        return this._perfCollector;
+    };
+}

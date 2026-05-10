@@ -4,5 +4,8 @@
  */
 export * from "./webgl2ParticleSystem.pure";
 
+import "../Shaders/gpuUpdateParticles.fragment";
+import "../Shaders/gpuUpdateParticles.vertex";
+
 import { RegisterWebgl2ParticleSystem } from "./webgl2ParticleSystem.pure";
 RegisterWebgl2ParticleSystem();

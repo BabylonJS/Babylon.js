@@ -4,5 +4,8 @@
  */
 export * from "./WebXRSpaceWarp.pure";
 
+import "../../Shaders/velocity.fragment";
+import "../../Shaders/velocity.vertex";
+
 import { RegisterWebXRSpaceWarp } from "./WebXRSpaceWarp.pure";
 RegisterWebXRSpaceWarp();

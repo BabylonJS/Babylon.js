@@ -931,3 +931,12 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return sceneOrEngine.getClassName() === "Scene";
     }
 }
+
+// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
+import { _MissingSideEffect, _MissingSideEffectProperty } from "../../Misc/devTools";
+
+BaseTexture.prototype.forceSphericalPolynomialsRecompute ??= _MissingSideEffect("BaseTexture", "forceSphericalPolynomialsRecompute") as any;
+if (!Object.getOwnPropertyDescriptor(BaseTexture.prototype, "sphericalPolynomial")) {
+    Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", _MissingSideEffectProperty("BaseTexture", "sphericalPolynomial"));
+}
+// #endregion GENERATED_SIDE_EFFECT_STUBS

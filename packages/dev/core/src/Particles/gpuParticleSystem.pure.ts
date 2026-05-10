@@ -30,6 +30,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 import { type Engine } from "../Engines/engine.pure";
@@ -2456,7 +2457,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as any;
-        if (engine.createEffectForParticles) {
+        if (_IsSideEffectImplemented(engine.createEffectForParticles)) {
             if (this.customShader != null) {
                 program = this.customShader;
                 const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
@@ -2821,7 +2822,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         );
         particleSystem._rootUrl = rootUrl;
 
-        if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
+        if (parsedParticleSystem.customShader && _IsSideEffectImplemented((engine as any).createEffectForParticles)) {
             const program = parsedParticleSystem.customShader;
             const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
             const custom: Nullable<Effect> = (engine as any).createEffectForParticles(
