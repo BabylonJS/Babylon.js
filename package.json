@@ -97,6 +97,7 @@
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
         "audit:side-effects": "node ./scripts/treeshaking/auditSideEffects.mjs",
+        "update:manifest": "node ./scripts/treeshaking/auditSideEffects.mjs --out scripts/treeshaking/side-effects-manifest.json",
         "split:register-class": "node ./scripts/treeshaking/splitRegisterClass.mjs",
         "inject:pure-annotations": "node ./scripts/treeshaking/injectPureAnnotations.mjs",
         "generate:pure-barrels": "node ./scripts/treeshaking/generatePureBarrels.mjs",

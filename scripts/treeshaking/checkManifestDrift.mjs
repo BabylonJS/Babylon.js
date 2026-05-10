@@ -47,7 +47,7 @@ function main() {
     try {
         committed = readFileSync(COMMITTED_MANIFEST, "utf-8");
     } catch {
-        console.error(`Committed manifest not found at ${COMMITTED_MANIFEST}.\n` + "Run: npm run audit:side-effects -- --out scripts/treeshaking/side-effects-manifest.json");
+        console.error(`Committed manifest not found at ${COMMITTED_MANIFEST}.\n` + "Run: npm run update:manifest");
         process.exit(2);
     }
 
@@ -110,7 +110,7 @@ function main() {
 
     console.error(
         "\nTo fix: regenerate the manifest and commit it:\n" +
-            "  node scripts/treeshaking/auditSideEffects.mjs --out scripts/treeshaking/side-effects-manifest.json\n" +
+            "  npm run update:manifest\n" +
             "  node scripts/treeshaking/syncSideEffects.mjs\n" +
             "  git add scripts/treeshaking/side-effects-manifest.json packages/public/@babylonjs/core/package.json\n"
     );

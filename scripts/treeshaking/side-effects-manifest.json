@@ -6,14 +6,14 @@
     "byType": {
       "top-level-call": 635,
       "declare-module": 108,
-      "bare-import": 181,
+      "bare-import": 250,
       "static-property-assignment": 2,
       "shader-store-write": 633
     },
     "filesByType": {
       "top-level-call": 635,
       "declare-module": 91,
-      "bare-import": 69,
+      "bare-import": 111,
       "static-property-assignment": 2,
       "shader-store-write": 633
     }
@@ -9618,8 +9618,13 @@
       "file": "Shaders/ShadersInclude/backgroundUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 9,
+          "line": 10,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -9728,8 +9733,13 @@
       "file": "Shaders/ShadersInclude/bumpFragmentFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 36,
+          "line": 37,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -9868,8 +9878,13 @@
       "file": "Shaders/ShadersInclude/defaultFragmentDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./decalFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 74,
+          "line": 75,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -9878,8 +9893,18 @@
       "file": "Shaders/ShadersInclude/defaultUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 12,
+          "line": 14,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -9888,8 +9913,13 @@
       "file": "Shaders/ShadersInclude/defaultVertexDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./decalVertexDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 44,
+          "line": 45,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -9988,8 +10018,18 @@
       "file": "Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./logDepthFragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./fogFragment\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 14,
+          "line": 16,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -9998,8 +10038,18 @@
       "file": "Shaders/ShadersInclude/gaussianSplattingUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 9,
+          "line": 11,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10018,8 +10068,13 @@
       "file": "Shaders/ShadersInclude/geometryUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 7,
+          "line": 8,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10198,8 +10253,18 @@
       "file": "Shaders/ShadersInclude/lightsFragmentFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./ltcHelperFunctions\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./clusteredLightingFunctions\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 110,
+          "line": 112,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10238,8 +10303,18 @@
       "file": "Shaders/ShadersInclude/lineUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 9,
+          "line": 11,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10538,8 +10613,18 @@
       "file": "Shaders/ShadersInclude/openpbrFragmentDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneFragmentDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./decalFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 155,
+          "line": 157,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10548,8 +10633,18 @@
       "file": "Shaders/ShadersInclude/openpbrFragmentSamplersDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./pbrFragmentReflectionDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 58,
+          "line": 60,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10598,8 +10693,13 @@
       "file": "Shaders/ShadersInclude/openpbrNormalMapFragmentFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 39,
+          "line": 40,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10668,8 +10768,18 @@
       "file": "Shaders/ShadersInclude/openpbrUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 11,
+          "line": 13,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10678,8 +10788,18 @@
       "file": "Shaders/ShadersInclude/openpbrVertexDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneVertexDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./decalVertexDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 133,
+          "line": 135,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10708,8 +10828,13 @@
       "file": "Shaders/ShadersInclude/pbrBlockAlbedoOpacity.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./decalFragment\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 85,
+          "line": 86,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10938,8 +11063,18 @@
       "file": "Shaders/ShadersInclude/pbrClusteredLightingFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./clusteredLightingFunctions\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./pbrBlockReflectance0\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 119,
+          "line": 121,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10978,8 +11113,13 @@
       "file": "Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./ltcHelperFunctions\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 39,
+          "line": 40,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10988,8 +11128,13 @@
       "file": "Shaders/ShadersInclude/pbrFragmentDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./decalFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 154,
+          "line": 155,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10998,8 +11143,13 @@
       "file": "Shaders/ShadersInclude/pbrFragmentExtraDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./mainUVVaryingDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 23,
+          "line": 24,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11018,8 +11168,23 @@
       "file": "Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./samplerFragmentAlternateDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 5,
+          "text": "import \"./pbrFragmentReflectionDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 73,
+          "line": 76,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11048,8 +11213,18 @@
       "file": "Shaders/ShadersInclude/pbrUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 11,
+          "line": 13,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11058,8 +11233,13 @@
       "file": "Shaders/ShadersInclude/pbrVertexDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./decalVertexDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 131,
+          "line": 132,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11218,8 +11398,18 @@
       "file": "Shaders/ShadersInclude/shadowMapFragmentExtraDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./packingFunctions\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./bayerDitherFunctions\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 21,
+          "line": 23,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11238,8 +11428,18 @@
       "file": "Shaders/ShadersInclude/shadowMapUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 9,
+          "line": 11,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11248,8 +11448,18 @@
       "file": "Shaders/ShadersInclude/shadowMapVertexDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneVertexDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshVertexDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 8,
+          "line": 10,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -12918,8 +13128,13 @@
       "file": "ShadersWGSL/ShadersInclude/backgroundUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 8,
+          "line": 9,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -12988,8 +13203,13 @@
       "file": "ShadersWGSL/ShadersInclude/bumpFragmentFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 36,
+          "line": 37,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13108,8 +13328,18 @@
       "file": "ShadersWGSL/ShadersInclude/defaultUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 10,
+          "line": 12,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13208,8 +13438,18 @@
       "file": "ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./logDepthFragment\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./fogFragment\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 15,
+          "line": 17,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13218,8 +13458,18 @@
       "file": "ShadersWGSL/ShadersInclude/gaussianSplattingUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 9,
+          "line": 11,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13388,8 +13638,18 @@
       "file": "ShadersWGSL/ShadersInclude/lightsFragmentFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./ltcHelperFunctions\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./clusteredLightingFunctions\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 103,
+          "line": 105,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13668,8 +13928,18 @@
       "file": "ShadersWGSL/ShadersInclude/openpbrFragmentSamplersDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./pbrFragmentReflectionDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 58,
+          "line": 60,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13718,8 +13988,13 @@
       "file": "ShadersWGSL/ShadersInclude/openpbrNormalMapFragmentFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 39,
+          "line": 40,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13788,8 +14063,18 @@
       "file": "ShadersWGSL/ShadersInclude/openpbrUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 10,
+          "line": 12,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -13818,8 +14103,13 @@
       "file": "ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./decalFragment\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 85,
+          "line": 86,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14068,8 +14358,18 @@
       "file": "ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./clusteredLightingFunctions\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./pbrBlockReflectance0\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 228,
+          "line": 230,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14078,8 +14378,13 @@
       "file": "ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./ltcHelperFunctions\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 51,
+          "line": 52,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14088,8 +14393,13 @@
       "file": "ShadersWGSL/ShadersInclude/pbrFragmentExtraDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./mainUVVaryingDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 23,
+          "line": 24,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14108,8 +14418,23 @@
       "file": "ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./samplerFragmentDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./samplerFragmentAlternateDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 5,
+          "text": "import \"./pbrFragmentReflectionDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 69,
+          "line": 72,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14138,8 +14463,18 @@
       "file": "ShadersWGSL/ShadersInclude/pbrUboDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./sceneUboDeclaration\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./meshUboDeclaration\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 10,
+          "line": 12,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14278,8 +14613,18 @@
       "file": "ShadersWGSL/ShadersInclude/shadowMapFragmentExtraDeclaration.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 3,
+          "text": "import \"./packingFunctions\";"
+        },
+        {
+          "type": "bare-import",
+          "line": 4,
+          "text": "import \"./bayerDitherFunctions\";"
+        },
+        {
           "type": "shader-store-write",
-          "line": 21,
+          "line": 23,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
