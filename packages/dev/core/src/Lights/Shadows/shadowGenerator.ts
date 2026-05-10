@@ -1001,7 +1001,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._sceneUBOs = [this._scene.createSceneUniformBuffer(`Scene for Shadow Generator (light "${this._light.name}")`, { forceMono: true })];
         }
 
-        RegisterShadowGeneratorSceneComponent();
+        RegisterShadowGeneratorSceneComponent(ShadowGenerator);
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
         // Texture type fallback from float to int if not supported.

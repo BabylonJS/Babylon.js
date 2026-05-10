@@ -6,7 +6,7 @@ import { SceneComponentConstants, type ISceneSerializableComponent } from "../..
 
 import { type IAssetContainer } from "core/IAssetContainer";
 import { type Scene } from "../../scene.pure";
-import { ShadowGenerator } from "./shadowGenerator";
+import { type ShadowGenerator } from "./shadowGenerator";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 /**
@@ -127,8 +127,9 @@ let _Registered = false;
 /**
  * Register side effects for shadowGeneratorSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param shadowGeneratorClass The class of the shadow generator to register the component for
  */
-export function RegisterShadowGeneratorSceneComponent(): void {
+export function RegisterShadowGeneratorSceneComponent(shadowGeneratorClass: typeof ShadowGenerator): void {
     if (_Registered) {
         return;
     }
@@ -140,17 +141,17 @@ export function RegisterShadowGeneratorSceneComponent(): void {
         if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
             for (let index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                 const parsedShadowGenerator = parsedData.shadowGenerators[index];
-                if (ShadowGenerator._CascadedShadowGeneratorParser && parsedShadowGenerator.className === "CascadedShadowGenerator") {
-                    ShadowGenerator._CascadedShadowGeneratorParser(parsedShadowGenerator, scene);
+                if (shadowGeneratorClass._CascadedShadowGeneratorParser && parsedShadowGenerator.className === "CascadedShadowGenerator") {
+                    shadowGeneratorClass._CascadedShadowGeneratorParser(parsedShadowGenerator, scene);
                 } else {
-                    ShadowGenerator.Parse(parsedShadowGenerator, scene);
+                    shadowGeneratorClass.Parse(parsedShadowGenerator, scene);
                 }
                 // SG would be available on their associated lights
             }
         }
     });
 
-    ShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
+    shadowGeneratorClass._SceneComponentInitialization = (scene: Scene) => {
         let component = scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
         if (!component) {
             component = new ShadowGeneratorSceneComponent(scene);
