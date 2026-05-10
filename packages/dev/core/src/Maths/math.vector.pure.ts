@@ -4774,6 +4774,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return result;
     }
 
+    /**
+     * Adds in place the given floats to the current quaternion
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     * @param z defines the z coordinate
+     * @param w defines the w coordinate
+     * @returns the current updated quaternion
+     */
     public addInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
         this._x += x;
         this._y += y;
@@ -5038,6 +5046,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return result;
     }
 
+    /**
+     * Determines if the current quaternion equals the given floats
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     * @param z defines the z coordinate
+     * @param w defines the w coordinate
+     * @returns true if the quaternion coordinates match the given floats
+     */
     public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
         return this._x === x && this._y === y && this._z === z && this._w === w;
     }
