@@ -4739,6 +4739,9 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     public setAll(value: number): this {
         return this.copyFromFloats(value, value, value, value);
     }
+
+    /**
+     * Adds two quaternions
      * Example Playground https://playground.babylonjs.com/#L49EJ7#10
      * @param other defines the second operand
      * @returns a new quaternion as the addition result of the given one and the current quaternion
