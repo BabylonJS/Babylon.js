@@ -311,10 +311,10 @@ export function babylonUMDExternalsPlugin(excludePackages = [], opts = {}) {
  * the import and the UMD wrapper tries to read `global.draco3dgltf` — the
  * factory receives `undefined`, and property access on it throws at runtime.
  *
- * The plugin rewrites import statements at transform time so the named bindings
- * become `const X = undefined;`, matching the expected "module not available"
- * semantics that the consuming code already guards against (e.g.
- * `typeof DracoDecoderModule !== "undefined"`).
+ * The plugin erases import statements at transform time so the module is never
+ * seen by rollup's external resolution.  The consuming code already uses
+ * `declare let` for the global and guards with `typeof X !== "undefined"`,
+ * falling back to loading the decoder from a CDN URL.
  */
 function stubOptionalPeerDepsPlugin() {
     const optionals = ["draco3dgltf"];
