@@ -4731,12 +4731,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return this.copyFromFloats(x, y, z, w);
     }
 
+    /**
+     * Sets all the quaternion coordinates to the given value
+     * @param value the value to set
+     * @returns the current updated quaternion
+     */
     public setAll(value: number): this {
         return this.copyFromFloats(value, value, value, value);
     }
-
-    /**
-     * Adds two quaternions
      * Example Playground https://playground.babylonjs.com/#L49EJ7#10
      * @param other defines the second operand
      * @returns a new quaternion as the addition result of the given one and the current quaternion
@@ -4787,10 +4789,27 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return result;
     }
 
+    /**
+     * Subtracts the given floats from the current quaternion
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     * @param z defines the z coordinate
+     * @param w defines the w coordinate
+     * @returns a new quaternion as the subtraction result
+     */
     public subtractFromFloats(x: number, y: number, z: number, w: number): Quaternion {
         return this.subtractFromFloatsToRef(x, y, z, w, new Quaternion());
     }
 
+    /**
+     * Subtracts the given floats from the current quaternion and stores the result in the given one
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     * @param z defines the z coordinate
+     * @param w defines the w coordinate
+     * @param result defines the quaternion to store the result
+     * @returns result input
+     */
     public subtractFromFloatsToRef<T extends Quaternion>(x: number, y: number, z: number, w: number, result: T): T {
         result._x = this._x - x;
         result._y = this._y - y;
@@ -4921,6 +4940,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return this.multiplyToRef(other, this);
     }
 
+    /**
+     * Multiplies the current quaternion coordinates by the given floats
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     * @param z defines the z coordinate
+     * @param w defines the w coordinate
+     * @returns the current updated quaternion
+     */
     public multiplyByFloats(x: number, y: number, z: number, w: number): this {
         this._x *= x;
         this._y *= y;
@@ -6336,10 +6363,20 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         return Matrix.FromArrayToRef(array, index, this);
     }
 
+    /**
+     * Sets all the matrix values from a float array
+     * @param floats the 16 float values to set
+     * @returns the current updated matrix
+     */
     public copyFromFloats(...floats: Tuple<number, 16>): this {
         return Matrix.FromArrayToRef(floats, 0, this);
     }
 
+    /**
+     * Sets the matrix values
+     * @param values the 16 values to set
+     * @returns the current updated matrix
+     */
     public set(...values: Tuple<number, 16>): this {
         const m = this._m;
         for (let i = 0; i < 16; i++) {
@@ -6349,6 +6386,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         return this;
     }
 
+    /**
+     * Sets all the matrix values to the given value
+     * @param value the value to set
+     * @returns the current updated matrix
+     */
     public setAll(value: number): this {
         const m = this._m;
         for (let i = 0; i < 16; i++) {

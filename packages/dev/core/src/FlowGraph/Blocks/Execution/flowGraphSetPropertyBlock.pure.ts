@@ -9,6 +9,9 @@ import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalCo
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
+/**
+ * Configuration for the FlowGraphSetPropertyBlock
+ */
 export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAssetType> {
     /**
      * The name of the property that will be set

@@ -623,6 +623,11 @@ export class ClusteredLightContainer extends Light {
         return this;
     }
 
+    /**
+     * Transfers the effect to the node material effect
+     * @param _effect the effect to transfer to
+     * @returns the light
+     */
     public override transferToNodeMaterialEffect(_effect: Effect): Light {
         return this;
     }
@@ -633,6 +638,10 @@ export class ClusteredLightContainer extends Light {
         defines["CLUSTLIGHT_SLICES"] = this._depthSlices;
     }
 
+    /**
+     * Returns whether this light is ready to be used
+     * @returns true if the light is ready
+     */
     public override _isReady(): boolean {
         this._updateBatches();
         return this._proxyMesh.isReady(true, true);

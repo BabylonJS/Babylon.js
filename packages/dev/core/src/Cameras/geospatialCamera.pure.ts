@@ -218,10 +218,10 @@ export class GeospatialCamera extends Camera {
      * If camera is actively in flight, will update the target properties and use up the remaining duration from original flyTo call
      *
      * To start a new flyTo curve entirely, call into flyToAsync again (it will stop the inflight animation)
-     * @param targetYaw
-     * @param targetPitch
-     * @param targetRadius
-     * @param targetCenter
+     * @param targetYaw the new target yaw angle in radians
+     * @param targetPitch the new target pitch angle in radians
+     * @param targetRadius the new target camera radius
+     * @param targetCenter the new target center point
      */
     public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
         this._flyToTargets.clear();
@@ -238,12 +238,12 @@ export class GeospatialCamera extends Camera {
 
     /**
      * Animate camera towards passed in property values. If undefined, will use current value
-     * @param targetYaw
-     * @param targetPitch
-     * @param targetRadius
-     * @param targetCenter
-     * @param flightDurationMs
-     * @param easingFunction
+     * @param targetYaw the target yaw angle in radians
+     * @param targetPitch the target pitch angle in radians
+     * @param targetRadius the target camera radius
+     * @param targetCenter the target center point
+     * @param flightDurationMs the duration of the flight animation in milliseconds
+     * @param easingFunction an optional easing function for the animation
      * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */

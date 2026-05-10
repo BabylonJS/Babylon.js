@@ -958,6 +958,10 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         this._isPBR = material instanceof PBRBaseMaterial;
     }
 
+    /**
+     * Prepares the defines used by the plugin
+     * @param defines the defines to prepare
+     */
     public override prepareDefines(defines: MaterialGIRSMRenderDefines) {
         defines.RENDER_WITH_GIRSM = this._isEnabled;
     }
@@ -975,19 +979,30 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         };
     }
 
+    /**
+     * Gets the samplers used by the plugin
+     * @param samplers the list of samplers to update
+     */
     public override getSamplers(samplers: string[]) {
-        samplers.push("girsmTextureGIContrib");
     }
 
+    /**
+     * Binds the material data for a sub mesh
+     * @param uniformBuffer the uniform buffer to update
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
-        if (this._isEnabled) {
             uniformBuffer.bindTexture("girsmTextureGIContrib", this.textureGIContrib);
             uniformBuffer.updateFloat2("girsmTextureOutputSize", this.outputTextureWidth, this.outputTextureHeight);
         }
     }
 
+    /**
+     * Gets custom shader code for the plugin
+     * @param shaderType the type of shader (vertex or fragment)
+     * @param shaderLanguage the shader language
+     * @returns the custom shader code
+     */
     public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage) {
-        let frag: { [name: string]: string };
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
             frag = {

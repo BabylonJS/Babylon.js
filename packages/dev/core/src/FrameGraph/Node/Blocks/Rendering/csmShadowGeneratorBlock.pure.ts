@@ -188,6 +188,10 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
+    /**
+     * Serializes this block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.numCascades = this.numCascades;

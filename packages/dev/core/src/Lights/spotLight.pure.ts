@@ -509,7 +509,11 @@ export class SpotLight extends ShadowLight {
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
     }
 
-    /** @override */
+    /**
+     * Returns whether light related textures are ready to be used in the rendering
+     * @override
+     * @returns true if the light textures are ready
+     */
     public override areLightTexturesReady(): boolean {
         if (this._projectionTexture && !this._projectionTexture.isReadyOrNotBlocking()) {
             return false;

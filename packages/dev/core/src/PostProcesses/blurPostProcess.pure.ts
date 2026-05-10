@@ -133,6 +133,15 @@ export class BlurPostProcess extends PostProcess {
         this.kernel = kernel;
     }
 
+    /**
+     * Updates the effect with the current post process compile time values and recompiles the shader
+     * @param _defines the post process defines
+     * @param _uniforms the post process uniforms
+     * @param _samplers the post process samplers
+     * @param _indexParameters the index parameters
+     * @param onCompiled callback called when the shader is compiled
+     * @param onError callback called if there is an error
+     */
     public override updateEffect(
         _defines: Nullable<string> = null,
         _uniforms: Nullable<string[]> = null,

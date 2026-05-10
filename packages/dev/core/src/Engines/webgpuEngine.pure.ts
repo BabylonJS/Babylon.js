@@ -1481,6 +1481,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return this._scissorCached.x !== 0 || this._scissorCached.y !== 0 || this._scissorCached.z !== 0 || this._scissorCached.w !== 0;
     }
 
+    /**
+     * Enable scissor test on a specific rectangle
+     * @param x defines left coordinate of the rectangle
+     * @param y defines top coordinate of the rectangle
+     * @param width defines width of the rectangle
+     * @param height defines height of the rectangle
+     */
     public enableScissor(x: number, y: number, width: number, height: number): void {
         this._scissorCached.x = x;
         this._scissorCached.y = y;
@@ -1488,6 +1495,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._scissorCached.w = height;
     }
 
+    /**
+     * Disable previously set scissor test rectangle
+     */
     public disableScissor() {
         this._scissorCached.x = this._scissorCached.y = this._scissorCached.z = this._scissorCached.w = 0;
         this._scissorsCurrent.x = this._scissorsCurrent.y = this._scissorsCurrent.w = this._scissorsCurrent.h = 0;
@@ -2329,6 +2339,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return Constants.TEXTUREFORMAT_RGBA;
     }
 
+    /**
+     * Update the comparison function of a texture
+     * @param texture defines the texture to update
+     * @param comparisonFunction defines the comparison function to set
+     */
     public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
         texture._comparisonFunction = comparisonFunction;
     }
@@ -3550,10 +3565,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._depthTextureFormat = wrapper.depthTextureFormat;
     }
 
+    /**
+     * Set the dithering state (not applicable in WebGPU)
+     */
     public setDitheringState(): void {
         // Does not exist in WebGPU
     }
 
+    /**
+     * Set the rasterizer state (not applicable in WebGPU)
+     */
     public setRasterizerState(): void {
         // Does not exist in WebGPU
     }

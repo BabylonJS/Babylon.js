@@ -496,6 +496,10 @@ export abstract class AbstractEngine {
         this._emptyTexture2DArray = null;
     }
 
+    /**
+     * Force the engine to wipe all caches
+     * @param bruteForce defines a boolean to force clearing ALL caches
+     */
     public abstract wipeCaches(bruteForce?: boolean): void;
 
     private _useReverseDepthBuffer = false;

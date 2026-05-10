@@ -73,23 +73,28 @@ export class FlowGraphInteger {
     /**
      * Compares two integers for equality.
      * @param other the other integer to compare
-     * @returns
+     * @returns true if the integers are equal
      */
     public equals(other: FlowGraphInteger): boolean {
         return this.value === other.value;
     }
 
+    /** The class name of this type */
     public static ClassName = "FlowGraphInteger";
 
     /**
      * Parses a FlowGraphInteger from a serialization object.
      * @param value te number to parse
-     * @returns
+     * @returns a new FlowGraphInteger
      */
     public static FromValue(value: number): FlowGraphInteger {
         return new FlowGraphInteger(value);
     }
 
+    /**
+     * Returns a string representation of this integer
+     * @returns the string representation
+     */
     public toString(): string {
         return this.value.toString();
     }

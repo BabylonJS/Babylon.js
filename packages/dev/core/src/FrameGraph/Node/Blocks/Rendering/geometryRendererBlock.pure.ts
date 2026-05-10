@@ -175,86 +175,110 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     // Irradiance
+    /** The format of the irradiance output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - IRRADIANCE")
     public irradianceFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the irradiance output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - IRRADIANCE")
     public irradianceType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // View depth
+    /** The format of the view depth output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VIEW DEPTH")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
+    /** The type of the view depth output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - VIEW DEPTH")
     public viewDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // Normalized view depth
+    /** The format of the normalized view depth output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - NORMALIZED VIEW DEPTH")
     public normalizedViewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
+    /** The type of the normalized view depth output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - NORMALIZED VIEW DEPTH")
     public normalizedViewDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // Screen depth
+    /** The format of the screen depth output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - SCREEN DEPTH")
     public screenDepthFormat = Constants.TEXTUREFORMAT_RED;
 
+    /** The type of the screen depth output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - SCREEN DEPTH")
     public screenDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // View normal
+    /** The format of the view normal output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VIEW NORMAL")
     public viewNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the view normal output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - VIEW NORMAL")
     public viewNormalType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // World normal
+    /** The format of the world normal output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - WORLD NORMAL")
     public worldNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the world normal output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - WORLD NORMAL")
     public worldNormalType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Local position
+    /** The format of the local position output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - LOCAL POSITION")
     public localPositionFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the local position output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - LOCAL POSITION")
     public localPositionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // World Position
+    /** The format of the world position output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - WORLD POSITION")
     public worldPositionFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the world position output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - WORLD POSITION")
     public worldPositionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // Albedo
+    /** The format of the albedo output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - ALBEDO")
     public albedoFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the albedo output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - ALBEDO")
     public albedoType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Reflectivity
+    /** The format of the reflectivity output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - REFLECTIVITY")
     public reflectivityFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the reflectivity output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - REFLECTIVITY")
     public reflectivityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Velocity
+    /** The format of the velocity output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VELOCITY")
     public velocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the velocity output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - VELOCITY")
     public velocityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Linear velocity
+    /** The format of the linear velocity output texture */
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - LINEAR VELOCITY")
     public linearVelocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
+    /** The type of the linear velocity output texture */
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - LINEAR VELOCITY")
     public linearVelocityType = Constants.TEXTURETYPE_HALF_FLOAT;
 
@@ -472,6 +496,10 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
+    /**
+     * Serializes this block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.sizeInPercentage = this.sizeInPercentage;

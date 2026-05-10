@@ -236,6 +236,11 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         }
     }
 
+    /**
+     * Gets the render target texture for the specified eye
+     * @param _eye the eye to get the render target texture for
+     * @returns the render target texture or null
+     */
     public getRenderTargetTextureForEye(_eye: XREye): Nullable<RenderTargetTexture> {
         return null;
     }

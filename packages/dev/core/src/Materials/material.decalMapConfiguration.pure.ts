@@ -76,6 +76,14 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    /**
+     * Checks if the sub mesh is ready to be used
+     * @param defines the list of defines
+     * @param scene the current scene
+     * @param engine the current engine
+     * @param subMesh the sub mesh to check
+     * @returns true if the sub mesh is ready
+     */
     public override isReadyForSubMesh(defines: DecalMapDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {
         const decalMap = subMesh.getMesh().decalMap;
 
@@ -86,6 +94,12 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         return decalMap.isReady();
     }
 
+    /**
+     * Prepares the defines before attributes are set
+     * @param defines the list of defines
+     * @param scene the current scene
+     * @param mesh the current mesh
+     */
     public override prepareDefinesBeforeAttributes(defines: DecalMapDefines, scene: Scene, mesh: AbstractMesh): void {
         const decalMap = mesh.decalMap;
 
@@ -107,6 +121,13 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the material data for a sub mesh
+     * @param uniformBuffer the uniform buffer to update
+     * @param scene the current scene
+     * @param _engine the current engine
+     * @param subMesh the sub mesh to bind
+     */
     public override hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, _engine: Engine, subMesh: SubMesh): void {
         /**
          * Note that we override hardBindForSubMesh and not bindForSubMesh because the material can be shared by multiple meshes,
@@ -130,10 +151,18 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         uniformBuffer.setTexture("decalSampler", texture);
     }
 
+    /**
+     * Gets the class name of this plugin
+     * @returns the class name
+     */
     public override getClassName(): string {
         return "DecalMapConfiguration";
     }
 
+    /**
+     * Gets the samplers used by the plugin
+     * @param samplers the list of samplers to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("decalSampler");
     }

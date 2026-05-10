@@ -398,18 +398,27 @@ export class DebugLayer {
         }
     }
 
+    /**
+     * Pop up the scene explorer in a separate window
+     */
     public popupSceneExplorer() {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector.PopupSceneExplorer();
         }
     }
 
+    /**
+     * Pop up the inspector in a separate window
+     */
     public popupInspector() {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector.PopupInspector();
         }
     }
 
+    /**
+     * Pop up the embedded inspector panel
+     */
     public popupEmbed() {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector.PopupEmbed();

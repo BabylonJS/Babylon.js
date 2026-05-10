@@ -378,6 +378,10 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         this._varAlbedoName = material instanceof PBRBaseMaterial ? "surfaceAlbedo" : "baseColor.rgb";
     }
 
+    /**
+     * Prepares the defines used by the plugin
+     * @param defines the defines to prepare
+     */
     public override prepareDefines(defines: MaterialRSMCreateDefines) {
         defines.RSMCREATE = this._isEnabled;
 
@@ -415,10 +419,18 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         };
     }
 
+    /**
+     * Gets the samplers used by the plugin
+     * @param samplers the list of samplers to update
+     */
     public override getSamplers(samplers: string[]) {
         samplers.push("rsmTextureProjectionSampler");
     }
 
+    /**
+     * Binds the material data for a sub mesh
+     * @param uniformBuffer the uniform buffer to update
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (!this._isEnabled) {
             return;
@@ -449,6 +461,12 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Gets custom shader code for the plugin
+     * @param shaderType the type of shader (vertex or fragment)
+     * @param shaderLanguage the shader language
+     * @returns the custom shader code or null
+     */
     public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return null;

@@ -285,7 +285,11 @@ export class FlowGraphAxisAngleFromQuaternionBlock extends FlowGraphBlock {
         }
     }
 
-    /** @override */
+    /**
+     * Gets the class name
+     * @override
+     * @returns the class name
+     */
     public override getClassName(): string {
         return FlowGraphBlockNames.AxisAngleFromQuaternion;
     }
