@@ -66,7 +66,7 @@ export class FlowGraphSceneEventCoordinator {
     public readonly pressedKeys: Set<string> = new Set<string>();
 
     /** The physical key codes that map to the virtual CommandOrControl key on this platform. */
-    private static readonly _commandOrCtrlCodes: ReadonlySet<string> = _IsMacPlatform ? new Set(["MetaLeft", "MetaRight"]) : new Set(["ControlLeft", "ControlRight"]);
+    private static readonly _COMMAND_OR_CTRL_CODES: ReadonlySet<string> = _IsMacPlatform ? new Set(["MetaLeft", "MetaRight"]) : new Set(["ControlLeft", "ControlRight"]);
 
     private _startingTime: number = 0;
 
@@ -136,7 +136,7 @@ export class FlowGraphSceneEventCoordinator {
         this._keyDownObserver = this._scene.onKeyboardObservable.add((keyboardInfo) => {
             const code = keyboardInfo.event.code;
             this.pressedKeys.add(code);
-            if (FlowGraphSceneEventCoordinator._commandOrCtrlCodes.has(code)) {
+            if (FlowGraphSceneEventCoordinator._COMMAND_OR_CTRL_CODES.has(code)) {
                 this.pressedKeys.add("CommandOrControl");
             }
             this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.KeyDown, payload: keyboardInfo });
@@ -145,10 +145,10 @@ export class FlowGraphSceneEventCoordinator {
         this._keyUpObserver = this._scene.onKeyboardObservable.add((keyboardInfo) => {
             const code = keyboardInfo.event.code;
             this.pressedKeys.delete(code);
-            if (FlowGraphSceneEventCoordinator._commandOrCtrlCodes.has(code)) {
+            if (FlowGraphSceneEventCoordinator._COMMAND_OR_CTRL_CODES.has(code)) {
                 // Only remove CommandOrControl if neither left nor right is still held
                 let stillHeld = false;
-                for (const c of FlowGraphSceneEventCoordinator._commandOrCtrlCodes) {
+                for (const c of Array.from(FlowGraphSceneEventCoordinator._COMMAND_OR_CTRL_CODES)) {
                     if (c !== code && this.pressedKeys.has(c)) {
                         stillHeld = true;
                         break;

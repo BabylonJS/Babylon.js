@@ -44,8 +44,10 @@ export interface IFlowGraphContextConfiguration {
     /**
      * The scene event coordinator that tracks runtime event state
      * (e.g. currently pressed keyboard keys).
+     * When not provided, keyboard polling blocks (e.g. IsKeyPressed) will
+     * report no keys pressed.
      */
-    readonly sceneEventCoordinator: FlowGraphSceneEventCoordinator;
+    readonly sceneEventCoordinator?: FlowGraphSceneEventCoordinator;
 
     /**
      * The assets context used by the flow graph context.

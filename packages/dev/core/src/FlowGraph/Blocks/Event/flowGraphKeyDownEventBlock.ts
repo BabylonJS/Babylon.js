@@ -50,12 +50,13 @@ export class FlowGraphKeyDownEventBlock extends FlowGraphKeyboardEventBlock {
             return true;
         }
 
-        // Delegate to the base class for key filtering, output population, and execution.
-        const result = super._executeEvent(context, keyboardInfo);
-
-        // Set the repeat output after the base class has set all other outputs.
+        // Set the repeat output before delegating to the base class,
+        // which calls _execute() and fires signals — downstream blocks
+        // must see the correct value during that execution chain.
         this.isRepeat.setValue(repeat, context);
-        return result;
+
+        // Delegate to the base class for key filtering, output population, and execution.
+        return super._executeEvent(context, keyboardInfo);
     }
 
     /**

@@ -1,6 +1,5 @@
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
@@ -80,7 +79,12 @@ export class FlowGraphIsKeyPressedBlock extends FlowGraphBlock {
 
     /** @internal */
     public override _updateOutputs(context: FlowGraphContext): void {
-        const keys = context.configuration.sceneEventCoordinator.pressedKeys;
+        const coordinator = context.configuration.sceneEventCoordinator;
+        if (!coordinator) {
+            this.isPressed.setValue(false, context);
+            return;
+        }
+        const keys = coordinator.pressedKeys;
         const keyCode = this.key.getValue(context);
 
         // Primary key must be held (unless empty, in which case only modifiers are checked)
