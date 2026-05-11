@@ -4,5 +4,6 @@
  */
 export * from "./taaRenderingPipeline.pure";
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import { RegisterTaaRenderingPipeline } from "./taaRenderingPipeline.pure";
 RegisterTaaRenderingPipeline();

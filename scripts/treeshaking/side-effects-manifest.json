@@ -6,14 +6,14 @@
     "byType": {
       "top-level-call": 634,
       "declare-module": 108,
-      "bare-import": 250,
+      "bare-import": 256,
       "static-property-assignment": 2,
       "shader-store-write": 633
     },
     "filesByType": {
       "top-level-call": 634,
       "declare-module": 91,
-      "bare-import": 111,
+      "bare-import": 116,
       "static-property-assignment": 2,
       "shader-store-write": 633
     }
@@ -4963,8 +4963,13 @@
       "file": "Materials/Textures/cubeTexture.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 1,
+          "text": "import \"../../Engines/AbstractEngine/abstractEngine.cubeTexture\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterCubeTexture();"
         }
       ]
@@ -7503,8 +7508,13 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterDefaultRenderingPipeline();"
         }
       ]
@@ -7608,8 +7618,13 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterSsao2RenderingPipeline();"
         }
       ]
@@ -7643,8 +7658,13 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterSsrRenderingPipeline();"
         }
       ]
@@ -7658,8 +7678,13 @@
           "text": "import \"../../../Shaders/standard.fragment\";"
         },
         {
+          "type": "bare-import",
+          "line": 8,
+          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 10,
+          "line": 11,
           "text": "RegisterStandardRenderingPipeline();"
         }
       ]
@@ -7678,8 +7703,13 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
       "sideEffects": [
         {
+          "type": "bare-import",
+          "line": 7,
+          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
+        },
+        {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterTaaRenderingPipeline();"
         }
       ]

@@ -1,3 +1,4 @@
+import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
 /**
  * Re-exports pure implementation and applies runtime side effects.
  * Import cubeTexture.pure for tree-shakeable, side-effect-free usage.

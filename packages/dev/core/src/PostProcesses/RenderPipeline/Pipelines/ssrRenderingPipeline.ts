@@ -4,5 +4,6 @@
  */
 export * from "./ssrRenderingPipeline.pure";
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import { RegisterSsrRenderingPipeline } from "./ssrRenderingPipeline.pure";
 RegisterSsrRenderingPipeline();

@@ -59,15 +59,11 @@ describe("Flow Nodes", () => {
     }
 
     beforeEach(() => {
-        log.mockReset().mockImplementation(() => {});
-        errorLog.mockReset().mockImplementation(() => {});
-        warnLog.mockReset().mockImplementation(() => {});
         engine = new NullEngine();
         scene = new Scene(engine);
         new ArcRotateCamera("", 0, 0, 0, new Vector3(0, 0, 0));
         log.mockClear();
         errorLog.mockClear();
-        warnLog.mockClear();
         renderInterval = setInterval(() => scene.render(), 16);
     });
 
