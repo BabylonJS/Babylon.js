@@ -297,11 +297,14 @@
         var sin2: f32 = 1.0f - coatGeoInfo.NdotV * coatGeoInfo.NdotV;
         // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
         // is just coat_ior since the incident medium is air (IOR = 1.0).
-        sin2 = sin2 / (coat_ior * coat_ior);
+        sin2 = sin2 / (coat_ior * coat_ior) * coat_weight;
         let cos_t: f32 = sqrt(1.0f - sin2);
         let coatPathLength = 1.0f / cos_t;
-        let colored_transmission: vec3f = pow(coat_color, vec3f(coatPathLength));
-        coatAbsorption = mix(vec3f(1.0f), colored_transmission * vec3f(darkened_transmission), coat_weight);
+        // Scale the optical path length by coat_weight (thickness model) so that
+        // a strongly-absorbing coat_color retains significant color at reduced weight.
+        let effectivePathLength = coatPathLength * coat_weight;
+        let colored_transmission: vec3f = pow(coat_color, vec3f(effectivePathLength));
+        coatAbsorption = colored_transmission * mix(vec3f(1.0f), vec3f(darkened_transmission), coat_weight);
     }
 
     #ifdef FUZZ
