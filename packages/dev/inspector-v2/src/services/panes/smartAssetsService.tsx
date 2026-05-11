@@ -29,6 +29,7 @@ import { Accordion, AccordionSection } from "shared-ui-components/fluent/primiti
 import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
@@ -110,13 +111,6 @@ const useStyles = makeStyles({
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
         fontSize: tokens.fontSizeBase100,
         opacity: 0.7,
-    },
-    iconButton: {
-        cursor: "pointer",
-        opacity: 0.6,
-        ":hover": {
-            opacity: 1,
-        },
     },
     hiddenInput: {
         display: "none",
@@ -366,9 +360,9 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                             {_shortenUrl(a.url)}
                         </Caption1>
                         <div className={styles.assetActions}>
-                            <LinkRegular fontSize={14} className={styles.iconButton} title="Swap URL" onClick={() => onSwapAsset(a.key)} />
-                            <ArrowSyncRegular fontSize={14} className={styles.iconButton} title="Reload" onClick={async () => await onReloadAsset(a.key)} />
-                            <DeleteRegular fontSize={14} className={styles.iconButton} title="Remove" onClick={async () => await onRemoveAsset(a.key)} />
+                            <Button appearance="subtle" icon={LinkRegular} title={`Swap URL for ${a.key}`} onClick={() => onSwapAsset(a.key)} />
+                            <Button appearance="subtle" icon={ArrowSyncRegular} title={`Reload ${a.key}`} onClick={async () => await onReloadAsset(a.key)} />
+                            <Button appearance="subtle" icon={DeleteRegular} title={`Remove ${a.key}`} onClick={async () => await onRemoveAsset(a.key)} />
                         </div>
                     </div>
                 );
