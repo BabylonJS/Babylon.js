@@ -1,7 +1,4 @@
-﻿#ifndef TEXRD
-    #define TEXRD(s, uv) texture2D(s, uv)
-#endif
-vec2 uvOffset = vec2(0.0, 0.0);
+﻿vec2 uvOffset = vec2(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX) || defined(DETAIL)
 	#ifdef NORMALXYSCALE
@@ -55,12 +52,12 @@ vec2 uvOffset = vec2(0.0, 0.0);
 
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
-		normalW = normalize(TEXRD(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3(normalMatrix) * normalW);
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, TEXRD(bumpSampler, vBumpUV + uvOffset).xyz, vBumpInfos.y);
+		normalW = perturbNormal(TBN, texture2D(bumpSampler, vBumpUV + uvOffset).xyz, vBumpInfos.y);
     #else
-        vec3 bumpNormal = TEXRD(bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
+        vec3 bumpNormal = texture2D(bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
         #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
             detailNormal.xy *= vDetailInfos.z;
