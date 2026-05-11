@@ -1,5 +1,8 @@
+#ifndef TEXRD
+    #define TEXRD(s, uv) texture2D(s, uv)
+#endif
 #ifdef LIGHTMAP
-    vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
+    vec4 lightmapColor = TEXRD(lightmapSampler, vLightmapUV + uvOffset);
 
     #ifdef RGBDLIGHTMAP
         lightmapColor.rgb = fromRGBD(lightmapColor);
