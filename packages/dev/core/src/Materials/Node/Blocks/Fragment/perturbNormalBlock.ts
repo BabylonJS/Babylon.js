@@ -391,10 +391,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         replaceStrings = [
             {
-                search: new RegExp(
-                    `(?:${isWebGPU ? "textureSample" : "texture2D"}|TEXRD)\\(bumpSampler${isWebGPU ? ",bumpSamplerSampler,fragmentInputs." : ","}vBumpUV\\)`,
-                    "g"
-                ),
+                search: new RegExp(`(?:${isWebGPU ? "textureSample" : "texture2D"}|TEXRD)\\(bumpSampler${isWebGPU ? ",bumpSamplerSampler,fragmentInputs." : ","}vBumpUV\\)`, "g"),
                 replace: `${uvForPerturbNormal}`,
             },
             {
