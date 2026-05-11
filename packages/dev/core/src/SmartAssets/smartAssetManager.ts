@@ -310,15 +310,24 @@ export async function LoadSmartAssetTextureAsync(scene: Scene, key: string, url?
 
     internal.textureKeys.add(key);
 
-    // If the URL changed for an already-tracked texture, dispose the stale instance.
-    // Callers that hold material references to the old texture should re-point them
-    // to the returned new texture.
-    if (url && previousUrl !== undefined && url !== previousUrl) {
-        for (const tex of [...scene.textures]) {
-            if (internal.objectToKeyMap.get(tex) === key) {
+    // Mirror LoadSmartAssetAsync: if a tracked texture already exists for this key,
+    // return it on a same-URL call (cache hit) or dispose it before reload on URL change.
+    // Without this guard, calling LoadSmartAssetTextureAsync twice with the same URL
+    // would create duplicate Texture objects in scene.textures.
+    const existingTextures: BaseTexture[] = [];
+    for (const tex of scene.textures) {
+        if (internal.objectToKeyMap.get(tex) === key) {
+            existingTextures.push(tex);
+        }
+    }
+    if (existingTextures.length > 0) {
+        if (url && previousUrl !== undefined && url !== previousUrl) {
+            for (const tex of existingTextures) {
                 internal.objectToKeyMap.delete(tex);
                 tex.dispose();
             }
+        } else {
+            return existingTextures[0];
         }
     }
 

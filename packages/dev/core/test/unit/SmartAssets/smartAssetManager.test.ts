@@ -9,6 +9,7 @@ import {
     GetSmartAssetManager,
     LoadAllSmartAssetsAsync,
     LoadSmartAssetAsync,
+    LoadSmartAssetTextureAsync,
     RegisterSmartAsset,
     RemoveSmartAssetAsync,
     SerializeSmartAssetManagerMap,
@@ -256,6 +257,36 @@ describe("SmartAssetManager", () => {
 
             const containers = await LoadAllSmartAssetsAsync(scene);
             expect(containers.length).toBe(3);
+        });
+    });
+
+    // ── loadTextureAsync Tests ──
+
+    describe("loadTextureAsync", () => {
+        it("should return the same texture instance on a same-URL second call (cache hit)", async () => {
+            const texture1 = await LoadSmartAssetTextureAsync(scene, "wood", "textures/wood.png");
+            const texture2 = await LoadSmartAssetTextureAsync(scene, "wood", "textures/wood.png");
+            expect(texture2).toBe(texture1);
+            const tracked = scene.textures.filter((t) => FindSmartAssetKeyForObject(scene, t) === "wood");
+            expect(tracked.length).toBe(1);
+        });
+
+        it("should return the same texture instance when called without URL after initial load", async () => {
+            const texture1 = await LoadSmartAssetTextureAsync(scene, "wood", "textures/wood.png");
+            const texture2 = await LoadSmartAssetTextureAsync(scene, "wood");
+            expect(texture2).toBe(texture1);
+        });
+
+        it("should dispose the stale texture and load a new one when the URL changes", async () => {
+            const texture1 = await LoadSmartAssetTextureAsync(scene, "wood", "textures/wood.png");
+            const disposeSpy = vi.spyOn(texture1, "dispose");
+
+            const texture2 = await LoadSmartAssetTextureAsync(scene, "wood", "textures/wood-v2.png");
+
+            expect(disposeSpy).toHaveBeenCalled();
+            expect(texture2).not.toBe(texture1);
+            const tracked = scene.textures.filter((t) => FindSmartAssetKeyForObject(scene, t) === "wood");
+            expect(tracked.length).toBe(1);
         });
     });
 
