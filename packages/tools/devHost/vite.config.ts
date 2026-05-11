@@ -1,7 +1,116 @@
-import { defineConfig, type Plugin } from "vite";
 import path from "path";
+import { defineConfig, type Plugin, type UserConfig } from "vite";
 // @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
+
+const OptionalPeerDependencies = ["draco3dgltf", "ammo.js", "cannon", "oimo", "recast", "havok", "basis_transcoder"];
+const OptionalPeerDependencyPattern = OptionalPeerDependencies.map((p) => p.replace(".", "\\.")).join("|");
+const LottieWorkerEntry = path.resolve("../../dev/lottiePlayer/src/worker.ts");
+const LottieWorkerDevUrl = "/__lottie-worker.js";
+const LottieWorkerUrlExpression = /new URL\(["']\.\/worker(?:\.[jt]s)?["'],\s*import\.meta\.url\)/g;
+
+function stubNamedOptionalPeerDependencyImport(bindings: string): string {
+    return bindings
+        .split(",")
+        .map((s) =>
+            s
+                .trim()
+                .split(/\s+as\s+/)
+                .pop()!
+                .trim()
+        )
+        .filter((n) => Boolean(n) && !n.startsWith("type "))
+        .map((n) => `const ${n} = undefined;`)
+        .join(" ");
+}
+
+function stubOptionalPeerDependencyImports(code: string): string {
+    if (!OptionalPeerDependencies.some((p) => code.includes(`"${p}"`) || code.includes(`'${p}'`))) {
+        return code;
+    }
+
+    const typeNamedRe = new RegExp(`import\\s+type\\s+\\{[^}]*\\}\\s+from\\s+['"](?:${OptionalPeerDependencyPattern})['"];?`, "g");
+    const namedRe = new RegExp(`import\\s+\\{([^}]*)\\}\\s+from\\s+['"](?:${OptionalPeerDependencyPattern})['"];?`, "g");
+    const starRe = new RegExp(`import\\s+(?:type\\s+)?\\*\\s+as\\s+(\\w+)\\s+from\\s+['"](?:${OptionalPeerDependencyPattern})['"];?`, "g");
+    const defaultRe = new RegExp(`import\\s+(?:type\\s+)?(\\w+)\\s+from\\s+['"](?:${OptionalPeerDependencyPattern})['"];?`, "g");
+    const sideEffectRe = new RegExp(`import\\s+['"](?:${OptionalPeerDependencyPattern})['"];?`, "g");
+
+    return code
+        .replace(typeNamedRe, "")
+        .replace(namedRe, (_m, bindings: string) => stubNamedOptionalPeerDependencyImport(bindings))
+        .replace(starRe, (_m, ns: string) => `const ${ns} = {};`)
+        .replace(defaultRe, (_m, def: string) => `const ${def} = undefined;`)
+        .replace(sideEffectRe, "");
+}
+
+function lottieClassicWorkerPlugin(aliases: Record<string, string>): Plugin {
+    let bundlePromise: Promise<string> | undefined;
+    let command: "build" | "serve" = "serve";
+
+    const bundleWorker = async (): Promise<string> => {
+        bundlePromise ??= import("esbuild").then(async ({ build }) => {
+            const result = await build({
+                entryPoints: [LottieWorkerEntry],
+                bundle: true,
+                write: false,
+                format: "iife",
+                platform: "browser",
+                target: "es2020",
+                sourcemap: "inline",
+                alias: aliases,
+                define: {
+                    "process.env.NODE_ENV": '"development"',
+                },
+            });
+            return result.outputFiles[0].text;
+        });
+
+        return bundlePromise;
+    };
+
+    return {
+        name: "lottie-classic-worker",
+        enforce: "pre",
+        configResolved(config) {
+            command = config.command;
+        },
+        async transform(code, id) {
+            if (!id.split("?")[0].endsWith("/packages/dev/lottiePlayer/src/player.ts") || !code.includes("./worker")) {
+                return null;
+            }
+
+            const workerUrl =
+                command === "serve"
+                    ? `new URL("${LottieWorkerDevUrl}", globalThis.location.href)`
+                    : `new URL(import.meta.ROLLUP_FILE_URL_${this.emitFile({ type: "asset", fileName: "assets/lottieWorker.js", source: await bundleWorker() })}, import.meta.url)`;
+            const transformedCode = code.replace(LottieWorkerUrlExpression, workerUrl);
+            if (transformedCode === code) {
+                return null;
+            }
+
+            return { code: transformedCode, map: null };
+        },
+        configureServer(server) {
+            server.watcher.on("change", () => (bundlePromise = undefined));
+
+            server.middlewares.use(async (req, res, next) => {
+                const pathname = req.url?.split(/[?#]/)[0] ?? "";
+                if (pathname !== LottieWorkerDevUrl) {
+                    next();
+                    return;
+                }
+
+                try {
+                    const workerCode = await bundleWorker();
+                    res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+                    res.end(workerCode);
+                } catch (error) {
+                    next(error);
+                }
+            });
+        },
+    };
+}
 
 /**
  * Stub optional peer dependencies that core/src references but that are not
@@ -16,48 +125,16 @@ import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
  *   → const DracoDecoderModule = undefined;
  */
 function stubOptionalPeerDepsPlugin(): Plugin {
-    const optionals = ["draco3dgltf", "ammo.js", "cannon", "oimo", "recast", "havok", "basis_transcoder"];
-    const q = optionals.map((p) => p.replace(".", "\\.")).join("|");
-    // Handle: import type { A, B } from "pkg"  — erase entirely (type-only)
-    const typeNamedRe = new RegExp(`import\\s+type\\s+\\{[^}]*\\}\\s+from\\s+['"](?:${q})['"];?`, "g");
-    // Handle: import { A, B } from "pkg"   (single or multi-line braces, runtime)
-    const namedRe = new RegExp(`import\\s+\\{([^}]*)\\}\\s+from\\s+['"](?:${q})['"];?`, "g");
-    // Handle: import * as ns from "pkg"
-    const starRe = new RegExp(`import\\s+(?:type\\s+)?\\*\\s+as\\s+(\\w+)\\s+from\\s+['"](?:${q})['"];?`, "g");
-    // Handle: import Default from "pkg"
-    const defaultRe = new RegExp(`import\\s+(?:type\\s+)?(\\w+)\\s+from\\s+['"](?:${q})['"];?`, "g");
-    // Handle: import "pkg"  (side-effect only)
-    const sideEffectRe = new RegExp(`import\\s+['"](?:${q})['"];?`, "g");
-
-    function stubNamed(bindings: string) {
-        return bindings
-            .split(",")
-            .map((s) =>
-                s
-                    .trim()
-                    .split(/\s+as\s+/)
-                    .pop()!
-                    .trim()
-            )
-            .filter((n) => Boolean(n) && !n.startsWith("type "))
-            .map((n) => `const ${n} = undefined;`)
-            .join(" ");
-    }
-
     return {
         name: "stub-optional-peer-deps",
         enforce: "pre",
         transform(code, id) {
             if (!/\.[tj]sx?$/.test(id)) return null;
-            if (!optionals.some((p) => code.includes(`"${p}"`) || code.includes(`'${p}'`))) return null;
+            const transformedCode = stubOptionalPeerDependencyImports(code);
+            if (transformedCode === code) return null;
 
             return {
-                code: code
-                    .replace(typeNamedRe, "")
-                    .replace(namedRe, (_m, bindings: string) => stubNamed(bindings))
-                    .replace(starRe, (_m, ns: string) => `const ${ns} = {};`)
-                    .replace(defaultRe, (_m, def: string) => `const ${def} = undefined;`)
-                    .replace(sideEffectRe, ""),
+                code: transformedCode,
                 map: null,
             };
         },
@@ -65,31 +142,33 @@ function stubOptionalPeerDepsPlugin(): Plugin {
 }
 
 export default defineConfig((_env) => {
+    const aliases = {
+        core: path.resolve("../../dev/core/src"),
+        gui: path.resolve("../../dev/gui/src"),
+        serializers: path.resolve("../../dev/serializers/src"),
+        loaders: path.resolve("../../dev/loaders/src"),
+        materials: path.resolve("../../dev/materials/src"),
+        "lottie-player": path.resolve("../../dev/lottiePlayer/src"),
+        inspector: path.resolve("../../dev/inspector/src"),
+        "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+        "post-processes": path.resolve("../../dev/postProcesses/src"),
+        "procedural-textures": path.resolve("../../dev/proceduralTextures/src"),
+        "node-editor": path.resolve("../../tools/nodeEditor/src"),
+        "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/src"),
+        "node-render-graph-editor": path.resolve("../../tools/nodeRenderGraphEditor/src"),
+        "node-particle-editor": path.resolve("../../tools/nodeParticleEditor/src"),
+        "gui-editor": path.resolve("../../tools/guiEditor/src"),
+        accessibility: path.resolve("../../tools/accessibility/src"),
+        "babylonjs-gltf2interface": path.resolve("./src/babylon.glTF2Interface.ts"),
+    };
+
     const base = commonDevViteConfiguration({
         port: parseInt(process.env.TOOLS_PORT ?? "1338"),
-        aliases: {
-            core: path.resolve("../../dev/core/src"),
-            gui: path.resolve("../../dev/gui/src"),
-            serializers: path.resolve("../../dev/serializers/src"),
-            loaders: path.resolve("../../dev/loaders/src"),
-            materials: path.resolve("../../dev/materials/src"),
-            "lottie-player": path.resolve("../../dev/lottiePlayer/src"),
-            inspector: path.resolve("../../dev/inspector/src"),
-            "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
-            "post-processes": path.resolve("../../dev/postProcesses/src"),
-            "procedural-textures": path.resolve("../../dev/proceduralTextures/src"),
-            "node-editor": path.resolve("../../tools/nodeEditor/src"),
-            "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/src"),
-            "node-render-graph-editor": path.resolve("../../tools/nodeRenderGraphEditor/src"),
-            "node-particle-editor": path.resolve("../../tools/nodeParticleEditor/src"),
-            "gui-editor": path.resolve("../../tools/guiEditor/src"),
-            accessibility: path.resolve("../../tools/accessibility/src"),
-            "babylonjs-gltf2interface": path.resolve("./src/babylon.glTF2Interface.ts"),
-        },
-    });
+        aliases,
+    }) as unknown as UserConfig;
 
     return {
         ...base,
-        plugins: [...(base.plugins ?? []), stubOptionalPeerDepsPlugin()],
+        plugins: [...(base.plugins ?? []), lottieClassicWorkerPlugin(aliases), stubOptionalPeerDepsPlugin()],
     };
 });
