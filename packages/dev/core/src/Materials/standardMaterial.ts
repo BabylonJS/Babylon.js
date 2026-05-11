@@ -917,7 +917,7 @@ export class StandardMaterial extends StandardMaterialBase {
 
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
 
-            defines.TEXTURE_REPETITION_MODE = this.textureRepetitionMode;
+            defines.TEXTURE_REPETITION_MODE = engine.version > 1 || engine.isWebGPU ? this.textureRepetitionMode : 0;
         }
 
         this._eventInfo.isReadyForSubMesh = true;

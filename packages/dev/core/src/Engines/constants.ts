@@ -165,7 +165,7 @@ export class Constants {
 
     /** No texture repetition breaking — standard tiling (1 texture fetch) */
     public static readonly TEXTURE_REPETITION_NONE = 0;
-    /** Noise-driven offset blending to break texture repetition (2 texture fetches). Based on Inigo Quilez's technique 3. */
+    /** Noise-driven offset blending to break texture repetition (3 texture fetches). Based on Inigo Quilez's technique 3. */
     public static readonly TEXTURE_REPETITION_NOISE_BLEND = 1;
     /** Hex-tile grid with per-tile rotation and luminance-weighted blending (3 texture fetches). Based on Mikkelsen, "Practical Real-Time Hex-Tiling", JCGT 2022. */
     public static readonly TEXTURE_REPETITION_HEX_TILING = 2;

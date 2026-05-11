@@ -186,7 +186,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
 
 const TextureRepetitionModeOptions = [
     { label: "None", value: Constants.TEXTURE_REPETITION_NONE },
-    { label: "Noise Blend (2 fetches)", value: Constants.TEXTURE_REPETITION_NOISE_BLEND },
+    { label: "Noise Blend (3 fetches)", value: Constants.TEXTURE_REPETITION_NOISE_BLEND },
     { label: "Hex Tiling (3 fetches)", value: Constants.TEXTURE_REPETITION_HEX_TILING },
     { label: "Tile Randomization (4 fetches)", value: Constants.TEXTURE_REPETITION_TILE_RANDOMIZATION },
     { label: "Voronoi Bombing (9 fetches)", value: Constants.TEXTURE_REPETITION_VORONOI_BOMBING },

@@ -45,12 +45,12 @@
         vec2 dy = dFdy(uv);
 
         // Sample the two closest virtual patterns
-        vec3 cola = textureGrad(samp, uv + 0.3 * offa, dx, dy).xyz;
-        vec3 colb = textureGrad(samp, uv + 0.3 * offb, dx, dy).xyz;
+        vec4 cola = textureGrad(samp, uv + 0.3 * offa, dx, dy);
+        vec4 colb = textureGrad(samp, uv + 0.3 * offb, dx, dy);
 
-        // Interpolate with contrast-aware blending
+        // Interpolate with contrast-aware blending (contrast metric from RGB only)
         float colSum = cola.x + cola.y + cola.z - colb.x - colb.y - colb.z;
-        return vec4(mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * colSum)), 1.0);
+        return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * colSum));
     }
 
 // --- Mode 2: Hex tiling with rotation (3 texture fetches) ---

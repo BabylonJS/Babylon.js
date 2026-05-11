@@ -423,15 +423,17 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Sets the texture repetition breaking mode.
      * Use one of the Constants.TEXTURE_REPETITION_* values to break visible texture tiling patterns.
-     * Ordered by cost: NONE (1 fetch), NOISE_BLEND (2), HEX_TILING (3), TILE_RANDOMIZATION (4), VORONOI_BOMBING (9).
+     * Ordered by cost: NONE (1 fetch), NOISE_BLEND (3), HEX_TILING (3), TILE_RANDOMIZATION (4), VORONOI_BOMBING (9).
+     * Not supported on WebGL1 — the mode will be forced to NONE.
      * @see https://iquilezles.org/articles/texturerepetition/
      * @see https://jcgt.org/published/0011/03/05/
      */
     public set textureRepetitionMode(value: number) {
-        if (this._textureRepetitionMode === value) {
+        const clamped = Math.max(Constants.TEXTURE_REPETITION_NONE, Math.min(value | 0, Constants.TEXTURE_REPETITION_VORONOI_BOMBING));
+        if (this._textureRepetitionMode === clamped) {
             return;
         }
-        this._textureRepetitionMode = value;
+        this._textureRepetitionMode = clamped;
         this.markAsDirty(Material.TextureDirtyFlag);
     }
 

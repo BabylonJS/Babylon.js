@@ -3250,7 +3250,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         if (defines._areTexturesDirty) {
-            defines.TEXTURE_REPETITION_MODE = this.textureRepetitionMode;
+            defines.TEXTURE_REPETITION_MODE = engine.version > 1 || engine.isWebGPU ? this.textureRepetitionMode : 0;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {

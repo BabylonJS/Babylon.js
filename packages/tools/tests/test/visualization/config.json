@@ -5124,6 +5124,7 @@
             "playgroundId": "#ESP440#0",
             "referenceImage": "texture-repetition-standard-material.png",
             "renderCount": 1,
+            "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Textures"]
         },
         {
@@ -5131,6 +5132,7 @@
             "playgroundId": "#6EPUUH#0",
             "referenceImage": "texture-repetition-pbr-material.png",
             "renderCount": 1,
+            "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
         },
         {
@@ -5138,6 +5140,7 @@
             "playgroundId": "#GOKMFP#0",
             "referenceImage": "texture-repetition-openpbr-material.png",
             "renderCount": 1,
+            "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
         }
     ]
