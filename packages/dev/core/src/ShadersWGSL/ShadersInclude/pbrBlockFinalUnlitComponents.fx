@@ -1,3 +1,6 @@
+#ifndef TEXRD
+    #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
+#endif
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
 finalDiffuse *= surfaceAlbedo;

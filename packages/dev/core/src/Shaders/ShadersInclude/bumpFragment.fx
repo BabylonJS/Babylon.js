@@ -1,4 +1,7 @@
-﻿vec2 uvOffset = vec2(0.0, 0.0);
+﻿#ifndef TEXRD
+    #define TEXRD(s, uv) texture2D(s, uv)
+#endif
+vec2 uvOffset = vec2(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX) || defined(DETAIL)
 	#ifdef NORMALXYSCALE

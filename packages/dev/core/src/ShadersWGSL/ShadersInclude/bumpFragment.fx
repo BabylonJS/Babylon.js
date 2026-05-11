@@ -1,3 +1,6 @@
+#ifndef TEXRD
+    #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
+#endif
 var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX) || defined(DETAIL)

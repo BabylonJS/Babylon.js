@@ -1,3 +1,6 @@
+#ifndef TEXRD
+    #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
+#endif
 #ifdef LIGHTMAP
     var lightmapColor: vec4f = TEXRD(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
 
