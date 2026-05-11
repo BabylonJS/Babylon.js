@@ -9,15 +9,15 @@ float subsurface_scatter_anisotropy = clamp(vSubsurfaceScatterAnisotropy, -0.999
 
 // Sample Subsurface Layer properties from textures
 #ifdef SUBSURFACE_WEIGHT
-    vec4 subsurfaceWeightFromTexture = texture2D(subsurfaceWeightSampler, vSubsurfaceWeightUV + uvOffset);
+    vec4 subsurfaceWeightFromTexture = TEXRD(subsurfaceWeightSampler, vSubsurfaceWeightUV + uvOffset);
 #endif
 
 #ifdef SUBSURFACE_COLOR
-    vec4 subsurfaceColorFromTexture = texture2D(subsurfaceColorSampler, vSubsurfaceColorUV + uvOffset);
+    vec4 subsurfaceColorFromTexture = TEXRD(subsurfaceColorSampler, vSubsurfaceColorUV + uvOffset);
 #endif
 
 #ifdef SUBSURFACE_RADIUS_SCALE
-    vec4 subsurfaceRadiusScaleFromTexture = texture2D(subsurfaceRadiusScaleSampler, vSubsurfaceRadiusScaleUV + uvOffset);
+    vec4 subsurfaceRadiusScaleFromTexture = TEXRD(subsurfaceRadiusScaleSampler, vSubsurfaceRadiusScaleUV + uvOffset);
 #endif
 
 // Apply texture values to subsurface layer properties

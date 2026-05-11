@@ -61,6 +61,7 @@ uniform Material {
     vec2 vReflectanceInfos;
     mat4 reflectanceMatrix;
     vec4 cameraInfo;
+    vec4 vTextureRepetitionHexTilingParams;
 
     vec2 vReflectionInfos;
     mat4 reflectionMatrix;

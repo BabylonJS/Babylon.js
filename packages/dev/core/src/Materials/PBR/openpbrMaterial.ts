@@ -444,6 +444,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public DECAL_AFTER_DETAIL = false;
 
+    public TEXTURE_REPETITION_MODE = 0;
+
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
     public VERTEX_PULLING_USE_INDEX_BUFFER = false;
@@ -2435,6 +2437,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("vDebugMode", 2);
         ubo.addUniform("renderTargetSize", 2);
         ubo.addUniform("cameraInfo", 4);
+        ubo.addUniform("vTextureRepetitionHexTilingParams", 4);
         ubo.addUniform("backgroundRefractionMatrix", 16);
         ubo.addUniform("vBackgroundRefractionInfos", 3);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
@@ -2510,6 +2513,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         } else {
             this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
         }
+
+        const hexParams = this.textureRepetitionHexTilingParams;
+        this._uniformBuffer.updateFloat4("vTextureRepetitionHexTilingParams", hexParams[0], hexParams[1], hexParams[2], hexParams[3]);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
@@ -3241,6 +3247,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
             defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
             defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
+        }
+
+        if (defines._areTexturesDirty) {
+            defines.TEXTURE_REPETITION_MODE = this.textureRepetitionMode;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {

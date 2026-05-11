@@ -20,35 +20,35 @@ var geometry_thickness: f32 = 0.0;
 
 // Sample Base Layer properties from textures
 #ifdef BASE_WEIGHT
-    let baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
+    let baseWeightFromTexture: vec4f = TEXRD(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef BASE_COLOR
-    let baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
+    let baseColorFromTexture: vec4f = TEXRD(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
 #endif
 
 #ifdef BASE_METALNESS
-    let metallicFromTexture: vec4f = textureSample(baseMetalnessSampler, baseMetalnessSamplerSampler, fragmentInputs.vBaseMetalnessUV + uvOffset);
+    let metallicFromTexture: vec4f = TEXRD(baseMetalnessSampler, baseMetalnessSamplerSampler, fragmentInputs.vBaseMetalnessUV + uvOffset);
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    let baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).r;
+    let baseDiffuseRoughnessFromTexture: f32 = TEXRD(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
 
 #ifdef GEOMETRY_TANGENT
-    let geometryTangentFromTexture: vec3f = textureSample(geometryTangentSampler, geometryTangentSamplerSampler, fragmentInputs.vGeometryTangentUV + uvOffset).rgb;
+    let geometryTangentFromTexture: vec3f = TEXRD(geometryTangentSampler, geometryTangentSamplerSampler, fragmentInputs.vGeometryTangentUV + uvOffset).rgb;
 #endif
 
 #ifdef SPECULAR_ROUGHNESS_ANISOTROPY
-    let anisotropyFromTexture: f32 = textureSample(specularRoughnessAnisotropySampler, specularRoughnessAnisotropySamplerSampler, fragmentInputs.vSpecularRoughnessAnisotropyUV + uvOffset).r * uniforms.vSpecularRoughnessAnisotropyInfos.y;
+    let anisotropyFromTexture: f32 = TEXRD(specularRoughnessAnisotropySampler, specularRoughnessAnisotropySamplerSampler, fragmentInputs.vSpecularRoughnessAnisotropyUV + uvOffset).r * uniforms.vSpecularRoughnessAnisotropyInfos.y;
 #endif
 
 #ifdef GEOMETRY_OPACITY
-    let opacityFromTexture: vec4f = textureSample(geometryOpacitySampler, geometryOpacitySamplerSampler, fragmentInputs.vGeometryOpacityUV + uvOffset);
+    let opacityFromTexture: vec4f = TEXRD(geometryOpacitySampler, geometryOpacitySamplerSampler, fragmentInputs.vGeometryOpacityUV + uvOffset);
 #endif
 
 #ifdef GEOMETRY_THICKNESS
-    let thicknessFromTexture: vec4f = textureSample(geometryThicknessSampler, geometryThicknessSamplerSampler, fragmentInputs.vGeometryThicknessUV + uvOffset);
+    let thicknessFromTexture: vec4f = TEXRD(geometryThicknessSampler, geometryThicknessSamplerSampler, fragmentInputs.vGeometryThicknessUV + uvOffset);
 #endif
 
 #ifdef DECAL
@@ -56,7 +56,7 @@ var geometry_thickness: f32 = 0.0;
 #endif
 
 #ifdef SPECULAR_COLOR
-    let specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
+    let specularColorFromTexture: vec4f = TEXRD(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
 #endif
 
 // If the specular weight is coming from the specular color texture's alpha channel, don't sample the
@@ -65,9 +65,9 @@ var geometry_thickness: f32 = 0.0;
     // If loaded from a glTF, the specular_weight is stored in the alpha channel.
     // Otherwise, it's expected to just be a greyscale texture.
     #ifdef SPECULAR_WEIGHT_IN_ALPHA
-        let specularWeightFromTexture: f32 = textureSample(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset).a;
+        let specularWeightFromTexture: f32 = TEXRD(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset).a;
     #else
-        let specularWeightFromTexture: f32 = textureSample(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset).r;
+        let specularWeightFromTexture: f32 = TEXRD(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset).r;
     #endif
 #endif
 
@@ -78,7 +78,7 @@ var geometry_thickness: f32 = 0.0;
 #if defined(SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN) && defined(BASE_METALNESS)
     let roughnessFromTexture: f32 = metallicFromTexture.g;
 #elif defined(SPECULAR_ROUGHNESS)
-    let roughnessFromTexture: f32 = textureSample(specularRoughnessSampler, specularRoughnessSamplerSampler, fragmentInputs.vSpecularRoughnessUV + uvOffset).r;
+    let roughnessFromTexture: f32 = TEXRD(specularRoughnessSampler, specularRoughnessSamplerSampler, fragmentInputs.vSpecularRoughnessUV + uvOffset).r;
 #endif
 
 // Initalize base layer properties from uniforms

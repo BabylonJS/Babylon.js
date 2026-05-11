@@ -11,27 +11,27 @@ vec2 geometry_coat_tangent = vec2(1.0, 0.0);
 
 // Sample Coat Layer properties from textures
 #ifdef COAT_WEIGHT
-    vec4 coatWeightFromTexture = texture2D(coatWeightSampler, vCoatWeightUV + uvOffset);
+    vec4 coatWeightFromTexture = TEXRD(coatWeightSampler, vCoatWeightUV + uvOffset);
 #endif
 
 #ifdef COAT_COLOR
-    vec4 coatColorFromTexture = texture2D(coatColorSampler, vCoatColorUV + uvOffset);
+    vec4 coatColorFromTexture = TEXRD(coatColorSampler, vCoatColorUV + uvOffset);
 #endif
 
 #ifdef COAT_ROUGHNESS
-    vec4 coatRoughnessFromTexture = texture2D(coatRoughnessSampler, vCoatRoughnessUV + uvOffset);
+    vec4 coatRoughnessFromTexture = TEXRD(coatRoughnessSampler, vCoatRoughnessUV + uvOffset);
 #endif
 
 #ifdef COAT_ROUGHNESS_ANISOTROPY
-    float coatRoughnessAnisotropyFromTexture = texture2D(coatRoughnessAnisotropySampler, vCoatRoughnessAnisotropyUV + uvOffset).r;
+    float coatRoughnessAnisotropyFromTexture = TEXRD(coatRoughnessAnisotropySampler, vCoatRoughnessAnisotropyUV + uvOffset).r;
 #endif
 
 #ifdef COAT_DARKENING
-    vec4 coatDarkeningFromTexture = texture2D(coatDarkeningSampler, vCoatDarkeningUV + uvOffset);
+    vec4 coatDarkeningFromTexture = TEXRD(coatDarkeningSampler, vCoatDarkeningUV + uvOffset);
 #endif
 
 #ifdef GEOMETRY_COAT_TANGENT
-    vec3 geometryCoatTangentFromTexture = texture2D(geometryCoatTangentSampler, vGeometryCoatTangentUV + uvOffset).rgb;
+    vec3 geometryCoatTangentFromTexture = TEXRD(geometryCoatTangentSampler, vGeometryCoatTangentUV + uvOffset).rgb;
 #endif
 
 // Initalize coat layer properties from uniforms

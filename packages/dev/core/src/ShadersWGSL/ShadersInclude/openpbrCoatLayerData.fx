@@ -11,27 +11,27 @@ var geometry_coat_tangent: vec2f = vec2f(1.0f, 0.0f);
 
 // Sample Coat Layer properties from textures
 #ifdef COAT_WEIGHT
-    var coatWeightFromTexture: vec4f = textureSample(coatWeightSampler, coatWeightSamplerSampler, fragmentInputs.vCoatWeightUV + uvOffset);
+    var coatWeightFromTexture: vec4f = TEXRD(coatWeightSampler, coatWeightSamplerSampler, fragmentInputs.vCoatWeightUV + uvOffset);
 #endif
 
 #ifdef COAT_COLOR
-    var coatColorFromTexture: vec4f = textureSample(coatColorSampler, coatColorSamplerSampler, fragmentInputs.vCoatColorUV + uvOffset);
+    var coatColorFromTexture: vec4f = TEXRD(coatColorSampler, coatColorSamplerSampler, fragmentInputs.vCoatColorUV + uvOffset);
 #endif
 
 #ifdef COAT_ROUGHNESS
-    var coatRoughnessFromTexture: vec4f = textureSample(coatRoughnessSampler, coatRoughnessSamplerSampler, fragmentInputs.vCoatRoughnessUV + uvOffset);
+    var coatRoughnessFromTexture: vec4f = TEXRD(coatRoughnessSampler, coatRoughnessSamplerSampler, fragmentInputs.vCoatRoughnessUV + uvOffset);
 #endif
 
 #ifdef COAT_ROUGHNESS_ANISOTROPY
-    var coatRoughnessAnisotropyFromTexture: f32 = textureSample(coatRoughnessAnisotropySampler, coatRoughnessAnisotropySamplerSampler, fragmentInputs.vCoatRoughnessAnisotropyUV + uvOffset).r;
+    var coatRoughnessAnisotropyFromTexture: f32 = TEXRD(coatRoughnessAnisotropySampler, coatRoughnessAnisotropySamplerSampler, fragmentInputs.vCoatRoughnessAnisotropyUV + uvOffset).r;
 #endif
 
 #ifdef COAT_DARKENING
-    var coatDarkeningFromTexture: vec4f = textureSample(coatDarkeningSampler, coatDarkeningSamplerSampler, fragmentInputs.vCoatDarkeningUV + uvOffset);
+    var coatDarkeningFromTexture: vec4f = TEXRD(coatDarkeningSampler, coatDarkeningSamplerSampler, fragmentInputs.vCoatDarkeningUV + uvOffset);
 #endif
 
 #ifdef GEOMETRY_COAT_TANGENT
-    var geometryCoatTangentFromTexture: vec3f = textureSample(geometryCoatTangentSampler, geometryCoatTangentSamplerSampler, fragmentInputs.vGeometryCoatTangentUV + uvOffset).rgb;
+    var geometryCoatTangentFromTexture: vec3f = TEXRD(geometryCoatTangentSampler, geometryCoatTangentSamplerSampler, fragmentInputs.vGeometryCoatTangentUV + uvOffset).rgb;
 #endif
 
 // Initalize coat layer properties from uniforms

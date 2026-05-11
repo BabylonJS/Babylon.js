@@ -200,6 +200,8 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
 
     public DECAL_AFTER_DETAIL = false;
 
+    public TEXTURE_REPETITION_MODE = 0;
+
     /**
      * Initializes the Standard Material defines.
      * @param externalProperties The external properties
@@ -914,6 +916,8 @@ export class StandardMaterial extends StandardMaterialBase {
             defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
 
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
+
+            defines.TEXTURE_REPETITION_MODE = this.textureRepetitionMode;
         }
 
         this._eventInfo.isReadyForSubMesh = true;
@@ -1360,6 +1364,7 @@ export class StandardMaterial extends StandardMaterialBase {
         ubo.addUniform("vDiffuseColor", 4);
         ubo.addUniform("vAmbientColor", 3);
         ubo.addUniform("cameraInfo", 4);
+        ubo.addUniform("vTextureRepetitionHexTilingParams", 4);
 
         PrepareUniformLayoutForIBL(ubo, false, true);
 
@@ -1403,6 +1408,9 @@ export class StandardMaterial extends StandardMaterialBase {
         } else {
             this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
         }
+
+        const hexParams = this.textureRepetitionHexTilingParams;
+        this._uniformBuffer.updateFloat4("vTextureRepetitionHexTilingParams", hexParams[0], hexParams[1], hexParams[2], hexParams[3]);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);

@@ -53,6 +53,7 @@ precision highp float;
 #include<pbrIBLFunctions>
 #include<openpbrNormalMapFragmentMainFunctions>
 #include<openpbrNormalMapFragmentFunctions>
+#include<textureRepetitionFunctions>
 
 #ifdef REFLECTION
     #include<reflectionFunction>
@@ -364,7 +365,7 @@ void main(void) {
     // _________________________ Emissive Lighting _______________________________
     vec3 material_surface_emission = vEmissionColor;
     #ifdef EMISSION_COLOR
-        vec3 emissionColorTex = texture2D(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
+        vec3 emissionColorTex = TEXRD(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
         #ifdef EMISSION_COLOR_GAMMA
             material_surface_emission *= toLinearSpace(emissionColorTex.rgb);
         #else

@@ -8,15 +8,15 @@ var fuzz_roughness: f32 = 0.0f;
 
 // Sample Fuzz Layer properties from textures
 #ifdef FUZZ_WEIGHT
-    let fuzzWeightFromTexture: vec4f = textureSample(fuzzWeightSampler, fuzzWeightSamplerSampler, fragmentInputs.vFuzzWeightUV + uvOffset);
+    let fuzzWeightFromTexture: vec4f = TEXRD(fuzzWeightSampler, fuzzWeightSamplerSampler, fragmentInputs.vFuzzWeightUV + uvOffset);
 #endif
 
 #ifdef FUZZ_COLOR
-    var fuzzColorFromTexture: vec4f = textureSample(fuzzColorSampler, fuzzColorSamplerSampler, fragmentInputs.vFuzzColorUV + uvOffset);
+    var fuzzColorFromTexture: vec4f = TEXRD(fuzzColorSampler, fuzzColorSamplerSampler, fragmentInputs.vFuzzColorUV + uvOffset);
 #endif
 
 #ifdef FUZZ_ROUGHNESS
-    let fuzzRoughnessFromTexture: vec4f = textureSample(fuzzRoughnessSampler, fuzzRoughnessSamplerSampler, fragmentInputs.vFuzzRoughnessUV + uvOffset);
+    let fuzzRoughnessFromTexture: vec4f = TEXRD(fuzzRoughnessSampler, fuzzRoughnessSamplerSampler, fragmentInputs.vFuzzRoughnessUV + uvOffset);
 #endif
 
 // Initalize fuzz layer properties from uniforms

@@ -87,6 +87,7 @@ varying vDirectionW: vec3f;
 
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
+#include<textureRepetitionFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
@@ -123,7 +124,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #ifdef DIFFUSE
-	baseColor = textureSample(diffuseSampler, diffuseSamplerSampler, fragmentInputs.vDiffuseUV + uvOffset);
+	baseColor = TEXRD(diffuseSampler, diffuseSamplerSampler, fragmentInputs.vDiffuseUV + uvOffset);
 
 	#if defined(ALPHATEST) && !defined(ALPHATEST_AFTERALLALPHACOMPUTATIONS)
 		if (baseColor.a < uniforms.alphaCutOff) {
@@ -166,7 +167,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var baseAmbientColor: vec3f =  vec3f(1., 1., 1.);
 
 #ifdef AMBIENT
-	baseAmbientColor = textureSample(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb * uniforms.vAmbientInfos.y;
+	baseAmbientColor = TEXRD(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb * uniforms.vAmbientInfos.y;
 #endif
 
 #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
@@ -176,7 +177,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	// Specular map
 #ifdef SPECULARTERM
 	#ifdef SPECULAR
-		var specularMapColor: vec4f = textureSample(specularSampler, specularSamplerSampler, fragmentInputs.vSpecularUV + uvOffset);
+		var specularMapColor: vec4f = TEXRD(specularSampler, specularSamplerSampler, fragmentInputs.vSpecularUV + uvOffset);
 		specularColor = specularMapColor.rgb;
 		#ifdef GLOSSINESS
 			glossiness = glossiness * specularMapColor.a;
@@ -195,7 +196,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var numLights: f32 = 0.;
 
 #ifdef LIGHTMAP
-	var lightmapColor: vec4f = textureSample(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
+	var lightmapColor: vec4f = TEXRD(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
     #ifdef RGBDLIGHTMAP
         lightmapColor = vec4f(fromRGBD(lightmapColor), lightmapColor.a);
     #endif
@@ -303,7 +304,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 #endif
 
 #ifdef OPACITY
-	var opacityMap: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
+	var opacityMap: vec4f = TEXRD(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
 
 #ifdef OPACITYRGB
 	opacityMap = vec4f(opacityMap.rgb *  vec3f(0.3, 0.59, 0.11), opacityMap.a);
@@ -339,7 +340,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 	// Emissive
 	var emissiveColor: vec3f = uniforms.vEmissiveColor;
 #ifdef EMISSIVE
-	emissiveColor += textureSample(emissiveSampler, emissiveSamplerSampler, fragmentInputs.vEmissiveUV + uvOffset).rgb * uniforms.vEmissiveInfos.y;
+	emissiveColor += TEXRD(emissiveSampler, emissiveSamplerSampler, fragmentInputs.vEmissiveUV + uvOffset).rgb * uniforms.vEmissiveInfos.y;
 #endif
 
 #ifdef EMISSIVEFRESNEL

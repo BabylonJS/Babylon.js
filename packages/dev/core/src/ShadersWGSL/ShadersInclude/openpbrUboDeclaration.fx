@@ -6,6 +6,7 @@ uniform pointSize: f32;
 uniform vDebugMode: vec2f;
 uniform renderTargetSize: vec2f;
 uniform cameraInfo: vec4f;
+uniform vTextureRepetitionHexTilingParams: vec4f;
 uniform backgroundRefractionMatrix: mat4x4f;
 uniform vBackgroundRefractionInfos: vec3f;
 

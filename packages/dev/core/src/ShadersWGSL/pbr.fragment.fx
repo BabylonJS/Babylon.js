@@ -37,6 +37,7 @@
 #include<pbrIBLFunctions>
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
+#include<textureRepetitionFunctions>
 
 #ifdef REFLECTION
     #include<reflectionFunction>
@@ -74,15 +75,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var albedoOpacityOut: albedoOpacityOutParams;
 
 #ifdef ALBEDO
-    var albedoTexture: vec4f = textureSample(albedoSampler, albedoSamplerSampler, fragmentInputs.vAlbedoUV + uvOffset);
+    var albedoTexture: vec4f = TEXRD(albedoSampler, albedoSamplerSampler, fragmentInputs.vAlbedoUV + uvOffset);
 #endif
 
 #ifdef BASE_WEIGHT
-    var baseWeightTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
+    var baseWeightTexture: vec4f = TEXRD(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef OPACITY
-    var opacityMap: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
+    var opacityMap: vec4f = TEXRD(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
@@ -127,7 +128,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var aoOut: ambientOcclusionOutParams;
 
 #ifdef AMBIENT
-    var ambientOcclusionColorMap: vec3f = textureSample(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb;
+    var ambientOcclusionColorMap: vec3f = TEXRD(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb;
 #endif
 
     aoOut = ambientOcclusionBlock(
@@ -149,7 +150,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var reflectivityOut: reflectivityOutParams;
 
 #if defined(REFLECTIVITY)
-    var surfaceMetallicOrReflectivityColorMap: vec4f = textureSample(reflectivitySampler, reflectivitySamplerSampler, fragmentInputs.vReflectivityUV + uvOffset);
+    var surfaceMetallicOrReflectivityColorMap: vec4f = TEXRD(reflectivitySampler, reflectivitySamplerSampler, fragmentInputs.vReflectivityUV + uvOffset);
     var baseReflectivity: vec4f = surfaceMetallicOrReflectivityColorMap;
     #ifndef METALLICWORKFLOW
         #ifdef REFLECTIVITY_GAMMA
@@ -160,17 +161,17 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #if defined(MICROSURFACEMAP)
-    var microSurfaceTexel: vec4f = textureSample(microSurfaceSampler, microSurfaceSamplerSampler, fragmentInputs.vMicroSurfaceSamplerUV + uvOffset) * uniforms.vMicroSurfaceSamplerInfos.y;
+    var microSurfaceTexel: vec4f = TEXRD(microSurfaceSampler, microSurfaceSamplerSampler, fragmentInputs.vMicroSurfaceSamplerUV + uvOffset) * uniforms.vMicroSurfaceSamplerInfos.y;
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    var baseDiffuseRoughnessTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).x;
+    var baseDiffuseRoughnessTexture: f32 = TEXRD(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).x;
 #endif
 
 #ifdef METALLICWORKFLOW
     var metallicReflectanceFactors: vec4f = uniforms.vMetallicReflectanceFactors;
     #ifdef REFLECTANCE
-        var reflectanceFactorsMap: vec4f = textureSample(reflectanceSampler, reflectanceSamplerSampler, fragmentInputs.vReflectanceUV + uvOffset);
+        var reflectanceFactorsMap: vec4f = TEXRD(reflectanceSampler, reflectanceSamplerSampler, fragmentInputs.vReflectanceUV + uvOffset);
         #ifdef REFLECTANCE_GAMMA
             reflectanceFactorsMap = toLinearSpaceVec4(reflectanceFactorsMap);
         #endif
@@ -178,7 +179,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
     #endif
     #ifdef METALLIC_REFLECTANCE
-        var metallicReflectanceFactorsMap: vec4f = textureSample(metallicReflectanceSampler, metallicReflectanceSamplerSampler, fragmentInputs.vMetallicReflectanceUV + uvOffset);
+        var metallicReflectanceFactorsMap: vec4f = TEXRD(metallicReflectanceSampler, metallicReflectanceSamplerSampler, fragmentInputs.vMetallicReflectanceUV + uvOffset);
         #ifdef METALLIC_REFLECTANCE_GAMMA
             metallicReflectanceFactorsMap = toLinearSpaceVec4(metallicReflectanceFactorsMap);
         #endif
@@ -252,7 +253,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var anisotropicOut: anisotropicOutParams;
 
         #ifdef ANISOTROPIC_TEXTURE
-            var anisotropyMapData: vec3f = textureSample(anisotropySampler, anisotropySamplerSampler, fragmentInputs.vAnisotropyUV + uvOffset).rgb * uniforms.vAnisotropyInfos.y;
+            var anisotropyMapData: vec3f = TEXRD(anisotropySampler, anisotropySamplerSampler, fragmentInputs.vAnisotropyUV + uvOffset).rgb * uniforms.vAnisotropyInfos.y;
         #endif
 
         anisotropicOut = anisotropicBlock(
@@ -333,10 +334,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var sheenOut: sheenOutParams;
 
         #ifdef SHEEN_TEXTURE
-            var sheenMapData: vec4f = textureSample(sheenSampler, sheenSamplerSampler, fragmentInputs.vSheenUV + uvOffset);
+            var sheenMapData: vec4f = TEXRD(sheenSampler, sheenSamplerSampler, fragmentInputs.vSheenUV + uvOffset);
         #endif
         #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            var sheenMapRoughnessData: vec4f = textureSample(sheenRoughnessSampler, sheenRoughnessSamplerSampler, fragmentInputs.vSheenRoughnessUV + uvOffset) * uniforms.vSheenInfos.w;
+            var sheenMapRoughnessData: vec4f = TEXRD(sheenRoughnessSampler, sheenRoughnessSamplerSampler, fragmentInputs.vSheenRoughnessUV + uvOffset) * uniforms.vSheenInfos.w;
         #endif
 
         sheenOut = sheenBlock(
@@ -397,7 +398,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________ Shared Iridescence and Clear Coat data _________________
     #ifdef CLEARCOAT
         #ifdef CLEARCOAT_TEXTURE
-            var clearCoatMapData: vec2f = textureSample(clearCoatSampler, clearCoatSamplerSampler, fragmentInputs.vClearCoatUV + uvOffset).rg * uniforms.vClearCoatInfos.y;
+            var clearCoatMapData: vec2f = TEXRD(clearCoatSampler, clearCoatSamplerSampler, fragmentInputs.vClearCoatUV + uvOffset).rg * uniforms.vClearCoatInfos.y;
         #endif
     #endif
 
@@ -406,10 +407,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var iridescenceOut: iridescenceOutParams;
 
         #ifdef IRIDESCENCE_TEXTURE
-            var iridescenceMapData: vec2f = textureSample(iridescenceSampler, iridescenceSamplerSampler, fragmentInputs.vIridescenceUV + uvOffset).rg * uniforms.vIridescenceInfos.y;
+            var iridescenceMapData: vec2f = TEXRD(iridescenceSampler, iridescenceSamplerSampler, fragmentInputs.vIridescenceUV + uvOffset).rg * uniforms.vIridescenceInfos.y;
         #endif
         #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-            var iridescenceThicknessMapData: vec2f = textureSample(iridescenceThicknessSampler, iridescenceThicknessSamplerSampler, fragmentInputs.vIridescenceThicknessUV + uvOffset).rg * uniforms.vIridescenceInfos.w;
+            var iridescenceThicknessMapData: vec2f = TEXRD(iridescenceThicknessSampler, iridescenceThicknessSamplerSampler, fragmentInputs.vIridescenceThicknessUV + uvOffset).rg * uniforms.vIridescenceInfos.w;
         #endif
 
         iridescenceOut = iridescenceBlock(
@@ -440,15 +441,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #ifdef CLEARCOAT
         #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            var clearCoatMapRoughnessData: vec4f = textureSample(clearCoatRoughnessSampler, clearCoatRoughnessSamplerSampler, fragmentInputs.vClearCoatRoughnessUV + uvOffset) * uniforms.vClearCoatInfos.w;
+            var clearCoatMapRoughnessData: vec4f = TEXRD(clearCoatRoughnessSampler, clearCoatRoughnessSamplerSampler, fragmentInputs.vClearCoatRoughnessUV + uvOffset) * uniforms.vClearCoatInfos.w;
         #endif
 
         #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
-            var clearCoatTintMapData: vec4f = textureSample(clearCoatTintSampler, clearCoatTintSamplerSampler, fragmentInputs.vClearCoatTintUV + uvOffset);
+            var clearCoatTintMapData: vec4f = TEXRD(clearCoatTintSampler, clearCoatTintSamplerSampler, fragmentInputs.vClearCoatTintUV + uvOffset);
         #endif
 
         #ifdef CLEARCOAT_BUMP
-            var clearCoatBumpMapData: vec4f = textureSample(clearCoatBumpSampler, clearCoatBumpSamplerSampler, fragmentInputs.vClearCoatBumpUV + uvOffset);
+            var clearCoatBumpMapData: vec4f = TEXRD(clearCoatBumpSampler, clearCoatBumpSamplerSampler, fragmentInputs.vClearCoatBumpUV + uvOffset);
         #endif
 
         clearcoatOut = clearcoatBlock(
@@ -520,19 +521,19 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #ifdef SUBSURFACE
         #ifdef SS_THICKNESSANDMASK_TEXTURE
-            var thicknessMap: vec4f = textureSample(thicknessSampler, thicknessSamplerSampler, fragmentInputs.vThicknessUV + uvOffset);
+            var thicknessMap: vec4f = TEXRD(thicknessSampler, thicknessSamplerSampler, fragmentInputs.vThicknessUV + uvOffset);
         #endif
 
         #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-            var refractionIntensityMap: vec4f = textureSample(refractionIntensitySampler, refractionIntensitySamplerSampler, fragmentInputs.vRefractionIntensityUV + uvOffset);
+            var refractionIntensityMap: vec4f = TEXRD(refractionIntensitySampler, refractionIntensitySamplerSampler, fragmentInputs.vRefractionIntensityUV + uvOffset);
         #endif
 
         #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-            var translucencyIntensityMap: vec4f = textureSample(translucencyIntensitySampler, translucencyIntensitySamplerSampler, fragmentInputs.vTranslucencyIntensityUV + uvOffset);
+            var translucencyIntensityMap: vec4f = TEXRD(translucencyIntensitySampler, translucencyIntensitySamplerSampler, fragmentInputs.vTranslucencyIntensityUV + uvOffset);
         #endif
 
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-            var translucencyColorMap: vec4f = textureSample(translucencyColorSampler, translucencyColorSamplerSampler, fragmentInputs.vTranslucencyColorUV + uvOffset);
+            var translucencyColorMap: vec4f = TEXRD(translucencyColorSampler, translucencyColorSamplerSampler, fragmentInputs.vTranslucencyColorUV + uvOffset);
             #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA
                 translucencyColorMap = toLinearSpaceVec4(translucencyColorMap);
             #endif

@@ -96,6 +96,7 @@ varying vec3 vDirectionW;
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
+#include<textureRepetitionFunctions>
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -132,7 +133,7 @@ void main(void) {
 #endif
 
 #ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
+	baseColor = TEXRD(diffuseSampler, vDiffuseUV + uvOffset);
 
 	#if defined(ALPHATEST) && !defined(ALPHATEST_AFTERALLALPHACOMPUTATIONS)
 		if (baseColor.a < alphaCutOff)
@@ -174,7 +175,7 @@ void main(void) {
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
-	baseAmbientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+	baseAmbientColor = TEXRD(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
 #endif
 
 #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
@@ -184,7 +185,7 @@ void main(void) {
 	// Specular map
 #ifdef SPECULARTERM
 	#ifdef SPECULAR
-		vec4 specularMapColor = texture2D(specularSampler, vSpecularUV + uvOffset);
+		vec4 specularMapColor = TEXRD(specularSampler, vSpecularUV + uvOffset);
 		specularColor = specularMapColor.rgb;
 		#ifdef GLOSSINESS
 			glossiness = glossiness * specularMapColor.a;
@@ -203,7 +204,7 @@ void main(void) {
 	float numLights = 0.;
 
 #ifdef LIGHTMAP
-	vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
+	vec4 lightmapColor = TEXRD(lightmapSampler, vLightmapUV + uvOffset);
     #ifdef RGBDLIGHTMAP
         lightmapColor.rgb = fromRGBD(lightmapColor);
     #endif
@@ -311,7 +312,7 @@ vec4 reflectionColor = vec4(0., 0., 0., 1.);
 #endif
 
 #ifdef OPACITY
-	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
+	vec4 opacityMap = TEXRD(opacitySampler, vOpacityUV + uvOffset);
 
 #ifdef OPACITYRGB
 	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
@@ -346,7 +347,7 @@ vec4 reflectionColor = vec4(0., 0., 0., 1.);
 	// Emissive
 	vec3 emissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
-	emissiveColor += texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb * vEmissiveInfos.y;
+	emissiveColor += TEXRD(emissiveSampler, vEmissiveUV + uvOffset).rgb * vEmissiveInfos.y;
 #endif
 
 #ifdef EMISSIVEFRESNEL
