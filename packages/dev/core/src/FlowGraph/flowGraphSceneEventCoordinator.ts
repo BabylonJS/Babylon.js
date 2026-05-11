@@ -1,9 +1,11 @@
 import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type KeyboardInfo, KeyboardEventTypes } from "core/Events/keyboardEvents";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Observer, Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { FlowGraphEventType } from "./flowGraphEventType";
+import { _IsMacPlatform } from "./utils";
 
 /**
  * the interface of the object the scene event coordinator will trigger.
@@ -49,6 +51,22 @@ export class FlowGraphSceneEventCoordinator {
     private _pointerUpObserver: Nullable<Observer<PointerInfo>>;
     private _pointerMoveObserver: Nullable<Observer<PointerInfo>>;
     private _pointerUnderMeshState: { [pointerId: number]: Nullable<AbstractMesh> } = {};
+    private _keyDownObserver: Nullable<Observer<KeyboardInfo>>;
+    private _keyUpObserver: Nullable<Observer<KeyboardInfo>>;
+    private _onBlurHandler: (() => void) | null = null;
+
+    /**
+     * The set of keys currently pressed, keyed by `event.code`.
+     * Keyboard event blocks use this to determine whether a key is held.
+     *
+     * In addition to physical key codes, a virtual `"CommandOrControl"` entry
+     * is maintained: it tracks Meta (Cmd) on macOS and Ctrl on Windows/Linux,
+     * enabling platform-agnostic shortcut checks via the IsKeyPressed block.
+     */
+    public readonly pressedKeys: Set<string> = new Set<string>();
+
+    /** The physical key codes that map to the virtual CommandOrControl key on this platform. */
+    private static readonly _commandOrCtrlCodes: ReadonlySet<string> = _IsMacPlatform ? new Set(["MetaLeft", "MetaRight"]) : new Set(["ControlLeft", "ControlRight"]);
 
     private _startingTime: number = 0;
 
@@ -114,6 +132,43 @@ export class FlowGraphSceneEventCoordinator {
             }
             this._pointerUnderMeshState[pointerId] = mesh;
         }, PointerEventTypes.POINTERMOVE);
+
+        this._keyDownObserver = this._scene.onKeyboardObservable.add((keyboardInfo) => {
+            const code = keyboardInfo.event.code;
+            this.pressedKeys.add(code);
+            if (FlowGraphSceneEventCoordinator._commandOrCtrlCodes.has(code)) {
+                this.pressedKeys.add("CommandOrControl");
+            }
+            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.KeyDown, payload: keyboardInfo });
+        }, KeyboardEventTypes.KEYDOWN);
+
+        this._keyUpObserver = this._scene.onKeyboardObservable.add((keyboardInfo) => {
+            const code = keyboardInfo.event.code;
+            this.pressedKeys.delete(code);
+            if (FlowGraphSceneEventCoordinator._commandOrCtrlCodes.has(code)) {
+                // Only remove CommandOrControl if neither left nor right is still held
+                let stillHeld = false;
+                for (const c of FlowGraphSceneEventCoordinator._commandOrCtrlCodes) {
+                    if (c !== code && this.pressedKeys.has(c)) {
+                        stillHeld = true;
+                        break;
+                    }
+                }
+                if (!stillHeld) {
+                    this.pressedKeys.delete("CommandOrControl");
+                }
+            }
+            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.KeyUp, payload: keyboardInfo });
+        }, KeyboardEventTypes.KEYUP);
+
+        // Clear all tracked keys when the window/tab loses focus.
+        // Without this, held keys would appear "stuck" after an Alt-Tab
+        // because the keyup event fires in the other window.
+        const canvas = this._scene.getEngine().getRenderingCanvas();
+        if (canvas) {
+            this._onBlurHandler = () => this.pressedKeys.clear();
+            canvas.addEventListener("blur", this._onBlurHandler);
+        }
     }
 
     public dispose() {
@@ -125,6 +180,14 @@ export class FlowGraphSceneEventCoordinator {
         this._pointerDownObserver?.remove();
         this._pointerUpObserver?.remove();
         this._pointerMoveObserver?.remove();
+        this._keyDownObserver?.remove();
+        this._keyUpObserver?.remove();
+        if (this._onBlurHandler) {
+            const canvas = this._scene.getEngine().getRenderingCanvas();
+            canvas?.removeEventListener("blur", this._onBlurHandler);
+            this._onBlurHandler = null;
+        }
+        this.pressedKeys.clear();
         this.onEventTriggeredObservable.clear();
     }
 }

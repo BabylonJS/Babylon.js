@@ -7,3 +7,6 @@ export * from "./flowGraphPointerOutEventBlock";
 export * from "./flowGraphPointerOverEventBlock";
 export * from "./flowGraphPhysicsCollisionEventBlock";
 export * from "./flowGraphSoundEndedEventBlock";
+export * from "./flowGraphKeyboardEventBlock";
+export * from "./flowGraphKeyDownEventBlock";
+export * from "./flowGraphKeyUpEventBlock";
