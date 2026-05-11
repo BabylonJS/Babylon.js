@@ -45,7 +45,7 @@ export class ClusteredLightContainer extends Light {
         if (!caps.texelFetch) {
             return 0;
         } else if (engine.isWebGPU) {
-            // On WebGPU we use atomic writes to storage textures
+            // On WebGPU we use atomic writes to storage buffers
             return 32;
         } else if (engine.version > 1) {
             // On WebGL 2 we use additive float blending as the light mask

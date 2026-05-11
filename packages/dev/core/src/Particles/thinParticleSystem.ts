@@ -200,25 +200,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _alive: boolean;
     private _useInstancing = false;
     private _vertexArrayObject: Nullable<WebGLVertexArrayObject>;
-    private _useFixedCapacityForSnapshot = false;
+    /** @internal */
+    public _useFixedCapacityForSnapshot = false;
     private _fixedCapacityHighWaterMark = 0;
-
-    /**
-     * Gets or sets a boolean indicating that the particle system should always render at full capacity.
-     * When enabled, the draw call always emits `getCapacity()` quads/instances and inactive slots are zero-filled in the
-     * vertex buffer (collapsing them to degenerate triangles that produce no fragments).
-     * This makes the particle system compatible with FAST snapshot rendering, where the recorded draw call parameters
-     * are baked into the GPU bundle. Activate via `SnapshotRenderingHelper.fixParticleSystem(ps)`.
-     * Note: vertex shader cost scales with capacity rather than the live particle count, so size capacity realistically.
-     * This property is runtime-only and is not persisted by `serialize()` / `Parse()`.
-     */
-    public get useFixedCapacityForSnapshot(): boolean {
-        return this._useFixedCapacityForSnapshot;
-    }
-
-    public set useFixedCapacityForSnapshot(value: boolean) {
-        this._useFixedCapacityForSnapshot = value;
-    }
 
     private _isDisposed = false;
 
@@ -2080,17 +2064,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 if (this._useFixedCapacityForSnapshot) {
                     // The vertex buffer is uploaded at full capacity so the FAST-snapshot bundle's draw call stays valid.
                     // Inactive slots must be zeroed so they collapse to degenerate (size=0) quads that emit no fragments.
-                    // Float32Array starts zeroed and `_appendParticleVertices` overwrites only the active range, so we
-                    // only need to clear slots that were active in a previous frame and aren't anymore — i.e. the range
-                    // [currentCount, highWaterMark). When the active count grows we just bump the high-water mark.
                     const stride = this._vertexBufferSize * (this._useInstancing ? 1 : 4);
                     const currentCount = this._particles.length;
                     if (currentCount < this._fixedCapacityHighWaterMark) {
                         this._vertexData.fill(0, currentCount * stride, this._fixedCapacityHighWaterMark * stride);
                     }
-                    if (currentCount > this._fixedCapacityHighWaterMark) {
-                        this._fixedCapacityHighWaterMark = currentCount;
-                    }
+                    this._fixedCapacityHighWaterMark = currentCount;
                     this._vertexBuffer.updateDirectly(this._vertexData, 0, this._capacity);
                 } else {
                     this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
@@ -2101,6 +2080,32 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (this.manualEmitCount === 0 && this.disposeOnStop) {
             this.stop();
         }
+    }
+
+    /** @internal */
+    public _initFixedCapacitySnapshotData(): boolean {
+        if (this._useFixedCapacityForSnapshot) {
+            return false;
+        }
+
+        this._useFixedCapacityForSnapshot = true;
+        this._vertexData.fill(0);
+        this._fixedCapacityHighWaterMark = 0;
+        this._vertexBuffer?.updateDirectly(this._vertexData, 0, this._capacity);
+
+        return true;
+    }
+
+    /** @internal */
+    public _clearFixedCapacitySnapshotData(): void {
+        if (!this._useFixedCapacityForSnapshot || !this._vertexBuffer || this._fixedCapacityHighWaterMark === 0) {
+            return;
+        }
+
+        const stride = this._vertexBufferSize * (this._useInstancing ? 1 : 4);
+        this._vertexData.fill(0, 0, this._fixedCapacityHighWaterMark * stride);
+        this._fixedCapacityHighWaterMark = 0;
+        this._vertexBuffer.updateDirectly(this._vertexData, 0, this._capacity);
     }
 
     /**

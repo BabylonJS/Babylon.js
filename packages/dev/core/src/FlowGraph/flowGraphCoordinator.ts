@@ -31,7 +31,7 @@ export interface IFlowGraphCoordinatorParseOptions {
     /**
      * The path converter to use to convert the path to an object accessor.
      */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+    pathConverter?: IPathToObjectConverter<IObjectAccessor>;
     /**
      * The scene that the flow graph coordinator belongs to.
      */

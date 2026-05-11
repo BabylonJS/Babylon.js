@@ -2,16 +2,17 @@
 
 ## Port Table
 
-| Port | Service | Workspace |
-|------|---------|----------|
-| 1337 | babylon-server (CDN) | `@tools/babylon-server` |
+| Port | Service                             | Workspace                               |
+| ---- | ----------------------------------- | --------------------------------------- |
+| 1337 | babylon-server (CDN)                | `@tools/babylon-server`                 |
 | 1338 | Dev Host / Playground (shared port) | `@tools/dev-host` / `@tools/playground` |
-| 1340 | Node Material Editor (NME) | `@tools/node-editor` |
-| 1341 | GUI Editor | `@tools/gui-editor` |
-| 1343 | Node Geometry Editor (NGE) | `@tools/node-geometry-editor` |
-| 1344 | Node Render Graph Editor (NRGE) | `@tools/node-render-graph-editor` |
-| 1345 | Node Particle Editor (NPE) | `@tools/node-particle-editor` |
-| 1346 | Smart Filter Editor (SFE) | `@tools/smart-filters-editor` |
+| 1340 | Node Material Editor (NME)          | `@tools/node-editor`                    |
+| 1341 | GUI Editor                          | `@tools/gui-editor`                     |
+| 1343 | Node Geometry Editor (NGE)          | `@tools/node-geometry-editor`           |
+| 1344 | Node Render Graph Editor (NRGE)     | `@tools/node-render-graph-editor`       |
+| 1345 | Node Particle Editor (NPE)          | `@tools/node-particle-editor`           |
+| 1346 | Smart Filter Editor (SFE)           | `@tools/smart-filters-editor`           |
+| 1347 | Flow Graph Editor (FGE)             | `@tools/flow-graph-editor`              |
 
 ## Checking Ports
 

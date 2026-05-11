@@ -33,7 +33,7 @@ export class SerializationTools {
         }
 
         for (const block of blocks) {
-            const node = globalState.onGetNodeFromBlock(block);
+            const node = globalState.onGetNodeFromBlock?.(block);
 
             editorData.locations.push({
                 blockId: block.uniqueId,
@@ -453,7 +453,6 @@ export class SerializationTools {
 
         // Deserialize the flow graph
         await SerializationTools.DeserializeAsync(ext.flowGraph, globalState);
-        globalState.onResetRequiredObservable.notifyObservers(false);
         globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         globalState.onClearUndoStack.notifyObservers();
         return true;

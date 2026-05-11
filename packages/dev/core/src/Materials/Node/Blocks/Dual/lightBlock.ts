@@ -291,7 +291,8 @@ export class LightBlock extends NodeMaterialBlock {
                 onlyUpdateBuffersList,
                 defines["IESLIGHTTEXTURE" + lightIndex],
                 defines["CLUSTLIGHT" + lightIndex],
-                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
+                state.shaderLanguage === ShaderLanguage.WGSL
             );
         }
     }

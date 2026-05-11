@@ -286,6 +286,7 @@ export class NormalMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: 4,
+                shaderLanguage: this._shaderLanguage,
             });
 
             subMesh.setEffect(

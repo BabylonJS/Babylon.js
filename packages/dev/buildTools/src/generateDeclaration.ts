@@ -4,6 +4,7 @@ import { globSync } from "glob";
 import * as fs from "fs";
 import * as path from "path";
 import * as chokidar from "chokidar";
+import { spawn } from "child_process";
 
 import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile, kebabize } from "./utils.js";
 import { type BuildType, type DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
@@ -598,6 +599,7 @@ export function generateDeclaration() {
         throw new Error("--config path to config file is required");
     }
     const asJSON = checkArgs("--json", true) as boolean;
+    const watchInputs = checkArgs("--watch-inputs", true) as boolean;
     const rootDir = findRootDirectory();
     // import { createRequire } from "module";
     // const requireRequest = createRequire(import.meta.url);
@@ -627,7 +629,63 @@ export function generateDeclaration() {
             return camelize(lib).replace(/@/g, "");
         });
         const directoriesToWatch = sourceDirs.map((dir: string) => path.join(rootDir, "packages", `${dir}/dist/**/*.d.ts`));
+        const sourceDirectoriesToWatch = sourceDirs.map((dir: string) => path.join(rootDir, "packages", `${dir}/src/**/*.{ts,tsx}`));
+        const declarationInputProjects = sourceDirs
+            .map((dir: string) => path.join("packages", dir, "tsconfig.build.json"))
+            .filter((project: string) => fs.existsSync(path.join(rootDir, project)));
         const looseDeclarations = sourceDirs.map((dir: string) => path.join(rootDir, "packages", `${dir}/**/LibDeclarations/**/*.d.ts`));
+
+        let inputBuildInProgress = false;
+        let inputBuildQueued = false;
+
+        const buildDeclarationInputs = () => {
+            if (!declarationInputProjects.length) {
+                debounced();
+                return;
+            }
+
+            if (inputBuildInProgress) {
+                inputBuildQueued = true;
+                return;
+            }
+
+            inputBuildInProgress = true;
+            const child = spawn("npx", ["tsc", "-b", ...declarationInputProjects, "--emitDeclarationOnly", "--pretty", "false"], {
+                cwd: rootDir,
+                stdio: "inherit",
+                shell: true,
+            });
+
+            let inputBuildCompleted = false;
+            const completeInputBuild = (code: number, error?: Error) => {
+                if (inputBuildCompleted) {
+                    return;
+                }
+
+                inputBuildCompleted = true;
+                inputBuildInProgress = false;
+                if (code === 0) {
+                    debounced();
+                } else if (error) {
+                    console.error(`declaration input build failed to start`, config.declarationLibs, error.message);
+                } else {
+                    console.error(`declaration input build failed`, config.declarationLibs, `(exit ${code})`);
+                }
+
+                if (inputBuildQueued) {
+                    inputBuildQueued = false;
+                    buildDeclarationInputs();
+                }
+            };
+
+            child.on("error", (error) => {
+                completeInputBuild(1, error);
+            });
+
+            child.on("close", (code) => {
+                completeInputBuild(code ?? 1);
+            });
+        };
 
         const debounced = debounce(() => {
             const { output, namespaceDeclaration, looseDeclarationsString } = generateCombinedDeclaration(
@@ -706,6 +764,19 @@ ${looseDeclarationsString || ""}`
                     }
                     debounced();
                 });
+            if (watchInputs) {
+                chokidar
+                    .watch(sourceDirectoriesToWatch, {
+                        ignoreInitial: true,
+                        awaitWriteFinish: {
+                            stabilityThreshold: 300,
+                            pollInterval: 100,
+                        },
+                    })
+                    .on("all", () => {
+                        buildDeclarationInputs();
+                    });
+            }
         } else {
             debounced();
         }
