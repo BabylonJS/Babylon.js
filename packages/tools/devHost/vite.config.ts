@@ -1,11 +1,12 @@
 import path from "path";
-import { defineConfig, type Plugin, type UserConfig } from "vite";
+import { defineConfig, normalizePath, type Plugin, type UserConfig } from "vite";
 // @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
 
 const OptionalPeerDependencies = ["draco3dgltf", "ammo.js", "cannon", "oimo", "recast", "havok", "basis_transcoder"];
 const OptionalPeerDependencyPattern = OptionalPeerDependencies.map((p) => p.replace(".", "\\.")).join("|");
 const LottieWorkerEntry = path.resolve("../../dev/lottiePlayer/src/worker.ts");
+const LottiePlayerEntry = normalizePath(path.resolve("../../dev/lottiePlayer/src/player.ts"));
 const LottieWorkerDevUrl = "/__lottie-worker.js";
 const LottieWorkerUrlExpression = /new URL\(["']\.\/worker(?:\.[jt]s)?["'],\s*import\.meta\.url\)/g;
 
@@ -46,24 +47,31 @@ function stubOptionalPeerDependencyImports(code: string): string {
 function lottieClassicWorkerPlugin(aliases: Record<string, string>): Plugin {
     let bundlePromise: Promise<string> | undefined;
     let command: "build" | "serve" = "serve";
+    let mode = "development";
+    let sourcemap: boolean | "inline" = "inline";
 
     const bundleWorker = async (): Promise<string> => {
-        bundlePromise ??= import("esbuild").then(async ({ build }) => {
-            const result = await build({
-                entryPoints: [LottieWorkerEntry],
-                bundle: true,
-                write: false,
-                format: "iife",
-                platform: "browser",
-                target: "es2020",
-                sourcemap: "inline",
-                alias: aliases,
-                define: {
-                    "process.env.NODE_ENV": '"development"',
-                },
+        bundlePromise ??= import("esbuild")
+            .then(async ({ build }) => {
+                const result = await build({
+                    entryPoints: [LottieWorkerEntry],
+                    bundle: true,
+                    write: false,
+                    format: "iife",
+                    platform: "browser",
+                    target: "es2020",
+                    sourcemap,
+                    alias: aliases,
+                    define: {
+                        "process.env.NODE_ENV": JSON.stringify(mode),
+                    },
+                });
+                return result.outputFiles[0].text;
+            })
+            .catch((error: unknown) => {
+                bundlePromise = undefined;
+                throw error;
             });
-            return result.outputFiles[0].text;
-        });
 
         return bundlePromise;
     };
@@ -73,9 +81,11 @@ function lottieClassicWorkerPlugin(aliases: Record<string, string>): Plugin {
         enforce: "pre",
         configResolved(config) {
             command = config.command;
+            mode = config.mode;
+            sourcemap = command === "serve" ? "inline" : config.build.sourcemap === "inline" ? "inline" : Boolean(config.build.sourcemap);
         },
         async transform(code, id) {
-            if (!id.split("?")[0].endsWith("/packages/dev/lottiePlayer/src/player.ts") || !code.includes("./worker")) {
+            if (normalizePath(id.split("?")[0]) !== LottiePlayerEntry || !code.includes("./worker")) {
                 return null;
             }
 
