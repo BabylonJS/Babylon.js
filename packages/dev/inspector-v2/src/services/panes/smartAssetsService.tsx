@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type FunctionComponent } from "react";
+import { useCallback, useContext, useMemo, useRef, useState, type FunctionComponent } from "react";
 
 import { type Scene } from "core/scene";
 import {
@@ -25,6 +25,7 @@ import { type ISelectionService, SelectionServiceIdentity } from "../selectionSe
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
@@ -86,13 +87,17 @@ const useStyles = makeStyles({
     },
     assetKey: {
         fontWeight: tokens.fontWeightSemibold,
-        minWidth: "60px",
-        flexShrink: 0,
+        minWidth: 0,
+        flex: 1,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
     },
     assetUrl: {
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
+        minWidth: 0,
         flex: 1,
         opacity: 0.7,
     },
@@ -141,6 +146,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const styles = useStyles();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
+
+    // Force the icon-only row action buttons to render in compact ("small") size
+    // even when the inspector's global ToolContext is "medium". They live in a
+    // tight row and the medium-size buttons crowd the layout.
+    const toolContext = useContext(ToolContext);
+    const compactToolContext = useMemo(() => ({ ...toolContext, size: "small" as const }), [toolContext]);
 
     // Subscribe reactively to changes — re-renders the asset list whenever
     // RegisterSmartAsset / Load / Remove / Reload fire onChangedObservable.
@@ -350,20 +361,24 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     <div key={a.key} className={styles.assetRow}>
                         <CubeRegular fontSize={14} />
                         {provEntity ? (
-                            <Caption1 className={styles.assetKey}>
-                                <Link value={a.key} onLink={() => (selectionService.selectedEntity = provEntity)} />
+                            <Caption1 className={styles.assetKey} title={a.key}>
+                                <Link value={a.key} size="small" onLink={() => (selectionService.selectedEntity = provEntity)} />
                             </Caption1>
                         ) : (
-                            <Caption1 className={styles.assetKey}>{a.key}</Caption1>
+                            <Caption1 className={styles.assetKey} title={a.key}>
+                                {a.key}
+                            </Caption1>
                         )}
                         <Caption1 className={styles.assetUrl} title={a.url}>
                             {_shortenUrl(a.url)}
                         </Caption1>
-                        <div className={styles.assetActions}>
-                            <Button appearance="subtle" icon={LinkRegular} title={`Swap URL for ${a.key}`} onClick={() => onSwapAsset(a.key)} />
-                            <Button appearance="subtle" icon={ArrowSyncRegular} title={`Reload ${a.key}`} onClick={async () => await onReloadAsset(a.key)} />
-                            <Button appearance="subtle" icon={DeleteRegular} title={`Remove ${a.key}`} onClick={async () => await onRemoveAsset(a.key)} />
-                        </div>
+                        <ToolContext.Provider value={compactToolContext}>
+                            <div className={styles.assetActions}>
+                                <Button appearance="subtle" icon={LinkRegular} title={`Swap URL for ${a.key}`} onClick={() => onSwapAsset(a.key)} />
+                                <Button appearance="subtle" icon={ArrowSyncRegular} title={`Reload ${a.key}`} onClick={async () => await onReloadAsset(a.key)} />
+                                <Button appearance="subtle" icon={DeleteRegular} title={`Remove ${a.key}`} onClick={async () => await onRemoveAsset(a.key)} />
+                            </div>
+                        </ToolContext.Provider>
                     </div>
                 );
             })}
