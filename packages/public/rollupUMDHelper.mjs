@@ -773,7 +773,7 @@ export function commonUMDRollupConfiguration(options) {
                           }),
                       ]
                     : []),
-                ...(minToMax && production && i === 0 ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
+                ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
             ];
             return {
                 input: inputFile,
