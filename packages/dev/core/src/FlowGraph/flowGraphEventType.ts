@@ -12,5 +12,7 @@ export const enum FlowGraphEventType {
     PointerMove = "PointerMove",
     PointerOver = "PointerOver",
     PointerOut = "PointerOut",
+    KeyDown = "KeyDown",
+    KeyUp = "KeyUp",
     NoTrigger = "NoTrigger",
 }

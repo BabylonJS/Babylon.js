@@ -1,4 +1,5 @@
 import { type Engine, NullEngine } from "core/Engines";
+import { Constants } from "core/Engines/constants";
 import {
     type FlowGraphAssetType,
     type FlowGraphExecutionBlock,
@@ -21,6 +22,9 @@ import {
     ParseFlowGraphContext,
     ParseFlowGraph,
     ParseFlowGraphAsync,
+    ParseCoordinatorAsync,
+    ParseFlowGraphCoordinatorFromSnippetAsync,
+    ParseFlowGraphFromSnippetAsync,
 } from "core/FlowGraph";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
@@ -33,6 +37,16 @@ import { Mesh } from "core/Meshes";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
+import { afterEach, vi } from "vitest";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+
+function MockFlowGraphSnippet(serializedFlowGraph: any) {
+    const fetchMock = vi.fn(async () => {
+        return new Response(JSON.stringify({ jsonPayload: JSON.stringify({ flowGraph: JSON.stringify(serializedFlowGraph) }) }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+}
 
 describe("Flow Graph Serialization", () => {
     let engine: Engine;
@@ -48,6 +62,10 @@ describe("Flow Graph Serialization", () => {
         Logger.Log = vi.fn();
 
         scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
     });
     it("Serializes and Parses a connection", () => {
         const block = {} as any;
@@ -206,6 +224,87 @@ describe("Flow Graph Serialization", () => {
         expect(Logger.Log).toHaveBeenCalledWith(42);
     });
 
+    it("parses connections from either side of serialized connection ids", async () => {
+        const mockContext: any = {};
+        const pathConverter = new FlowGraphPathConverter(mockContext);
+
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+        context.setVariable("test", 42);
+
+        const sceneReadyBlock = new FlowGraphSceneReadyEventBlock();
+        graph.addEventBlock(sceneReadyBlock);
+
+        const logBlock = new FlowGraphConsoleLogBlock();
+        sceneReadyBlock.out.connectTo(logBlock.in);
+
+        const getVariableBlock = new FlowGraphGetVariableBlock({ variable: "test" });
+        logBlock.message.connectTo(getVariableBlock.value);
+
+        const serialized: any = {};
+        graph.serialize(serialized);
+
+        const sceneReadyJson = serialized.allBlocks.find((block: any) => block.className === "FlowGraphSceneReadyEventBlock");
+        sceneReadyJson.signalOutputs.find((signalOutput: any) => signalOutput.name === "out").connectedPointIds = [];
+
+        const logJson = serialized.allBlocks.find((block: any) => block.className === "FlowGraphConsoleLogBlock");
+        logJson.dataInputs.find((dataInput: any) => dataInput.name === "message").connectedPointIds = [];
+
+        const parsed = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter });
+        parsed.start();
+
+        expect(Logger.Log).toHaveBeenCalledWith(42);
+    });
+
+    it("parses a flow graph coordinator from a snippet", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph("Snippet Graph");
+        graph.addEventBlock(new FlowGraphSceneReadyEventBlock());
+
+        const serializedGraph: any = {};
+        graph.serialize(serializedGraph);
+        const serializedCoordinator = { _flowGraphs: [serializedGraph], activeGraphIndex: 0 };
+        const fetchMock = MockFlowGraphSnippet(serializedCoordinator);
+
+        const parsedCoordinator = await ParseFlowGraphCoordinatorFromSnippetAsync("ABC123#4", { scene });
+
+        expect(fetchMock.mock.calls[0][0]).toBe(Constants.SnippetUrl + "/ABC123/4");
+        expect(parsedCoordinator.flowGraphs.length).toBe(1);
+        expect(parsedCoordinator.flowGraphs[0].name).toBe("Snippet Graph");
+    });
+
+    it("preserves false dispatch settings when parsing a coordinator", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.dispatchEventsSynchronously = false;
+        coordinator.createGraph("Async Events Graph");
+
+        const serializedCoordinator: any = {};
+        coordinator.serialize(serializedCoordinator);
+
+        const parsedCoordinator = await ParseCoordinatorAsync(serializedCoordinator, { scene });
+
+        expect(parsedCoordinator.dispatchEventsSynchronously).toBe(false);
+    });
+
+    it("returns the active flow graph from a snippet", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const firstGraph = coordinator.createGraph("First Graph");
+        const activeGraph = coordinator.createGraph("Active Graph");
+
+        const firstSerializedGraph: any = {};
+        firstGraph.serialize(firstSerializedGraph);
+        const activeSerializedGraph: any = {};
+        activeGraph.serialize(activeSerializedGraph);
+        MockFlowGraphSnippet({ _flowGraphs: [firstSerializedGraph, activeSerializedGraph], activeGraphIndex: 1 });
+
+        const targetCoordinator = new FlowGraphCoordinator({ scene });
+        const parsedActiveGraph = await ParseFlowGraphFromSnippetAsync("ABC123#4", { coordinator: targetCoordinator });
+
+        expect(targetCoordinator.flowGraphs.length).toBe(2);
+        expect(parsedActiveGraph.name).toBe("Active Graph");
+    });
+
     it("Preserves name and uniqueId across serialize/parse roundtrip", async () => {
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph("My Custom Graph");
@@ -264,6 +363,35 @@ describe("Flow Graph Serialization", () => {
 
         scene.onReadyObservable.notifyObservers(scene);
         expect(mesh.position.asArray()).toEqual([1, 2, 3]);
+    });
+
+    it("parses scene node references by id when unique ids differ", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const camera = new ArcRotateCamera("camera1", 0, 0, 10, Vector3.Zero(), scene);
+
+        const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
+        graph.addEventBlock(flowGraphSceneReadyBlock);
+
+        const setPropertyBlock = new FlowGraphSetPropertyBlock<number, FlowGraphAssetType.Camera>({ propertyName: "alpha" });
+        flowGraphSceneReadyBlock.out.connectTo(setPropertyBlock.in);
+
+        const cameraBlock = new FlowGraphConstantBlock<ArcRotateCamera>({ value: camera });
+        cameraBlock.output.connectTo(setPropertyBlock.object);
+
+        const valueBlock = new FlowGraphConstantBlock<number>({ value: 1 });
+        valueBlock.output.connectTo(setPropertyBlock.value);
+
+        const serialized: any = {};
+        graph.serialize(serialized);
+        const cameraBlockJson = serialized.allBlocks.find((block: any) => block.uniqueId === cameraBlock.uniqueId);
+        cameraBlockJson.config.value.uniqueId = -1;
+
+        const parsed = await ParseFlowGraphAsync(serialized, { coordinator });
+        parsed.start();
+
+        scene.onReadyObservable.notifyObservers(scene);
+        expect(camera.alpha).toBe(1);
     });
 
     it("Event block fires both out and done signals after round-trip", async () => {

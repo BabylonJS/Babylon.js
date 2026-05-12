@@ -43,6 +43,7 @@ export * from "./Probes/index";
 export * from "./Rendering/index";
 export * from "./scene";
 export * from "./sceneComponent";
+export * from "./SmartAssets/index";
 export * from "./Sprites/index";
 export * from "./States/index";
 export * from "./types";

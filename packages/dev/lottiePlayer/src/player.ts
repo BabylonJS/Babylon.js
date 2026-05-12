@@ -12,7 +12,7 @@ import {
 } from "./messageTypes";
 import { type RawLottieAnimation } from "./parsing/rawTypes";
 import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
-import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
+import { BlobWorkerWrapper } from "./blobWorkerWrapper";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -184,7 +184,7 @@ export class Player {
 
     private _getOrCreateWorker(): globalThis.Worker {
         if (!this._worker) {
-            const wrapperWorker = new Worker(new URL("./worker", import.meta.url));
+            const wrapperWorker = new BlobWorkerWrapper(new URL("./worker", import.meta.url));
             this._worker = wrapperWorker.getWorker();
             this._worker.onmessage = (evt: MessageEvent) => {
                 this._handleWorkerMessage(evt);

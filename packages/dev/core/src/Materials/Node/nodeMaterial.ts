@@ -2375,7 +2375,17 @@ export class NodeMaterial extends NodeMaterialBase {
         const id = this.id;
         const uniqueId = this.uniqueId;
 
+        const previousImageProcessingConfiguration = this._imageProcessingConfiguration;
+        const previousImageProcessingObserver = this._imageProcessingObserver;
+        const hasSerializedImageProcessingConfiguration = Object.prototype.hasOwnProperty.call(source, "_imageProcessingConfiguration");
+
         SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
+        const parsedImageProcessingConfiguration = this._imageProcessingConfiguration;
+        if (hasSerializedImageProcessingConfiguration) {
+            this._imageProcessingConfiguration = previousImageProcessingConfiguration;
+            this._imageProcessingObserver = previousImageProcessingObserver;
+            this._attachImageProcessingConfiguration(parsedImageProcessingConfiguration);
+        }
 
         this.id = id;
         this.uniqueId = uniqueId;

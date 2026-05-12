@@ -1,6 +1,7 @@
 import { type AbstractMesh } from "../../../Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type PointerInfo, PointerEventTypes } from "../../../Events/pointerEvents";
+import { type IPointerEvent } from "../../../Events/deviceInputEvents";
 import { type FlowGraphContext } from "../../flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -99,7 +100,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         // stable across reloads).
         const meshMatches = !mesh ? !!pickedMesh : !!(pickedMesh && (pickedMesh === mesh || _IsDescendantOf(pickedMesh, mesh) || pickedMesh.name === mesh.name));
         if (meshMatches && pickedMesh) {
-            this.pointerId.setValue((pickedInfo.event as PointerEvent).pointerId, context);
+            this.pointerId.setValue((pickedInfo.event as IPointerEvent).pointerId, context);
             this.pickOrigin.setValue(pickedInfo.pickInfo!.ray?.origin!, context);
             this.pickedPoint.setValue(pickedInfo.pickInfo!.pickedPoint!, context);
             this.pickedMesh.setValue(pickedMesh, context);

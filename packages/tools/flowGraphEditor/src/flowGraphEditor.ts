@@ -92,8 +92,6 @@ export class FlowGraphEditor {
             options.customLoadObservable.add((data) => {
                 const doLoadAsync = async () => {
                     await SerializationTools.DeserializeAsync(data, globalState);
-                    globalState.onResetRequiredObservable.notifyObservers(false);
-                    globalState.onBuiltObservable.notifyObservers();
                 };
                 void doLoadAsync();
             });
