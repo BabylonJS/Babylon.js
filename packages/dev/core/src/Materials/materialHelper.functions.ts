@@ -22,6 +22,7 @@ import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import { type CubeTexture } from "./Textures/cubeTexture";
 import { type Color3 } from "core/Maths/math.color";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // For backwards compatibility, we export everything from the pure version of this file.
 export * from "./materialHelper.functions.pure";
@@ -1375,6 +1376,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param iesLightTexture defines if IES texture must be used
  * @param clusteredLightTextures defines if the clustered light textures must be used
  * @param rectAreaLightTexture defines if rect area light is using a emission texture.
+ * @param clusteredLightStorageBuffer defines if the clustered light tile mask uses a storage buffer instead of a texture
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1385,7 +1387,8 @@ export function PrepareUniformsAndSamplersForLight(
     updateOnlyBuffersList = false,
     iesLightTexture = false,
     clusteredLightTextures = false,
-    rectAreaLightTexture = false
+    rectAreaLightTexture = false,
+    clusteredLightStorageBuffer = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1435,7 +1438,9 @@ export function PrepareUniformsAndSamplersForLight(
     }
     if (clusteredLightTextures) {
         samplersList.push("lightDataTexture" + lightIndex);
-        samplersList.push("tileMaskTexture" + lightIndex);
+        if (!clusteredLightStorageBuffer) {
+            samplersList.push("tileMaskTexture" + lightIndex);
+        }
     }
 }
 
@@ -1494,6 +1499,7 @@ export function PrepareUniformsAndSamplersForIBL(uniformsList: string[], sampler
 export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
     let uniformsList: string[];
     let uniformBuffersList: string[] | undefined;
+    let shaderLanguage: Nullable<ShaderLanguage> = null;
 
     if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
         const options = <IEffectCreationOptions>uniformsListOrOptions;
@@ -1502,6 +1508,7 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
         samplersList = options.samplers;
         defines = options.defines;
         maxSimultaneousLights = options.maxSimultaneousLights || 0;
+        shaderLanguage = options.shaderLanguage ?? null;
     } else {
         uniformsList = <string[]>uniformsListOrOptions;
         if (!samplersList) {
@@ -1522,7 +1529,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             false,
             defines["IESLIGHTTEXTURE" + lightIndex],
             defines["CLUSTLIGHT" + lightIndex],
-            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
+            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
+            shaderLanguage === ShaderLanguage.WGSL
         );
     }
 

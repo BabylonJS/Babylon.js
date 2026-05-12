@@ -5,6 +5,7 @@ import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { Light } from "core/Lights/light";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
@@ -282,6 +283,54 @@ describe("ClusteredLightContainer", () => {
             expect(parsed.lights[1].name).toBe("spot1");
 
             scene2.dispose();
+        });
+    });
+
+    describe("transferTexturesToEffect", () => {
+        it("binds the tile mask storage buffer for WebGPU effects", () => {
+            const setStorageBuffer = vi.fn();
+            const setTexture = vi.fn();
+
+            ClusteredLightContainer.prototype.transferTexturesToEffect.call(
+                {
+                    getEngine: () => ({ isWebGPU: true, setStorageBuffer }),
+                    _lightDataTexture: "lightDataTexture",
+                    _tileMaskTexture: "tileMaskTexture",
+                    _tileMaskBuffer: "tileMaskBuffer",
+                },
+                {
+                    shaderLanguage: ShaderLanguage.GLSL,
+                    setTexture,
+                },
+                "0"
+            );
+
+            expect(setTexture).toHaveBeenCalledWith("lightDataTexture0", "lightDataTexture");
+            expect(setTexture).not.toHaveBeenCalledWith("tileMaskTexture0", "tileMaskTexture");
+            expect(setStorageBuffer).toHaveBeenCalledWith("tileMaskBuffer0", "tileMaskBuffer");
+        });
+
+        it("binds the WGSL tile mask storage buffer for WGSL effects on WebGPU", () => {
+            const setStorageBuffer = vi.fn();
+            const setTexture = vi.fn();
+
+            ClusteredLightContainer.prototype.transferTexturesToEffect.call(
+                {
+                    getEngine: () => ({ isWebGPU: true, setStorageBuffer }),
+                    _lightDataTexture: "lightDataTexture",
+                    _tileMaskTexture: "tileMaskTexture",
+                    _tileMaskBuffer: "tileMaskBuffer",
+                },
+                {
+                    shaderLanguage: ShaderLanguage.WGSL,
+                    setTexture,
+                },
+                "0"
+            );
+
+            expect(setTexture).toHaveBeenCalledWith("lightDataTexture0", "lightDataTexture");
+            expect(setTexture).not.toHaveBeenCalledWith("tileMaskTexture0", "tileMaskTexture");
+            expect(setStorageBuffer).toHaveBeenCalledWith("tileMaskBuffer0", "tileMaskBuffer");
         });
     });
 });

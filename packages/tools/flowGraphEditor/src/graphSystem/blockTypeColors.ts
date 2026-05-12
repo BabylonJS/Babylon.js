@@ -36,6 +36,8 @@ const _EventBlockNames = new Set<string>([
     "FlowGraphPointerOverEventBlock",
     "FlowGraphPointerOutEventBlock",
     "FlowGraphReceiveCustomEventBlock",
+    "FlowGraphKeyDownEventBlock",
+    "FlowGraphKeyUpEventBlock",
 ]);
 
 /**

@@ -306,6 +306,50 @@ export function babylonUMDExternalsPlugin(excludePackages = [], opts = {}) {
 }
 
 /**
+ * Rollup plugin that stubs optional peer dependencies (e.g. draco3dgltf) that
+ * are not installed in the dev workspace.  Without this, rollup externalizes
+ * the import and the UMD wrapper tries to read `global.draco3dgltf` — the
+ * factory receives `undefined`, and property access on it throws at runtime.
+ *
+ * The plugin erases import statements at transform time so the module is never
+ * seen by rollup's external resolution.  The consuming code already uses
+ * `declare let` for the global and guards with `typeof X !== "undefined"`,
+ * falling back to loading the decoder from a CDN URL.
+ */
+function stubOptionalPeerDepsPlugin() {
+    const optionals = ["draco3dgltf"];
+    const q = optionals.map((p) => p.replace(".", "\\.")).join("|");
+    // Erase ALL import forms — type-only, named, star, default, side-effect.
+    // Unlike the devHost Vite plugin, we do NOT create `const X = undefined`
+    // stubs because rollup would rename them (e.g. `DracoDecoderModule$1`),
+    // breaking worker functions that are stringified via `.toString()` and
+    // expect the original global name.  The consuming code already uses
+    // `declare let` for the global and guards with `typeof X !== "undefined"`.
+    const importRe = new RegExp(
+        `import\\s+(?:` +
+            `type\\s+\\{[^}]*\\}|` + // import type { … }
+            `\\{[^}]*\\}|` + // import { … }
+            `(?:type\\s+)?\\*\\s+as\\s+\\w+|` + // import * as ns / import type * as ns
+            `(?:type\\s+)?\\w+|` + // import Default / import type Default
+            `` + // (empty — side-effect)
+            `)\\s*from\\s+['"](?:${q})['"];?|` +
+            `import\\s+['"](?:${q})['"];?`, // import "pkg"
+        "g"
+    );
+
+    return {
+        name: "stub-optional-peer-deps",
+        transform(code, id) {
+            if (!/\.[tj]sx?$/.test(id)) return null;
+            if (!optionals.some((p) => code.includes(`"${p}"`) || code.includes(`'${p}'`))) return null;
+
+            const newCode = code.replace(importRe, "");
+            return newCode !== code ? { code: newCode, map: null } : null;
+        },
+    };
+}
+
+/**
  * Rollup renderChunk plugin that replaces any dynamic `import("umdId")` calls
  * that survive inlineDynamicImports (i.e. imports of external packages) with
  * `Promise.resolve(GLOBAL)` so the output remains ES5/ES6-compatible.
@@ -471,7 +515,7 @@ function camelize(str) {
  * @param {string} [options.namespace]
  *   UMD global name for this bundle (e.g. "BABYLON.GUI").
  *   Defaults to the value in umdGlobals.
- * @param {string} [options.outputPath]        Output directory; defaults to process.cwd().
+ * @param {string} [options.outputPath]        Output directory; defaults to "./dist".
  * @param {Record<string,string>} [options.alias]  Additional alias entries.
  * @param {string[]} [options.optionalExternalFunctionSkip]
  *   Extra dev package names to bundle (not externalize).
@@ -495,7 +539,7 @@ export function commonUMDRollupConfiguration(options) {
         devPackageAliasPath,
         mode = "development",
         namespace,
-        outputPath = process.cwd(),
+        outputPath = resolve("./dist"),
         alias: aliasMap = {},
         optionalExternalFunctionSkip = [],
         maxMode = false,
@@ -588,6 +632,7 @@ export function commonUMDRollupConfiguration(options) {
           ];
 
     const plugins = [
+        stubOptionalPeerDepsPlugin(),
         externalsPlugin,
         aliasPlugin({ entries: aliasEntries }),
         // Rewrite `import * as styles from "*.module.scss"` to a default import
@@ -728,7 +773,7 @@ export function commonUMDRollupConfiguration(options) {
                           }),
                       ]
                     : []),
-                ...(minToMax && production && i === 0 ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
+                ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
             ];
             return {
                 input: inputFile,

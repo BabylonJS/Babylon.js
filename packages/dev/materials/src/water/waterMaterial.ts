@@ -549,6 +549,7 @@ export class WaterMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: this.maxSimultaneousLights,
+                shaderLanguage: this._shaderLanguage,
             });
             subMesh.setEffect(
                 scene.getEngine().createEffect(

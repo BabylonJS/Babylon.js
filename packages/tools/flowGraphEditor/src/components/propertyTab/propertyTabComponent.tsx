@@ -65,7 +65,7 @@ const useStyles = makeStyles({
 });
 
 /**
- * Property tab — right-pane content.
+ * Property tab - right-pane content.
  *
  * Displays either the property panel of the currently selected node/frame/port, or a
  * default view of editor-wide controls (UI, options, file, snippet) organised into a
@@ -80,6 +80,9 @@ export const PropertyTabComponent: React.FunctionComponent<IPropertyTabComponent
 
 class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
+    private _onHashChange = () => {
+        void this._loadSnippetFromHashAsync();
+    };
 
     constructor(props: IPropertyTabInnerProps) {
         super(props);
@@ -106,10 +109,40 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
+
+        this.props.globalState.hostDocument.defaultView?.addEventListener("hashchange", this._onHashChange);
+        void this._loadSnippetFromHashAsync();
     }
 
     override componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
+        this.props.globalState.hostDocument.defaultView?.removeEventListener("hashchange", this._onHashChange);
+    }
+
+    private _getSnippetIdFromHash(): string {
+        const hash = this.props.globalState.hostDocument.defaultView?.location.hash.substring(1) ?? "";
+        try {
+            return decodeURIComponent(hash);
+        } catch {
+            return hash;
+        }
+    }
+
+    private _setSnippetIdInHash(snippetId: string): void {
+        const hostWindow = this.props.globalState.hostDocument.defaultView;
+        if (!hostWindow) {
+            return;
+        }
+        const { pathname, search } = hostWindow.location;
+        hostWindow.history.replaceState(null, "", `${pathname}${search}#${snippetId}`);
+    }
+
+    private async _loadSnippetFromHashAsync(): Promise<void> {
+        const snippetId = this._getSnippetIdFromHash();
+        if (!snippetId || snippetId === this.props.globalState.flowGraphSnippetId) {
+            return;
+        }
+        await this.loadFromSnippetAsync(snippetId);
     }
 
     load(file: File) {
@@ -119,7 +152,6 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                 const decoder = new TextDecoder("utf-8");
                 const doLoadAsync = async () => {
                     await SerializationTools.DeserializeAsync(JSON.parse(decoder.decode(data)), this.props.globalState);
-                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
                     ShowToast(this.props.globalState, "Flow graph loaded from file", "success");
@@ -216,6 +248,7 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                     newId += "#" + snippet.version;
                 }
                 this.props.globalState.flowGraphSnippetId = newId;
+                this._setSnippetIdInHash(newId);
                 this.forceUpdate();
 
                 if (navigator.clipboard) {
@@ -234,7 +267,7 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                     });
                 }
 
-                ShowToast(this.props.globalState, "Graph saved — ID: " + newId + " (copied to clipboard)", "success");
+                ShowToast(this.props.globalState, "Graph saved - ID: " + newId + " (copied to clipboard)", "success");
             } else {
                 ShowToast(this.props.globalState, `Unable to save flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`, "error");
             }
@@ -264,7 +297,7 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                 try {
                     await SerializationTools.DeserializeAsync(serializationObject, this.props.globalState);
                     this.props.globalState.flowGraphSnippetId = id;
-                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                    this._setSnippetIdInHash(id);
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));
@@ -356,7 +389,6 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                             <FileUploadLine label="Load" accept=".json" onClick={(files) => this.load(files[0])} />
                             <FileUploadLine label="Load glTF" accept=".glb,.gltf" onClick={(files) => this.loadGlb(files[0])} />
                             <Button label="Save" title="Save" onClick={() => this.save()} />
-                            <Button label="Export glTF (.glb)" title="Export glTF (.glb)" onClick={() => void this.exportGlbAsync()} />
                             {this.props.globalState.customSave && (
                                 <Button
                                     label={this.props.globalState.customSave.label}

@@ -8,7 +8,7 @@
 #
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
-#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
+#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 #
 # Secret variables (configure in pipeline UI):
 #   - GitHubPAT
@@ -149,7 +149,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/master/v$(PackageVersion)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "saveZip=true" \
@@ -176,7 +176,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/master/v$(PackageVersion)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@fileSize.zip"

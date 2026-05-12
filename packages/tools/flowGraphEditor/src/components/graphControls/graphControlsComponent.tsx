@@ -44,7 +44,7 @@ const useStyles = makeStyles({
     separator: {
         // Fluent's `Divider` defaults to `flex-grow: 1`, which is fine in fixed-width toolbars
         // (see inspector-v2's curve editor topBar). Our toolbar has `flex-wrap: wrap` so that
-        // slack does exist on the row — without `flexGrow: 0` each divider would expand to
+        // slack does exist on the row - without `flexGrow: 0` each divider would expand to
         // consume it. Width and height pin the visible line.
         flexGrow: 0,
         width: "1px",
@@ -68,7 +68,7 @@ const useStyles = makeStyles({
     },
     stateStack: {
         // CSS grid stack: all four labels share grid cell 1/1 so the container's intrinsic
-        // width equals the widest label. Only the currently-active label is visible — the
+        // width equals the widest label. Only the currently-active label is visible - the
         // others reserve the same space with `visibility: hidden`. This eliminates horizontal
         // shift of subsequent toolbar items as the graph state changes.
         display: "inline-grid",
@@ -123,7 +123,7 @@ const useStyles = makeStyles({
         gap: tokens.spacingHorizontalXXS,
     },
     speedButton: {
-        // Fluent's Button has a baseline min-width that makes short labels like "0.1×" much
+        // Fluent's Button has a baseline min-width that makes short labels like "0.1x" much
         // wider than they need to be. Collapse to the content's intrinsic width with a small
         // pad so all four presets fit comfortably and don't overflow the toolbar.
         minWidth: "auto",
@@ -221,16 +221,6 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
 
     const onStart = useCallback(() => {
         try {
-            // Stop all auto-playing animation groups on the scene so the flow
-            // graph has exclusive control over which animations run.
-            const scene = globalState.sceneContext?.scene;
-            if (scene) {
-                for (const ag of scene.animationGroups) {
-                    if (ag.isPlaying) {
-                        ag.stop();
-                    }
-                }
-            }
             // Wire the flow graph to the preview scene so events fire on the visible scene.
             const previewScene = globalState.sceneContext?.scene;
             if (previewScene) {
@@ -348,7 +338,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                 globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`  ... and ${result.issues.length - maxIssues} more issue(s).`, false));
             }
         } else {
-            globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Validation passed — no issues found.", false));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Validation passed - no issues found.", false));
         }
     }, [globalState]);
 
@@ -557,7 +547,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
             <div className={classes.timeScale}>
                 <Caption1 className={classes.label}>Speed</Caption1>
                 {SpeedPresets.map((s) => (
-                    <Tooltip key={s} content={`${s}× speed`} relationship="label">
+                    <Tooltip key={s} content={`${s}x speed`} relationship="label">
                         <Button
                             className={classes.speedButton}
                             size="small"
@@ -566,7 +556,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                                 globalState.timeScale = s;
                             }}
                         >
-                            {s}×
+                            {s}x
                         </Button>
                     </Tooltip>
                 ))}

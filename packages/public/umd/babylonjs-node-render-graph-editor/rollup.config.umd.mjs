@@ -14,6 +14,6 @@ export default commonUMDRollupConfiguration({
     maxMode: true,
     minToMax: true,
     alias: {
-        "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),
+        "shared-ui-components": path.resolve(devMode ? "../../../dev/sharedUiComponents/src" : "../../../dev/sharedUiComponents/dist"),
     },
 });

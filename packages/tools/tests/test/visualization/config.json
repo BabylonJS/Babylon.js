@@ -375,7 +375,7 @@
         },
         {
             "title": "Volumetric Light Scattering Post Process with Morph Targets",
-            "playgroundId": "#5E318S#5",
+            "playgroundId": "#5E318S#7",
             "referenceImage": "volumetricLightScatteringMorphTargets.png",
             "dependsOn": ["Lights", "Materials", "Morph", "PostProcesses"]
         },
@@ -550,7 +550,7 @@
         },
         {
             "title": "Particle subemitters",
-            "playgroundId": "#1LK70I#40",
+            "playgroundId": "#1LK70I#41",
             "renderCount": 50,
             "referenceImage": "subemitters.png",
             "dependsOn": ["Animations", "Lights", "PBR", "Particles", "PostProcesses", "Textures"],
@@ -797,6 +797,14 @@
             "renderCount": 50,
             "referenceImage": "particle-helper.png",
             "dependsOn": ["Particles"]
+        },
+        {
+            "title": "FAST snapshot CPU particles",
+            "playgroundId": "#AW6Q7E#0",
+            "renderCount": 30,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "referenceImage": "fast-snapshot-cpu-particles.png",
+            "dependsOn": ["Cameras", "Particles", "Rendering"]
         },
         {
             "title": "Chibi Rex",
@@ -3919,26 +3927,14 @@
         {
             "title": "OpenPBR Thin Film and Specular Color - IBL",
             "playgroundId": "#GRQHVV#322",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film and Specular IOR Match - IBL",
             "playgroundId": "#GRQHVV#323",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film Textures - IBL",
