@@ -198,7 +198,9 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     let y: f32 = dir.y;
     let z: f32 = dir.z;
 
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
     result += -SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+    #endif
 #if SH_DEGREE > 1
     let xx: f32 = x * x;
     let yy: f32 = y * y;
@@ -206,14 +208,17 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     let xy: f32 = x * y;
     let yz: f32 = y * z;
     let xz: f32 = x * z;
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
     result +=
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
         SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
         SH_C2[3] * xz * sh[7] +
         SH_C2[4] * (xx - yy) * sh[8];
+    #endif
 
 #if SH_DEGREE > 2
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
     result +=
         SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
@@ -222,8 +227,10 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
         SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
         SH_C3[5] * z * (xx - yy) * sh[14] +
         SH_C3[6] * x * (xx - 3.0f * yy) * sh[15];
+    #endif
 
 #if SH_DEGREE > 3
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
     result +=
         SH_C4[0] * x * y * (xx - yy) * sh[16] +
         SH_C4[1] * y * z * (3.0f * xx - yy) * sh[17] +
@@ -234,6 +241,7 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
         SH_C4[6] * (xx - yy) * (7.0f * zz - 1.0f) * sh[22] +
         SH_C4[7] * x * z * (xx - 3.0f * yy) * sh[23] +
         SH_C4[8] * (xx * (xx - 3.0f * yy) - yy * (3.0f * xx - yy)) * sh[24];
+    #endif
 #endif
 #endif
 #endif

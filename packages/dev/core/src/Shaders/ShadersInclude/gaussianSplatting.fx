@@ -153,20 +153,25 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
     float x = dir.x;
     float y = dir.y;
     float z = dir.z;
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
     result += - SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+    #endif
 
 #if SH_DEGREE > 1
     float xx = x * x, yy = y * y, zz = z * z;
     float xy = x * y, yz = y * z, xz = x * z;
-    result += 
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
+    result +=
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
         SH_C2[2] * (2.0 * zz - xx - yy) * sh[6] +
         SH_C2[3] * xz * sh[7] +
         SH_C2[4] * (xx - yy) * sh[8];
+    #endif
 
 #if SH_DEGREE > 2
-    result += 
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
+    result +=
         SH_C3[0] * y * (3.0 * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
         SH_C3[2] * y * (4.0 * zz - xx - yy) * sh[11] +
@@ -174,8 +179,10 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
         SH_C3[4] * x * (4.0 * zz - xx - yy) * sh[13] +
         SH_C3[5] * z * (xx - yy) * sh[14] +
         SH_C3[6] * x * (xx - 3.0 * yy) * sh[15];
+    #endif
 
 #if SH_DEGREE > 3
+    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
     result +=
         SH_C4[0] * x * y * (xx - yy) * sh[16] +
         SH_C4[1] * y * z * (3.0 * xx - yy) * sh[17] +
@@ -186,6 +193,7 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
         SH_C4[6] * (xx - yy) * (7.0 * zz - 1.0) * sh[22] +
         SH_C4[7] * x * z * (xx - 3.0 * yy) * sh[23] +
         SH_C4[8] * (xx * (xx - 3.0 * yy) - yy * (3.0 * xx - yy)) * sh[24];
+    #endif
 #endif
 #endif
 #endif

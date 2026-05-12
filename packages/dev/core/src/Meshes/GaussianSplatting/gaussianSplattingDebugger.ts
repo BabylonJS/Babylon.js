@@ -1,5 +1,5 @@
 import { type Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Vector3 } from "../../Maths/math.vector";
 import { GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingDebugMaterialPlugin } from "../../Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
 import { type GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
@@ -31,7 +31,7 @@ export class GaussianSplattingDebugger {
     private _sizeCulling: Nullable<{ min: number; max: number }> = null;
     private _opacityScale: number = 1.0;
     private _opacitySaturate: boolean = false;
-    private _shDC: boolean = true;
+    private _shDc: boolean = true;
     private _shOrder1: boolean = true;
     private _shOrder2: boolean = true;
     private _shOrder3: boolean = true;
@@ -84,8 +84,9 @@ export class GaussianSplattingDebugger {
      * Returns the min/max size range of splats in a mesh.
      * Convenience wrapper for GaussianSplattingMeshBase.splatSizeRange.
      * @param mesh The mesh to query.
+     * @returns the splat size range, or null if not yet computed.
      */
-    public static getSplatSizeRange(mesh: GaussianSplattingMeshBase): Nullable<{ min: number; max: number }> {
+    public static GetSplatSizeRange(mesh: GaussianSplattingMeshBase): Nullable<{ min: number; max: number }> {
         return mesh.splatSizeRange;
     }
 
@@ -97,7 +98,7 @@ export class GaussianSplattingDebugger {
         plugin.sizeCulling = this._sizeCulling;
         plugin.opacityScale = this._opacityScale;
         plugin.opacitySaturate = this._opacitySaturate;
-        plugin.shDC = this._shDC;
+        plugin.shDc = this._shDc;
         plugin.shOrder1 = this._shOrder1;
         plugin.shOrder2 = this._shOrder2;
         plugin.shOrder3 = this._shOrder3;
@@ -173,13 +174,13 @@ export class GaussianSplattingDebugger {
     }
 
     /** Include the DC (base) color from colorsTexture. Default: true. */
-    public get shDC(): boolean {
-        return this._shDC;
+    public get shDc(): boolean {
+        return this._shDc;
     }
-    public set shDC(value: boolean) {
-        this._shDC = value;
+    public set shDc(value: boolean) {
+        this._shDc = value;
         for (const p of this._plugins) {
-            p.shDC = value;
+            p.shDc = value;
         }
     }
 

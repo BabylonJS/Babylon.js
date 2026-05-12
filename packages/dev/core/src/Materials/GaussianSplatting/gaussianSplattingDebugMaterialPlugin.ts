@@ -7,24 +7,32 @@ import { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Vector3 } from "../../Maths/math.vector";
 import { type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /** @internal */
 class GaussianSplattingDebugDefines extends MaterialDefines {
-    // Master gate — present when any feature is non-default; absent otherwise
+    /** Defines whether any debug feature is active */
     GS_DBG_ENABLED: boolean = false;
-    // Feature flags (0 = off, 1 = on)
+    /** Defines whether world-space clipping box is enabled (0: off, 1: on) */
     GS_DBG_CLIP: number = 0;
+    /** Defines whether opacity culling is enabled (0: off, 1: on) */
     GS_DBG_CULL_OPACITY: number = 0;
+    /** Defines whether size culling is enabled (0: off, 1: on) */
     GS_DBG_CULL_SIZE: number = 0;
+    /** Defines whether per-splat opacity scaling is enabled (0: off, 1: on) */
     GS_DBG_OPACITY_SCALE: number = 0;
+    /** Defines whether opacity saturation (flat disk) is enabled (0: off, 1: on) */
     GS_DBG_OPACITY_SATURATE: number = 0;
-    // SH toggles — default 1 (all on); set to 0 to suppress the contribution
+    /** Defines whether the DC (base) SH color is included (0: off, 1: on) */
     GS_DBG_SH_DC: number = 1;
+    /** Defines whether SH band 1 contribution is included (0: off, 1: on) */
     GS_DBG_SH_ORDER1: number = 1;
+    /** Defines whether SH band 2 contribution is included (0: off, 1: on) */
     GS_DBG_SH_ORDER2: number = 1;
+    /** Defines whether SH band 3 contribution is included (0: off, 1: on) */
     GS_DBG_SH_ORDER3: number = 1;
+    /** Defines whether SH band 4 contribution is included (0: off, 1: on) */
     GS_DBG_SH_ORDER4: number = 1;
 }
 
@@ -41,7 +49,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _sizeCulling: Nullable<{ min: number; max: number }> = null;
     private _opacityScale: number = 1.0;
     private _opacitySaturate: boolean = false;
-    private _shDC: boolean = true;
+    private _shDc: boolean = true;
     private _shOrder1: boolean = true;
     private _shOrder2: boolean = true;
     private _shOrder3: boolean = true;
@@ -62,7 +70,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
             this._sizeCulling !== null ||
             this._opacityScale !== 1.0 ||
             this._opacitySaturate ||
-            !this._shDC ||
+            !this._shDc ||
             !this._shOrder1 ||
             !this._shOrder2 ||
             !this._shOrder3 ||
@@ -139,11 +147,11 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     }
 
     /** Include the DC (base) color from colorsTexture. Default: true. */
-    public get shDC(): boolean {
-        return this._shDC;
+    public get shDc(): boolean {
+        return this._shDc;
     }
-    public set shDC(value: boolean) {
-        this._shDC = value;
+    public set shDc(value: boolean) {
+        this._shDc = value;
         this._markDirty();
     }
 
@@ -190,7 +198,10 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         return "GaussianSplattingDebugMaterialPlugin";
     }
 
-    /** @returns true for GLSL and WGSL */
+    /**
+     * @param shaderLanguage the shader language to check
+     * @returns true for GLSL and WGSL
+     */
     public override isCompatible(shaderLanguage: ShaderLanguage): boolean {
         switch (shaderLanguage) {
             case ShaderLanguage.GLSL:
@@ -201,7 +212,14 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         }
     }
 
-    /** Always ready — no async resources. */
+    /**
+     * Always ready — no async resources.
+     * @param _defines unused
+     * @param _scene unused
+     * @param _engine unused
+     * @param _subMesh unused
+     * @returns true
+     */
     public override isReadyForSubMesh(_defines: MaterialDefines, _scene: Scene, _engine: AbstractEngine, _subMesh: SubMesh): boolean {
         return true;
     }
@@ -218,7 +236,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         defines.GS_DBG_CULL_SIZE = this._sizeCulling !== null ? 1 : 0;
         defines.GS_DBG_OPACITY_SCALE = this._opacityScale !== 1.0 ? 1 : 0;
         defines.GS_DBG_OPACITY_SATURATE = this._opacitySaturate ? 1 : 0;
-        defines.GS_DBG_SH_DC = this._shDC ? 1 : 0;
+        defines.GS_DBG_SH_DC = this._shDc ? 1 : 0;
         defines.GS_DBG_SH_ORDER1 = this._shOrder1 ? 1 : 0;
         defines.GS_DBG_SH_ORDER2 = this._shOrder2 ? 1 : 0;
         defines.GS_DBG_SH_ORDER3 = this._shOrder3 ? 1 : 0;
@@ -229,6 +247,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
      * Returns shader code injections for the debug features.
      * @param shaderType "vertex" or "fragment"
      * @param shaderLanguage GLSL or WGSL
+     * @returns map of injection-point name to injected code, or null
      */
     public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
         if (shaderLanguage === ShaderLanguage.WGSL) {
@@ -241,11 +260,46 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         if (shaderType === "vertex") {
             return {
                 CUSTOM_VERTEX_DEFINITIONS: `
+#if defined(GS_DBG_ENABLED) && GS_DBG_CLIP == 1
+uniform vec3 dbgClipMin;
+uniform vec3 dbgClipMax;
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_OPACITY == 1
+uniform float dbgMinOpacity;
+uniform float dbgMaxOpacity;
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_SIZE == 1
+uniform float dbgMinSize;
+uniform float dbgMaxSize;
+#endif
 #if defined(GS_DBG_ENABLED) && GS_DBG_OPACITY_SCALE == 1
 uniform float dbgOpacityScale;
 #endif
 `,
                 CUSTOM_VERTEX_UPDATE: `
+#if defined(GS_DBG_ENABLED) && GS_DBG_CLIP == 1
+    if (worldPos.x < dbgClipMin.x || worldPos.x > dbgClipMax.x ||
+        worldPos.y < dbgClipMin.y || worldPos.y > dbgClipMax.y ||
+        worldPos.z < dbgClipMin.z || worldPos.z > dbgClipMax.z) {
+        scale = vec2(0.0);
+    }
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_OPACITY == 1
+    if (splat.color.w < dbgMinOpacity || splat.color.w > dbgMaxOpacity) {
+        scale = vec2(0.0);
+    }
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_SIZE == 1
+    {
+        float _d0 = splat.covA.x; float _d1 = splat.covA.y; float _d2 = splat.covA.z;
+        float _d3 = splat.covA.w; float _d4 = splat.covB.x; float _d5 = splat.covB.y;
+        float _det = _d0*(_d3*_d5 - _d4*_d4) - _d1*(_d1*_d5 - _d4*_d2) + _d2*(_d1*_d4 - _d3*_d2);
+        float _sz = pow(abs(_det), 1.0/6.0);
+        if (_sz < dbgMinSize || _sz > dbgMaxSize) {
+            scale = vec2(0.0);
+        }
+    }
+#endif
 #if defined(GS_DBG_ENABLED) && GS_DBG_OPACITY_SCALE == 1
     vColor.w *= dbgOpacityScale;
 #endif
@@ -267,11 +321,46 @@ uniform float dbgOpacityScale;
         if (shaderType === "vertex") {
             return {
                 CUSTOM_VERTEX_DEFINITIONS: `
+#if defined(GS_DBG_ENABLED) && GS_DBG_CLIP == 1
+uniform dbgClipMin: vec3f;
+uniform dbgClipMax: vec3f;
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_OPACITY == 1
+uniform dbgMinOpacity: f32;
+uniform dbgMaxOpacity: f32;
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_SIZE == 1
+uniform dbgMinSize: f32;
+uniform dbgMaxSize: f32;
+#endif
 #if defined(GS_DBG_ENABLED) && GS_DBG_OPACITY_SCALE == 1
 uniform dbgOpacityScale: f32;
 #endif
 `,
                 CUSTOM_VERTEX_UPDATE: `
+#if defined(GS_DBG_ENABLED) && GS_DBG_CLIP == 1
+    if (worldPos.x < uniforms.dbgClipMin.x || worldPos.x > uniforms.dbgClipMax.x ||
+        worldPos.y < uniforms.dbgClipMin.y || worldPos.y > uniforms.dbgClipMax.y ||
+        worldPos.z < uniforms.dbgClipMin.z || worldPos.z > uniforms.dbgClipMax.z) {
+        scale = vec2f(0.0);
+    }
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_OPACITY == 1
+    if (splat.color.w < uniforms.dbgMinOpacity || splat.color.w > uniforms.dbgMaxOpacity) {
+        scale = vec2f(0.0);
+    }
+#endif
+#if defined(GS_DBG_ENABLED) && GS_DBG_CULL_SIZE == 1
+    {
+        let _d0 = splat.covA.x; let _d1 = splat.covA.y; let _d2 = splat.covA.z;
+        let _d3 = splat.covA.w; let _d4 = splat.covB.x; let _d5 = splat.covB.y;
+        let _det = _d0*(_d3*_d5 - _d4*_d4) - _d1*(_d1*_d5 - _d4*_d2) + _d2*(_d1*_d4 - _d3*_d2);
+        let _sz = pow(abs(_det), 1.0/6.0);
+        if (_sz < uniforms.dbgMinSize || _sz > uniforms.dbgMaxSize) {
+            scale = vec2f(0.0);
+        }
+    }
+#endif
 #if defined(GS_DBG_ENABLED) && GS_DBG_OPACITY_SCALE == 1
     vertexOutputs.vColor.w *= uniforms.dbgOpacityScale;
 #endif
@@ -291,6 +380,7 @@ uniform dbgOpacityScale: f32;
 
     /**
      * Declares debug uniforms as external so the Effect can resolve their locations.
+     * @returns uniform descriptor with externalUniforms list
      */
     public override getUniforms(): {
         ubo?: Array<{ name: string; size?: number; type?: string; arraySize?: number }>;

@@ -79,7 +79,15 @@ void main () {
     mat3 normWorldRot = inverseMat3(worldRot);
 
     vec3 eyeToSplatLocalSpace = normalize(normWorldRot * (worldPos.xyz - eyePosition));
-    vColor.xyz = splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace);
+    #if defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
+        vColor.xyz = computeSH(splat, eyeToSplatLocalSpace);
+    #else
+        vColor.xyz = splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace);
+    #endif
+#else
+    #if defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
+        vColor.xyz = vec3(0.0);
+    #endif
 #endif
 
     vColor.w *= alpha;
