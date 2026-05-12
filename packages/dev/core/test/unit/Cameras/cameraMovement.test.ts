@@ -161,6 +161,43 @@ describe("InputMapper", () => {
             expect(mapper.inputMap[1].interaction).toBe("rotate");
         });
     });
+
+    describe("setInteractions", () => {
+        it("should update every matching entry and return the count", () => {
+            mapper.inputMap = [
+                { source: "pointer", button: 0, interaction: "rotate" },
+                { source: "pointer", button: 0, interaction: "pan" },
+                { source: "pointer", button: 2, interaction: "pan" },
+            ];
+
+            const updated = mapper.setInteractions("pointer", { button: 0 }, "zoom");
+
+            expect(updated).toBe(2);
+            expect(mapper.inputMap[0].interaction).toBe("zoom");
+            expect(mapper.inputMap[1].interaction).toBe("zoom");
+            expect(mapper.inputMap[2].interaction).toBe("pan");
+        });
+
+        it("should return 0 when no entries match", () => {
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
+
+            expect(mapper.setInteractions("keyboard", undefined, "zoom")).toBe(0);
+            expect(mapper.inputMap[0].interaction).toBe("rotate");
+        });
+
+        it("should also update entries with no conditions when conditions match (wildcard semantics)", () => {
+            mapper.inputMap = [
+                { source: "keyboard", interaction: "rotate" },
+                { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" },
+            ];
+
+            const updated = mapper.setInteractions("keyboard", { modifiers: { ctrl: true } }, "zoom");
+
+            expect(updated).toBe(2);
+            expect(mapper.inputMap[0].interaction).toBe("zoom");
+            expect(mapper.inputMap[1].interaction).toBe("zoom");
+        });
+    });
 });
 
 describe("CameraMovement", () => {

@@ -172,4 +172,31 @@ describe("ArcRotateCameraMovement", () => {
             expect(camera.movement.panInertia).toBe(0.5);
         });
     });
+
+    describe("ArcRotateCameraKeyboardMoveInput.useAltToZoom", () => {
+        it("applies the cached value when the input is later attached to a camera", async () => {
+            const { ArcRotateCameraKeyboardMoveInput } = await import("core/Cameras/Inputs/arcRotateCameraKeyboardMoveInput");
+
+            // Drop the auto-added keyboard input so we can simulate the bug scenario:
+            // a fresh, detached input that is configured before being added to a camera.
+            const existingKeyboard = camera.inputs.attached["keyboard"];
+            if (existingKeyboard) {
+                camera.inputs.remove(existingKeyboard);
+            }
+
+            // Configure the detached input — this.camera is undefined here, so the cached
+            // value cannot be applied to any inputMap yet.
+            const input = new ArcRotateCameraKeyboardMoveInput();
+            input.useAltToZoom = false;
+            expect(input.useAltToZoom).toBe(false);
+            // Camera's default inputMap still contains the alt-zoom entry (no input has touched it).
+            expect(camera.movement.input.resolveInteraction("keyboard", { modifiers: { alt: true } })?.interaction).toBe("zoom");
+
+            // Add to camera (sets input.camera) then attach — attachControl must flush the cached value.
+            camera.inputs.add(input);
+            input.attachControl();
+
+            expect(camera.movement.input.resolveInteraction("keyboard", { modifiers: { alt: true } })?.interaction).not.toBe("zoom");
+        });
+    });
 });

@@ -298,6 +298,10 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
     /**
      * Changes the interaction for the first inputMap entry matching the given source and conditions.
      * This is the simplest way to remap a single input without rebuilding the entire inputMap.
+     *
+     * Note: only the first matching entry is updated. To update every matching entry use
+     * {@link setInteractions}; to address an individual entry beyond the first, look it up via
+     * {@link getEntries} and assign `entry.interaction` directly.
      * @param source - The physical input source to match
      * @param conditions - Conditions to match (button, modifiers, key, etc.)
      * @param interaction - The new interaction to assign to the matched entry
@@ -310,6 +314,30 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Changes the interaction for every inputMap entry matching the given source and conditions.
+     * Useful when more than one entry maps to the same physical input (e.g. duplicate bindings,
+     * or several keys aliased to the same action) and all of them should be remapped together.
+     * @param source - The physical input source to match
+     * @param conditions - Conditions to match (button, modifiers, key, etc.). Uses the same
+     *                     event-resolution semantics as {@link resolveInteraction}: omitted entry
+     *                     condition fields are treated as wildcards and will match.
+     * @param interaction - The new interaction to assign to every matched entry
+     * @returns The number of entries that were updated
+     */
+    public setInteractions(source: InputSource, conditions: InputConditions | undefined, interaction: InteractionName<THandlers>): number {
+        let count = 0;
+        const arr = this.inputMap;
+        for (let i = 0; i < arr.length; i++) {
+            const entry = arr[i];
+            if (entry.source === source && this._entryMatches(entry, conditions)) {
+                entry.interaction = interaction;
+                count++;
+            }
+        }
+        return count;
     }
 
     private _entryMatches(entry: InputMapEntry<InteractionName<THandlers>>, currentConditions?: InputConditions): boolean {

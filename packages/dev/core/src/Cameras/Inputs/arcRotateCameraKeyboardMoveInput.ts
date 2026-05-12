@@ -90,6 +90,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      * Defines whether alt+arrows/wasd triggers zoom instead of rotation/pan.
      * When disabled, alt+keyboard events are ignored by the zoom inputMap entry.
      * Setting this updates the corresponding inputMap entry on the camera's movement system.
+     * If set before the camera is attached, the value is cached and applied during `attachControl`.
      */
     @serialize()
     public get useAltToZoom(): boolean {
@@ -98,14 +99,24 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     public set useAltToZoom(value: boolean) {
         this._useAltToZoom = value;
-        if (this.camera?.movement) {
-            const input = this.camera.movement.input;
-            const entry = input.getEntry("keyboard", "zoom", { modifiers: { alt: true } });
-            if (!value && entry) {
-                input.inputMap.splice(input.inputMap.indexOf(entry), 1);
-            } else if (value && !entry) {
-                input.addEntry({ source: "keyboard", modifiers: { alt: true }, interaction: "zoom" });
-            }
+        this._applyUseAltToZoomToInputMap();
+    }
+
+    /**
+     * Applies the cached `_useAltToZoom` value to the camera's inputMap.
+     * Safe to call before the camera is attached: it is a no-op until `this.camera.movement` is available.
+     * Idempotent — calling it when the inputMap already matches the cached value is a no-op.
+     */
+    private _applyUseAltToZoomToInputMap(): void {
+        if (!this.camera?.movement) {
+            return;
+        }
+        const input = this.camera.movement.input;
+        const entry = input.getEntry("keyboard", "zoom", { modifiers: { alt: true } });
+        if (!this._useAltToZoom && entry) {
+            input.inputMap.splice(input.inputMap.indexOf(entry), 1);
+        } else if (this._useAltToZoom && !entry) {
+            input.addEntry({ source: "keyboard", modifiers: { alt: true }, interaction: "zoom" });
         }
     }
 
@@ -134,6 +145,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
         this._scene = this.camera.getScene();
         this._engine = this._scene.getEngine();
+
+        this._applyUseAltToZoomToInputMap();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
             this._keys.length = 0;

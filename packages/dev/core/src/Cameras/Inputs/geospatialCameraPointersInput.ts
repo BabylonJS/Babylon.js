@@ -32,12 +32,12 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      * @deprecated Use the `sensitivity` field on the pointer rotate entry in `camera.movement.input.inputMap` instead.
      */
     public get pitchSensitivity(): number {
-        const entry = this.camera.movement.input.getEntry("pointer", "rotate");
+        const entry = this.camera?.movement.input.getEntry("pointer", "rotate");
         return entry?.sensitivityY ?? entry?.sensitivity ?? 1;
     }
 
     public set pitchSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.getEntries("pointer", "rotate")) {
+        for (const entry of this.camera?.movement.input.getEntries("pointer", "rotate") ?? []) {
             entry.sensitivityY = value;
         }
     }
@@ -48,12 +48,12 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      * @deprecated Use the `sensitivity` field on the pointer rotate entry in `camera.movement.input.inputMap` instead.
      */
     public get yawSensitivity(): number {
-        const entry = this.camera.movement.input.getEntry("pointer", "rotate");
+        const entry = this.camera?.movement.input.getEntry("pointer", "rotate");
         return entry?.sensitivityX ?? entry?.sensitivity ?? 1;
     }
 
     public set yawSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.getEntries("pointer", "rotate")) {
+        for (const entry of this.camera?.movement.input.getEntries("pointer", "rotate") ?? []) {
             entry.sensitivityX = value;
         }
     }

@@ -3919,26 +3919,14 @@
         {
             "title": "OpenPBR Thin Film and Specular Color - IBL",
             "playgroundId": "#GRQHVV#322",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film and Specular IOR Match - IBL",
             "playgroundId": "#GRQHVV#323",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film Textures - IBL",
@@ -5120,22 +5108,11 @@
             "excludeFromPerformance": true
         },
         {
-            "title": "ArcRotate legacy inertia 0.9 alpha glide",
-            "playgroundId": "#C7KCTE#0",
+            "title": "ArcRotate legacy inertia comparison",
+            "playgroundId": "#UAPORV#0",
             "renderCount": 30,
-            "referenceImage": "arc-legacy-inertia-default-alpha.png"
-        },
-        {
-            "title": "ArcRotate legacy inertia 0.5 alpha glide",
-            "playgroundId": "#OPHBRC#0",
-            "renderCount": 30,
-            "referenceImage": "arc-legacy-inertia-low-alpha.png"
-        },
-        {
-            "title": "ArcRotate legacy inertia 0 alpha snap",
-            "playgroundId": "#HF2DLH#0",
-            "renderCount": 5,
-            "referenceImage": "arc-legacy-inertia-zero-snap.png"
+            "referenceImage": "arc-legacy-inertia-comparison.png",
+            "dependsOn": ["Cameras"]
         },
         {
             "title": "ArcRotate legacy panningInertia glide",

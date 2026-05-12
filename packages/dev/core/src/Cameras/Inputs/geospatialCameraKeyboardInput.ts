@@ -65,12 +65,12 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     @serialize()
     public get rotationSensitivity(): number {
-        const entry = this.camera.movement.input.getEntry("keyboard", "rotate");
+        const entry = this.camera?.movement.input.getEntry("keyboard", "rotate");
         return entry?.sensitivity ?? 1;
     }
 
     public set rotationSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.getEntries("keyboard", "rotate")) {
+        for (const entry of this.camera?.movement.input.getEntries("keyboard", "rotate") ?? []) {
             entry.sensitivity = value;
         }
     }
@@ -82,12 +82,12 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     @serialize()
     public get panSensitivity(): number {
-        const entry = this.camera.movement.input.getEntry("keyboard", "pan");
+        const entry = this.camera?.movement.input.getEntry("keyboard", "pan");
         return entry?.sensitivity ?? 1;
     }
 
     public set panSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.getEntries("keyboard", "pan")) {
+        for (const entry of this.camera?.movement.input.getEntries("keyboard", "pan") ?? []) {
             entry.sensitivity = value;
         }
     }
@@ -99,12 +99,12 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     @serialize()
     public get zoomSensitivity(): number {
-        const entry = this.camera.movement.input.getEntry("keyboard", "zoom");
+        const entry = this.camera?.movement.input.getEntry("keyboard", "zoom");
         return entry?.sensitivity ?? 1;
     }
 
     public set zoomSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.getEntries("keyboard", "zoom")) {
+        for (const entry of this.camera?.movement.input.getEntries("keyboard", "zoom") ?? []) {
             entry.sensitivity = value;
         }
     }
