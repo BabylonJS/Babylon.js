@@ -103,6 +103,11 @@ export interface IRetargetOptions {
 
 type TransformNodeNameToNode = Map<string, { node: TransformNode; initialTransformations: { position: Vector3; scaling: Vector3; quaternion?: Quaternion; rotation: Vector3 } }>;
 
+type AvatarSkeletonStates = {
+    transformNodeStates: Map<TransformNode, { position: Vector3; scaling: Vector3; quaternion?: Quaternion; rotation: Vector3 }>;
+    boneMatrices: Map<Bone, Matrix>;
+};
+
 /**
  * Represents an animator avatar that manages meshes, skeletons and morph target managers for a hierarchical transform node and mesh structure.
  * This class is used to group and manage animation-related resources (meshes, skeletons and morph targets) associated with a root transform node and its descendants.
@@ -263,6 +268,14 @@ export class AnimatorAvatar {
             fixRootPosition: true,
             ...options,
         };
+
+        // Capture the avatar's current bone state so we can restore it before returning.
+        // _computeBoneWorldMatrices() (called next) returns the skeletons to rest, and the
+        // optional _fixRootPosition / _fixGroundReference helpers further drive the bones via
+        // an internal play / goToFrame loop. Without restoring afterwards, any animation
+        // already playing on the avatar gets clobbered (typically visible as a snap to the
+        // rest pose the moment that animation is later stopped).
+        const avatarSkeletonStates = this._captureAvatarSkeletonStates();
 
         // Make sure that all world matrices are up to date, both in the bone hierarchy and in the animation transform node hierarchy
         this._computeBoneWorldMatrices();
@@ -444,6 +457,13 @@ export class AnimatorAvatar {
                 }
             }
         }
+
+        // Restore the avatar's bones to their pre-call state. The internal helpers above
+        // (_computeBoneWorldMatrices and, when enabled, _fixRootPosition / _fixGroundReference)
+        // overwrite the bone transforms; without restoring, any animation already driving the
+        // avatar appears clobbered (visible as a snap to rest pose the moment that animation
+        // is later stopped).
+        this._restoreAvatarSkeletonStates(avatarSkeletonStates);
 
         return animationGroup;
     }
@@ -846,9 +866,46 @@ export class AnimatorAvatar {
         };
     }
 
-    private _resetStates(sourceTransformNodeNameToNode: TransformNodeNameToNode) {
-        this.skeletons.forEach((skeleton) => skeleton.returnToRest());
+    private _captureAvatarSkeletonStates(): AvatarSkeletonStates {
+        const transformNodeStates = new Map<TransformNode, { position: Vector3; scaling: Vector3; quaternion?: Quaternion; rotation: Vector3 }>();
+        const boneMatrices = new Map<Bone, Matrix>();
 
+        this.skeletons.forEach((skeleton) => {
+            for (const bone of skeleton.bones) {
+                const linkedNode = bone._linkedTransformNode;
+                if (linkedNode) {
+                    transformNodeStates.set(linkedNode, {
+                        position: linkedNode.position.clone(),
+                        scaling: linkedNode.scaling.clone(),
+                        quaternion: linkedNode.rotationQuaternion?.clone(),
+                        rotation: linkedNode.rotation.clone(),
+                    });
+                } else {
+                    boneMatrices.set(bone, bone.getLocalMatrix().clone());
+                }
+            }
+        });
+
+        return { transformNodeStates, boneMatrices };
+    }
+
+    private _restoreAvatarSkeletonStates(states: AvatarSkeletonStates): void {
+        states.transformNodeStates.forEach((data, node) => {
+            node.position.copyFrom(data.position);
+            node.scaling.copyFrom(data.scaling);
+            if (data.quaternion && node.rotationQuaternion) {
+                node.rotationQuaternion.copyFrom(data.quaternion);
+            } else {
+                node.rotation.copyFrom(data.rotation);
+            }
+        });
+
+        states.boneMatrices.forEach((matrix, bone) => {
+            bone._matrix = matrix;
+        });
+    }
+
+    private _resetStates(sourceTransformNodeNameToNode: TransformNodeNameToNode) {
         sourceTransformNodeNameToNode.forEach((data) => {
             const { node, initialTransformations } = data;
             node.position.copyFrom(initialTransformations.position);
