@@ -6,14 +6,14 @@
     "byType": {
       "top-level-call": 634,
       "declare-module": 108,
-      "bare-import": 256,
+      "bare-import": 249,
       "static-property-assignment": 2,
       "shader-store-write": 633
     },
     "filesByType": {
       "top-level-call": 634,
       "declare-module": 91,
-      "bare-import": 116,
+      "bare-import": 112,
       "static-property-assignment": 2,
       "shader-store-write": 633
     }
@@ -129,8 +129,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterAudioSceneComponent();"
+          "line": 10,
+          "text": "RegisterAudioSceneComponent(Sound);"
         }
       ]
     },
@@ -3129,8 +3129,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterGamepadSceneComponent();"
+          "line": 10,
+          "text": "RegisterGamepadSceneComponent(GamepadManager);"
         }
       ]
     },
@@ -3204,8 +3204,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "RegisterEffectLayerSceneComponent();"
+          "line": 9,
+          "text": "RegisterEffectLayerSceneComponent(EffectLayer);"
         }
       ]
     },
@@ -3274,8 +3274,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterLensFlareSystemSceneComponent();"
+          "line": 10,
+          "text": "RegisterLensFlareSystemSceneComponent(LensFlareSystem);"
         }
       ]
     },
@@ -3314,8 +3314,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
-          "text": "RegisterClusteredLightingSceneComponent();"
+          "line": 9,
+          "text": "RegisterClusteredLightingSceneComponent(ClusteredLightContainer);"
         }
       ]
     },
@@ -5519,8 +5519,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterMeshSimplificationSceneComponent();"
+          "line": 10,
+          "text": "RegisterMeshSimplificationSceneComponent(SimplificationQueue);"
         }
       ]
     },
@@ -7508,13 +7508,8 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
       "sideEffects": [
         {
-          "type": "bare-import",
-          "line": 7,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
           "type": "top-level-call",
-          "line": 9,
+          "line": 8,
           "text": "RegisterDefaultRenderingPipeline();"
         }
       ]
@@ -7590,26 +7585,21 @@
         {
           "type": "bare-import",
           "line": 3,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
-          "type": "bare-import",
-          "line": 4,
           "text": "import \"../../../Rendering/depthRendererSceneComponent\";"
         },
         {
           "type": "bare-import",
-          "line": 5,
+          "line": 4,
           "text": "import \"../../../Shaders/chromaticAberration.fragment\";"
         },
         {
           "type": "bare-import",
-          "line": 6,
+          "line": 5,
           "text": "import \"../../../Shaders/lensHighlights.fragment\";"
         },
         {
           "type": "bare-import",
-          "line": 7,
+          "line": 6,
           "text": "import \"../../../Shaders/depthOfField.fragment\";"
         }
       ]
@@ -7618,13 +7608,8 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
       "sideEffects": [
         {
-          "type": "bare-import",
-          "line": 7,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
           "type": "top-level-call",
-          "line": 9,
+          "line": 8,
           "text": "RegisterSsao2RenderingPipeline();"
         }
       ]
@@ -7635,21 +7620,16 @@
         {
           "type": "bare-import",
           "line": 3,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
-          "type": "bare-import",
-          "line": 4,
           "text": "import \"../../../Rendering/depthRendererSceneComponent\";"
         },
         {
           "type": "bare-import",
-          "line": 5,
+          "line": 4,
           "text": "import \"../../../Shaders/ssao.fragment\";"
         },
         {
           "type": "bare-import",
-          "line": 6,
+          "line": 5,
           "text": "import \"../../../Shaders/ssaoCombine.fragment\";"
         }
       ]
@@ -7658,13 +7638,8 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
       "sideEffects": [
         {
-          "type": "bare-import",
-          "line": 7,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
           "type": "top-level-call",
-          "line": 9,
+          "line": 8,
           "text": "RegisterSsrRenderingPipeline();"
         }
       ]
@@ -7678,13 +7653,8 @@
           "text": "import \"../../../Shaders/standard.fragment\";"
         },
         {
-          "type": "bare-import",
-          "line": 8,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
           "type": "top-level-call",
-          "line": 11,
+          "line": 10,
           "text": "RegisterStandardRenderingPipeline();"
         }
       ]
@@ -7703,13 +7673,8 @@
       "file": "PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
       "sideEffects": [
         {
-          "type": "bare-import",
-          "line": 7,
-          "text": "import \"../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent\";"
-        },
-        {
           "type": "top-level-call",
-          "line": 9,
+          "line": 8,
           "text": "RegisterTaaRenderingPipeline();"
         }
       ]
@@ -7719,8 +7684,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterPostProcessRenderPipelineManagerSceneComponent();"
+          "line": 10,
+          "text": "RegisterPostProcessRenderPipelineManagerSceneComponent(PostProcessRenderPipelineManager);"
         }
       ]
     },
@@ -7929,8 +7894,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterDepthPeelingSceneComponent();"
+          "line": 10,
+          "text": "RegisterDepthPeelingSceneComponent(DepthPeelingRenderer);"
         }
       ]
     },
@@ -7964,8 +7929,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterDepthRendererSceneComponent();"
+          "line": 10,
+          "text": "RegisterDepthRendererSceneComponent(DepthRenderer);"
         }
       ]
     },
@@ -8049,8 +8014,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterGeometryBufferRendererSceneComponent();"
+          "line": 10,
+          "text": "RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);"
         }
       ]
     },
@@ -8079,8 +8044,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterIblCdfGeneratorSceneComponent();"
+          "line": 10,
+          "text": "RegisterIblCdfGeneratorSceneComponent(IblCdfGenerator);"
         }
       ]
     },
@@ -8174,8 +8139,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterPrePassRendererSceneComponent();"
+          "line": 10,
+          "text": "RegisterPrePassRendererSceneComponent(PrePassRenderer);"
         }
       ]
     },
@@ -8209,8 +8174,8 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 9,
-          "text": "RegisterSubSurfaceSceneComponent();"
+          "line": 10,
+          "text": "RegisterSubSurfaceSceneComponent(SubSurfaceConfiguration);"
         }
       ]
     },

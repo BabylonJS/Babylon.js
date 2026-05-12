@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Sound } from "./sound.pure";
+import { type Sound } from "./sound.pure";
 import { SoundTrack } from "./soundTrack";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { SceneComponentConstants, type ISceneSerializableComponent } from "../sceneComponent";
@@ -355,8 +355,9 @@ let _Registered = false;
 /**
  * Register side effects for audioSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param soundClass The Sound class to register the component for
  */
-export function RegisterAudioSceneComponent(): void {
+export function RegisterAudioSceneComponent(soundClass: typeof Sound): void {
     if (_Registered) {
         return;
     }
@@ -376,14 +377,14 @@ export function RegisterAudioSceneComponent(): void {
                         parsedSound.url = parsedSound.name;
                     }
                     if (!loadedSounds[parsedSound.url]) {
-                        loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
+                        loadedSound = soundClass.Parse(parsedSound, scene, rootUrl);
                         loadedSounds[parsedSound.url] = loadedSound;
                         container.sounds.push(loadedSound);
                     } else {
-                        container.sounds.push(Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
+                        container.sounds.push(soundClass.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
                     }
                 } else {
-                    container.sounds.push(new Sound(parsedSound.name, null, scene));
+                    container.sounds.push(new soundClass(parsedSound.name, null, scene));
                 }
             }
         }
@@ -559,7 +560,7 @@ export function RegisterAudioSceneComponent(): void {
         configurable: true,
     });
 
-    Sound._SceneComponentInitialization = (scene: Scene) => {
+    soundClass._SceneComponentInitialization = (scene: Scene) => {
         let compo = scene._getComponent(SceneComponentConstants.NAME_AUDIO);
         if (!compo) {
             compo = new AudioSceneComponent(scene);

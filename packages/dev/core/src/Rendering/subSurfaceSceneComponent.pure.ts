@@ -6,7 +6,7 @@ import { SceneComponentConstants, type ISceneSerializableComponent } from "../sc
 import { type Nullable } from "../types";
 import { Color3 } from "../Maths/math.color.pure";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
-import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
+import { type SubSurfaceConfiguration } from "./subSurfaceConfiguration";
 
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
@@ -98,8 +98,9 @@ let _Registered = false;
 /**
  * Register side effects for subSurfaceSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param subSurfaceConfigClass The SubSurfaceConfiguration class to register the component for
  */
-export function RegisterSubSurfaceSceneComponent(): void {
+export function RegisterSubSurfaceSceneComponent(subSurfaceConfigClass: typeof SubSurfaceConfiguration): void {
     if (_Registered) {
         return;
     }
@@ -141,7 +142,7 @@ export function RegisterSubSurfaceSceneComponent(): void {
 
         const prePassRenderer = this.enablePrePassRenderer();
         if (prePassRenderer) {
-            this._subSurfaceConfiguration = new SubSurfaceConfiguration(this);
+            this._subSurfaceConfiguration = new subSurfaceConfigClass(this);
             prePassRenderer.addEffectConfiguration(this._subSurfaceConfiguration);
             return this._subSurfaceConfiguration;
         }
@@ -158,7 +159,7 @@ export function RegisterSubSurfaceSceneComponent(): void {
         this._subSurfaceConfiguration = null;
     };
 
-    SubSurfaceConfiguration._SceneComponentInitialization = (scene: Scene) => {
+    subSurfaceConfigClass._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.
         let component = scene._getComponent(SceneComponentConstants.NAME_SUBSURFACE) as SubSurfaceSceneComponent;
         if (!component) {

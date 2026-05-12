@@ -5,5 +5,6 @@ export * from "./meshSimplificationSceneComponent.types";
  */
 export * from "./meshSimplificationSceneComponent.pure";
 
+import { SimplificationQueue } from "./meshSimplification";
 import { RegisterMeshSimplificationSceneComponent } from "./meshSimplificationSceneComponent.pure";
-RegisterMeshSimplificationSceneComponent();
+RegisterMeshSimplificationSceneComponent(SimplificationQueue);

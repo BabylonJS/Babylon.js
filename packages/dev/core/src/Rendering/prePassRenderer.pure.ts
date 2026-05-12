@@ -16,6 +16,7 @@ import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer.pure";
+import { RegisterPrePassRendererSceneComponent } from "./prePassRendererSceneComponent.pure";
 
 /**
  * Renders a pre pass of the scene
@@ -334,6 +335,7 @@ export class PrePassRenderer {
             }
         }
 
+        RegisterPrePassRendererSceneComponent(PrePassRenderer);
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
         this._currentTarget = this.defaultRT;

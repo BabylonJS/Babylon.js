@@ -5,7 +5,6 @@
 export * from "./standardRenderingPipeline.pure";
 
 import "../../../Shaders/standard.fragment";
-import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import { RegisterStandardRenderingPipeline } from "./standardRenderingPipeline.pure";
 RegisterStandardRenderingPipeline();

@@ -11,7 +11,7 @@ import { type Camera } from "../Cameras/camera.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { PrePassRenderer } from "./prePassRenderer.pure";
+import { type PrePassRenderer } from "./prePassRenderer.pure";
 
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
@@ -135,8 +135,9 @@ let _Registered = false;
 /**
  * Register side effects for prePassRendererSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param prePassRendererClass The PrePassRenderer class to register the component for
  */
-export function RegisterPrePassRendererSceneComponent(): void {
+export function RegisterPrePassRendererSceneComponent(prePassRendererClass: typeof PrePassRenderer): void {
     if (_Registered) {
         return;
     }
@@ -160,7 +161,7 @@ export function RegisterPrePassRendererSceneComponent(): void {
             return this._prePassRenderer;
         }
 
-        this._prePassRenderer = new PrePassRenderer(this);
+        this._prePassRenderer = new prePassRendererClass(this);
 
         if (!this._prePassRenderer.isSupported) {
             this._prePassRenderer = null;
@@ -181,7 +182,7 @@ export function RegisterPrePassRendererSceneComponent(): void {
         this._prePassRenderer = null;
     };
 
-    PrePassRenderer._SceneComponentInitialization = (scene: Scene) => {
+    prePassRendererClass._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.
         let component = scene._getComponent(SceneComponentConstants.NAME_PREPASSRENDERER) as PrePassRendererSceneComponent;
         if (!component) {

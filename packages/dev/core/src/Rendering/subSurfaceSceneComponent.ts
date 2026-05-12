@@ -5,5 +5,6 @@ export * from "./subSurfaceSceneComponent.types";
  */
 export * from "./subSurfaceSceneComponent.pure";
 
+import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
 import { RegisterSubSurfaceSceneComponent } from "./subSurfaceSceneComponent.pure";
-RegisterSubSurfaceSceneComponent();
+RegisterSubSurfaceSceneComponent(SubSurfaceConfiguration);

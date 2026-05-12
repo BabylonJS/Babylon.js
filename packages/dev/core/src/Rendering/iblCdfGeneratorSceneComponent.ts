@@ -5,5 +5,6 @@ export * from "./iblCdfGeneratorSceneComponent.types";
  */
 export * from "./iblCdfGeneratorSceneComponent.pure";
 
+import { IblCdfGenerator } from "./iblCdfGenerator";
 import { RegisterIblCdfGeneratorSceneComponent } from "./iblCdfGeneratorSceneComponent.pure";
-RegisterIblCdfGeneratorSceneComponent();
+RegisterIblCdfGeneratorSceneComponent(IblCdfGenerator);

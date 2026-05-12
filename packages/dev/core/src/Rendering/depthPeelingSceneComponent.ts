@@ -5,5 +5,6 @@ export * from "./depthPeelingSceneComponent.types";
  */
 export * from "./depthPeelingSceneComponent.pure";
 
+import { DepthPeelingRenderer } from "./depthPeelingRenderer";
 import { RegisterDepthPeelingSceneComponent } from "./depthPeelingSceneComponent.pure";
-RegisterDepthPeelingSceneComponent();
+RegisterDepthPeelingSceneComponent(DepthPeelingRenderer);

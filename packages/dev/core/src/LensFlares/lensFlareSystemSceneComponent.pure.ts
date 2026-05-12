@@ -9,7 +9,7 @@ import { type IAssetContainer } from "core/IAssetContainer";
 import { type Nullable } from "../types";
 import { type AssetContainer } from "../assetContainer";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
-import { LensFlareSystem } from "./lensFlareSystem";
+import { type LensFlareSystem } from "./lensFlareSystem";
 
 /**
  * Defines the lens flare scene component responsible to manage any lens flares
@@ -123,8 +123,9 @@ let _Registered = false;
 /**
  * Register side effects for lensFlareSystemSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param lensFlareSystemClass The LensFlareSystem class to register the component for
  */
-export function RegisterLensFlareSystemSceneComponent(): void {
+export function RegisterLensFlareSystemSceneComponent(lensFlareSystemClass: typeof LensFlareSystem): void {
     if (_Registered) {
         return;
     }
@@ -140,7 +141,7 @@ export function RegisterLensFlareSystemSceneComponent(): void {
 
             for (let index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
                 const parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                const lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
+                const lf = lensFlareSystemClass.Parse(parsedLensFlareSystem, scene, rootUrl);
                 container.lensFlareSystems.push(lf);
             }
         }
@@ -182,7 +183,7 @@ export function RegisterLensFlareSystemSceneComponent(): void {
         this.lensFlareSystems.push(newLensFlareSystem);
     };
 
-    LensFlareSystem._SceneComponentInitialization = (scene: Scene) => {
+    lensFlareSystemClass._SceneComponentInitialization = (scene: Scene) => {
         let component = scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
         if (!component) {
             component = new LensFlareSystemSceneComponent(scene);

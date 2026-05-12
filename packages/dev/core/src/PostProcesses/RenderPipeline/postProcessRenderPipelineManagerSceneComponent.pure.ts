@@ -3,7 +3,9 @@
 import { SceneComponentConstants, type ISceneComponent } from "../../sceneComponent";
 
 import { Scene } from "../../scene.pure";
-import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
+import { type PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
+
+let _PostProcessRenderPipelineManagerClass: typeof PostProcessRenderPipelineManager;
 
 /**
  * Defines the Render Pipeline scene component responsible to rendering pipelines
@@ -64,8 +66,12 @@ let _Registered = false;
 /**
  * Register side effects for postProcessRenderPipelineManagerSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param pipelineManagerClass The PostProcessRenderPipelineManager class to use for lazy instantiation
  */
-export function RegisterPostProcessRenderPipelineManagerSceneComponent(): void {
+export function RegisterPostProcessRenderPipelineManagerSceneComponent(pipelineManagerClass?: typeof PostProcessRenderPipelineManager): void {
+    if (pipelineManagerClass) {
+        _PostProcessRenderPipelineManagerClass = pipelineManagerClass;
+    }
     if (_Registered) {
         return;
     }
@@ -80,7 +86,7 @@ export function RegisterPostProcessRenderPipelineManagerSceneComponent(): void {
                     component = new PostProcessRenderPipelineManagerSceneComponent(this);
                     this._addComponent(component);
                 }
-                this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
+                this._postProcessRenderPipelineManager = new _PostProcessRenderPipelineManagerClass!();
             }
 
             return this._postProcessRenderPipelineManager;

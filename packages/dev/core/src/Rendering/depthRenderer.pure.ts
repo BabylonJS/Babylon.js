@@ -23,6 +23,7 @@ import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { type GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { type GaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { RegisterDepthRendererSceneComponent } from "./depthRendererSceneComponent.pure";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -171,6 +172,7 @@ export class DepthRenderer {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
+        RegisterDepthRendererSceneComponent(DepthRenderer);
         DepthRenderer._SceneComponentInitialization(this._scene);
 
         const engine = scene.getEngine();

@@ -319,7 +319,7 @@ export abstract class EffectLayer {
         this.name = name;
 
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
-        RegisterEffectLayerSceneComponent();
+        RegisterEffectLayerSceneComponent(EffectLayer);
         EffectLayer._SceneComponentInitialization(this._scene);
 
         this._engine = this._scene.getEngine();

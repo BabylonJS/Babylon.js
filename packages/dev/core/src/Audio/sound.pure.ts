@@ -22,6 +22,7 @@ import { type Nullable } from "../types";
 import { type AudioEngine } from "./audioEngine.pure";
 import { type ISoundOptions } from "./Interfaces/ISoundOptions";
 import { RegisterClass } from "../Misc/typeStore";
+import { RegisterAudioSceneComponent } from "./audioSceneComponent.pure";
 
 const TmpRampOptions: IAudioParameterRampOptions = {
     duration: 0,
@@ -247,6 +248,7 @@ export class Sound {
             return;
         }
         this._scene = scene;
+        RegisterAudioSceneComponent(Sound);
         Sound._SceneComponentInitialization(scene);
         this._readyToPlayCallback = readyToPlayCallback || (() => {});
 

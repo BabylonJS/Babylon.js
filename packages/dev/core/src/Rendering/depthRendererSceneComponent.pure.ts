@@ -10,7 +10,7 @@ import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
-import { DepthRenderer } from "./depthRenderer.pure";
+import { type DepthRenderer } from "./depthRenderer.pure";
 
 /**
  * Defines the Depth Renderer scene component responsible to manage a depth buffer useful
@@ -120,8 +120,9 @@ let _Registered = false;
 /**
  * Register side effects for depthRendererSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param depthRendererClass The DepthRenderer class to register the component for
  */
-export function RegisterDepthRendererSceneComponent(): void {
+export function RegisterDepthRendererSceneComponent(depthRendererClass: typeof DepthRenderer): void {
     if (_Registered) {
         return;
     }
@@ -153,7 +154,7 @@ export function RegisterDepthRendererSceneComponent(): void {
             } else {
                 textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             }
-            this._depthRenderer[camera.uniqueId] = new DepthRenderer(
+            this._depthRenderer[camera.uniqueId] = new depthRendererClass(
                 this,
                 textureType,
                 camera,
@@ -177,7 +178,7 @@ export function RegisterDepthRendererSceneComponent(): void {
         this._depthRenderer[camera.uniqueId].dispose();
     };
 
-    DepthRenderer._SceneComponentInitialization = (scene: Scene) => {
+    depthRendererClass._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.
         let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHRENDERER) as DepthRendererSceneComponent;
         if (!component) {

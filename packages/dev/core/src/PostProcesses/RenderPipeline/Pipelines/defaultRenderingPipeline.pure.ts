@@ -29,6 +29,7 @@ import { TimingTools } from "core/Misc/timingTools";
 import { type Animation } from "../../../Animations/animation.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { RegisterDepthRendererSceneComponent } from "../../../Rendering/depthRendererSceneComponent.pure";
+import { DepthRenderer } from "../../../Rendering/depthRenderer.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -429,7 +430,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * @param automaticBuild If false, you will have to manually call prepare() to update the pipeline (default: true)
      */
     constructor(name = "", hdr = true, scene: Scene = EngineStore.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
-        RegisterDepthRendererSceneComponent();
+        RegisterDepthRendererSceneComponent(DepthRenderer);
         super(scene.getEngine(), name);
         this._cameras = cameras || scene.cameras;
         this._cameras = this._cameras.slice();

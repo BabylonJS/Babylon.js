@@ -4,6 +4,5 @@
  */
 export * from "./ssao2RenderingPipeline.pure";
 
-import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import { RegisterSsao2RenderingPipeline } from "./ssao2RenderingPipeline.pure";
 RegisterSsao2RenderingPipeline();

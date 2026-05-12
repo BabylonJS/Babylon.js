@@ -5,5 +5,6 @@ export * from "./audioSceneComponent.types";
  */
 export * from "./audioSceneComponent.pure";
 
+import { Sound } from "./sound.pure";
 import { RegisterAudioSceneComponent } from "./audioSceneComponent.pure";
-RegisterAudioSceneComponent();
+RegisterAudioSceneComponent(Sound);

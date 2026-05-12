@@ -17,6 +17,7 @@ import { type PrePassEffectConfiguration } from "core/Rendering/prePassEffectCon
 import { Logger } from "core/Misc/logger";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { RegisterPrePassRendererSceneComponent } from "../../../Rendering/prePassRendererSceneComponent.pure";
+import { PrePassRenderer } from "../../../Rendering/prePassRenderer.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -196,7 +197,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
      * @param textureType The type of texture where the scene will be rendered (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
     constructor(name: string, scene: Scene, cameras?: Camera[], textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
-        RegisterPrePassRendererSceneComponent();
+        RegisterPrePassRendererSceneComponent(PrePassRenderer);
         const engine = scene.getEngine();
 
         super(engine, name);

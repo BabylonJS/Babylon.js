@@ -6,7 +6,7 @@ import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Observer } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
-import { IblCdfGenerator } from "./iblCdfGenerator";
+import { type IblCdfGenerator } from "./iblCdfGenerator";
 
 /**
  * Defines the IBL CDF Generator scene component responsible for generating CDF maps for a given IBL.
@@ -83,8 +83,9 @@ let _Registered = false;
 /**
  * Register side effects for iblCdfGeneratorSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param iblCdfGeneratorClass The IblCdfGenerator class to register the component for
  */
-export function RegisterIblCdfGeneratorSceneComponent(): void {
+export function RegisterIblCdfGeneratorSceneComponent(iblCdfGeneratorClass: typeof IblCdfGenerator): void {
     if (_Registered) {
         return;
     }
@@ -108,7 +109,7 @@ export function RegisterIblCdfGeneratorSceneComponent(): void {
             return this._iblCdfGenerator;
         }
 
-        this._iblCdfGenerator = new IblCdfGenerator(this);
+        this._iblCdfGenerator = new iblCdfGeneratorClass(this);
         if (!this._iblCdfGenerator.isSupported) {
             this._iblCdfGenerator = null;
             return null;
@@ -128,7 +129,7 @@ export function RegisterIblCdfGeneratorSceneComponent(): void {
         this._iblCdfGenerator = null;
     };
 
-    IblCdfGenerator._SceneComponentInitialization = (scene: Scene) => {
+    iblCdfGeneratorClass._SceneComponentInitialization = (scene: Scene) => {
         // Register the CDF generator component to the scene.
         let component = scene._getComponent(SceneComponentConstants.NAME_IBLCDFGENERATOR) as IblCdfGeneratorSceneComponent;
         if (!component) {

@@ -4,6 +4,5 @@
  */
 export * from "./defaultRenderingPipeline.pure";
 
-import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import { RegisterDefaultRenderingPipeline } from "./defaultRenderingPipeline.pure";
 RegisterDefaultRenderingPipeline();

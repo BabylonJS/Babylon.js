@@ -13,7 +13,7 @@ import { PassPostProcess } from "../../../PostProcesses/passPostProcess.pure";
 import { type Scene } from "../../../scene.pure";
 import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
-import { type PrePassRenderer } from "../../../Rendering/prePassRenderer.pure";
+import { PrePassRenderer } from "../../../Rendering/prePassRenderer.pure";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer.pure";
 import { Constants } from "../../../Engines/constants";
 import { type Nullable } from "../../../types";
@@ -336,8 +336,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         forceGeometryBuffer: boolean | GeometryBufferRenderer = false,
         textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
-        RegisterPrePassRendererSceneComponent();
-        RegisterGeometryBufferRendererSceneComponent();
+        RegisterPrePassRendererSceneComponent(PrePassRenderer);
+        RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);
         super(scene.getEngine(), name);
 
         this._thinSSAORenderingPipeline = new ThinSSAO2RenderingPipeline(name, scene);

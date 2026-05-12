@@ -30,6 +30,7 @@ import {
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
+import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -587,6 +588,7 @@ export class GeometryBufferRenderer {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
+        RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
         // Render target

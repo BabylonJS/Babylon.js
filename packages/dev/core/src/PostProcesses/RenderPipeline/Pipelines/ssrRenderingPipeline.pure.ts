@@ -9,7 +9,7 @@ import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 import { type Scene } from "../../../scene.pure";
 import { ScreenSpaceReflections2Configuration } from "../../../Rendering/screenSpaceReflections2Configuration";
-import { type PrePassRenderer } from "../../../Rendering/prePassRenderer.pure";
+import { PrePassRenderer } from "../../../Rendering/prePassRenderer.pure";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer.pure";
 import { Constants } from "../../../Engines/constants";
 import { type Nullable } from "../../../types";
@@ -606,8 +606,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * @param useScreenspaceDepth Indicates if the depth buffer should be linear or screenspace (default: false). This allows sharing the buffer with other effect pipelines that may require the depth to be in screenspace.
      */
     constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE, useScreenspaceDepth = false) {
-        RegisterPrePassRendererSceneComponent();
-        RegisterGeometryBufferRendererSceneComponent();
+        RegisterPrePassRendererSceneComponent(PrePassRenderer);
+        RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);
         super(scene.getEngine(), name);
 
         this._thinSSRRenderingPipeline = new ThinSSRRenderingPipeline(name, scene);

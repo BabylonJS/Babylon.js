@@ -2,7 +2,7 @@
 
 import { type Scene } from "core/scene.pure";
 import { SceneComponentConstants, type RenderTargetsStageAction, type ISceneComponent } from "core/sceneComponent";
-import { ClusteredLightContainer } from "./clusteredLightContainer.pure";
+import { type ClusteredLightContainer } from "./clusteredLightContainer.pure";
 import { LightConstants } from "../lightConstants";
 
 /**
@@ -62,14 +62,15 @@ let _Registered = false;
 /**
  * Register side effects for clusteredLightingSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param clusteredLightContainerClass The ClusteredLightContainer class to register the component for
  */
-export function RegisterClusteredLightingSceneComponent(): void {
+export function RegisterClusteredLightingSceneComponent(clusteredLightContainerClass: typeof ClusteredLightContainer): void {
     if (_Registered) {
         return;
     }
     _Registered = true;
 
-    ClusteredLightContainer._SceneComponentInitialization = (scene) => {
+    clusteredLightContainerClass._SceneComponentInitialization = (scene) => {
         if (!scene._getComponent(SceneComponentConstants.NAME_CLUSTEREDLIGHTING)) {
             scene._addComponent(new ClusteredLightingSceneComponent(scene));
         }

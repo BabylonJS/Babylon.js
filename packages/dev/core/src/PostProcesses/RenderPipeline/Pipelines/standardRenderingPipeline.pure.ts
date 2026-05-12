@@ -25,6 +25,7 @@ import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPos
 import { type Animation } from "../../../Animations/animation.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { RegisterDepthRendererSceneComponent } from "../../../Rendering/depthRendererSceneComponent.pure";
+import { DepthRenderer } from "../../../Rendering/depthRenderer.pure";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -582,7 +583,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      */
     constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
-        RegisterDepthRendererSceneComponent();
+        RegisterDepthRendererSceneComponent(DepthRenderer);
         super(scene.getEngine(), name);
         this._cameras = cameras || scene.cameras;
         this._cameras = this._cameras.slice();

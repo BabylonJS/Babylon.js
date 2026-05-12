@@ -3,9 +3,11 @@
 import { Scene } from "../scene.pure";
 import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
 
-import { DepthPeelingRenderer } from "./depthPeelingRenderer";
+import { type DepthPeelingRenderer } from "./depthPeelingRenderer";
 import { Constants } from "../Engines/constants";
 import { type ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
+
+let _DepthPeelingRendererClass: typeof DepthPeelingRenderer;
 
 /**
  * Scene component to render order independent transparency with depth peeling
@@ -28,7 +30,7 @@ export class DepthPeelingSceneComponent implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
 
-        scene.depthPeelingRenderer = new DepthPeelingRenderer(scene);
+        scene.depthPeelingRenderer = new _DepthPeelingRendererClass(scene);
     }
 
     /**
@@ -55,8 +57,10 @@ let _Registered = false;
 /**
  * Register side effects for depthPeelingSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param depthPeelingRendererClass The DepthPeelingRenderer class to use for instantiation
  */
-export function RegisterDepthPeelingSceneComponent(): void {
+export function RegisterDepthPeelingSceneComponent(depthPeelingRendererClass: typeof DepthPeelingRenderer): void {
+    _DepthPeelingRendererClass = depthPeelingRendererClass;
     if (_Registered) {
         return;
     }

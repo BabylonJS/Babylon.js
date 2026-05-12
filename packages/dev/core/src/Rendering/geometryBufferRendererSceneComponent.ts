@@ -5,5 +5,6 @@ export * from "./geometryBufferRendererSceneComponent.types";
  */
 export * from "./geometryBufferRendererSceneComponent.pure";
 
+import { GeometryBufferRenderer } from "./geometryBufferRenderer.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
-RegisterGeometryBufferRendererSceneComponent();
+RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);

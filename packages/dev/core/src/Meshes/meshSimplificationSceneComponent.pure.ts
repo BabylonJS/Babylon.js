@@ -5,7 +5,7 @@ import { Scene } from "../scene.pure";
 import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
 
 import { Mesh } from "./mesh.pure";
-import { type ISimplificationSettings, SimplificationQueue, SimplificationType } from "./meshSimplification";
+import { type ISimplificationSettings, type SimplificationQueue, SimplificationType } from "./meshSimplification";
 
 /**
  * Defines the simplification queue scene component responsible to help scheduling the various simplification task
@@ -63,8 +63,9 @@ let _Registered = false;
 /**
  * Register side effects for meshSimplificationSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param simplificationQueueClass The SimplificationQueue class to use for lazy instantiation
  */
-export function RegisterMeshSimplificationSceneComponent(): void {
+export function RegisterMeshSimplificationSceneComponent(simplificationQueueClass: typeof SimplificationQueue): void {
     if (_Registered) {
         return;
     }
@@ -73,7 +74,7 @@ export function RegisterMeshSimplificationSceneComponent(): void {
     Object.defineProperty(Scene.prototype, "simplificationQueue", {
         get: function (this: Scene) {
             if (!this._simplificationQueue) {
-                this._simplificationQueue = new SimplificationQueue();
+                this._simplificationQueue = new simplificationQueueClass();
                 let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
                 if (!component) {
                     component = new SimplicationQueueSceneComponent(this);

@@ -9,7 +9,7 @@ import { SceneComponentConstants, type ISceneSerializableComponent } from "../sc
 import { EngineStore } from "../Engines/engineStore";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { type Scene } from "../scene.pure";
-import { EffectLayer } from "./effectLayer";
+import { type EffectLayer } from "./effectLayer";
 import { type AssetContainer } from "../assetContainer";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
@@ -231,8 +231,9 @@ let _Registered = false;
 /**
  * Register side effects for effectLayerSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param effectLayerClass The EffectLayer class to register the component for
  */
-export function RegisterEffectLayerSceneComponent(): void {
+export function RegisterEffectLayerSceneComponent(effectLayerClass: typeof EffectLayer): void {
     if (_Registered) {
         return;
     }
@@ -246,13 +247,13 @@ export function RegisterEffectLayerSceneComponent(): void {
             }
 
             for (let index = 0; index < parsedData.effectLayers.length; index++) {
-                const effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
+                const effectLayer = effectLayerClass.Parse(parsedData.effectLayers[index], scene, rootUrl);
                 container.effectLayers.push(effectLayer);
             }
         }
     });
 
-    EffectLayer._SceneComponentInitialization = (scene: Scene) => {
+    effectLayerClass._SceneComponentInitialization = (scene: Scene) => {
         let component = scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
         if (!component) {
             component = new EffectLayerSceneComponent(scene);

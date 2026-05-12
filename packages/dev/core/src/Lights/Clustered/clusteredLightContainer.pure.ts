@@ -27,6 +27,7 @@ import { type SpotLight } from "../spotLight.pure";
 import { type RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Node } from "core/node";
+import { RegisterClusteredLightingSceneComponent } from "./clusteredLightingSceneComponent.pure";
 
 const DefaultDepthSlices = 16;
 const MobileClusteredLightBatchSize = 8;
@@ -273,6 +274,7 @@ export class ClusteredLightContainer extends Light {
         this._sliceRanges = new Float32Array(this._depthSlices * 2);
 
         if (this._batchSize > 0) {
+            RegisterClusteredLightingSceneComponent(ClusteredLightContainer);
             ClusteredLightContainer._SceneComponentInitialization(this._scene);
             for (const light of lights) {
                 this.addLight(light);

@@ -5,7 +5,7 @@ import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent
 
 import { FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput";
 import { ArcRotateCameraGamepadInput } from "../Cameras/Inputs/arcRotateCameraGamepadInput";
-import { GamepadManager } from "./gamepadManager";
+import { type GamepadManager } from "./gamepadManager";
 import { FreeCameraInputsManager } from "../Cameras/freeCameraInputsManager.pure";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager.pure";
 
@@ -62,8 +62,9 @@ let _Registered = false;
 /**
  * Register side effects for gamepadSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param gamepadManagerClass The GamepadManager class to use for lazy instantiation
  */
-export function RegisterGamepadSceneComponent(): void {
+export function RegisterGamepadSceneComponent(gamepadManagerClass: typeof GamepadManager): void {
     if (_Registered) {
         return;
     }
@@ -72,7 +73,7 @@ export function RegisterGamepadSceneComponent(): void {
     Object.defineProperty(Scene.prototype, "gamepadManager", {
         get: function (this: Scene) {
             if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager(this);
+                this._gamepadManager = new gamepadManagerClass(this);
                 let component = this._getComponent(SceneComponentConstants.NAME_GAMEPAD) as GamepadSystemSceneComponent;
                 if (!component) {
                     component = new GamepadSystemSceneComponent(this);

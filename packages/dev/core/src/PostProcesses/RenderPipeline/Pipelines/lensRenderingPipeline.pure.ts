@@ -12,6 +12,7 @@ import { type Scene } from "../../../scene.pure";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
 import { Constants } from "../../../Engines/constants";
 import { RegisterDepthRendererSceneComponent } from "../../../Rendering/depthRendererSceneComponent.pure";
+import { DepthRenderer } from "../../../Rendering/depthRenderer.pure";
 
 import { RandomRange } from "../../../Maths/math.scalar.functions";
 
@@ -97,7 +98,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      */
     constructor(name: string, parameters: any, scene: Scene, ratio: number = 1.0, cameras?: Camera[]) {
-        RegisterDepthRendererSceneComponent();
+        RegisterDepthRendererSceneComponent(DepthRenderer);
         super(scene.getEngine(), name);
 
         this._scene = scene;

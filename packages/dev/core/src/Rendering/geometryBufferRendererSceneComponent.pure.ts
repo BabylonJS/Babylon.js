@@ -7,7 +7,7 @@ import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer.pure";
+import { type GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer.pure";
 
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
@@ -65,8 +65,9 @@ let _Registered = false;
 /**
  * Register side effects for geometryBufferRendererSceneComponent.
  * Safe to call multiple times; only the first call has an effect.
+ * @param geometryBufferRendererClass The GeometryBufferRenderer class to register the component for
  */
-export function RegisterGeometryBufferRendererSceneComponent(): void {
+export function RegisterGeometryBufferRendererSceneComponent(geometryBufferRendererClass: typeof GeometryBufferRenderer): void {
     if (_Registered) {
         return;
     }
@@ -94,7 +95,7 @@ export function RegisterGeometryBufferRendererSceneComponent(): void {
             return this._geometryBufferRenderer;
         }
 
-        this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio, depthFormat, textureTypesAndFormats);
+        this._geometryBufferRenderer = new geometryBufferRendererClass(this, ratio, depthFormat, textureTypesAndFormats);
         if (!this._geometryBufferRenderer.isSupported) {
             this._geometryBufferRenderer = null;
         }
@@ -111,7 +112,7 @@ export function RegisterGeometryBufferRendererSceneComponent(): void {
         this._geometryBufferRenderer = null;
     };
 
-    GeometryBufferRenderer._SceneComponentInitialization = (scene: Scene) => {
+    geometryBufferRendererClass._SceneComponentInitialization = (scene: Scene) => {
         // Register the G Buffer component to the scene.
         let component = scene._getComponent(SceneComponentConstants.NAME_GEOMETRYBUFFERRENDERER) as GeometryBufferRendererSceneComponent;
         if (!component) {

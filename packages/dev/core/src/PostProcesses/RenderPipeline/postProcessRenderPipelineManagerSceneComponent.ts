@@ -5,5 +5,6 @@ export * from "./postProcessRenderPipelineManagerSceneComponent.types";
  */
 export * from "./postProcessRenderPipelineManagerSceneComponent.pure";
 
+import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
 import { RegisterPostProcessRenderPipelineManagerSceneComponent } from "./postProcessRenderPipelineManagerSceneComponent.pure";
-RegisterPostProcessRenderPipelineManagerSceneComponent();
+RegisterPostProcessRenderPipelineManagerSceneComponent(PostProcessRenderPipelineManager);

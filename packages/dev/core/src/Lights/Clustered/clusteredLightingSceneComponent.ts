@@ -4,5 +4,6 @@
  */
 export * from "./clusteredLightingSceneComponent.pure";
 
+import { ClusteredLightContainer } from "./clusteredLightContainer.pure";
 import { RegisterClusteredLightingSceneComponent } from "./clusteredLightingSceneComponent.pure";
-RegisterClusteredLightingSceneComponent();
+RegisterClusteredLightingSceneComponent(ClusteredLightContainer);
