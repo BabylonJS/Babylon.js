@@ -8,6 +8,7 @@ import { GLTFLoader } from "../glTFLoader";
 import { type IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { TransmissionHelper, type ITransmissionHelperHolder } from "./transmissionHelper";
 
 const NAME = "KHR_materials_diffuse_transmission";
 
@@ -79,6 +80,17 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         adapter.configureSubsurface();
         adapter.subsurfaceWeight = extension.diffuseTransmissionFactor ?? 0;
+
+        // Handle transmission helper setup (only needed for PBR materials)
+        if (adapter.subsurfaceWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
+            const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
+            if (!scene._transmissionHelper) {
+                new TransmissionHelper({}, babylonMaterial.getScene(), this._loader);
+            } else if (!scene._transmissionHelper?._isRenderTargetValid()) {
+                // If the render target is not valid, recreate it.
+                scene._transmissionHelper?._setupRenderTargets();
+            }
+        }
 
         adapter.diffuseTransmissionTint = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
 
