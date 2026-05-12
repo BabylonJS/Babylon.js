@@ -221,6 +221,7 @@ export class PhysicsCharacterController {
     private _transformNode: TransformNode;
     private _ownShape: boolean;
     private _manifold: IContact[] = [];
+    private _stepUpSavedManifold: IContact[] = [];
     private _lastDisplacement: Vector3;
     private _contactAngleSensitivity = 10.0;
     private _lastInvDeltaTime: number;
@@ -1712,8 +1713,7 @@ export class PhysicsCharacterController {
         }
 
         // 6. Snapshot manifold, refresh at landing, validate no unacceptable penetration
-        const stepUpState = this as typeof this & { _stepUpSavedManifold?: typeof this._manifold };
-        const savedManifold = stepUpState._stepUpSavedManifold ?? (stepUpState._stepUpSavedManifold = []);
+        const savedManifold = this._stepUpSavedManifold;
         savedManifold.length = this._manifold.length;
         for (let i = 0; i < this._manifold.length; i++) {
             savedManifold[i] = this._manifold[i];
