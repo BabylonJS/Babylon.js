@@ -1165,6 +1165,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
                 "cameraInfo",
+                "vTextureRepetitionHexTilingParams",
             ];
 
             const samplers = [

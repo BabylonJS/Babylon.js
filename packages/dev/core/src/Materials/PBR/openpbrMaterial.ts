@@ -2963,6 +2963,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
             "cameraInfo",
+            "vTextureRepetitionHexTilingParams",
             "backgroundRefractionMatrix",
             "vBackgroundRefractionInfos",
         ];

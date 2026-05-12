@@ -1434,6 +1434,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
             "cameraInfo",
+            "vTextureRepetitionHexTilingParams",
         ];
 
         const samplers = [
