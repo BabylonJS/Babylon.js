@@ -3919,26 +3919,14 @@
         {
             "title": "OpenPBR Thin Film and Specular Color - IBL",
             "playgroundId": "#GRQHVV#322",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film and Specular IOR Match - IBL",
             "playgroundId": "#GRQHVV#323",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film Textures - IBL",
@@ -4247,6 +4235,12 @@
             "playgroundId": "#PJ5JXH#122",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["CSG", "FrameGraph", "GUI", "Layers", "LibMaterials", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Particles", "Shadows", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR glTF Surface Tinting",
+            "playgroundId": "#GRQHVV#325",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "Background material blur",
