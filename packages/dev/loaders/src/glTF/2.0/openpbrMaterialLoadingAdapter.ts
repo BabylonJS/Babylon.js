@@ -1407,7 +1407,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this.coatWeightTexture = null;
         this.coatWeight = 1.0;
 
-        const [lerpCoatColor, lerpSurfaceColor] = await Promise.all([
+        const results = await Promise.allSettled([
             LerpTexturesAsync(
                 "lerpExistingCoat",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
@@ -1425,6 +1425,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.SRGB
             ),
         ]);
+        const rejected = results.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
+        if (rejected) {
+            for (const r of results) {
+                if (r.status === "fulfilled") {
+                    r.value.texture?.dispose();
+                }
+            }
+            throw rejected.reason;
+        }
+        const [lerpCoatColor, lerpSurfaceColor] = results.map(
+            (r) => (r as PromiseFulfilledResult<(typeof results)[number] extends PromiseSettledResult<infer T> ? T : never>).value
+        );
         if (signal.aborted) {
             lerpCoatColor.texture?.dispose();
             lerpSurfaceColor.texture?.dispose();

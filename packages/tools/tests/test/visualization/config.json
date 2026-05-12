@@ -4240,7 +4240,7 @@
             "title": "OpenPBR glTF Surface Tinting",
             "playgroundId": "#GRQHVV#325",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Loaders", "Materials", "PBR", "Textures", "glTF"]
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
         },
         {
             "title": "Background material blur",
