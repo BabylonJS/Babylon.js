@@ -37,7 +37,7 @@ export interface ICharacterControllerCollisionEvent {
      */
     collider: PhysicsBody;
     /**
-     *
+     * Index of the collider in instances
      */
     colliderIndex: number;
     /**
