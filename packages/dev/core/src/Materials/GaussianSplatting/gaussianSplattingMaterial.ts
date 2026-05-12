@@ -310,6 +310,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
         defines["COMPENSATION"] = splatMaterial && splatMaterial.compensation ? splatMaterial.compensation : GaussianSplattingMaterial.Compensation;
 
+        // Allow plugins to write their defines (e.g. GS_DBG_ENABLED) before the effect is (re)created
+        this._eventInfo.defines = defines;
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();

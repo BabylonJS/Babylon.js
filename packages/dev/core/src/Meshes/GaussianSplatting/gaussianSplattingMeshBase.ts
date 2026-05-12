@@ -396,6 +396,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
+    private _splatSizeMin: number = Infinity;
+    private _splatSizeMax: number = -Infinity;
     private _sortIsDirty = false;
 
     // Cached bounding box for incremental addPart updates (O(1) vs O(N) scan of positions)
@@ -529,6 +531,18 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public get shData() {
         return this._keepInRam ? this._shData : null;
+    }
+
+    /**
+     * Returns the min/max size range of splats in this mesh, where size is pow(|det(Σ)|, 1/6)
+     * of the 3D covariance matrix — equivalent to the geometric mean of the principal radii.
+     * Computed automatically during updateData(). Returns null before any data has been loaded.
+     */
+    public get splatSizeRange(): Nullable<{ min: number; max: number }> {
+        if (!isFinite(this._splatSizeMin) || !isFinite(this._splatSizeMax)) {
+            return null;
+        }
+        return { min: this._splatSizeMin, max: this._splatSizeMax };
     }
 
     /**
@@ -2109,6 +2123,21 @@ export class GaussianSplattingMeshBase extends Mesh {
         covB[dstIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
         covB[dstIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
 
+        const c0 = covariances[0];
+        const c1 = covariances[1];
+        const c2 = covariances[2];
+        const c3 = covariances[3];
+        const c4 = covariances[4];
+        const c5 = covariances[5];
+        const det3d = c0 * (c3 * c5 - c4 * c4) - c1 * (c1 * c5 - c4 * c2) + c2 * (c1 * c4 - c3 * c2);
+        const splatSize = Math.pow(Math.abs(det3d), 1.0 / 6.0);
+        if (splatSize < this._splatSizeMin) {
+            this._splatSizeMin = splatSize;
+        }
+        if (splatSize > this._splatSizeMax) {
+            this._splatSizeMax = splatSize;
+        }
+
         // colors
         colorArray[dstIndex * 4 + 0] = uBuffer[32 * srcIndex + 24 + 0];
         colorArray[dstIndex * 4 + 1] = uBuffer[32 * srcIndex + 24 + 1];
@@ -2367,6 +2396,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         // GPU region untouched. Falls through to the full-rebuild path when textures don't exist yet
         // or the texture height needs to grow.
         const incremental = this._canReuseCachedData(previousVertexCount, vertexCount);
+
+        if (!incremental) {
+            this._splatSizeMin = Infinity;
+            this._splatSizeMax = -Infinity;
+        }
 
         // The first texture line/texel that must be (re-)processed and uploaded.
         // For a full rebuild this is 0. For an incremental update it is the row boundary just before
