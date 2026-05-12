@@ -44,6 +44,7 @@ export * from "./Probes/pure";
 export * from "./Rendering/pure";
 export * from "./scene.pure";
 export * from "./sceneComponent";
+export * from "./SmartAssets/pure";
 export * from "./Sprites/pure";
 export * from "./States/pure";
 export * from "./types";
