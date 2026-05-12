@@ -1,5 +1,7 @@
 #ifndef TEXRD_DEFINED
-    #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
+    fn TEXRD(t: texture_2d<f32>, ts: sampler, uv: vec2f) -> vec4f {
+        return textureSample(t, ts, uv);
+    }
 #endif
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;

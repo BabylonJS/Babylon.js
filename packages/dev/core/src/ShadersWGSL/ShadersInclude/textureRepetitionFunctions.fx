@@ -237,10 +237,14 @@
 
 #endif
 
-// --- The TEXRD macro ---
+// --- The TEXRD function ---
 #if TEXTURE_REPETITION_MODE > 0
-    #define TEXRD(t, ts, uv) _texRepSample(t, ts, uv)
+    fn TEXRD(t: texture_2d<f32>, ts: sampler, uv: vec2f) -> vec4f {
+        return _texRepSample(t, ts, uv);
+    }
 #else
-    #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
+    fn TEXRD(t: texture_2d<f32>, ts: sampler, uv: vec2f) -> vec4f {
+        return textureSample(t, ts, uv);
+    }
 #endif
 #define TEXRD_DEFINED
