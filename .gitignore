@@ -1,5 +1,6 @@
 dist
 tmp
+.tmp*
 temp
 .temp
 .tempChromeCanaryProfileForDebug

@@ -14,7 +14,7 @@
         "test:debug": "set DEBUG=true && npm run test",
         "update": "vitest run -u",
         "build": "node ./build.mjs",
-        "test:es6-packages": "tsc -p ./tsconfig.es6-smoke.json && node ./scripts/buildEs6SmokeTests.mjs",
+        "test:es6-packages": "tsc -p ./tsconfig.es6-smoke.json && node ./scripts/buildEs6SmokeTests.mjs && vitest run --config ./vitest.es6.config.mts",
         "test:es6vis": "playwright test --config ../../../playwright.es6vis.config.ts",
         "test:es6vis:update": "playwright test --config ../../../playwright.es6vis.config.ts --update-snapshots",
         "serve:es6vis": "vite --config es6Vis/vite.config.ts",
