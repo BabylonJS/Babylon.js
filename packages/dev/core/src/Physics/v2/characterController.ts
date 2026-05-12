@@ -762,7 +762,9 @@ export class PhysicsCharacterController {
             extraUpStaticFriction: constraints[index].extraUpStaticFriction,
         };
         const distance = newConstraint.planeDistance;
-        newConstraint.planeNormal.subtractInPlace(this.up.scale(verticalComponent));
+        const stepWallVerticalProjection = TmpVectors.Vector3[0];
+        this.up.scaleToRef(verticalComponent, stepWallVerticalProjection);
+        newConstraint.planeNormal.subtractInPlace(stepWallVerticalProjection);
         newConstraint.planeNormal.normalize();
         if (distance >= 0) {
             newConstraint.planeDistance = distance * newConstraint.planeNormal.dot(constraints[index].planeNormal);
@@ -1569,20 +1571,22 @@ export class PhysicsCharacterController {
             return null;
         }
         let bestFrac = Number.POSITIVE_INFINITY;
-        let bestNormal: Vector3 | null = null;
+        const bestNormal = TmpVectors.Vector3[0];
+        let hasBestNormal = false;
         let bestBody: { body: PhysicsBody; index: number } | null = null;
         for (let i = 0; i < numHits; i++) {
             const [frac, , hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(this._castCollector, i)[1];
             if (frac < bestFrac) {
                 bestFrac = frac;
-                bestNormal = Vector3.FromArray(hitWorld[4]);
+                Vector3.FromArrayToRef(hitWorld[4], 0, bestNormal);
+                hasBestNormal = true;
                 bestBody = bodyMap.get(hitWorld[0][0]) ?? null;
             }
         }
-        if (bestNormal == null) {
+        if (!hasBestNormal) {
             return null;
         }
-        return { fraction: bestFrac, normal: bestNormal, body: bestBody };
+        return { fraction: bestFrac, normal: bestNormal.clone(), body: bestBody };
     }
 
     /**
@@ -1695,24 +1699,35 @@ export class PhysicsCharacterController {
 
         // Landing position = downStart - upUnit * (downFrac * downDist - keepDistance)
         const landingDrop = downHit.fraction * downDist - this.keepDistance;
-        const landingPos = upUnit.scale(-landingDrop);
+        const landingPos = TmpVectors.Vector3[0];
+        upUnit.scaleToRef(-landingDrop, landingPos);
         landingPos.addInPlace(fwdEndAdjusted);
 
         // Thin-wall guard: landing must be measurably higher than where we started.
-        const heightDelta = landingPos.subtract(this._position).dot(upUnit);
+        const landingDelta = TmpVectors.Vector3[1];
+        landingPos.subtractToRef(this._position, landingDelta);
+        const heightDelta = landingDelta.dot(upUnit);
         if (heightDelta < eps) {
             return -1;
         }
 
         // 6. Snapshot manifold, refresh at landing, validate no unacceptable penetration
-        const savedManifold = this._manifold.slice();
+        const stepUpState = this as typeof this & { _stepUpSavedManifold?: typeof this._manifold };
+        const savedManifold = stepUpState._stepUpSavedManifold ?? (stepUpState._stepUpSavedManifold = []);
+        savedManifold.length = this._manifold.length;
+        for (let i = 0; i < this._manifold.length; i++) {
+            savedManifold[i] = this._manifold[i];
+        }
         this._refreshManifoldAtPosition(landingPos);
         const maxSlope = Math.max(this.maxSlopeCosine, maxSlopeCosEps);
         for (let i = 0; i < this._manifold.length; i++) {
             const c = this._manifold[i];
             if (c.normal.dot(upUnit) < maxSlope && c.distance < -this.keepDistance) {
                 // Penetrating a non-walkable surface at landing — reject and restore manifold
-                this._manifold = savedManifold;
+                this._manifold.length = savedManifold.length;
+                for (let j = 0; j < savedManifold.length; j++) {
+                    this._manifold[j] = savedManifold[j];
+                }
                 return -1;
             }
         }
