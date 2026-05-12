@@ -1,4 +1,4 @@
-#ifndef TEXRD
+#ifndef TEXRD_DEFINED
     #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
 #endif
 #ifdef LIGHTMAP

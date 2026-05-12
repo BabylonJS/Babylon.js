@@ -242,3 +242,4 @@
 #else
     #define TEXRD(s, uv) texture2D(s, uv)
 #endif
+#define TEXRD_DEFINED

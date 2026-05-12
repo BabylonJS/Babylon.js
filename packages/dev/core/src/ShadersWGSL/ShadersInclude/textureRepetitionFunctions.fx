@@ -243,3 +243,4 @@
 #else
     #define TEXRD(t, ts, uv) textureSample(t, ts, uv)
 #endif
+#define TEXRD_DEFINED

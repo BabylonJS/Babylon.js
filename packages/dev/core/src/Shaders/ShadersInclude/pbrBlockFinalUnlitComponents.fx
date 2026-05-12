@@ -1,5 +1,5 @@
  
- #ifndef TEXRD
+ #ifndef TEXRD_DEFINED
     #define TEXRD(s, uv) texture2D(s, uv)
 #endif
 // _____________________________ Diffuse ________________________________________
