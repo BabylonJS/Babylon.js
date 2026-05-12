@@ -114,6 +114,7 @@ export interface ISpriteManager extends IDisposable {
 
     /**
      * Serializes the sprite manager to a JSON object
+     * @param serializeTexture defines whether the texture must be serialized as well (false by default)
      */
     serialize(serializeTexture?: boolean): any;
 }
