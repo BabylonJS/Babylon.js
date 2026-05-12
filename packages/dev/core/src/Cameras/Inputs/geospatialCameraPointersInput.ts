@@ -69,6 +69,11 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         return "GeospatialCameraPointersInput";
     }
 
+    /**
+     * Handles the pointer-down event. Captures the active button + modifier state, resolves which
+     * inputMap entry should drive the gesture, and starts pan tracking if the resolved interaction is "pan".
+     * @param evt - The pointer-down event.
+     */
     public override onButtonDown(evt: IPointerEvent): void {
         this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
@@ -171,6 +176,17 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         }
     }
 
+    /**
+     * Handles a multi-touch (pinch / two-finger pan) gesture. Detects whether the gesture should be
+     * interpreted as a pinch zoom or a two-finger pan based on cumulative finger distance change,
+     * and forwards the gesture to the parent class once a mode is decided.
+     * @param pointA - First active touch point, or null if it just ended.
+     * @param pointB - Second active touch point, or null if it just ended.
+     * @param previousPinchSquaredDistance - Squared distance between the two touches on the previous frame.
+     * @param pinchSquaredDistance - Squared distance between the two touches on the current frame.
+     * @param previousMultiTouchPanPosition - Centroid of the two touches on the previous frame, or null if unavailable.
+     * @param multiTouchPanPosition - Centroid of the two touches on the current frame, or null if the gesture ended.
+     */
     public override onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,

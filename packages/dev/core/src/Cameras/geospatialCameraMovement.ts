@@ -90,6 +90,7 @@ export class GeospatialCameraMovement extends CameraMovement {
 
     constructor(
         scene: Scene,
+        /** Geospatial bounds (min/max latitude, longitude, altitude, etc.) used to clamp camera motion. */
         public limits: GeospatialLimits,
         cameraPosition: Vector3,
         private _cameraCenter: Vector3,
@@ -251,7 +252,12 @@ export class GeospatialCameraMovement extends CameraMovement {
         this.panAccumulatedPixels.subtractInPlace(delta);
     }
 
-    /** @override */
+    /**
+     * Consumes the per-frame accumulated pan/rotate/zoom deltas and applies them to the camera state,
+     * with geospatial-specific dampening (e.g. slower panning near the poles, parallax-based pan compensation).
+     * Called once per frame by the scene's render loop via `_checkInputs`.
+     * @override
+     */
     public override computeCurrentFrameDeltas(): void {
         const cameraCenter = this._cameraCenter;
 
