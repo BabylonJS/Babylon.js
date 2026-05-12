@@ -45,6 +45,7 @@ export { WatcherServiceIdentity } from "./services/watcherService";
 
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
+export { inspectorAssetNotFoundHandler } from "./services/smartAssetHandler";
 export * from "shared-ui-components/modularTool/services/settingsStore";
 export type {
     IShellService,
