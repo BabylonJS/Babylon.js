@@ -33,7 +33,6 @@
         "eslint-plugin-tsdoc": "^0.5.0",
         "glob": "^13.0.6",
         "globals": "^16.0.0",
-        "husky": "^9.1.7",
         "jsdom": "^26.1.0",
         "lint-staged": "^16.2.7",
         "nx": "^22.5.4",
@@ -98,7 +97,7 @@
         "test:graphTools": "playwright test -c ./playwright.config.ts --project=graphTools",
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
-        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools && husky",
+        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
@@ -123,7 +122,7 @@
         "packages/**/src/**/*.{scss,css}": "prettier --write"
     },
     "engines": {
-        "node": ">=20.11.0 <23.0.0",
+        "node": ">=20.17.0 <23.0.0",
         "npm": ">=8.0.0"
     },
     "changelog": {
