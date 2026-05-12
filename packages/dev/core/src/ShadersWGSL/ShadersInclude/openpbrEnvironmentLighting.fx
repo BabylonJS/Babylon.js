@@ -39,7 +39,7 @@
         // a strongly-absorbing coat_color retains significant color at reduced weight.
         let effectivePathLength = coatPathLength * coat_weight;
         let colored_transmission: vec3f = pow(coat_color, vec3f(effectivePathLength));
-        coatAbsorption = colored_transmission * mix(vec3f(1.0f), darkened_transmission, coat_weight);
+        coatAbsorption = colored_transmission * mix(1.0f, darkened_transmission, coat_weight);
     }
 #endif
 // _____________________________ Base Diffuse Layer IBL _______________________________________
