@@ -332,6 +332,9 @@ export interface IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for volumetric transmission (KHR_materials_volume)
+     */
     configureVolume(): void;
 
     /**

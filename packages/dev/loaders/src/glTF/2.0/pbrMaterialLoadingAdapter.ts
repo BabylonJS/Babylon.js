@@ -270,6 +270,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Enable the specular/glossiness workflow and disable metallic/roughness.
      */
     public configureSpecularGlossiness(): void {
+        this._specWorkflow = true;
         this._material.metallic = null;
         this._material.roughness = null;
         this._material.useMicroSurfaceFromReflectivityMapAlpha = true;
@@ -870,6 +871,9 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for PBR material. Nothing to do for PBRMaterial.
+     */
     public configureVolume(): void {}
 
     /**
@@ -881,7 +885,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Gets whether the material is thin-walled (i.e. non-volumetric) or not.
      */
     public get geometryThinWalled(): boolean {
-        return true;
+        return this._material.subSurface.maximumThickness === 0;
     }
 
     /**

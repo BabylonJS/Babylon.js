@@ -839,6 +839,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for OpenPBR material.
+     */
     public configureVolume(): void {
         // If we're configuring volume, we assume the material is not thin-walled (i.e. it's volumetric).
         this._material.geometryThinWalled = 0.0;
