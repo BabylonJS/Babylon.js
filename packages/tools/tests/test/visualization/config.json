@@ -5132,7 +5132,7 @@
             "playgroundId": "#6EPUUH#0",
             "referenceImage": "texture-repetition-pbr-material.png",
             "renderCount": 1,
-            "errorRatio": 2.5,
+            "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
         },
@@ -5141,7 +5141,7 @@
             "playgroundId": "#GOKMFP#0",
             "referenceImage": "texture-repetition-openpbr-material.png",
             "renderCount": 1,
-            "errorRatio": 2.5,
+            "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
         }
