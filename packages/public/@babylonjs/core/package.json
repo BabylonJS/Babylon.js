@@ -7,20 +7,24 @@
     "exports": {
         ".": {
             "types": "./index.d.ts",
-            "import": "./index.js"
+            "import": "./index.js",
+            "default": "./index.js"
         },
         "./pure": {
             "types": "./pure.d.ts",
             "import": "./pure.js",
+            "default": "./pure.js",
             "sideEffects": false
         },
         "./*": {
             "types": "./*.d.ts",
-            "import": "./*.js"
+            "import": "./*.js",
+            "default": "./*.js"
         },
         "./*.js": {
             "types": "./*.d.ts",
-            "import": "./*.js"
+            "import": "./*.js",
+            "default": "./*.js"
         }
     },
     "files": [
