@@ -40,5 +40,7 @@ export * from "./shaderStore";
 export * from "./renderTargetWrapper";
 export * from "./Processors/iShaderProcessor";
 export * from "./engine.common";
+export * from "./engineRegistration.pure";
+export * from "./nullEngineRegistration.pure";
 export * from "./Processors/pure";
 export * from "./WebGPU/pure";
