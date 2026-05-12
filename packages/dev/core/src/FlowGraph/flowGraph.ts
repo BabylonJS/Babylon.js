@@ -111,6 +111,8 @@ export class FlowGraph {
         [FlowGraphEventType.PointerMove]: [],
         [FlowGraphEventType.PointerOver]: [],
         [FlowGraphEventType.PointerOut]: [],
+        [FlowGraphEventType.KeyDown]: [],
+        [FlowGraphEventType.KeyUp]: [],
         [FlowGraphEventType.SceneAfterRender]: [],
         [FlowGraphEventType.NoTrigger]: [],
     };
@@ -141,6 +143,15 @@ export class FlowGraph {
     }
     private _executionContexts: FlowGraphContext[] = [];
     private _sceneEventCoordinator: FlowGraphSceneEventCoordinator;
+
+    /**
+     * The scene event coordinator for this graph.
+     * Provides access to runtime event state such as currently pressed keys.
+     */
+    public get sceneEventCoordinator(): FlowGraphSceneEventCoordinator {
+        return this._sceneEventCoordinator;
+    }
+
     private _eventObserver: Nullable<Observer<IFlowGraphEventTrigger>>;
 
     /**
@@ -258,7 +269,7 @@ export class FlowGraph {
      * @returns the context, where you can get and set variables
      */
     public createContext() {
-        const context = new FlowGraphContext({ scene: this._scene, coordinator: this._coordinator });
+        const context = new FlowGraphContext({ scene: this._scene, coordinator: this._coordinator, sceneEventCoordinator: this._sceneEventCoordinator });
         this._executionContexts.push(context);
         return context;
     }

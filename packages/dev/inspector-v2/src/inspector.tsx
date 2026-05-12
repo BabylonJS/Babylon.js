@@ -59,6 +59,7 @@ import { SettingsServiceDefinition } from "shared-ui-components/modularTool/serv
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
+import { SmartAssetsServiceDefinition } from "./services/panes/smartAssetsService";
 import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/import/gltfAnimationImportService";
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
@@ -70,6 +71,7 @@ import { InspectorSettingsServiceDefinition } from "./services/inspectorSettings
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { SmartAssetPromptServiceDefinition } from "./services/smartAssetPromptService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -365,6 +367,8 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             // Tools pane tab and related services.
             ToolsServiceDefinition,
             ExportServiceDefinition,
+            SmartAssetPromptServiceDefinition,
+            SmartAssetsServiceDefinition,
             GLTFAnimationImportServiceDefinition,
             GLTFLoaderOptionsServiceDefinition,
             GLTFValidationServiceDefinition,

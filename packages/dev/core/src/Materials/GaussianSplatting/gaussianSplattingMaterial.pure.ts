@@ -286,8 +286,16 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // Values that need to be evaluated on every frame
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, false);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // SH is disabled for webGL1
         if (engine.version > 1 || engine.isWebGPU) {

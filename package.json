@@ -34,6 +34,7 @@
         "glob": "^13.0.6",
         "globals": "^16.0.0",
         "jsdom": "^26.1.0",
+        "lint-staged": "^16.2.7",
         "nx": "^22.5.4",
         "prettier": "^3.0.3",
         "rimraf": "^6.1.3",
@@ -109,7 +110,7 @@
         "check:treeshaking": "node ./scripts/treeshaking/verifyTreeShaking.mjs",
         "check:treeshaking-all": "npm run check:manifest-drift && npm run check:pure-barrels && npm run check:side-effects-sync && npm run test:treeshaking",
         "catalog:static-helpers": "node ./scripts/treeshaking/catalogStaticHelpers.mjs",
-        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
+        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
@@ -118,6 +119,7 @@
         "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --cache && npm run check:manifest-drift && npm run check:pure-barrels && npm run check:side-effects-sync",
         "lint:changed": "node scripts/lint-changed.mjs",
         "lint:changed:fix": "node scripts/lint-changed.mjs --fix",
+        "precommit": "lint-staged",
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops && npm run check:manifest-drift && npm run check:pure-barrels && npm run check:side-effects-sync",
         "lint:cycles": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --rule '{\"import/no-cycle\": [1, {\"maxDepth\": 1, \"ignoreExternal\": true}]}'",
         "update-all-dependencies": "npm update -ws",
@@ -125,8 +127,15 @@
         "start": "npx nx run-many --targets watch:dev:skip-compile serve --projects @babylonjs/root @tools/babylon-server --parallel 2 --skipNxCache true --outputStyle stream",
         "start:devhost": "npm run serve -w @tools/dev-host"
     },
+    "lint-staged": {
+        "packages/**/src/**/*.{ts,tsx,js,json}": [
+            "prettier --write",
+            "eslint --quiet --cache --no-warn-ignored"
+        ],
+        "packages/**/src/**/*.{scss,css}": "prettier --write"
+    },
     "engines": {
-        "node": ">=20.11.0 <23.0.0",
+        "node": ">=20.17.0 <23.0.0",
         "npm": ">=8.0.0"
     },
     "changelog": {

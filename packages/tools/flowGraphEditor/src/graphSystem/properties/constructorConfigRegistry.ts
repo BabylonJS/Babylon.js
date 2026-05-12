@@ -179,6 +179,16 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
     ["FlowGraphPointerOutEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
     ["FlowGraphMeshPickEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
 
+    // ---------- Keyboard event blocks (stopPropagation) ----------
+    [
+        "FlowGraphKeyDownEventBlock",
+        [
+            { key: "stopPropagation", label: "Stop propagation", kind: "boolean" },
+            { key: "ignoreRepeat", label: "Ignore key repeat", kind: "boolean" },
+        ],
+    ],
+    ["FlowGraphKeyUpEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+
     // ---------- Float to Int (rounding mode) ----------
     ["FlowGraphFloatToInt", [{ key: "roundingMode", label: "Rounding mode", kind: "options", options: ROUNDING_MODE_OPTIONS }]],
 
