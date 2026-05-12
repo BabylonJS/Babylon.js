@@ -15,6 +15,6 @@ export default defineConfig({
     // Prevent Vite from pre-bundling the large @babylonjs packages.
     // They ship as native ESM and will be served directly.
     optimizeDeps: {
-        exclude: ["@babylonjs/core"],
+        exclude: ["@babylonjs/core", "@babylonjs/gui", "@babylonjs/loaders"],
     },
 });
