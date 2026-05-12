@@ -318,6 +318,15 @@ jobs:
                 command: custom
                 customCommand: "run test:es6-packages -w @tools/tests"
 
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "ES6 visualization tests (BrowserStack)"
+            env:
+                CI: "true"
+                BSTACK_TEST_TYPE: "es6vis"
+                BSTACK_BUILD_NAME: "ES6 Visualization Tests"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
           - task: Npm@1
             displayName: "npm build modules size"
             inputs:

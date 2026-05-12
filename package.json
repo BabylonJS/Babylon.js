@@ -96,6 +96,7 @@
         "test:audioV2": "playwright test --project=audioV2",
         "test:graphTools": "playwright test -c ./playwright.config.ts --project=graphTools",
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",
+        "test:es6vis": "npm run test:es6vis -w @tools/tests",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
         "audit:side-effects": "node ./scripts/treeshaking/auditSideEffects.mjs",
         "update:manifest": "node ./scripts/treeshaking/auditSideEffects.mjs --out scripts/treeshaking/side-effects-manifest.json",
