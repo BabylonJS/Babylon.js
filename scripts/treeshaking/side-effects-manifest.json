@@ -1,13 +1,14 @@
 {
   "stats": {
-    "totalFiles": 3206,
-    "filesWithSideEffects": 1414,
-    "filesWithoutSideEffects": 1792,
+    "totalFiles": 3210,
+    "filesWithSideEffects": 1417,
+    "filesWithoutSideEffects": 1793,
     "byType": {
       "top-level-call": 634,
       "declare-module": 108,
       "bare-import": 249,
       "static-property-assignment": 2,
+      "RegisterClass": 3,
       "shader-store-write": 633
     },
     "filesByType": {
@@ -15,6 +16,7 @@
       "declare-module": 91,
       "bare-import": 112,
       "static-property-assignment": 2,
+      "RegisterClass": 3,
       "shader-store-write": 633
     }
   },
@@ -2030,6 +2032,16 @@
       ]
     },
     {
+      "file": "FlowGraph/Blocks/Data/flowGraphIsKeyPressedBlock.ts",
+      "sideEffects": [
+        {
+          "type": "RegisterClass",
+          "line": 120,
+          "text": "RegisterClass(FlowGraphBlockNames.IsKeyPressed, FlowGraphIsKeyPressedBlock);"
+        }
+      ]
+    },
+    {
       "file": "FlowGraph/Blocks/Data/flowGraphTransformCoordinatesSystemBlock.ts",
       "sideEffects": [
         {
@@ -2166,6 +2178,26 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterFlowGraphIndexOfBlock();"
+        }
+      ]
+    },
+    {
+      "file": "FlowGraph/Blocks/Event/flowGraphKeyDownEventBlock.ts",
+      "sideEffects": [
+        {
+          "type": "RegisterClass",
+          "line": 69,
+          "text": "RegisterClass(FlowGraphBlockNames.KeyDownEvent, FlowGraphKeyDownEventBlock);"
+        }
+      ]
+    },
+    {
+      "file": "FlowGraph/Blocks/Event/flowGraphKeyUpEventBlock.ts",
+      "sideEffects": [
+        {
+          "type": "RegisterClass",
+          "line": 29,
+          "text": "RegisterClass(FlowGraphBlockNames.KeyUpEvent, FlowGraphKeyUpEventBlock);"
         }
       ]
     },
@@ -3194,7 +3226,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 51,
+          "line": 52,
           "text": "import \"./Shaders/ShadersInclude/sceneFragmentDeclaration\";"
         }
       ]
