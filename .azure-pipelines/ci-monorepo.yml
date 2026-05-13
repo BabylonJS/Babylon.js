@@ -799,6 +799,37 @@ jobs:
             displayName: "Run visualization tests"
             retryCountOnTaskFailure: 3
 
+          # validation_native.js writes its output (rendered PNGs to Results/,
+          # diff overlays to Errors/) next to Playground.exe. Mirror BabylonNative's
+          # own win32 workflow (.github/workflows/build-win32.yml) by uploading
+          # both as pipeline artifacts so failures are debuggable without re-running
+          # the test against a matching native binary locally.
+          - pwsh: |
+                # PublishPipelineArtifact@1 has no "ignore if missing" option, so
+                # make sure both directories exist before publishing. Results/ may
+                # be missing if Playground.exe crashed before writing anything;
+                # Errors/ is only created on actual pixel diffs.
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\RelWithDebInfo\Results" | Out-Null
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\RelWithDebInfo\Errors" | Out-Null
+            displayName: "Ensure native visualization output dirs"
+            condition: not(canceled())
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Rendered Pictures"
+            condition: not(canceled())
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\RelWithDebInfo\\Results"
+                artifact: "native-rendered-pictures"
+                publishLocation: "pipeline"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Error Pictures"
+            condition: failed()
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\RelWithDebInfo\\Errors"
+                artifact: "native-error-pictures"
+                publishLocation: "pipeline"
+
     # ============================================================================
     # PERFORMANCE TESTS
     # Depends on: Build, FormatLint
