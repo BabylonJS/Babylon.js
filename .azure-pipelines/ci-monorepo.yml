@@ -800,17 +800,22 @@ jobs:
             retryCountOnTaskFailure: 3
 
           # validation_native.js writes its output (rendered PNGs to Results/,
-          # diff overlays to Errors/) next to Playground.exe. Mirror BabylonNative's
-          # own win32 workflow (.github/workflows/build-win32.yml) by uploading
-          # both as pipeline artifacts so failures are debuggable without re-running
-          # the test against a matching native binary locally.
+          # diff overlays to Errors/) next to Playground.exe's parent directory:
+          # `TestUtils.getOutputDirectory()` on Win32 returns the parent of the
+          # module directory. With Playground.exe under
+          # ..\BabylonNativeNightlyPlayground\RelWithDebInfo\, the output lands
+          # in ..\BabylonNativeNightlyPlayground\Results\ (not under
+          # RelWithDebInfo\). Mirror BabylonNative's own win32 workflow
+          # (.github/workflows/build-win32.yml) by uploading both as pipeline
+          # artifacts so failures are debuggable without re-running the test
+          # against a matching native binary locally.
           - pwsh: |
                 # PublishPipelineArtifact@1 has no "ignore if missing" option, so
                 # make sure both directories exist before publishing. Results/ may
                 # be missing if Playground.exe crashed before writing anything;
                 # Errors/ is only created on actual pixel diffs.
-                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\RelWithDebInfo\Results" | Out-Null
-                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\RelWithDebInfo\Errors" | Out-Null
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Results" | Out-Null
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Errors" | Out-Null
             displayName: "Ensure native visualization output dirs"
             condition: not(canceled())
 
@@ -818,7 +823,7 @@ jobs:
             displayName: "Upload Rendered Pictures"
             condition: not(canceled())
             inputs:
-                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\RelWithDebInfo\\Results"
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Results"
                 artifact: "native-rendered-pictures"
                 publishLocation: "pipeline"
 
@@ -826,7 +831,7 @@ jobs:
             displayName: "Upload Error Pictures"
             condition: failed()
             inputs:
-                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\RelWithDebInfo\\Errors"
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Errors"
                 artifact: "native-error-pictures"
                 publishLocation: "pipeline"
 
