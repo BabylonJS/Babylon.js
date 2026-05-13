@@ -325,6 +325,18 @@ export class PBRCustomMaterial extends PBRMaterial {
         this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
     }
 
+    /**
+     * Disposes the material
+     * @param forceDisposeEffect specifies if effects should be forcefully disposed
+     * @param forceDisposeTextures specifies if textures should be forcefully disposed
+     */
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        delete Effect.ShadersStore[this._createdShaderName + "VertexShader"];
+        delete Effect.ShadersStore[this._createdShaderName + "PixelShader"];
+
+        super.dispose(forceDisposeEffect, forceDisposeTextures);
+    }
+
     protected override _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         if (!effect) {
             return;

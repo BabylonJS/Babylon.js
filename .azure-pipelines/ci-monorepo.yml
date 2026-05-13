@@ -313,6 +313,12 @@ jobs:
             continueOnError: true
 
           - task: Npm@1
+            displayName: "Test ES6 packages"
+            inputs:
+                command: custom
+                customCommand: "run test:es6-packages -w @tools/tests"
+
+          - task: Npm@1
             displayName: "npm build modules size"
             inputs:
                 command: custom
@@ -401,12 +407,10 @@ jobs:
           - script: |
                 git branch
                 git fetch origin "+refs/heads/*:refs/remotes/origin/*"
-                git checkout -B master origin/master
                 git branch
 
-                GIT_CHANGES_COMMAND="git diff $(Build.SourceVersion) --name-only --relative" npm run test:docs
+                GIT_CHANGES_COMMAND="git diff origin/master...HEAD --name-only --relative" npm run test:docs
             displayName: "Run TypeDoc test"
-            continueOnError: true
             env:
                 CI: "true"
 
@@ -416,6 +420,7 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./junit.xml"
+                failTaskOnFailedTests: true
 
     # ============================================================================
     # UNIT TESTS

@@ -40,6 +40,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphPointerOutEventBlock: "Triggered on pointer out",
         FlowGraphReceiveCustomEventBlock: "Triggered when a custom event is received",
         FlowGraphSendCustomEventBlock: "Sends a custom event",
+        FlowGraphKeyDownEventBlock: "Triggered when a keyboard key is pressed down",
+        FlowGraphKeyUpEventBlock: "Triggered when a keyboard key is released",
+        FlowGraphIsKeyPressedBlock: "Checks if a keyboard key is currently held down",
 
         // Control Flow
         FlowGraphBranchBlock: "Branches execution based on a condition",

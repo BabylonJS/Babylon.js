@@ -590,7 +590,16 @@ function GetHorizontalAlignment(justify: RawTextJustify): "left" | "right" | "ce
 }
 
 function QuoteFontFamily(fontFamily: string): string {
-    return /[\s,"']/.test(fontFamily) ? `"${fontFamily.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : fontFamily;
+    // If the value already contains a comma, treat it as a pre-formed CSS font-family list (e.g.
+    // `"'Segoe UI', 'Helvetica Neue', sans-serif"`) and pass it through verbatim. Wrapping such a
+    // value in outer quotes would collapse the entire stack into a single (non-existent) family
+    // name and force the canvas to fall back to its default serif face.
+    if (fontFamily.indexOf(",") !== -1) {
+        return fontFamily;
+    }
+
+    // Single family name — quote only if it contains whitespace or characters that require quoting.
+    return /[\s"']/.test(fontFamily) ? `"${fontFamily.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : fontFamily;
 }
 
 function GetCanvasFontStyle(rawFont: RawFont): string {

@@ -308,6 +308,13 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Event/flowGraphPointerUpEventBlock")).FlowGraphPointerUpEventBlock;
         case FlowGraphBlockNames.PointerMoveEvent:
             return async () => (await import("./Event/flowGraphPointerMoveEventBlock")).FlowGraphPointerMoveEventBlock;
+        // Keyboard
+        case FlowGraphBlockNames.KeyDownEvent:
+            return async () => (await import("./Event/flowGraphKeyDownEventBlock")).FlowGraphKeyDownEventBlock;
+        case FlowGraphBlockNames.KeyUpEvent:
+            return async () => (await import("./Event/flowGraphKeyUpEventBlock")).FlowGraphKeyUpEventBlock;
+        case FlowGraphBlockNames.IsKeyPressed:
+            return async () => (await import("./Data/flowGraphIsKeyPressedBlock")).FlowGraphIsKeyPressedBlock;
         case FlowGraphBlockNames.Context:
             return async () => (await import("./Data/Utils/flowGraphContextBlock")).FlowGraphContextBlock;
         case FlowGraphBlockNames.ArrayIndex:
