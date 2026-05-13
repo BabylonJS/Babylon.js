@@ -8,9 +8,9 @@
  * the Show args and dispatches a "babylonSandboxReady" event that we pick up
  * here to start the sandbox with the correct version info.
  */
-// Register GLTF/GLB loader (2.0 sub-loader assigns GLTFFileLoader._CreateGLTF2Loader).
-// The sandbox loads .glb/.gltf files directly via SceneLoader.
-import "loaders/glTF/2.0/glTFLoader";
+// Register GLTF/GLB loader and all glTF 2.0 extensions (side-effect imports
+// register each KHR_/EXT_ extension via registerGLTFExtension).
+import "loaders/glTF/2.0";
 import { Sandbox } from "./sandbox";
 
 const HostElement = document.getElementById("host-element") as HTMLElement;
