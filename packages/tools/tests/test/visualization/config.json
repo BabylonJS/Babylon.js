@@ -116,6 +116,48 @@
             "dependsOn": ["GaussianSplatting", "Lights", "Loaders", "SPLATLoader", "Shadows"]
         },
         {
+            "title": "Gaussian Splatting Debug Opacity Scale",
+            "playgroundId": "#XSNFXP#16",
+            "referenceImage": "gsplat-debug-opacity-scale.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Opacity Saturate",
+            "playgroundId": "#XSNFXP#17",
+            "referenceImage": "gsplat-debug-opacity-saturate.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Size Culling",
+            "playgroundId": "#XSNFXP#19",
+            "referenceImage": "gsplat-debug-size-culling.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Opacity Culling",
+            "playgroundId": "#XSNFXP#20",
+            "referenceImage": "gsplat-debug-opacity-culling.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Clipping Box",
+            "playgroundId": "#XSNFXP#21",
+            "referenceImage": "gsplat-debug-clipping-box.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Diffuse Only",
+            "playgroundId": "#XSNFXP#22",
+            "referenceImage": "gsplat-debug-diffuse-only.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug SH4 Only",
+            "playgroundId": "#XSNFXP#24",
+            "referenceImage": "gsplat-debug-sh4-only.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
             "title": "Gaussian Splatting IBL Shadows",
             "playgroundId": "#DAID4Q",
             "renderCount": 15,

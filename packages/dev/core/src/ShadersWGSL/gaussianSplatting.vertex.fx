@@ -99,7 +99,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
-    let scale: vec2f = vec2f(1., 1.);
+    var scale: vec2f = vec2f(1., 1.);
 
 #define CUSTOM_VERTEX_UPDATE
 

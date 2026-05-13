@@ -370,7 +370,12 @@ uniform dbgOpacityScale: f32;
             return {
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
 #if defined(GS_DBG_ENABLED) && GS_DBG_OPACITY_SATURATE == 1
-    finalColor.a = fragmentInputs.vColor.a;
+    {
+        let _gsdbgA: f32 = -dot(fragmentInputs.vPosition, fragmentInputs.vPosition);
+        if (_gsdbgA > -4.0) {
+            finalColor.a = fragmentInputs.vColor.a;
+        }
+    }
 #endif
 `,
             };
