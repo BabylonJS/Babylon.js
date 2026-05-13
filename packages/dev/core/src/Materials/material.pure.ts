@@ -419,6 +419,45 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return this._backFaceCulling;
     }
 
+    @serialize("textureRepetitionMode")
+    protected _textureRepetitionMode = Constants.TEXTURE_REPETITION_NONE;
+
+    /**
+     * Sets the texture repetition breaking mode.
+     * Use one of the Constants.TEXTURE_REPETITION_* values to break visible texture tiling patterns.
+     * Ordered by cost: NONE (1 fetch), NOISE_BLEND (3), HEX_TILING (3), TILE_RANDOMIZATION (4), VORONOI_BOMBING (9).
+     * Not supported on WebGL1 — the mode will be forced to NONE.
+     * @see https://iquilezles.org/articles/texturerepetition/
+     * @see https://jcgt.org/published/0011/03/05/
+     */
+    public set textureRepetitionMode(value: number) {
+        const clamped = Math.max(Constants.TEXTURE_REPETITION_NONE, Math.min(value | 0, Constants.TEXTURE_REPETITION_VORONOI_BOMBING));
+        if (this._textureRepetitionMode === clamped) {
+            return;
+        }
+        this._textureRepetitionMode = clamped;
+        this.markAsDirty(Material.TextureDirtyFlag);
+    }
+
+    /**
+     * Gets the texture repetition breaking mode.
+     * @see https://iquilezles.org/articles/texturerepetition/
+     */
+    public get textureRepetitionMode(): number {
+        return this._textureRepetitionMode;
+    }
+
+    /**
+     * Parameters for the hex tiling texture repetition mode (TEXTURE_REPETITION_HEX_TILING).
+     * x = rotation strength (0..1, default 1.0) — how much each hex tile is rotated.
+     * y = fall-off contrast (0..1, default 0.6) — how much luminance affects blending weight at tile borders.
+     * z = exponent (1..20, default 7.0) — controls the sharpness of weight falloff between tiles.
+     * w = contrast (0..1, default 0.5) — boost blending contrast via Gain3 (0.5 = neutral, &gt;0.5 = higher contrast).
+     * @see https://jcgt.org/published/0011/03/05/
+     */
+    @serialize("textureRepetitionHexTilingParams")
+    public textureRepetitionHexTilingParams = [1.0, 0.6, 7.0, 0.5];
+
     /**
      * Specifies if back or front faces should be culled (when culling is enabled)
      */

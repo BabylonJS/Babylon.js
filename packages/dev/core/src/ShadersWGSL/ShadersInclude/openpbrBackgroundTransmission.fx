@@ -5,7 +5,7 @@ var slab_translucent_background: vec4f = vec4f(0., 0., 0., 1.);
 {
     // Select a mipmap LOD appropriate for the roughness.
     // vBackgroundRefractionInfos.x = log2(LOD0 resolution) = number of mip levels.
-    let refractionLOD: f32 = min(transmission_roughness, 0.7) * uniforms.vBackgroundRefractionInfos.x;
+    let refractionLOD: f32 = min(transmission_roughness, 0.8) * uniforms.vBackgroundRefractionInfos.x;
 
     // Size of one texel at the selected LOD, expressed in UV [0,1] space.
     // At LOD k of an N-level mip chain, one texel = 2^k / 2^N = 2^(k-N).

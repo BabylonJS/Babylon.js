@@ -26,6 +26,7 @@ export * from "./refractionTexture";
 export * from "./renderTargetTexture";
 export * from "./textureMerger";
 export * from "./textureSampler";
+export * from "./textureProcessor";
 export * from "./texture";
 export * from "./thinTexture";
 export * from "./thinRenderTargetTexture";

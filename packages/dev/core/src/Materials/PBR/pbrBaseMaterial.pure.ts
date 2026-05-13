@@ -249,6 +249,8 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
 
     public DECAL_AFTER_DETAIL = false;
 
+    public TEXTURE_REPETITION_MODE = 0;
+
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
     public VERTEX_PULLING_USE_INDEX_BUFFER = false;
@@ -1432,6 +1434,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
             "cameraInfo",
+            "vTextureRepetitionHexTilingParams",
         ];
 
         const samplers = [
@@ -1782,6 +1785,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
         }
 
+        if (defines._areTexturesDirty) {
+            defines.TEXTURE_REPETITION_MODE = engine.version > 1 || engine.isWebGPU ? this.textureRepetitionMode : 0;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(defines);
         }
@@ -1916,6 +1923,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         ubo.addUniform("reflectanceMatrix", 16);
 
         ubo.addUniform("cameraInfo", 4);
+        ubo.addUniform("vTextureRepetitionHexTilingParams", 4);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
         super.buildUniformLayout();
     }
@@ -1961,6 +1969,9 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         } else {
             this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
         }
+
+        const hexParams = this.textureRepetitionHexTilingParams;
+        this._uniformBuffer.updateFloat4("vTextureRepetitionHexTilingParams", hexParams[0], hexParams[1], hexParams[2], hexParams[3]);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);

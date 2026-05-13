@@ -1,15 +1,15 @@
 {
   "stats": {
-    "totalFiles": 3230,
-    "filesWithSideEffects": 1440,
-    "filesWithoutSideEffects": 1790,
+    "totalFiles": 3235,
+    "filesWithSideEffects": 1444,
+    "filesWithoutSideEffects": 1791,
     "byType": {
       "top-level-call": 638,
       "declare-module": 129,
       "bare-import": 249,
       "static-property-assignment": 2,
       "RegisterClass": 3,
-      "shader-store-write": 633
+      "shader-store-write": 637
     },
     "filesByType": {
       "top-level-call": 638,
@@ -17,7 +17,7 @@
       "bare-import": 112,
       "static-property-assignment": 2,
       "RegisterClass": 3,
-      "shader-store-write": 633
+      "shader-store-write": 637
     }
   },
   "manifest": [
@@ -8656,7 +8656,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 389,
+          "line": 391,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -9586,7 +9586,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 306,
+          "line": 308,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -9666,7 +9666,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 639,
+          "line": 641,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -9996,7 +9996,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 67,
+          "line": 71,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10131,7 +10131,7 @@
         },
         {
           "type": "shader-store-write",
-          "line": 75,
+          "line": 78,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10871,7 +10871,7 @@
         },
         {
           "type": "shader-store-write",
-          "line": 157,
+          "line": 160,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -10986,7 +10986,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 30,
+          "line": 34,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11381,7 +11381,7 @@
         },
         {
           "type": "shader-store-write",
-          "line": 155,
+          "line": 158,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11441,7 +11441,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 41,
+          "line": 45,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11772,6 +11772,16 @@
       ]
     },
     {
+      "file": "Shaders/ShadersInclude/textureRepetitionFunctions.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 47,
+          "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
+        }
+      ]
+    },
+    {
       "file": "Shaders/ShadersInclude/uvAttributeDeclaration.ts",
       "sideEffects": [
         {
@@ -11947,6 +11957,16 @@
         {
           "type": "shader-store-write",
           "line": 90,
+          "text": "if (!ShaderStore.ShadersStore[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "Shaders/textureProcessor.fragment.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 152,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -12276,7 +12296,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 399,
+          "line": 401,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13126,7 +13146,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 285,
+          "line": 287,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13206,7 +13226,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 627,
+          "line": 629,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13466,7 +13486,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 46,
+          "line": 50,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14281,7 +14301,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 30,
+          "line": 34,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14691,7 +14711,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 40,
+          "line": 44,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14947,6 +14967,16 @@
       ]
     },
     {
+      "file": "ShadersWGSL/ShadersInclude/textureRepetitionFunctions.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 47,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
       "file": "ShadersWGSL/ShadersInclude/uvAttributeDeclaration.ts",
       "sideEffects": [
         {
@@ -15092,6 +15122,16 @@
         {
           "type": "shader-store-write",
           "line": 82,
+          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/textureProcessor.fragment.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 157,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]

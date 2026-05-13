@@ -33,6 +33,7 @@ uniform vEmissiveColor: vec3f;
 uniform vDiffuseColor: vec4f;
 uniform vAmbientColor: vec3f;
 uniform cameraInfo: vec4f;
+uniform vTextureRepetitionHexTilingParams: vec4f;
 uniform vReflectionInfos: vec2f;
 uniform reflectionMatrix: mat4x4f;
 uniform vReflectionPosition: vec3f;

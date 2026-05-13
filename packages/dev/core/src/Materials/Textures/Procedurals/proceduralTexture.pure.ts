@@ -43,6 +43,12 @@ export interface IProceduralTextureCreationOptions extends RenderTargetTextureOp
      * Additional async code to run before preparing the effect
      */
     extraInitializationsAsync?: () => Promise<void>;
+    /**
+     * When true the texture will not be pushed onto scene.proceduralTextures and will
+     * therefore never be rendered automatically by the scene render loop. Use this for
+     * one-shot or manually-driven textures that manage their own render lifecycle.
+     */
+    skipSceneRegistration?: boolean;
 }
 
 /**
@@ -188,7 +194,9 @@ export class ProceduralTexture extends Texture {
             component = new ProceduralTextureSceneComponent(scene);
             scene._addComponent(component);
         }
-        scene.proceduralTextures.push(this);
+        if (!this._options.skipSceneRegistration) {
+            scene.proceduralTextures.push(this);
+        }
 
         this._fullEngine = scene.getEngine();
 
