@@ -22,6 +22,7 @@
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>

@@ -22,6 +22,7 @@
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
@@ -37,7 +38,6 @@
 #include<pbrIBLFunctions>
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
-#include<textureRepetitionFunctions>
 
 #ifdef REFLECTION
     #include<reflectionFunction>

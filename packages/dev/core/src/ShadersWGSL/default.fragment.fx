@@ -85,9 +85,9 @@ varying vDirectionW: vec3f;
 
 #include<imageProcessingFunctions>
 
+#include<textureRepetitionFunctions>
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
-#include<textureRepetitionFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>

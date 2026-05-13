@@ -91,12 +91,12 @@ varying vec3 vDirectionW;
 
 #include<imageProcessingFunctions>
 
+#include<textureRepetitionFunctions>
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
-#include<textureRepetitionFunctions>
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 

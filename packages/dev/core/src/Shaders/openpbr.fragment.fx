@@ -38,6 +38,7 @@ precision highp float;
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
@@ -53,7 +54,6 @@ precision highp float;
 #include<pbrIBLFunctions>
 #include<openpbrNormalMapFragmentMainFunctions>
 #include<openpbrNormalMapFragmentFunctions>
-#include<textureRepetitionFunctions>
 
 #ifdef REFLECTION
     #include<reflectionFunction>
