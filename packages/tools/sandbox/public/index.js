@@ -17,12 +17,6 @@ let loadScriptAsync = function (url, instantResolve) {
         script.src = urlToLoad;
         // Scripts will still download in parallel, but will execute in the sequence they are added to the DOM
         script.async = false;
-        // Allow window.onerror to receive the real exception message + stack
-        // for cross-origin scripts. The sandbox loads its dependencies from a
-        // separate origin (the Babylon CDN, or the local devhost CDN on a
-        // different port) which without ``crossorigin="anonymous"`` causes any
-        // uncaught exception to surface as the opaque "Script error." message.
-        script.crossOrigin = "anonymous";
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
@@ -32,7 +26,6 @@ let loadScriptAsync = function (url, instantResolve) {
             // fallback
             const fallbackScript = document.createElement("script");
             fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
-            fallbackScript.crossOrigin = "anonymous";
             fallbackScript.onload = () => {
                 if (!instantResolve) {
                     resolve();
