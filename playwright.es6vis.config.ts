@@ -21,7 +21,7 @@ export default defineConfig({
 
     fullyParallel: false, // serial — consistent GPU state across styles
     forbidOnly: isCI,
-    retries: isCI ? 2 : 0,
+    retries: isCI ? 1 : 0,
     workers: 1,
 
     reporter: isCI ? [["line"], ["junit", { outputFile: "junit-es6vis.xml" }], ["html", { open: "never" }]] : [["list"], ["html"]],

@@ -312,6 +312,10 @@ jobs:
             displayName: "Make sure es6 packages are ready"
             continueOnError: true
 
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "$(BuildName)/testResults/es6visplaywright"
+
           - task: Npm@1
             displayName: "Test ES6 packages"
             inputs:
@@ -326,6 +330,33 @@ jobs:
                 BSTACK_BUILD_NAME: "ES6 Visualization Tests"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/es6visplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete ES6 visualization test results"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(BuildName)/testResults/es6visplaywright"
+                displayName: "Upload ES6 visualization test results"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]ES6 visualization test report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/es6visplaywright/index.html"
+            displayName: "Log ES6 visualization test report URL"
+            condition: succeededOrFailed()
+
+          - task: PublishTestResults@2
+            displayName: "Publish ES6 visualization test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
 
           - task: Npm@1
             displayName: "npm build modules size"
