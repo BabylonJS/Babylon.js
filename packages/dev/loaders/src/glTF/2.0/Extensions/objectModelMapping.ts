@@ -31,22 +31,43 @@ import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Mesh } from "core/Meshes/mesh";
 import { type RectAreaLight } from "core/Lights/rectAreaLight";
 
+/**
+ * Top-level shape of the glTF Object Model accessor tree. Each property
+ * describes a navigable section of the JSON-Pointer namespace (e.g. `/nodes`,
+ * `/materials`, `/scenes`) that KHR_interactivity, KHR_animation_pointer and
+ * other extensions consume via {@link GetMappingForKey}.
+ */
 export interface IGLTFObjectModelTree {
+    /** Read-only accessor for the active scene index (`/scene`). */
     scene: { __target__: boolean } & IObjectAccessor<number | undefined, any, number>;
+    /** Accessor tree for `/cameras`. */
     cameras: IGLTFObjectModelTreeCamerasObject;
+    /** Accessor tree for `/nodes`. */
     nodes: IGLTFObjectModelTreeNodesObject;
+    /** Accessor tree for `/materials`. */
     materials: IGLTFObjectModelTreeMaterialsObject;
+    /** Accessor tree for `/extensions` (root-level glTF extensions). */
     extensions: IGLTFObjectModelTreeExtensionsObject;
+    /** Accessor tree for `/animations`. */
     animations: {
         length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
         __array__: {};
     };
+    /** Accessor tree for `/meshes`. */
     meshes: IGLTFObjectModelTreeMeshesObject;
+    /** Accessor tree for `/scenes`. */
     scenes: IGLTFObjectModelTreeScenesObject;
+    /** Accessor tree for `/skins`. */
     skins: IGLTFObjectModelTreeSkinsObject;
 }
 
+/**
+ * Accessor tree describing the `/nodes` section of the glTF Object Model.
+ * Exposes per-node TRS, ref-typed parent/children/camera/mesh/skin links,
+ * morph-target weights and node-extension properties.
+ */
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
+    /** Number of nodes in the array. */
     length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], number>;
     __array__: {
         __target__: boolean;
@@ -84,7 +105,12 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
     };
 }
 
+/**
+ * Accessor tree describing the `/cameras` section of the glTF Object Model.
+ * Exposes orthographic and perspective camera properties.
+ */
 export interface IGLTFObjectModelTreeCamerasObject {
+    /** Number of cameras in the array. */
     length: IObjectAccessor<ICamera[], any, number>;
     __array__: {
         __target__: boolean;
@@ -103,7 +129,12 @@ export interface IGLTFObjectModelTreeCamerasObject {
     };
 }
 
+/**
+ * Accessor tree describing the `/materials` section of the glTF Object Model.
+ * Covers core PBR properties as well as the family of KHR_materials_* extensions.
+ */
 export interface IGLTFObjectModelTreeMaterialsObject {
+    /** Number of materials in the array. */
     length: IObjectAccessor<IMaterial[], PBRMaterial[], number>;
     __array__: {
         __target__: boolean;
@@ -267,7 +298,13 @@ interface ITextureDefinition {
     scale: IObjectAccessor<IMaterial, PBRMaterial, Vector2>;
 }
 
+/**
+ * Accessor tree describing the `/meshes` section of the glTF Object Model.
+ * Exposes per-mesh primitives (and their material refs) and the mesh-level
+ * morph-target weights array.
+ */
 export interface IGLTFObjectModelTreeMeshesObject {
+    /** Number of meshes in the array. */
     length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
     __array__: {
         __target__: boolean;
@@ -285,7 +322,12 @@ export interface IGLTFObjectModelTreeMeshesObject {
     };
 }
 
+/**
+ * Accessor tree describing the `/scenes` section of the glTF Object Model.
+ * Per-scene root-node refs are exposed under `nodes/{i}`.
+ */
 export interface IGLTFObjectModelTreeScenesObject {
+    /** Number of scenes in the array. */
     length: IObjectAccessor<IScene[], any, number>;
     __array__: {
         __target__: boolean;
@@ -296,7 +338,12 @@ export interface IGLTFObjectModelTreeScenesObject {
     };
 }
 
+/**
+ * Accessor tree describing the `/skins` section of the glTF Object Model.
+ * Joint and skeleton properties are exposed as JSON-Pointer refs.
+ */
 export interface IGLTFObjectModelTreeSkinsObject {
+    /** Number of skins in the array. */
     length: IObjectAccessor<ISkin[], any, number>;
     __array__: {
         __target__: boolean;
@@ -308,7 +355,13 @@ export interface IGLTFObjectModelTreeSkinsObject {
     };
 }
 
+/**
+ * Accessor tree describing root-level glTF extensions exposed through the
+ * Object Model. Currently covers the punctual / area / IES / image-based
+ * light extension families.
+ */
 export interface IGLTFObjectModelTreeExtensionsObject {
+    /** Accessor tree for `/extensions/KHR_lights_punctual`. */
     KHR_lights_punctual: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
@@ -324,6 +377,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
+    /** Accessor tree for `/extensions/EXT_lights_area`. */
     EXT_lights_area: {
         lights: {
             length: IObjectAccessor<IEXTLightsArea_Light[], Light[], number>;
@@ -338,11 +392,13 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
+    /** Accessor tree for `/extensions/EXT_lights_ies`. */
     EXT_lights_ies: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
         };
     };
+    /** Accessor tree for `/extensions/EXT_lights_image_based`. */
     EXT_lights_image_based: {
         lights: {
             __array__: {

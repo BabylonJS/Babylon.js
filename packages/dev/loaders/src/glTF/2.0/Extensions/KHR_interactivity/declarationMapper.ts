@@ -59,6 +59,12 @@ interface IGLTFToFlowGraphMappingObject {
     defaultValue?: any;
 }
 
+/**
+ * Description of how a KHR_interactivity declaration (op such as
+ * `pointer/get`, `event/onSelect`, `math/add`) maps to one or more
+ * FlowGraph blocks. Used by {@link InteractivityGraphToFlowGraphParser}
+ * to translate the source glTF graph into the serialized FlowGraph form.
+ */
 export interface IGLTFToFlowGraphMapping {
     /**
      * The type of the FlowGraph block(s).

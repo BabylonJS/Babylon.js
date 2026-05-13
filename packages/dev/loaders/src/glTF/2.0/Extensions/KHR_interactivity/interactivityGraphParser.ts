@@ -8,9 +8,21 @@ import { type FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNa
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
+/**
+ * Description of a KHR_interactivity custom event, as parsed from the
+ * glTF `events` array. Used by the importer to register the event with the
+ * FlowGraph send/receive event blocks.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
+    /** Identifier of the event, used to match send and receive blocks. */
     eventId: string;
+    /**
+     * Optional payload schema for the event. Each entry describes one
+     * value carried by the event: an `id` (the FlowGraph data socket name),
+     * a `type` (glTF interactivity type name) and an optional default
+     * `value`. `eventData` (the boolean) is currently unused.
+     */
     eventData?: {
         eventData: boolean;
         id: string;
@@ -37,6 +49,15 @@ export const gltfTypeToBabylonType: {
     ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
 };
 
+/**
+ * Parses a KHR_interactivity graph definition (the raw glTF JSON object) into
+ * the serialized FlowGraph form consumed by {@link ParseFlowGraphAsync}.
+ *
+ * The class walks the interactivity types, declarations, variables, events
+ * and nodes in order, applies any importer-side transforms (e.g. the
+ * relative-pointer-prefix bake) and emits an {@link ISerializedFlowGraph}
+ * via {@link serializeToFlowGraph}.
+ */
 export class InteractivityGraphToFlowGraphParser {
     /**
      * Note - the graph should be rejected if the same type is defined twice.
@@ -558,10 +579,22 @@ export class InteractivityGraphToFlowGraphParser {
         outputConnection.connectedPointIds.push(inputConnection.uniqueId);
     }
 
+    /**
+     * Returns the deterministic FlowGraph user-variable name used for the
+     * static variable at the given declaration index.
+     * @param index zero-based index into the interactivity graph's `variables` array.
+     * @returns the FlowGraph variable name (e.g. `staticVariable_3`).
+     */
     public getVariableName(index: number) {
         return "staticVariable_" + index;
     }
 
+    /**
+     * Serializes the parsed interactivity graph into the {@link ISerializedFlowGraph}
+     * payload consumed by `ParseFlowGraphAsync`. Performs node-connection wiring
+     * and seeds the execution context with the graph's static variables.
+     * @returns the serialized FlowGraph for the parsed KHR_interactivity graph.
+     */
     public serializeToFlowGraph(): ISerializedFlowGraph {
         const context: ISerializedFlowGraphContext = {
             uniqueId: RandomGUID(),
