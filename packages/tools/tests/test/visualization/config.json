@@ -3512,13 +3512,13 @@
         },
         {
             "title": "Sponza Clustered Lighting",
-            "playgroundId": "#CSCJO2#17",
+            "playgroundId": "#CSCJO2#100",
             "referenceImage": "sponza-clustered-lighting.png",
             "dependsOn": ["Lights", "Loaders", "glTF"]
         },
         {
             "title": "Sponza Clustered Lighting (2 viewports)",
-            "playgroundId": "#CSCJO2#20",
+            "playgroundId": "#CSCJO2#101",
             "referenceImage": "sponza-clustered-lighting-viewports.png",
             "dependsOn": ["Cameras", "Lights", "Loaders", "glTF"]
         },
@@ -3534,7 +3534,7 @@
         },
         {
             "title": "Sponza Clustered Lighting (node material pbr)",
-            "playgroundId": "#QY98Z3#17",
+            "playgroundId": "#QY98Z3#23",
             "dependsOn": ["Cameras", "Lights", "Loaders", "NodeMaterial", "glTF"]
         },
         {
@@ -3544,7 +3544,7 @@
         },
         {
             "title": "Clustered Lighting (lhs pbr material)",
-            "playgroundId": "#CSCJO2#60",
+            "playgroundId": "#CSCJO2#102",
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
@@ -3554,7 +3554,7 @@
         },
         {
             "title": "Clustered Lighting (lhs pbr nodematerial)",
-            "playgroundId": "#CSCJO2#62",
+            "playgroundId": "#CSCJO2#103",
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
@@ -3564,7 +3564,7 @@
         },
         {
             "title": "Clustered Lighting (rhs pbr material)",
-            "playgroundId": "#CSCJO2#70",
+            "playgroundId": "#CSCJO2#104",
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
@@ -3574,7 +3574,7 @@
         },
         {
             "title": "Clustered Lighting (rhs pbr nodematerial)",
-            "playgroundId": "#CSCJO2#72",
+            "playgroundId": "#CSCJO2#105",
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {

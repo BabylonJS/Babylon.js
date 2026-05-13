@@ -116,6 +116,10 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
                 babylonLight.falloffType = Light.FALLOFF_GLTF;
                 babylonLight.diffuse = light.color ? Color3.FromArray(light.color) : Color3.White();
+                // glTF lights only define a single color (KHR_lights_punctual). We mirror it to the specular color
+                // so that PBR specular/anisotropic/clearcoat lobes (which now use vLightSpecular) stay tinted by
+                // the glTF light color and don't unexpectedly turn white on existing scenes.
+                babylonLight.specular = babylonLight.diffuse;
                 babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;
                 babylonLight.range = light.range == undefined ? Number.MAX_VALUE : light.range;
                 babylonLight.parent = babylonMesh;

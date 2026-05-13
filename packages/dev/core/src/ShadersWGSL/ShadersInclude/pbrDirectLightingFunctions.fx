@@ -360,9 +360,9 @@ fn evalFuzz(L: vec3f, NdotL: f32, NdotV: f32, T: vec3f, B: vec3f, ltcLut: vec3f)
                         info.diffuse *= (vec3(1.0) - fresnel);
                     #endif
                     #ifdef ANISOTROPIC
-                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
+                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, light.vLightSpecular.rgb);
                     #else
-                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, light.vLightDiffuse.rgb);
+                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, light.vLightSpecular.rgb);
                     #endif
                 #endif
 
@@ -379,7 +379,7 @@ fn evalFuzz(L: vec3f, NdotL: f32, NdotV: f32, T: vec3f, B: vec3f, ltcLut: vec3f)
                 // Clear Coat contribution
                 #ifdef CLEARCOAT
                     preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, light.vLightSpecular.a, preInfo.lightDistance);
-                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, light.vLightDiffuse.rgb);
+                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, light.vLightSpecular.rgb);
 
                     #ifdef CLEARCOAT_TINT
                         // Absorption
