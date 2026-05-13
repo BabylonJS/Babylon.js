@@ -239,13 +239,18 @@
                 //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
+            function getLoadModelOptions() {
+                const materialValue = document.querySelector("#materialSelect").value;
+                return materialValue === "openpbr" ? { pluginOptions: { gltf: { useOpenPBR: true } } } : undefined;
+            }
+
             globalThis.onDrop = async (event) => {
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
                     currentSource = file;
-                    await viewerDetails.viewer.loadModel(file);
+                    await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
                 }
             };
 
@@ -301,7 +306,7 @@
 
                 if (file) {
                     currentSource = file;
-                    await viewerDetails.viewer.loadModel(file);
+                    await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
                 }
             };
 
@@ -405,8 +410,7 @@
                 viewer.updateShadows({ quality: value });
             };
             globalThis.onMaterial = () => {
-                const value = document.querySelector("#materialSelect").value;
-                viewerDetails.viewer.loadModel(currentSource, { pluginOptions: { gltf: { useOpenPBR: value === "openpbr" } } });
+                viewerDetails.viewer.loadModel(currentSource, getLoadModelOptions());
             };
         </script>
     </body>
