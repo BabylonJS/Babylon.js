@@ -1,8 +1,5 @@
  
- #ifndef TEXRD_DEFINED
-    #define TEXRD(s, uv) texture2D(s, uv)
-#endif
-// _____________________________ Diffuse ________________________________________
+ // _____________________________ Diffuse ________________________________________
 vec3 finalDiffuse = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
 

@@ -1,8 +1,3 @@
-#ifndef TEXRD_DEFINED
-    fn TEXRD(t: texture_2d<f32>, ts: sampler, uv: vec2f) -> vec4f {
-        return textureSample(t, ts, uv);
-    }
-#endif
 #ifdef LIGHTMAP
     var lightmapColor: vec4f = TEXRD(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
 
