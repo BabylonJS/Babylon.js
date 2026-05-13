@@ -38,7 +38,7 @@ for (const sceneName of SCENES) {
                 await page.goto(`/?scene=${sceneName}&style=${style}`);
 
                 // Wait for the render loop to signal readiness
-                await page.waitForFunction(() => (window as Record<string, unknown>).__ready === true, null, { timeout: 30_000 });
+                await page.waitForFunction(() => (window as Record<string, unknown>).__ready === true, null, { timeout: 20_000 });
 
                 // Grab the canvas element
                 const canvas = page.locator("#renderCanvas");

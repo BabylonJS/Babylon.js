@@ -96,7 +96,7 @@ const es6visWebServer = activeConfig.local
 export default defineConfig({
     fullyParallel: true,
     forbidOnly: true,
-    retries: 2,
+    retries: testType === "es6vis" ? 1 : 2,
     workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 2,
     timeout: isPerformanceRun ? 300_000 : undefined,
     reporter: baseReporters,
