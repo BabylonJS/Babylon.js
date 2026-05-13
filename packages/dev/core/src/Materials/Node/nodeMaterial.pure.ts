@@ -2513,8 +2513,7 @@ export class NodeMaterial extends NodeMaterialBase {
                             textureResolve();
                         });
                         internalTexture.onErrorObservable.addOnce((e) => {
-                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                            textureReject(e);
+                            textureReject(_ErrorFromReason(e));
                         });
                     })
                 );
@@ -2564,6 +2563,35 @@ export function NodeMaterialParse(source: any, scene: Scene, rootUrl: string = "
     return nodeMaterial;
 }
 
+async function _WaitForBuildAsync(nodeMaterial: NodeMaterial): Promise<NodeMaterial> {
+    if (!nodeMaterial.buildIsInProgress) {
+        return nodeMaterial;
+    }
+
+    return await new Promise<NodeMaterial>((resolve, reject) => {
+        const buildObserver = nodeMaterial.onBuildObservable.addOnce(() => {
+            nodeMaterial.onBuildErrorObservable.remove(errorObserver);
+            resolve(nodeMaterial);
+        });
+        const errorObserver = nodeMaterial.onBuildErrorObservable.addOnce((error) => {
+            nodeMaterial.onBuildObservable.remove(buildObserver);
+            reject(new Error(error));
+        });
+    });
+}
+
+function _ErrorFromReason(reason: unknown): Error {
+    return reason instanceof Error ? reason : new Error(String(reason));
+}
+
+async function _WaitForBuildAndTexturesAsync(nodeMaterial: NodeMaterial, waitForTextureReadyness: boolean): Promise<NodeMaterial> {
+    await _WaitForBuildAsync(nodeMaterial);
+    if (waitForTextureReadyness) {
+        await nodeMaterial.whenTexturesReadyAsync();
+    }
+    return nodeMaterial;
+}
+
 /**
  * Creates a node material from a snippet saved in a remote file
  * @param name defines the name of the material to create
@@ -2595,6 +2623,7 @@ export async function NodeMaterialParseFromFileAsync(
     material.name = finalName; // in case it was changed during parse
     if (!skipBuild) {
         material.build();
+        await _WaitForBuildAsync(material);
     }
     return material;
 }
@@ -2653,28 +2682,19 @@ export function NodeMaterialParseFromSnippetAsync(
                             nodeMaterial.build();
                         }
                     } catch (err) {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject(err);
+                        reject(_ErrorFromReason(err));
+                        return;
                     }
 
-                    if (waitForTextureReadyness) {
-                        nodeMaterial
-                            .whenTexturesReadyAsync()
-                            // eslint-disable-next-line github/no-then
-                            .then(() => {
-                                resolve(nodeMaterial!);
-                            })
-                            // eslint-disable-next-line github/no-then
-                            .catch((err) => {
-                                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                                reject(err);
-                            });
-                    } else {
-                        resolve(nodeMaterial);
-                    }
+                    void (async () => {
+                        try {
+                            resolve(await _WaitForBuildAndTexturesAsync(nodeMaterial!, waitForTextureReadyness));
+                        } catch (err) {
+                            reject(_ErrorFromReason(err));
+                        }
+                    })();
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject("Unable to load the snippet " + snippetId);
+                    reject(new Error("Unable to load the snippet " + snippetId));
                 }
             }
         });
