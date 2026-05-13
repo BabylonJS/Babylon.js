@@ -53,6 +53,3 @@ packages/tools/smartFiltersEditor/www/index.html
 
 # Sonda bundle analysis reports
 .sonda/
-
-# KHR_Interactivity spec/design documents (local only)
-specs/interactivity-refactor
