@@ -21,7 +21,11 @@ var subsurface_scatter_anisotropy: f32 = clamp(uniforms.vSubsurfaceScatterAnisot
 
 // Apply texture values to subsurface layer properties
 #ifdef SUBSURFACE_WEIGHT
-    subsurface_weight *= subsurfaceWeightFromTexture.r;
+    #ifdef SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA
+        subsurface_weight *= subsurfaceWeightFromTexture.a;
+    #else
+        subsurface_weight *= subsurfaceWeightFromTexture.r;
+    #endif
 #endif
 
 #ifdef SUBSURFACE_COLOR

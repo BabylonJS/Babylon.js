@@ -183,6 +183,7 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
                 await Promise.all([import("../../Shaders/textureMerger.fragment")]);
             }
         },
+        skipSceneRegistration: true,
     };
     const proceduralTexture = new ProceduralTexture(name, outputSize, _ShaderName, scene, outputTextureOptions);
     proceduralTexture.refreshRate = -1; // Do not auto-refresh

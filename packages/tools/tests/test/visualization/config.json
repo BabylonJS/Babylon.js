@@ -4245,6 +4245,12 @@
             "dependsOn": ["CSG", "FrameGraph", "GUI", "Layers", "LibMaterials", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Particles", "Shadows", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR glTF Surface Tinting",
+            "playgroundId": "#GRQHVV#325",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458",
             "dependsOn": ["Materials", "Textures"]
