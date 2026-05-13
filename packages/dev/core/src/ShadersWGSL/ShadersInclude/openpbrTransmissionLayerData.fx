@@ -37,7 +37,7 @@ var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionA
 
 #ifdef TRANSMISSION_COLOR
     #ifdef TRANSMISSION_COLOR_GAMMA
-        transmission_color *= toLinearSpace(transmissionColorFromTexture.rgb);
+        transmission_color *= toLinearSpaceVec3(transmissionColorFromTexture.rgb);
     #else
         transmission_color *= transmissionColorFromTexture.rgb;
     #endif

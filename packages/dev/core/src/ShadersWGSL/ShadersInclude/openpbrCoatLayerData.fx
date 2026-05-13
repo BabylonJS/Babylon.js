@@ -50,7 +50,7 @@ geometry_coat_tangent = uniforms.vGeometryCoatTangent.rg;
 
 #ifdef COAT_COLOR
     #ifdef COAT_COLOR_GAMMA
-        coat_color *= toLinearSpace(coatColorFromTexture.rgb);
+        coat_color *= toLinearSpaceVec3(coatColorFromTexture.rgb);
     #else
         coat_color *= coatColorFromTexture.rgb;
     #endif

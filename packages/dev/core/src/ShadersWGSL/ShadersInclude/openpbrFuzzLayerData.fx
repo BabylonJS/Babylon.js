@@ -31,7 +31,7 @@ fuzz_roughness = uniforms.vFuzzRoughness;
 
 #ifdef FUZZ_COLOR
     #ifdef FUZZ_COLOR_GAMMA
-        fuzz_color *= toLinearSpace(fuzzColorFromTexture.rgb);
+        fuzz_color *= toLinearSpaceVec3(fuzzColorFromTexture.rgb);
     #else
         fuzz_color *= fuzzColorFromTexture.rgb;
     #endif

@@ -104,7 +104,7 @@ geometry_thickness = uniforms.vGeometryThickness;
 // Apply texture values to base layer properties
 #ifdef BASE_COLOR
     #ifdef BASE_COLOR_GAMMA
-        base_color *= toLinearSpace(baseColorFromTexture.rgb);
+        base_color *= toLinearSpaceVec3(baseColorFromTexture.rgb);
     #else
         base_color *= baseColorFromTexture.rgb;
     #endif
@@ -159,7 +159,7 @@ geometry_thickness = uniforms.vGeometryThickness;
 
 #ifdef SPECULAR_COLOR
     #ifdef SPECULAR_COLOR_GAMMA
-        specular_color *= toLinearSpace(specularColorFromTexture.rgb);
+        specular_color *= toLinearSpaceVec3(specularColorFromTexture.rgb);
     #else
         specular_color *= specularColorFromTexture.rgb;
     #endif
