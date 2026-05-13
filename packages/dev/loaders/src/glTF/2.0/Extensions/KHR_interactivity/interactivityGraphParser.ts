@@ -274,13 +274,27 @@ export class InteractivityGraphToFlowGraphParser {
         }
         for (const name of Object.keys(node.values)) {
             const socket = node.values[name] as IKHRInteractivity_Variable & { node?: number; socket?: string };
+            // Skip non-ref-typed inputs. By KHR_interactivity convention the ref
+            // socket of a `pointer/*` op is named after the ref it carries
+            // (``nodeRef``, ``materialRef``, ``meshRef``, etc.) and never
+            // ``value`` — `value` is the data being read or written by the
+            // pointer op, not the pointer prefix. Only consider sockets whose
+            // declared type is ``ref`` (a literal whose serialized type maps to
+            // FlowGraphTypes.String) or whose name follows the *Ref convention.
+            const literal = socket?.value?.[0];
+            const declaredType = (socket as any)?.type;
+            const isLiteralRef = typeof literal === "string" && literal.startsWith("/");
+            const isTypedRef = typeof declaredType === "number" && this._types[declaredType]?.flowGraphType === FlowGraphTypes.String;
+            const isNamedRef = name.endsWith("Ref");
+            if (!isLiteralRef && !isTypedRef && !isNamedRef) {
+                continue;
+            }
             // Static-literal case: the socket has a hardcoded JSON-Pointer ref
             // value (e.g. ``"/nodes/22/"``). Splice the literal into the template
             // and drop the socket entirely so the connection-wiring step ignores
             // it. This is the Calculator.glb pattern.
-            const literal = socket?.value?.[0];
-            if (typeof literal === "string" && literal.startsWith("/")) {
-                const trimmedRef = literal.replace(/\/+$/, "");
+            if (isLiteralRef) {
+                const trimmedRef = (literal as string).replace(/\/+$/, "");
                 (pointerCfg!.value as any[])[0] = trimmedRef + "/" + template;
                 delete (node.values as any)[name];
                 break;
