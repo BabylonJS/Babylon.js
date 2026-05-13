@@ -61,6 +61,7 @@ export interface ITransmissionHelperOptions {
 
 /**
  * A class to handle setting up the rendering of opaque objects to be shown through transmissive objects.
+ * @internal
  */
 export class TransmissionHelper {
     /**
