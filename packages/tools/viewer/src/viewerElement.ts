@@ -860,6 +860,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: false })
     public animationProgress = 0;
 
+    private _loadedSource: Nullable<string | File | ArrayBufferView> = null;
+
     @state()
     private _animations: readonly string[] = [];
 
@@ -1008,8 +1010,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         } else {
             this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer());
 
-            if (changedProperties.has("source") || changedProperties.has("useOpenPBR")) {
+            if (changedProperties.has("source")) {
                 this._updateModel();
+            } else if (changedProperties.has("useOpenPBR")) {
+                this._updateModel(this._loadedSource ?? this.source);
             }
 
             if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
@@ -1419,6 +1423,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 details.viewer.onModelChanged.add((source) => {
+                    if (source) {
+                        this._loadedSource = source;
+                    }
                     this._animations = [...details.viewer.animations];
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
@@ -1492,11 +1499,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         });
     }
 
-    private async _updateModel() {
+    private async _updateModel(source: Nullable<string | File | ArrayBufferView> = this.source) {
         if (this._viewerDetails) {
             try {
-                if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, {
+                if (source) {
+                    await this._viewerDetails.viewer.loadModel(source, {
                         pluginExtension: this.extension ?? undefined,
                     });
                 } else {
