@@ -17,7 +17,7 @@ finalAmbient = finalAmbient * surfaceAlbedo.rgb;
 // _____________________________ Emissive ________________________________________
 var finalEmissive: vec3f = uniforms.vEmissiveColor;
 #ifdef EMISSIVE
-var emissiveColorTex: vec3f = textureSample(emissiveSampler, emissiveSamplerSampler, fragmentInputs.vEmissiveUV + uvOffset).rgb;
+var emissiveColorTex: vec3f = TEXRD(emissiveSampler, emissiveSamplerSampler, fragmentInputs.vEmissiveUV + uvOffset).rgb;
 #ifdef GAMMAEMISSIVE
     finalEmissive *= toLinearSpaceVec3(emissiveColorTex.rgb);
 #else

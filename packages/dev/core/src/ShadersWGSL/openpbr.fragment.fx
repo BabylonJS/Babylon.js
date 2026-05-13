@@ -22,6 +22,7 @@
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
@@ -342,7 +343,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef EMISSION_COLOR
         let emissionColorTex: vec3f = textureSample(emissionColorSampler, emissionColorSamplerSampler, uniforms.vEmissionColorUV + uvOffset).rgb;
         #ifdef EMISSION_COLOR_GAMMA
-            material_surface_emission *= toLinearSpace(emissionColorTex.rgb);
+            material_surface_emission *= toLinearSpaceVec3(emissionColorTex.rgb);
         #else
             material_surface_emission *= emissionColorTex.rgb;
         #endif

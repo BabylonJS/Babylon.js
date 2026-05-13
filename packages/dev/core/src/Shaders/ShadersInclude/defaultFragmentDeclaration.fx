@@ -104,4 +104,8 @@ uniform vec4 vDetailInfos;
 
 #include<decalFragmentDeclaration>
 
+#if TEXTURE_REPETITION_MODE > 0
+uniform vec4 vTextureRepetitionHexTilingParams;
+#endif
+
 #define ADDITIONAL_FRAGMENT_DECLARATION

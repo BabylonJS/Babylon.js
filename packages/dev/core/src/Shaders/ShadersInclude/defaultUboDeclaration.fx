@@ -37,6 +37,7 @@ uniform Material
 	vec4 vDiffuseColor;
 	vec3 vAmbientColor;
 	vec4 cameraInfo;
+	vec4 vTextureRepetitionHexTilingParams;
 
 	vec2 vReflectionInfos;
 	mat4 reflectionMatrix;
