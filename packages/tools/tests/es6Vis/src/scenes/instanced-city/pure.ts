@@ -139,11 +139,10 @@ export function run(canvas: HTMLCanvasElement): void {
     detailSphere.addLODLevel(80, lodLow);
     detailSphere.addLODLevel(150, null);
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 10) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

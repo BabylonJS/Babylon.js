@@ -46,11 +46,10 @@ export async function run(canvas: HTMLCanvasElement): Promise<void> {
         result.skeletons[0].returnToRest();
     }
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 10) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

@@ -87,11 +87,10 @@ export function run(canvas: HTMLCanvasElement): void {
     centerLight.intensity = 1.5;
     centerLight.diffuse = new Color3(0.6, 0.6, 0.8);
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 30) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

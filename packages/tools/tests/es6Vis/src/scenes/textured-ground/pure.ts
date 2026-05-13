@@ -81,11 +81,10 @@ export function run(canvas: HTMLCanvasElement): void {
     cyl.material = cylMat;
     shadowGen.addShadowCaster(cyl);
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 10) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

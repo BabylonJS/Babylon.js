@@ -158,7 +158,7 @@ export class WebGPUCacheSampler {
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Constants.TEXTURE_NEAREST_NEAREST:
+            /* case Constants.TEXTURE_NEAREST_NEAREST: */ // same value as below
             case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
@@ -183,7 +183,7 @@ export class WebGPUCacheSampler {
                     mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 }
                 break;
-            case Constants.TEXTURE_LINEAR_LINEAR:
+            /* case Constants.TEXTURE_LINEAR_LINEAR: */ // same value as below
             case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;

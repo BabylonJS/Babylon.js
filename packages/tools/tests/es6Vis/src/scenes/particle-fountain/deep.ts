@@ -24,6 +24,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { ParticleSystem } from "@babylonjs/core/Particles/particleSystem";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { Animation } from "@babylonjs/core/Animations/animation";
+import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import "@babylonjs/core/Animations/animatable";
 
 export function run(canvas: HTMLCanvasElement): void {
@@ -70,6 +71,7 @@ export function run(canvas: HTMLCanvasElement): void {
 
     // Create particle system (exercises the import) but don't start for determinism
     const ps = new ParticleSystem("fountain", 2000, scene);
+    ps.particleTexture = new Texture("https://cdn.babylonjs.com/textures/flare.png", scene);
     ps.createPointEmitter(new Vector3(-0.2, 1, -0.2), new Vector3(0.2, 1, 0.2));
     ps.emitter = emitter;
     ps.color1 = new Color4(1, 0.6, 0.1, 1);
@@ -107,11 +109,10 @@ export function run(canvas: HTMLCanvasElement): void {
         scene.beginAnimation(orb, 0, 60, true);
     }
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 30) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

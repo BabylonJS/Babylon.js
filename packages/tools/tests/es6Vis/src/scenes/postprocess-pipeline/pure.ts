@@ -116,11 +116,10 @@ export function run(canvas: HTMLCanvasElement): void {
     ssao.samples = 16;
     scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 30) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

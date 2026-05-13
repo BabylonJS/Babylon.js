@@ -32,11 +32,10 @@ export function run(canvas: HTMLCanvasElement): void {
     groundMat.diffuseColor = new Color3(0.4, 0.6, 0.3);
     ground.material = groundMat;
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 10) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

@@ -22,6 +22,7 @@ import {
     Color3,
     Color4,
     Vector3,
+    Texture,
     ParticleSystem,
     GlowLayer,
     Animation,
@@ -71,6 +72,7 @@ export function run(canvas: HTMLCanvasElement): void {
 
     // Create particle system (exercises the import) but don't start for determinism
     const ps = new ParticleSystem("fountain", 2000, scene);
+    ps.particleTexture = new Texture("https://cdn.babylonjs.com/textures/flare.png", scene);
     ps.createPointEmitter(new Vector3(-0.2, 1, -0.2), new Vector3(0.2, 1, 0.2));
     ps.emitter = emitter;
     ps.color1 = new Color4(1, 0.6, 0.1, 1);
@@ -109,11 +111,10 @@ export function run(canvas: HTMLCanvasElement): void {
         scene.beginAnimation(orb, 0, 60, true);
     }
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 30) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }

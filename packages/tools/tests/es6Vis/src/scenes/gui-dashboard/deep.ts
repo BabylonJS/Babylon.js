@@ -119,11 +119,10 @@ export function run(canvas: HTMLCanvasElement): void {
     resetBtn.paddingTop = "10px";
     panel.addControl(resetBtn);
 
-    let frameCount = 0;
     engine.runRenderLoop(() => {
         scene.render();
-        if (++frameCount >= 10) {
-            (window as any).__ready = true;
-        }
+    });
+    scene.executeWhenReady(() => {
+        (window as any).__ready = true;
     });
 }
