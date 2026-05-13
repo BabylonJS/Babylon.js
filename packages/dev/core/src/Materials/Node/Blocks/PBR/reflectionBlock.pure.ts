@@ -65,6 +65,36 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initReflectionBlockShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initReflectionBlockShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction"),
+                import("../../../../ShadersWGSL/ShadersInclude/harmonicsFunctions"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/helperFunctions"),
+                import("../../../../Shaders/ShadersInclude/reflectionFunction"),
+                import("../../../../Shaders/ShadersInclude/harmonicsFunctions"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
+    }
+
     protected override _onGenerateOnlyFragmentCodeChanged(): boolean {
         if (this.position.isConnected) {
             this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;

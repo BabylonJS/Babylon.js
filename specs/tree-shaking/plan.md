@@ -1319,17 +1319,19 @@ visible — the code compiles fine, but crashes at runtime.
 
 ### Solution
 
-Install lightweight **warning stubs** on class prototypes for **all methods/properties declared
-in `.types.ts` augmentation files**. When called without the required side-effect import, the
-stub logs a helpful `console.warn` pointing to the tree-shaking documentation, instead of
-crashing. The stubs are **overwritten** when the real register function runs — zero impact
-for users who import the side-effect module correctly.
+Install lightweight **diagnostic stubs** on class prototypes for **all methods/properties declared
+in `.types.ts` augmentation files**. The stubs are quiet by default because Babylon internals
+probe some augmented APIs as optional features. Developers can opt into one-time `console.warn`
+messages while debugging pure-import scenes. The stubs are **overwritten** when the real register
+function runs — zero impact for users who import the side-effect module correctly.
 
 ### Implementation
 
 **Utility functions** — added to `Misc/devTools.ts`:
 
-- `_MissingSideEffect(className, methodName)` — returns a stub function that warns once
+- `SetMissingSideEffectWarningsEnabled(enabled)` — opt into/out of one-time stub warnings
+- `SuppressMissingSideEffectWarnings(callback)` — suppress warnings for known internal probing
+- `_MissingSideEffect(className, methodName)` — returns a stub function that can warn once
 - `_MissingSideEffectProperty(className, propName)` — returns a `{ get, configurable: true }` descriptor
 
 **Automation script** — `scripts/treeshaking/generateSideEffectStubs.mjs`:
@@ -1354,7 +1356,13 @@ if (!Object.getOwnPropertyDescriptor(Scene.prototype, "debugLayer")) {
 }
 ```
 
-**Warning output**:
+**Opt-in warning output**:
+
+```typescript
+import { SetMissingSideEffectWarningsEnabled } from "@babylonjs/core/Misc/devTools";
+
+SetMissingSideEffectWarningsEnabled(true);
+```
 
 ```
 [Babylon.js] Scene.getPhysicsEngine() requires a side-effect import.
@@ -1368,6 +1376,7 @@ if (!Object.getOwnPropertyDescriptor(Scene.prototype, "debugLayer")) {
 - [x] **11.3** — Generated stubs across 21 target class files
 - [x] **11.4** — TypeScript compilation: ✅ zero errors
 - [x] **11.5** — Bundle smoke tests: ✅ all pass
+- [x] **11.6** — Added opt-in missing side-effect warning diagnostics and scoped suppression
 
 ### Stub Coverage
 
@@ -1619,6 +1628,21 @@ Implementation:
 - No registry, no closures, no stored references in hot code paths
 - Currently covers ~22 stubs: SerializationHelper parsers (4), Scene factories (2), Scene picking/Ray (1),
   Texture factories (4), Mesh parsers (10), Node factories (1)
+
+#### 13.1b — Runtime Stub Warning Diagnostics ✅
+
+Generated `_MissingSideEffect` stubs can emit one-time runtime warnings when explicitly enabled:
+
+```typescript
+import { SetMissingSideEffectWarningsEnabled } from "@babylonjs/core/Misc/devTools";
+
+SetMissingSideEffectWarningsEnabled(true);
+```
+
+Use this while debugging pure-import scenes to identify missing side-effect registrations as they
+are called. Keep it disabled in production unless the app intentionally wants runtime diagnostics.
+When code intentionally probes optional augmented APIs, wrap that section with
+`SuppressMissingSideEffectWarnings(() => { ... })`.
 
 #### 13.2 — Transitive Dependencies in Registration Functions ✅
 

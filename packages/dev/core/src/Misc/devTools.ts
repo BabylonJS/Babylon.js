@@ -11,6 +11,32 @@ export function _WarnImport(name: string, warnOnce = false) {
 }
 
 const _StubWarnedMap: { [key: string]: boolean } = {};
+let _MissingSideEffectWarningsEnabled = false;
+let _MissingSideEffectWarningsSuppressionDepth = 0;
+
+/**
+ * Enables or disables console warnings when generated side-effect stubs are called.
+ * Warnings are disabled by default because internal code may probe optional augmented APIs.
+ * @param enabled - Whether missing side-effect stub calls should emit one-time warnings.
+ */
+export function SetMissingSideEffectWarningsEnabled(enabled: boolean): void {
+    _MissingSideEffectWarningsEnabled = enabled;
+}
+
+/**
+ * Runs a callback while missing side-effect stub warnings are suppressed.
+ * @param callback - The callback to run with warnings suppressed.
+ * @returns The callback result.
+ */
+export function SuppressMissingSideEffectWarnings<T>(callback: () => T): T {
+    _MissingSideEffectWarningsSuppressionDepth++;
+
+    try {
+        return callback();
+    } finally {
+        _MissingSideEffectWarningsSuppressionDepth--;
+    }
+}
 
 /**
  * Interface for functions that are side-effect stubs.
@@ -43,7 +69,7 @@ export interface ISideEffectStub {
  */
 export function _MissingSideEffect(className: string, methodName: string, warn = false): (...args: unknown[]) => void {
     const stub = function () {
-        if (warn) {
+        if ((warn || _MissingSideEffectWarningsEnabled) && _MissingSideEffectWarningsSuppressionDepth === 0) {
             const key = `${className}.${methodName}`;
             if (!_StubWarnedMap[key]) {
                 _StubWarnedMap[key] = true;

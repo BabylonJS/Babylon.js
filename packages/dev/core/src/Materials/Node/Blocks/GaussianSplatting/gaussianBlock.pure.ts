@@ -70,6 +70,31 @@ export class GaussianBlock extends NodeMaterialBlock {
      */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("vPosition");
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/logDepthDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
+                import("../../../../Shaders/ShadersInclude/logDepthDeclaration"),
+                import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration"),
+                import("../../../../Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

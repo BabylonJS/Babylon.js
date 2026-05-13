@@ -101,6 +101,29 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._excludeVariableName("invViewport");
         state._excludeVariableName("kernelSize");
         state._excludeVariableName("eyePosition");
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting"),
+                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"),
+                import("../../../../Shaders/ShadersInclude/gaussianSplatting"),
+                import("../../../../Shaders/ShadersInclude/helperFunctions"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
     /**
      * Update defines for shader compilation

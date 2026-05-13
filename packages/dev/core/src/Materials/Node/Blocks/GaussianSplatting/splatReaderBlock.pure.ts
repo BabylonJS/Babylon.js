@@ -73,6 +73,24 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         state._excludeVariableName("centersTexture");
         state._excludeVariableName("colorsTexture");
         state._excludeVariableName("dataTextureSize");
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting"),
+            ]);
+        } else {
+            await Promise.all([import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"), import("../../../../Shaders/ShadersInclude/gaussianSplatting")]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

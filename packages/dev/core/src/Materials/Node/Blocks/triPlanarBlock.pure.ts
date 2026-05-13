@@ -227,6 +227,28 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../ShadersWGSL/ShadersInclude/helperFunctions");
+        } else {
+            await import("../../../Shaders/ShadersInclude/helperFunctions");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */

@@ -5,6 +5,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -50,6 +51,28 @@ export class RandomNumberBlock extends NodeMaterialBlock {
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../ShadersWGSL/ShadersInclude/helperFunctions");
+        } else {
+            await import("../../../Shaders/ShadersInclude/helperFunctions");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

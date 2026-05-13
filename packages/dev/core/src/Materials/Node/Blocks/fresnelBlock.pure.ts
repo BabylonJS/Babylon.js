@@ -8,6 +8,7 @@ import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { InputBlock } from "./Input/inputBlock.pure";
 import { type NodeMaterial } from "../nodeMaterial.pure";
 import { ViewDirectionBlock } from "./viewDirectionBlock.pure";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -70,6 +71,28 @@ export class FresnelBlock extends NodeMaterialBlock {
      */
     public get fresnel(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../ShadersWGSL/ShadersInclude/fresnelFunction");
+        } else {
+            await import("../../../Shaders/ShadersInclude/fresnelFunction");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

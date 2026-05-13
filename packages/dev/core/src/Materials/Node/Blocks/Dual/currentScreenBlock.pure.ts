@@ -141,6 +141,21 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
      */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName(this.samplerName);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/helperFunctions");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /** {@inheritDoc} */
