@@ -13,10 +13,21 @@ export interface IMaterialLoadingAdapter {
      */
     readonly material: Material;
 
-    /**
-     * Finalizes material properties after loading is complete.
-     */
+    /** @deprecated Use finalizeAsync instead. */
     finalize?(): void;
+
+    /**
+     * Finalizes material properties after all loading is complete.
+     * May return a Promise for async work (e.g. GPU texture processing). Any returned
+     * Promise is tracked by the loader and awaited before the COMPLETE state is reached,
+     * so callers can rely on onCompleteObservable for fully processed materials.
+     *
+     * The loader passes an AbortSignal that is aborted when the loader is disposed.
+     * Implementations should check `signal.aborted` after each await point and, if
+     * aborted, release any intermediate resources and return early.
+     * @param signal An AbortSignal that fires when the loader is disposed mid-flight.
+     */
+    finalizeAsync?(signal: AbortSignal): Promise<void> | void;
 
     /**
      * Whether the material should be treated as unlit
@@ -111,6 +122,11 @@ export interface IMaterialLoadingAdapter {
     enableSpecularEdgeColor(enableEdgeColor?: boolean): void;
 
     /**
+     * Enable the specular/glossiness workflow and disable metallic/roughness.
+     */
+    configureSpecularGlossiness(): void;
+
+    /**
      * Sets/gets the specular weight
      */
     specularWeight: number;
@@ -144,6 +160,12 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the specular IOR
      */
     specularIor: number;
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    glossiness: number;
 
     // ========================================
     // EMISSION PARAMETERS
@@ -310,6 +332,9 @@ export interface IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for volumetric transmission (KHR_materials_volume)
+     */
     configureVolume(): void;
 
     /**

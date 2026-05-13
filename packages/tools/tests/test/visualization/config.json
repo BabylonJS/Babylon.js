@@ -1,4 +1,4 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -4245,6 +4245,12 @@
             "dependsOn": ["CSG", "FrameGraph", "GUI", "Layers", "LibMaterials", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Particles", "Shadows", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR glTF Surface Tinting",
+            "playgroundId": "#GRQHVV#325",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458",
             "dependsOn": ["Materials", "Textures"]
@@ -5114,6 +5120,32 @@
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Particles"],
             "excludeFromPerformance": true
+        },
+        {
+            "title": "Texture Repetition - Standard Material",
+            "playgroundId": "#ESP440#0",
+            "referenceImage": "texture-repetition-standard-material.png",
+            "renderCount": 1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Textures"]
+        },
+        {
+            "title": "Texture Repetition - PBR Material",
+            "playgroundId": "#6EPUUH#0",
+            "referenceImage": "texture-repetition-pbr-material.png",
+            "renderCount": 1,
+            "errorRatio": 7.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Textures"]
+        },
+        {
+            "title": "Texture Repetition - OpenPBR Material",
+            "playgroundId": "#GOKMFP#0",
+            "referenceImage": "texture-repetition-openpbr-material.png",
+            "renderCount": 1,
+            "errorRatio": 7.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Textures"]
         }
     ]
 }

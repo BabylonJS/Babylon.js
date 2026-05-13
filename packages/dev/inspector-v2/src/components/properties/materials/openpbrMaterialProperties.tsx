@@ -204,7 +204,7 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 target={material}
                 propertyKey="specularIor"
                 min={1}
-                max={3}
+                max={30}
                 step={0.01}
                 description="Index of refraction is a physical value controlling the reflective intensity and refraction. The parameter has no effect on metals."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
