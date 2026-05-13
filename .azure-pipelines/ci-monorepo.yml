@@ -312,6 +312,12 @@ jobs:
             displayName: "Make sure es6 packages are ready"
             continueOnError: true
 
+          - task: Npm@1
+            displayName: "Test ES6 packages"
+            inputs:
+                command: custom
+                customCommand: "run test:es6-packages -w @tools/tests"
+
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "ES6 visualization tests (BrowserStack)"
             env:
@@ -320,12 +326,6 @@ jobs:
                 BSTACK_BUILD_NAME: "ES6 Visualization Tests"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-
-          - task: Npm@1
-            displayName: "Test ES6 packages"
-            inputs:
-                command: custom
-                customCommand: "run test:es6-packages -w @tools/tests"
 
           - task: Npm@1
             displayName: "npm build modules size"
