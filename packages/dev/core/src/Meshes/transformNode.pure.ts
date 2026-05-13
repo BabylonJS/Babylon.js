@@ -442,7 +442,9 @@ export class TransformNode extends Node {
      */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
+        options?: {
+            doNotInstantiate: boolean | ((node: TransformNode) => boolean);
+        },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
@@ -1489,65 +1491,6 @@ export class TransformNode extends Node {
         return serializationObject;
     }
 
-    // Statics
-    /**
-     * Returns a new TransformNode object parsed from the source provided.
-     * @param parsedTransformNode is the source.
-     * @param scene the scene the object belongs to
-     * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
-     * @returns a new TransformNode object parsed from the source provided.
-     */
-    public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
-        const transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);
-
-        if (parsedTransformNode.localMatrix) {
-            transformNode.setPreTransformMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
-        } else if (parsedTransformNode.pivotMatrix) {
-            transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.pivotMatrix));
-        }
-
-        transformNode.setEnabled(parsedTransformNode.isEnabled);
-
-        transformNode._waitingParsedUniqueId = parsedTransformNode.uniqueId;
-
-        // Parent
-        if (parsedTransformNode.parentId !== undefined) {
-            transformNode._waitingParentId = parsedTransformNode.parentId;
-        }
-
-        if (parsedTransformNode.parentInstanceIndex !== undefined) {
-            transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
-        }
-
-        if (parsedTransformNode.freezeWorldMatrix) {
-            transformNode._waitingFreezeWorldMatrix = parsedTransformNode.freezeWorldMatrix;
-        }
-
-        // Animations
-        if (parsedTransformNode.animations) {
-            for (let animationIndex = 0; animationIndex < parsedTransformNode.animations.length; animationIndex++) {
-                const parsedAnimation = parsedTransformNode.animations[animationIndex];
-                const internalClass = GetClass("BABYLON.Animation");
-                if (internalClass) {
-                    transformNode.animations.push(internalClass.Parse(parsedAnimation));
-                }
-            }
-            Node.ParseAnimationRanges(transformNode, parsedTransformNode, scene);
-        }
-
-        if (parsedTransformNode.autoAnimate) {
-            scene.beginAnimation(
-                transformNode,
-                parsedTransformNode.autoAnimateFrom,
-                parsedTransformNode.autoAnimateTo,
-                parsedTransformNode.autoAnimateLoop,
-                parsedTransformNode.autoAnimateSpeed || 1.0
-            );
-        }
-
-        return transformNode;
-    }
-
     /**
      * Get all child-transformNodes of this node
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -1645,6 +1588,73 @@ export class TransformNode extends Node {
             this._isAbsoluteSynced = true;
         }
     }
+}
+
+/**
+ * Returns a new TransformNode object parsed from the source provided.
+ * @param parsedTransformNode is the source.
+ * @param scene the scene the object belongs to
+ * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
+ * @returns a new TransformNode object parsed from the source provided.
+ */
+export function TransformNodeParse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
+    const transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);
+
+    if (parsedTransformNode.localMatrix) {
+        transformNode.setPreTransformMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
+    } else if (parsedTransformNode.pivotMatrix) {
+        transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.pivotMatrix));
+    }
+
+    transformNode.setEnabled(parsedTransformNode.isEnabled);
+
+    transformNode._waitingParsedUniqueId = parsedTransformNode.uniqueId;
+
+    // Parent
+    if (parsedTransformNode.parentId !== undefined) {
+        transformNode._waitingParentId = parsedTransformNode.parentId;
+    }
+
+    if (parsedTransformNode.parentInstanceIndex !== undefined) {
+        transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
+    }
+
+    if (parsedTransformNode.freezeWorldMatrix) {
+        transformNode._waitingFreezeWorldMatrix = parsedTransformNode.freezeWorldMatrix;
+    }
+
+    // Animations
+    if (parsedTransformNode.animations) {
+        for (let animationIndex = 0; animationIndex < parsedTransformNode.animations.length; animationIndex++) {
+            const parsedAnimation = parsedTransformNode.animations[animationIndex];
+            const internalClass = GetClass("BABYLON.Animation");
+            if (internalClass) {
+                transformNode.animations.push(internalClass.Parse(parsedAnimation));
+            }
+        }
+        Node.ParseAnimationRanges(transformNode, parsedTransformNode, scene);
+    }
+
+    if (parsedTransformNode.autoAnimate) {
+        scene.beginAnimation(
+            transformNode,
+            parsedTransformNode.autoAnimateFrom,
+            parsedTransformNode.autoAnimateTo,
+            parsedTransformNode.autoAnimateLoop,
+            parsedTransformNode.autoAnimateSpeed || 1.0
+        );
+    }
+
+    return transformNode;
+}
+
+let _TransformNodeRegistered = false;
+export function RegisterTransformNode(): void {
+    if (_TransformNodeRegistered) {
+        return;
+    }
+    _TransformNodeRegistered = true;
+    TransformNode.Parse = TransformNodeParse;
 }
 
 // #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`

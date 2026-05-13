@@ -274,28 +274,6 @@ export class NodeMaterial extends NodeMaterialBase {
     /** If true, the node material will use GLSL if the engine is WebGL and WGSL if it's WebGPU. It takes priority over DefaultShaderLanguage if it's true */
     public static UseNativeShaderLanguageOfEngine = false;
 
-    /**
-     * Checks if a block is a texture block
-     * @param block The block to check
-     * @returns True if the block is a texture block
-     */
-    public static _BlockIsTextureBlock(block: NodeMaterialBlock): block is NodeMaterialTextureBlocks {
-        return (
-            block.getClassName() === "TextureBlock" ||
-            block.getClassName() === "ReflectionTextureBaseBlock" ||
-            block.getClassName() === "ReflectionTextureBlock" ||
-            block.getClassName() === "ReflectionBlock" ||
-            block.getClassName() === "RefractionBlock" ||
-            block.getClassName() === "CurrentScreenBlock" ||
-            block.getClassName() === "SmartFilterTextureBlock" ||
-            block.getClassName() === "ParticleTextureBlock" ||
-            block.getClassName() === "ImageSourceBlock" ||
-            block.getClassName() === "TriPlanarBlock" ||
-            block.getClassName() === "BiPlanarBlock" ||
-            block.getClassName() === "PrePassTextureBlock"
-        );
-    }
-
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
     /** Gets whether the node material is currently building */
@@ -1887,7 +1865,7 @@ export class NodeMaterial extends NodeMaterialBase {
         const textureBlocks: NodeMaterialTextureBlocks[] = [];
 
         for (const block of this.attachedBlocks) {
-            if (NodeMaterial._BlockIsTextureBlock(block)) {
+            if (NodeMaterialBlockIsTextureBlock(block)) {
                 textureBlocks.push(block);
             }
         }
@@ -2197,7 +2175,7 @@ export class NodeMaterial extends NodeMaterialBase {
      * @returns a promise that will fulfil when the material is fully loaded
      */
     public async loadAsync(url: string, rootUrl: string = "") {
-        return await NodeMaterial.ParseFromFileAsync("", url, this.getScene(), rootUrl, true, this);
+        return await NodeMaterialParseFromFileAsync("", url, this.getScene(), rootUrl, true, this);
     }
 
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
@@ -2545,155 +2523,180 @@ export class NodeMaterial extends NodeMaterialBase {
 
         return Promise.all(textureReadyPromises);
     }
+}
 
-    /**
-     * Creates a node material from parsed material data
-     * @param source defines the JSON representation of the material
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param shaderLanguage defines the language to use (GLSL by default)
-     * @returns a new node material
-     */
-    public static override Parse(source: any, scene: Scene, rootUrl: string = "", shaderLanguage = ShaderLanguage.GLSL): NodeMaterial {
-        const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene, { shaderLanguage: shaderLanguage }), source, scene, rootUrl);
+/**
+ * Checks if a block is a texture block
+ * @param block The block to check
+ * @returns True if the block is a texture block
+ */
+export function NodeMaterialBlockIsTextureBlock(block: NodeMaterialBlock): block is NodeMaterialTextureBlocks {
+    return (
+        block.getClassName() === "TextureBlock" ||
+        block.getClassName() === "ReflectionTextureBaseBlock" ||
+        block.getClassName() === "ReflectionTextureBlock" ||
+        block.getClassName() === "ReflectionBlock" ||
+        block.getClassName() === "RefractionBlock" ||
+        block.getClassName() === "CurrentScreenBlock" ||
+        block.getClassName() === "SmartFilterTextureBlock" ||
+        block.getClassName() === "ParticleTextureBlock" ||
+        block.getClassName() === "ImageSourceBlock" ||
+        block.getClassName() === "TriPlanarBlock" ||
+        block.getClassName() === "BiPlanarBlock" ||
+        block.getClassName() === "PrePassTextureBlock"
+    );
+}
 
-        nodeMaterial.parseSerializedObject(source, rootUrl);
-        nodeMaterial.build();
+/**
+ * Creates a node material from parsed material data
+ * @param source defines the JSON representation of the material
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @param shaderLanguage defines the language to use (GLSL by default)
+ * @returns a new node material
+ */
+export function NodeMaterialParse(source: any, scene: Scene, rootUrl: string = "", shaderLanguage = ShaderLanguage.GLSL): NodeMaterial {
+    const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene, { shaderLanguage: shaderLanguage }), source, scene, rootUrl);
 
-        return nodeMaterial;
+    nodeMaterial.parseSerializedObject(source, rootUrl);
+    nodeMaterial.build();
+
+    return nodeMaterial;
+}
+
+/**
+ * Creates a node material from a snippet saved in a remote file
+ * @param name defines the name of the material to create
+ * @param url defines the url to load from
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL for nested url in the node material
+ * @param skipBuild defines whether to build the node material
+ * @param targetMaterial defines a material to use instead of creating a new one
+ * @param urlRewriter defines a function used to rewrite urls
+ * @param options defines options to be used with the node material
+ * @returns a promise that will resolve to the new node material
+ */
+export async function NodeMaterialParseFromFileAsync(
+    name: string,
+    url: string,
+    scene: Scene,
+    rootUrl: string = "",
+    skipBuild: boolean = false,
+    targetMaterial?: NodeMaterial,
+    urlRewriter?: (url: string) => string,
+    options?: Partial<INodeMaterialOptions>
+): Promise<NodeMaterial> {
+    const material = targetMaterial ?? new NodeMaterial(name, scene, options);
+    const finalName = material.name;
+
+    const data = await scene._loadFileAsync(url);
+    const serializationObject = JSON.parse(data);
+    material.parseSerializedObject(serializationObject, rootUrl, undefined, urlRewriter);
+    material.name = finalName; // in case it was changed during parse
+    if (!skipBuild) {
+        material.build();
+    }
+    return material;
+}
+
+/**
+ * Creates a node material from a snippet saved by the node material editor
+ * @param snippetId defines the snippet to load
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @param nodeMaterial defines a node material to update (instead of creating a new one)
+ * @param skipBuild defines whether to build the node material
+ * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
+ * @param urlRewriter defines a function used to rewrite urls
+ * @param options defines options to be used with the node material
+ * @returns a promise that will resolve to the new node material
+ */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+export function NodeMaterialParseFromSnippetAsync(
+    this: typeof NodeMaterial | void,
+    snippetId: string,
+    scene: Scene = EngineStore.LastCreatedScene!,
+    rootUrl: string = "",
+    nodeMaterial?: NodeMaterial,
+    skipBuild: boolean = false,
+    waitForTextureReadyness: boolean = false,
+    urlRewriter?: (url: string) => string,
+    options?: Partial<INodeMaterialOptions>
+): Promise<NodeMaterial> {
+    if (snippetId === "_BLANK") {
+        return Promise.resolve(NodeMaterialCreateDefault("blank", scene));
     }
 
-    /**
-     * Creates a node material from a snippet saved in a remote file
-     * @param name defines the name of the material to create
-     * @param url defines the url to load from
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL for nested url in the node material
-     * @param skipBuild defines whether to build the node material
-     * @param targetMaterial defines a material to use instead of creating a new one
-     * @param urlRewriter defines a function used to rewrite urls
-     * @param options defines options to be used with the node material
-     * @returns a promise that will resolve to the new node material
-     */
-    public static async ParseFromFileAsync(
-        name: string,
-        url: string,
-        scene: Scene,
-        rootUrl: string = "",
-        skipBuild: boolean = false,
-        targetMaterial?: NodeMaterial,
-        urlRewriter?: (url: string) => string,
-        options?: Partial<INodeMaterialOptions>
-    ): Promise<NodeMaterial> {
-        const material = targetMaterial ?? new NodeMaterial(name, scene, options);
-        const finalName = material.name;
+    const snippetUrl = this?.SnippetUrl ?? NodeMaterial.SnippetUrl;
 
-        const data = await scene._loadFileAsync(url);
-        const serializationObject = JSON.parse(data);
-        material.parseSerializedObject(serializationObject, rootUrl, undefined, urlRewriter);
-        material.name = finalName; // in case it was changed during parse
-        if (!skipBuild) {
-            material.build();
-        }
-        return material;
-    }
+    return new Promise((resolve, reject) => {
+        const request = new WebRequest();
+        request.addEventListener("readystatechange", () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                    const serializationObject = JSON.parse(snippet.nodeMaterial);
 
-    /**
-     * Creates a node material from a snippet saved by the node material editor
-     * @param snippetId defines the snippet to load
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param nodeMaterial defines a node material to update (instead of creating a new one)
-     * @param skipBuild defines whether to build the node material
-     * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
-     * @param urlRewriter defines a function used to rewrite urls
-     * @param options defines options to be used with the node material
-     * @returns a promise that will resolve to the new node material
-     */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public static ParseFromSnippetAsync(
-        snippetId: string,
-        scene: Scene = EngineStore.LastCreatedScene!,
-        rootUrl: string = "",
-        nodeMaterial?: NodeMaterial,
-        skipBuild: boolean = false,
-        waitForTextureReadyness: boolean = false,
-        urlRewriter?: (url: string) => string,
-        options?: Partial<INodeMaterialOptions>
-    ): Promise<NodeMaterial> {
-        if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
-        }
-
-        return new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const serializationObject = JSON.parse(snippet.nodeMaterial);
-
-                        if (!nodeMaterial) {
-                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene, options), serializationObject, scene, rootUrl);
-                            nodeMaterial.uniqueId = scene.getUniqueId();
-                        }
-
-                        nodeMaterial.parseSerializedObject(serializationObject, undefined, undefined, urlRewriter);
-                        nodeMaterial.snippetId = snippetId;
-
-                        // We reset sideOrientation to default value
-                        nodeMaterial.sideOrientation = null;
-
-                        try {
-                            if (!skipBuild) {
-                                nodeMaterial.build();
-                            }
-                        } catch (err) {
-                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                            reject(err);
-                        }
-
-                        if (waitForTextureReadyness) {
-                            nodeMaterial
-                                .whenTexturesReadyAsync()
-                                // eslint-disable-next-line github/no-then
-                                .then(() => {
-                                    resolve(nodeMaterial!);
-                                })
-                                // eslint-disable-next-line github/no-then
-                                .catch((err) => {
-                                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                                    reject(err);
-                                });
-                        } else {
-                            resolve(nodeMaterial);
-                        }
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject("Unable to load the snippet " + snippetId);
+                    if (!nodeMaterial) {
+                        nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene, options), serializationObject, scene, rootUrl);
+                        nodeMaterial.uniqueId = scene.getUniqueId();
                     }
+
+                    nodeMaterial.parseSerializedObject(serializationObject, undefined, undefined, urlRewriter);
+                    nodeMaterial.snippetId = snippetId;
+
+                    // We reset sideOrientation to default value
+                    nodeMaterial.sideOrientation = null;
+
+                    try {
+                        if (!skipBuild) {
+                            nodeMaterial.build();
+                        }
+                    } catch (err) {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject(err);
+                    }
+
+                    if (waitForTextureReadyness) {
+                        nodeMaterial
+                            .whenTexturesReadyAsync()
+                            // eslint-disable-next-line github/no-then
+                            .then(() => {
+                                resolve(nodeMaterial!);
+                            })
+                            // eslint-disable-next-line github/no-then
+                            .catch((err) => {
+                                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                                reject(err);
+                            });
+                    } else {
+                        resolve(nodeMaterial);
+                    }
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject("Unable to load the snippet " + snippetId);
                 }
-            });
-
-            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
-            request.send();
+            }
         });
-    }
 
-    /**
-     * Creates a new node material set to default basic configuration
-     * @param name defines the name of the material
-     * @param scene defines the hosting scene
-     * @returns a new NodeMaterial
-     */
-    public static CreateDefault(name: string, scene?: Scene) {
-        const newMaterial = new NodeMaterial(name, scene);
+        request.open("GET", snippetUrl + "/" + snippetId.replace(/#/g, "/"));
+        request.send();
+    });
+}
 
-        newMaterial.setToDefault();
-        newMaterial.build();
+/**
+ * Creates a new node material set to default basic configuration
+ * @param name defines the name of the material
+ * @param scene defines the hosting scene
+ * @returns a new NodeMaterial
+ */
+export function NodeMaterialCreateDefault(name: string, scene?: Scene) {
+    const newMaterial = new NodeMaterial(name, scene);
 
-        return newMaterial;
-    }
+    newMaterial.setToDefault();
+    newMaterial.build();
+
+    return newMaterial;
 }
 
 let _Registered = false;
@@ -2706,6 +2709,12 @@ export function RegisterNodeMaterial(): void {
         return;
     }
     _Registered = true;
+
+    NodeMaterial._BlockIsTextureBlock = NodeMaterialBlockIsTextureBlock;
+    NodeMaterial.Parse = NodeMaterialParse;
+    NodeMaterial.ParseFromFileAsync = NodeMaterialParseFromFileAsync;
+    NodeMaterial.ParseFromSnippetAsync = NodeMaterialParseFromSnippetAsync;
+    NodeMaterial.CreateDefault = NodeMaterialCreateDefault;
 
     RegisterClass("BABYLON.NodeMaterial", NodeMaterial);
 }

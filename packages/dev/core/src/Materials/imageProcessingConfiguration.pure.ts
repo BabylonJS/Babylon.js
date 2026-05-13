@@ -4,7 +4,7 @@ import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor
 import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
-import { ColorCurves } from "../Materials/colorCurves.pure";
+import { ColorCurves, ColorCurvesBind } from "../Materials/colorCurves.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Effect } from "../Materials/effect.pure";
 import { Mix } from "../Misc/tools.functions";
@@ -12,8 +12,6 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "./imageProcessingConfiguration.functions";
 import { RegisterClass } from "../Misc/typeStore";
-
-/* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  * This groups together the common properties used for image processing either in direct forward pass
@@ -552,7 +550,7 @@ export class ImageProcessingConfiguration {
     public bind(effect: Effect, overrideAspectRatio?: number): void {
         // Color Curves
         if (this._colorCurvesEnabled && this.colorCurves) {
-            ColorCurves.Bind(this.colorCurves, effect);
+            ColorCurvesBind(this.colorCurves, effect);
         }
 
         // Vignette and dither handled together due to common uniform.
@@ -619,24 +617,6 @@ export class ImageProcessingConfiguration {
         return SerializationHelper.Serialize(this);
     }
 
-    /**
-     * Parses the image processing from a json representation.
-     * @param source the JSON source to parse
-     * @returns The parsed image processing
-     */
-    public static Parse(source: any): ImageProcessingConfiguration {
-        const parsed = SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
-        // Backward compatibility
-        if (source.vignetteCentreX !== undefined) {
-            parsed.vignetteCenterX = source.vignetteCentreX;
-        }
-        if (source.vignetteCentreY !== undefined) {
-            parsed.vignetteCenterY = source.vignetteCentreY;
-        }
-
-        return parsed;
-    }
-
     // Static constants associated to the image processing.
     private static _VIGNETTEMODE_MULTIPLY = 0;
     private static _VIGNETTEMODE_OPAQUE = 1;
@@ -657,6 +637,25 @@ export class ImageProcessingConfiguration {
 }
 
 let _Registered = false;
+
+/**
+ * Parses the image processing from a json representation.
+ * @param source the JSON source to parse
+ * @returns The parsed image processing
+ */
+export function ImageProcessingConfigurationParse(source: any): ImageProcessingConfiguration {
+    const parsed = SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
+    // Backward compatibility
+    if (source.vignetteCentreX !== undefined) {
+        parsed.vignetteCenterX = source.vignetteCentreX;
+    }
+    if (source.vignetteCentreY !== undefined) {
+        parsed.vignetteCenterY = source.vignetteCentreY;
+    }
+
+    return parsed;
+}
+
 /**
  * Register side effects for imageProcessingConfiguration.
  * Safe to call multiple times; only the first call has an effect.
@@ -668,7 +667,9 @@ export function RegisterImageProcessingConfiguration(): void {
     _Registered = true;
 
     // References the dependencies.
-    SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfiguration.Parse;
+    ImageProcessingConfiguration.Parse = ImageProcessingConfigurationParse;
+
+    SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfigurationParse;
 
     // Register Class Name
     RegisterClass("BABYLON.ImageProcessingConfiguration", ImageProcessingConfiguration);

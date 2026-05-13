@@ -3,6 +3,7 @@
  * Import ssrRenderingPipeline.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./ssrRenderingPipeline.pure";
+export * from "./ssrRenderingPipeline.types";
 
 import { RegisterSsrRenderingPipeline } from "./ssrRenderingPipeline.pure";
 RegisterSsrRenderingPipeline();

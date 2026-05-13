@@ -858,20 +858,21 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         return serializationObject;
     }
-
-    /**
-     * Parse the serialized pipeline
-     * @param source Source pipeline.
-     * @param scene The scene to load the pipeline to.
-     * @param rootUrl The URL of the serialized pipeline.
-     * @returns An instantiated pipeline from the serialized object.
-     */
-    public static Parse(source: any, scene: Scene, rootUrl: string): DefaultRenderingPipeline {
-        return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Parse the serialized pipeline
+ * @param source Source pipeline.
+ * @param scene The scene to load the pipeline to.
+ * @param rootUrl The URL of the serialized pipeline.
+ * @returns An instantiated pipeline from the serialized object.
+ */
+export function DefaultRenderingPipelineParse(source: any, scene: Scene, rootUrl: string): DefaultRenderingPipeline {
+    return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
+}
+
 /**
  * Register side effects for defaultRenderingPipeline.
  * Safe to call multiple times; only the first call has an effect.
@@ -881,6 +882,8 @@ export function RegisterDefaultRenderingPipeline(): void {
         return;
     }
     _Registered = true;
+
+    DefaultRenderingPipeline.Parse = DefaultRenderingPipelineParse;
 
     RegisterClass("BABYLON.DefaultRenderingPipeline", DefaultRenderingPipeline);
 }

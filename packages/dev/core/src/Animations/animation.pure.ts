@@ -79,7 +79,6 @@ export interface IMakeAnimationAdditiveOptions {
 /**
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationState {
     key: number;
     repeatCount: number;
@@ -217,393 +216,6 @@ export class Animation {
             animation.setEasingFunction(easingFunction);
         }
 
-        return animation;
-    }
-
-    /**
-     * Sets up an animation
-     * @param property The property to animate
-     * @param animationType The animation type to apply
-     * @param framePerSecond The frames per second of the animation
-     * @param easingFunction The easing function used in the animation
-     * @returns The created animation
-     */
-    public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation {
-        const animation: Animation = new Animation(property + "Animation", property, framePerSecond, animationType, Animation.ANIMATIONLOOPMODE_CONSTANT);
-
-        animation.setEasingFunction(easingFunction);
-
-        return animation;
-    }
-
-    /**
-     * Create and start an animation on a node
-     * @param name defines the name of the global animation that will be run on all nodes
-     * @param target defines the target where the animation will take place
-     * @param targetProperty defines property to animate
-     * @param framePerSecond defines the number of frame per second yo use
-     * @param totalFrame defines the number of frames in total
-     * @param from defines the initial value
-     * @param to defines the final value
-     * @param loopMode defines which loop mode you want to use (off by default)
-     * @param easingFunction defines the easing function to use (linear by default)
-     * @param onAnimationEnd defines the callback to call when animation end
-     * @param scene defines the hosting scene
-     * @returns the animatable created for this animation
-     */
-    public static CreateAndStartAnimation(
-        name: string,
-        target: any,
-        targetProperty: string,
-        framePerSecond: number,
-        totalFrame: number,
-        from: any,
-        to: any,
-        loopMode?: number,
-        easingFunction?: EasingFunction,
-        onAnimationEnd?: () => void,
-        scene?: Scene
-    ): Nullable<Animatable> {
-        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
-
-        if (!animation) {
-            return null;
-        }
-
-        if (target.getScene) {
-            scene = target.getScene();
-        }
-
-        if (!scene) {
-            return null;
-        }
-
-        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, animation.loopMode !== Animation.ANIMATIONLOOPMODE_CONSTANT, 1.0, onAnimationEnd);
-    }
-
-    /**
-     * Create and start an animation on a node and its descendants
-     * @param name defines the name of the global animation that will be run on all nodes
-     * @param node defines the root node where the animation will take place
-     * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
-     * @param targetProperty defines property to animate
-     * @param framePerSecond defines the number of frame per second to use
-     * @param totalFrame defines the number of frames in total
-     * @param from defines the initial value
-     * @param to defines the final value
-     * @param loopMode defines which loop mode you want to use (off by default)
-     * @param easingFunction defines the easing function to use (linear by default)
-     * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-     * @returns the list of animatables created for all nodes
-     * @example https://www.babylonjs-playground.com/#MH0VLI
-     */
-    public static CreateAndStartHierarchyAnimation(
-        name: string,
-        node: Node,
-        directDescendantsOnly: boolean,
-        targetProperty: string,
-        framePerSecond: number,
-        totalFrame: number,
-        from: any,
-        to: any,
-        loopMode?: number,
-        easingFunction?: EasingFunction,
-        onAnimationEnd?: () => void
-    ): Nullable<Animatable[]> {
-        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
-
-        if (!animation) {
-            return null;
-        }
-
-        const scene = node.getScene();
-        return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
-    }
-
-    /**
-     * Creates a new animation, merges it with the existing animations and starts it
-     * @param name Name of the animation
-     * @param node Node which contains the scene that begins the animations
-     * @param targetProperty Specifies which property to animate
-     * @param framePerSecond The frames per second of the animation
-     * @param totalFrame The total number of frames
-     * @param from The frame at the beginning of the animation
-     * @param to The frame at the end of the animation
-     * @param loopMode Specifies the loop mode of the animation
-     * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
-     * @param onAnimationEnd Callback to run once the animation is complete
-     * @returns Nullable animation
-     */
-    public static CreateMergeAndStartAnimation(
-        name: string,
-        node: Node,
-        targetProperty: string,
-        framePerSecond: number,
-        totalFrame: number,
-        from: any,
-        to: any,
-        loopMode?: number,
-        easingFunction?: EasingFunction,
-        onAnimationEnd?: () => void
-    ): Nullable<Animatable> {
-        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
-
-        if (!animation) {
-            return null;
-        }
-
-        node.animations.push(animation);
-
-        return node.getScene().beginAnimation(node, 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
-    }
-
-    /**
-     * Convert the keyframes of an animation to be relative to a given reference frame.
-     * @param sourceAnimation defines the Animation containing keyframes to convert
-     * @param referenceFrame defines the frame that keyframes in the range will be relative to (default: 0)
-     * @param range defines the name of the AnimationRange belonging to the Animation to convert
-     * @param cloneOriginal defines whether or not to clone the animation and convert the clone or convert the original animation (default is false)
-     * @param clonedName defines the name of the resulting cloned Animation if cloneOriginal is true
-     * @returns a new Animation if cloneOriginal is true or the original Animation if cloneOriginal is false
-     */
-    public static MakeAnimationAdditive(sourceAnimation: Animation, referenceFrame?: number, range?: string, cloneOriginal?: boolean, clonedName?: string): Animation;
-
-    /**
-     * Convert the keyframes of an animation to be relative to a given reference frame.
-     * @param sourceAnimation defines the Animation containing keyframes to convert
-     * @param options defines the options to use when converting ey keyframes
-     * @returns a new Animation if options.cloneOriginalAnimation is true or the original Animation if options.cloneOriginalAnimation is false
-     */
-    public static MakeAnimationAdditive(sourceAnimation: Animation, options?: IMakeAnimationAdditiveOptions): Animation;
-
-    /** @internal */
-    public static MakeAnimationAdditive(
-        sourceAnimation: Animation,
-        referenceFrameOrOptions?: number | IMakeAnimationAdditiveOptions,
-        range?: string,
-        cloneOriginal = false,
-        clonedName?: string
-    ): Animation {
-        let options: IMakeAnimationAdditiveOptions;
-
-        if (typeof referenceFrameOrOptions === "object") {
-            options = referenceFrameOrOptions;
-        } else {
-            options = {
-                referenceFrame: referenceFrameOrOptions ?? 0,
-                range: range,
-                cloneOriginalAnimation: cloneOriginal,
-                clonedAnimationName: clonedName,
-            };
-        }
-
-        let animation = sourceAnimation;
-
-        if (options.cloneOriginalAnimation) {
-            animation = sourceAnimation.clone();
-            animation.name = options.clonedAnimationName || animation.name;
-        }
-
-        if (!animation._keys.length) {
-            return animation;
-        }
-
-        const referenceFrame = options.referenceFrame && options.referenceFrame >= 0 ? options.referenceFrame : 0;
-        let startIndex = 0;
-        const firstKey = animation._keys[0];
-        let endIndex = animation._keys.length - 1;
-        const lastKey = animation._keys[endIndex];
-        const valueStore = {
-            referenceValue: firstKey.value,
-            referencePosition: TmpVectors.Vector3[0],
-            referenceQuaternion: TmpVectors.Quaternion[0],
-            referenceScaling: TmpVectors.Vector3[1],
-            keyPosition: TmpVectors.Vector3[2],
-            keyQuaternion: TmpVectors.Quaternion[1],
-            keyScaling: TmpVectors.Vector3[3],
-        };
-        let from = firstKey.frame;
-        let to = lastKey.frame;
-        if (options.range) {
-            const rangeValue = animation.getRange(options.range);
-
-            if (rangeValue) {
-                from = rangeValue.from;
-                to = rangeValue.to;
-            }
-        } else {
-            from = options.fromFrame ?? from;
-            to = options.toFrame ?? to;
-        }
-
-        if (from !== firstKey.frame) {
-            startIndex = animation.createKeyForFrame(from);
-        }
-
-        if (to !== lastKey.frame) {
-            endIndex = animation.createKeyForFrame(to);
-        }
-
-        // There's only one key, so use it
-        if (animation._keys.length === 1) {
-            const value = animation._getKeyValue(animation._keys[0]);
-            valueStore.referenceValue = value.clone ? value.clone() : value;
-        }
-
-        // Reference frame is before the first frame, so just use the first frame
-        else if (referenceFrame <= firstKey.frame) {
-            const value = animation._getKeyValue(firstKey.value);
-            valueStore.referenceValue = value.clone ? value.clone() : value;
-        }
-
-        // Reference frame is after the last frame, so just use the last frame
-        else if (referenceFrame >= lastKey.frame) {
-            const value = animation._getKeyValue(lastKey.value);
-            valueStore.referenceValue = value.clone ? value.clone() : value;
-        }
-
-        // Interpolate the reference value from the animation
-        else {
-            EvaluateAnimationState.key = 0;
-            const value = animation._interpolate(referenceFrame, EvaluateAnimationState);
-            valueStore.referenceValue = value.clone ? value.clone() : value;
-        }
-
-        // Conjugate the quaternion
-        if (animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
-            valueStore.referenceValue.normalize().conjugateInPlace();
-        }
-
-        // Decompose matrix and conjugate the quaternion
-        else if (animation.dataType === Animation.ANIMATIONTYPE_MATRIX) {
-            valueStore.referenceValue.decompose(valueStore.referenceScaling, valueStore.referenceQuaternion, valueStore.referencePosition);
-            valueStore.referenceQuaternion.normalize().conjugateInPlace();
-        }
-
-        let startFrame = Number.MAX_VALUE;
-        const clippedKeys: Nullable<IAnimationKey[]> = options.clipKeys ? [] : null;
-
-        // Subtract the reference value from all of the key values
-        for (let index = startIndex; index <= endIndex; index++) {
-            let key = animation._keys[index];
-
-            if (clippedKeys || options.cloneOriginalAnimation) {
-                key = {
-                    frame: key.frame,
-                    value: key.value.clone ? key.value.clone() : key.value,
-                    inTangent: key.inTangent,
-                    outTangent: key.outTangent,
-                    interpolation: key.interpolation,
-                    lockedTangent: key.lockedTangent,
-                    easingFunction: key.easingFunction,
-                };
-                if (clippedKeys) {
-                    if (startFrame === Number.MAX_VALUE) {
-                        startFrame = key.frame;
-                    }
-                    key.frame -= startFrame;
-                    clippedKeys.push(key);
-                }
-            }
-
-            // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
-            if (index && animation.dataType !== Animation.ANIMATIONTYPE_FLOAT && key.value === firstKey.value) {
-                continue;
-            }
-
-            switch (animation.dataType) {
-                case Animation.ANIMATIONTYPE_MATRIX:
-                    key.value.decompose(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition);
-                    valueStore.keyPosition.subtractInPlace(valueStore.referencePosition);
-                    valueStore.keyScaling.divideInPlace(valueStore.referenceScaling);
-                    valueStore.referenceQuaternion.multiplyToRef(valueStore.keyQuaternion, valueStore.keyQuaternion);
-                    Matrix.ComposeToRef(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition, key.value);
-                    break;
-
-                case Animation.ANIMATIONTYPE_QUATERNION:
-                    valueStore.referenceValue.multiplyToRef(key.value, key.value);
-                    break;
-
-                case Animation.ANIMATIONTYPE_VECTOR2:
-                case Animation.ANIMATIONTYPE_VECTOR3:
-                case Animation.ANIMATIONTYPE_COLOR3:
-                case Animation.ANIMATIONTYPE_COLOR4:
-                    key.value.subtractToRef(valueStore.referenceValue, key.value);
-                    break;
-
-                case Animation.ANIMATIONTYPE_SIZE:
-                    key.value.width -= valueStore.referenceValue.width;
-                    key.value.height -= valueStore.referenceValue.height;
-                    break;
-
-                default:
-                    key.value -= valueStore.referenceValue;
-            }
-        }
-
-        if (clippedKeys) {
-            animation.setKeys(clippedKeys, true);
-        }
-
-        return animation;
-    }
-
-    /**
-     * Transition property of an host to the target Value
-     * @param property The property to transition
-     * @param targetValue The target Value of the property
-     * @param host The object where the property to animate belongs
-     * @param scene Scene used to run the animation
-     * @param frameRate Framerate (in frame/s) to use
-     * @param transition The transition type we want to use
-     * @param duration The duration of the animation, in milliseconds
-     * @param onAnimationEnd Callback trigger at the end of the animation
-     * @param stopCurrent If true, will stop the current animation on the property
-     * @param customKeys defines custom keys to use for the animation instead of the from-to keys
-     * @returns Nullable animation
-     */
-    public static TransitionTo(
-        property: string,
-        targetValue: any,
-        host: any,
-        scene: Scene,
-        frameRate: number,
-        transition: Animation,
-        duration: number,
-        onAnimationEnd: Nullable<() => void> = null,
-        stopCurrent: boolean = true,
-        customKeys?: IAnimationKey[]
-    ): Nullable<Animatable> {
-        if (duration <= 0) {
-            host[property] = targetValue;
-            if (onAnimationEnd) {
-                onAnimationEnd();
-            }
-            return null;
-        }
-
-        const endFrame: number = frameRate * (duration / 1000);
-
-        transition.setKeys(
-            customKeys ?? [
-                {
-                    frame: 0,
-                    value: host[property].clone ? host[property].clone() : host[property],
-                },
-                {
-                    frame: endFrame,
-                    value: targetValue,
-                },
-            ]
-        );
-
-        if (!host.animations) {
-            host.animations = [];
-        }
-
-        host.animations.push(transition);
-
-        const animation: Animatable = scene.beginAnimation(host, 0, endFrame, false, 1.0, onAnimationEnd ?? undefined, undefined, stopCurrent);
         return animation;
     }
 
@@ -1451,243 +1063,635 @@ export class Animation {
             return right;
         }
     }
+}
 
-    /**
-     * Parses an animation object and creates an animation
-     * @param parsedAnimation Parsed animation object
-     * @returns Animation object
-     */
-    public static Parse(parsedAnimation: any): Animation {
-        const animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+/**
+ * Convert the keyframes of an animation to be relative to a given reference frame.
+ * @param sourceAnimation defines the Animation containing keyframes to convert
+ * @param referenceFrame defines the frame that keyframes in the range will be relative to (default: 0)
+ * @param range defines the name of the AnimationRange belonging to the Animation to convert
+ * @param cloneOriginal defines whether or not to clone the animation and convert the clone or convert the original animation (default is false)
+ * @param clonedName defines the name of the resulting cloned Animation if cloneOriginal is true
+ * @returns a new Animation if cloneOriginal is true or the original Animation if cloneOriginal is false
+ */
+export function AnimationMakeAnimationAdditive(sourceAnimation: Animation, referenceFrame?: number, range?: string, cloneOriginal?: boolean, clonedName?: string): Animation;
 
-        const dataType = parsedAnimation.dataType;
-        const keys: Array<IAnimationKey> = [];
-        let data;
-        let index: number;
+/**
+ * Convert the keyframes of an animation to be relative to a given reference frame.
+ * @param sourceAnimation defines the Animation containing keyframes to convert
+ * @param options defines the options to use when converting ey keyframes
+ * @returns a new Animation if options.cloneOriginalAnimation is true or the original Animation if options.cloneOriginalAnimation is false
+ */
+export function AnimationMakeAnimationAdditive(sourceAnimation: Animation, options?: IMakeAnimationAdditiveOptions): Animation;
 
-        if (parsedAnimation.enableBlending) {
-            animation.enableBlending = parsedAnimation.enableBlending;
-        }
+/** @internal */
+export function AnimationMakeAnimationAdditive(
+    sourceAnimation: Animation,
+    referenceFrameOrOptions?: number | IMakeAnimationAdditiveOptions,
+    range?: string,
+    cloneOriginal = false,
+    clonedName?: string
+): Animation {
+    let options: IMakeAnimationAdditiveOptions;
 
-        if (parsedAnimation.blendingSpeed) {
-            animation.blendingSpeed = parsedAnimation.blendingSpeed;
-        }
+    if (typeof referenceFrameOrOptions === "object") {
+        options = referenceFrameOrOptions;
+    } else {
+        options = {
+            referenceFrame: referenceFrameOrOptions ?? 0,
+            range: range,
+            cloneOriginalAnimation: cloneOriginal,
+            clonedAnimationName: clonedName,
+        };
+    }
 
-        for (index = 0; index < parsedAnimation.keys.length; index++) {
-            const key = parsedAnimation.keys[index];
-            let inTangent: any = undefined;
-            let outTangent: any = undefined;
-            let interpolation: any = undefined;
+    let animation = sourceAnimation;
 
-            switch (dataType) {
-                case Animation.ANIMATIONTYPE_FLOAT:
-                    data = key.values[0];
-                    if (key.values.length >= 2) {
-                        inTangent = key.values[1];
-                    }
-                    if (key.values.length >= 3) {
-                        outTangent = key.values[2];
-                    }
-                    if (key.values.length >= 4) {
-                        interpolation = key.values[3];
-                    }
-                    break;
-                case Animation.ANIMATIONTYPE_QUATERNION:
-                    data = Quaternion.FromArray(key.values);
-                    if (key.values.length >= 8) {
-                        const _inTangent = Quaternion.FromArray(key.values.slice(4, 8));
-                        if (!_inTangent.equals(Quaternion.Zero())) {
-                            inTangent = _inTangent;
-                        }
-                    }
-                    if (key.values.length >= 12) {
-                        const _outTangent = Quaternion.FromArray(key.values.slice(8, 12));
-                        if (!_outTangent.equals(Quaternion.Zero())) {
-                            outTangent = _outTangent;
-                        }
-                    }
-                    if (key.values.length >= 13) {
-                        interpolation = key.values[12];
-                    }
-                    break;
-                case Animation.ANIMATIONTYPE_MATRIX:
-                    data = Matrix.FromArray(key.values);
-                    if (key.values.length >= 17) {
-                        interpolation = key.values[16];
-                    }
-                    break;
-                case Animation.ANIMATIONTYPE_COLOR3:
-                    data = Color3.FromArray(key.values);
-                    if (key.values[3]) {
-                        inTangent = Color3.FromArray(key.values[3]);
-                    }
-                    if (key.values[4]) {
-                        outTangent = Color3.FromArray(key.values[4]);
-                    }
-                    if (key.values[5]) {
-                        interpolation = key.values[5];
-                    }
-                    break;
-                case Animation.ANIMATIONTYPE_COLOR4:
-                    data = Color4.FromArray(key.values);
-                    if (key.values[4]) {
-                        inTangent = Color4.FromArray(key.values[4]);
-                    }
-                    if (key.values[5]) {
-                        outTangent = Color4.FromArray(key.values[5]);
-                    }
-                    if (key.values[6]) {
-                        interpolation = Color4.FromArray(key.values[6]);
-                    }
-                    break;
-                case Animation.ANIMATIONTYPE_VECTOR3:
-                default:
-                    data = Vector3.FromArray(key.values);
-                    if (key.values[3]) {
-                        inTangent = Vector3.FromArray(key.values[3]);
-                    }
-                    if (key.values[4]) {
-                        outTangent = Vector3.FromArray(key.values[4]);
-                    }
-                    if (key.values[5]) {
-                        interpolation = key.values[5];
-                    }
-                    break;
-            }
+    if (options.cloneOriginalAnimation) {
+        animation = sourceAnimation.clone();
+        animation.name = options.clonedAnimationName || animation.name;
+    }
 
-            const keyData: any = {};
-            keyData.frame = key.frame;
-            keyData.value = data;
-
-            if (inTangent != undefined) {
-                keyData.inTangent = inTangent;
-            }
-            if (outTangent != undefined) {
-                keyData.outTangent = outTangent;
-            }
-            if (interpolation != undefined) {
-                keyData.interpolation = interpolation;
-            }
-            keys.push(keyData);
-        }
-
-        animation.setKeys(keys);
-
-        if (parsedAnimation.ranges) {
-            for (index = 0; index < parsedAnimation.ranges.length; index++) {
-                data = parsedAnimation.ranges[index];
-                animation.createRange(data.name, data.from, data.to);
-            }
-        }
-
+    const keys = animation.getKeys();
+    if (!keys.length) {
         return animation;
     }
 
-    /**
-     * Appends the serialized animations from the source animations
-     * @param source Source containing the animations
-     * @param destination Target to store the animations
-     */
-    public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
-        SerializationHelper.AppendSerializedAnimations(source, destination);
+    const referenceFrame = options.referenceFrame && options.referenceFrame >= 0 ? options.referenceFrame : 0;
+    let startIndex = 0;
+    const firstKey = keys[0];
+    let endIndex = keys.length - 1;
+    const lastKey = keys[endIndex];
+    const valueStore = {
+        referenceValue: firstKey.value,
+        referencePosition: TmpVectors.Vector3[0],
+        referenceQuaternion: TmpVectors.Quaternion[0],
+        referenceScaling: TmpVectors.Vector3[1],
+        keyPosition: TmpVectors.Vector3[2],
+        keyQuaternion: TmpVectors.Quaternion[1],
+        keyScaling: TmpVectors.Vector3[3],
+    };
+    let from = firstKey.frame;
+    let to = lastKey.frame;
+    if (options.range) {
+        const rangeValue = animation.getRange(options.range);
+
+        if (rangeValue) {
+            from = rangeValue.from;
+            to = rangeValue.to;
+        }
+    } else {
+        from = options.fromFrame ?? from;
+        to = options.toFrame ?? to;
     }
 
-    /**
-     * Creates a new animation or an array of animations from a snippet saved in a remote file
-     * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
-     * @param url defines the url to load from
-     * @returns a promise that will resolve to the new animation or an array of animations
-     */
-    public static async ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
-        return await new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        let serializationObject = JSON.parse(request.responseText);
-                        if (serializationObject.animations) {
-                            serializationObject = serializationObject.animations;
-                        }
+    if (from !== firstKey.frame) {
+        startIndex = animation.createKeyForFrame(from);
+    }
 
-                        if (serializationObject.length) {
-                            const output: Animation[] = [];
-                            for (const serializedAnimation of serializationObject) {
-                                output.push(this.Parse(serializedAnimation));
-                            }
+    if (to !== lastKey.frame) {
+        endIndex = animation.createKeyForFrame(to);
+    }
 
-                            resolve(output);
-                        } else {
-                            const output = this.Parse(serializationObject);
+    const updatedKeys = animation.getKeys();
 
-                            if (name) {
-                                output.name = name;
-                            }
+    // There's only one key, so use it
+    if (updatedKeys.length === 1) {
+        const value = animation._getKeyValue(updatedKeys[0]);
+        valueStore.referenceValue = value.clone ? value.clone() : value;
+    }
 
-                            resolve(output);
-                        }
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject("Unable to load the animation");
-                    }
+    // Reference frame is before the first frame, so just use the first frame
+    else if (referenceFrame <= firstKey.frame) {
+        const value = animation._getKeyValue(firstKey.value);
+        valueStore.referenceValue = value.clone ? value.clone() : value;
+    }
+
+    // Reference frame is after the last frame, so just use the last frame
+    else if (referenceFrame >= lastKey.frame) {
+        const value = animation._getKeyValue(lastKey.value);
+        valueStore.referenceValue = value.clone ? value.clone() : value;
+    }
+
+    // Interpolate the reference value from the animation
+    else {
+        EvaluateAnimationState.key = 0;
+        const value = animation._interpolate(referenceFrame, EvaluateAnimationState);
+        valueStore.referenceValue = value.clone ? value.clone() : value;
+    }
+
+    // Conjugate the quaternion
+    if (animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
+        valueStore.referenceValue.normalize().conjugateInPlace();
+    }
+
+    // Decompose matrix and conjugate the quaternion
+    else if (animation.dataType === Animation.ANIMATIONTYPE_MATRIX) {
+        valueStore.referenceValue.decompose(valueStore.referenceScaling, valueStore.referenceQuaternion, valueStore.referencePosition);
+        valueStore.referenceQuaternion.normalize().conjugateInPlace();
+    }
+
+    let startFrame = Number.MAX_VALUE;
+    const clippedKeys: Nullable<IAnimationKey[]> = options.clipKeys ? [] : null;
+
+    // Subtract the reference value from all of the key values
+    for (let index = startIndex; index <= endIndex; index++) {
+        let key = updatedKeys[index];
+
+        if (clippedKeys || options.cloneOriginalAnimation) {
+            key = {
+                frame: key.frame,
+                value: key.value.clone ? key.value.clone() : key.value,
+                inTangent: key.inTangent,
+                outTangent: key.outTangent,
+                interpolation: key.interpolation,
+                lockedTangent: key.lockedTangent,
+                easingFunction: key.easingFunction,
+            };
+            if (clippedKeys) {
+                if (startFrame === Number.MAX_VALUE) {
+                    startFrame = key.frame;
                 }
-            });
+                key.frame -= startFrame;
+                clippedKeys.push(key);
+            }
+        }
 
-            request.open("GET", url);
-            request.send();
-        });
+        // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
+        if (index && animation.dataType !== Animation.ANIMATIONTYPE_FLOAT && key.value === firstKey.value) {
+            continue;
+        }
+
+        switch (animation.dataType) {
+            case Animation.ANIMATIONTYPE_MATRIX:
+                key.value.decompose(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition);
+                valueStore.keyPosition.subtractInPlace(valueStore.referencePosition);
+                valueStore.keyScaling.divideInPlace(valueStore.referenceScaling);
+                valueStore.referenceQuaternion.multiplyToRef(valueStore.keyQuaternion, valueStore.keyQuaternion);
+                Matrix.ComposeToRef(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition, key.value);
+                break;
+
+            case Animation.ANIMATIONTYPE_QUATERNION:
+                valueStore.referenceValue.multiplyToRef(key.value, key.value);
+                break;
+
+            case Animation.ANIMATIONTYPE_VECTOR2:
+            case Animation.ANIMATIONTYPE_VECTOR3:
+            case Animation.ANIMATIONTYPE_COLOR3:
+            case Animation.ANIMATIONTYPE_COLOR4:
+                key.value.subtractToRef(valueStore.referenceValue, key.value);
+                break;
+
+            case Animation.ANIMATIONTYPE_SIZE:
+                key.value.width -= valueStore.referenceValue.width;
+                key.value.height -= valueStore.referenceValue.height;
+                break;
+
+            default:
+                key.value -= valueStore.referenceValue;
+        }
     }
 
-    /**
-     * Creates an animation or an array of animations from a snippet saved by the Inspector
-     * @param snippetId defines the snippet to load
-     * @returns a promise that will resolve to the new animation or a new array of animations
-     */
-    public static async ParseFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
-        return await new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-
-                        if (snippet.animations) {
-                            const serializationObject = JSON.parse(snippet.animations);
-                            const outputs: Animation[] = [];
-                            for (const serializedAnimation of serializationObject.animations) {
-                                const output = this.Parse(serializedAnimation);
-                                output.snippetId = snippetId;
-                                outputs.push(output);
-                            }
-
-                            resolve(outputs);
-                        } else {
-                            const serializationObject = JSON.parse(snippet.animation);
-                            const output = this.Parse(serializationObject);
-
-                            output.snippetId = snippetId;
-
-                            resolve(output);
-                        }
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject("Unable to load the snippet " + snippetId);
-                    }
-                }
-            });
-
-            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
-            request.send();
-        });
+    if (clippedKeys) {
+        animation.setKeys(clippedKeys, true);
     }
 
-    /**
-     * Creates an animation or an array of animations from a snippet saved by the Inspector
-     * @deprecated Please use ParseFromSnippetAsync instead
-     * @param snippetId defines the snippet to load
-     * @returns a promise that will resolve to the new animation or a new array of animations
-     */
-    public static CreateFromSnippetAsync = Animation.ParseFromSnippetAsync;
+    return animation;
 }
+
+/**
+ * Sets up an animation
+ * @param property The property to animate
+ * @param animationType The animation type to apply
+ * @param framePerSecond The frames per second of the animation
+ * @param easingFunction The easing function used in the animation
+ * @returns The created animation
+ */
+export function AnimationCreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation {
+    const animation: Animation = new Animation(property + "Animation", property, framePerSecond, animationType, Animation.ANIMATIONLOOPMODE_CONSTANT);
+
+    animation.setEasingFunction(easingFunction);
+
+    return animation;
+}
+
+/**
+ * Create and start an animation on a node
+ * @param name defines the name of the global animation that will be run on all nodes
+ * @param target defines the target where the animation will take place
+ * @param targetProperty defines property to animate
+ * @param framePerSecond defines the number of frame per second yo use
+ * @param totalFrame defines the number of frames in total
+ * @param from defines the initial value
+ * @param to defines the final value
+ * @param loopMode defines which loop mode you want to use (off by default)
+ * @param easingFunction defines the easing function to use (linear by default)
+ * @param onAnimationEnd defines the callback to call when animation end
+ * @param scene defines the hosting scene
+ * @returns the animatable created for this animation
+ */
+export function AnimationCreateAndStartAnimation(
+    name: string,
+    target: any,
+    targetProperty: string,
+    framePerSecond: number,
+    totalFrame: number,
+    from: any,
+    to: any,
+    loopMode?: number,
+    easingFunction?: EasingFunction,
+    onAnimationEnd?: () => void,
+    scene?: Scene
+): Nullable<Animatable> {
+    const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+    if (!animation) {
+        return null;
+    }
+
+    if (target.getScene) {
+        scene = target.getScene();
+    }
+
+    if (!scene) {
+        return null;
+    }
+
+    return scene.beginDirectAnimation(target, [animation], 0, totalFrame, animation.loopMode !== Animation.ANIMATIONLOOPMODE_CONSTANT, 1.0, onAnimationEnd);
+}
+
+/**
+ * Create and start an animation on a node and its descendants
+ * @param name defines the name of the global animation that will be run on all nodes
+ * @param node defines the root node where the animation will take place
+ * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
+ * @param targetProperty defines property to animate
+ * @param framePerSecond defines the number of frame per second to use
+ * @param totalFrame defines the number of frames in total
+ * @param from defines the initial value
+ * @param to defines the final value
+ * @param loopMode defines which loop mode you want to use (off by default)
+ * @param easingFunction defines the easing function to use (linear by default)
+ * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+ * @returns the list of animatables created for all nodes
+ * @example https://www.babylonjs-playground.com/#MH0VLI
+ */
+export function AnimationCreateAndStartHierarchyAnimation(
+    name: string,
+    node: Node,
+    directDescendantsOnly: boolean,
+    targetProperty: string,
+    framePerSecond: number,
+    totalFrame: number,
+    from: any,
+    to: any,
+    loopMode?: number,
+    easingFunction?: EasingFunction,
+    onAnimationEnd?: () => void
+): Nullable<Animatable[]> {
+    const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+    if (!animation) {
+        return null;
+    }
+
+    const scene = node.getScene();
+    return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
+}
+
+/**
+ * Creates a new animation, merges it with the existing animations and starts it
+ * @param name Name of the animation
+ * @param node Node which contains the scene that begins the animations
+ * @param targetProperty Specifies which property to animate
+ * @param framePerSecond The frames per second of the animation
+ * @param totalFrame The total number of frames
+ * @param from The frame at the beginning of the animation
+ * @param to The frame at the end of the animation
+ * @param loopMode Specifies the loop mode of the animation
+ * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
+ * @param onAnimationEnd Callback to run once the animation is complete
+ * @returns Nullable animation
+ */
+export function AnimationCreateMergeAndStartAnimation(
+    name: string,
+    node: Node,
+    targetProperty: string,
+    framePerSecond: number,
+    totalFrame: number,
+    from: any,
+    to: any,
+    loopMode?: number,
+    easingFunction?: EasingFunction,
+    onAnimationEnd?: () => void
+): Nullable<Animatable> {
+    const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+    if (!animation) {
+        return null;
+    }
+
+    node.animations.push(animation);
+
+    return node.getScene().beginAnimation(node, 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
+}
+
+/**
+ * Transition property of an object to a target value
+ * @param property The property to transition
+ * @param targetValue The target value of the property
+ * @param host The object where the property to animate belongs
+ * @param scene Scene used to run the animation
+ * @param frameRate Framerate (in frame/s) to use
+ * @param transition The transition to apply
+ * @param duration The duration of the transition (in milliseconds)
+ * @param onAnimationEnd Callback to run once the animation is complete
+ * @param stopCurrent Stop the current animations for this property (default: true)
+ * @param customKeys Custom animation keys for the transition
+ * @returns the animatable created for this transition
+ */
+export function AnimationTransitionTo(
+    property: string,
+    targetValue: any,
+    host: any,
+    scene: Scene,
+    frameRate: number,
+    transition: Animation,
+    duration: number,
+    onAnimationEnd: Nullable<() => void> = null,
+    stopCurrent: boolean = true,
+    customKeys?: IAnimationKey[]
+): Nullable<Animatable> {
+    if (duration <= 0) {
+        host[property] = targetValue;
+        if (onAnimationEnd) {
+            onAnimationEnd();
+        }
+        return null;
+    }
+
+    const endFrame: number = frameRate * (duration / 1000);
+
+    transition.setKeys(
+        customKeys ?? [
+            {
+                frame: 0,
+                value: host[property].clone ? host[property].clone() : host[property],
+            },
+            {
+                frame: endFrame,
+                value: targetValue,
+            },
+        ]
+    );
+
+    if (!host.animations) {
+        host.animations = [];
+    }
+
+    host.animations.push(transition);
+
+    const animatable: Animatable = scene.beginAnimation(host, 0, endFrame, false, 1.0, onAnimationEnd ?? undefined, undefined, stopCurrent);
+    return animatable;
+}
+
+/**
+ * Appends the serialized animations from the source animations
+ * @param source Source containing the animations
+ * @param destination Target to store the animations
+ */
+export function AnimationAppendSerializedAnimations(source: IAnimatable, destination: any): void {
+    SerializationHelper.AppendSerializedAnimations(source, destination);
+}
+
+/**
+ * Parses an animation object and creates an animation
+ * @param parsedAnimation Parsed animation object
+ * @returns Animation object
+ */
+export function AnimationParse(parsedAnimation: any): Animation {
+    const animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+
+    const dataType = parsedAnimation.dataType;
+    const keys: Array<IAnimationKey> = [];
+    let data;
+    let index: number;
+
+    if (parsedAnimation.enableBlending) {
+        animation.enableBlending = parsedAnimation.enableBlending;
+    }
+
+    if (parsedAnimation.blendingSpeed) {
+        animation.blendingSpeed = parsedAnimation.blendingSpeed;
+    }
+
+    for (index = 0; index < parsedAnimation.keys.length; index++) {
+        const key = parsedAnimation.keys[index];
+        let inTangent: any = undefined;
+        let outTangent: any = undefined;
+        let interpolation: any = undefined;
+
+        switch (dataType) {
+            case Animation.ANIMATIONTYPE_FLOAT:
+                data = key.values[0];
+                if (key.values.length >= 2) {
+                    inTangent = key.values[1];
+                }
+                if (key.values.length >= 3) {
+                    outTangent = key.values[2];
+                }
+                if (key.values.length >= 4) {
+                    interpolation = key.values[3];
+                }
+                break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+                data = Quaternion.FromArray(key.values);
+                if (key.values.length >= 8) {
+                    const _inTangent = Quaternion.FromArray(key.values.slice(4, 8));
+                    if (!_inTangent.equals(Quaternion.Zero())) {
+                        inTangent = _inTangent;
+                    }
+                }
+                if (key.values.length >= 12) {
+                    const _outTangent = Quaternion.FromArray(key.values.slice(8, 12));
+                    if (!_outTangent.equals(Quaternion.Zero())) {
+                        outTangent = _outTangent;
+                    }
+                }
+                if (key.values.length >= 13) {
+                    interpolation = key.values[12];
+                }
+                break;
+            case Animation.ANIMATIONTYPE_MATRIX:
+                data = Matrix.FromArray(key.values);
+                if (key.values.length >= 17) {
+                    interpolation = key.values[16];
+                }
+                break;
+            case Animation.ANIMATIONTYPE_COLOR3:
+                data = Color3.FromArray(key.values);
+                if (key.values[3]) {
+                    inTangent = Color3.FromArray(key.values[3]);
+                }
+                if (key.values[4]) {
+                    outTangent = Color3.FromArray(key.values[4]);
+                }
+                if (key.values[5]) {
+                    interpolation = key.values[5];
+                }
+                break;
+            case Animation.ANIMATIONTYPE_COLOR4:
+                data = Color4.FromArray(key.values);
+                if (key.values[4]) {
+                    inTangent = Color4.FromArray(key.values[4]);
+                }
+                if (key.values[5]) {
+                    outTangent = Color4.FromArray(key.values[5]);
+                }
+                if (key.values[6]) {
+                    interpolation = Color4.FromArray(key.values[6]);
+                }
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+            default:
+                data = Vector3.FromArray(key.values);
+                if (key.values[3]) {
+                    inTangent = Vector3.FromArray(key.values[3]);
+                }
+                if (key.values[4]) {
+                    outTangent = Vector3.FromArray(key.values[4]);
+                }
+                if (key.values[5]) {
+                    interpolation = key.values[5];
+                }
+                break;
+        }
+
+        const keyData: any = {};
+        keyData.frame = key.frame;
+        keyData.value = data;
+
+        if (inTangent != undefined) {
+            keyData.inTangent = inTangent;
+        }
+        if (outTangent != undefined) {
+            keyData.outTangent = outTangent;
+        }
+        if (interpolation != undefined) {
+            keyData.interpolation = interpolation;
+        }
+        keys.push(keyData);
+    }
+
+    animation.setKeys(keys);
+
+    if (parsedAnimation.ranges) {
+        for (index = 0; index < parsedAnimation.ranges.length; index++) {
+            data = parsedAnimation.ranges[index];
+            animation.createRange(data.name, data.from, data.to);
+        }
+    }
+
+    return animation;
+}
+
+/**
+ * Creates a new animation or an array of animations from a snippet saved in a remote file
+ * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
+ * @param url defines the url to load from
+ * @returns a promise that will resolve to the new animation or an array of animations
+ */
+export async function AnimationParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
+    return await new Promise((resolve, reject) => {
+        const request = new WebRequest();
+        request.addEventListener("readystatechange", () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    let serializationObject = JSON.parse(request.responseText);
+                    if (serializationObject.animations) {
+                        serializationObject = serializationObject.animations;
+                    }
+
+                    if (serializationObject.length) {
+                        const output: Animation[] = [];
+                        for (const serializedAnimation of serializationObject) {
+                            output.push(AnimationParse(serializedAnimation));
+                        }
+
+                        resolve(output);
+                    } else {
+                        const output = AnimationParse(serializationObject);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    }
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject("Unable to load the animation");
+                }
+            }
+        });
+
+        request.open("GET", url);
+        request.send();
+    });
+}
+
+/**
+ * Creates an animation or an array of animations from a snippet saved by the Inspector
+ * @param snippetId defines the snippet to load
+ * @returns a promise that will resolve to the new animation or a new array of animations
+ */
+export async function AnimationParseFromSnippetAsync(this: typeof Animation | void, snippetId: string): Promise<Animation | Array<Animation>> {
+    const snippetUrl = this?.SnippetUrl ?? Animation.SnippetUrl;
+
+    return await new Promise((resolve, reject) => {
+        const request = new WebRequest();
+        request.addEventListener("readystatechange", () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+
+                    if (snippet.animations) {
+                        const serializationObject = JSON.parse(snippet.animations);
+                        const outputs: Animation[] = [];
+                        for (const serializedAnimation of serializationObject.animations) {
+                            const output = AnimationParse(serializedAnimation);
+                            output.snippetId = snippetId;
+                            outputs.push(output);
+                        }
+
+                        resolve(outputs);
+                    } else {
+                        const serializationObject = JSON.parse(snippet.animation);
+                        const output = AnimationParse(serializationObject);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    }
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject("Unable to load the snippet " + snippetId);
+                }
+            }
+        });
+
+        request.open("GET", snippetUrl + "/" + snippetId.replace(/#/g, "/"));
+        request.send();
+    });
+}
+
+/**
+ * Creates an animation or an array of animations from a snippet saved by the Inspector
+ * @deprecated Please use AnimationParseFromSnippetAsync instead
+ * @param snippetId defines the snippet to load
+ * @returns a promise that will resolve to the new animation or a new array of animations
+ */
+export const AnimationCreateFromSnippetAsync = AnimationParseFromSnippetAsync;
 
 let _Registered = false;
 /**
@@ -1699,6 +1703,18 @@ export function RegisterAnimation(): void {
         return;
     }
     _Registered = true;
+
+    Animation.Parse = AnimationParse;
+    Animation.ParseFromFileAsync = AnimationParseFromFileAsync;
+    Animation.ParseFromSnippetAsync = AnimationParseFromSnippetAsync;
+    Animation.CreateFromSnippetAsync = AnimationCreateFromSnippetAsync;
+    Animation.CreateAnimation = AnimationCreateAnimation;
+    Animation.CreateAndStartAnimation = AnimationCreateAndStartAnimation;
+    Animation.CreateAndStartHierarchyAnimation = AnimationCreateAndStartHierarchyAnimation;
+    Animation.CreateMergeAndStartAnimation = AnimationCreateMergeAndStartAnimation;
+    Animation.MakeAnimationAdditive = AnimationMakeAnimationAdditive;
+    Animation.TransitionTo = AnimationTransitionTo;
+    Animation.AppendSerializedAnimations = AnimationAppendSerializedAnimations;
 
     RegisterClass("BABYLON.Animation", Animation);
 

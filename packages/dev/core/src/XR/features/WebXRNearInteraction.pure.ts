@@ -21,7 +21,7 @@ import { BoundingSphere } from "../../Culling/boundingSphere";
 import { type TransformNode } from "../../Meshes/transformNode.pure";
 import { StandardMaterial } from "../../Materials/standardMaterial.pure";
 import { Color3 } from "../../Maths/math.color.pure";
-import { NodeMaterial } from "../../Materials/Node/nodeMaterial.pure";
+import { type NodeMaterial, NodeMaterialParseFromFileAsync, NodeMaterialParseFromSnippetAsync } from "../../Materials/Node/nodeMaterial.pure";
 import { type Material } from "../../Materials/material.pure";
 import { Animation } from "../../Animations/animation.pure";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
@@ -866,9 +866,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         } else {
             let parsePromise: Promise<NodeMaterial>;
             if (this._options.motionControllerTouchMaterialSnippetUrl) {
-                parsePromise = NodeMaterial.ParseFromFileAsync("motionControllerTouchMaterial", this._options.motionControllerTouchMaterialSnippetUrl, meshCreationScene);
+                parsePromise = NodeMaterialParseFromFileAsync("motionControllerTouchMaterial", this._options.motionControllerTouchMaterialSnippetUrl, meshCreationScene);
             } else {
-                parsePromise = NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene);
+                parsePromise = NodeMaterialParseFromSnippetAsync("8RUNKL#3", meshCreationScene);
             }
             parsePromise
                 // eslint-disable-next-line github/no-then
@@ -966,7 +966,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (!predicate(mesh) || !this._controllerAvailablePredicate(mesh, controllerData.xrController.uniqueId)) {
                     continue;
                 }
-                const result = WebXRNearInteraction.PickMeshWithSphere(mesh, sphere);
+                const result = WebXRNearInteractionPickMeshWithSphere(mesh, sphere);
 
                 if (result && result.hit && result.distance < pickingInfo.distance) {
                     pickingInfo.hit = result.hit;
@@ -985,89 +985,89 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
         return pickingInfo;
     }
+}
 
-    /**
-     * Picks a mesh with a sphere
-     * @param mesh the mesh to pick
-     * @param sphere picking sphere in world coordinates
-     * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
-     * @returns the picking info
-     */
-    public static PickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo = false): PickingInfo {
-        const subMeshes = mesh.subMeshes;
-        const pi = new PickingInfo();
-        const boundingInfo = mesh.getBoundingInfo();
+/**
+ * Picks a mesh with a sphere
+ * @param mesh the mesh to pick
+ * @param sphere picking sphere in world coordinates
+ * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
+ * @returns the picking info
+ */
+export function WebXRNearInteractionPickMeshWithSphere(mesh: AbstractMesh, sphere: BoundingSphere, skipBoundingInfo = false): PickingInfo {
+    const subMeshes = mesh.subMeshes;
+    const pi = new PickingInfo();
+    const boundingInfo = mesh.getBoundingInfo();
 
-        if (!mesh._generatePointsArray()) {
-            return pi;
-        }
-
-        if (!mesh.subMeshes || !boundingInfo) {
-            return pi;
-        }
-
-        if (!skipBoundingInfo && !BoundingSphere.Intersects(boundingInfo.boundingSphere, sphere)) {
-            return pi;
-        }
-
-        const result = LocalTempVectors[0];
-        const tmpVec = LocalTempVectors[1];
-        LocalTempVectors[2].setAll(0);
-        LocalTempVectors[3].setAll(0);
-
-        const tmpRay = new Ray(LocalTempVectors[2], LocalTempVectors[3], 1);
-
-        let distance = +Infinity;
-        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;
-        const center = TmpVectors.Vector3[2];
-        const worldToMesh = TmpVectors.Matrix[0];
-        worldToMesh.copyFrom(mesh.getWorldMatrix());
-        worldToMesh.invert();
-        Vector3.TransformCoordinatesToRef(sphere.center, worldToMesh, center);
-
-        for (let index = 0; index < subMeshes.length; index++) {
-            const subMesh = subMeshes[index];
-
-            subMesh.projectToRef(center, <Vector3[]>mesh._positions, <IndicesArray>mesh.getIndices(), tmpVec);
-
-            Vector3.TransformCoordinatesToRef(tmpVec, mesh.getWorldMatrix(), tmpVec);
-            tmp = Vector3.Distance(tmpVec, sphere.center);
-
-            // Check for finger inside of mesh
-            tmpDistanceSurfaceToCenter = Vector3.DistanceSquared(tmpVec, mesh.getAbsolutePosition());
-            tmpDistanceSphereToCenter = Vector3.DistanceSquared(sphere.center, mesh.getAbsolutePosition());
-            if (tmpDistanceSphereToCenter !== -1 && tmpDistanceSurfaceToCenter !== -1 && tmpDistanceSurfaceToCenter > tmpDistanceSphereToCenter) {
-                tmp = 0;
-                tmpVec.copyFrom(sphere.center);
-            }
-
-            if (tmp !== -1 && tmp < distance) {
-                distance = tmp;
-
-                // ray between the sphere center and the point on the mesh
-                Ray.CreateFromToToRef(sphere.center, tmpVec, tmpRay);
-                tmpRay.length = distance * 2;
-                intersectionInfo = tmpRay.intersectsMesh(mesh);
-
-                result.copyFrom(tmpVec);
-            }
-        }
-
-        if (distance < sphere.radius) {
-            pi.hit = true;
-            pi.distance = distance;
-            pi.pickedMesh = mesh;
-            pi.pickedPoint = result.clone();
-            if (intersectionInfo && intersectionInfo.bu !== null && intersectionInfo.bv !== null) {
-                pi.faceId = intersectionInfo.faceId;
-                pi.subMeshId = intersectionInfo.subMeshId;
-                pi.bu = intersectionInfo.bu;
-                pi.bv = intersectionInfo.bv;
-            }
-        }
-
+    if (!mesh._generatePointsArray()) {
         return pi;
     }
+
+    if (!mesh.subMeshes || !boundingInfo) {
+        return pi;
+    }
+
+    if (!skipBoundingInfo && !BoundingSphere.Intersects(boundingInfo.boundingSphere, sphere)) {
+        return pi;
+    }
+
+    const result = LocalTempVectors[0];
+    const tmpVec = LocalTempVectors[1];
+    LocalTempVectors[2].setAll(0);
+    LocalTempVectors[3].setAll(0);
+
+    const tmpRay = new Ray(LocalTempVectors[2], LocalTempVectors[3], 1);
+
+    let distance = +Infinity;
+    let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;
+    const center = TmpVectors.Vector3[2];
+    const worldToMesh = TmpVectors.Matrix[0];
+    worldToMesh.copyFrom(mesh.getWorldMatrix());
+    worldToMesh.invert();
+    Vector3.TransformCoordinatesToRef(sphere.center, worldToMesh, center);
+
+    for (let index = 0; index < subMeshes.length; index++) {
+        const subMesh = subMeshes[index];
+
+        subMesh.projectToRef(center, <Vector3[]>mesh._positions, <IndicesArray>mesh.getIndices(), tmpVec);
+
+        Vector3.TransformCoordinatesToRef(tmpVec, mesh.getWorldMatrix(), tmpVec);
+        tmp = Vector3.Distance(tmpVec, sphere.center);
+
+        // Check for finger inside of mesh
+        tmpDistanceSurfaceToCenter = Vector3.DistanceSquared(tmpVec, mesh.getAbsolutePosition());
+        tmpDistanceSphereToCenter = Vector3.DistanceSquared(sphere.center, mesh.getAbsolutePosition());
+        if (tmpDistanceSphereToCenter !== -1 && tmpDistanceSurfaceToCenter !== -1 && tmpDistanceSurfaceToCenter > tmpDistanceSphereToCenter) {
+            tmp = 0;
+            tmpVec.copyFrom(sphere.center);
+        }
+
+        if (tmp !== -1 && tmp < distance) {
+            distance = tmp;
+
+            // ray between the sphere center and the point on the mesh
+            Ray.CreateFromToToRef(sphere.center, tmpVec, tmpRay);
+            tmpRay.length = distance * 2;
+            intersectionInfo = tmpRay.intersectsMesh(mesh);
+
+            result.copyFrom(tmpVec);
+        }
+    }
+
+    if (distance < sphere.radius) {
+        pi.hit = true;
+        pi.distance = distance;
+        pi.pickedMesh = mesh;
+        pi.pickedPoint = result.clone();
+        if (intersectionInfo && intersectionInfo.bu !== null && intersectionInfo.bv !== null) {
+            pi.faceId = intersectionInfo.faceId;
+            pi.subMeshId = intersectionInfo.subMeshId;
+            pi.bu = intersectionInfo.bu;
+            pi.bv = intersectionInfo.bv;
+        }
+    }
+
+    return pi;
 }
 
 let _Registered = false;
@@ -1080,6 +1080,8 @@ export function RegisterWebXRNearInteraction(): void {
         return;
     }
     _Registered = true;
+
+    WebXRNearInteraction.PickMeshWithSphere = WebXRNearInteractionPickMeshWithSphere;
 
     //Register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

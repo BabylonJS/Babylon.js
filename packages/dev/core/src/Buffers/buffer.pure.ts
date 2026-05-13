@@ -566,7 +566,7 @@ export class VertexBuffer {
 
         if (type === undefined) {
             const vertexData = this.getData();
-            this.type = vertexData ? VertexBuffer.GetDataType(vertexData) : VertexBuffer.FLOAT;
+            this.type = vertexData ? VertexBufferGetDataType(vertexData) : VertexBuffer.FLOAT;
         } else {
             this.type = type;
         }
@@ -574,11 +574,11 @@ export class VertexBuffer {
         const typeByteLength = GetTypeByteLength(this.type);
 
         if (useBytes) {
-            this._size = size || (stride ? stride / typeByteLength : VertexBuffer.DeduceStride(kind));
+            this._size = size || (stride ? stride / typeByteLength : VertexBufferDeduceStride(kind));
             this.byteStride = stride || this._buffer.byteStride || this._size * typeByteLength;
             this.byteOffset = offset || 0;
         } else {
-            this._size = size || stride || VertexBuffer.DeduceStride(kind);
+            this._size = size || stride || VertexBufferDeduceStride(kind);
             this.byteStride = stride ? stride * typeByteLength : this._buffer.byteStride || this._size * typeByteLength;
             this.byteOffset = (offset || 0) * typeByteLength;
         }
@@ -831,124 +831,142 @@ export class VertexBuffer {
      * Additional matrix weights (for bones)
      */
     public static readonly MatricesWeightsExtraKind = Constants.MatricesWeightsExtraKind;
+}
 
-    /**
-     * Deduces the stride given a kind.
-     * @param kind The kind string to deduce
-     * @returns The deduced stride
-     */
-    public static DeduceStride(kind: string): number {
-        switch (kind) {
-            case VertexBuffer.UVKind:
-            case VertexBuffer.UV2Kind:
-            case VertexBuffer.UV3Kind:
-            case VertexBuffer.UV4Kind:
-            case VertexBuffer.UV5Kind:
-            case VertexBuffer.UV6Kind:
-                return 2;
-            case VertexBuffer.NormalKind:
-            case VertexBuffer.PositionKind:
-                return 3;
-            case VertexBuffer.ColorKind:
-            case VertexBuffer.ColorInstanceKind:
-            case VertexBuffer.MatricesIndicesKind:
-            case VertexBuffer.MatricesIndicesExtraKind:
-            case VertexBuffer.MatricesWeightsKind:
-            case VertexBuffer.MatricesWeightsExtraKind:
-            case VertexBuffer.TangentKind:
-                return 4;
-            default:
-                throw new Error("Invalid kind '" + kind + "'");
+/**
+ * Deduces the stride given a kind.
+ * @param kind The kind string to deduce
+ * @returns The deduced stride
+ */
+export function VertexBufferDeduceStride(kind: string): number {
+    switch (kind) {
+        case VertexBuffer.UVKind:
+        case VertexBuffer.UV2Kind:
+        case VertexBuffer.UV3Kind:
+        case VertexBuffer.UV4Kind:
+        case VertexBuffer.UV5Kind:
+        case VertexBuffer.UV6Kind:
+            return 2;
+        case VertexBuffer.NormalKind:
+        case VertexBuffer.PositionKind:
+            return 3;
+        case VertexBuffer.ColorKind:
+        case VertexBuffer.ColorInstanceKind:
+        case VertexBuffer.MatricesIndicesKind:
+        case VertexBuffer.MatricesIndicesExtraKind:
+        case VertexBuffer.MatricesWeightsKind:
+        case VertexBuffer.MatricesWeightsExtraKind:
+        case VertexBuffer.TangentKind:
+            return 4;
+        default:
+            throw new Error("Invalid kind '" + kind + "'");
+    }
+}
+
+/**
+ * Gets the vertex buffer type of the given data array.
+ * @param data the data array
+ * @returns the vertex buffer type
+ */
+export function VertexBufferGetDataType(data: DataArray): number {
+    if (data instanceof Int8Array) {
+        return VertexBuffer.BYTE;
+    } else if (data instanceof Uint8Array) {
+        return VertexBuffer.UNSIGNED_BYTE;
+    } else if (data instanceof Int16Array) {
+        return VertexBuffer.SHORT;
+    } else if (data instanceof Uint16Array) {
+        return VertexBuffer.UNSIGNED_SHORT;
+    } else if (data instanceof Int32Array) {
+        return VertexBuffer.INT;
+    } else if (data instanceof Uint32Array) {
+        return VertexBuffer.UNSIGNED_INT;
+    } else {
+        return VertexBuffer.FLOAT;
+    }
+}
+
+/**
+ * Gets the byte length of the given type.
+ * @param type the type
+ * @returns the number of bytes
+ * @deprecated Use `getTypeByteLength` from `bufferUtils` instead
+ */
+export function VertexBufferGetTypeByteLength(type: number): number {
+    return GetTypeByteLength(type);
+}
+
+/**
+ * Enumerates each value of the given parameters as numbers.
+ * @param data the data to enumerate
+ * @param byteOffset the byte offset of the data
+ * @param byteStride the byte stride of the data
+ * @param componentCount the number of components per element
+ * @param componentType the type of the component
+ * @param count the number of values to enumerate
+ * @param normalized whether the data is normalized
+ * @param callback the callback function called for each value
+ * @deprecated Use `EnumerateFloatValues` from `bufferUtils` instead
+ */
+export function VertexBufferForEach(
+    data: DataArray,
+    byteOffset: number,
+    byteStride: number,
+    componentCount: number,
+    componentType: number,
+    count: number,
+    normalized: boolean,
+    callback: (value: number, index: number) => void
+): void {
+    EnumerateFloatValues(data, byteOffset, byteStride, componentCount, componentType, count, normalized, (values, index) => {
+        for (let componentIndex = 0; componentIndex < componentCount; componentIndex++) {
+            callback(values[componentIndex], index + componentIndex);
         }
-    }
+    });
+}
 
-    /**
-     * Gets the vertex buffer type of the given data array.
-     * @param data the data array
-     * @returns the vertex buffer type
-     */
-    public static GetDataType(data: DataArray): number {
-        if (data instanceof Int8Array) {
-            return VertexBuffer.BYTE;
-        } else if (data instanceof Uint8Array) {
-            return VertexBuffer.UNSIGNED_BYTE;
-        } else if (data instanceof Int16Array) {
-            return VertexBuffer.SHORT;
-        } else if (data instanceof Uint16Array) {
-            return VertexBuffer.UNSIGNED_SHORT;
-        } else if (data instanceof Int32Array) {
-            return VertexBuffer.INT;
-        } else if (data instanceof Uint32Array) {
-            return VertexBuffer.UNSIGNED_INT;
-        } else {
-            return VertexBuffer.FLOAT;
-        }
-    }
+/**
+ * Gets the given data array as a float array. Float data is constructed if the data array cannot be returned directly.
+ * @param data the input data array
+ * @param size the number of components
+ * @param type the component type
+ * @param byteOffset the byte offset of the data
+ * @param byteStride the byte stride of the data
+ * @param normalized whether the data is normalized
+ * @param totalVertices number of vertices in the buffer to take into account
+ * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+ * @returns a float array containing vertex data
+ * @deprecated Use `GetFloatData` from `bufferUtils` instead
+ */
+export function VertexBufferGetFloatData(
+    data: DataArray,
+    size: number,
+    type: number,
+    byteOffset: number,
+    byteStride: number,
+    normalized: boolean,
+    totalVertices: number,
+    forceCopy?: boolean
+): FloatArray {
+    return GetFloatData(data, size, type, byteOffset, byteStride, normalized, totalVertices, forceCopy);
+}
 
-    /**
-     * Gets the byte length of the given type.
-     * @param type the type
-     * @returns the number of bytes
-     * @deprecated Use `getTypeByteLength` from `bufferUtils` instead
-     */
-    public static GetTypeByteLength(type: number): number {
-        return GetTypeByteLength(type);
+let _Registered = false;
+/**
+ * Register side effects for VertexBuffer.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterVertexBuffer(): void {
+    if (_Registered) {
+        return;
     }
+    _Registered = true;
 
-    /**
-     * Enumerates each value of the given parameters as numbers.
-     * @param data the data to enumerate
-     * @param byteOffset the byte offset of the data
-     * @param byteStride the byte stride of the data
-     * @param componentCount the number of components per element
-     * @param componentType the type of the component
-     * @param count the number of values to enumerate
-     * @param normalized whether the data is normalized
-     * @param callback the callback function called for each value
-     * @deprecated Use `EnumerateFloatValues` from `bufferUtils` instead
-     */
-    public static ForEach(
-        data: DataArray,
-        byteOffset: number,
-        byteStride: number,
-        componentCount: number,
-        componentType: number,
-        count: number,
-        normalized: boolean,
-        callback: (value: number, index: number) => void
-    ): void {
-        EnumerateFloatValues(data, byteOffset, byteStride, componentCount, componentType, count, normalized, (values, index) => {
-            for (let componentIndex = 0; componentIndex < componentCount; componentIndex++) {
-                callback(values[componentIndex], index + componentIndex);
-            }
-        });
-    }
-
-    /**
-     * Gets the given data array as a float array. Float data is constructed if the data array cannot be returned directly.
-     * @param data the input data array
-     * @param size the number of components
-     * @param type the component type
-     * @param byteOffset the byte offset of the data
-     * @param byteStride the byte stride of the data
-     * @param normalized whether the data is normalized
-     * @param totalVertices number of vertices in the buffer to take into account
-     * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
-     * @returns a float array containing vertex data
-     * @deprecated Use `GetFloatData` from `bufferUtils` instead
-     */
-    public static GetFloatData(
-        data: DataArray,
-        size: number,
-        type: number,
-        byteOffset: number,
-        byteStride: number,
-        normalized: boolean,
-        totalVertices: number,
-        forceCopy?: boolean
-    ): FloatArray {
-        return GetFloatData(data, size, type, byteOffset, byteStride, normalized, totalVertices, forceCopy);
-    }
+    VertexBuffer.DeduceStride = VertexBufferDeduceStride;
+    VertexBuffer.GetDataType = VertexBufferGetDataType;
+    VertexBuffer.GetTypeByteLength = VertexBufferGetTypeByteLength;
+    VertexBuffer.ForEach = VertexBufferForEach;
+    VertexBuffer.GetFloatData = VertexBufferGetFloatData;
 }
 
 // #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`

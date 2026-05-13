@@ -8,11 +8,11 @@ The `@babylonjs/core` package uses a **three-file split** pattern so bundlers ca
 
 ## The Three Files
 
-| File           | Purpose                                                                                                                               | Side effects?                                                           |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `foo.pure.ts`  | All logic, classes, functions, and exports. Imports only from other `.pure.ts` files.                                                 | **No** — must be fully tree-shakeable                                   |
-| `foo.ts`       | Thin backward-compatible wrapper. Re-exports everything from `foo.pure.ts`, then calls the registration function to run side effects. | **Yes** — registers classes, augments prototypes, writes to ShaderStore |
-| `foo.types.ts` | `declare module` augmentations (types only, zero runtime bytes). Exported from `foo.pure.ts`.                                         | **No**                                                                  |
+| File           | Purpose                                                                                                                                   | Side effects?                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `foo.pure.ts`  | All logic, classes, functions, and pure exports. Imports only from other `.pure.ts` files.                                                | **No** — must be fully tree-shakeable                                   |
+| `foo.ts`       | Thin backward-compatible wrapper. Re-exports `foo.pure.ts` plus `foo.types.ts`, then calls the registration function to run side effects. | **Yes** — registers classes, augments prototypes, writes to ShaderStore |
+| `foo.types.ts` | `declare module` augmentations (types only, zero runtime bytes). Exported from `foo.pure.ts`.                                             | **No**                                                                  |
 
 Not every file needs all three. `.types.ts` is only needed when the file augments another class's interface (e.g., adding methods to `Scene`). Files with no side effects at all may only have a `.pure.ts`.
 
@@ -24,9 +24,6 @@ When adding a new class or module to `packages/dev/core/src/`:
 
 ```ts
 /** This file must only contain pure code and pure imports */
-
-// If this file augments another class, re-export the types
-export * from "./myModule.types";
 
 // Import only from .pure.ts files
 import { Scene } from "../scene.pure";
@@ -53,6 +50,7 @@ export function registerMyModule() {
 
 ```ts
 export * from "./myModule.pure";
+export * from "./myModule.types";
 
 import { registerMyModule } from "./myModule.pure";
 registerMyModule();
@@ -62,7 +60,7 @@ That's it. The wrapper is always exactly these 3 lines (plus the registration ca
 
 ### 3. Create `myModule.types.ts` (only if augmenting)
 
-Only needed if `registerMyModule()` adds methods to `Scene`, `Engine`, or another class via prototype assignment:
+Only needed if `registerMyModule()` adds methods to `Scene`, `Engine`, or another class via prototype assignment, or if wrapper registration reattaches extracted static APIs:
 
 ```ts
 import { type MyModule } from "./myModule.pure";
@@ -111,5 +109,6 @@ npm run audit:side-effects && npm run check:manifest-drift && npm run test:trees
 
 - **Adding logic?** Edit the `.pure.ts` file, not the `.ts` wrapper.
 - **Adding a prototype augmentation?** Add the type to `.types.ts`, add the prototype assignment inside the `register*()` function in `.pure.ts`.
+- **Adding a static API reattachment?** Add the namespace augmentation to `.types.ts`, add the static assignment inside the `register*()` function in `.pure.ts`, and export `.types.ts` from the wrapper.
 - **Adding a side effect (RegisterClass, ShaderStore write)?** Put it inside the `register*()` function in `.pure.ts`.
 - **Never add side effects directly at module scope in `.pure.ts`** — always inside the registration function.

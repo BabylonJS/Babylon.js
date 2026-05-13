@@ -280,22 +280,6 @@ export class ColorGradingTexture extends BaseTexture {
     }
 
     /**
-     * Parses a color grading texture serialized by Babylon.
-     * @param parsedTexture The texture information being parsedTexture
-     * @param scene The scene to load the texture in
-     * @returns A color grading texture
-     */
-    public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
-        let texture = null;
-        if (parsedTexture.name && !parsedTexture.isRenderTarget) {
-            texture = new ColorGradingTexture(parsedTexture.name, scene);
-            texture.name = parsedTexture.name;
-            texture.level = parsedTexture.level;
-        }
-        return texture;
-    }
-
-    /**
      * Serializes the LUT texture to json format.
      * @returns The JSON representation of the texture
      */
@@ -314,6 +298,23 @@ export class ColorGradingTexture extends BaseTexture {
 }
 
 let _Registered = false;
+
+/**
+ * Parses a color grading texture serialized by Babylon.
+ * @param parsedTexture The texture information being parsedTexture
+ * @param scene The scene to load the texture in
+ * @returns A color grading texture
+ */
+export function ColorGradingTextureParse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
+    let texture = null;
+    if (parsedTexture.name && !parsedTexture.isRenderTarget) {
+        texture = new ColorGradingTexture(parsedTexture.name, scene);
+        texture.name = parsedTexture.name;
+        texture.level = parsedTexture.level;
+    }
+    return texture;
+}
+
 /**
  * Register side effects for colorGradingTexture.
  * Safe to call multiple times; only the first call has an effect.
@@ -323,6 +324,8 @@ export function RegisterColorGradingTexture(): void {
         return;
     }
     _Registered = true;
+
+    ColorGradingTexture.Parse = ColorGradingTextureParse;
 
     RegisterClass("BABYLON.ColorGradingTexture", ColorGradingTexture);
 }

@@ -328,75 +328,6 @@ export class ColorCurves {
     }
 
     /**
-     * Binds the color curves to the shader.
-     * @param colorCurves The color curve to bind
-     * @param effect The effect to bind to
-     * @param positiveUniform The positive uniform shader parameter
-     * @param neutralUniform The neutral uniform shader parameter
-     * @param negativeUniform The negative uniform shader parameter
-     */
-    public static Bind(
-        colorCurves: ColorCurves,
-        effect: Effect,
-        positiveUniform = "vCameraColorCurvePositive",
-        neutralUniform = "vCameraColorCurveNeutral",
-        negativeUniform = "vCameraColorCurveNegative"
-    ): void {
-        if (colorCurves._dirty) {
-            colorCurves._dirty = false;
-
-            // Fill in global info.
-            colorCurves._getColorGradingDataToRef(
-                colorCurves._globalHue,
-                colorCurves._globalDensity,
-                colorCurves._globalSaturation,
-                colorCurves._globalExposure,
-                colorCurves._globalCurve
-            );
-
-            // Compute highlights info.
-            colorCurves._getColorGradingDataToRef(
-                colorCurves._highlightsHue,
-                colorCurves._highlightsDensity,
-                colorCurves._highlightsSaturation,
-                colorCurves._highlightsExposure,
-                colorCurves._tempColor
-            );
-            colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._highlightsCurve);
-
-            // Compute midtones info.
-            colorCurves._getColorGradingDataToRef(
-                colorCurves._midtonesHue,
-                colorCurves._midtonesDensity,
-                colorCurves._midtonesSaturation,
-                colorCurves._midtonesExposure,
-                colorCurves._tempColor
-            );
-            colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._midtonesCurve);
-
-            // Compute shadows info.
-            colorCurves._getColorGradingDataToRef(
-                colorCurves._shadowsHue,
-                colorCurves._shadowsDensity,
-                colorCurves._shadowsSaturation,
-                colorCurves._shadowsExposure,
-                colorCurves._tempColor
-            );
-            colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._shadowsCurve);
-
-            // Compute deltas (neutral is midtones).
-            colorCurves._highlightsCurve.subtractToRef(colorCurves._midtonesCurve, colorCurves._positiveCurve);
-            colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);
-        }
-
-        if (effect) {
-            effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
-            effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
-            effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
-        }
-    }
-
-    /**
      * Prepare the list of uniforms associated with the ColorCurves effects.
      * @param uniformsList The list of uniforms used in the effect
      */
@@ -551,17 +482,68 @@ export class ColorCurves {
         return SerializationHelper.Serialize(this);
     }
 
-    /**
-     * Parses the color curve from a json representation.
-     * @param source the JSON source to parse
-     * @returns The parsed curves
-     */
-    public static Parse(source: any): ColorCurves {
-        return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
+    /** @internal */
+    public _bind(effect: Effect, positiveUniform = "vCameraColorCurvePositive", neutralUniform = "vCameraColorCurveNeutral", negativeUniform = "vCameraColorCurveNegative"): void {
+        if (this._dirty) {
+            this._dirty = false;
+
+            // Fill in global info.
+            this._getColorGradingDataToRef(this._globalHue, this._globalDensity, this._globalSaturation, this._globalExposure, this._globalCurve);
+
+            // Compute highlights info.
+            this._getColorGradingDataToRef(this._highlightsHue, this._highlightsDensity, this._highlightsSaturation, this._highlightsExposure, this._tempColor);
+            this._tempColor.multiplyToRef(this._globalCurve, this._highlightsCurve);
+
+            // Compute midtones info.
+            this._getColorGradingDataToRef(this._midtonesHue, this._midtonesDensity, this._midtonesSaturation, this._midtonesExposure, this._tempColor);
+            this._tempColor.multiplyToRef(this._globalCurve, this._midtonesCurve);
+
+            // Compute shadows info.
+            this._getColorGradingDataToRef(this._shadowsHue, this._shadowsDensity, this._shadowsSaturation, this._shadowsExposure, this._tempColor);
+            this._tempColor.multiplyToRef(this._globalCurve, this._shadowsCurve);
+
+            // Compute deltas (neutral is midtones).
+            this._highlightsCurve.subtractToRef(this._midtonesCurve, this._positiveCurve);
+            this._midtonesCurve.subtractToRef(this._shadowsCurve, this._negativeCurve);
+        }
+
+        if (effect) {
+            effect.setFloat4(positiveUniform, this._positiveCurve.r, this._positiveCurve.g, this._positiveCurve.b, this._positiveCurve.a);
+            effect.setFloat4(neutralUniform, this._midtonesCurve.r, this._midtonesCurve.g, this._midtonesCurve.b, this._midtonesCurve.a);
+            effect.setFloat4(negativeUniform, this._negativeCurve.r, this._negativeCurve.g, this._negativeCurve.b, this._negativeCurve.a);
+        }
     }
 }
 
 let _Registered = false;
+
+/**
+ * Parses the color curve from a json representation.
+ * @param source the JSON source to parse
+ * @returns The parsed curves
+ */
+export function ColorCurvesParse(source: any): ColorCurves {
+    return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
+}
+
+/**
+ * Binds the color curves to the shader.
+ * @param colorCurves The color curve to bind
+ * @param effect The effect to bind to
+ * @param positiveUniform The positive uniform shader parameter
+ * @param neutralUniform The neutral uniform shader parameter
+ * @param negativeUniform The negative uniform shader parameter
+ */
+export function ColorCurvesBind(
+    colorCurves: ColorCurves,
+    effect: Effect,
+    positiveUniform = "vCameraColorCurvePositive",
+    neutralUniform = "vCameraColorCurveNeutral",
+    negativeUniform = "vCameraColorCurveNegative"
+): void {
+    colorCurves._bind(effect, positiveUniform, neutralUniform, negativeUniform);
+}
+
 /**
  * Register side effects for colorCurves.
  * Safe to call multiple times; only the first call has an effect.
@@ -573,5 +555,8 @@ export function RegisterColorCurves(): void {
     _Registered = true;
 
     // References the dependencies.
-    SerializationHelper._ColorCurvesParser = ColorCurves.Parse;
+    ColorCurves.Bind = ColorCurvesBind;
+    ColorCurves.Parse = ColorCurvesParse;
+
+    SerializationHelper._ColorCurvesParser = ColorCurvesParse;
 }

@@ -166,24 +166,25 @@ export class FresnelParameters {
             power: this.power,
         };
     }
-
-    /**
-     * Parse a JSON object and deserialize it to a new Fresnel parameter object.
-     * @param parsedFresnelParameters Define the JSON representation
-     * @returns the parsed parameters
-     */
-    public static Parse(parsedFresnelParameters: IFresnelParametersSerialized): FresnelParameters {
-        return new FresnelParameters({
-            isEnabled: parsedFresnelParameters.isEnabled,
-            leftColor: Color3.FromArray(parsedFresnelParameters.leftColor),
-            rightColor: Color3.FromArray(parsedFresnelParameters.rightColor),
-            bias: parsedFresnelParameters.bias,
-            power: parsedFresnelParameters.power || 1.0,
-        });
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Parse a JSON object and deserialize it to a new Fresnel parameter object.
+ * @param parsedFresnelParameters Define the JSON representation
+ * @returns the parsed parameters
+ */
+export function FresnelParametersParse(parsedFresnelParameters: IFresnelParametersSerialized): FresnelParameters {
+    return new FresnelParameters({
+        isEnabled: parsedFresnelParameters.isEnabled,
+        leftColor: Color3.FromArray(parsedFresnelParameters.leftColor),
+        rightColor: Color3.FromArray(parsedFresnelParameters.rightColor),
+        bias: parsedFresnelParameters.bias,
+        power: parsedFresnelParameters.power || 1.0,
+    });
+}
+
 /**
  * Register side effects for fresnelParameters.
  * Safe to call multiple times; only the first call has an effect.
@@ -195,5 +196,7 @@ export function RegisterFresnelParameters(): void {
     _Registered = true;
 
     // References the dependencies.
-    SerializationHelper._FresnelParametersParser = FresnelParameters.Parse;
+    FresnelParameters.Parse = FresnelParametersParse;
+
+    SerializationHelper._FresnelParametersParser = FresnelParametersParse;
 }

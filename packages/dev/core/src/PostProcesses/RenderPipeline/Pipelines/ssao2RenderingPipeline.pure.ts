@@ -606,25 +606,26 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         return serializationObject;
     }
-
-    /**
-     * Parse the serialized pipeline
-     * @param source Source pipeline.
-     * @param scene The scene to load the pipeline to.
-     * @param rootUrl The URL of the serialized pipeline.
-     * @returns An instantiated pipeline from the serialized object.
-     */
-    public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
-        return SerializationHelper.Parse(
-            () => new SSAO2RenderingPipeline(source._name, scene, source._ratio, undefined, source._forceGeometryBuffer, source._textureType),
-            source,
-            scene,
-            rootUrl
-        );
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Parse the serialized pipeline
+ * @param source Source pipeline.
+ * @param scene The scene to load the pipeline to.
+ * @param rootUrl The URL of the serialized pipeline.
+ * @returns An instantiated pipeline from the serialized object.
+ */
+export function SSAO2RenderingPipelineParse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
+    return SerializationHelper.Parse(
+        () => new SSAO2RenderingPipeline(source._name, scene, source._ratio, undefined, source._forceGeometryBuffer, source._textureType),
+        source,
+        scene,
+        rootUrl
+    );
+}
+
 /**
  * Register side effects for ssao2RenderingPipeline.
  * Safe to call multiple times; only the first call has an effect.
@@ -634,6 +635,8 @@ export function RegisterSsao2RenderingPipeline(): void {
         return;
     }
     _Registered = true;
+
+    SSAO2RenderingPipeline.Parse = SSAO2RenderingPipelineParse;
 
     RegisterClass("BABYLON.SSAO2RenderingPipeline", SSAO2RenderingPipeline);
 }

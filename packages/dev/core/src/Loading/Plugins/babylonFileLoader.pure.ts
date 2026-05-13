@@ -9,7 +9,7 @@ import { Material } from "../../Materials/material.pure";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
 import { CubeTexture } from "../../Materials/Textures/cubeTexture.pure";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture.pure";
-import { AnimationGroup } from "../../Animations/animationGroup.pure";
+import { AnimationGroupParse } from "../../Animations/animationGroup.pure";
 import { Light } from "../../Lights/light";
 import { SceneLoaderFlags } from "../sceneLoaderFlags";
 import { Constants } from "../../Engines/constants";
@@ -555,7 +555,7 @@ export const LoadAssetContainer = (
 
             for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                 const parsedAnimationGroup = parsedData.animationGroups[index];
-                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene, targetLookup);
+                const animationGroup = AnimationGroupParse(parsedAnimationGroup, scene, targetLookup);
                 container.animationGroups.push(animationGroup);
                 animationGroup._parentContainer = container;
                 log += index === 0 ? "\n\tAnimationGroups:" : "";

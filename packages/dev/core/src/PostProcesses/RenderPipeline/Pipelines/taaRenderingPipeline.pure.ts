@@ -426,20 +426,21 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         return serializationObject;
     }
-
-    /**
-     * Parse the serialized pipeline
-     * @param source Source pipeline.
-     * @param scene The scene to load the pipeline to.
-     * @param rootUrl The URL of the serialized pipeline.
-     * @returns An instantiated pipeline from the serialized object.
-     */
-    public static Parse(source: any, scene: Scene, rootUrl: string): TAARenderingPipeline {
-        return SerializationHelper.Parse(() => new TAARenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Parse the serialized pipeline
+ * @param source Source pipeline.
+ * @param scene The scene to load the pipeline to.
+ * @param rootUrl The URL of the serialized pipeline.
+ * @returns An instantiated pipeline from the serialized object.
+ */
+export function TAARenderingPipelineParse(source: any, scene: Scene, rootUrl: string): TAARenderingPipeline {
+    return SerializationHelper.Parse(() => new TAARenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+}
+
 /**
  * Register side effects for taaRenderingPipeline.
  * Safe to call multiple times; only the first call has an effect.
@@ -449,6 +450,8 @@ export function RegisterTaaRenderingPipeline(): void {
         return;
     }
     _Registered = true;
+
+    TAARenderingPipeline.Parse = TAARenderingPipelineParse;
 
     RegisterClass("BABYLON.TAARenderingPipeline", TAARenderingPipeline);
 }

@@ -443,12 +443,10 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      * Specifies if the volumetric lights scattering effect is enabled
      */
     @serialize()
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get VLSEnabled(): boolean {
         return this._vlsEnabled;
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set VLSEnabled(enabled) {
         if (this._vlsEnabled === enabled) {
             return;
@@ -1664,33 +1662,34 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     }
 
     /**
-     * Parse the serialized pipeline
-     * @param source Source pipeline.
-     * @param scene The scene to load the pipeline to.
-     * @param rootUrl The URL of the serialized pipeline.
-     * @returns An instantiated pipeline from the serialized object.
-     */
-    public static Parse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline {
-        const p = SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
-
-        if (source.sourceLightId) {
-            p.sourceLight = <SpotLight | DirectionalLight>scene.getLightById(source.sourceLightId);
-        }
-
-        if (source.screenSpaceReflectionPostProcess) {
-            SerializationHelper.Parse(() => p.screenSpaceReflectionPostProcess, source.screenSpaceReflectionPostProcess, scene, rootUrl);
-        }
-
-        return p;
-    }
-
-    /**
      * Luminance steps
      */
     public static LuminanceSteps: number = 6;
 }
 
 let _Registered = false;
+
+/**
+ * Parse the serialized pipeline
+ * @param source Source pipeline.
+ * @param scene The scene to load the pipeline to.
+ * @param rootUrl The URL of the serialized pipeline.
+ * @returns An instantiated pipeline from the serialized object.
+ */
+export function StandardRenderingPipelineParse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline {
+    const p = SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+
+    if (source.sourceLightId) {
+        p.sourceLight = <SpotLight | DirectionalLight>scene.getLightById(source.sourceLightId);
+    }
+
+    if (source.screenSpaceReflectionPostProcess) {
+        SerializationHelper.Parse(() => p.screenSpaceReflectionPostProcess, source.screenSpaceReflectionPostProcess, scene, rootUrl);
+    }
+
+    return p;
+}
+
 /**
  * Register side effects for standardRenderingPipeline.
  * Safe to call multiple times; only the first call has an effect.
@@ -1700,6 +1699,8 @@ export function RegisterStandardRenderingPipeline(): void {
         return;
     }
     _Registered = true;
+
+    StandardRenderingPipeline.Parse = StandardRenderingPipelineParse;
 
     RegisterClass("BABYLON.StandardRenderingPipeline", StandardRenderingPipeline);
 }

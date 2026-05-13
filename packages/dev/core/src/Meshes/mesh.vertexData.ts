@@ -3,6 +3,7 @@
 import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
 import { type Matrix, type Vector2, Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBufferDeduceStride } from "../Buffers/buffer.pure";
 import { _WarnImport } from "../Misc/devTools";
 import { type Color3, Color4 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
@@ -1280,7 +1281,7 @@ export class VertexData implements IVertexDataLike {
         }
 
         const getElementCount = (kind: string, values: FloatArray) => {
-            const stride = VertexBuffer.DeduceStride(kind);
+            const stride = VertexBufferDeduceStride(kind);
             if (values.length % stride !== 0) {
                 throw new Error("The " + kind + "s array count must be a multiple of " + stride);
             }

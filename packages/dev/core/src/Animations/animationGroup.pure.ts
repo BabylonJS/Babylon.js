@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Animatable } from "./animatable.core";
-import { Animation, type IMakeAnimationAdditiveOptions } from "./animation.pure";
+import { type Animation, AnimationMakeAnimationAdditive, AnimationParse, type IMakeAnimationAdditiveOptions } from "./animation.pure";
 import { type IAnimationKey } from "./animationKey";
 
 import { type Scene, type IDisposable } from "../scene.pure";
@@ -455,55 +455,6 @@ export class AnimationGroup implements IDisposable {
         const fps = this.targetedAnimations[0].animation.framePerSecond * this._speedRatio;
 
         return (to - from) / fps;
-    }
-
-    /**
-     * Merge the array of animation groups into a new animation group
-     * @param animationGroups List of animation groups to merge
-     * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
-     * @param normalize If true, animation groups will be normalized before being merged, so that all animations have the same "from" and "to" frame (default: false)
-     * @param weight Weight for the new animation group. If not provided, it will inherit the weight from the first animation group of the array
-     * @returns The new animation group or null if no animation groups were passed
-     */
-    public static MergeAnimationGroups(animationGroups: Array<AnimationGroup>, disposeSource = true, normalize = false, weight?: number): Nullable<AnimationGroup> {
-        if (animationGroups.length === 0) {
-            return null;
-        }
-
-        weight = weight ?? animationGroups[0].weight;
-
-        let beginFrame = Number.MAX_VALUE;
-        let endFrame = -Number.MAX_VALUE;
-
-        if (normalize) {
-            for (const animationGroup of animationGroups) {
-                if (animationGroup.from < beginFrame) {
-                    beginFrame = animationGroup.from;
-                }
-
-                if (animationGroup.to > endFrame) {
-                    endFrame = animationGroup.to;
-                }
-            }
-        }
-
-        const mergedAnimationGroup = new AnimationGroup(animationGroups[0].name + "_merged", animationGroups[0]._scene, weight);
-
-        for (const animationGroup of animationGroups) {
-            if (normalize) {
-                animationGroup.normalize(beginFrame, endFrame);
-            }
-
-            for (const targetedAnimation of animationGroup.targetedAnimations) {
-                mergedAnimationGroup.addTargetedAnimation(targetedAnimation.animation, targetedAnimation.target);
-            }
-
-            if (disposeSource) {
-                animationGroup.dispose();
-            }
-        }
-
-        return mergedAnimationGroup;
     }
 
     /**
@@ -1009,278 +960,6 @@ export class AnimationGroup implements IDisposable {
         return serializationObject;
     }
 
-    // Statics
-    /**
-     * Returns a new AnimationGroup object parsed from the source provided.
-     * @param parsedAnimationGroup defines the source
-     * @param scene defines the scene that will receive the animationGroup
-     * @param targetLookup a callback that will be used instead of the default lookup
-     * @returns a new AnimationGroup
-     */
-    public static Parse(parsedAnimationGroup: any, scene: Scene, targetLookup?: (parsedTargetAnimation: any) => any): AnimationGroup {
-        const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene, parsedAnimationGroup.weight, parsedAnimationGroup.playOrder);
-        for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
-            const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
-            const animation = Animation.Parse(targetedAnimation.animation);
-
-            const target = targetLookup
-                ? targetLookup(targetedAnimation)
-                : targetedAnimation.animation.property === "influence"
-                  ? scene.getMorphTargetById(targetedAnimation.targetId)
-                  : scene.getNodeById(targetedAnimation.targetId);
-
-            if (target) {
-                animationGroup.addTargetedAnimation(animation, target);
-            }
-        }
-
-        if (Tags) {
-            Tags.AddTagsTo(animationGroup, parsedAnimationGroup.tags);
-        }
-
-        if (parsedAnimationGroup.from !== null && parsedAnimationGroup.to !== null) {
-            animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
-        }
-
-        if (parsedAnimationGroup.speedRatio !== undefined) {
-            animationGroup._speedRatio = parsedAnimationGroup.speedRatio;
-        }
-        if (parsedAnimationGroup.loopAnimation !== undefined) {
-            animationGroup._loopAnimation = parsedAnimationGroup.loopAnimation;
-        }
-
-        if (parsedAnimationGroup.isAdditive !== undefined) {
-            animationGroup._isAdditive = parsedAnimationGroup.isAdditive;
-        }
-
-        if (parsedAnimationGroup.weight !== undefined) {
-            animationGroup._weight = parsedAnimationGroup.weight;
-        }
-
-        if (parsedAnimationGroup.playOrder !== undefined) {
-            animationGroup._playOrder = parsedAnimationGroup.playOrder;
-        }
-
-        if (parsedAnimationGroup.enableBlending !== undefined) {
-            animationGroup._enableBlending = parsedAnimationGroup.enableBlending;
-        }
-
-        if (parsedAnimationGroup.blendingSpeed !== undefined) {
-            animationGroup._blendingSpeed = parsedAnimationGroup.blendingSpeed;
-        }
-
-        if (parsedAnimationGroup.metadata !== undefined) {
-            animationGroup.metadata = parsedAnimationGroup.metadata;
-        }
-
-        return animationGroup;
-    }
-
-    /**
-     * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
-     * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
-     * @param referenceFrame defines the frame that keyframes in the range will be relative to (default: 0)
-     * @param range defines the name of the AnimationRange belonging to the animations in the group to convert
-     * @param cloneOriginal defines whether or not to clone the group and convert the clone or convert the original group (default is false)
-     * @param clonedName defines the name of the resulting cloned AnimationGroup if cloneOriginal is true
-     * @returns a new AnimationGroup if cloneOriginal is true or the original AnimationGroup if cloneOriginal is false
-     */
-    public static MakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, referenceFrame: number, range?: string, cloneOriginal?: boolean, clonedName?: string): AnimationGroup;
-
-    /**
-     * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
-     * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
-     * @param options defines the options to use when converting keyframes
-     * @returns a new AnimationGroup if options.cloneOriginalAnimationGroup is true or the original AnimationGroup if options.cloneOriginalAnimationGroup is false
-     */
-    public static MakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, options?: IMakeAnimationGroupAdditiveOptions): AnimationGroup;
-
-    /** @internal */
-    public static MakeAnimationAdditive(
-        sourceAnimationGroup: AnimationGroup,
-        referenceFrameOrOptions?: number | IMakeAnimationGroupAdditiveOptions,
-        range?: string,
-        cloneOriginal = false,
-        clonedName?: string
-    ): AnimationGroup {
-        let options: IMakeAnimationGroupAdditiveOptions;
-
-        if (typeof referenceFrameOrOptions === "object") {
-            options = referenceFrameOrOptions;
-        } else {
-            options = {
-                referenceFrame: referenceFrameOrOptions,
-                range: range,
-                cloneOriginalAnimationGroup: cloneOriginal,
-                clonedAnimationName: clonedName,
-            };
-        }
-
-        let animationGroup = sourceAnimationGroup;
-        if (options.cloneOriginalAnimationGroup) {
-            animationGroup = sourceAnimationGroup.clone(options.clonedAnimationGroupName || animationGroup.name);
-        }
-
-        const targetedAnimations = animationGroup.targetedAnimations;
-        for (let index = 0; index < targetedAnimations.length; index++) {
-            const targetedAnimation = targetedAnimations[index];
-            targetedAnimation.animation = Animation.MakeAnimationAdditive(targetedAnimation.animation, options);
-        }
-
-        animationGroup.isAdditive = true;
-
-        if (options.clipKeys) {
-            // We need to recalculate the from/to frames for the animation group because some keys may have been removed
-            let from = Number.MAX_VALUE;
-            let to = -Number.MAX_VALUE;
-
-            const targetedAnimations = animationGroup.targetedAnimations;
-            for (let index = 0; index < targetedAnimations.length; index++) {
-                const targetedAnimation = targetedAnimations[index];
-                const animation = targetedAnimation.animation;
-                const keys = animation.getKeys();
-
-                if (from > keys[0].frame) {
-                    from = keys[0].frame;
-                }
-
-                if (to < keys[keys.length - 1].frame) {
-                    to = keys[keys.length - 1].frame;
-                }
-            }
-
-            animationGroup._from = from;
-            animationGroup._to = to;
-        }
-
-        return animationGroup;
-    }
-
-    /**
-     * Creates a new animation, keeping only the keys that are inside a given key range
-     * @param sourceAnimationGroup defines the animation group on which to operate
-     * @param fromKey defines the lower bound of the range
-     * @param toKey defines the upper bound of the range
-     * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
-     * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the keys. Default is false, so animations will be cloned
-     * @returns a new animation group stripped from all the keys outside the given range
-     */
-    public static ClipKeys(sourceAnimationGroup: AnimationGroup, fromKey: number, toKey: number, name?: string, dontCloneAnimations?: boolean): AnimationGroup {
-        const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
-
-        return AnimationGroup.ClipKeysInPlace(animationGroup, fromKey, toKey, dontCloneAnimations);
-    }
-
-    /**
-     * Updates an existing animation, keeping only the keys that are inside a given key range
-     * @param animationGroup defines the animation group on which to operate
-     * @param fromKey defines the lower bound of the range
-     * @param toKey defines the upper bound of the range
-     * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the keys. Default is false, so animations will be cloned
-     * @returns the animationGroup stripped from all the keys outside the given range
-     */
-    public static ClipKeysInPlace(animationGroup: AnimationGroup, fromKey: number, toKey: number, dontCloneAnimations?: boolean): AnimationGroup {
-        return AnimationGroup.ClipInPlace(animationGroup, fromKey, toKey, dontCloneAnimations, false);
-    }
-
-    /**
-     * Creates a new animation, keeping only the frames that are inside a given frame range
-     * @param sourceAnimationGroup defines the animation group on which to operate
-     * @param fromFrame defines the lower bound of the range
-     * @param toFrame defines the upper bound of the range
-     * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
-     * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the frames. Default is false, so animations will be cloned
-     * @returns a new animation group stripped from all the frames outside the given range
-     */
-    public static ClipFrames(sourceAnimationGroup: AnimationGroup, fromFrame: number, toFrame: number, name?: string, dontCloneAnimations?: boolean): AnimationGroup {
-        const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
-
-        return AnimationGroup.ClipFramesInPlace(animationGroup, fromFrame, toFrame, dontCloneAnimations);
-    }
-
-    /**
-     * Updates an existing animation, keeping only the frames that are inside a given frame range
-     * @param animationGroup defines the animation group on which to operate
-     * @param fromFrame defines the lower bound of the range
-     * @param toFrame defines the upper bound of the range
-     * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the frames. Default is false, so animations will be cloned
-     * @returns the animationGroup stripped from all the frames outside the given range
-     */
-    public static ClipFramesInPlace(animationGroup: AnimationGroup, fromFrame: number, toFrame: number, dontCloneAnimations?: boolean): AnimationGroup {
-        return AnimationGroup.ClipInPlace(animationGroup, fromFrame, toFrame, dontCloneAnimations, true);
-    }
-
-    /**
-     * Updates an existing animation, keeping only the keys that are inside a given key or frame range
-     * @param animationGroup defines the animation group on which to operate
-     * @param start defines the lower bound of the range
-     * @param end defines the upper bound of the range
-     * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the keys. Default is false, so animations will be cloned
-     * @param useFrame defines if the range is defined by frame numbers or key indices (default is false which means use key indices)
-     * @returns the animationGroup stripped from all the keys outside the given range
-     */
-    public static ClipInPlace(animationGroup: AnimationGroup, start: number, end: number, dontCloneAnimations?: boolean, useFrame = false): AnimationGroup {
-        let from = Number.MAX_VALUE;
-        let to = -Number.MAX_VALUE;
-
-        const targetedAnimations = animationGroup.targetedAnimations;
-        for (let index = 0; index < targetedAnimations.length; index++) {
-            const targetedAnimation = targetedAnimations[index];
-            const animation = dontCloneAnimations ? targetedAnimation.animation : targetedAnimation.animation.clone();
-
-            if (useFrame) {
-                // Make sure we have keys corresponding to the bounds of the frame range
-                animation.createKeyForFrame(start);
-                animation.createKeyForFrame(end);
-            }
-
-            const keys = animation.getKeys();
-            const newKeys: IAnimationKey[] = [];
-
-            let startFrame = Number.MAX_VALUE;
-            for (let k = 0; k < keys.length; k++) {
-                const key = keys[k];
-                if ((!useFrame && k >= start && k <= end) || (useFrame && key.frame >= start && key.frame <= end)) {
-                    const newKey: IAnimationKey = {
-                        frame: key.frame,
-                        value: key.value.clone ? key.value.clone() : key.value,
-                        inTangent: key.inTangent,
-                        outTangent: key.outTangent,
-                        interpolation: key.interpolation,
-                        lockedTangent: key.lockedTangent,
-                    };
-                    if (startFrame === Number.MAX_VALUE) {
-                        startFrame = newKey.frame;
-                    }
-                    newKey.frame -= startFrame;
-                    newKeys.push(newKey);
-                }
-            }
-
-            if (newKeys.length === 0) {
-                targetedAnimations.splice(index, 1);
-                index--;
-                continue;
-            }
-
-            if (from > newKeys[0].frame) {
-                from = newKeys[0].frame;
-            }
-
-            if (to < newKeys[newKeys.length - 1].frame) {
-                to = newKeys[newKeys.length - 1].frame;
-            }
-
-            animation.setKeys(newKeys, true);
-            targetedAnimation.animation = animation; // in case the animation has been cloned
-        }
-
-        animationGroup._from = from;
-        animationGroup._to = to;
-
-        return animationGroup;
-    }
-
     /**
      * Returns the string "AnimationGroup"
      * @returns "AnimationGroup"
@@ -1307,4 +986,354 @@ export class AnimationGroup implements IDisposable {
         }
         return ret;
     }
+}
+
+/**
+ * Merge the array of animation groups into a new animation group
+ * @param animationGroups List of animation groups to merge
+ * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
+ * @param normalize If true, animation groups will be normalized before being merged, so that all animations have the same "from" and "to" frame (default: false)
+ * @param weight Weight for the new animation group. If not provided, it will inherit the weight from the first animation group of the array
+ * @returns The new animation group or null if no animation groups were passed
+ */
+export function AnimationGroupMergeAnimationGroups(animationGroups: Array<AnimationGroup>, disposeSource = true, normalize = false, weight?: number): Nullable<AnimationGroup> {
+    if (animationGroups.length === 0) {
+        return null;
+    }
+
+    weight = weight ?? animationGroups[0].weight;
+
+    let beginFrame = Number.MAX_VALUE;
+    let endFrame = -Number.MAX_VALUE;
+
+    if (normalize) {
+        for (const animationGroup of animationGroups) {
+            if (animationGroup.from < beginFrame) {
+                beginFrame = animationGroup.from;
+            }
+
+            if (animationGroup.to > endFrame) {
+                endFrame = animationGroup.to;
+            }
+        }
+    }
+
+    const mergedAnimationGroup = new AnimationGroup(animationGroups[0].name + "_merged", animationGroups[0].getScene(), weight);
+
+    for (const animationGroup of animationGroups) {
+        if (normalize) {
+            animationGroup.normalize(beginFrame, endFrame);
+        }
+
+        for (const targetedAnimation of animationGroup.targetedAnimations) {
+            mergedAnimationGroup.addTargetedAnimation(targetedAnimation.animation, targetedAnimation.target);
+        }
+
+        if (disposeSource) {
+            animationGroup.dispose();
+        }
+    }
+
+    return mergedAnimationGroup;
+}
+
+/**
+ * Returns a new AnimationGroup object parsed from the source provided.
+ * @param parsedAnimationGroup defines the source
+ * @param scene defines the scene that will receive the animationGroup
+ * @param targetLookup a callback that will be used instead of the default lookup
+ * @returns a new AnimationGroup
+ */
+export function AnimationGroupParse(parsedAnimationGroup: any, scene: Scene, targetLookup?: (parsedTargetAnimation: any) => any): AnimationGroup {
+    const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene, parsedAnimationGroup.weight, parsedAnimationGroup.playOrder);
+    const animationGroupInternal = animationGroup as any;
+    for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
+        const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
+        const animation = AnimationParse(targetedAnimation.animation);
+
+        const target = targetLookup
+            ? targetLookup(targetedAnimation)
+            : targetedAnimation.animation.property === "influence"
+              ? scene.getMorphTargetById(targetedAnimation.targetId)
+              : scene.getNodeById(targetedAnimation.targetId);
+
+        if (target) {
+            animationGroup.addTargetedAnimation(animation, target);
+        }
+    }
+
+    if (Tags) {
+        Tags.AddTagsTo(animationGroup, parsedAnimationGroup.tags);
+    }
+
+    if (parsedAnimationGroup.from !== null && parsedAnimationGroup.to !== null) {
+        animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+    }
+
+    if (parsedAnimationGroup.speedRatio !== undefined) {
+        animationGroupInternal._speedRatio = parsedAnimationGroup.speedRatio;
+    }
+    if (parsedAnimationGroup.loopAnimation !== undefined) {
+        animationGroupInternal._loopAnimation = parsedAnimationGroup.loopAnimation;
+    }
+
+    if (parsedAnimationGroup.isAdditive !== undefined) {
+        animationGroupInternal._isAdditive = parsedAnimationGroup.isAdditive;
+    }
+
+    if (parsedAnimationGroup.weight !== undefined) {
+        animationGroupInternal._weight = parsedAnimationGroup.weight;
+    }
+
+    if (parsedAnimationGroup.playOrder !== undefined) {
+        animationGroupInternal._playOrder = parsedAnimationGroup.playOrder;
+    }
+
+    if (parsedAnimationGroup.enableBlending !== undefined) {
+        animationGroupInternal._enableBlending = parsedAnimationGroup.enableBlending;
+    }
+
+    if (parsedAnimationGroup.blendingSpeed !== undefined) {
+        animationGroupInternal._blendingSpeed = parsedAnimationGroup.blendingSpeed;
+    }
+
+    if (parsedAnimationGroup.metadata !== undefined) {
+        animationGroup.metadata = parsedAnimationGroup.metadata;
+    }
+
+    return animationGroup;
+}
+
+/**
+ * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+ * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
+ * @param referenceFrame defines the frame that keyframes in the range will be relative to (default: 0)
+ * @param range defines the name of the AnimationRange belonging to the animations in the group to convert
+ * @param cloneOriginal defines whether or not to clone the group and convert the clone or convert the original group (default is false)
+ * @param clonedName defines the name of the resulting cloned AnimationGroup if cloneOriginal is true
+ * @returns a new AnimationGroup if cloneOriginal is true or the original AnimationGroup if cloneOriginal is false
+ */
+export function AnimationGroupMakeAnimationAdditive(
+    sourceAnimationGroup: AnimationGroup,
+    referenceFrame: number,
+    range?: string,
+    cloneOriginal?: boolean,
+    clonedName?: string
+): AnimationGroup;
+
+/**
+ * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+ * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
+ * @param options defines the options to use when converting keyframes
+ * @returns a new AnimationGroup if options.cloneOriginalAnimationGroup is true or the original AnimationGroup if options.cloneOriginalAnimationGroup is false
+ */
+export function AnimationGroupMakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, options?: IMakeAnimationGroupAdditiveOptions): AnimationGroup;
+
+/** @internal */
+export function AnimationGroupMakeAnimationAdditive(
+    sourceAnimationGroup: AnimationGroup,
+    referenceFrameOrOptions?: number | IMakeAnimationGroupAdditiveOptions,
+    range?: string,
+    cloneOriginal = false,
+    clonedName?: string
+): AnimationGroup {
+    let options: IMakeAnimationGroupAdditiveOptions;
+
+    if (typeof referenceFrameOrOptions === "object") {
+        options = referenceFrameOrOptions;
+    } else {
+        options = {
+            referenceFrame: referenceFrameOrOptions,
+            range: range,
+            cloneOriginalAnimationGroup: cloneOriginal,
+            clonedAnimationName: clonedName,
+        };
+    }
+
+    let animationGroup = sourceAnimationGroup;
+    if (options.cloneOriginalAnimationGroup) {
+        animationGroup = sourceAnimationGroup.clone(options.clonedAnimationGroupName || animationGroup.name);
+    }
+
+    const targetedAnimations = animationGroup.targetedAnimations;
+    for (let index = 0; index < targetedAnimations.length; index++) {
+        const targetedAnimation = targetedAnimations[index];
+        targetedAnimation.animation = AnimationMakeAnimationAdditive(targetedAnimation.animation, options);
+    }
+
+    animationGroup.isAdditive = true;
+
+    if (options.clipKeys) {
+        // We need to recalculate the from/to frames for the animation group because some keys may have been removed
+        let from = Number.MAX_VALUE;
+        let to = -Number.MAX_VALUE;
+
+        const targetedAnimations = animationGroup.targetedAnimations;
+        for (let index = 0; index < targetedAnimations.length; index++) {
+            const targetedAnimation = targetedAnimations[index];
+            const animation = targetedAnimation.animation;
+            const keys = animation.getKeys();
+
+            if (from > keys[0].frame) {
+                from = keys[0].frame;
+            }
+
+            if (to < keys[keys.length - 1].frame) {
+                to = keys[keys.length - 1].frame;
+            }
+        }
+
+        const animationGroupInternal = animationGroup as any;
+        animationGroupInternal._from = from;
+        animationGroupInternal._to = to;
+    }
+
+    return animationGroup;
+}
+
+/**
+ * Creates a new animation, keeping only the keys that are inside a given key range
+ * @param sourceAnimationGroup defines the animation group on which to operate
+ * @param fromKey defines the lower bound of the range
+ * @param toKey defines the upper bound of the range
+ * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
+ * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the keys. Default is false, so animations will be cloned
+ * @returns a new animation group stripped from all the keys outside the given range
+ */
+export function AnimationGroupClipKeys(sourceAnimationGroup: AnimationGroup, fromKey: number, toKey: number, name?: string, dontCloneAnimations?: boolean): AnimationGroup {
+    const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
+
+    return AnimationGroupClipKeysInPlace(animationGroup, fromKey, toKey, dontCloneAnimations);
+}
+
+/**
+ * Updates an existing animation, keeping only the keys that are inside a given key range
+ * @param animationGroup defines the animation group on which to operate
+ * @param fromKey defines the lower bound of the range
+ * @param toKey defines the upper bound of the range
+ * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the keys. Default is false, so animations will be cloned
+ * @returns the animationGroup stripped from all the keys outside the given range
+ */
+export function AnimationGroupClipKeysInPlace(animationGroup: AnimationGroup, fromKey: number, toKey: number, dontCloneAnimations?: boolean): AnimationGroup {
+    return AnimationGroupClipInPlace(animationGroup, fromKey, toKey, dontCloneAnimations, false);
+}
+
+/**
+ * Creates a new animation, keeping only the frames that are inside a given frame range
+ * @param sourceAnimationGroup defines the animation group on which to operate
+ * @param fromFrame defines the lower bound of the range
+ * @param toFrame defines the upper bound of the range
+ * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
+ * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the frames. Default is false, so animations will be cloned
+ * @returns a new animation group stripped from all the frames outside the given range
+ */
+export function AnimationGroupClipFrames(sourceAnimationGroup: AnimationGroup, fromFrame: number, toFrame: number, name?: string, dontCloneAnimations?: boolean): AnimationGroup {
+    const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
+
+    return AnimationGroupClipFramesInPlace(animationGroup, fromFrame, toFrame, dontCloneAnimations);
+}
+
+/**
+ * Updates an existing animation, keeping only the frames that are inside a given frame range
+ * @param animationGroup defines the animation group on which to operate
+ * @param fromFrame defines the lower bound of the range
+ * @param toFrame defines the upper bound of the range
+ * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the frames. Default is false, so animations will be cloned
+ * @returns the animationGroup stripped from all the frames outside the given range
+ */
+export function AnimationGroupClipFramesInPlace(animationGroup: AnimationGroup, fromFrame: number, toFrame: number, dontCloneAnimations?: boolean): AnimationGroup {
+    return AnimationGroupClipInPlace(animationGroup, fromFrame, toFrame, dontCloneAnimations, true);
+}
+
+/**
+ * Updates an existing animation, keeping only the keys that are inside a given key or frame range
+ * @param animationGroup defines the animation group on which to operate
+ * @param start defines the lower bound of the range
+ * @param end defines the upper bound of the range
+ * @param dontCloneAnimations defines whether or not the animations should be cloned before clipping the keys. Default is false, so animations will be cloned
+ * @param useFrame defines if the range is defined by frame numbers or key indices (default is false which means use key indices)
+ * @returns the animationGroup stripped from all the keys outside the given range
+ */
+export function AnimationGroupClipInPlace(animationGroup: AnimationGroup, start: number, end: number, dontCloneAnimations?: boolean, useFrame = false): AnimationGroup {
+    let from = Number.MAX_VALUE;
+    let to = -Number.MAX_VALUE;
+
+    const targetedAnimations = animationGroup.targetedAnimations;
+    for (let index = 0; index < targetedAnimations.length; index++) {
+        const targetedAnimation = targetedAnimations[index];
+        const animation = dontCloneAnimations ? targetedAnimation.animation : targetedAnimation.animation.clone();
+
+        if (useFrame) {
+            // Make sure we have keys corresponding to the bounds of the frame range
+            animation.createKeyForFrame(start);
+            animation.createKeyForFrame(end);
+        }
+
+        const keys = animation.getKeys();
+        const newKeys: IAnimationKey[] = [];
+
+        let startFrame = Number.MAX_VALUE;
+        for (let k = 0; k < keys.length; k++) {
+            const key = keys[k];
+            if ((!useFrame && k >= start && k <= end) || (useFrame && key.frame >= start && key.frame <= end)) {
+                const newKey: IAnimationKey = {
+                    frame: key.frame,
+                    value: key.value.clone ? key.value.clone() : key.value,
+                    inTangent: key.inTangent,
+                    outTangent: key.outTangent,
+                    interpolation: key.interpolation,
+                    lockedTangent: key.lockedTangent,
+                };
+                if (startFrame === Number.MAX_VALUE) {
+                    startFrame = newKey.frame;
+                }
+                newKey.frame -= startFrame;
+                newKeys.push(newKey);
+            }
+        }
+
+        if (newKeys.length === 0) {
+            targetedAnimations.splice(index, 1);
+            index--;
+            continue;
+        }
+
+        if (from > newKeys[0].frame) {
+            from = newKeys[0].frame;
+        }
+
+        if (to < newKeys[newKeys.length - 1].frame) {
+            to = newKeys[newKeys.length - 1].frame;
+        }
+
+        animation.setKeys(newKeys, true);
+        targetedAnimation.animation = animation; // in case the animation has been cloned
+    }
+
+    const animationGroupInternal = animationGroup as any;
+    animationGroupInternal._from = from;
+    animationGroupInternal._to = to;
+
+    return animationGroup;
+}
+
+let _Registered = false;
+/**
+ * Register side effects for AnimationGroup.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAnimationGroup(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    AnimationGroup.MergeAnimationGroups = AnimationGroupMergeAnimationGroups;
+    AnimationGroup.Parse = AnimationGroupParse;
+    AnimationGroup.MakeAnimationAdditive = AnimationGroupMakeAnimationAdditive;
+    AnimationGroup.ClipKeys = AnimationGroupClipKeys;
+    AnimationGroup.ClipKeysInPlace = AnimationGroupClipKeysInPlace;
+    AnimationGroup.ClipFrames = AnimationGroupClipFrames;
+    AnimationGroup.ClipFramesInPlace = AnimationGroupClipFramesInPlace;
+    AnimationGroup.ClipInPlace = AnimationGroupClipInPlace;
 }

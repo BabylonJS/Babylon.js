@@ -1,19 +1,19 @@
 {
   "stats": {
-    "totalFiles": 3210,
-    "filesWithSideEffects": 1417,
-    "filesWithoutSideEffects": 1793,
+    "totalFiles": 3230,
+    "filesWithSideEffects": 1440,
+    "filesWithoutSideEffects": 1790,
     "byType": {
-      "top-level-call": 634,
-      "declare-module": 108,
+      "top-level-call": 638,
+      "declare-module": 129,
       "bare-import": 249,
       "static-property-assignment": 2,
       "RegisterClass": 3,
       "shader-store-write": 633
     },
     "filesByType": {
-      "top-level-call": 634,
-      "declare-module": 91,
+      "top-level-call": 638,
+      "declare-module": 111,
       "bare-import": 112,
       "static-property-assignment": 2,
       "RegisterClass": 3,
@@ -101,8 +101,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterAnimation();"
+        }
+      ]
+    },
+    {
+      "file": "Animations/animation.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 28,
+          "text": "declare module \"./animation.pure\" {"
         }
       ]
     },
@@ -111,8 +121,23 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 3,
+          "line": 5,
           "text": "import \"./animatable\";"
+        },
+        {
+          "type": "top-level-call",
+          "line": 7,
+          "text": "RegisterAnimationGroup();"
+        }
+      ]
+    },
+    {
+      "file": "Animations/animationGroup.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 22,
+          "text": "declare module \"./animationGroup.pure\" {"
         }
       ]
     },
@@ -177,6 +202,26 @@
       ]
     },
     {
+      "file": "Buffers/buffer.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 6,
+          "text": "RegisterVertexBuffer();"
+        }
+      ]
+    },
+    {
+      "file": "Buffers/buffer.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 16,
+          "text": "declare module \"./buffer.pure\" {"
+        }
+      ]
+    },
+    {
       "file": "Buffers/index.ts",
       "sideEffects": [
         {
@@ -193,6 +238,26 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterArcRotateCamera();"
+        }
+      ]
+    },
+    {
+      "file": "Cameras/camera.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 9,
+          "text": "RegisterCamera();"
+        }
+      ]
+    },
+    {
+      "file": "Cameras/camera.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./camera.pure\" {"
         }
       ]
     },
@@ -496,8 +561,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterComputeShader();"
+        }
+      ]
+    },
+    {
+      "file": "Compute/computeShader.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./computeShader.pure\" {"
         }
       ]
     },
@@ -3481,8 +3556,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterColorCurves();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/colorCurves.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 7,
+          "text": "declare module \"./colorCurves.pure\" {"
         }
       ]
     },
@@ -3506,8 +3591,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterFresnelParameters();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/fresnelParameters.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./fresnelParameters.pure\" {"
         }
       ]
     },
@@ -3576,13 +3671,23 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterImageProcessingConfiguration();"
         },
         {
           "type": "bare-import",
-          "line": 10,
+          "line": 11,
           "text": "import \"./colorCurves\";"
+        }
+      ]
+    },
+    {
+      "file": "Materials/imageProcessingConfiguration.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./imageProcessingConfiguration.pure\" {"
         }
       ]
     },
@@ -3661,8 +3766,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterMultiMaterial();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/multiMaterial.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./multiMaterial.pure\" {"
         }
       ]
     },
@@ -4821,8 +4936,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterNodeMaterial();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Node/nodeMaterial.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 16,
+          "text": "declare module \"./nodeMaterial.pure\" {"
         }
       ]
     },
@@ -4916,8 +5041,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterShaderMaterial();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/shaderMaterial.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 14,
+          "text": "declare module \"./shaderMaterial.pure\" {"
         }
       ]
     },
@@ -4986,8 +5121,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterColorGradingTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Textures/colorGradingTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./colorGradingTexture.pure\" {"
         }
       ]
     },
@@ -4996,13 +5141,23 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 1,
+          "line": 5,
           "text": "import \"../../Engines/AbstractEngine/abstractEngine.cubeTexture\";"
         },
         {
           "type": "top-level-call",
-          "line": 9,
+          "line": 10,
           "text": "RegisterCubeTexture();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Textures/cubeTexture.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 8,
+          "text": "declare module \"./cubeTexture.pure\" {"
         }
       ]
     },
@@ -6462,6 +6617,26 @@
       ]
     },
     {
+      "file": "Meshes/transformNode.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 9,
+          "text": "RegisterTransformNode();"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/transformNode.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./transformNode.pure\" {"
+        }
+      ]
+    },
+    {
       "file": "Misc/basis.ts",
       "sideEffects": [
         {
@@ -7541,8 +7716,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterDefaultRenderingPipeline();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./defaultRenderingPipeline.pure\" {"
         }
       ]
     },
@@ -7641,8 +7826,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterSsao2RenderingPipeline();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./ssao2RenderingPipeline.pure\" {"
         }
       ]
     },
@@ -7671,8 +7866,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterSsrRenderingPipeline();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./ssrRenderingPipeline.pure\" {"
         }
       ]
     },
@@ -7681,13 +7886,23 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 7,
+          "line": 8,
           "text": "import \"../../../Shaders/standard.fragment\";"
         },
         {
           "type": "top-level-call",
-          "line": 10,
+          "line": 11,
           "text": "RegisterStandardRenderingPipeline();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./standardRenderingPipeline.pure\" {"
         }
       ]
     },
@@ -7706,8 +7921,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterTaaRenderingPipeline();"
+        }
+      ]
+    },
+    {
+      "file": "PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./taaRenderingPipeline.pure\" {"
         }
       ]
     },
@@ -7891,8 +8116,13 @@
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 2,
+          "line": 5,
           "text": "declare module \"../scene.pure\" {"
+        },
+        {
+          "type": "declare-module",
+          "line": 29,
+          "text": "declare module \"./reflectionProbe.pure\" {"
         }
       ]
     },
@@ -15126,8 +15356,18 @@
       "sideEffects": [
         {
           "type": "top-level-call",
-          "line": 8,
+          "line": 9,
           "text": "RegisterWebXRNearInteraction();"
+        }
+      ]
+    },
+    {
+      "file": "XR/features/WebXRNearInteraction.types.ts",
+      "sideEffects": [
+        {
+          "type": "declare-module",
+          "line": 6,
+          "text": "declare module \"./WebXRNearInteraction.pure\" {"
         }
       ]
     },

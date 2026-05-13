@@ -177,42 +177,6 @@ export class CubeTexture extends BaseTexture {
     private _buffer: Nullable<ArrayBufferView> = null;
 
     /**
-     * Creates a cube texture from an array of image urls
-     * @param files defines an array of image urls
-     * @param scene defines the hosting scene
-     * @param noMipmap specifies if mip maps are not used
-     * @returns a cube texture
-     */
-    public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
-        let rootUrlKey = "";
-
-        for (const url of files) {
-            rootUrlKey += url;
-        }
-
-        return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
-    }
-
-    /**
-     * Creates and return a texture created from prefilterd data by tools like IBL Baker or Lys.
-     * @param url defines the url of the prefiltered texture
-     * @param scene defines the scene the texture is attached to
-     * @param forcedExtension defines the extension of the file if different from the url
-     * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
-     * @returns the prefiltered texture
-     */
-    public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
-        const oldValue = scene.useDelayedTextureLoading;
-        scene.useDelayedTextureLoading = false;
-
-        const result = new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
-
-        scene.useDelayedTextureLoading = oldValue;
-
-        return result;
-    }
-
-    /**
      * Creates a cube texture to use with reflection for instance. It can be based upon dds or six images as well
      * as prefiltered data.
      * @param rootUrl defines the url of the texture or the root name of the six images
@@ -517,59 +481,6 @@ export class CubeTexture extends BaseTexture {
     }
 
     /**
-     * Parses text to create a cube texture
-     * @param parsedTexture define the serialized text to read from
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root url of the cube texture
-     * @returns a cube texture
-     */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
-        const texture = SerializationHelper.Parse(
-            () => {
-                let prefiltered: boolean = false;
-                if (parsedTexture.prefiltered) {
-                    prefiltered = parsedTexture.prefiltered;
-                }
-                return new CubeTexture(
-                    rootUrl + (parsedTexture.url ?? parsedTexture.name),
-                    scene,
-                    parsedTexture.extensions,
-                    false,
-                    parsedTexture.files || null,
-                    null,
-                    null,
-                    undefined,
-                    prefiltered,
-                    parsedTexture.forcedExtension
-                );
-            },
-            parsedTexture,
-            scene
-        );
-
-        // Local Cubemaps
-        if (parsedTexture.boundingBoxPosition) {
-            texture.boundingBoxPosition = Vector3.FromArray(parsedTexture.boundingBoxPosition);
-        }
-        if (parsedTexture.boundingBoxSize) {
-            texture.boundingBoxSize = Vector3.FromArray(parsedTexture.boundingBoxSize);
-        }
-
-        // Animations
-        if (parsedTexture.animations) {
-            for (let animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
-                const parsedAnimation = parsedTexture.animations[animationIndex];
-                const internalClass = GetClass("BABYLON.Animation");
-                if (internalClass) {
-                    texture.animations.push(internalClass.Parse(parsedAnimation));
-                }
-            }
-        }
-
-        return texture;
-    }
-
-    /**
      * Makes a clone, or deep copy, of the cube texture
      * @returns a new cube texture
      */
@@ -602,6 +513,96 @@ export class CubeTexture extends BaseTexture {
 }
 
 let _Registered = false;
+
+/**
+ * Creates a cube texture from an array of image urls
+ * @param files defines an array of image urls
+ * @param scene defines the hosting scene
+ * @param noMipmap specifies if mip maps are not used
+ * @returns a cube texture
+ */
+export function CubeTextureCreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
+    let rootUrlKey = "";
+
+    for (const url of files) {
+        rootUrlKey += url;
+    }
+
+    return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
+}
+
+/**
+ * Creates and return a texture created from prefilterd data by tools like IBL Baker or Lys.
+ * @param url defines the url of the prefiltered texture
+ * @param scene defines the scene the texture is attached to
+ * @param forcedExtension defines the extension of the file if different from the url
+ * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
+ * @returns the prefiltered texture
+ */
+export function CubeTextureCreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true): CubeTexture {
+    const oldValue = scene.useDelayedTextureLoading;
+    scene.useDelayedTextureLoading = false;
+
+    const result = new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
+
+    scene.useDelayedTextureLoading = oldValue;
+
+    return result;
+}
+
+/**
+ * Parses text to create a cube texture
+ * @param parsedTexture define the serialized text to read from
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root url of the cube texture
+ * @returns a cube texture
+ */
+export function CubeTextureParse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
+    const texture = SerializationHelper.Parse(
+        () => {
+            let prefiltered: boolean = false;
+            if (parsedTexture.prefiltered) {
+                prefiltered = parsedTexture.prefiltered;
+            }
+            return new CubeTexture(
+                rootUrl + (parsedTexture.url ?? parsedTexture.name),
+                scene,
+                parsedTexture.extensions,
+                false,
+                parsedTexture.files || null,
+                null,
+                null,
+                undefined,
+                prefiltered,
+                parsedTexture.forcedExtension
+            );
+        },
+        parsedTexture,
+        scene
+    );
+
+    // Local Cubemaps
+    if (parsedTexture.boundingBoxPosition) {
+        texture.boundingBoxPosition = Vector3.FromArray(parsedTexture.boundingBoxPosition);
+    }
+    if (parsedTexture.boundingBoxSize) {
+        texture.boundingBoxSize = Vector3.FromArray(parsedTexture.boundingBoxSize);
+    }
+
+    // Animations
+    if (parsedTexture.animations) {
+        for (let animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+            const parsedAnimation = parsedTexture.animations[animationIndex];
+            const internalClass = GetClass("BABYLON.Animation");
+            if (internalClass) {
+                texture.animations.push(internalClass.Parse(parsedAnimation));
+            }
+        }
+    }
+
+    return texture;
+}
+
 /**
  * Register side effects for cubeTexture.
  * Safe to call multiple times; only the first call has an effect.
@@ -612,7 +613,11 @@ export function RegisterCubeTexture(): void {
     }
     _Registered = true;
 
-    Texture._CubeTextureParser = CubeTexture.Parse;
+    CubeTexture.CreateFromImages = CubeTextureCreateFromImages;
+    CubeTexture.CreateFromPrefilteredData = CubeTextureCreateFromPrefilteredData;
+    CubeTexture.Parse = CubeTextureParse;
+
+    Texture._CubeTextureParser = CubeTextureParse;
 
     // Some exporters relies on Tools.Instantiate
     RegisterClass("BABYLON.CubeTexture", CubeTexture);

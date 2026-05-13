@@ -300,47 +300,48 @@ export class ReflectionProbe {
 
         return serializationObject;
     }
-
-    /**
-     * Parse the JSON representation of a reflection probe in order to recreate the reflection probe in the given scene.
-     * @param parsedReflectionProbe Define the JSON representation of the reflection probe
-     * @param scene Define the scene the parsed reflection probe should be instantiated in
-     * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
-     * @returns The parsed reflection probe if successful
-     */
-    public static Parse(parsedReflectionProbe: any, scene: Scene, rootUrl: string): Nullable<ReflectionProbe> {
-        let reflectionProbe: Nullable<ReflectionProbe> = null;
-        if (scene.reflectionProbes) {
-            for (let index = 0; index < scene.reflectionProbes.length; index++) {
-                const rp = scene.reflectionProbes[index];
-                if (rp.name === parsedReflectionProbe.name) {
-                    reflectionProbe = rp;
-                    break;
-                }
-            }
-        }
-
-        reflectionProbe = SerializationHelper.Parse(
-            () => reflectionProbe || new ReflectionProbe(parsedReflectionProbe.name, parsedReflectionProbe.renderTargetSize, scene, parsedReflectionProbe._generateMipMaps),
-            parsedReflectionProbe,
-            scene,
-            rootUrl
-        );
-        reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
-
-        if (parsedReflectionProbe._attachedMesh) {
-            reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
-        }
-
-        if (parsedReflectionProbe.metadata) {
-            reflectionProbe.metadata = parsedReflectionProbe.metadata;
-        }
-
-        return reflectionProbe;
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Parse the JSON representation of a reflection probe in order to recreate the reflection probe in the given scene.
+ * @param parsedReflectionProbe Define the JSON representation of the reflection probe
+ * @param scene Define the scene the parsed reflection probe should be instantiated in
+ * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
+ * @returns The parsed reflection probe if successful
+ */
+export function ReflectionProbeParse(parsedReflectionProbe: any, scene: Scene, rootUrl: string): Nullable<ReflectionProbe> {
+    let reflectionProbe: Nullable<ReflectionProbe> = null;
+    if (scene.reflectionProbes) {
+        for (let index = 0; index < scene.reflectionProbes.length; index++) {
+            const rp = scene.reflectionProbes[index];
+            if (rp.name === parsedReflectionProbe.name) {
+                reflectionProbe = rp;
+                break;
+            }
+        }
+    }
+
+    reflectionProbe = SerializationHelper.Parse(
+        () => reflectionProbe || new ReflectionProbe(parsedReflectionProbe.name, parsedReflectionProbe.renderTargetSize, scene, parsedReflectionProbe._generateMipMaps),
+        parsedReflectionProbe,
+        scene,
+        rootUrl
+    );
+    reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
+
+    if (parsedReflectionProbe._attachedMesh) {
+        reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
+    }
+
+    if (parsedReflectionProbe.metadata) {
+        reflectionProbe.metadata = parsedReflectionProbe.metadata;
+    }
+
+    return reflectionProbe;
+}
+
 /**
  * Register side effects for reflectionProbe.
  * Safe to call multiple times; only the first call has an effect.
@@ -350,6 +351,8 @@ export function RegisterReflectionProbe(): void {
         return;
     }
     _Registered = true;
+
+    ReflectionProbe.Parse = ReflectionProbeParse;
 
     Scene.prototype.removeReflectionProbe = function (toRemove: ReflectionProbe): number {
         if (!this.reflectionProbes) {

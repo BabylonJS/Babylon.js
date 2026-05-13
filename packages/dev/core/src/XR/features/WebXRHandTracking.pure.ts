@@ -19,7 +19,7 @@ import { type InstancedMesh } from "../../Meshes/instancedMesh.pure";
 import { SceneLoader, type ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
 
 import { Color3 } from "../../Maths/math.color.pure";
-import { NodeMaterial } from "../../Materials/Node/nodeMaterial.pure";
+import { NodeMaterialParseFromFileAsync } from "../../Materials/Node/nodeMaterial.pure";
 import { type InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock.pure";
 import { Material } from "../../Materials/material.pure";
 import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder.pure";
@@ -690,7 +690,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             // eslint-disable-next-line require-atomic-updates
             WebXRHandTracking._LeftHandGLB = handGLBs[1];
             const shaderUrl = Tools.GetAssetUrl(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
-            const handShader = await NodeMaterial.ParseFromFileAsync("handShader", shaderUrl, scene, undefined, true);
+            const handShader = await NodeMaterialParseFromFileAsync("handShader", shaderUrl, scene, undefined, true);
 
             // depth prepass and alpha mode
             handShader.needDepthPrePass = true;

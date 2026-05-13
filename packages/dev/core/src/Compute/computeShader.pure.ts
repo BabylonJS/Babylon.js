@@ -508,43 +508,39 @@ export class ComputeShader {
         return serializationObject;
     }
 
-    /**
-     * Creates a compute shader from parsed compute shader data
-     * @param source defines the JSON representation of the compute shader
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a new compute shader
-     */
-    public static Parse(source: any, scene: Scene, rootUrl: string): ComputeShader {
-        const compute = SerializationHelper.Parse(
-            () => new ComputeShader(source.name, scene.getEngine() as WebGPUEngine, source.shaderPath, source.options),
-            source,
-            scene,
-            rootUrl
-        );
-
-        for (const key in source.textures) {
-            const binding = source.bindings[key];
-            const texture = <Texture>Texture.Parse(source.textures[key], scene, rootUrl);
-
-            if (binding.type === ComputeBindingType.Texture) {
-                compute.setTexture(key, texture);
-            } else if (binding.type === ComputeBindingType.TextureWithoutSampler) {
-                compute.setTexture(key, texture, false);
-            } else {
-                compute.setStorageTexture(key, texture);
-            }
-        }
-
-        return compute;
-    }
-
     protected static _BufferIsDataBuffer(buffer: UniformBuffer | StorageBuffer | DataBuffer): buffer is DataBuffer {
         return (buffer as DataBuffer).underlyingResource !== undefined;
     }
 }
 
 let _Registered = false;
+
+/**
+ * Creates a compute shader from parsed compute shader data
+ * @param source defines the JSON representation of the compute shader
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @returns a new compute shader
+ */
+export function ComputeShaderParse(source: any, scene: Scene, rootUrl: string): ComputeShader {
+    const compute = SerializationHelper.Parse(() => new ComputeShader(source.name, scene.getEngine() as WebGPUEngine, source.shaderPath, source.options), source, scene, rootUrl);
+
+    for (const key in source.textures) {
+        const binding = source.bindings[key];
+        const texture = <Texture>Texture.Parse(source.textures[key], scene, rootUrl);
+
+        if (binding.type === ComputeBindingType.Texture) {
+            compute.setTexture(key, texture);
+        } else if (binding.type === ComputeBindingType.TextureWithoutSampler) {
+            compute.setTexture(key, texture, false);
+        } else {
+            compute.setStorageTexture(key, texture);
+        }
+    }
+
+    return compute;
+}
+
 /**
  * Register side effects for computeShader.
  * Safe to call multiple times; only the first call has an effect.
@@ -554,6 +550,8 @@ export function RegisterComputeShader(): void {
         return;
     }
     _Registered = true;
+
+    ComputeShader.Parse = ComputeShaderParse;
 
     RegisterClass("BABYLON.ComputeShader", ComputeShader);
 }

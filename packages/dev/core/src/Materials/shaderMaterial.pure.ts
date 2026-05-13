@@ -41,6 +41,10 @@ import { RegisterClass } from "../Misc/typeStore";
 
 const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
+interface IShaderMaterialMatrixArrayAccess {
+    _matrixArrays: { [name: string]: Float32Array | Array<number> };
+}
+
 /**
  * Defines the options associated with the creation of a shader material.
  */
@@ -1698,249 +1702,252 @@ export class ShaderMaterial extends PushMaterial {
 
         return serializationObject;
     }
-
-    /**
-     * Creates a shader material from parsed shader material data
-     * @param source defines the JSON representation of the material
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a new material
-     */
-    public static override Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
-        const material = SerializationHelper.Parse(
-            () => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes),
-            source,
-            scene,
-            rootUrl
-        );
-
-        let name: string;
-
-        // Stencil
-        if (source.stencil) {
-            material.stencil.parse(source.stencil, scene, rootUrl);
-        }
-
-        // Texture
-        for (name in source.textures) {
-            material.setTexture(name, <BaseTexture>Texture.Parse(source.textures[name], scene, rootUrl));
-        }
-
-        // Texture arrays
-        for (name in source.textureArrays) {
-            const array = source.textureArrays[name];
-            const textureArray: BaseTexture[] = [];
-
-            for (let index = 0; index < array.length; index++) {
-                textureArray.push(<BaseTexture>Texture.Parse(array[index], scene, rootUrl));
-            }
-            material.setTextureArray(name, textureArray);
-        }
-
-        // Int
-        for (name in source.ints) {
-            material.setInt(name, source.ints[name]);
-        }
-
-        // UInt
-        for (name in source.uints) {
-            material.setUInt(name, source.uints[name]);
-        }
-
-        // Float
-        for (name in source.floats) {
-            material.setFloat(name, source.floats[name]);
-        }
-
-        // Floats
-        for (name in source.floatsArrays) {
-            material.setFloats(name, source.floatsArrays[name]);
-        }
-
-        // Color3
-        for (name in source.colors3) {
-            const color = source.colors3[name];
-            material.setColor3(name, { r: color[0], g: color[1], b: color[2] });
-        }
-
-        // Color3 arrays
-        for (name in source.colors3Arrays) {
-            const colors: IColor3Like[] = source.colors3Arrays[name]
-                .reduce((arr: Array<Array<number>>, num: number, i: number) => {
-                    if (i % 3 === 0) {
-                        arr.push([num]);
-                    } else {
-                        arr[arr.length - 1].push(num);
-                    }
-                    return arr;
-                }, [])
-                .map((color: ArrayLike<number>) => ({ r: color[0], g: color[1], b: color[2] }));
-            material.setColor3Array(name, colors);
-        }
-
-        // Color4
-        for (name in source.colors4) {
-            const color = source.colors4[name];
-            material.setColor4(name, { r: color[0], g: color[1], b: color[2], a: color[3] });
-        }
-
-        // Color4 arrays
-        for (name in source.colors4Arrays) {
-            const colors: IColor4Like[] = source.colors4Arrays[name]
-                .reduce((arr: Array<Array<number>>, num: number, i: number) => {
-                    if (i % 4 === 0) {
-                        arr.push([num]);
-                    } else {
-                        arr[arr.length - 1].push(num);
-                    }
-                    return arr;
-                }, [])
-                .map((color: ArrayLike<number>) => ({ r: color[0], g: color[1], b: color[2], a: color[3] }));
-            material.setColor4Array(name, colors);
-        }
-
-        // Vector2
-        for (name in source.vectors2) {
-            const vector = source.vectors2[name];
-            material.setVector2(name, { x: vector[0], y: vector[1] });
-        }
-
-        // Vector3
-        for (name in source.vectors3) {
-            const vector = source.vectors3[name];
-            material.setVector3(name, { x: vector[0], y: vector[1], z: vector[2] });
-        }
-
-        // Vector4
-        for (name in source.vectors4) {
-            const vector = source.vectors4[name];
-            material.setVector4(name, { x: vector[0], y: vector[1], z: vector[2], w: vector[3] });
-        }
-
-        // Quaternion
-        for (name in source.quaternions) {
-            material.setQuaternion(name, Quaternion.FromArray(source.quaternions[name]));
-        }
-
-        // Matrix
-        for (name in source.matrices) {
-            material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
-        }
-
-        // MatrixArray
-        for (name in source.matrixArray) {
-            material._matrixArrays[name] = new Float32Array(source.matrixArray[name]);
-        }
-
-        // Matrix 3x3
-        for (name in source.matrices3x3) {
-            material.setMatrix3x3(name, source.matrices3x3[name]);
-        }
-
-        // Matrix 2x2
-        for (name in source.matrices2x2) {
-            material.setMatrix2x2(name, source.matrices2x2[name]);
-        }
-
-        // Vector2Array
-        for (name in source.vectors2Arrays) {
-            material.setArray2(name, source.vectors2Arrays[name]);
-        }
-
-        // Vector3Array
-        for (name in source.vectors3Arrays) {
-            material.setArray3(name, source.vectors3Arrays[name]);
-        }
-
-        // Vector4Array
-        for (name in source.vectors4Arrays) {
-            material.setArray4(name, source.vectors4Arrays[name]);
-        }
-
-        // QuaternionArray
-        for (name in source.quaternionsArrays) {
-            material.setArray4(name, source.quaternionsArrays[name]);
-        }
-
-        return material;
-    }
-
-    /**
-     * Creates a new ShaderMaterial from a snippet saved in a remote file
-     * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
-     * @param url defines the url to load from
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a promise that will resolve to the new ShaderMaterial
-     */
-    public static async ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
-        return await new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        const serializationObject = JSON.parse(request.responseText);
-                        const output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
-
-                        if (name) {
-                            output.name = name;
-                        }
-
-                        resolve(output);
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject("Unable to load the ShaderMaterial");
-                    }
-                }
-            });
-
-            request.open("GET", url);
-            request.send();
-        });
-    }
-
-    /**
-     * Creates a ShaderMaterial from a snippet saved by the Inspector
-     * @param snippetId defines the snippet to load
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a promise that will resolve to the new ShaderMaterial
-     */
-    public static async ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
-        return await new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const serializationObject = JSON.parse(snippet.shaderMaterial);
-                        const output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
-
-                        output.snippetId = snippetId;
-
-                        resolve(output);
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject("Unable to load the snippet " + snippetId);
-                    }
-                }
-            });
-
-            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
-            request.send();
-        });
-    }
-
-    /**
-     * Creates a ShaderMaterial from a snippet saved by the Inspector
-     * @deprecated Please use ParseFromSnippetAsync instead
-     * @param snippetId defines the snippet to load
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a promise that will resolve to the new ShaderMaterial
-     */
-    public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
 }
+
+/**
+ * Creates a shader material from parsed shader material data
+ * @param source defines the JSON representation of the material
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @returns a new material
+ */
+export function ShaderMaterialParse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
+    const material = SerializationHelper.Parse(
+        () => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes),
+        source,
+        scene,
+        rootUrl
+    );
+
+    let name: string;
+
+    // Stencil
+    if (source.stencil) {
+        material.stencil.parse(source.stencil, scene, rootUrl);
+    }
+
+    // Texture
+    for (name in source.textures) {
+        material.setTexture(name, <BaseTexture>Texture.Parse(source.textures[name], scene, rootUrl));
+    }
+
+    // Texture arrays
+    for (name in source.textureArrays) {
+        const array = source.textureArrays[name];
+        const textureArray: BaseTexture[] = [];
+
+        for (let index = 0; index < array.length; index++) {
+            textureArray.push(<BaseTexture>Texture.Parse(array[index], scene, rootUrl));
+        }
+        material.setTextureArray(name, textureArray);
+    }
+
+    // Int
+    for (name in source.ints) {
+        material.setInt(name, source.ints[name]);
+    }
+
+    // UInt
+    for (name in source.uints) {
+        material.setUInt(name, source.uints[name]);
+    }
+
+    // Float
+    for (name in source.floats) {
+        material.setFloat(name, source.floats[name]);
+    }
+
+    // Floats
+    for (name in source.floatsArrays) {
+        material.setFloats(name, source.floatsArrays[name]);
+    }
+
+    // Color3
+    for (name in source.colors3) {
+        const color = source.colors3[name];
+        material.setColor3(name, { r: color[0], g: color[1], b: color[2] });
+    }
+
+    // Color3 arrays
+    for (name in source.colors3Arrays) {
+        const colors: IColor3Like[] = source.colors3Arrays[name]
+            .reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                if (i % 3 === 0) {
+                    arr.push([num]);
+                } else {
+                    arr[arr.length - 1].push(num);
+                }
+                return arr;
+            }, [])
+            .map((color: ArrayLike<number>) => ({ r: color[0], g: color[1], b: color[2] }));
+        material.setColor3Array(name, colors);
+    }
+
+    // Color4
+    for (name in source.colors4) {
+        const color = source.colors4[name];
+        material.setColor4(name, { r: color[0], g: color[1], b: color[2], a: color[3] });
+    }
+
+    // Color4 arrays
+    for (name in source.colors4Arrays) {
+        const colors: IColor4Like[] = source.colors4Arrays[name]
+            .reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                if (i % 4 === 0) {
+                    arr.push([num]);
+                } else {
+                    arr[arr.length - 1].push(num);
+                }
+                return arr;
+            }, [])
+            .map((color: ArrayLike<number>) => ({ r: color[0], g: color[1], b: color[2], a: color[3] }));
+        material.setColor4Array(name, colors);
+    }
+
+    // Vector2
+    for (name in source.vectors2) {
+        const vector = source.vectors2[name];
+        material.setVector2(name, { x: vector[0], y: vector[1] });
+    }
+
+    // Vector3
+    for (name in source.vectors3) {
+        const vector = source.vectors3[name];
+        material.setVector3(name, { x: vector[0], y: vector[1], z: vector[2] });
+    }
+
+    // Vector4
+    for (name in source.vectors4) {
+        const vector = source.vectors4[name];
+        material.setVector4(name, { x: vector[0], y: vector[1], z: vector[2], w: vector[3] });
+    }
+
+    // Quaternion
+    for (name in source.quaternions) {
+        material.setQuaternion(name, Quaternion.FromArray(source.quaternions[name]));
+    }
+
+    // Matrix
+    for (name in source.matrices) {
+        material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
+    }
+
+    // MatrixArray
+    const matrixArrayAccess = material as unknown as IShaderMaterialMatrixArrayAccess;
+    for (name in source.matrixArray) {
+        matrixArrayAccess._matrixArrays[name] = new Float32Array(source.matrixArray[name]);
+    }
+
+    // Matrix 3x3
+    for (name in source.matrices3x3) {
+        material.setMatrix3x3(name, source.matrices3x3[name]);
+    }
+
+    // Matrix 2x2
+    for (name in source.matrices2x2) {
+        material.setMatrix2x2(name, source.matrices2x2[name]);
+    }
+
+    // Vector2Array
+    for (name in source.vectors2Arrays) {
+        material.setArray2(name, source.vectors2Arrays[name]);
+    }
+
+    // Vector3Array
+    for (name in source.vectors3Arrays) {
+        material.setArray3(name, source.vectors3Arrays[name]);
+    }
+
+    // Vector4Array
+    for (name in source.vectors4Arrays) {
+        material.setArray4(name, source.vectors4Arrays[name]);
+    }
+
+    // QuaternionArray
+    for (name in source.quaternionsArrays) {
+        material.setArray4(name, source.quaternionsArrays[name]);
+    }
+
+    return material;
+}
+
+/**
+ * Creates a new ShaderMaterial from a snippet saved in a remote file
+ * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+ * @param url defines the url to load from
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @returns a promise that will resolve to the new ShaderMaterial
+ */
+export async function ShaderMaterialParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
+    return await new Promise((resolve, reject) => {
+        const request = new WebRequest();
+        request.addEventListener("readystatechange", () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    const serializationObject = JSON.parse(request.responseText);
+                    const output = ShaderMaterialParse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
+
+                    if (name) {
+                        output.name = name;
+                    }
+
+                    resolve(output);
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject("Unable to load the ShaderMaterial");
+                }
+            }
+        });
+
+        request.open("GET", url);
+        request.send();
+    });
+}
+
+/**
+ * Creates a ShaderMaterial from a snippet saved by the Inspector
+ * @param snippetId defines the snippet to load
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @returns a promise that will resolve to the new ShaderMaterial
+ */
+export async function ShaderMaterialParseFromSnippetAsync(this: typeof ShaderMaterial | void, snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
+    const snippetUrl = this?.SnippetUrl ?? ShaderMaterial.SnippetUrl;
+
+    return await new Promise((resolve, reject) => {
+        const request = new WebRequest();
+        request.addEventListener("readystatechange", () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                    const serializationObject = JSON.parse(snippet.shaderMaterial);
+                    const output = ShaderMaterialParse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
+
+                    output.snippetId = snippetId;
+
+                    resolve(output);
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject("Unable to load the snippet " + snippetId);
+                }
+            }
+        });
+
+        request.open("GET", snippetUrl + "/" + snippetId.replace(/#/g, "/"));
+        request.send();
+    });
+}
+
+/**
+ * Creates a ShaderMaterial from a snippet saved by the Inspector
+ * @deprecated Please use ShaderMaterialParseFromSnippetAsync instead
+ * @param snippetId defines the snippet to load
+ * @param scene defines the hosting scene
+ * @param rootUrl defines the root URL to use to load textures and relative dependencies
+ * @returns a promise that will resolve to the new ShaderMaterial
+ */
+export const ShaderMaterialCreateFromSnippetAsync = ShaderMaterialParseFromSnippetAsync;
 
 let _Registered = false;
 /**
@@ -1952,6 +1959,11 @@ export function RegisterShaderMaterial(): void {
         return;
     }
     _Registered = true;
+
+    ShaderMaterial.Parse = ShaderMaterialParse;
+    ShaderMaterial.ParseFromFileAsync = ShaderMaterialParseFromFileAsync;
+    ShaderMaterial.ParseFromSnippetAsync = ShaderMaterialParseFromSnippetAsync;
+    ShaderMaterial.CreateFromSnippetAsync = ShaderMaterialCreateFromSnippetAsync;
 
     RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);
 }

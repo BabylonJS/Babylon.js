@@ -1493,7 +1493,6 @@ export class Camera extends Node {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
         const constructorFunc = Node.Construct(type, name, scene, {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             interaxial_distance: interaxial_distance,
             isStereoscopicSideBySide: isStereoscopicSideBySide,
         });
@@ -1514,82 +1513,6 @@ export class Camera extends Node {
         return this.getWorldMatrix();
     }
 
-    /**
-     * Parse a JSON and creates the camera from the parsed information
-     * @param parsedCamera The JSON to parse
-     * @param scene The scene to instantiate the camera in
-     * @returns the newly constructed camera
-     */
-    public static Parse(parsedCamera: any, scene: Scene): Camera {
-        const type = parsedCamera.type;
-        const construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
-
-        const camera = SerializationHelper.Parse(construct, parsedCamera, scene);
-
-        // Parent
-        if (parsedCamera.parentId !== undefined) {
-            camera._waitingParentId = parsedCamera.parentId;
-        }
-
-        // Parent instance index
-        if (parsedCamera.parentInstanceIndex !== undefined) {
-            camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
-        }
-
-        //If camera has an input manager, let it parse inputs settings
-        if (camera.inputs) {
-            camera.inputs.parse(parsedCamera);
-
-            camera._setupInputs();
-        }
-
-        if (parsedCamera.upVector) {
-            camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
-        }
-
-        if ((<any>camera).setPosition) {
-            // need to force position
-            camera.position.copyFromFloats(0, 0, 0);
-            (<any>camera).setPosition(Vector3.FromArray(parsedCamera.position));
-        }
-
-        // Target
-        if (parsedCamera.target) {
-            if ((<any>camera).setTarget) {
-                (<any>camera).setTarget(Vector3.FromArray(parsedCamera.target));
-            }
-        }
-
-        // Apply 3d rig, when found
-        if (parsedCamera.cameraRigMode) {
-            const rigParams = parsedCamera.interaxial_distance ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
-            camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
-        }
-
-        // Animations
-        if (parsedCamera.animations) {
-            for (let animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
-                const parsedAnimation = parsedCamera.animations[animationIndex];
-                const internalClass = GetClass("BABYLON.Animation");
-                if (internalClass) {
-                    camera.animations.push(internalClass.Parse(parsedAnimation));
-                }
-            }
-            Node.ParseAnimationRanges(camera, parsedCamera, scene);
-        }
-
-        if (parsedCamera.autoAnimate) {
-            scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
-        }
-
-        // Check if isEnabled is defined to be back compatible with prior serialized versions.
-        if (parsedCamera.isEnabled !== undefined) {
-            camera.setEnabled(parsedCamera.isEnabled);
-        }
-
-        return camera;
-    }
-
     /** @internal */
     public _calculateHandednessMultiplier(): number {
         let handednessMultiplier = this.getScene().useRightHandedSystem ? -1 : 1;
@@ -1599,4 +1522,89 @@ export class Camera extends Node {
 
         return handednessMultiplier;
     }
+}
+
+/**
+ * Parse a JSON and creates the camera from the parsed information
+ * @param parsedCamera The JSON to parse
+ * @param scene The scene to instantiate the camera in
+ * @returns the newly constructed camera
+ */
+export function CameraParse(parsedCamera: any, scene: Scene): Camera {
+    const type = parsedCamera.type;
+    const construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
+
+    const camera = SerializationHelper.Parse(construct, parsedCamera, scene);
+
+    // Parent
+    if (parsedCamera.parentId !== undefined) {
+        camera._waitingParentId = parsedCamera.parentId;
+    }
+
+    // Parent instance index
+    if (parsedCamera.parentInstanceIndex !== undefined) {
+        camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
+    }
+
+    //If camera has an input manager, let it parse inputs settings
+    if (camera.inputs) {
+        camera.inputs.parse(parsedCamera);
+
+        camera._setupInputs();
+    }
+
+    if (parsedCamera.upVector) {
+        camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
+    }
+
+    if ((<any>camera).setPosition) {
+        // need to force position
+        camera.position.copyFromFloats(0, 0, 0);
+        (<any>camera).setPosition(Vector3.FromArray(parsedCamera.position));
+    }
+
+    // Target
+    if (parsedCamera.target) {
+        if ((<any>camera).setTarget) {
+            (<any>camera).setTarget(Vector3.FromArray(parsedCamera.target));
+        }
+    }
+
+    // Apply 3d rig, when found
+    if (parsedCamera.cameraRigMode) {
+        const rigParams = parsedCamera.interaxial_distance ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+        camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
+    }
+
+    // Animations
+    if (parsedCamera.animations) {
+        for (let animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
+            const parsedAnimation = parsedCamera.animations[animationIndex];
+            const internalClass = GetClass("BABYLON.Animation");
+            if (internalClass) {
+                camera.animations.push(internalClass.Parse(parsedAnimation));
+            }
+        }
+        Node.ParseAnimationRanges(camera, parsedCamera, scene);
+    }
+
+    if (parsedCamera.autoAnimate) {
+        scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
+    }
+
+    // Check if isEnabled is defined to be back compatible with prior serialized versions.
+    if (parsedCamera.isEnabled !== undefined) {
+        camera.setEnabled(parsedCamera.isEnabled);
+    }
+
+    return camera;
+}
+
+let _CameraRegistered = false;
+export function RegisterCamera(): void {
+    if (_CameraRegistered) {
+        return;
+    }
+    _CameraRegistered = true;
+    Camera.Parse = CameraParse;
 }

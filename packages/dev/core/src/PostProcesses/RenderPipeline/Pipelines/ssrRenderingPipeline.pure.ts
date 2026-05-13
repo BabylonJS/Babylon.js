@@ -1029,20 +1029,21 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
         return serializationObject;
     }
-
-    /**
-     * Parse the serialized pipeline
-     * @param source Source pipeline.
-     * @param scene The scene to load the pipeline to.
-     * @param rootUrl The URL of the serialized pipeline.
-     * @returns An instantiated pipeline from the serialized object.
-     */
-    public static Parse(source: any, scene: Scene, rootUrl: string): SSRRenderingPipeline {
-        return SerializationHelper.Parse(() => new SSRRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Parse the serialized pipeline
+ * @param source Source pipeline.
+ * @param scene The scene to load the pipeline to.
+ * @param rootUrl The URL of the serialized pipeline.
+ * @returns An instantiated pipeline from the serialized object.
+ */
+export function SSRRenderingPipelineParse(source: any, scene: Scene, rootUrl: string): SSRRenderingPipeline {
+    return SerializationHelper.Parse(() => new SSRRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+}
+
 /**
  * Register side effects for ssrRenderingPipeline.
  * Safe to call multiple times; only the first call has an effect.
@@ -1052,6 +1053,8 @@ export function RegisterSsrRenderingPipeline(): void {
         return;
     }
     _Registered = true;
+
+    SSRRenderingPipeline.Parse = SSRRenderingPipelineParse;
 
     RegisterClass("BABYLON.SSRRenderingPipeline", SSRRenderingPipeline);
 }

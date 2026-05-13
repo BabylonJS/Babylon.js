@@ -244,36 +244,37 @@ export class MultiMaterial extends Material {
 
         super.dispose(forceDisposeEffect, forceDisposeTextures);
     }
-
-    /**
-     * Creates a MultiMaterial from parsed MultiMaterial data.
-     * @param parsedMultiMaterial defines parsed MultiMaterial data.
-     * @param scene defines the hosting scene
-     * @returns a new MultiMaterial
-     */
-    public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
-        const multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
-
-        multiMaterial.id = parsedMultiMaterial.id;
-        multiMaterial._loadedUniqueId = parsedMultiMaterial.uniqueId;
-
-        if (Tags) {
-            Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
-        }
-
-        if (parsedMultiMaterial.materialsUniqueIds) {
-            multiMaterial._waitingSubMaterialsUniqueIds = parsedMultiMaterial.materialsUniqueIds;
-        } else {
-            for (const subMatId of parsedMultiMaterial.materials) {
-                multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId));
-            }
-        }
-
-        return multiMaterial;
-    }
 }
 
 let _Registered = false;
+
+/**
+ * Creates a MultiMaterial from parsed MultiMaterial data.
+ * @param parsedMultiMaterial defines parsed MultiMaterial data.
+ * @param scene defines the hosting scene
+ * @returns a new MultiMaterial
+ */
+export function MultiMaterialParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
+    const multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
+
+    multiMaterial.id = parsedMultiMaterial.id;
+    multiMaterial._loadedUniqueId = parsedMultiMaterial.uniqueId;
+
+    if (Tags) {
+        Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+    }
+
+    if (parsedMultiMaterial.materialsUniqueIds) {
+        multiMaterial._waitingSubMaterialsUniqueIds = parsedMultiMaterial.materialsUniqueIds;
+    } else {
+        for (const subMatId of parsedMultiMaterial.materials) {
+            multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId));
+        }
+    }
+
+    return multiMaterial;
+}
+
 /**
  * Register side effects for multiMaterial.
  * Safe to call multiple times; only the first call has an effect.
@@ -283,6 +284,8 @@ export function RegisterMultiMaterial(): void {
         return;
     }
     _Registered = true;
+
+    MultiMaterial.ParseMultiMaterial = MultiMaterialParseMultiMaterial;
 
     RegisterClass("BABYLON.MultiMaterial", MultiMaterial);
 }

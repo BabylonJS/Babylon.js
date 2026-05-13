@@ -93,8 +93,8 @@ The import path should be relative to the consuming file. No named imports are n
 Each side-effect file now has a three-file split:
 
 - **`component.types.ts`** — `declare module` augmentation (types only, zero runtime bytes)
-- **`component.pure.ts`** — registration function + pure code + `export * from "./component.types"`
-- **`component.ts`** — backward-compatible wrapper that calls the registration function
+- **`component.pure.ts`** — registration function + pure code
+- **`component.ts`** — backward-compatible wrapper that exports `component.pure.ts` and `component.types.ts`, then calls the registration function
 
 When importing from `.pure.ts` files (or the `pure.ts` barrel), you must **explicitly call the registration function** for the augmented methods to work at runtime:
 
