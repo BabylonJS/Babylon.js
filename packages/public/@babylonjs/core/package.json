@@ -13,8 +13,8 @@
         "./pure": {
             "types": "./pure.d.ts",
             "import": "./pure.js",
-            "default": "./pure.js",
-            "sideEffects": false
+            "sideEffects": false,
+            "default": "./pure.js"
         },
         "./*": {
             "types": "./*.d.ts",

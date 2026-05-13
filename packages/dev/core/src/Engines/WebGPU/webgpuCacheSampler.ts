@@ -105,7 +105,7 @@ export class WebGPUCacheSampler {
                     lodMinClamp = lodMaxClamp = 0;
                 }
                 break;
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+            /* case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR: */ // same value as below
             case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
