@@ -268,6 +268,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public USE_GLTF_STYLE_ANISOTROPY = false;
     public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
     public FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = false;
+    public SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = false;
     public GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = false;
 
     public ENVIRONMENTBRDF = false;
@@ -304,6 +305,12 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public FUZZ_IBL_SAMPLES = 6;
 
     /**
+     * Enables the 4-tap rotated-grid kernel for refractive background blur.
+     * When false, a single dithered sample is used instead.
+     */
+    public REFRACTION_HIGH_QUALITY_BLUR = false;
+
+    /**
      * Tells the shader to enable the fuzz layer
      */
     public FUZZ = false;
@@ -333,6 +340,11 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      * Enables the use of screen-space irradiance texture for scattering
      */
     public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = false;
+
+    /**
+     * Number of samples used by the screen-space SSS convolution kernel.
+     */
+    public SSS_SAMPLE_COUNT = 16;
 
     /**
      * Indicates that the irradiance texture is from the legacy GeometryBufferRenderer.
@@ -432,6 +444,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public UNLIT = false;
 
     public DECAL_AFTER_DETAIL = false;
+
+    public TEXTURE_REPETITION_MODE = 0;
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
@@ -784,7 +798,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public subsurfaceRadius: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadius")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _subsurfaceRadius: Property<number> = new Property<number>("subsurface_radius", 1.0, "vSubsurfaceRadius", 1, 0, "SUBSURFACE_SLAB");
+    private _subsurfaceRadius: Property<number> = new Property<number>("subsurface_radius", 0.1, "vSubsurfaceRadius", 1, 0, "SUBSURFACE_SLAB");
 
     /**
      * Defines the scale factor applied to the subsurface radius.
@@ -1186,6 +1200,29 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
 
+    /** SSS convolution uses 8 samples. */
+    public static readonly SSS_QUALITY_LOW = 0;
+    /** SSS convolution uses 16 samples (default). */
+    public static readonly SSS_QUALITY_MEDIUM = 1;
+    /** SSS convolution uses 32 samples. */
+    public static readonly SSS_QUALITY_HIGH = 2;
+
+    private _sssQuality: number = OpenPBRMaterial.SSS_QUALITY_MEDIUM;
+    /**
+     * Controls the sample count of the screen-space SSS convolution kernel.
+     * Use the SSS_QUALITY_LOW / MEDIUM / HIGH constants (8 / 16 / 32 samples).
+     * Higher quality reduces noise at the cost of GPU time. Default: MEDIUM.
+     */
+    public get sssQuality(): number {
+        return this._sssQuality;
+    }
+    public set sssQuality(value: number) {
+        if (this._sssQuality !== value) {
+            this._sssQuality = value;
+            this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
+    }
+
     private _sssIrradianceTexture: Nullable<ThinTexture> = null;
     /**
      * Defines the irradiance texture used for subsurface scattering.
@@ -1564,6 +1601,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useFuzzRoughnessFromTextureAlpha = false;
 
     /**
+     * Specifies that the subsurface weight is stored in the alpha channel of the texture.
+     * This is for compatibility with glTF where the subsurface weight is stored in
+     * the alpha channel of the diffuseTransmissionTexture.
+     */
+    public _useSubsurfaceWeightFromTextureAlpha = false;
+
+    /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
      * makes the reflect vector face the model (under horizon).
      * @internal
@@ -1727,6 +1771,22 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public set backgroundRefractionTexture(texture: Nullable<BaseTexture>) {
         this._backgroundRefractionTexture = texture;
         this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    private _refractionHighQualityBlur: boolean = true;
+    /**
+     * When true, uses a 4-tap rotated-grid kernel for refractive background blur,
+     * eliminating bilinear block artifacts at the cost of 3 extra texture samples.
+     * When false, a single dithered sample is used. Default: true.
+     */
+    public get refractionHighQualityBlur(): boolean {
+        return this._refractionHighQualityBlur;
+    }
+    public set refractionHighQualityBlur(value: boolean) {
+        if (this._refractionHighQualityBlur !== value) {
+            this._refractionHighQualityBlur = value;
+            this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
     }
 
     /**
@@ -2385,6 +2445,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("vDebugMode", 2);
         ubo.addUniform("renderTargetSize", 2);
         ubo.addUniform("cameraInfo", 4);
+        ubo.addUniform("vTextureRepetitionHexTilingParams", 4);
         ubo.addUniform("backgroundRefractionMatrix", 16);
         ubo.addUniform("vBackgroundRefractionInfos", 3);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
@@ -2461,6 +2522,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
         }
 
+        const hexParams = this.textureRepetitionHexTilingParams;
+        this._uniformBuffer.updateFloat4("vTextureRepetitionHexTilingParams", hexParams[0], hexParams[1], hexParams[2], hexParams[3]);
+
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
@@ -2497,7 +2561,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         }
                     }
 
-                    if (this.geometryNormalTexture) {
+                    if (this.geometryNormalTexture || this.geometryCoatNormalTexture) {
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {
@@ -2907,6 +2971,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
             "cameraInfo",
+            "vTextureRepetitionHexTilingParams",
             "backgroundRefractionMatrix",
             "vBackgroundRefractionInfos",
         ];
@@ -2993,6 +3058,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             samplers: samplers,
             defines: defines,
             maxSimultaneousLights: this._maxSimultaneousLights,
+            shaderLanguage: this._shaderLanguage,
         });
 
         const csnrOptions: ICustomShaderNameResolveOptions = {};
@@ -3104,6 +3170,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.COAT_ROUGHNESS_FROM_GREEN_CHANNEL = this._useCoatRoughnessFromGreenChannel;
                 defines.SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = this._useFuzzRoughnessFromTextureAlpha;
+                defines.SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = this._useSubsurfaceWeightFromTextureAlpha;
                 defines.BASE_METALNESS_FROM_METALNESS_TEXTURE_BLUE = this._useMetallicFromMetallicTextureBlue;
                 defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
                 defines.GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = this._useGeometryThicknessFromGreenChannel;
@@ -3140,6 +3207,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (this.hasTransparency) {
                     defines.REFRACTED_BACKGROUND = !!this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled;
+                    defines.REFRACTION_HIGH_QUALITY_BLUR = this._refractionHighQualityBlur;
                     defines.REFRACTED_LIGHTS = true;
                     const radianceTexture = this._getRadianceTexture();
                     if (radianceTexture) {
@@ -3191,6 +3259,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
         }
 
+        if (defines._areTexturesDirty) {
+            defines.TEXTURE_REPETITION_MODE = engine.version > 1 || engine.isWebGPU ? this.textureRepetitionMode : 0;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(defines);
         }
@@ -3230,6 +3302,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
         defines.SCATTERING = this.hasScattering;
+        const _sssSampleCounts = [8, 16, 32];
+        defines.SSS_SAMPLE_COUNT = _sssSampleCounts[this._sssQuality] ?? 16;
         defines.TRANSMISSION_SLAB = this.transmissionWeight > 0;
         defines.TRANSMISSION_SLAB_VOLUME = this.transmissionWeight > 0 && this.transmissionDepth > 0;
         defines.SUBSURFACE_SLAB = this.subsurfaceWeight > 0;

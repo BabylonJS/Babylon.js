@@ -13,7 +13,7 @@ export const EditorBlockRegistrations: IBlockRegistration[] = [
         tooltip: "Supplies a texture from a webcam",
         // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter) => {
-            const module = await import(/* webpackChunkName: "webCamBlock" */ "./webCamInputBlock/webCamInputBlock.js");
+            const module = await import("./webCamInputBlock/webCamInputBlock.js");
             return new module.WebCamInputBlock(smartFilter);
         },
     },

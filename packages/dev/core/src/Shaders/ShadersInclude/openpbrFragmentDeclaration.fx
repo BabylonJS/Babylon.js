@@ -81,11 +81,14 @@ uniform vec2 vAmbientOcclusionInfos;
 
 #ifdef GEOMETRY_NORMAL
 uniform vec2 vGeometryNormalInfos;
-uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef GEOMETRY_TANGENT
 uniform vec2 vGeometryTangentInfos;
+#endif
+
+#if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL)
+    uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
@@ -249,6 +252,10 @@ uniform vec2 vThinFilmThicknessInfos;
 #ifdef REFRACTED_BACKGROUND
     uniform mat4 backgroundRefractionMatrix;
     uniform vec3 vBackgroundRefractionInfos;
+#endif
+
+#if TEXTURE_REPETITION_MODE > 0
+uniform vec4 vTextureRepetitionHexTilingParams;
 #endif
 
 #define ADDITIONAL_FRAGMENT_DECLARATION

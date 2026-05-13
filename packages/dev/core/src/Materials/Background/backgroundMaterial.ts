@@ -806,6 +806,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: this._maxSimultaneousLights,
+                shaderLanguage: this._shaderLanguage,
             });
 
             const join = defines.toString();

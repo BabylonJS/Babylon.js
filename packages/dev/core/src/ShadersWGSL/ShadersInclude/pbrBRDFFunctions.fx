@@ -281,8 +281,20 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     // Second interface
     var baseIOR: vec3f = getIORTfromAirToSurfaceR0(clamp(baseF0, vec3f(0.0), vec3f(0.9999))); // guard against 1.0
     var R1: vec3f = getR0fromIORsVec3(baseIOR, iridescenceIOR);
-    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1,  vec3f(1.));
-    var phi23: vec3f =  vec3f(0.0);
+
+    // When film and substrate IORs match, R1=0 and there is no second-interface reflection.
+    // Return the first-interface Fresnel only — the thin film is optically absent.
+    // Without this guard two bugs combine to produce spurious colour even when R1=0:
+    //   1. Schlick with F90=1 gives R23=(1-cosTheta)^5 instead of 0 for matched IORs.
+    //   2. clamp(R12*R23, 1e-5, ...) forces r123=sqrt(1e-5)=0.003 non-zero, and
+    //      evalSensitivity then amplifies that into visible interference fringes.
+    let maxR1: f32 = max(R1.r, max(R1.g, R1.b));
+    if (maxR1 < 1e-6) {
+        return max(vec3f(R12), vec3f(0.0));
+    }
+
+    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1, vec3f(1.));
+    var phi23: vec3f = vec3f(0.0);
     if (baseIOR[0] < iridescenceIOR) {
         phi23[0] = PI;
     }
@@ -295,12 +307,12 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
 
     // Phase shift
     var opd: f32 = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
-    var phi: vec3f =  vec3f(phi21) + phi23;
+    var phi: vec3f = vec3f(phi21) + phi23;
 
     // Compound terms
     var R123: vec3f = clamp(R12 * R23, vec3f(1e-5), vec3f(0.9999));
     var r123: vec3f = sqrt(R123);
-    var Rs: vec3f = (T121 * T121) * R23 / ( vec3f(1.0) - R123);
+    var Rs: vec3f = (T121 * T121) * R23 / (vec3f(1.0) - R123);
 
     // Reflectance term for m = 0 (DC term amplitude)
     var C0: vec3f = R12 + Rs;
@@ -311,13 +323,14 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     for (var m: i32 = 1; m <= 2; m++)
     {
         Cm *= r123;
-        var Sm: vec3f = 2.0 * evalSensitivity( f32(m) * opd,  f32(m) * phi);
+        var Sm: vec3f = 2.0 * evalSensitivity(f32(m) * opd, f32(m) * phi);
         I += Cm * Sm;
     }
 
     // Since out of gamut colors might be produced, negative color values are clamped to 0.
-    return max(I,  vec3f(0.0));
+    return max(I, vec3f(0.0));
 }
+
 #endif
 
 // ______________________________________________________________________

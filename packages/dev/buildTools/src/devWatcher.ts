@@ -62,11 +62,11 @@ export const devWatch = () => {
 
     if (watchDeclarations) {
         const filter = processedPackages.join(",");
-        const filterAddition = processedPackages.length === 0 ? [] : ["--", "--filter", filter];
+        const declarationScriptArgs = [...(skipCompilation ? ["--watch-inputs"] : []), ...(processedPackages.length === 0 ? [] : ["--filter", filter])];
         processes.push({
             // npm run watch:declaration -w @tools/babylon-server
             command: "npm",
-            arguments: ["run", "watch:declaration:dev", "-w", "@tools/babylon-server", ...filterAddition],
+            arguments: ["run", "watch:declaration:dev", "-w", "@tools/babylon-server", ...(declarationScriptArgs.length === 0 ? [] : ["--", ...declarationScriptArgs])],
             name: "declaration",
         });
     }

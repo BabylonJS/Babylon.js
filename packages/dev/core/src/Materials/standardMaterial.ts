@@ -6,7 +6,7 @@ import { type IAnimatable } from "../Animations/animatable.interface";
 import { type Nullable } from "../types";
 import { Scene } from "../scene";
 import { type Matrix } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Color3, TmpColors } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
@@ -199,6 +199,8 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public IS_REFRACTION_LINEAR = false;
 
     public DECAL_AFTER_DETAIL = false;
+
+    public TEXTURE_REPETITION_MODE = 0;
 
     /**
      * Initializes the Standard Material defines.
@@ -914,6 +916,8 @@ export class StandardMaterial extends StandardMaterialBase {
             defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
 
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
+
+            defines.TEXTURE_REPETITION_MODE = engine.version > 1 || engine.isWebGPU ? this.textureRepetitionMode : 0;
         }
 
         this._eventInfo.isReadyForSubMesh = true;
@@ -1161,6 +1165,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
                 "cameraInfo",
+                "vTextureRepetitionHexTilingParams",
             ];
 
             const samplers = [
@@ -1216,6 +1221,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: this._maxSimultaneousLights,
+                shaderLanguage: this._shaderLanguage,
             });
 
             AddClipPlaneUniforms(uniforms);
@@ -1359,6 +1365,7 @@ export class StandardMaterial extends StandardMaterialBase {
         ubo.addUniform("vDiffuseColor", 4);
         ubo.addUniform("vAmbientColor", 3);
         ubo.addUniform("cameraInfo", 4);
+        ubo.addUniform("vTextureRepetitionHexTilingParams", 4);
 
         PrepareUniformLayoutForIBL(ubo, false, true);
 
@@ -1403,6 +1410,9 @@ export class StandardMaterial extends StandardMaterialBase {
             this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
         }
 
+        const hexParams = this.textureRepetitionHexTilingParams;
+        this._uniformBuffer.updateFloat4("vTextureRepetitionHexTilingParams", hexParams[0], hexParams[1], hexParams[2], hexParams[3]);
+
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
@@ -1434,15 +1444,13 @@ export class StandardMaterial extends StandardMaterialBase {
                     }
 
                     if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        ubo.updateColor4(
-                            "opacityParts",
-                            new Color3(
-                                this.opacityFresnelParameters.leftColor.toLuminance(),
-                                this.opacityFresnelParameters.rightColor.toLuminance(),
-                                this.opacityFresnelParameters.bias
-                            ),
-                            this.opacityFresnelParameters.power
+                        const opacityParts = TmpColors.Color3[0];
+                        opacityParts.set(
+                            this.opacityFresnelParameters.leftColor.toLuminance(),
+                            this.opacityFresnelParameters.rightColor.toLuminance(),
+                            this.opacityFresnelParameters.bias
                         );
+                        ubo.updateColor4("opacityParts", opacityParts, this.opacityFresnelParameters.power);
                     }
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {

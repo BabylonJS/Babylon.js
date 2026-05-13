@@ -78,8 +78,9 @@ export class GraphNode {
      * Shows a validation badge on the node header.
      * @param severity - "error" | "warning" | null. Pass null to hide the badge.
      * @param tooltip - tooltip text shown on hover.
+     * @param onClick - optional callback invoked when the badge is clicked.
      */
-    public setValidationState(severity: "error" | "warning" | null, tooltip?: string): void {
+    public setValidationState(severity: "error" | "warning" | null, tooltip?: string, onClick?: () => void): void {
         if (!this._validationBadge) {
             return;
         }
@@ -87,11 +88,41 @@ export class GraphNode {
         if (!severity) {
             this._validationBadge.style.display = "none";
             this._validationBadge.title = "";
+            this._validationBadge.removeAttribute("role");
+            this._validationBadge.removeAttribute("tabindex");
+            this._validationBadge.removeAttribute("aria-label");
+            this._validationBadge.onclick = null;
+            this._validationBadge.onpointerdown = null;
+            this._validationBadge.onpointermove = null;
+            this._validationBadge.onpointerup = null;
+            this._validationBadge.onkeydown = null;
             return;
         }
         this._validationBadge.style.display = "";
         this._validationBadge.classList.add(severity === "error" ? localStyles["validationError"] : localStyles["validationWarning"]);
         this._validationBadge.title = tooltip ?? "";
+        this._validationBadge.setAttribute("role", "button");
+        this._validationBadge.tabIndex = 0;
+        this._validationBadge.setAttribute("aria-label", severity === "error" ? "Show validation errors" : "Show validation warnings");
+        this._validationBadge.onclick = null;
+        this._validationBadge.onpointerdown = (e) => {
+            e.stopPropagation();
+        };
+        this._validationBadge.onpointermove = (e) => {
+            e.stopPropagation();
+        };
+        this._validationBadge.onpointerup = (e) => {
+            e.stopPropagation();
+            onClick?.();
+        };
+        this._validationBadge.onkeydown = (e) => {
+            if (e.key !== "Enter" && e.key !== " ") {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            onClick?.();
+        };
     }
 
     /**

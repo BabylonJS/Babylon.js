@@ -50,7 +50,10 @@ steps:
           git checkout "$LATEST_TAG"
       displayName: "Override checkout to latest version tag"
       condition: >-
-          and(
-            or(eq(variables['Build.Reason'], 'ResourceTrigger'), eq(variables['Build.Reason'], 'BuildCompletion')),
-            eq(variables['Build.TriggeredBy.DefinitionName'], '${{ parameters.triggeringPipeline }}')
+          or(
+            eq(variables['Build.Reason'], 'ResourceTrigger'),
+            and(
+              eq(variables['Build.Reason'], 'BuildCompletion'),
+              eq(variables['Build.TriggeredBy.DefinitionName'], '${{ parameters.triggeringPipeline }}')
+            )
           )

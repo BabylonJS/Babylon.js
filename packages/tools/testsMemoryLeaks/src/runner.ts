@@ -63,6 +63,24 @@ const WriteStderrLine = (message: string) => {
     process.stderr.write(`${message}\n`);
 };
 
+const WriteStdoutLine = (message: string) => {
+    process.stdout.write(`${message}\n`);
+};
+
+const GetScenarioUrl = (definition: MemoryLeakScenarioDefinition, config: IGlobalConfig): string => {
+    if (definition.kind === "viewer") {
+        return `${config.viewerBaseUrl}${definition.urlPath}`;
+    }
+    return `${config.baseUrl}/empty.html`;
+};
+
+const FormatStartMessage = (definition: MemoryLeakScenarioDefinition, config: IGlobalConfig, index: number, total: number): string => {
+    const url = GetScenarioUrl(definition, config);
+    const detail =
+        definition.kind === "playground" ? ` playground=${definition.playgroundId}` : definition.kind === "package" ? ` packageScenario=${definition.packageScenario}` : "";
+    return `[memleak ${index + 1}/${total}] running ${definition.id} (${definition.kind}) \u2014 ${definition.name} [${definition.packageName}]${detail}\n  url: ${url}`;
+};
+
 const RunScenarioDefinitionsSequentiallyAsync = async (
     definitions: MemoryLeakScenarioDefinition[],
     options: IMemoryLeakRunnerOptions,
@@ -75,15 +93,28 @@ const RunScenarioDefinitionsSequentiallyAsync = async (
     }
 
     const definition = definitions[definitionIndex];
-    const result = await RunScenario(definition, options, config);
+    WriteStdoutLine(FormatStartMessage(definition, config, definitionIndex, definitions.length));
+    const startedAtMs = Date.now();
+    let result: IMemoryLeakScenarioResult;
+    try {
+        result = await RunScenario(definition, options, config);
+    } catch (error) {
+        const elapsedSeconds = ((Date.now() - startedAtMs) / 1000).toFixed(1);
+        WriteStderrLine(`[memleak ${definitionIndex + 1}/${definitions.length}] FAILED ${definition.id} after ${elapsedSeconds}s: ${(error as Error)?.message ?? error}`);
+        throw error;
+    }
     results.push(result);
+    const elapsedSeconds = ((Date.now() - startedAtMs) / 1000).toFixed(1);
 
     if (result.leaks.length > 0) {
         const message = FormatLeakCountMessage(definition, result.leaks, result.resultDirectory);
+        WriteStderrLine(`[memleak ${definitionIndex + 1}/${definitions.length}] LEAKED ${definition.id} in ${elapsedSeconds}s`);
         if (options.failFast ?? true) {
             throw new MemoryLeakRunnerError(message, results);
         }
         WriteStderrLine(message);
+    } else {
+        WriteStdoutLine(`[memleak ${definitionIndex + 1}/${definitions.length}] passed ${definition.id} in ${elapsedSeconds}s`);
     }
 
     await RunScenarioDefinitionsSequentiallyAsync(definitions, options, config, results, definitionIndex + 1);

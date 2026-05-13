@@ -51,8 +51,12 @@
             specularColoredFresnel = specularFresnel * specular_color;
             
             #ifdef THIN_FILM
-                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-                vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                // evalIridescence recovers IOR from baseDielectricReflectance.F0 internally.
+                // F0 already bakes in specular_weight as mix(0, F0_ior, weight), so the
+                // specular_weight → thin-film-strength relationship is preserved. The maxR1
+                // guard inside evalIridescence suppresses spurious colour when film IOR matches
+                // the substrate IOR (e.g. specular_ior == thin_film_ior at weight=1).
+                vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, vec3(baseDielectricReflectance.F0));
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
@@ -224,11 +228,17 @@
             #endif
 
             #ifdef THIN_FILM
-                vec3 thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                // getF82Specular clamps cos_theta = max(specular_roughness, VdotH) to prevent the
+                // Schlick curve from reaching white for rough surfaces. Without the same clamp,
+                // evalIridescence evaluates at VdotH=0 and returns 1.0 (Schlick F90=1), while the
+                // F82 baseline evaluates at max(roughness, 0) = roughness — a much lower value.
+                // Applying the same floor makes the thin film Fresnel match the F82 baseline magnitude.
+                float thinFilmConductorAngle = max(preInfo{X}.VdotH, specular_roughness);
+                vec3 thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, thinFilmConductorAngle, thin_film_thickness, baseConductorReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-                coloredFresnel = mix(coloredFresnel, specular_weight * thin_film_ior_scale * thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
             #endif
 
             #ifdef ANISOTROPIC_BASE
@@ -284,11 +294,17 @@
         float sin2 = 1.0 - cosTheta_view * cosTheta_view;
         // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
         // is just coat_ior since the incident medium is air (IOR = 1.0).
-        sin2 = sin2 / (coat_ior * coat_ior);
+        sin2 = sin2 / (coat_ior * coat_ior) * coat_weight;
         float cos_t = sqrt(1.0 - sin2);
         float coatPathLength = 1.0 / cos_t;
-        vec3 colored_transmission = pow(coat_color, vec3(coatPathLength));
-        coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
+        // Scale the optical path length by coat_weight (thickness model) so that
+        // a strongly-absorbing coat_color retains significant color at reduced weight,
+        // matching the Beer-Lambert expectation. Using a linear mix of the final
+        // absorption value instead would rapidly bleach the color toward white at
+        // half-weight for any strongly absorbing coat_color.
+        float effectivePathLength = coatPathLength * coat_weight;
+        vec3 colored_transmission = pow(coat_color, vec3(effectivePathLength));
+        coatAbsorption = colored_transmission * mix(1.0, darkened_transmission, coat_weight);
     }
 
     #ifdef FUZZ

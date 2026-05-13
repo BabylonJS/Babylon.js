@@ -21,7 +21,6 @@ import {
     BuildFromComponents,
     GetDefaultValueForType,
     InferVariableType,
-    type IVariableEntry,
     type VariableTypeName,
 } from "flow-graph-editor/variableUtils";
 import { CONSTRUCTOR_CONFIG } from "flow-graph-editor/graphSystem/properties/constructorConfigRegistry";

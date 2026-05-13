@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector-legacy",
-    "version": "9.4.1",
+    "version": "9.6.2",
     "private": true,
     "module": "dist/babylon.inspector.bundle.js",
     "main": "dist/babylon.inspector.bundle.js",
@@ -13,8 +13,8 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run build:prod && npm run build:declaration",
-        "build:dev": "webpack --env development",
-        "build:prod": "webpack --env production",
+        "build:dev": "rollup -c rollup.config.umd.mjs",
+        "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist"
     },
@@ -35,13 +35,13 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/addons": "9.4.1",
-        "@babylonjs/core": "9.4.1",
-        "@babylonjs/gui": "9.4.1",
-        "@babylonjs/gui-editor": "9.4.1",
-        "@babylonjs/loaders": "9.4.1",
-        "@babylonjs/materials": "9.4.1",
-        "@babylonjs/serializers": "9.4.1",
+        "@babylonjs/addons": "9.6.2",
+        "@babylonjs/core": "9.6.2",
+        "@babylonjs/gui": "9.6.2",
+        "@babylonjs/gui-editor": "9.6.2",
+        "@babylonjs/loaders": "9.6.2",
+        "@babylonjs/materials": "9.6.2",
+        "@babylonjs/serializers": "9.6.2",
         "@dev/inspector-legacy": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

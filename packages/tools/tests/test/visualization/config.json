@@ -1,11 +1,12 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
             "title": "Merge Meshes with submeshes",
             "playgroundId": "#ZHPFRQ",
             "referenceImage": "mergemeshes-sub.png",
-            "dependsOn": ["Meshes"]
+            "dependsOn": ["Meshes"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting modify",
@@ -29,7 +30,8 @@
             "title": "Gaussian Splatting Depth",
             "playgroundId": "#V80DRL#12",
             "referenceImage": "gsplat-depth.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "PostProcesses", "SPLATLoader", "Shaders"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "PostProcesses", "SPLATLoader", "Shaders"],
+            "performanceTest": true
         },
         {
             "title": "Gaussian Splatting Depth Alpha Blended",
@@ -71,25 +73,29 @@
             "title": "Gaussian Splatting SPZ SH Order 4 No WASM",
             "playgroundId": "#XSNFXP#13",
             "referenceImage": "gsplat-spz-sh-order-4.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting SPZ Detailed Splat",
             "playgroundId": "#XSNFXP#6",
             "referenceImage": "gsplat-spz-detailed-splat.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting SPZ Detailed Splat No WASM",
             "playgroundId": "#XSNFXP#14",
             "referenceImage": "gsplat-spz-detailed-splat.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting PLY SH Order 4",
             "playgroundId": "#XSNFXP#7",
             "referenceImage": "gsplat-ply-sh-order-4.png",
-            "dependsOn": ["Loaders", "SPLATLoader"]
+            "dependsOn": ["Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting Update Data",
@@ -114,140 +120,158 @@
             "playgroundId": "#DAID4Q",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png",
-            "dependsOn": ["Particles"]
+            "dependsOn": ["Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "SPZ v3 - Splat",
             "playgroundId": "#V7CV8W#4",
             "referenceImage": "gsplat-spz-v3.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
         },
         {
             "title": "SOGS with SH",
             "playgroundId": "#QA2662#13",
             "errorRatio": 5,
             "referenceImage": "gsplat-sogs-sh.png",
-            "dependsOn": ["Loaders"]
+            "dependsOn": ["Loaders"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting Part Test",
             "playgroundId": "#BTS11N#0",
             "errorRatio": 5,
             "referenceImage": "gsplat-part-test.png",
-            "dependsOn": ["GaussianSplatting", "Loaders"]
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting Part Serialize Test",
             "playgroundId": "#XQZVOI#0",
             "errorRatio": 5,
             "referenceImage": "gsplat-part-test.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "Serializers"]
+            "dependsOn": ["GaussianSplatting", "Loaders", "Serializers"],
+            "excludeFromPerformance": true
         },
         {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png",
-            "dependsOn": ["Materials", "Meshes", "Textures"]
+            "dependsOn": ["Materials", "Meshes", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "RH billboard2",
             "playgroundId": "#QDVYS4#4",
             "referenceImage": "rh-billboard2.png",
-            "dependsOn": ["Meshes"]
+            "dependsOn": ["Meshes"],
+            "excludeFromPerformance": true
         },
         {
             "title": "MSDF",
             "playgroundId": "#6RLCWP#20",
             "referenceImage": "msdf.png",
-            "dependsOn": ["MSDFText"]
+            "dependsOn": ["MSDFText"],
+            "excludeFromPerformance": true
         },
         {
             "title": "MSDF Screen projected",
             "playgroundId": "#6RLCWP#48",
             "referenceImage": "msdf-projected.png",
-            "dependsOn": ["Gizmos", "Meshes"]
+            "dependsOn": ["Gizmos", "Meshes"],
+            "excludeFromPerformance": true
         },
         {
             "title": "MSDF Billboard",
             "playgroundId": "#6RLCWP#23",
             "referenceImage": "msdf-billboard.png",
-            "dependsOn": ["Gizmos", "Meshes"]
+            "dependsOn": ["Gizmos", "Meshes"],
+            "excludeFromPerformance": true
         },
         {
             "title": "MSDF Stroke",
             "playgroundId": "#6RLCWP#41",
             "referenceImage": "msdf-stroke.png",
-            "dependsOn": ["Gizmos", "Meshes"]
+            "dependsOn": ["Gizmos", "Meshes"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Attractors",
             "playgroundId": "#DEZ79M#57",
             "referenceImage": "attractors.png",
-            "dependsOn": ["Layers", "Materials", "Particles"]
+            "dependsOn": ["Layers", "Materials", "Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "PBR in mirror",
             "playgroundId": "#Q7DP2M",
             "referenceImage": "pbr_mirror.png",
-            "dependsOn": ["Loaders", "PBR", "Probes", "Textures", "glTF"]
+            "dependsOn": ["Loaders", "PBR", "Probes", "Textures", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR Base Weight",
             "playgroundId": "#DT1XPP#4",
             "referenceImage": "openpbr_base_weight.png",
-            "dependsOn": ["Lights", "PBR", "Textures"]
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
             "playgroundId": "#MXACV7#30",
             "referenceImage": "openpbr_base_diffuse_roughness.png",
-            "dependsOn": ["Lights", "PBR", "Textures"]
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
-            "playgroundId": "#MXACV7#29",
-            "renderCount": 15,
+            "playgroundId": "#76D28X#0",
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png",
-            "dependsOn": ["Lights", "PBR", "Textures"]
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
             "playgroundId": "#MXACV7#28",
-            "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png",
-            "dependsOn": ["PBR", "Textures"]
+            "dependsOn": ["PBR", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
             "playgroundId": "#MXACV7#27",
-            "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png",
-            "dependsOn": ["PBR", "Textures"]
+            "dependsOn": ["PBR", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR Base Diffuse Roughness SH IBL",
             "playgroundId": "#MXACV7#32",
-            "renderCount": 2,
             "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png",
-            "dependsOn": ["PBR", "Textures"]
+            "dependsOn": ["PBR", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png",
-            "dependsOn": ["Layers", "Loaders", "NodeMaterial", "glTF"]
+            "dependsOn": ["Layers", "Loaders", "NodeMaterial", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "NME Glow Automatic",
             "playgroundId": "#7QCYPB#327",
             "referenceImage": "nme_glow_automatic.png",
-            "dependsOn": ["Layers", "Loaders", "NodeMaterial", "glTF"]
+            "dependsOn": ["Layers", "Loaders", "NodeMaterial", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "EXT_lights_ies",
@@ -313,7 +337,8 @@
             "title": "Simple refraction",
             "playgroundId": "#22KZUW#652",
             "referenceImage": "simple-refraction.png",
-            "dependsOn": ["Materials", "Textures"]
+            "dependsOn": ["Materials", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Detail map",
@@ -339,7 +364,8 @@
             "title": "Convolution Post Process",
             "playgroundId": "#FBH4J7#281",
             "referenceImage": "convolution.png",
-            "dependsOn": ["Lights", "Loaders", "PostProcesses"]
+            "dependsOn": ["Lights", "Loaders", "PostProcesses"],
+            "performanceTest": true
         },
         {
             "title": "Volumetric Light Scattering Post Process with Skeleton",
@@ -349,7 +375,7 @@
         },
         {
             "title": "Volumetric Light Scattering Post Process with Morph Targets",
-            "playgroundId": "#5E318S#5",
+            "playgroundId": "#5E318S#7",
             "referenceImage": "volumetricLightScatteringMorphTargets.png",
             "dependsOn": ["Lights", "Materials", "Morph", "PostProcesses"]
         },
@@ -422,7 +448,8 @@
             "title": "Node geometry",
             "playgroundId": "#WGZLGJ#9152",
             "referenceImage": "nodeGeometry.png",
-            "dependsOn": ["Materials", "NodeMaterial"]
+            "dependsOn": ["Materials", "NodeMaterial"],
+            "performanceTest": true
         },
         {
             "title": "Node Geometry - Building generator",
@@ -435,7 +462,8 @@
             "title": "GreasedLine - non camera facing",
             "playgroundId": "#FJRQ8N#150",
             "referenceImage": "greased-line-non-camera-facing.png",
-            "dependsOn": ["GreasedLine", "Textures"]
+            "dependsOn": ["GreasedLine", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GreasedLine - basic",
@@ -465,7 +493,8 @@
             "title": "Iridescence",
             "playgroundId": "#2FDQT5#1505",
             "referenceImage": "iridescence.png",
-            "dependsOn": ["PBR", "Textures"]
+            "dependsOn": ["PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Iridescence NME",
@@ -498,7 +527,8 @@
             "title": "Sprites",
             "playgroundId": "#ZX8DJ3#1",
             "referenceImage": "Sprites.png",
-            "dependsOn": ["Layers", "Sprites"]
+            "dependsOn": ["Layers", "Sprites"],
+            "performanceTest": true
         },
         {
             "title": "Procedural texture with NME",
@@ -520,10 +550,11 @@
         },
         {
             "title": "Particle subemitters",
-            "playgroundId": "#1LK70I#40",
+            "playgroundId": "#1LK70I#41",
             "renderCount": 50,
             "referenceImage": "subemitters.png",
-            "dependsOn": ["Animations", "Lights", "PBR", "Particles", "PostProcesses", "Textures"]
+            "dependsOn": ["Animations", "Lights", "PBR", "Particles", "PostProcesses", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Black and White post-process",
@@ -542,13 +573,15 @@
             "title": "Spotlight shadows",
             "playgroundId": "#U2F7P9#4",
             "referenceImage": "point-light-shadows.png",
-            "dependsOn": ["Lights", "Materials", "Shadows"]
+            "dependsOn": ["Lights", "Materials", "Shadows"],
+            "performanceTest": true
         },
         {
             "title": "Node material 0",
             "playgroundId": "#M5VQE9#41",
             "referenceImage": "node-material0.png",
-            "dependsOn": ["Animations", "Lights", "Morph", "NodeMaterial", "Shadows", "Textures"]
+            "dependsOn": ["Animations", "Lights", "Morph", "NodeMaterial", "Shadows", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Node material 1",
@@ -597,7 +630,8 @@
             "title": "Node material PBR 1",
             "playgroundId": "#D8AK3Z#121",
             "referenceImage": "node-material-pbr-1.png",
-            "dependsOn": ["Animations", "Cameras", "Lights", "NodeMaterial", "PBR", "Shadows", "Textures"]
+            "dependsOn": ["Animations", "Cameras", "Lights", "NodeMaterial", "PBR", "Shadows", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Node material PBR Pure WebGPU",
@@ -688,7 +722,6 @@
         },
         {
             "title": "Sliders",
-            "renderCount": 5,
             "playgroundId": "#HATGQZ#3",
             "referenceImage": "Sliders.png",
             "excludeFromAutomaticTesting": true,
@@ -696,7 +729,6 @@
         },
         {
             "title": "Pointers",
-            "renderCount": 5,
             "playgroundId": "#1GLEJK#5",
             "referenceImage": "pointers.png",
             "excludeFromAutomaticTesting": true,
@@ -713,7 +745,8 @@
             "playgroundId": "#WCDZS#92",
             "renderCount": 150,
             "referenceImage": "sps.png",
-            "dependsOn": ["Behaviors", "Lights", "Materials", "Meshes", "Particles"]
+            "dependsOn": ["Behaviors", "Lights", "Materials", "Meshes", "Particles"],
+            "performanceTest": true
         },
         {
             "title": "Simulate pointer",
@@ -735,7 +768,6 @@
         },
         {
             "title": "Clip planes",
-            "renderCount": 5,
             "playgroundId": "#Y6W087#0",
             "referenceImage": "clipplanes.png",
             "dependsOn": ["GUI", "Lights", "Loaders", "Textures"]
@@ -767,6 +799,14 @@
             "dependsOn": ["Particles"]
         },
         {
+            "title": "FAST snapshot CPU particles",
+            "playgroundId": "#AW6Q7E#0",
+            "renderCount": 30,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "referenceImage": "fast-snapshot-cpu-particles.png",
+            "dependsOn": ["Cameras", "Particles", "Rendering"]
+        },
+        {
             "title": "Chibi Rex",
             "playgroundId": "#SYM1EP#0",
             "referenceImage": "chibi-rex.png",
@@ -777,7 +817,8 @@
             "playgroundId": "#8ZNZFY#0",
             "referenceImage": "yeti.png",
             "errorRatio": 3,
-            "dependsOn": ["Animations", "Loaders", "Particles", "glTF"]
+            "dependsOn": ["Animations", "Loaders", "Particles", "glTF"],
+            "performanceTest": true
         },
         {
             "title": "Sponza",
@@ -879,7 +920,8 @@
             "title": "Soft Shadows",
             "playgroundId": "#0YYQ3N#0",
             "referenceImage": "softShadows.png",
-            "dependsOn": ["Lights", "Loaders", "Shadows"]
+            "dependsOn": ["Lights", "Loaders", "Shadows"],
+            "performanceTest": true
         },
         {
             "title": "Soft Shadows (Right Handed)",
@@ -895,7 +937,6 @@
         },
         {
             "title": "Highlights",
-            "renderCount": 5,
             "playgroundId": "#P7N8YW#1",
             "referenceImage": "highlights.png",
             "dependsOn": ["Layers", "Lights", "PBR", "Textures"]
@@ -933,7 +974,6 @@
         },
         {
             "title": "Capsule",
-            "renderCount": 10,
             "playgroundId": "#JAFIIU#4",
             "referenceImage": "CreateCapsule.png",
             "dependsOn": ["Meshes"]
@@ -942,11 +982,11 @@
             "title": "Bones",
             "playgroundId": "#7EC27T#3",
             "referenceImage": "bones.png",
-            "dependsOn": ["Animations", "Bones", "Lights", "Loaders", "Materials", "Particles", "Shadows"]
+            "dependsOn": ["Animations", "Bones", "Lights", "Loaders", "Materials", "Particles", "Shadows"],
+            "performanceTest": true
         },
         {
             "title": "LOD",
-            "renderCount": 10,
             "playgroundId": "#FFMFW5#0",
             "referenceImage": "lod.png",
             "errorRatio": 5,
@@ -969,15 +1009,14 @@
         },
         {
             "title": "Advanced shadows",
-            "renderCount": 20,
             "playgroundId": "#SLV8LW#3",
             "referenceImage": "advancedShadows.png",
             "errorRatio": 5,
-            "dependsOn": ["GUI", "Lights", "Materials", "Shadows", "Textures"]
+            "dependsOn": ["GUI", "Lights", "Materials", "Shadows", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Advanced shadows (right handed)",
-            "renderCount": 20,
             "playgroundId": "#B48X7G#64",
             "referenceImage": "advancedShadows2.png",
             "errorRatio": 5,
@@ -987,7 +1026,8 @@
             "title": "point light shadows",
             "playgroundId": "#XDNVAY#1",
             "referenceImage": "pointLightShadows.png",
-            "dependsOn": ["Lights", "Materials", "Meshes", "Shadows"]
+            "dependsOn": ["Lights", "Materials", "Meshes", "Shadows"],
+            "performanceTest": true
         },
         {
             "title": "Shadow depth wrappers",
@@ -1024,39 +1064,45 @@
             "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 0)",
             "playgroundId": "#22MFU2#78",
             "referenceImage": "draco.png",
-            "dependsOn": ["PBR"]
+            "dependsOn": ["PBR"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 1)",
             "playgroundId": "#22MFU2#78",
             "replace": "numWorkers = 0, numWorkers = 1",
             "referenceImage": "draco.png",
-            "dependsOn": ["PBR"]
+            "dependsOn": ["PBR"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Draco Mesh Compression (fallback)",
             "playgroundId": "#22MFU2#75",
             "replace": "numWorkers = 0, numWorkers = 1",
             "referenceImage": "draco.png",
-            "dependsOn": ["PBR"]
+            "dependsOn": ["PBR"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Draco Decoder",
             "playgroundId": "#22MFU2#82",
             "referenceImage": "draco.png",
-            "dependsOn": ["PBR"]
+            "dependsOn": ["PBR"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Draco Decoder/Encoder roundtrip",
             "playgroundId": "#JNW207#4",
             "referenceImage": "dracoRoundtrip.png",
-            "dependsOn": ["Loaders"]
+            "dependsOn": ["Loaders"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF Normals",
             "playgroundId": "#SMEAEB#0",
             "referenceImage": "gltfnormals.png",
-            "dependsOn": ["Lights", "Loaders", "Materials", "Meshes", "PBR", "Textures", "glTF"]
+            "dependsOn": ["Lights", "Loaders", "Materials", "Meshes", "PBR", "Textures", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF Animation Node",
@@ -1105,7 +1151,8 @@
             "playgroundId": "#DS8AA7#27",
             "replace": "__folder__, Material, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfMaterial.png",
-            "dependsOn": ["Loaders", "PBR", "Textures"]
+            "dependsOn": ["Loaders", "PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "GLTF Material Alpha Blend",
@@ -1205,7 +1252,8 @@
             "playgroundId": "#DS8AA7#27",
             "replace": "__folder__, Mesh_Primitives, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfMeshPrimitives.png",
-            "dependsOn": ["Loaders", "PBR", "Textures"]
+            "dependsOn": ["Loaders", "PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "GLTF Mesh Primitives UV (0)",
@@ -1325,7 +1373,8 @@
             "title": "GLTF Serializer Skinning and Animation",
             "playgroundId": "#DMZBX1#1",
             "referenceImage": "gltfSerializerSkinningAndAnimation.png",
-            "dependsOn": ["Animations", "Cameras", "Loaders", "Serializers", "glTF"]
+            "dependsOn": ["Animations", "Cameras", "Loaders", "Serializers", "glTF"],
+            "performanceTest": true
         },
         {
             "title": "GLTF Serializer Skinning and Animation (Right Handed)",
@@ -1454,7 +1503,8 @@
             "title": "GLTF Serializer multimaterial with raw texture",
             "playgroundId": "#KU72PX",
             "referenceImage": "glTFSerializerMultimaterial.png",
-            "dependsOn": ["Lights", "Materials", "Meshes", "PBR", "Serializers", "Textures", "glTF"]
+            "dependsOn": ["Lights", "Materials", "Meshes", "PBR", "Serializers", "Textures", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -1472,13 +1522,15 @@
             "title": "GLTF Buggy with Meshopt Compression",
             "playgroundId": "#CIYTF6#0",
             "referenceImage": "gltfBuggyMeshopt.png",
-            "dependsOn": ["Loaders", "glTF"]
+            "dependsOn": ["Loaders", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF BoomBox with Unlit Material",
             "playgroundId": "#GYM97C#2",
             "referenceImage": "gltfUnlit.png",
-            "dependsOn": ["Loaders", "glTF"]
+            "dependsOn": ["Loaders", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF Extension KHR_texture_transform",
@@ -1490,20 +1542,23 @@
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
             "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
-            "dependsOn": ["Loaders", "glTF"]
+            "dependsOn": ["Loaders", "glTF"],
+            "performanceTest": true
         },
         {
             "title": "GLTF Extension KHR_materials_volume with analytic light",
             "playgroundId": "#YG3BBF#48",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png",
-            "dependsOn": ["Loaders", "glTF"]
+            "dependsOn": ["Loaders", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF Extension KHR_materials_volume with attenuation",
             "playgroundId": "#YG3BBF#18",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
             "errorRatio": 3,
-            "dependsOn": ["Loaders", "glTF"]
+            "dependsOn": ["Loaders", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GLTF Extension KHR_materials_specular",
@@ -1532,7 +1587,6 @@
         {
             "title": "Enable disable post process",
             "playgroundId": "#1VI6WV#19",
-            "renderCount": 50,
             "errorRatio": 3,
             "referenceImage": "enableDisablePostProcess.png",
             "dependsOn": ["PostProcesses"]
@@ -1540,30 +1594,28 @@
         {
             "title": "Sharpen",
             "playgroundId": "#NAW8EA#1",
-            "renderCount": 20,
             "referenceImage": "sharpen.png",
             "dependsOn": ["PostProcesses"]
         },
         {
             "title": "Depth of field",
             "playgroundId": "#IDSQK2#86",
-            "renderCount": 20,
             "referenceImage": "depthOfField.png",
             "dependsOn": ["Cameras", "Materials", "PostProcesses", "Shaders"]
         },
         {
             "title": "Chromatic aberration",
             "playgroundId": "#NAW8EA#0",
-            "renderCount": 20,
             "referenceImage": "chromaticAberration.png",
-            "dependsOn": ["PostProcesses"]
+            "dependsOn": ["PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Default pipeline",
-            "playgroundId": "#NAW8EA#6",
-            "renderCount": 20,
+            "playgroundId": "#3054SF#0",
             "referenceImage": "defaultPipeline.png",
-            "dependsOn": ["PostProcesses"]
+            "dependsOn": ["PostProcesses"],
+            "performanceTest": true
         },
         {
             "title": "Kernel Blur",
@@ -1591,16 +1643,14 @@
         },
         {
             "title": "Particles",
-            "renderCount": 100,
-            "playgroundId": "#G3ZYFU#7",
+            "playgroundId": "#UPXK98#0",
             "referenceImage": "particles.png",
-            "dependsOn": ["Materials", "Particles", "Probes", "Textures"]
+            "dependsOn": ["Materials", "Particles", "Probes", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Reflection probes",
-            "renderCount": 20,
-            "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
-            "functionToCall": "CreateReflectionProbeTestScene ",
+            "playgroundId": "#JHGNUU#0",
             "referenceImage": "refprobe.png",
             "dependsOn": ["Probes"]
         },
@@ -1620,7 +1670,8 @@
             "title": "PBR",
             "playgroundId": "#LCA0Q4#27",
             "referenceImage": "pbr.png",
-            "dependsOn": ["PBR", "Textures"]
+            "dependsOn": ["PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "PBR refraction",
@@ -1648,7 +1699,6 @@
         },
         {
             "title": "MultiSample render targets",
-            "renderCount": 20,
             "playgroundId": "#12MKMN#0",
             "referenceImage": "MultiSample-render-targets.png",
             "dependsOn": ["Materials", "Probes", "Textures"]
@@ -1657,7 +1707,8 @@
             "title": "Default rendering pipeline",
             "playgroundId": "#5XB8YT#2",
             "referenceImage": "DefaultRenderingPipeline.png",
-            "dependsOn": ["Loaders", "PostProcesses"]
+            "dependsOn": ["Loaders", "PostProcesses"],
+            "performanceTest": true
         },
         {
             "title": "Billboard",
@@ -1677,7 +1728,8 @@
             "functionToCall": "createScene",
             "errorRatio": 4,
             "referenceImage": "GUI.png",
-            "dependsOn": ["GUI"]
+            "dependsOn": ["GUI"],
+            "performanceTest": true
         },
         {
             "title": "Up Vector",
@@ -1708,7 +1760,8 @@
             "functionToCall": "CreateInstancesTestScene",
             "referenceImage": "instances.png",
             "replace": "ground., Ground.",
-            "excludeFromAutomaticTesting": true
+            "excludeFromAutomaticTesting": true,
+            "performanceTest": true
         },
         {
             "title": "Instanced Bones",
@@ -1720,7 +1773,8 @@
             "title": "Thin Instances",
             "playgroundId": "#V1JE4Z#1",
             "referenceImage": "thinInstances.png",
-            "dependsOn": ["Materials", "Meshes"]
+            "dependsOn": ["Materials", "Meshes"],
+            "performanceTest": true
         },
         {
             "title": "Light Projection Texture",
@@ -1733,18 +1787,17 @@
             "playgroundId": "#LRFB2D#262",
             "referenceImage": "GlowLayer.png",
             "errorRatio": 2.5,
-            "dependsOn": ["Layers", "Loaders", "glTF"]
+            "dependsOn": ["Layers", "Loaders", "glTF"],
+            "performanceTest": true
         },
         {
             "title": "Local cubemaps",
-            "renderCount": 2,
             "playgroundId": "#RNASML#4",
             "referenceImage": "local-cubemaps.png",
             "dependsOn": ["GUI", "Lights", "Materials", "Textures"]
         },
         {
             "title": "TGA",
-            "renderCount": 5,
             "playgroundId": "#ZI77S7#4",
             "referenceImage": "tga.png",
             "dependsOn": ["Layers"]
@@ -1783,17 +1836,17 @@
             "title": "SSAO2",
             "playgroundId": "#XT1HAS#1",
             "referenceImage": "ssao2.png",
-            "renderCount": 200,
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Materials", "PostProcesses"]
+            "dependsOn": ["Materials", "PostProcesses"],
+            "performanceTest": true
         },
         {
             "title": "DepthRenderer",
             "playgroundId": "#3HPMAA#0",
-            "renderCount": 50,
             "referenceImage": "depthRenderer.png",
-            "dependsOn": ["PBR"]
+            "dependsOn": ["PBR"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Edges",
@@ -1822,22 +1875,19 @@
         {
             "title": "Realtime Filtering",
             "playgroundId": "#FEEK7G#118",
-            "renderCount": 5,
             "referenceImage": "realtimeFiltering.png",
             "dependsOn": ["PBR", "Probes", "Textures"]
         },
         {
             "title": "Realtime Filtering Irradiance",
             "playgroundId": "#FEEK7G#1089",
-            "renderCount": 5,
             "referenceImage": "realtimeFilteringIrradiance.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
         },
         {
             "title": "Realtime Filtering Irradiance with CDF",
-            "playgroundId": "#FEEK7G#1087",
-            "renderCount": 5,
+            "playgroundId": "#F6JODO#0",
             "referenceImage": "realtimeFilteringIrradianceCDF.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
@@ -1845,7 +1895,6 @@
         {
             "title": "Prefiltering Irradiance on load",
             "playgroundId": "#FEEK7G#1111",
-            "renderCount": 5,
             "referenceImage": "prefilteringIrradiance.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
@@ -1853,7 +1902,6 @@
         {
             "title": "Prefiltering Irradiance on load with CDF",
             "playgroundId": "#FEEK7G#1110",
-            "renderCount": 5,
             "referenceImage": "prefilteringIrradianceCDF.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
@@ -1925,10 +1973,10 @@
         {
             "title": "KTX2 decoder test",
             "playgroundId": "#EIJH8L#27",
-            "renderCount": 5,
             "referenceImage": "ktx2decoder.png",
             "excludeFromAutomaticTesting": true,
-            "dependsOn": ["GUI", "Materials", "Textures"]
+            "dependsOn": ["GUI", "Materials", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Motion Blur",
@@ -1936,13 +1984,13 @@
             "referenceImage": "motionBlur.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Animations", "PBR", "PostProcesses", "Textures"]
+            "dependsOn": ["Animations", "PBR", "PostProcesses", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Screen space reflections",
             "playgroundId": "#PIZ1GK#1059",
             "referenceImage": "ssr.png",
-            "renderCount": 10,
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true,
             "dependsOn": ["Materials", "PostProcesses", "Textures"]
@@ -1951,22 +1999,22 @@
             "title": "Geometry buffer renderer",
             "playgroundId": "#PIZ1GK#1620",
             "referenceImage": "geometrybufferrenderer.png",
-            "renderCount": 10,
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Materials", "PBR", "PostProcesses", "Textures"]
+            "dependsOn": ["Materials", "PBR", "PostProcesses", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Shadows and LODs",
             "playgroundId": "#F7KZ7C#9",
             "referenceImage": "shadowsandlod.png",
-            "dependsOn": ["Lights", "Materials", "Meshes", "Shadows"]
+            "dependsOn": ["Lights", "Materials", "Meshes", "Shadows"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Shadows CSM and LODs",
             "playgroundId": "#24HWT9#20",
             "referenceImage": "shadowscsmandlod.png",
-            "renderCount": 2,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Lights", "Materials", "Meshes", "Shadows"]
         },
@@ -1978,14 +2026,12 @@
         },
         {
             "title": "Shadows with instances in left handed system",
-            "renderCount": 10,
             "playgroundId": "#MSAHKR#79",
             "referenceImage": "shadowsinstancesleft.png",
             "dependsOn": ["Lights", "Loaders", "Meshes", "PBR", "Shadows", "glTF"]
         },
         {
             "title": "Shadows with instances in right handed system",
-            "renderCount": 10,
             "playgroundId": "#MSAHKR#13",
             "referenceImage": "shadowsinstancesright.png",
             "dependsOn": ["Lights", "Loaders", "Meshes", "PBR", "Shadows", "glTF"]
@@ -2013,7 +2059,6 @@
         },
         {
             "title": "Prepass SSAO + instanced bones",
-            "renderCount": 50,
             "playgroundId": "#0K8EYN#197",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instanced-bones.png",
@@ -2021,7 +2066,6 @@
         },
         {
             "title": "Prepass SSAO + depth of field",
-            "renderCount": 10,
             "playgroundId": "#8F5HYV#72",
             "excludedEngines": ["webgl1"],
             "errorRatio": 3.5,
@@ -2030,39 +2074,37 @@
         },
         {
             "title": "Prepass + mirror, without postprocess",
-            "renderCount": 10,
-            "playgroundId": "#PIZ1GK#1084",
+            "playgroundId": "#9A4QF8#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png",
             "dependsOn": ["Materials", "PBR", "PostProcesses", "Probes", "Textures"]
         },
         {
             "title": "Prepass + mirror, with postprocesses",
-            "renderCount": 10,
-            "playgroundId": "#PIZ1GK#1085",
+            "playgroundId": "#E4QF68#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png",
-            "dependsOn": ["Materials", "PBR", "PostProcesses", "Probes", "Textures"]
+            "dependsOn": ["Materials", "PBR", "PostProcesses", "Probes", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + sprites",
-            "renderCount": 10,
             "playgroundId": "#9RI8CG#187",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-sprites.png",
-            "dependsOn": ["Layers", "Lights", "Meshes", "PostProcesses", "Sprites"]
+            "dependsOn": ["Layers", "Lights", "Meshes", "PostProcesses", "Sprites"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + glow layer",
-            "renderCount": 30,
-            "playgroundId": "#LRFB2D#263",
+            "playgroundId": "#7HMTCH#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-glow-layer.png",
-            "dependsOn": ["Layers", "Loaders", "PostProcesses", "glTF"]
+            "dependsOn": ["Layers", "Loaders", "PostProcesses", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + bounding box renderer",
-            "renderCount": 10,
             "playgroundId": "#4F33I3#35",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-bbr.png",
@@ -2070,15 +2112,14 @@
         },
         {
             "title": "Prepass SSAO + line edges renderer",
-            "renderCount": 10,
             "playgroundId": "#T90MQ4#3",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-line-edges.png",
-            "dependsOn": ["Meshes", "PostProcesses"]
+            "dependsOn": ["Meshes", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + B&W post process",
-            "renderCount": 10,
             "playgroundId": "#N55Q2M#8",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-b-and-w.png",
@@ -2086,15 +2127,14 @@
         },
         {
             "title": "Prepass SSAO + clip planes",
-            "renderCount": 10,
             "playgroundId": "#Y6W087#71",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-clip-planes.png",
-            "dependsOn": ["GUI", "Lights", "Loaders", "PostProcesses", "Textures"]
+            "dependsOn": ["GUI", "Lights", "Loaders", "PostProcesses", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + GUI",
-            "renderCount": 10,
             "playgroundId": "#LLVZ90#4",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-gui.png",
@@ -2102,7 +2142,6 @@
         },
         {
             "title": "Prepass SSAO + LOD",
-            "renderCount": 10,
             "playgroundId": "#FFMFW5#29",
             "excludedEngines": ["webgl1"],
             "errorRatio": 6,
@@ -2111,7 +2150,6 @@
         },
         {
             "title": "Prepass SSAO + shadow only",
-            "renderCount": 10,
             "playgroundId": "#1KF7V1#55",
             "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-shadow-only.png",
@@ -2119,23 +2157,20 @@
         },
         {
             "title": "Prepass SSAO + highlight layer",
-            "renderCount": 10,
-            "playgroundId": "#1KUJ0A#416",
+            "playgroundId": "#79439I#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-highlight-layer.png",
             "dependsOn": ["Layers", "PostProcesses"]
         },
         {
             "title": "Prepass SSAO + point light",
-            "renderCount": 10,
-            "playgroundId": "#XDNVAY#6",
+            "playgroundId": "#WW5UB5#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-point-light.png",
             "dependsOn": ["Lights", "Materials", "Meshes", "PostProcesses", "Shadows"]
         },
         {
             "title": "Prepass SSAO + on/off post-process",
-            "renderCount": 10,
             "playgroundId": "#1VI6WV#20",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-on-off-pp.png",
@@ -2143,7 +2178,6 @@
         },
         {
             "title": "Prepass SSAO + thin instances",
-            "renderCount": 10,
             "playgroundId": "#V1JE4Z#25",
             "excludedEngines": ["webgl1"],
             "errorRatio": 3,
@@ -2152,15 +2186,14 @@
         },
         {
             "title": "Prepass SSAO + depth renderer",
-            "renderCount": 10,
             "playgroundId": "#3HPMAA#1",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-depth-renderer.png",
-            "dependsOn": ["PBR", "PostProcesses"]
+            "dependsOn": ["PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + visibility",
-            "renderCount": 30,
             "playgroundId": "#PXC9CF#7",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-visibility.png",
@@ -2168,11 +2201,11 @@
         },
         {
             "title": "Prepass SSAO + default pipeline",
-            "renderCount": 10,
-            "playgroundId": "#NAW8EA#7",
+            "playgroundId": "#IIMFWT#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-default-pipeline.png",
-            "dependsOn": ["PostProcesses"]
+            "dependsOn": ["PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass MBlur + Lens",
@@ -2180,12 +2213,12 @@
             "playgroundId": "#ZEB7H6#23",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mb-lens.png",
-            "dependsOn": ["LensFlares", "Lights", "Materials", "PostProcesses", "Textures"]
+            "dependsOn": ["LensFlares", "Lights", "Materials", "PostProcesses", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Prepass SSAO + MSAA",
-            "renderCount": 10,
-            "playgroundId": "#12MKMN#7",
+            "playgroundId": "#LSTDFU#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-msaa.png",
             "dependsOn": ["Materials", "PostProcesses", "Probes", "Textures"]
@@ -2195,7 +2228,8 @@
             "playgroundId": "#1LK70I#35",
             "referenceImage": "multiCameraRenderingWithScissors.png",
             "errorRatio": 3,
-            "dependsOn": ["Cameras"]
+            "dependsOn": ["Cameras"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Scissor test",
@@ -2290,8 +2324,7 @@
         },
         {
             "title": "Thin instances + dynamic buffer resize",
-            "renderCount": 10,
-            "playgroundId": "#217750#217",
+            "playgroundId": "#10G61O#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-buffer-resize.png",
             "dependsOn": ["Meshes", "PostProcesses"]
@@ -2328,7 +2361,6 @@
         },
         {
             "title": "Reverse depth buffer and shadows",
-            "renderCount": 10,
             "playgroundId": "#WL4Q8J#20",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferShadows.png",
@@ -2336,7 +2368,6 @@
         },
         {
             "title": "Reverse depth buffer and CSM shadows",
-            "renderCount": 10,
             "playgroundId": "#IIZ9UU#248",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferCSMShadows.png",
@@ -2352,22 +2383,19 @@
         },
         {
             "title": "Multi cameras and output render target",
-            "renderCount": 2,
-            "playgroundId": "#BCYE7J#46",
+            "playgroundId": "#3VPD1J#0",
             "referenceImage": "multiCamerasOutputRenderTarget.png",
             "dependsOn": ["Cameras", "Materials", "Textures"]
         },
         {
             "title": "Multi cameras and output render target with depth texture (D24)",
-            "renderCount": 2,
-            "playgroundId": "#BCYE7J#36",
+            "playgroundId": "#XASY5D#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "multiCamerasOutputRenderTarget.png",
             "dependsOn": ["Cameras", "Materials", "Textures"]
         },
         {
             "title": "Sample depth texture",
-            "renderCount": 2,
             "playgroundId": "#8RU8Q3#158",
             "excludedEngines": ["webgl1"],
             "referenceImage": "sampleDepthTexture.png",
@@ -2375,7 +2403,6 @@
         },
         {
             "title": "Order independent transparency",
-            "renderCount": 5,
             "playgroundId": "#1PLV5Z#104",
             "excludedEngines": ["webgl1"],
             "referenceImage": "oit.png",
@@ -2383,7 +2410,6 @@
         },
         {
             "title": "Show all procedural textures",
-            "renderCount": 5,
             "playgroundId": "#4N0QRP#1",
             "referenceImage": "allProcTextures.png",
             "excludeFromAutomaticTesting": true,
@@ -2391,8 +2417,7 @@
         },
         {
             "title": "Custom material with depth renderer",
-            "renderCount": 5,
-            "playgroundId": "#6GFJNR#152",
+            "playgroundId": "#9LECW0#0",
             "referenceImage": "customMatDepthRenderer.png",
             "dependsOn": ["Materials", "Meshes", "Shaders"]
         },
@@ -2400,26 +2425,24 @@
             "title": "Baked Vertex Animation",
             "playgroundId": "#14WJWW#13",
             "referenceImage": "bakedVertexAnimation.png",
-            "dependsOn": ["BakedVertexAnimation", "Loaders", "Meshes"]
+            "dependsOn": ["BakedVertexAnimation", "Loaders", "Meshes"],
+            "performanceTest": true
         },
         {
             "title": "Baked Vertex Animation with Depth Of Field",
-            "renderCount": 20,
-            "playgroundId": "#JWO4R0#8",
+            "playgroundId": "#B50RGD#0",
             "referenceImage": "bakedVertexAnimationDOF.png",
             "dependsOn": ["BakedVertexAnimation", "Loaders", "PostProcesses"]
         },
         {
             "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
-            "renderCount": 20,
-            "playgroundId": "#1LF9GK#3",
+            "playgroundId": "#0PIQHX#0",
             "referenceImage": "bakedVertexAnimationVLS.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["BakedVertexAnimation", "Loaders", "PostProcesses"]
         },
         {
             "title": "Bones and morphs computation order",
-            "renderCount": 40,
             "playgroundId": "#WGZLGJ#4040",
             "referenceImage": "bonesMorphsCompute.png",
             "errorRatio": 1,
@@ -2428,7 +2451,6 @@
         {
             "title": "DepthRenderer rhs",
             "playgroundId": "#1PHYB0#138",
-            "renderCount": 5,
             "referenceImage": "depthRendererRHS.png",
             "dependsOn": ["Loaders", "Materials", "PostProcesses", "ProceduralTextures", "Shaders", "glTF"]
         },
@@ -2454,15 +2476,13 @@
         },
         {
             "title": "Picking Visual Test",
-            "renderCount": 2,
-            "playgroundId": "#4J7Y7V#1",
+            "playgroundId": "#0GTR7S#0",
             "referenceImage": "pickingVisualTest.png",
             "dependsOn": ["Cameras", "Materials"]
         },
         {
             "title": "GUI Input Test",
-            "renderCount": 2,
-            "playgroundId": "#UB4F3B#8",
+            "playgroundId": "#A3RC6I#0",
             "errorRatio": 4,
             "referenceImage": "guiInputTest.png",
             "dependsOn": ["GUI", "Textures"]
@@ -2496,7 +2516,6 @@
             "playgroundId": "#YS93KY",
             "referenceImage": "loadGuiSnippetWithUnicode.png",
             "errorRatio": 4,
-            "renderCount": 50,
             "dependsOn": ["GUI", "Textures"]
         },
         {
@@ -2504,7 +2523,6 @@
             "playgroundId": "#ERVGT5",
             "referenceImage": "parseGuiJsonWithUnicode.png",
             "errorRatio": 4,
-            "renderCount": 50,
             "dependsOn": ["GUI", "Textures"]
         },
         {
@@ -2512,7 +2530,6 @@
             "playgroundId": "#LMQGSX#2",
             "referenceImage": "multiSGPerLight.png",
             "errorRatio": 2,
-            "renderCount": 5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Cameras", "Lights", "Shadows"]
         },
@@ -2536,7 +2553,8 @@
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#15148",
             "referenceImage": "exportGltfKHRTextureTransform.png",
-            "dependsOn": ["Loaders", "Materials", "Serializers", "glTF"]
+            "dependsOn": ["Loaders", "Materials", "Serializers", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GUI Input Text Area Inside ScrollViewer",
@@ -2620,7 +2638,6 @@
         {
             "title": "Screen Space Reflections 2",
             "playgroundId": "#PIZ1GK#1500",
-            "renderCount": 5,
             "excludedEngines": ["webgl1"],
             "referenceImage": "Screen-Space-Reflections-2.png",
             "dependsOn": ["Collisions", "Loaders", "PostProcesses"]
@@ -2729,7 +2746,8 @@
             "title": "Font style inheritance",
             "playgroundId": "#QFK9K4#26",
             "referenceImage": "Font-style-inheritance.png",
-            "dependsOn": ["GUI", "Textures"]
+            "dependsOn": ["GUI", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Font size inheritance",
@@ -2764,7 +2782,6 @@
         },
         {
             "title": "edge-renderer-and-zOffset",
-            "renderCount": 5,
             "playgroundId": "#3DBA8X#1",
             "dependsOn": ["Meshes"]
         },
@@ -2776,23 +2793,21 @@
         {
             "title": "water-material",
             "playgroundId": "#EUH2VL#1",
-            "dependsOn": ["LibMaterials", "Materials", "Textures"]
+            "dependsOn": ["LibMaterials", "Materials", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "show-bounding-box",
-            "renderCount": 5,
-            "playgroundId": "#0LN1JD#9",
+            "playgroundId": "#Y2TD10#0",
             "dependsOn": ["Meshes", "Textures"]
         },
         {
             "title": "cube-reflection-with-probe-and-mirrors",
-            "renderCount": 20,
-            "playgroundId": "#X3V1NN#7",
+            "playgroundId": "#3DJPE6#0",
             "dependsOn": ["Materials", "Meshes", "Probes", "Textures"]
         },
         {
             "title": "sphere-with-custom-shader-to-display-wireframe-using-glow-layer",
-            "renderCount": 5,
             "playgroundId": "#Y05E2C#6",
             "dependsOn": ["Layers", "Materials", "Meshes", "Shaders", "Textures"]
         },
@@ -2822,7 +2837,6 @@
         {
             "title": "default-render-pipeline",
             "playgroundId": "#GAFR36#0",
-            "renderCount": 5,
             "excludeFromAutomaticTesting": true,
             "dependsOn": ["Cameras", "GUI", "Loaders", "PostProcesses", "Textures", "glTF"]
         },
@@ -2838,57 +2852,49 @@
         },
         {
             "title": "procedural-texture-with-node-material",
-            "renderCount": 10,
             "playgroundId": "#IA4X0H#1",
             "dependsOn": ["Materials", "NodeMaterial", "ProceduralTextures"]
         },
         {
             "title": "apply-all-post-processes",
-            "renderCount": 10,
-            "playgroundId": "#MJ59Y8#18",
+            "playgroundId": "#QEILPW#0",
             "dependsOn": ["Lights", "Loaders", "PostProcesses"]
         },
         {
             "title": "simple-custom-shader",
-            "renderCount": 5,
             "playgroundId": "#6GFJNR#2",
             "dependsOn": ["Materials", "Shaders"]
         },
         {
             "title": "show-multiple-guis",
-            "renderCount": 5,
             "errorRatio": 4,
             "playgroundId": "#6X9UMD#12",
             "dependsOn": ["GUI", "Materials", "Meshes", "Textures"]
         },
         {
             "title": "skybox-with-boombox",
-            "renderCount": 20,
             "errorRatio": 4,
             "playgroundId": "#I2TR8G#0",
             "dependsOn": ["GUI", "Loaders", "Materials", "Textures", "glTF"]
         },
         {
             "title": "show-all-procedural-textures",
-            "renderCount": 5,
             "playgroundId": "#4N0QRP#1",
             "excludeFromAutomaticTesting": true,
             "dependsOn": ["Materials", "ProceduralTextures"]
         },
         {
             "title": "custom-handling-of-materials-for-render-target-pass",
-            "renderCount": 60,
             "playgroundId": "#FIVL25#21",
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Shaders", "Textures", "glTF"]
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
-            "playgroundId": "#F6PGMC#16",
+            "playgroundId": "#84JLNC#0",
             "dependsOn": ["Animations", "Layers", "NodeMaterial"]
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
-            "renderCount": 10,
             "playgroundId": "#IIZ9UU#63",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Lights", "Materials", "Shadows"]
@@ -2901,7 +2907,6 @@
         },
         {
             "title": "depth-renderer",
-            "renderCount": 5,
             "playgroundId": "#1PHYB0#112",
             "dependsOn": ["Materials", "PostProcesses", "ProceduralTextures", "Shaders"]
         },
@@ -2948,14 +2953,12 @@
         },
         {
             "title": "change-texture-of-material",
-            "renderCount": 10,
-            "playgroundId": "#7PN9PH#2",
+            "playgroundId": "#91XVF7#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials"]
         },
         {
             "title": "screen-space-curvature",
-            "renderCount": 5,
             "playgroundId": "#YF8D42#22",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Loaders", "PostProcesses"]
@@ -2976,7 +2979,6 @@
         },
         {
             "title": "Render to 3D RT",
-            "renderCount": 5,
             "playgroundId": "#XSNYAU#83",
             "errorRatio": 3,
             "excludedEngines": ["webgl1"],
@@ -3004,10 +3006,9 @@
         },
         {
             "title": "Interleaved buffers test (updateUVs = true, updateAfterRender = true)",
-            "playgroundId": "#AVFNTW#5",
+            "playgroundId": "#VF9GO4#0",
             "replace": "//options//, updateUVs = true; updateAfterRender = true;",
             "referenceImage": "interleaved-buffers-4.png",
-            "renderCount": 2,
             "dependsOn": ["Meshes", "PBR"]
         },
         {
@@ -3162,7 +3163,8 @@
             "title": "FrameGraph nrge shadows",
             "playgroundId": "#JWKDME#185",
             "errorRatio": 2,
-            "dependsOn": ["Animations", "Bones", "FrameGraph", "GUI", "Lights", "Loaders", "Materials", "NodeMaterial", "Particles", "Shadows"]
+            "dependsOn": ["Animations", "Bones", "FrameGraph", "GUI", "Lights", "Loaders", "Materials", "NodeMaterial", "Particles", "Shadows"],
+            "performanceTest": true
         },
         {
             "title": "FrameGraph nrge csm shadows",
@@ -3303,7 +3305,8 @@
         {
             "title": "FrameGraph nrge multi RTT MSAA",
             "playgroundId": "#JAG54A",
-            "dependsOn": ["FrameGraph"]
+            "dependsOn": ["FrameGraph"],
+            "excludeFromPerformance": true
         },
         {
             "title": "FrameGraph nrg gui bloom",
@@ -3316,7 +3319,8 @@
             "playgroundId": "#9YU4C5#111",
             "referenceImage": "FrameGraph-nrg-glow-layer.png",
             "errorRatio": 1,
-            "dependsOn": ["FrameGraph", "Layers", "Loaders", "Particles", "Textures", "glTF"]
+            "dependsOn": ["FrameGraph", "Layers", "Loaders", "Particles", "Textures", "glTF"],
+            "performanceTest": true
         },
         {
             "title": "FrameGraph highlight layer",
@@ -3409,12 +3413,14 @@
         {
             "title": "Render target texture with clustered lights",
             "playgroundId": "#1QCA2M#11",
-            "dependsOn": ["Animations", "Bones", "Lights", "Loaders", "Materials", "Particles", "Textures"]
+            "dependsOn": ["Animations", "Bones", "Lights", "Loaders", "Materials", "Particles", "Textures"],
+            "excludeFromPerformance": true
         },
         {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#10",
-            "dependsOn": ["PBR", "Textures"]
+            "dependsOn": ["PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Synchronous Effect",
@@ -3436,27 +3442,28 @@
         },
         {
             "title": "Flow Graph multiple contexts",
-            "playgroundId": "#FQWPBI#11",
+            "playgroundId": "#O0F8LH#0",
             "referenceImage": "Flow-Graph-multiple-contexts.png",
-            "renderCount": 30,
             "dependsOn": ["Animations", "FlowGraph"]
         },
         {
             "title": "KHR diffuse transmission",
             "playgroundId": "#RX52XX#1",
-            "dependsOn": ["Loaders", "glTF"]
+            "dependsOn": ["Loaders", "glTF"],
+            "excludeFromPerformance": true
         },
         {
             "title": "SubSurface Scattering",
-            "playgroundId": "#5H0H89#129",
-            "renderCount": 10,
+            "playgroundId": "#FR639I#0",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"],
+            "performanceTest": true
         },
         {
             "title": "Specular Reflectance with IOR",
             "playgroundId": "#KQYNYS#58",
-            "dependsOn": ["Lights", "PBR", "Textures"]
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "Conductor Transmission",
@@ -3581,35 +3588,40 @@
             "playgroundId": "#VO1Z0C#39",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"]
+            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
             "playgroundId": "#VO1Z0C#40",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Atmosphere", "Cameras", "Lights", "Meshes", "PBR", "PostProcesses"]
+            "dependsOn": ["Atmosphere", "Cameras", "Lights", "Meshes", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Atmosphere Day (Ray Marching)",
             "playgroundId": "#VO1Z0C#41",
             "referenceImage": "atmosphere-day-ray-marching.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"]
+            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Atmosphere Sunset",
             "playgroundId": "#VO1Z0C#42",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"]
+            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
             "playgroundId": "#VO1Z0C#43",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Atmosphere", "Cameras", "Lights", "Meshes", "PBR", "PostProcesses"]
+            "dependsOn": ["Atmosphere", "Cameras", "Lights", "Meshes", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Atmosphere Night",
@@ -3630,13 +3642,15 @@
             "playgroundId": "#VO1Z0C#47",
             "referenceImage": "atmosphere-space-view.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"]
+            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",
             "playgroundId": "#KQYNYS#56",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Lights", "PBR", "Textures"]
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "performanceTest": true
         },
         {
             "title": "OpenPBR IBL F82 Specular Metal vs Weight",
@@ -3911,10 +3925,21 @@
             "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
+            "title": "OpenPBR Thin Film and Specular Color - IBL",
+            "playgroundId": "#GRQHVV#322",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular IOR Match - IBL",
+            "playgroundId": "#GRQHVV#323",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
+        },
+        {
             "title": "OpenPBR Thin Film Textures - IBL",
             "playgroundId": "#GRQHVV#174",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2,
             "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
@@ -4051,9 +4076,8 @@
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
-            "playgroundId": "#GRQHVV#265",
+            "playgroundId": "#5OBC5W#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
@@ -4076,16 +4100,15 @@
         },
         {
             "title": "OpenPBR Subsurface Radius vs Roughness - IBL",
-            "playgroundId": "#GRQHVV#270",
+            "playgroundId": "#54A9FQ#0",
+            "errorRatio": 2.5,
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Radius vs Anisotropy - IBL",
-            "playgroundId": "#GRQHVV#271",
+            "playgroundId": "#7I1LAC#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2,
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
@@ -4096,79 +4119,68 @@
         },
         {
             "title": "OpenPBR Subsurface Radius vs Radius Scale - IBL",
-            "playgroundId": "#GRQHVV#273",
+            "playgroundId": "#SD5EQ1#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending - IBL",
-            "playgroundId": "#GRQHVV#296",
+            "playgroundId": "#SXXR4T#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending - Analytic Lights",
-            "playgroundId": "#GRQHVV#299",
+            "playgroundId": "#T69TFO#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
-            "playgroundId": "#GRQHVV#235",
+            "playgroundId": "#UZ7KW4#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Transmission Dense Scattering - IBL",
-            "playgroundId": "#GRQHVV#294",
+            "playgroundId": "#Q3QF1V#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 10,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Transmission Dense Scattering - SH",
             "playgroundId": "#GRQHVV#293",
             "excludedEngines": ["webgl1"],
-            "renderCount": 10,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - IBL",
-            "playgroundId": "#GRQHVV#295",
+            "playgroundId": "#Z8RCM0#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 10,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - Analytic Lights",
             "playgroundId": "#GRQHVV#306",
             "excludedEngines": ["webgl1"],
-            "renderCount": 10,
             "dependsOn": ["FrameGraph", "LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Particles", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - Realtime IBL",
-            "playgroundId": "#GRQHVV#307",
+            "playgroundId": "#5A4TWS#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Color Scaling - IBL",
-            "playgroundId": "#GRQHVV#302",
+            "playgroundId": "#YWXM7Z#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
-            "playgroundId": "#GRQHVV#311",
+            "playgroundId": "#BY1IOY#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
@@ -4181,7 +4193,6 @@
             "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
             "playgroundId": "#GRQHVV#315",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "excludeFromAutomaticTesting": true,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
@@ -4193,16 +4204,14 @@
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
-            "playgroundId": "#GRQHVV#316",
+            "playgroundId": "#GT3JYS#1",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - Realtime IBL",
-            "playgroundId": "#GRQHVV#318",
+            "playgroundId": "#MB4ZGH#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
@@ -4213,28 +4222,33 @@
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
-            "playgroundId": "#GRQHVV#313",
+            "playgroundId": "#URIA5X#0",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5,
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - IBL",
-            "playgroundId": "#PJ5JXH#115",
+            "playgroundId": "#PJ5JXH#120",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["CSG", "FrameGraph", "GUI", "Layers", "LibMaterials", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Particles", "Shadows", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface SSS Frame Graph - Analytic Lights",
-            "playgroundId": "#PJ5JXH#117",
+            "playgroundId": "#PJ5JXH#121",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["CSG", "FrameGraph", "GUI", "Layers", "LibMaterials", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Particles", "Shadows", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - Combination Lights",
-            "playgroundId": "#PJ5JXH#116",
+            "playgroundId": "#PJ5JXH#122",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["CSG", "FrameGraph", "GUI", "Layers", "LibMaterials", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Particles", "Shadows", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR glTF Surface Tinting",
+            "playgroundId": "#GRQHVV#325",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
         },
         {
             "title": "Background material blur",
@@ -4248,16 +4262,16 @@
         },
         {
             "title": "Havok FloatingOrigin Multi-Region",
-            "playgroundId": "#BEDCVY",
+            "playgroundId": "#ND10JJ#0",
             "useLargeWorldRendering": true,
-            "renderCount": 180,
             "dependsOn": ["Cameras", "GUI", "PBR", "Physics", "Textures"]
         },
         {
             "title": "NME Particles with PositionW",
             "playgroundId": "#RA18GJ#17",
             "renderCount": 120,
-            "dependsOn": ["NodeMaterial", "Particles"]
+            "dependsOn": ["NodeMaterial", "Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Particles - Basic Properties - Size",
@@ -4507,78 +4521,67 @@
         },
         {
             "title": "Particles - Animations",
-            "playgroundId": "#2MI0A1#7",
-            "renderCount": 120,
+            "playgroundId": "#K9LJUG#0",
             "referenceImage": "particles-animations.png",
             "dependsOn": ["LibMaterials", "Particles"]
         },
         {
             "title": "Particles - Animations 2",
-            "playgroundId": "#2MI0A1#8",
-            "renderCount": 120,
+            "playgroundId": "#CBXIIX#0",
             "referenceImage": "particles-animations-2.png",
             "dependsOn": ["LibMaterials", "Particles"]
         },
         {
             "title": "Particles - Ramp Gradient",
-            "playgroundId": "#I2D9MM#15",
-            "renderCount": 120,
+            "playgroundId": "#P14652#0",
             "referenceImage": "particles-ramp-gradient.png",
             "dependsOn": ["LibMaterials", "Particles"]
         },
         {
             "title": "Particles - Ramp Gradient Remap",
-            "playgroundId": "#E3VU3R",
-            "renderCount": 120,
+            "playgroundId": "#1U4LNR#0",
             "referenceImage": "particles-ramp-gradient-remap.png",
             "dependsOn": ["LibMaterials", "Particles"]
         },
         {
             "title": "Particles - Ramp Gradient Remap Alpha",
-            "playgroundId": "#I2D9MM#16",
-            "renderCount": 120,
+            "playgroundId": "#T4VZD9#0",
             "referenceImage": "particles-ramp-gradient-remap-alpha.png",
             "dependsOn": ["LibMaterials", "Particles"]
         },
         {
             "title": "Particles - Billboard Y",
-            "playgroundId": "#T3ZCP7#5",
-            "renderCount": 180,
+            "playgroundId": "#6JLSVW#0",
             "referenceImage": "particles-billboard-y.png",
             "dependsOn": ["Lights", "Materials", "Meshes", "Particles"]
         },
         {
             "title": "Particles - Billboard False",
-            "playgroundId": "#XWG0HV#4",
-            "renderCount": 120,
+            "playgroundId": "#P3W3Y8#0",
             "referenceImage": "particles-billboard-false.png",
             "dependsOn": ["Particles"]
         },
         {
             "title": "Particles - Multiply Blend",
-            "playgroundId": "#M1HYFH#6",
-            "renderCount": 120,
+            "playgroundId": "#LWYGNM#0",
             "referenceImage": "particles-multiply-blend.png",
             "dependsOn": ["Lights", "Particles", "Textures"]
         },
         {
             "title": "Particles - Ramp Blend",
-            "playgroundId": "#XPVJMM#4",
-            "renderCount": 120,
+            "playgroundId": "#30UJYF#0",
             "referenceImage": "particles-ramp-blend.png",
             "dependsOn": ["Lights", "PBR", "Particles", "PostProcesses", "Textures"]
         },
         {
             "title": "Particles - Effects",
-            "playgroundId": "#1ASENS#424",
-            "renderCount": 120,
+            "playgroundId": "#KH7B0A#0",
             "referenceImage": "particles-effects.png",
             "dependsOn": ["Particles", "Shaders"]
         },
         {
             "title": "Particles - Helper - Sun",
-            "playgroundId": "#A97UQ6#5",
-            "renderCount": 120,
+            "playgroundId": "#U78ZGE#0",
             "referenceImage": "particles-helper-sun.png",
             "dependsOn": ["Particles"]
         },
@@ -4591,29 +4594,25 @@
         },
         {
             "title": "Particles - Helper - Fire",
-            "playgroundId": "#I2D9MM#18",
-            "renderCount": 120,
+            "playgroundId": "#WHFJPV#0",
             "referenceImage": "particles-helper-fire.png",
             "dependsOn": ["Lights", "PBR", "Particles", "PostProcesses", "Textures"]
         },
         {
             "title": "Particles - Attractors",
-            "playgroundId": "#DEZ79M#73",
-            "renderCount": 240,
+            "playgroundId": "#PUWWM3#0",
             "referenceImage": "particles-attractors.png",
             "dependsOn": ["Layers", "Materials", "Particles"]
         },
         {
             "title": "Particles - Flowmaps",
-            "playgroundId": "#M58G3X#4",
-            "renderCount": 240,
+            "playgroundId": "#39BW3H#0",
             "referenceImage": "particles-flowmaps.png",
             "dependsOn": ["Gizmos", "Layers", "Particles"]
         },
         {
             "title": "Particles - Flowmaps 2",
-            "playgroundId": "#PPC2EI#5",
-            "renderCount": 120,
+            "playgroundId": "#U0PEEV#0",
             "referenceImage": "particles-flowmaps-2.png",
             "dependsOn": ["Layers", "Particles"]
         },
@@ -4644,14 +4643,12 @@
         {
             "title": "Unbalanced push pop - debug markers",
             "playgroundId": "#T26WTI#2",
-            "renderCount": 10,
             "excludedEngines": ["webgl1", "webgl2"],
             "dependsOn": ["Textures"]
         },
         {
             "title": "Pending pop - debug markers",
             "playgroundId": "#24HWT9#25",
-            "renderCount": 10,
             "excludedEngines": ["webgl1", "webgl2"],
             "dependsOn": ["Textures"]
         },
@@ -4663,7 +4660,8 @@
         {
             "title": "Selection outline layer with instances and LOD",
             "playgroundId": "#8I487I#0",
-            "dependsOn": ["Layers", "Materials", "Meshes"]
+            "dependsOn": ["Layers", "Materials", "Meshes"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Selection outline layer instance selected with LOD",
@@ -5086,7 +5084,8 @@
             "referenceImage": "gpu-particles-attractors-multiple.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 2.5,
-            "dependsOn": ["LibMaterials", "Materials", "Particles"]
+            "dependsOn": ["LibMaterials", "Materials", "Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GPU Particles - Attractors Ring",
@@ -5094,7 +5093,8 @@
             "referenceImage": "gpu-particles-attractors-ring.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 2.5,
-            "dependsOn": ["LibMaterials", "Materials", "Particles"]
+            "dependsOn": ["LibMaterials", "Materials", "Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GPU Particles - Attractors Local",
@@ -5102,21 +5102,50 @@
             "referenceImage": "gpu-particles-attractors-local.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 2.5,
-            "dependsOn": ["LibMaterials", "Particles"]
+            "dependsOn": ["LibMaterials", "Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GPU Particles - From Particle System",
             "playgroundId": "#7JQ28N#0",
             "referenceImage": "gpu-particles-from-particle-system.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Particles"]
+            "dependsOn": ["Particles"],
+            "excludeFromPerformance": true
         },
         {
             "title": "GPU Particles - From Particle System - Flow Map",
             "playgroundId": "#9H7NNG#0",
             "referenceImage": "gpu-particles-from-particle-system-flow-map.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Particles"]
+            "dependsOn": ["Particles"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Texture Repetition - Standard Material",
+            "playgroundId": "#ESP440#0",
+            "referenceImage": "texture-repetition-standard-material.png",
+            "renderCount": 1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Textures"]
+        },
+        {
+            "title": "Texture Repetition - PBR Material",
+            "playgroundId": "#6EPUUH#0",
+            "referenceImage": "texture-repetition-pbr-material.png",
+            "renderCount": 1,
+            "errorRatio": 7.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Textures"]
+        },
+        {
+            "title": "Texture Repetition - OpenPBR Material",
+            "playgroundId": "#GOKMFP#0",
+            "referenceImage": "texture-repetition-openpbr-material.png",
+            "renderCount": 1,
+            "errorRatio": 7.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Textures"]
         }
     ]
 }

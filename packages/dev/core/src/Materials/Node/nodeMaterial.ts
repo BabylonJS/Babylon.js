@@ -316,9 +316,17 @@ export class NodeMaterial extends NodeMaterialBase {
      * @returns the global NME
      */
     private _getGlobalNodeMaterialEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
+        // Note: rollup-built UMD bundles do not expose the editor class
+        // directly on the namespace - it lives on `.default.NodeEditor` -
+        // so we unwrap that case before falling back to the BABYLON global.
         if (typeof NODEEDITOR !== "undefined") {
-            return NODEEDITOR;
+            if ((NODEEDITOR as any).NodeEditor) {
+                return NODEEDITOR;
+            }
+            if ((NODEEDITOR as any).default?.NodeEditor) {
+                return (NODEEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.
@@ -2367,7 +2375,17 @@ export class NodeMaterial extends NodeMaterialBase {
         const id = this.id;
         const uniqueId = this.uniqueId;
 
+        const previousImageProcessingConfiguration = this._imageProcessingConfiguration;
+        const previousImageProcessingObserver = this._imageProcessingObserver;
+        const hasSerializedImageProcessingConfiguration = Object.prototype.hasOwnProperty.call(source, "_imageProcessingConfiguration");
+
         SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
+        const parsedImageProcessingConfiguration = this._imageProcessingConfiguration;
+        if (hasSerializedImageProcessingConfiguration) {
+            this._imageProcessingConfiguration = previousImageProcessingConfiguration;
+            this._imageProcessingObserver = previousImageProcessingObserver;
+            this._attachImageProcessingConfiguration(parsedImageProcessingConfiguration);
+        }
 
         this.id = id;
         this.uniqueId = uniqueId;

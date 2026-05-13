@@ -808,17 +808,38 @@ export class GaussianSplattingMeshBase extends Mesh {
         // each subMesh against the scene's shadow generators. Otherwise the first shadow pass
         // would be skipped (ShadowGenerator.isReady would return false) and we'd miss the shadow
         // on a renderCount=1 capture.
+        // The shadow generator's depth wrapper is standalone (it wraps a ShaderMaterial), so its
+        // isReadyForSubMesh path stamps an effect on subMesh._drawWrappers[engine.currentRenderPassId].
+        // If we leave currentRenderPassId set to the main pass while doing this, we'd overwrite the
+        // GS material's defines on the main draw wrapper, causing the GS material to recreate its
+        // defines on the next call and lose any plugin-driven define state (e.g. defines toggled
+        // by a MaterialPluginBase.isReadyForSubMesh override). Temporarily switch to each shadow
+        // generator's render pass id while preparing it (matches the pattern used in Mesh.isReady).
         if (this.material && this.material.shadowDepthWrapper) {
-            for (const light of this._scene.lights) {
-                const shadowGenerator = light.getShadowGenerator();
-                if (!shadowGenerator) {
-                    continue;
-                }
-                for (const subMesh of this.subMeshes) {
-                    if (!shadowGenerator.isReady(subMesh, true, false)) {
-                        return false;
+            const engine = this._scene.getEngine();
+            const previousRenderPassId = engine.currentRenderPassId;
+            try {
+                for (const light of this._scene.lights) {
+                    const shadowGenerator = light.getShadowGenerator();
+                    if (!shadowGenerator) {
+                        continue;
+                    }
+                    const shadowMap = shadowGenerator.getShadowMap();
+                    const renderPassIds = shadowMap?.renderPassIds;
+                    if (!renderPassIds || renderPassIds.length === 0) {
+                        continue;
+                    }
+                    for (let p = 0; p < renderPassIds.length; ++p) {
+                        engine.currentRenderPassId = renderPassIds[p];
+                        for (const subMesh of this.subMeshes) {
+                            if (!shadowGenerator.isReady(subMesh, true, false)) {
+                                return false;
+                            }
+                        }
                     }
                 }
+            } finally {
+                engine.currentRenderPassId = previousRenderPassId;
             }
         }
 

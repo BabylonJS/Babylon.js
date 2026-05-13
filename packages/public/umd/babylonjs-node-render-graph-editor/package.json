@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-render-graph-editor",
-    "version": "9.4.1",
+    "version": "9.6.2",
     "main": "babylon.nodeRenderGraphEditor.js",
     "types": "babylon.nodeRenderGraphEditor.module.d.ts",
     "files": [
@@ -8,13 +8,14 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run build:prod && npm run build:declaration",
-        "build:dev": "webpack --env development",
-        "build:prod": "webpack --env production",
+        "build:dev": "rollup -c rollup.config.umd.mjs",
+        "build:dev:fast": "rollup -c rollup.config.umd.mjs --environment ROLLUP_DEVMODE:true",
+        "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "9.4.1"
+        "babylonjs": "9.6.2"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -22,15 +23,8 @@
         "@tools/node-render-graph-editor": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
-        "css-loader": "^7.1.0",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "sass-loader": "^13.0.0",
-        "source-map-loader": "^4.0.0",
-        "ts-loader": "^9.2.6",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1",
-        "webpack-merge": "^5.8.0"
+        "react-dom": "^18.2.0"
     },
     "keywords": [
         "3D",

@@ -295,8 +295,16 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // Values that need to be evaluated on every frame
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, false);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // SH is disabled for webGL1
         if (engine.version > 1 || engine.isWebGPU) {
@@ -590,6 +598,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     private _voxelMissingTextureWarned = new Set<number>();
+    private _voxelPartWorldData = new Float32Array(0);
+    private readonly _voxelPartVisibilityData: number[] = [];
 
     protected _bindVoxelEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial): boolean {
         if (!gsMesh.rotationsATexture) {
@@ -626,14 +636,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         if (gsMesh.partIndicesTexture) {
             effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-            const partWorldData = new Float32Array(gsMesh.partCount * 16);
+            const partWorldDataLength = gsMesh.partCount * 16;
+            if (this._voxelPartWorldData.length !== partWorldDataLength) {
+                this._voxelPartWorldData = new Float32Array(partWorldDataLength);
+            }
+            const partWorldData = this._voxelPartWorldData;
             for (let i = 0; i < gsMesh.partCount; i++) {
                 gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
             }
             effect.setMatrices("partWorld", partWorldData);
-            const partVisibilityData: number[] = [];
+            const partVisibilityData = this._voxelPartVisibilityData;
+            partVisibilityData.length = gsMesh.partCount;
             for (let i = 0; i < gsMesh.partCount; i++) {
-                partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
+                partVisibilityData[i] = gsMesh.partVisibility[i] ?? 1.0;
             }
             effect.setArray("partVisibility", partVisibilityData);
         }

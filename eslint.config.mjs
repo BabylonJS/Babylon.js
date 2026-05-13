@@ -136,6 +136,8 @@ export default tseslint.config(
             "**/ShadersWGSL/**/*.ts",
             "**/*.fragment.ts",
             "**/*.vertex.ts",
+            "**/*.fragment.d.ts",
+            "**/*.vertex.d.ts",
 
             // Public packages (generated)
             "packages/public/**",

@@ -1,4 +1,5 @@
 import { type AdvancedDynamicTexture, type Container, type Control } from "gui/index";
+import { type GUIEditor } from "gui-editor/guiEditor";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
@@ -115,8 +116,13 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                     icon: () => <EditRegular />,
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     execute: async () => {
-                        const { GUIEditor } = await import("gui-editor/guiEditor");
-                        await GUIEditor.Show({ liveGuiTexture: texture });
+                        // The UMD inspector bundle externalizes "gui-editor/guiEditor" to BABYLON.GuiEditor,
+                        // which is the GUIEditor class itself rather than a namespace { GUIEditor }.
+                        // Tolerate both shapes so this works in both UMD and module builds.
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        const guiEditorModule: { GUIEditor: typeof GUIEditor } | typeof GUIEditor = await import("gui-editor/guiEditor");
+                        const guiEditor = "GUIEditor" in guiEditorModule ? guiEditorModule.GUIEditor : guiEditorModule;
+                        await guiEditor.Show({ liveGuiTexture: texture });
                     },
                 };
             },

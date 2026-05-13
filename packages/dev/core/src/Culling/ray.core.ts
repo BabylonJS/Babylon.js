@@ -2,6 +2,7 @@ import { Epsilon } from "core/Maths/math.constants";
 import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { BuildArray } from "core/Misc/arrayTools";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
+import { type BoundingInfo } from "./boundingInfo";
 import { type BoundingBox } from "./boundingBox";
 import { type BoundingSphere } from "./boundingSphere";
 import { type DeepImmutable, type float, type Nullable } from "core/types";
@@ -828,6 +829,20 @@ function InternalPickForMesh(
 ) {
     const ray = rayFunction(world, mesh.enableDistantPicking);
 
+    return InternalPickForMeshWithRay(pickingInfo, mesh, world, ray, fastCheck, onlyBoundingInfo, trianglePredicate, skipBoundingInfo);
+}
+
+// Used when a caller already has the mesh-local ray and wants to avoid rebuilding it through rayFunction.
+function InternalPickForMeshWithRay(
+    pickingInfo: Nullable<PickingInfo>,
+    mesh: AbstractMesh,
+    world: Matrix,
+    ray: Ray,
+    fastCheck?: boolean,
+    onlyBoundingInfo?: boolean,
+    trianglePredicate?: TrianglePickingPredicate,
+    skipBoundingInfo?: boolean
+) {
     const result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
     if (!result || !result.hit) {
         return null;
@@ -838,6 +853,40 @@ function InternalPickForMesh(
     }
 
     return result;
+}
+
+function GetThinInstancePickingIntersectionThreshold(className: string, mesh: AbstractMesh): number {
+    return className === "InstancedLinesMesh" || className === "LinesMesh" ? (mesh as any).intersectionThreshold : 0;
+}
+
+function GetThinInstanceRawBoundingInfo(mesh: AbstractMesh): { rawBoundingInfo: Nullable<BoundingInfo>; intersectionThreshold: number } {
+    const className = mesh.getClassName();
+
+    // GreasedLineMesh has a custom width-aware pick path, so the generic raw sphere+box precheck is not safe there.
+    if (className === "GreasedLineMesh") {
+        return { rawBoundingInfo: null, intersectionThreshold: 0 };
+    }
+
+    const rawBoundingInfo = mesh.rawBoundingInfo;
+
+    return { rawBoundingInfo, intersectionThreshold: rawBoundingInfo ? GetThinInstancePickingIntersectionThreshold(className, mesh) : 0 };
+}
+
+// Returns null when the raw-bounds precheck rejects; otherwise returns the mesh-local thin-instance ray to reuse downstream.
+function ThinInstanceIntersectsRawBoundingInfo(
+    rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+    mesh: AbstractMesh,
+    world: Matrix,
+    rawBoundingInfo: BoundingInfo,
+    intersectionThreshold: number
+): Nullable<Ray> {
+    const ray = rayFunction(world, mesh.enableDistantPicking);
+
+    if (!ray.intersectsSphere(rawBoundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(rawBoundingInfo.boundingBox, intersectionThreshold)) {
+        return null;
+    }
+
+    return ray;
 }
 
 function InternalPick(
@@ -853,6 +902,7 @@ function InternalPick(
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
     const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
+    const useFastPath = picker === InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -876,6 +926,7 @@ function InternalPick(
                     // the user only asked for a bounding info check so we can return
                     return result;
                 }
+                const { rawBoundingInfo: thinInstanceRawBoundingInfo, intersectionThreshold: thinInstanceIntersectionThreshold } = GetThinInstanceRawBoundingInfo(mesh);
                 const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
                 if (thinMatrixData) {
                     const thinMatrix = TmpVectors.Matrix[0];
@@ -887,7 +938,19 @@ function InternalPick(
                         }
                         Matrix.FromArrayToRef(thinMatrixData, index << 4, thinMatrix);
                         thinMatrix.multiplyToRef(world, combinedWorld);
-                        const result = picker(pickingInfo, rayFunction, mesh, combinedWorld, fastCheck, onlyBoundingInfo, trianglePredicate, true);
+                        const thinInstanceRay =
+                            useFastPath && thinInstanceRawBoundingInfo
+                                ? ThinInstanceIntersectsRawBoundingInfo(rayFunction, mesh, combinedWorld, thinInstanceRawBoundingInfo, thinInstanceIntersectionThreshold)
+                                : null;
+
+                        if (useFastPath && thinInstanceRawBoundingInfo && !thinInstanceRay) {
+                            continue;
+                        }
+
+                        const result: Nullable<PickingInfo> =
+                            useFastPath && thinInstanceRay
+                                ? InternalPickForMeshWithRay(pickingInfo, mesh, combinedWorld, thinInstanceRay, fastCheck, onlyBoundingInfo, trianglePredicate, true)
+                                : picker(pickingInfo, rayFunction, mesh, combinedWorld, fastCheck, onlyBoundingInfo, trianglePredicate, true);
 
                         if (result) {
                             pickingInfo = result;
@@ -929,6 +992,7 @@ function InternalMultiPick(
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
     const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
+    const useFastPath = picker === InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -947,6 +1011,7 @@ function InternalMultiPick(
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             const result = picker(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
+                const { rawBoundingInfo: thinInstanceRawBoundingInfo, intersectionThreshold: thinInstanceIntersectionThreshold } = GetThinInstanceRawBoundingInfo(mesh);
                 const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
                 if (thinMatrixData) {
                     const thinMatrix = TmpVectors.Matrix[0];
@@ -958,7 +1023,19 @@ function InternalMultiPick(
                         }
                         Matrix.FromArrayToRef(thinMatrixData, index << 4, thinMatrix);
                         thinMatrix.multiplyToRef(world, combinedWorld);
-                        const result = picker(null, rayFunction, mesh, combinedWorld, false, false, trianglePredicate, true);
+                        const thinInstanceRay =
+                            useFastPath && thinInstanceRawBoundingInfo
+                                ? ThinInstanceIntersectsRawBoundingInfo(rayFunction, mesh, combinedWorld, thinInstanceRawBoundingInfo, thinInstanceIntersectionThreshold)
+                                : null;
+
+                        if (useFastPath && thinInstanceRawBoundingInfo && !thinInstanceRay) {
+                            continue;
+                        }
+
+                        const result: Nullable<PickingInfo> =
+                            useFastPath && thinInstanceRay
+                                ? InternalPickForMeshWithRay(null, mesh, combinedWorld, thinInstanceRay, false, false, trianglePredicate, true)
+                                : picker(null, rayFunction, mesh, combinedWorld, false, false, trianglePredicate, true);
 
                         if (result) {
                             result.thinInstanceIndex = index;

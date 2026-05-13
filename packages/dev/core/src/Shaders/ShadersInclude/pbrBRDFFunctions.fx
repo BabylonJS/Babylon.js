@@ -284,6 +284,17 @@ vec3 evalIridescence(float outsideIOR, float eta2, float cosTheta1, float thinFi
     // Second interface
     vec3 baseIOR = getIORTfromAirToSurfaceR0(clamp(baseF0, 0.0, 0.9999)); // guard against 1.0
     vec3 R1 = getR0fromIORs(baseIOR, iridescenceIOR);
+
+    // When film and substrate IORs match (R1≈0), return the first-interface Fresnel only.
+    // Without this guard two bugs produce spurious colour even when R1=0:
+    //   1. Schlick F90=1 gives R23=(1-cosTheta)^5 instead of 0.
+    //   2. clamp(R12*R23, 1e-5,...) forces r123=sqrt(1e-5) non-zero, and evalSensitivity
+    //      amplifies that into visible interference fringes.
+    float maxR1 = max(R1.r, max(R1.g, R1.b));
+    if (maxR1 < 1e-6) {
+        return max(vec3(R12), vec3(0.0));
+    }
+
     vec3 R23 = fresnelSchlickGGX(cosTheta2, R1, vec3(1.));
     vec3 phi23 = vec3(0.0);
     if (baseIOR[0] < iridescenceIOR) phi23[0] = PI;

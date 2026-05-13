@@ -6,6 +6,7 @@ uniform pointSize: f32;
 uniform vDebugMode: vec2f;
 uniform renderTargetSize: vec2f;
 uniform cameraInfo: vec4f;
+uniform vTextureRepetitionHexTilingParams: vec4f;
 uniform backgroundRefractionMatrix: mat4x4f;
 uniform vBackgroundRefractionInfos: vec3f;
 
@@ -133,8 +134,8 @@ uniform vGeometryOpacityInfos: vec2f;
 uniform geometryOpacityMatrix: mat4x4f;
 uniform vGeometryThicknessInfos: vec2f;
 uniform geometryThicknessMatrix: mat4x4f;
-uniform vEmissionInfos: vec2f;
-uniform emissionMatrix: mat4x4f;
+uniform vEmissionColorInfos: vec2f;
+uniform emissionColorMatrix: mat4x4f;
 uniform vThinFilmWeightInfos: vec2f;
 uniform thinFilmWeightMatrix: mat4x4f;
 uniform vThinFilmThicknessInfos: vec2f;
