@@ -9,6 +9,10 @@ const shouldAnalyze = process.argv.includes("--analyze");
 
 const files = readdirSync(join(__dirname, "src"));
 for (const file of files) {
+    if (!file.endsWith(".ts")) {
+        continue;
+    }
+
     // TODO: Figure out why this entry uses so much memory when bundling sceneWithInspector.js
     if (file !== "sceneWithInspector.ts") {
         console.log();
