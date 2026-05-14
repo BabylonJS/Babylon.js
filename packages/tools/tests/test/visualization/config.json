@@ -1749,16 +1749,6 @@
             "dependsOn": ["ProceduralTextures", "Textures"]
         },
         {
-            "title": "Instances",
-            "renderCount": 50,
-            "scriptToRun": "/Demos/Instances/instances.js",
-            "functionToCall": "CreateInstancesTestScene",
-            "referenceImage": "instances.png",
-            "replace": "ground., Ground.",
-            "excludeFromAutomaticTesting": true,
-            "performanceTest": true
-        },
-        {
             "title": "Instanced Bones",
             "playgroundId": "#2YLJ1L#2",
             "referenceImage": "instancedBones.png",
