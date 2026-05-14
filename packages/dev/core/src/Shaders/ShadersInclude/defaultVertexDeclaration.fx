@@ -54,6 +54,7 @@ uniform mat4 detailMatrix;
 #endif
 
 uniform vec4 cameraInfo;
+uniform vec4 vTextureRepetitionHexTilingParams;
 
 #include<decalVertexDeclaration>
 

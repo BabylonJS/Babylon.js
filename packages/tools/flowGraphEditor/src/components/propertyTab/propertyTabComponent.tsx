@@ -376,12 +376,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.save();
                             }}
                         />
-                        <ButtonLineComponent
-                            label="Export glTF (.glb)"
-                            onClick={() => {
-                                void this.exportGlbAsync();
-                            }}
-                        />
                         {this.props.globalState.customSave && (
                             <ButtonLineComponent
                                 label={this.props.globalState.customSave.label}

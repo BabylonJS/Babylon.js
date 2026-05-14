@@ -249,6 +249,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var irradiance_alpha: f32 = 1.0;
         #ifdef REFLECTION
             #ifdef IRRADIANCE_SCATTER_MASK
+                #ifndef BUMP
+                    // Sampling layer data requires uvOffset to be defined. In the geometry shader, it's only
+                    // defined in the bump fragment, so we'll define it here, if not already defined by the bump fragment.
+                    let uvOffset: vec2f = vec2f(0.0);
+                #endif
                 var vSubsurfaceColor: vec3f = vec3f(1.0);
                 var vSubsurfaceRadius: f32 = 0.0;
                 var vSubsurfaceRadiusScale: vec3f = vec3f(1.0);
@@ -314,9 +319,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #ifdef IBL_SHADOW_TEXTURE
                 irradiance *= iblShadowValue;
             #endif
-            #ifndef BUMP
-                let uvOffset: vec2f = vec2f(0.0);
-            #endif
+            
             #ifdef IRRADIANCE_SCATTER_MASK
                 irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
             #endif

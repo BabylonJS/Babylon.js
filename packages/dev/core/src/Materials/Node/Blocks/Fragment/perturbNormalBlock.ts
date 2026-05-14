@@ -378,7 +378,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                     replace: replaceString0,
                 },
                 { search: searchExp1, replace: replaceString1 },
-                { search: /texture.+?bumpSampler,.*?vBumpUV\)\.w/g, replace: "height_" },
+                { search: /(?:texture2D|textureSample|TEXRD)\(bumpSampler,.*?vBumpUV\)\.w/g, replace: "height_" },
             ],
         });
 
@@ -390,14 +390,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state.compilationString += state._declareLocalVar(tempOutput, NodeMaterialBlockConnectionPointTypes.Vector3) + ` = vec3${fSuffix}(0.);\n`;
 
         replaceStrings = [
-            { search: new RegExp(`texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\)`, "g"), replace: `${uvForPerturbNormal}` },
+            {
+                search: new RegExp(`(?:${isWebGPU ? "textureSample" : "texture2D"}|TEXRD)\\(bumpSampler${isWebGPU ? ",bumpSamplerSampler,fragmentInputs." : ","}vBumpUV\\)`, "g"),
+                replace: `${uvForPerturbNormal}`,
+            },
             {
                 search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
                 replace: `${state._declareLocalVar("normalMatrix", NodeMaterialBlockConnectionPointTypes.Matrix)} = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : uniformPrefix + this._worldMatrixName});`,
             },
             {
                 search: new RegExp(
-                    `perturbNormal\\(TBN,texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${uniformPrefix}vBumpInfos.y\\)`,
+                    `perturbNormal\\(TBN,(?:${isWebGPU ? "textureSample" : "texture2D"}|TEXRD)\\(bumpSampler${isWebGPU ? ",bumpSamplerSampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${uniformPrefix}vBumpInfos.y\\)`,
                     "g"
                 ),
                 replace: `perturbNormal(TBN, ${uvForPerturbNormal}, ${uniformPrefix}vBumpInfos.y)`,
