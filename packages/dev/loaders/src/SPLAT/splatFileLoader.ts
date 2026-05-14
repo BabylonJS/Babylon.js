@@ -73,7 +73,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         keepInRam: false,
         flipY: false,
         needsRotationScaleTextures: false,
-        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
+        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.2/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
@@ -323,8 +323,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         };
 
-        // Check for gzip magic bytes to detect SPZ format
-        if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
+        // Check for gzip (before SPZ V4) and NGSP (SPZ V4+) magic bytes to detect SPZ format
+        const isGZipped = u8[0] === 0x1f && u8[1] === 0x8b;
+        const isNGSP = u8[0] === 0x4e && u8[1] === 0x47 && u8[2] === 0x53 && u8[3] === 0x50;
+        if (!isGZipped && !isNGSP) {
             return new Promise((resolve) => {
                 handlePLY(resolve);
             });

@@ -64,6 +64,12 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting SPZ V4 Extensions",
+            "playgroundId": "#XSNFXP#25",
+            "referenceImage": "gsplat-spz-v4-extensions.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "Gaussian Splatting SPZ SH Order 4",
             "playgroundId": "#XSNFXP#5",
             "referenceImage": "gsplat-spz-sh-order-4.png",
@@ -159,7 +165,7 @@
         },
         {
             "title": "Gaussian Splatting IBL Shadows",
-            "playgroundId": "#DAID4Q",
+            "playgroundId": "#DAID4Q#2",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
