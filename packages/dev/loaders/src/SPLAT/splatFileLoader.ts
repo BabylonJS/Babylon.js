@@ -368,6 +368,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         }
 
+        // NGSP (SPZ V4+) requires WASM — the native fallback only handles legacy gzip formats
+        if (isNGSP) {
+            return Promise.reject(
+                new Error(
+                    "SPZ V4+ files (NGSP format) are not supported by the native fallback loader. " +
+                        "Please provide a valid 'spzLibraryUrl' in the loading options to use the WASM-based SPZ library, " +
+                        "or ensure WebAssembly is available in your environment."
+                )
+            );
+        }
+
         // Manual path: decompress gzip, then parse with the built-in SPZ parser
         const readableStream = new ReadableStream({
             start(controller) {
