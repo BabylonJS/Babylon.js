@@ -128,8 +128,16 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     private _engine: AbstractEngine;
     private _scene: Scene;
 
+    /**
+     * Modifier state stored separately from `_keyboardConditions` so it can be typed as a
+     * concrete (non-optional) object. This avoids non-null assertions when updating modifier
+     * fields each frame, and the conditions object holds the same reference so
+     * resolveInteraction sees the live state.
+     */
+    private _keyboardModifiers: { ctrl: boolean; alt: boolean } = { ctrl: false, alt: false };
+
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
-    private _keyboardConditions: KeyboardConditions = { modifiers: { ctrl: false, alt: false } };
+    private _keyboardConditions: KeyboardConditions = { modifiers: this._keyboardModifiers };
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -234,8 +242,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
             const camera = this.camera;
             const input = camera.movement.input;
 
-            this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
-            this._keyboardConditions.modifiers!.alt = this._altPressed;
+            this._keyboardModifiers.ctrl = this._ctrlPressed;
+            this._keyboardModifiers.alt = this._altPressed;
 
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];

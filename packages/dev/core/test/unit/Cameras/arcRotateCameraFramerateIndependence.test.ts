@@ -342,6 +342,35 @@ describe("ArcRotateCamera back-compat parameter combinations", () => {
             expect(camera.radius).toBeCloseTo(rSettled, 6);
         });
     });
+
+    describe("referenceFrameRate", () => {
+        // referenceFrameRate is mutable post-construction. It calibrates inertia values to a
+        // specific reference rate, so the per-frame decay should equal `inertia` exactly when
+        // the actual framerate matches `referenceFrameRate` (legacy behavior preserved at the
+        // chosen reference rate). This test catches regressions where the reference rate (or
+        // the prevFrameTime fallback) gets baked in at construction time.
+        it("changing referenceFrameRate after construction makes per-frame decay match inertia at the new reference rate", () => {
+            camera.inertia = 0.9;
+
+            // Default reference rate is 60. At 60fps wall-clock, decay-per-frame == inertia.
+            setFrameRate(engine!, 60);
+            const decayAt60Reference60Fps = camera.movement.getFrameIndependentDecay(0.9);
+            expect(decayAt60Reference60Fps).toBeCloseTo(0.9, 6);
+
+            // Raise referenceFrameRate post-construction. At 60fps wall-clock the decay-per-frame
+            // now reflects ~2.4 "reference frames" of decay (16.67ms / 6.94ms) and is < 0.9.
+            camera.movement.referenceFrameRate = 144;
+            const decayAt144Reference60Fps = camera.movement.getFrameIndependentDecay(0.9);
+            expect(decayAt144Reference60Fps).toBeLessThan(0.9);
+
+            // And when the wall-clock framerate matches the new reference rate, decay-per-frame
+            // returns to exactly `inertia`. Confirms the new reference value is actually being
+            // read each call (not cached from construction).
+            setFrameRate(engine!, 144);
+            const decayAt144Reference144Fps = camera.movement.getFrameIndependentDecay(0.9);
+            expect(decayAt144Reference144Fps).toBeCloseTo(0.9, 6);
+        });
+    });
 });
 
 // =================================================================================================

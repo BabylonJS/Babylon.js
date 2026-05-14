@@ -369,6 +369,11 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
             return true;
         }
 
+        // NOTE: Uses the `"key" in conditions` form rather than `conditions.key !== undefined`
+        // so that callers can explicitly target entries with no constraint via
+        // `getEntries({ button: undefined })` — i.e. "find catch-all entries that don't
+        // require a specific button". `!== undefined` would silently ignore a deliberate
+        // `undefined` and behave like the property was omitted, which would be wrong here.
         switch (entry.source) {
             case "pointer":
                 if ("button" in conditions && entry.button !== conditions.button) {

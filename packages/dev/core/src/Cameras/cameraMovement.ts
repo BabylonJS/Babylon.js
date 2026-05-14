@@ -169,9 +169,13 @@ export class CameraMovement {
     private _rotationVelocity: Vector3 = new Vector3();
 
     /**
-     * Used when calculating inertial decay. Default to 60fps
+     * Last frame's effective deltaTime in ms. Updated at the end of each
+     * `computeCurrentFrameDeltas` call. Initialized to 0 so the very-first-frame fallback
+     * (used when the engine reports `getDeltaTime() === 0`) always reflects the *current*
+     * `referenceFrameRate` rather than baking in the value at construction time — see
+     * `_getEffectiveDeltaMs`.
      */
-    private _prevFrameTimeMs: number = 1000 / DefaultReferenceFrameRate;
+    private _prevFrameTimeMs: number = 0;
 
     constructor(
         scene: Scene,
@@ -189,7 +193,7 @@ export class CameraMovement {
     public computeCurrentFrameDeltas(): void {
         const deltaTimeMs = this._scene.getEngine().getDeltaTime();
         // Use prevFrameTime as fallback when deltaTime is 0 (e.g. first render frame in tests or unusual conditions)
-        const effectiveDeltaMs = deltaTimeMs > 0 ? deltaTimeMs : this._prevFrameTimeMs;
+        const effectiveDeltaMs = this._getEffectiveDeltaMs(deltaTimeMs);
 
         // Fast-path: when nothing is moving (no accumulated input, all velocities zero), skip all work.
         if (
@@ -303,7 +307,7 @@ export class CameraMovement {
      */
     public getFrameIndependentDecay(inertia: number): number {
         const dt = this._scene.getEngine().getDeltaTime();
-        const effectiveDt = dt > 0 ? dt : this._prevFrameTimeMs;
+        const effectiveDt = this._getEffectiveDeltaMs(dt);
         const referenceFrameDurationMs = 1000 / this.referenceFrameRate;
         return Math.pow(inertia, effectiveDt / referenceFrameDurationMs);
     }
@@ -325,11 +329,29 @@ export class CameraMovement {
         return (1 - decay) / oneMinusInertia;
     }
 
+    /**
+     * Resolves the effective delta time for the current frame, falling back to the previous
+     * frame's value when the engine reports a 0 delta. When neither is available yet (first
+     * frame), falls back to the duration of one frame at `referenceFrameRate` so the very
+     * first frame's decay matches the user's currently configured frame rate.
+     * @param dt - Raw delta time in ms reported by the engine (0 if unavailable this frame).
+     * @returns The effective delta time in ms to use for this frame's decay calculations.
+     */
+    private _getEffectiveDeltaMs(dt: number): number {
+        if (dt > 0) {
+            return dt;
+        }
+        if (this._prevFrameTimeMs > 0) {
+            return this._prevFrameTimeMs;
+        }
+        return 1000 / this.referenceFrameRate;
+    }
+
     private _calculateCurrentVelocity(velocityRef: number, pixelDelta: number, inertialDecayFactor: number): number {
         let inputVelocity = velocityRef;
         const deltaTimeMs = this._scene.getEngine().getDeltaTime();
         // Use prevFrameTime as fallback when deltaTime is 0 (e.g. first render frame in tests or unusual conditions)
-        const effectiveDeltaMs = deltaTimeMs > 0 ? deltaTimeMs : this._prevFrameTimeMs;
+        const effectiveDeltaMs = this._getEffectiveDeltaMs(deltaTimeMs);
 
         if (effectiveDeltaMs === 0) {
             return inputVelocity;

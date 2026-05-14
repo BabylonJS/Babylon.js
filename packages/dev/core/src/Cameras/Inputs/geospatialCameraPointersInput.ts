@@ -21,10 +21,18 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     private _pinchCentroid: Nullable<PointerTouch> = null;
 
     /** Cached resolved inputMap entry for the current pointer gesture */
-    private _activeEntry: PointerInputMapEntry | null = null;
+    private _activeEntry: Nullable<PointerInputMapEntry> = null;
+
+    /**
+     * Modifier state stored separately from `_pointerConditions` so it can be typed as a
+     * concrete (non-optional) object. This avoids non-null assertions when updating modifier
+     * fields on every pointer-down, and the conditions object holds the same reference so
+     * resolveInteraction sees the live state.
+     */
+    private _pointerModifiers: { ctrl: boolean; alt: boolean; shift: boolean } = { ctrl: false, alt: false, shift: false };
 
     /** Cached conditions object for pointer-down resolution */
-    private _pointerConditions: PointerConditions = { modifiers: { ctrl: false, alt: false, shift: false } };
+    private _pointerConditions: PointerConditions = { modifiers: this._pointerModifiers };
 
     /**
      * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch).
@@ -79,9 +87,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         const scene = this.camera.getScene();
 
         this._pointerConditions.button = evt.button;
-        this._pointerConditions.modifiers!.ctrl = evt.ctrlKey;
-        this._pointerConditions.modifiers!.alt = evt.altKey;
-        this._pointerConditions.modifiers!.shift = evt.shiftKey;
+        this._pointerModifiers.ctrl = evt.ctrlKey;
+        this._pointerModifiers.alt = evt.altKey;
+        this._pointerModifiers.shift = evt.shiftKey;
         this._activeEntry = this.camera.movement.input.resolveInteraction("pointer", this._pointerConditions);
 
         if (this._activeEntry?.interaction === "pan") {
