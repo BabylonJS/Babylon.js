@@ -214,7 +214,10 @@ export class GLTFLoader implements IGLTFLoader {
 
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
-    private _disposed = false;
+    /**
+     * @internal
+     */
+    public _disposed = false;
     private _rootUrl: Nullable<string> = null;
     private _fileName: Nullable<string> = null;
     private _uniqueRootUrl: Nullable<string> = null;
@@ -530,7 +533,7 @@ export class GLTFLoader implements IGLTFLoader {
                     // work (e.g. GPU texture processing); any returned Promise is pushed into
                     // _completePromises so it is awaited before the COMPLETE state is reached.
                     for (const adapter of Array.from(this._materialAdapters)) {
-                        this._completePromises.push(adapter.finalizeAsync());
+                        this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
                     this._extensionsOnReady();
