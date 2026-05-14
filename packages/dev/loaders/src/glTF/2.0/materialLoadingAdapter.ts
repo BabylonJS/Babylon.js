@@ -19,7 +19,7 @@ export interface IMaterialLoadingAdapter {
      * by the loader and awaited before the COMPLETE state is reached, so callers can rely
      * on onCompleteObservable for fully processed materials.
      */
-    finalizeAsync?(): Promise<void>;
+    finalizeAsync(): Promise<void>;
 
     /**
      * Whether the material should be treated as unlit

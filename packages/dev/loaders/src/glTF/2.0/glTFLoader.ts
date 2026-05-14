@@ -530,10 +530,7 @@ export class GLTFLoader implements IGLTFLoader {
                     // work (e.g. GPU texture processing); any returned Promise is pushed into
                     // _completePromises so it is awaited before the COMPLETE state is reached.
                     for (const adapter of Array.from(this._materialAdapters)) {
-                        const result = adapter.finalizeAsync?.();
-                        if (result) {
-                            this._completePromises.push(result);
-                        }
+                        this._completePromises.push(adapter.finalizeAsync());
                     }
 
                     this._extensionsOnReady();

@@ -30,6 +30,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * No-op: PBRMaterial has no deferred finalization.
+     */
+    public async finalizeAsync(): Promise<void> {}
+
+    /**
      * Whether the material should be treated as unlit
      */
     public get isUnlit(): boolean {
