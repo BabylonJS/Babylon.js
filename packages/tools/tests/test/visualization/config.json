@@ -1,4 +1,4 @@
-{
+﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -356,7 +356,6 @@
             "title": "Decal map PP",
             "playgroundId": "#9BVW2S#101",
             "referenceImage": "decal-map-pp.png",
-            "renderCount": 50,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Loaders", "Materials", "Meshes", "glTF"]
         },
@@ -550,8 +549,7 @@
         },
         {
             "title": "Particle subemitters",
-            "playgroundId": "#1LK70I#41",
-            "renderCount": 50,
+            "playgroundId": "#1LK70I#43",
             "referenceImage": "subemitters.png",
             "dependsOn": ["Animations", "Lights", "PBR", "Particles", "PostProcesses", "Textures"],
             "performanceTest": true
@@ -742,8 +740,7 @@
         },
         {
             "title": "Solid particle system",
-            "playgroundId": "#WCDZS#92",
-            "renderCount": 150,
+            "playgroundId": "#WCDZS#531",
             "referenceImage": "sps.png",
             "dependsOn": ["Behaviors", "Lights", "Materials", "Meshes", "Particles"],
             "performanceTest": true
@@ -794,7 +791,6 @@
         {
             "title": "Particle Helper",
             "playgroundId": "#1VGT5D#2",
-            "renderCount": 50,
             "referenceImage": "particle-helper.png",
             "dependsOn": ["Particles"]
         },
@@ -1327,7 +1323,6 @@
             "title": "GLTF Alpha Blend",
             "playgroundId": "#SYQW69#579",
             "referenceImage": "glTFAlphaBlend.png",
-            "renderCount": 1,
             "dependsOn": ["Loaders", "glTF"]
         },
         {
@@ -2044,8 +2039,7 @@
         },
         {
             "title": "Prepass SSAO + particles",
-            "renderCount": 50,
-            "playgroundId": "#65MUMZ#47",
+            "playgroundId": "#65MUMZ#59",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-particles.png",
             "dependsOn": ["Materials", "Particles", "PostProcesses", "Probes", "Textures"]
@@ -2270,14 +2264,12 @@
         },
         {
             "title": "Refraction local cube map STD",
-            "renderCount": 1,
             "playgroundId": "#RJN64I#7",
             "referenceImage": "refraction-local-std.png",
             "dependsOn": ["Materials", "PBR", "Probes", "Textures"]
         },
         {
             "title": "Refraction local cube map PBR",
-            "renderCount": 1,
             "playgroundId": "#RJN64I#5",
             "referenceImage": "refraction-local-pbr.png",
             "dependsOn": ["PBR", "Probes", "Textures"]
@@ -2901,8 +2893,7 @@
         },
         {
             "title": "halo-particle-system",
-            "renderCount": 20,
-            "playgroundId": "#2441BU#1",
+            "playgroundId": "#2441BU#5",
             "dependsOn": ["Particles"]
         },
         {
@@ -2912,8 +2903,7 @@
         },
         {
             "title": "particle-system-with-custom-nme-shader",
-            "renderCount": 5,
-            "playgroundId": "#DMLLV2",
+            "playgroundId": "#DMLLV2#7",
             "dependsOn": ["NodeMaterial", "Particles"]
         },
         {
@@ -2937,8 +2927,7 @@
         },
         {
             "title": "wgsl-in-shadermaterial",
-            "renderCount": 30,
-            "playgroundId": "#8RU8Q3#157",
+            "playgroundId": "#8RU8Q3#193",
             "excludedEngines": ["webgl1", "webgl2"],
             "dependsOn": ["Compute", "Loaders", "Materials", "Meshes", "Morph", "Shaders", "Textures", "glTF"]
         },
@@ -4262,8 +4251,7 @@
         },
         {
             "title": "NME Particles with PositionW",
-            "playgroundId": "#RA18GJ#17",
-            "renderCount": 120,
+            "playgroundId": "#RA18GJ#18",
             "dependsOn": ["NodeMaterial", "Particles"],
             "excludeFromPerformance": true
         },
@@ -4581,8 +4569,7 @@
         },
         {
             "title": "Particles - Helper - Smoke",
-            "playgroundId": "#XRRTC0#2",
-            "renderCount": 120,
+            "playgroundId": "#XRRTC0#3",
             "referenceImage": "particles-helper-smoke.png",
             "dependsOn": ["Lights", "PBR", "Particles", "PostProcesses", "Textures"]
         },
@@ -5004,7 +4991,6 @@
             "title": "GPU Particles - Emitters - Mesh",
             "playgroundId": "#7XBJVF#0",
             "referenceImage": "gpu-particles-emitters-mesh.png",
-            "renderCount": 120,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Particles"]
         },
@@ -5119,7 +5105,6 @@
             "title": "Texture Repetition - Standard Material",
             "playgroundId": "#ESP440#0",
             "referenceImage": "texture-repetition-standard-material.png",
-            "renderCount": 1,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Textures"]
         },
@@ -5127,7 +5112,6 @@
             "title": "Texture Repetition - PBR Material",
             "playgroundId": "#6EPUUH#0",
             "referenceImage": "texture-repetition-pbr-material.png",
-            "renderCount": 1,
             "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
@@ -5136,7 +5120,6 @@
             "title": "Texture Repetition - OpenPBR Material",
             "playgroundId": "#GOKMFP#0",
             "referenceImage": "texture-repetition-openpbr-material.png",
-            "renderCount": 1,
             "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
