@@ -134,8 +134,9 @@ export class GaussianSplattingDebugger {
     }
 
     /**
-     * Size culling range. Splats whose geometric-mean radius falls outside are not rendered.
-     * Use GaussianSplattingDebugger.getSplatSizeRange(mesh) to find an asset's range.
+     * Size culling range. Size is pow(|det(Σ)|, 1/6) of the 3D covariance matrix,
+     * equal to the geometric mean of the principal radii. Splats outside this range are not rendered.
+     * Use GaussianSplattingDebugger.GetSplatSizeRange(mesh) to find an asset's range.
      * Set to null to disable.
      */
     public get sizeCulling(): Nullable<{ min: number; max: number }> {

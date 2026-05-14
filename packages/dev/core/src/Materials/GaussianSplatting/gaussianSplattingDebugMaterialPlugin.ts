@@ -111,7 +111,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
 
     /**
      * Size culling range. Size is pow(|det(Σ)|, 1/6) of the 3D covariance matrix,
-     * equal to the geometric mean of the principal radii. Use GaussianSplattingMesh.splatSizeRange
+     * equal to the geometric mean of the principal radii. Use GaussianSplattingMeshBase.splatSizeRange
      * to find the asset's range. Set to null to disable.
      */
     public get sizeCulling(): Nullable<{ min: number; max: number }> {
