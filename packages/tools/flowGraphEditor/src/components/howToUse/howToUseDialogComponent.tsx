@@ -15,17 +15,14 @@ const useStyles = makeStyles({
         width: "700px",
         maxWidth: "90%",
         maxHeight: "80vh",
-        // Mirror Fluent's pattern: DialogBody's baseline `max-height: calc(100dvh - 2*24px)`
-        // accounts for the surface's 24px top/bottom padding. When we shrink the surface to
-        // 80vh, do the same compensation so the body fits inside the surface's padding box.
-        "& .fui-DialogBody": {
-            maxHeight: "calc(80vh - 2 * 24px)",
-            minHeight: 0,
-        },
     },
     body: {
-        overflowY: "auto",
+        // Constrain DialogContent to fit within the shrunk surface, accounting for
+        // DialogSurface's 24px top/bottom padding. This ensures content scrolls within
+        // the visible dialog area instead of overflowing.
+        maxHeight: "calc(80vh - 2 * 24px)",
         minHeight: 0,
+        overflowY: "auto",
         display: "flex",
         flexDirection: "column",
         gap: tokens.spacingVerticalL,

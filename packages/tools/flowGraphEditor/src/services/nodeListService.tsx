@@ -31,6 +31,6 @@ export const NodeListServiceDefinition: ServiceDefinition<[], [IShellService, IG
             dispose: () => {
                 registration.dispose();
             },
-        } satisfies IDisposable;
+        };
     },
 };

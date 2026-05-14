@@ -75,7 +75,7 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
                 dispose: () => {
                     options.customLoadObservable?.remove(loadObserver ?? null);
                 },
-            } satisfies IGlobalStateService & IDisposable;
+            };
         },
     };
 }

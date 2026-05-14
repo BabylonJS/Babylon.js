@@ -32,6 +32,6 @@ export const VariablesServiceDefinition: ServiceDefinition<[], [IShellService, I
             dispose: () => {
                 registration.dispose();
             },
-        } satisfies IDisposable;
+        };
     },
 };

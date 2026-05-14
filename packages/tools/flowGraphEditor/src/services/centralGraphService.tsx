@@ -1,5 +1,4 @@
 import { type IDisposable } from "core/index";
-import { createElement } from "react";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
@@ -20,13 +19,13 @@ export const CentralGraphServiceDefinition: ServiceDefinition<[], [IShellService
     factory: (shellService, globalStateService) => {
         const registration = shellService.addCentralContent({
             key: "FlowGraphEditor",
-            component: () => createElement(GraphEditor, { globalState: globalStateService.globalState }),
+            component: () => <GraphEditor globalState={globalStateService.globalState} />,
         });
 
         return {
             dispose: () => {
                 registration.dispose();
             },
-        } satisfies IDisposable;
+        };
     },
 };

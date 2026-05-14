@@ -64,6 +64,6 @@ export const ToolbarServiceDefinition: ServiceDefinition<[], [IShellService, IGl
                 helpRegistration.dispose();
                 howToUseRegistration.dispose();
             },
-        } satisfies IDisposable;
+        };
     },
 };

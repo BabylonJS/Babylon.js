@@ -52,6 +52,6 @@ export const PropertyTabServiceDefinition: ServiceDefinition<[], [IShellService,
             dispose: () => {
                 registration.dispose();
             },
-        } satisfies IDisposable;
+        };
     },
 };

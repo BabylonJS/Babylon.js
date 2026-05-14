@@ -31,6 +31,6 @@ export const ScenePreviewServiceDefinition: ServiceDefinition<[], [IShellService
             dispose: () => {
                 registration.dispose();
             },
-        } satisfies IDisposable;
+        };
     },
 };

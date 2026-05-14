@@ -26,6 +26,6 @@ export const ToastBridgeServiceDefinition: ServiceDefinition<[], [IGlobalStateSe
             dispose: () => {
                 observer?.remove();
             },
-        } satisfies IDisposable;
+        };
     },
 };

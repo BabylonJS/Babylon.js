@@ -31,6 +31,6 @@ export const DialogBridgeServiceDefinition: ServiceDefinition<[], [IGlobalStateS
             dispose: () => {
                 observer?.remove();
             },
-        } satisfies IDisposable;
+        };
     },
 };
