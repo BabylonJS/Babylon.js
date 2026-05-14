@@ -38,6 +38,7 @@ precision highp float;
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
@@ -336,7 +337,7 @@ void main(void) {
         #endif
         #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
             // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
-            float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
+            float unweighted_translucency = max(mix(subsurface_weight, 1.0f, transmission_weight), 0.0001);
             transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
             transmission_roughness = mix(1.0, transmission_roughness, transmission_weight / unweighted_translucency);
@@ -364,7 +365,7 @@ void main(void) {
     // _________________________ Emissive Lighting _______________________________
     vec3 material_surface_emission = vEmissionColor;
     #ifdef EMISSION_COLOR
-        vec3 emissionColorTex = texture2D(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
+        vec3 emissionColorTex = TEXRD(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
         #ifdef EMISSION_COLOR_GAMMA
             material_surface_emission *= toLinearSpace(emissionColorTex.rgb);
         #else

@@ -88,7 +88,7 @@
             #endif
 
             #ifdef GAMMAREFLECTION
-                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
+                environmentIrradiance.rgb = toLinearSpaceVec3(environmentIrradiance.rgb);
             #endif
             // If we have a predominant light direction, use it to compute the diffuse roughness term.abort
             // Otherwise, bend the irradiance vector to simulate retro-reflectivity of diffuse roughness.
@@ -185,7 +185,7 @@
         #endif
 
         #ifdef GAMMAREFLECTION
-            environmentRadiance.rgb = toLinearSpace(environmentRadiance.rgb);
+            environmentRadiance.rgb = toLinearSpaceVec3(environmentRadiance.rgb);
         #endif
 
         // _____________________________ Levels _____________________________________
@@ -305,7 +305,7 @@
                 #ifdef RGBDREFLECTION
                     accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);
                 #elif defined(GAMMAREFLECTION)
-                    accumulatedRadiance += vec3f(sample_weight) * toLinearSpace(radianceSample.rgb);
+                    accumulatedRadiance += vec3f(sample_weight) * toLinearSpaceVec3(radianceSample.rgb);
                 #else
                     accumulatedRadiance += vec3f(sample_weight) * radianceSample.rgb;
                 #endif
