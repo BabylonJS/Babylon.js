@@ -277,5 +277,8 @@ export abstract class AbstractSpatialAudio {
      */
     public abstract update(): void;
 
+    /**
+     * Releases associated resources.
+     */
     public abstract dispose(): void;
 }
