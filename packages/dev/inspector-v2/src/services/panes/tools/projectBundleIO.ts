@@ -5,7 +5,7 @@ import { GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManag
 import { SerializeProject, LoadProjectAsync, PROJECT_LOCALS_KEY } from "../../../projects/projectSerializer";
 
 /**
- * Serializes a project into a `.babylonproject` zip bundle.
+ * Serializes a project into a `.babylonproj` zip bundle.
  *
  * The zip contains:
  * - `project.json` — the project document (assets + overrides)
@@ -73,8 +73,8 @@ export async function saveProjectBundleAsync(scene: Scene): Promise<Blob> {
 }
 
 /**
- * Loads a `.babylonproject` zip bundle. Extracts all files, creates blob
- * URLs for bundled assets, and loads the project through SAM.
+ * Loads a `.babylonproj` zip bundle into a scene. Extracts all files,
+ * creates blob URLs for bundled assets, and loads the project through SAM.
  *
  * @param scene - The scene to load the project into.
  * @param zipFile - The zip file to load.

@@ -16,6 +16,7 @@ import {
 import { ApplyAllOverrides, ApplyOverridesForKey, AddOverride, GetOverrides } from "../../../projects/overrideManager";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Material } from "core/Materials/material";
+import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
@@ -24,12 +25,14 @@ import { type ISelectionService, SelectionServiceIdentity } from "../../selectio
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 
 import { PROJECT_LOCALS_KEY } from "../../../projects/projectSerializer";
+import { loadProjectBundleAsync, saveProjectBundleAsync } from "./projectBundleIO";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, DocumentTextRegular } from "@fluentui/react-icons";
+import { Body1, Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
+import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, DocumentTextRegular, SaveRegular } from "@fluentui/react-icons";
 
 /**
  * Inspector Tools service that provides an assembly-focused UX for composing
@@ -41,6 +44,14 @@ export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsServic
     consumes: [ToolsServiceIdentity, SelectionServiceIdentity],
     factory: (toolsService, selectionService) => {
         const contentRegistrations: IDisposable[] = [];
+
+        contentRegistrations.push(
+            toolsService.addSectionContent({
+                key: "Project File",
+                section: "Project File",
+                component: (props: { context: Scene }) => <ProjectFileTools scene={props.context} />,
+            })
+        );
 
         contentRegistrations.push(
             toolsService.addSectionContent({
@@ -142,7 +153,80 @@ const useStyles = makeStyles({
     overrideValue: {
         color: tokens.colorPaletteGreenForeground1,
     },
+    busyMessage: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+    },
 });
+
+// ── Project File ──
+
+/**
+ * Save/load controls for the `.babylonproj` zip bundle that captures the
+ * scene's smart assets and overrides as a single project file.
+ * @param props - Component props.
+ * @returns The project file controls.
+ */
+const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
+    const { scene } = props;
+    const styles = useStyles();
+    const [status, setStatus] = useState("");
+    const [busy, setBusy] = useState("");
+    const isBusy = busy !== "";
+
+    const onSaveProject = useCallback(async () => {
+        if (isBusy) {
+            return;
+        }
+        setBusy("Saving project...");
+        setStatus("");
+        try {
+            const blob = await saveProjectBundleAsync(scene);
+            Tools.Download(blob, "scene.babylonproj");
+            setStatus("Saved scene.babylonproj");
+        } catch (err) {
+            setStatus(`Save error: ${err}`);
+        } finally {
+            setBusy("");
+        }
+    }, [scene, isBusy]);
+
+    const onLoadProject = useCallback(
+        async (files: FileList) => {
+            const file = files[0];
+            if (!file || isBusy) {
+                return;
+            }
+            setBusy("Loading project...");
+            setStatus("");
+            try {
+                await loadProjectBundleAsync(scene, file);
+                setStatus(`Loaded ${file.name}`);
+            } catch (err) {
+                setStatus(`Load error: ${err}`);
+            } finally {
+                setBusy("");
+            }
+        },
+        [scene, isBusy]
+    );
+
+    return (
+        <>
+            <ButtonLine label="Save Project (.babylonproj)" icon={SaveRegular} onClick={onSaveProject} disabled={isBusy} />
+            <FileUploadLine label="Load Project (.babylonproj)" accept=".babylonproj" onClick={onLoadProject} disabled={isBusy} />
+            {isBusy && (
+                <div className={styles.busyMessage}>
+                    <Spinner size="extra-small" />
+                    <Caption1>{busy}</Caption1>
+                </div>
+            )}
+            {status && <div className={styles.statusMessage}>{status}</div>}
+        </>
+    );
+};
 
 // ── Smart Asset List ──
 
