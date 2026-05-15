@@ -2,15 +2,27 @@ import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type Material } from "core/Materials/material";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
-import { Color3 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type GLTFLoader } from "./glTFLoader";
+import {
+    MultiplyTexturesAsync,
+    LerpTexturesAsync,
+    CreateTextureWithFactorOperand,
+    TextureChannel,
+    TextureColorSpace,
+    InvertTextureAsync,
+    ExtractChannelAsync,
+    ChannelMask,
+    ExtractMaxChannelAsync,
+} from "core/Materials/Textures/textureProcessor";
 
 /**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
  */
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: OpenPBRMaterial;
-
+    private _specWorkflow: boolean = false;
     /**
      * Creates a new instance of the OpenPBRMaterialLoadingAdapter.
      * @param material - The OpenPBR material to adapt.
@@ -257,6 +269,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // OpenPBR already supports edge color natively, no configuration needed
     }
 
+    public configureSpecularGlossiness(): void {
+        this._specWorkflow = true;
+    }
+
     /**
      * Sets the specular weight of the OpenPBR material.
      * @param value The specular weight value (0-1)
@@ -380,6 +396,17 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public get specularIor(): number {
         return this._material.specularIor;
+    }
+
+    /**
+     * Sets the glossiness (inverted roughness) of the OpenPBR material.
+     */
+    public set glossiness(value: number) {
+        this._material.specularRoughness = Math.max(1.0 - value, 0.0);
+    }
+
+    public get glossiness(): number {
+        return 1.0 - this._material.specularRoughness;
     }
 
     // ========================================
@@ -527,6 +554,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Gets the coat color of the OpenPBR material.
+     */
+    public get coatColor(): Color3 {
+        return this._material.coatColor;
+    }
+
+    /**
      * Sets the coat color texture of the OpenPBR material.
      * @param value The coat color texture or null
      */
@@ -576,12 +610,20 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.coatIor = value;
     }
 
+    public get coatIor(): number {
+        return this._material.coatIor;
+    }
+
     /**
      * Sets the coat darkening value of the OpenPBR material.
      * @param value The coat darkening value
      */
     public set coatDarkening(value: number) {
         this._material.coatDarkening = value;
+    }
+
+    public get coatDarkening(): number {
+        return this._material.coatDarkening;
     }
 
     /**
@@ -666,6 +708,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set transmissionWeightTexture(value: Nullable<BaseTexture>) {
         this._material.transmissionWeightTexture = value;
+    }
+
+    public get transmissionWeightTexture(): Nullable<BaseTexture> {
+        return this._material.transmissionWeightTexture;
     }
 
     /**
@@ -794,6 +840,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for OpenPBR material.
+     */
     public configureVolume(): void {
         // If we're configuring volume, we assume the material is not thin-walled (i.e. it's volumetric).
         this._material.geometryThinWalled = 0.0;
@@ -859,6 +908,11 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set subsurfaceWeightTexture(value: Nullable<BaseTexture>) {
         this._material.subsurfaceWeightTexture = value;
+        this._material._useSubsurfaceWeightFromTextureAlpha = true;
+    }
+
+    public get subsurfaceWeightTexture(): Nullable<BaseTexture> {
+        return this._material.subsurfaceWeightTexture;
     }
 
     /**
@@ -1203,7 +1257,11 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
     }
 
-    public finalize(): void {
+    /**
+     * Finalizes material properties after all loading is complete.
+     * @param loader The glTF loader; `loader._disposed` is polled between texture passes to bail early on dispose.
+     */
+    public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
@@ -1213,21 +1271,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 this.subsurfaceColor = this._diffuseTransmissionTint;
                 this.subsurfaceColorTexture = this._diffuseTransmissionTintTexture;
             } else {
-                // The material is volumetric and we have surface tinting, so we need to move that tinting to the coat layer to preserve it.
-                // TODO: If we already have a coat slab, we'll have to merge the two.
-                if (this._material.coatWeight == 0 && (!this.baseColor.equals(Color3.White()) || this.baseColorTexture)) {
-                    this._material.coatWeight = this.subsurfaceWeight;
-                    this._material.coatWeightTexture = this.subsurfaceWeightTexture;
-                    this._material.coatColor = this._diffuseTransmissionTint;
-                    this._material.coatColorTexture = this._diffuseTransmissionTintTexture;
-                    this._material.coatIor = this._material.specularIor; // Use the same IOR for the coat as the specular layer to try to match the original reflection as closely as possible.
-                    this._material.coatDarkening = 0.0;
-                    this._material.coatRoughness = this._material.specularRoughness;
-                    this._material.coatRoughnessTexture = this._material.specularRoughnessTexture;
-
-                    // To simulate diffuse transmission, set the specular roughness to maximum and remove the roughness texture.
-                    this._material.specularRoughness = 1.0;
-                    this._material.specularRoughnessTexture = null;
+                // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
+                await this.copySurfaceToCoatAsync(
+                    loader,
+                    this.subsurfaceWeight,
+                    this.subsurfaceWeightTexture,
+                    TextureChannel.A,
+                    this._diffuseTransmissionTint,
+                    this._diffuseTransmissionTintTexture,
+                    true
+                );
+                if (loader._disposed) {
+                    return;
                 }
             }
         }
@@ -1237,17 +1292,259 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
                 this._material.transmissionColor = this._material.baseColor;
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
-            } else if (this._material.coatWeight == 0 && (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null)) {
+            } else if (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null) {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
-                // TODO: If we already have a coat slab, we'll have to merge the two.
-                this._material.coatWeight = this.transmissionWeight;
-                this._material.coatWeightTexture = this.transmissionWeightTexture;
-                this._material.coatColor = this.baseColor;
-                this._material.coatColorTexture = this.baseColorTexture;
-                this._material.coatIor = this._material.specularIor; // Use the same IOR for the coat as the specular layer to try to match the original reflection as closely as possible.
-                this._material.coatDarkening = 0.0;
-                this._material.coatRoughness = this._material.specularRoughness;
-                this._material.coatRoughnessTexture = this._material.specularRoughnessTexture;
+                await this.copySurfaceToCoatAsync(loader, this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture, false);
+                if (loader._disposed) {
+                    return;
+                }
+            }
+        }
+
+        if (this._specWorkflow) {
+            // To convert from spec-gloss to OpenPBR, we'll grab the specular color's alpha channel (which contains glossiness) and
+            // invert it to get roughness.
+            const newRoughnessTexture = await InvertTextureAsync(
+                "newRoughnessTexture (" + this._material.name + ")",
+                await ExtractChannelAsync(
+                    "glossiness (" + this._material.name + ")",
+                    CreateTextureWithFactorOperand(
+                        this.specularColorTexture,
+                        new Color4(this.specularColor.r, this.specularColor.g, this.specularColor.b, this.glossiness),
+                        TextureChannel.A,
+                        TextureColorSpace.Linear
+                    ),
+                    TextureChannel.A,
+                    this._material.getScene(),
+                    TextureColorSpace.Linear,
+                    ChannelMask.R
+                ),
+                this._material.getScene(),
+                ChannelMask.R,
+                TextureColorSpace.Linear,
+                ChannelMask.R
+            );
+            if (loader._disposed) {
+                newRoughnessTexture.texture?.dispose();
+                return;
+            }
+            this.specularRoughnessTexture = newRoughnessTexture.texture;
+            this.specularRoughness = newRoughnessTexture.factor ? newRoughnessTexture.factor.r : 1.0;
+
+            // Metallic = max(linearize(specular).rgb). The specular texture is sRGB so we must
+            // linearize it first (TextureColorSpace.SRGB). The factor is already linear per convention.
+            // We store metallic as linear (no outputColorSpace) because it is a data/scalar value;
+            // encoding it as sRGB would corrupt it when it is used as the lerp t below.
+            const newMetallic = await ExtractMaxChannelAsync(
+                "metallicTexture (" + this._material.name + ")",
+                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                this._material.getScene(),
+                false,
+                TextureColorSpace.SRGB,
+                ChannelMask.RGB
+            );
+            if (loader._disposed) {
+                newMetallic.texture?.dispose();
+                return;
+            }
+            this.baseMetalnessTexture = newMetallic.texture;
+            this.baseMetalness = newMetallic.factor ? newMetallic.factor.r : 1.0;
+
+            // base_color = lerp(diffuse, specular, metallic).
+            // Strip dispose before passing newMetallic as t — its texture is already owned by the
+            // material (baseMetalnessTexture) and must not be released after the lerp pass.
+            const newBaseColor = await LerpTexturesAsync(
+                "newBaseColor (" + this._material.name + ")",
+                CreateTextureWithFactorOperand(this.baseColorTexture, this.baseColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                { ...newMetallic, dispose: undefined, colorSpace: TextureColorSpace.Linear },
+                this._material.getScene(),
+                TextureColorSpace.SRGB,
+                ChannelMask.RGB
+            );
+            if (loader._disposed) {
+                newBaseColor.texture?.dispose();
+                return;
+            }
+            const oldBaseColorTexture = this.baseColorTexture;
+            oldBaseColorTexture?.dispose();
+            this.baseColorTexture = newBaseColor.texture;
+            this.baseColor = newBaseColor.factor ? new Color3(newBaseColor.factor.r, newBaseColor.factor.g, newBaseColor.factor.b) : Color3.White();
+
+            const oldSpecularColorTexture = this.specularColorTexture;
+            oldSpecularColorTexture?.dispose();
+            this.specularColorTexture = null;
+        }
+    }
+
+    private async copySurfaceToCoatAsync(
+        loader: GLTFLoader,
+        weight: number,
+        weightTexture: Nullable<BaseTexture>,
+        weightTextureChannel: TextureChannel,
+        color: Color3,
+        colorTexture: Nullable<BaseTexture>,
+        diffuseTransmission: boolean = false
+    ): Promise<void> {
+        // Blend coat properties using:
+        // New coat will cover all areas that previously had coat or transmission.
+        //   new_coat_weight = max(weight, existing_coat_weight)
+        // New coat color is the multiplication of the base color tint and the existing coat tint, each blended by their respective weights:
+        //   new_coat_color  = lerp(white, existing_coat_color, existing_coat_weight)
+        //                   * lerp(white, color, weight)
+        // Snapshot the original coat properties before mutating them, so both lerps
+        // use the pre-merge values (the first lerp blends the *existing* coat color
+        // by the *existing* coat weight; we must not use the merged weight here).
+        const origCoatWeight = this._material.coatWeight;
+        const origCoatWeightTexture = this._material.coatWeightTexture;
+        const origCoatColor = this._material.coatColor.clone();
+        const origCoatColorTexture = this._material.coatColorTexture;
+        const origCoatNormalTexture = this._material.geometryCoatNormalTexture;
+
+        const origCoatWeightCol4 = new Color4(origCoatWeight, origCoatWeight, origCoatWeight, origCoatWeight);
+        const weightCol4 = new Color4(weight, weight, weight, weight);
+
+        this.coatWeightTexture = null;
+        this.coatWeight = 1.0;
+
+        const results = await Promise.allSettled([
+            LerpTexturesAsync(
+                "lerpExistingCoat",
+                CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
+                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+                this._material.getScene(),
+                TextureColorSpace.SRGB
+            ),
+            LerpTexturesAsync(
+                "lerpSurfaceColor",
+                CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
+                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
+                this._material.getScene(),
+                TextureColorSpace.SRGB
+            ),
+        ]);
+        const rejected = results.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
+        if (rejected) {
+            for (const r of results) {
+                if (r.status === "fulfilled") {
+                    r.value.texture?.dispose();
+                }
+            }
+            throw rejected.reason;
+        }
+        const [lerpCoatColor, lerpSurfaceColor] = results.map(
+            (r) => (r as PromiseFulfilledResult<(typeof results)[number] extends PromiseSettledResult<infer T> ? T : never>).value
+        );
+        if (loader._disposed) {
+            lerpCoatColor.texture?.dispose();
+            lerpSurfaceColor.texture?.dispose();
+            return;
+        }
+
+        const newCoatColor = await MultiplyTexturesAsync(
+            "newCoatColor (" + this._material.name + ")",
+            lerpCoatColor,
+            lerpSurfaceColor,
+            this._material.getScene(),
+            TextureColorSpace.SRGB
+        );
+        if (loader._disposed) {
+            newCoatColor.texture?.dispose();
+            return;
+        }
+
+        if (newCoatColor.texture) {
+            this.coatColorTexture = newCoatColor.texture;
+            this.coatColor = Color3.White();
+        } else if (newCoatColor.factor) {
+            this.coatColorTexture = null;
+            this.coatColor.fromArray([newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b]);
+        }
+
+        const newCoatIor = await LerpTexturesAsync(
+            "newCoatIor (" + this._material.name + ")",
+            CreateTextureWithFactorOperand(null, new Color4(this._material.specularIor, this._material.specularIor, this._material.specularIor, 1.0), TextureChannel.R),
+            CreateTextureWithFactorOperand(null, new Color4(this.coatIor, this.coatIor, this.coatIor, 1.0), TextureChannel.R),
+            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._material.getScene()
+        );
+        if (loader._disposed) {
+            newCoatIor.texture?.dispose();
+            return;
+        }
+        this.coatIor = newCoatIor.factor ? newCoatIor.factor.r : this.coatIor;
+
+        const newCoatRoughness = await LerpTexturesAsync(
+            "newCoatRoughness (" + this._material.name + ")",
+            CreateTextureWithFactorOperand(
+                this.specularRoughnessTexture,
+                new Color4(this.specularRoughness, this.specularRoughness, this.specularRoughness, 1.0),
+                TextureChannel.G
+            ),
+            CreateTextureWithFactorOperand(this.coatRoughnessTexture, new Color4(this.coatRoughness, this.coatRoughness, this.coatRoughness, 1.0), TextureChannel.G),
+            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._material.getScene()
+        );
+        if (loader._disposed) {
+            newCoatRoughness.texture?.dispose();
+            return;
+        }
+        this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
+        this.coatRoughnessTexture = newCoatRoughness.texture;
+
+        const newCoatDarkening = await LerpTexturesAsync(
+            "newCoatDarkening (" + this._material.name + ")",
+            CreateTextureWithFactorOperand(null, new Color4(0, 0, 0, 1.0), TextureChannel.R),
+            CreateTextureWithFactorOperand(null, new Color4(this.coatDarkening, this.coatDarkening, this.coatDarkening, 1.0), TextureChannel.R),
+            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._material.getScene()
+        );
+        if (loader._disposed) {
+            newCoatDarkening.texture?.dispose();
+            return;
+        }
+        this.coatDarkening = newCoatDarkening.factor ? newCoatDarkening.factor.r : this.coatDarkening;
+
+        if (diffuseTransmission) {
+            const newSpecularRoughness = await LerpTexturesAsync(
+                "newSpecularRoughness (" + this._material.name + ")",
+                CreateTextureWithFactorOperand(
+                    this.specularRoughnessTexture,
+                    new Color4(this._material.specularRoughness, this._material.specularRoughness, this._material.specularRoughness, 1.0),
+                    TextureChannel.G
+                ),
+                CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1.0), TextureChannel.R),
+                CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
+                this._material.getScene()
+            );
+            if (loader._disposed) {
+                newSpecularRoughness.texture?.dispose();
+                return;
+            }
+            this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
+            this.specularRoughnessTexture = newSpecularRoughness.texture;
+        }
+
+        if (origCoatNormalTexture || this.geometryNormalTexture) {
+            const newCoatNormal = await LerpTexturesAsync(
+                "newCoatNormal (" + this._material.name + ")",
+                CreateTextureWithFactorOperand(
+                    this.geometryNormalTexture,
+                    this.geometryNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0),
+                    TextureChannel.RGBA
+                ),
+                CreateTextureWithFactorOperand(origCoatNormalTexture, origCoatNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0), TextureChannel.RGBA),
+                CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+                this._material.getScene()
+            );
+            if (loader._disposed) {
+                newCoatNormal.texture?.dispose();
+                return;
+            }
+            if (newCoatNormal.texture) {
+                this.geometryCoatNormalTexture = newCoatNormal.texture;
             }
         }
     }

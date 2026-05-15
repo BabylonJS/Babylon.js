@@ -246,6 +246,11 @@ void main() {
         float irradiance_alpha = 1.0;
         #ifdef REFLECTION
             #ifdef IRRADIANCE_SCATTER_MASK
+                #ifndef BUMP
+                    // Sampling layer data requires uvOffset to be defined. In the geometry shader, it's only
+                    // defined in the bump fragment, so we'll define it here, if not already defined by the bump fragment.
+                    vec2 uvOffset = vec2(0.0);
+                #endif
                 vec3 vSubsurfaceColor = vec3(1.0);
                 float vSubsurfaceRadius = 0.0;
                 vec3 vSubsurfaceRadiusScale = vec3(1.0);
@@ -308,9 +313,7 @@ void main() {
             #ifdef IBL_SHADOW_TEXTURE
                 irradiance *= iblShadowValue;
             #endif
-            #ifndef BUMP
-                vec2 uvOffset = vec2(0.0);
-            #endif
+            
             #ifdef IRRADIANCE_SCATTER_MASK
                 irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
             #endif

@@ -1,21 +1,16 @@
-import { useCallback, useRef, useState, type FunctionComponent } from "react";
+import { useCallback, useContext, useMemo, useRef, useState, type FunctionComponent } from "react";
 
-import { type Scene, type IDisposable } from "core/scene";
+import { type Scene } from "core/scene";
 import {
-    AddSmartAssetManagerCreatedObserver,
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
-    GetOrCreateSmartAssetManager,
-    GetSmartAssetManagerFromScene,
+    GetSmartAssetManager,
     GetSmartAssetTextureExtensions,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
-    RegisterSmartAsset,
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
-    SetSmartAssetRefreshCallback,
     UnloadSmartAssetAsync,
-    type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
 
 import { type Material } from "core/Materials/material";
@@ -30,18 +25,19 @@ import { type ISelectionService, SelectionServiceIdentity } from "../selectionSe
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
-import { AddSmartAssetsPaneSelectionObserver, ClearSmartAssetsPaneSelectionRequest, EnableSmartAssetsPaneSelectionRequestCache } from "../smartAssetsPaneSelection";
 import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
 const SmartAssetsPaneKey = "Smart Assets";
 
-const TextureFileAccept = [".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"];
 const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
+const TextureFileAccept = Array.from(GetSmartAssetTextureExtensions());
 const AllAcceptString = [...SceneFileAccept, ...TextureFileAccept].join(",");
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -50,109 +46,29 @@ function _isTextureExtension(ext: string): boolean {
 }
 
 /**
- * Inspector pane service that appears when Smart Assets are used in the current scene.
+ * Inspector pane service that hosts the Smart Assets pane.
  */
 export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
     friendlyName: "Smart Assets",
     consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
     factory: (shellService, sceneContext, selectionService) => {
-        let paneRegistration: IDisposable | null = null;
-        let selectionRequested = false;
-        let selectionRequestVersion = 0;
-
-        const selectPane = () => {
-            const pane = shellService.sidePanes.find((pane) => pane.key === SmartAssetsPaneKey);
-            if (pane) {
-                pane.select();
-                return true;
-            }
-            return false;
-        };
-
-        const schedulePaneSelection = (requestVersion: number, attempt = 0) => {
-            globalThis.setTimeout(
-                () => {
-                    if (!selectionRequested || requestVersion !== selectionRequestVersion) {
-                        return;
-                    }
-
-                    if (selectPane()) {
-                        selectionRequested = false;
-                        ClearSmartAssetsPaneSelectionRequest();
-                        return;
-                    }
-
-                    if (attempt < 10) {
-                        schedulePaneSelection(requestVersion, attempt + 1);
-                    }
-                },
-                attempt === 0 ? 0 : 16
-            );
-        };
-
-        const requestPaneSelection = () => {
-            selectionRequested = true;
-            selectionRequestVersion++;
-            registerPane();
-            schedulePaneSelection(selectionRequestVersion);
-        };
-
-        const registerPane = () => {
-            if (paneRegistration) {
-                return;
-            }
-
-            paneRegistration = shellService.addSidePane({
-                key: SmartAssetsPaneKey,
-                title: SmartAssetsPaneKey,
-                icon: CubeRegular,
-                horizontalLocation: "right",
-                verticalLocation: "top",
-                order: 395,
-                teachingMoment: false,
-                content: () => {
-                    const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                    return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
-                },
-            });
-
-            if (selectionRequested) {
-                schedulePaneSelection(selectionRequestVersion);
-            }
-        };
-
-        const registerPaneForCurrentScene = () => {
-            const scene = sceneContext.currentScene;
-            if (scene && GetSmartAssetManagerFromScene(scene)) {
-                registerPane();
-            }
-        };
-
-        registerPaneForCurrentScene();
-
-        const sceneObserver = sceneContext.currentSceneObservable.add(registerPaneForCurrentScene);
-        const selectionObserver = AddSmartAssetsPaneSelectionObserver(() => {
-            requestPaneSelection();
-        });
-
-        const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
-            if (manager.scene === sceneContext.currentScene) {
-                registerPane();
-                if (selectionRequested) {
-                    schedulePaneSelection(selectionRequestVersion);
-                }
-            }
+        const paneRegistration = shellService.addSidePane({
+            key: SmartAssetsPaneKey,
+            title: SmartAssetsPaneKey,
+            icon: CubeRegular,
+            horizontalLocation: "right",
+            verticalLocation: "top",
+            order: 395,
+            teachingMoment: false,
+            content: () => {
+                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
+            },
         });
 
         return {
             dispose: () => {
-                selectionRequested = false;
-                selectionRequestVersion++;
-                paneRegistration?.dispose();
-                sceneObserver.remove();
-                selectionObserver?.remove();
-                EnableSmartAssetsPaneSelectionRequestCache();
-                smartAssetManagerCreatedObserver?.remove();
+                paneRegistration.dispose();
             },
         };
     },
@@ -171,13 +87,17 @@ const useStyles = makeStyles({
     },
     assetKey: {
         fontWeight: tokens.fontWeightSemibold,
-        minWidth: "60px",
-        flexShrink: 0,
+        minWidth: 0,
+        flex: 1,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
     },
     assetUrl: {
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
+        minWidth: 0,
         flex: 1,
         opacity: 0.7,
     },
@@ -196,13 +116,6 @@ const useStyles = makeStyles({
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
         fontSize: tokens.fontSizeBase100,
         opacity: 0.7,
-    },
-    iconButton: {
-        cursor: "pointer",
-        opacity: 0.6,
-        ":hover": {
-            opacity: 1,
-        },
     },
     hiddenInput: {
         display: "none",
@@ -234,18 +147,18 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
 
-    // Find the SAM
-    const sam = GetSmartAssetManagerFromScene(scene) ?? null;
+    // Force the icon-only row action buttons to render in compact ("small") size
+    // even when the inspector's global ToolContext is "medium". They live in a
+    // tight row and the medium-size buttons crowd the layout.
+    const toolContext = useContext(ToolContext);
+    const compactToolContext = useMemo(() => ({ ...toolContext, size: "small" as const }), [toolContext]);
 
-    // Reactively read assets — re-renders when the Smart Asset manager changes.
+    // Subscribe reactively to changes — re-renders the asset list whenever
+    // RegisterSmartAsset / Load / Remove / Reload fire onChangedObservable.
+    const sam = GetSmartAssetManager(scene);
     const assets = useObservableState(
-        useCallback(() => {
-            if (!sam) {
-                return [] as Array<{ key: string; url: string }>;
-            }
-            return Array.from(GetAllSmartAssets(sam), ([key, url]) => ({ key, url }));
-        }, [sam]),
-        sam?.onChangedObservable
+        useCallback(() => Array.from(GetAllSmartAssets(scene), ([key, url]) => ({ key, url })), [scene]),
+        sam.onChangedObservable
     );
 
     const onAddAsset = useCallback(() => {
@@ -259,8 +172,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 return;
             }
 
-            const sam = GetOrCreateSmartAssetManager(scene);
-
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const key = file.name.replace(/\.[^/.]+$/, "");
@@ -268,22 +179,23 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 const isTexture = _isTextureExtension(ext);
 
                 const blobUrl = URL.createObjectURL(file);
-                RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) });
+                const options = { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) };
 
                 try {
                     if (isTexture) {
                         // eslint-disable-next-line no-await-in-loop
-                        await LoadSmartAssetTextureAsync(sam, key);
+                        await LoadSmartAssetTextureAsync(scene, key, blobUrl, options);
                     } else {
                         // Temporarily set onAssetNotFound to return the File so SAM's
                         // retry path can use the extension hint and track loaded objects.
-                        const savedHandler = sam.onAssetNotFound;
-                        sam.onAssetNotFound = async () => file;
+                        const samForOverride = GetSmartAssetManager(scene);
+                        const savedHandler = samForOverride.onAssetNotFound;
+                        samForOverride.onAssetNotFound = async () => file;
                         try {
                             // eslint-disable-next-line no-await-in-loop
-                            await LoadSmartAssetAsync(sam, key);
+                            await LoadSmartAssetAsync(scene, key, blobUrl, options);
                         } finally {
-                            sam.onAssetNotFound = savedHandler;
+                            samForOverride.onAssetNotFound = savedHandler;
                         }
                     }
                     setStatus(`Added: ${key}`);
@@ -301,8 +213,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onRemoveAsset = useCallback(
         async (key: string) => {
-            const sam = GetOrCreateSmartAssetManager(scene);
-            await RemoveSmartAssetAsync(sam, key);
+            await RemoveSmartAssetAsync(scene, key);
             setStatus(`Removed: ${key}`);
         },
         [scene]
@@ -310,8 +221,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onReloadAsset = useCallback(
         async (key: string) => {
-            const sam = GetOrCreateSmartAssetManager(scene);
-            await ReloadSmartAssetAsync(sam, key);
+            await ReloadSmartAssetAsync(scene, key);
             setStatus(`Reloaded: ${key}`);
         },
         [scene]
@@ -320,7 +230,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const onSwapAsset = useCallback(
         (key: string) => {
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
-                const sam = GetOrCreateSmartAssetManager(scene);
+                const sam = GetSmartAssetManager(scene);
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
                 const isTexture = _isTextureExtension(ext);
@@ -329,20 +239,19 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     // Find the old texture tracked by this key
                     let oldTex: BaseTexture | undefined;
                     for (const tex of scene.textures) {
-                        if (FindSmartAssetKeyForObject(sam, tex) === key) {
+                        if (FindSmartAssetKeyForObject(scene, tex) === key) {
                             oldTex = tex;
                             break;
                         }
                     }
 
                     // Load the new texture via SAM so it stays tracked by key.
-                    RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
-                    const newTex = await LoadSmartAssetTextureAsync(sam, key);
-
-                    // Register a refresh callback so Reload can re-read the file from disk
-                    if (fileHandle) {
-                        SetSmartAssetRefreshCallback(sam, key, async () => await fileHandle.getFile());
-                    }
+                    // Pass reloadSource so Reload can re-read the file from disk.
+                    const newTex = await LoadSmartAssetTextureAsync(scene, key, blobUrl, {
+                        ...(ext ? { extension: ext } : {}),
+                        type: "texture",
+                        reloadSource: fileHandle ? async () => await fileHandle.getFile() : undefined,
+                    });
 
                     // Replace references on all materials that used the old texture.
                     // Only Standard/PBR-style slot names are rewritten here; NodeMaterial,
@@ -361,19 +270,17 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
-                    await UnloadSmartAssetAsync(sam, key);
-                    RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
-
-                    // Register a refresh callback so Reload can re-read the file from disk
-                    if (fileHandle) {
-                        SetSmartAssetRefreshCallback(sam, key, async () => await fileHandle.getFile());
-                    }
+                    await UnloadSmartAssetAsync(scene, key);
 
                     // Use onAssetNotFound to provide the File so SAM tracks loaded objects.
                     const savedHandler = sam.onAssetNotFound;
                     sam.onAssetNotFound = async () => file;
                     try {
-                        await LoadSmartAssetAsync(sam, key);
+                        // Pass reloadSource so Reload can re-read the file from disk.
+                        await LoadSmartAssetAsync(scene, key, blobUrl, {
+                            ...(ext ? { extension: ext } : {}),
+                            reloadSource: fileHandle ? async () => await fileHandle.getFile() : undefined,
+                        });
                     } finally {
                         sam.onAssetNotFound = savedHandler;
                     }
@@ -448,26 +355,30 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             {assets.length === 0 && <Caption1 className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</Caption1>}
             {assets.map((a) => {
                 // Find the first mesh produced by this key for click-to-select
-                const provEntity = sam ? _findFirstEntityForKey(a.key, scene, sam) : null;
+                const provEntity = _findFirstEntityForKey(a.key, scene);
 
                 return (
                     <div key={a.key} className={styles.assetRow}>
                         <CubeRegular fontSize={14} />
                         {provEntity ? (
-                            <Caption1 className={styles.assetKey}>
-                                <Link value={a.key} onLink={() => (selectionService.selectedEntity = provEntity)} />
+                            <Caption1 className={styles.assetKey} title={a.key}>
+                                <Link value={a.key} size="small" onLink={() => (selectionService.selectedEntity = provEntity)} />
                             </Caption1>
                         ) : (
-                            <Caption1 className={styles.assetKey}>{a.key}</Caption1>
+                            <Caption1 className={styles.assetKey} title={a.key}>
+                                {a.key}
+                            </Caption1>
                         )}
                         <Caption1 className={styles.assetUrl} title={a.url}>
                             {_shortenUrl(a.url)}
                         </Caption1>
-                        <div className={styles.assetActions}>
-                            <LinkRegular fontSize={14} className={styles.iconButton} title="Swap URL" onClick={() => onSwapAsset(a.key)} />
-                            <ArrowSyncRegular fontSize={14} className={styles.iconButton} title="Reload" onClick={async () => await onReloadAsset(a.key)} />
-                            <DeleteRegular fontSize={14} className={styles.iconButton} title="Remove" onClick={async () => await onRemoveAsset(a.key)} />
-                        </div>
+                        <ToolContext.Provider value={compactToolContext}>
+                            <div className={styles.assetActions}>
+                                <Button appearance="subtle" icon={LinkRegular} title={`Swap URL for ${a.key}`} onClick={() => onSwapAsset(a.key)} />
+                                <Button appearance="subtle" icon={ArrowSyncRegular} title={`Reload ${a.key}`} onClick={async () => await onReloadAsset(a.key)} />
+                                <Button appearance="subtle" icon={DeleteRegular} title={`Remove ${a.key}`} onClick={async () => await onRemoveAsset(a.key)} />
+                            </div>
+                        </ToolContext.Provider>
                     </div>
                 );
             })}
@@ -485,25 +396,24 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
  * Prefers non-root meshes, then materials, then textures.
  * @param key - The smart asset key.
  * @param scene - The scene to search.
- * @param sam - The SmartAssetManager instance.
  * @returns The first matching entity, or null if not found.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): AbstractMesh | Material | BaseTexture | null {
+function _findFirstEntityForKey(key: string, scene: Scene): AbstractMesh | Material | BaseTexture | null {
     for (const mesh of scene.meshes) {
-        if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(sam, mesh) === key) {
+        if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(scene, mesh) === key) {
             return mesh;
         }
     }
 
     for (const mat of scene.materials) {
-        if (FindSmartAssetKeyForObject(sam, mat) === key) {
+        if (FindSmartAssetKeyForObject(scene, mat) === key) {
             return mat;
         }
     }
 
     for (const tex of scene.textures) {
-        if (FindSmartAssetKeyForObject(sam, tex) === key) {
+        if (FindSmartAssetKeyForObject(scene, tex) === key) {
             return tex;
         }
     }

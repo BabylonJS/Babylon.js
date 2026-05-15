@@ -70,6 +70,7 @@ uniform float pointSize;
 #endif
 
 uniform vec4 cameraInfo;
+uniform vec4 vTextureRepetitionHexTilingParams;
 
 // Reflection
 #ifdef REFLECTION

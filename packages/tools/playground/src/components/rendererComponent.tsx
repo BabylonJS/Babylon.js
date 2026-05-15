@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
 import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
@@ -16,6 +18,7 @@ import {
     Logger,
     AddSmartAssetManagerCreatedObserver,
     type Nullable,
+    type Observer,
     type Scene,
     type SmartAssetManager,
     type ThinEngine,
@@ -49,6 +52,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _inspectorV2Token: Nullable<InspectorToken> = null;
     private _inspectableToken: Nullable<InspectableToken> = null;
     private _bridgeToken: Nullable<ModularBridgeToken> = null;
+    private _smartAssetManagerCreatedObserver: Nullable<Observer<SmartAssetManager>> = null;
 
     /**
      * Create the rendering component.
@@ -77,7 +81,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!this._engine) {
                 return;
             }
-            void this._downloadManager.downloadAsync();
+            this._downloadManager.downloadAsync();
         });
 
         this.props.globalState.onInspectorRequiredObservable.add(async () => {
@@ -121,7 +125,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onThemeChangedObservable.add(() => {
             if (this._inspectorV2Token) {
                 void this._inspectorV2Token.dispose();
-                void this._showInspectorAsync();
+                this._showInspectorAsync();
             }
         });
 
@@ -134,6 +138,25 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
 
         window.addEventListener("error", this._saveError);
+
+        // Bridge SmartAssetManager onAssetNotFound to the Inspector prompt.
+        // Registered for the lifetime of the component (rather than per-run) so
+        // SAMs created asynchronously - after runner.run() returns, e.g. from
+        // a setTimeout, deferred load, or user interaction - still get bridged.
+        // The `if (!manager.onAssetNotFound)` guard makes re-fires across runs safe.
+        this._smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
+            if (!manager.onAssetNotFound) {
+                manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
+            }
+        });
+    }
+
+    /**
+     * React lifecycle hook that runs when the component unmounts.
+     */
+    public override componentWillUnmount() {
+        this._smartAssetManagerCreatedObserver?.remove();
+        this._smartAssetManagerCreatedObserver = null;
     }
 
     private _ensureBridge() {
@@ -285,7 +308,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             return;
         }
 
-        void this._compileAndRunAsync();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._compileAndRunAsync();
     }
 
     private _finishRun() {
@@ -485,14 +509,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             };
             (window as any).canvas = canvas;
 
-            // Install SmartAssetManager hook BEFORE user code runs so
-            // onAssetNotFound is available during createScene execution.
-            const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
-                if (!manager.onAssetNotFound) {
-                    manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
-                }
-            });
-
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
 
@@ -506,8 +522,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             } catch (err) {
                 this._failRun(err, "The playground timed out while running the scene.");
                 return;
-            } finally {
-                smartAssetManagerCreatedObserver?.remove();
             }
             if (!sceneResult) {
                 return this._notifyError("createScene export not found or returned null.");

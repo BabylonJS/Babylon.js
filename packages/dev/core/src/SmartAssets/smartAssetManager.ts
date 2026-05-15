@@ -49,17 +49,24 @@ export type SmartAssetManager = {
 };
 
 /**
- * A Smart Asset manager handle, or a scene that should use its attached manager.
- * When a scene is supplied to Smart Asset functions, the scene's manager is
- * created automatically if needed.
- */
-export type SmartAssetManagerOrScene = SmartAssetManager | Scene;
-
-/**
  * Optional registration data that helps select the correct loader when the URL
  * does not contain a usable file extension, such as blob-backed local files.
  */
-export type SmartAssetRegistrationOptions = Pick<ISerializedSmartAssetEntry, "type" | "extension" | "metadata">;
+type SmartAssetRegistrationOptions = Pick<ISerializedSmartAssetEntry, "type" | "extension" | "metadata">;
+
+/**
+ * Optional load-time configuration. Includes the persistable {@link SmartAssetRegistrationOptions}
+ * fields (type, extension, metadata) plus a transient `reloadSource` callback used by
+ * {@link ReloadSmartAssetAsync} to fetch fresh bytes from disk for blob-backed assets.
+ */
+export type SmartAssetLoadOptions = SmartAssetRegistrationOptions & {
+    /**
+     * Optional callback invoked by {@link ReloadSmartAssetAsync} to obtain a fresh File
+     * for the asset. Use this when the registered URL is a `blob:` URL backed by a
+     * `FileSystemFileHandle` so Reload can re-read the underlying file from disk.
+     */
+    readonly reloadSource?: () => Promise<File>;
+};
 
 type SmartAssetManagerInternals = {
     urls: Map<string, string>;
@@ -67,7 +74,7 @@ type SmartAssetManagerInternals = {
     containers: Map<string, AssetContainer>;
     objectToKeyMap: WeakMap<object, string>;
     textureKeys: Set<string>;
-    refreshCallbacks: Map<string, () => Promise<File>>;
+    reloadSources: Map<string, () => Promise<File>>;
     blobUrls: Map<string, string>;
     sceneDisposeObserver: ReturnType<Scene["onDisposeObservable"]["add"]> | null;
 };
@@ -78,16 +85,12 @@ const OnSmartAssetManagerCreatedObservable = new Observable<SmartAssetManager>()
 /**
  * Creates a new SmartAssetManager state object and attaches it to the scene.
  *
- * Throws if the scene already has a SmartAssetManager — use {@link GetOrCreateSmartAssetManager}
- * if you don't know whether one already exists.
+ * Internal: callers should use {@link GetSmartAssetManager} which returns the
+ * existing manager when one is already attached.
  * @param scene - The scene this manager operates on.
  * @returns The created smart asset manager state.
  */
-export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
-    if (GetSmartAssetManagerFromScene(scene)) {
-        throw new Error("SmartAssetManager: A manager already exists for this scene. Use GetOrCreateSmartAssetManager instead.");
-    }
-
+function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
     const manager: SmartAssetManager = {
         scene,
         onChangedObservable: new Observable<void>(),
@@ -100,7 +103,7 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         containers: new Map(),
         objectToKeyMap: new WeakMap(),
         textureKeys: new Set(),
-        refreshCallbacks: new Map(),
+        reloadSources: new Map(),
         blobUrls: new Map(),
         sceneDisposeObserver: null,
     };
@@ -120,21 +123,17 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
 }
 
 /**
- * Returns the SmartAssetManager attached to a scene, or undefined if none exists.
- * @param scene - The scene to look up.
- * @returns The SmartAssetManager, or undefined.
- */
-export function GetSmartAssetManagerFromScene(scene: Scene): SmartAssetManager | undefined {
-    return scene.metadata?.[SMART_ASSET_MANAGER_KEY] as SmartAssetManager | undefined;
-}
-
-/**
- * Returns the SmartAssetManager attached to a scene, creating one when needed.
+ * Returns the SmartAssetManager attached to the given scene, creating and
+ * attaching one if none exists.
  * @param scene - The scene to look up or attach a manager to.
  * @returns The existing or newly created SmartAssetManager.
  */
-export function GetOrCreateSmartAssetManager(scene: Scene): SmartAssetManager {
-    return GetSmartAssetManagerFromScene(scene) ?? CreateSmartAssetManager(scene);
+export function GetSmartAssetManager(scene: Scene): SmartAssetManager {
+    const existing = scene.metadata?.[SMART_ASSET_MANAGER_KEY] as SmartAssetManager | undefined;
+    if (existing) {
+        return existing;
+    }
+    return CreateSmartAssetManager(scene);
 }
 
 /**
@@ -149,13 +148,13 @@ export function AddSmartAssetManagerCreatedObserver(callback: (manager: SmartAss
 
 /**
  * Registers a smart asset entry mapping a key to a URL.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose smart asset registry to update.
  * @param key - Unique string identifier for this asset.
  * @param url - URL or path to the asset file.
  * @param options - Optional loader hints and metadata for this asset.
  */
-export function RegisterSmartAsset(managerOrScene: SmartAssetManagerOrScene, key: string, url: string, options?: SmartAssetRegistrationOptions): void {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export function RegisterSmartAsset(scene: Scene, key: string, url: string, options?: SmartAssetRegistrationOptions): void {
+    const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
     RevokeManagedBlobUrl(internal, key, url);
     internal.urls.set(key, url);
@@ -173,34 +172,18 @@ export function RegisterSmartAsset(managerOrScene: SmartAssetManagerOrScene, key
 }
 
 /**
- * Sets a callback that provides fresh file contents for a key on reload.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The smart asset key.
- * @param callback - A function that returns a fresh File, or null to clear.
- */
-export function SetSmartAssetRefreshCallback(managerOrScene: SmartAssetManagerOrScene, key: string, callback: (() => Promise<File>) | null): void {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    const internal = GetSmartAssetInternals(manager);
-    if (callback) {
-        internal.refreshCallbacks.set(key, callback);
-    } else {
-        internal.refreshCallbacks.delete(key);
-    }
-}
-
-/**
  * Removes a key from the registry. If the asset is loaded, it is unloaded first.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene that owns the smart asset.
  * @param key - The key to remove.
  * @returns A promise that resolves when the asset has been unloaded and removed.
  */
-export async function RemoveSmartAssetAsync(managerOrScene: SmartAssetManagerOrScene, key: string): Promise<void> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export async function RemoveSmartAssetAsync(scene: Scene, key: string): Promise<void> {
+    const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
     if (internal.containers.has(key)) {
-        await UnloadSmartAssetAsync(manager, key);
+        await UnloadSmartAssetAsync(scene, key);
     }
-    for (const tex of [...manager.scene.textures]) {
+    for (const tex of [...scene.textures]) {
         if (internal.objectToKeyMap.get(tex) === key) {
             internal.objectToKeyMap.delete(tex);
             tex.dispose();
@@ -209,45 +192,38 @@ export async function RemoveSmartAssetAsync(managerOrScene: SmartAssetManagerOrS
     internal.urls.delete(key);
     internal.options.delete(key);
     internal.textureKeys.delete(key);
-    internal.refreshCallbacks.delete(key);
+    internal.reloadSources.delete(key);
     RevokeManagedBlobUrl(internal, key);
     manager.onChangedObservable.notifyObservers();
 }
 
 /**
- * Resolves a key to its registered URL, or undefined if not registered.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The key to look up.
- * @returns The URL, or undefined.
- */
-export function ResolveSmartAsset(managerOrScene: SmartAssetManagerOrScene, key: string): string | undefined {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    return GetSmartAssetInternals(manager).urls.get(key);
-}
-
-/**
  * Returns all registered key-to-URL mappings.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose smart asset registry to read.
  * @returns A read-only map of keys to URLs.
  */
-export function GetAllSmartAssets(managerOrScene: SmartAssetManagerOrScene): ReadonlyMap<string, string> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    return GetSmartAssetInternals(manager).urls;
+export function GetAllSmartAssets(scene: Scene): ReadonlyMap<string, string> {
+    return GetSmartAssetInternals(GetSmartAssetManager(scene)).urls;
 }
 
 /**
  * Loads a scene-file asset by key.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene to load the asset into.
  * @param key - The key to load.
  * @param url - Optional URL. If provided, the key is registered first.
  * @param options - Optional loader hints and metadata for this asset.
  * @returns A promise resolving to the loaded AssetContainer.
  */
-export async function LoadSmartAssetAsync(managerOrScene: SmartAssetManagerOrScene, key: string, url?: string, options?: SmartAssetRegistrationOptions): Promise<AssetContainer> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export async function LoadSmartAssetAsync(scene: Scene, key: string, url?: string, options?: SmartAssetLoadOptions): Promise<AssetContainer> {
+    const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
+    const previousUrl = internal.urls.get(key);
+    const { reloadSource, ...registrationOptions } = options ?? {};
     if (url) {
-        RegisterSmartAsset(manager, key, url, options);
+        RegisterSmartAsset(scene, key, url, registrationOptions);
+    }
+    if (reloadSource) {
+        internal.reloadSources.set(key, reloadSource);
     }
 
     const resolvedUrl = internal.urls.get(key);
@@ -257,7 +233,13 @@ export async function LoadSmartAssetAsync(managerOrScene: SmartAssetManagerOrSce
 
     const existing = internal.containers.get(key);
     if (existing) {
-        return existing;
+        if (url && url !== previousUrl) {
+            // URL changed — drop the stale container before fetching the new one
+            // so callers don't get a surprise cached return for an updated URL.
+            await UnloadSmartAssetAsync(scene, key);
+        } else {
+            return existing;
+        }
     }
 
     return await LoadSmartAssetSceneFileAsync(manager, key, resolvedUrl, internal.options.get(key)?.extension);
@@ -265,11 +247,11 @@ export async function LoadSmartAssetAsync(managerOrScene: SmartAssetManagerOrSce
 
 /**
  * Loads all registered assets concurrently.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose registered assets to load.
  * @returns A promise resolving to loaded scene-file containers.
  */
-export async function LoadAllSmartAssetsAsync(managerOrScene: SmartAssetManagerOrScene): Promise<AssetContainer[]> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export async function LoadAllSmartAssetsAsync(scene: Scene): Promise<AssetContainer[]> {
+    const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
     const scenePromises: Promise<AssetContainer | null>[] = [];
     const texturePromises: Promise<void>[] = [];
@@ -282,7 +264,7 @@ export async function LoadAllSmartAssetsAsync(managerOrScene: SmartAssetManagerO
         if (internal.textureKeys.has(key) || options?.type === "texture" || IsTextureUrl(url) || IsTextureExtension(options?.extension)) {
             const textureLoadAsync = async () => {
                 try {
-                    await LoadSmartAssetTextureAsync(manager, key);
+                    await LoadSmartAssetTextureAsync(scene, key);
                 } catch {
                     Logger.Warn(`SmartAssetManager: Texture "${key}" could not be loaded — skipping.`);
                 }
@@ -291,7 +273,7 @@ export async function LoadAllSmartAssetsAsync(managerOrScene: SmartAssetManagerO
         } else {
             const sceneLoadAsync = async () => {
                 try {
-                    return await LoadSmartAssetAsync(manager, key);
+                    return await LoadSmartAssetAsync(scene, key);
                 } catch {
                     Logger.Warn(`SmartAssetManager: Asset "${key}" could not be loaded — skipping.`);
                     return null;
@@ -308,25 +290,46 @@ export async function LoadAllSmartAssetsAsync(managerOrScene: SmartAssetManagerO
 
 /**
  * Loads a standalone texture by key.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene to load the texture into.
  * @param key - The key to load.
  * @param url - Optional URL. If provided, the key is registered first.
  * @param options - Optional loader hints and metadata for this asset.
  * @returns A promise resolving to the loaded texture.
  */
-export async function LoadSmartAssetTextureAsync(
-    managerOrScene: SmartAssetManagerOrScene,
-    key: string,
-    url?: string,
-    options?: SmartAssetRegistrationOptions
-): Promise<BaseTexture> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export async function LoadSmartAssetTextureAsync(scene: Scene, key: string, url?: string, options?: SmartAssetLoadOptions): Promise<BaseTexture> {
+    const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
+    const previousUrl = internal.urls.get(key);
+    const { reloadSource, ...registrationOptions } = options ?? {};
     if (url) {
-        RegisterSmartAsset(manager, key, url, { ...options, type: options?.type ?? "texture" });
+        RegisterSmartAsset(scene, key, url, { ...registrationOptions, type: registrationOptions.type ?? "texture" });
+    }
+    if (reloadSource) {
+        internal.reloadSources.set(key, reloadSource);
     }
 
     internal.textureKeys.add(key);
+
+    // Mirror LoadSmartAssetAsync: if a tracked texture already exists for this key,
+    // return it on a same-URL call (cache hit) or dispose it before reload on URL change.
+    // Without this guard, calling LoadSmartAssetTextureAsync twice with the same URL
+    // would create duplicate Texture objects in scene.textures.
+    const existingTextures: BaseTexture[] = [];
+    for (const tex of scene.textures) {
+        if (internal.objectToKeyMap.get(tex) === key) {
+            existingTextures.push(tex);
+        }
+    }
+    if (existingTextures.length > 0) {
+        if (url && previousUrl !== undefined && url !== previousUrl) {
+            for (const tex of existingTextures) {
+                internal.objectToKeyMap.delete(tex);
+                tex.dispose();
+            }
+        } else {
+            return existingTextures[0];
+        }
+    }
 
     const resolvedUrl = internal.urls.get(key);
     if (!resolvedUrl) {
@@ -352,12 +355,12 @@ export async function LoadSmartAssetTextureAsync(
 
 /**
  * Unloads a loaded asset while keeping the key registered.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose smart asset to unload.
  * @param key - The key to unload.
  * @returns A promise that resolves once the asset has been unloaded.
  */
-export async function UnloadSmartAssetAsync(managerOrScene: SmartAssetManagerOrScene, key: string): Promise<void> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export async function UnloadSmartAssetAsync(scene: Scene, key: string): Promise<void> {
+    const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
     const container = internal.containers.get(key);
     if (container) {
@@ -368,7 +371,7 @@ export async function UnloadSmartAssetAsync(managerOrScene: SmartAssetManagerOrS
         return;
     }
 
-    for (const tex of [...manager.scene.textures]) {
+    for (const tex of [...scene.textures]) {
         if (internal.objectToKeyMap.get(tex) === key) {
             internal.objectToKeyMap.delete(tex);
             tex.dispose();
@@ -379,57 +382,50 @@ export async function UnloadSmartAssetAsync(managerOrScene: SmartAssetManagerOrS
 
 /**
  * Unloads and re-loads an asset.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose smart asset to reload.
  * @param key - The key to reload.
  * @returns A promise resolving to the newly loaded AssetContainer or BaseTexture.
  */
-export async function ReloadSmartAssetAsync(managerOrScene: SmartAssetManagerOrScene, key: string): Promise<AssetContainer | BaseTexture> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    const internal = GetSmartAssetInternals(manager);
-    const refreshCallback = internal.refreshCallbacks.get(key);
-    if (refreshCallback) {
+export async function ReloadSmartAssetAsync(scene: Scene, key: string): Promise<AssetContainer | BaseTexture> {
+    const internal = GetSmartAssetInternals(GetSmartAssetManager(scene));
+    const reloadSource = internal.reloadSources.get(key);
+    if (reloadSource) {
         try {
-            const freshFile = await refreshCallback();
+            const freshFile = await reloadSource();
             const blobUrl = URL.createObjectURL(freshFile);
-            RegisterSmartAsset(manager, key, blobUrl, { extension: GetExtensionFromUrl(freshFile.name) || internal.options.get(key)?.extension });
+            RegisterSmartAsset(scene, key, blobUrl, { extension: GetExtensionFromUrl(freshFile.name) || internal.options.get(key)?.extension });
         } catch (e) {
-            Logger.Warn(`SmartAssetManager: Refresh callback failed for "${key}": ${e}`);
+            Logger.Warn(`SmartAssetManager: reloadSource callback failed for "${key}": ${e}`);
         }
     }
 
-    await UnloadSmartAssetAsync(manager, key);
+    await UnloadSmartAssetAsync(scene, key);
 
-    let result: AssetContainer | BaseTexture;
     if (internal.textureKeys.has(key)) {
-        result = await LoadSmartAssetTextureAsync(manager, key);
-    } else {
-        result = await LoadSmartAssetAsync(manager, key);
+        return await LoadSmartAssetTextureAsync(scene, key);
     }
-
-    return result;
+    return await LoadSmartAssetAsync(scene, key);
 }
 
 /**
  * Finds which smart asset key owns a scene object.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose registry to search.
  * @param object - A scene object.
  * @returns The key, or undefined if the object is not tracked.
  */
-export function FindSmartAssetKeyForObject(managerOrScene: SmartAssetManagerOrScene, object: Node | Material | BaseTexture | AnimationGroup): string | undefined {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    return GetSmartAssetInternals(manager).objectToKeyMap.get(object);
+export function FindSmartAssetKeyForObject(scene: Scene, object: Node | Material | BaseTexture | AnimationGroup): string | undefined {
+    return GetSmartAssetInternals(GetSmartAssetManager(scene)).objectToKeyMap.get(object);
 }
 
 /**
  * Serializes the registry to a JSON-compatible document.
  * If a baseUrl is provided, asset URLs are stored relative to it for portability.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene whose registry to serialize.
  * @param baseUrl - Optional base URL for making asset paths relative.
  * @returns A serialized asset map document.
  */
-export function SerializeSmartAssetManagerMap(managerOrScene: SmartAssetManagerOrScene, baseUrl?: string): ISerializedSmartAssetMap {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    const internal = GetSmartAssetInternals(manager);
+export function SerializeSmartAssetManagerMap(scene: Scene, baseUrl?: string): ISerializedSmartAssetMap {
+    const internal = GetSmartAssetInternals(GetSmartAssetManager(scene));
     const assets: Record<string, ISerializedSmartAssetEntry> = {};
 
     for (const [key, registeredUrl] of Array.from(internal.urls)) {
@@ -446,13 +442,12 @@ export function SerializeSmartAssetManagerMap(managerOrScene: SmartAssetManagerO
 
 /**
  * Loads an asset map from a URL, File, or pre-parsed JSON object.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param scene - The scene to load assets into.
  * @param source - A URL string, File object, or pre-parsed ISerializedSmartAssetMap.
  * @param rootUrl - Optional root URL for resolving relative asset paths.
  * @returns A promise that resolves after the map has been loaded and all registered assets have been attempted.
  */
-export async function LoadSmartAssetMapAsync(managerOrScene: SmartAssetManagerOrScene, source: string | File | ISerializedSmartAssetMap, rootUrl?: string): Promise<void> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+export async function LoadSmartAssetMapAsync(scene: Scene, source: string | File | ISerializedSmartAssetMap, rootUrl?: string): Promise<void> {
     let resolvedRootUrl = rootUrl ?? "";
 
     if (typeof source === "string" && !rootUrl) {
@@ -465,10 +460,10 @@ export async function LoadSmartAssetMapAsync(managerOrScene: SmartAssetManagerOr
 
     for (const [key, entry] of Object.entries(doc.assets)) {
         const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        RegisterSmartAsset(manager, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
+        RegisterSmartAsset(scene, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
     }
 
-    await LoadAllSmartAssetsAsync(manager);
+    await LoadAllSmartAssetsAsync(scene);
 }
 
 /**
@@ -515,7 +510,7 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
     internal.urls.clear();
     internal.options.clear();
     internal.textureKeys.clear();
-    internal.refreshCallbacks.clear();
+    internal.reloadSources.clear();
     internal.containers.clear();
     for (const blobUrl of Array.from(internal.blobUrls.values())) {
         URL.revokeObjectURL(blobUrl);
@@ -552,10 +547,6 @@ function TrackManagedBlobUrl(internal: SmartAssetManagerInternals, key: string, 
     }
 }
 
-function ResolveSmartAssetManager(managerOrScene: SmartAssetManagerOrScene): SmartAssetManager {
-    return SmartAssetManagerInternals.has(managerOrScene as SmartAssetManager) ? (managerOrScene as SmartAssetManager) : GetOrCreateSmartAssetManager(managerOrScene as Scene);
-}
-
 async function CreateAndLoadTextureAsync(manager: SmartAssetManager, url: string, extensionHint?: string): Promise<BaseTexture> {
     return await new Promise<BaseTexture>((resolve, reject) => {
         const ext = (extensionHint || GetExtensionFromUrl(url)).toLowerCase();
@@ -587,12 +578,12 @@ async function ResolveNotFoundAsync(manager: SmartAssetManager, key: string, exp
         return null;
     }
     if (typeof resolution === "string") {
-        RegisterSmartAsset(manager, key, resolution);
+        RegisterSmartAsset(manager.scene, key, resolution);
         return { url: resolution, extensionHint: GetSmartAssetInternals(manager).options.get(key)?.extension };
     }
     const blobUrl = URL.createObjectURL(resolution);
     const extensionHint = GetExtensionFromUrl(resolution.name) || undefined;
-    RegisterSmartAsset(manager, key, blobUrl, { extension: extensionHint });
+    RegisterSmartAsset(manager.scene, key, blobUrl, { extension: extensionHint });
     return { url: blobUrl, extensionHint };
 }
 
@@ -640,29 +631,6 @@ const TextureExtensions = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gi
  */
 export function GetSmartAssetTextureExtensions(): ReadonlySet<string> {
     return TextureExtensions;
-}
-
-/**
- * Returns true if the smart asset key is registered as a standalone texture.
- * A key is considered a texture if it was registered with type "texture",
- * if its extension is a known texture extension, or if its URL has a
- * texture file extension.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The smart asset key to check.
- * @returns True if the key represents a standalone texture asset.
- */
-export function IsSmartAssetTextureKey(managerOrScene: SmartAssetManagerOrScene, key: string): boolean {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    const internal = GetSmartAssetInternals(manager);
-    if (internal.textureKeys.has(key)) {
-        return true;
-    }
-    const options = internal.options.get(key);
-    if (options?.type === "texture" || IsTextureExtension(options?.extension)) {
-        return true;
-    }
-    const url = internal.urls.get(key);
-    return url !== undefined && IsTextureUrl(url);
 }
 
 /**

@@ -410,6 +410,72 @@ test("change model source", async ({ page }) => {
     await expectScreenshotMatch(page, "viewer-change-model-source.png");
 });
 
+test("use-open-pbr attribute applies to viewer options", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            use-open-pbr
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Query the element directly inside the page rather than via an ElementHandle to reliably
+    // read Lit reactive properties, which are defined on the element's prototype.
+    const useOpenPBR = await page.evaluate(() => {
+        const el = document.querySelector("babylon-viewer");
+        return (el as ViewerElement | null)?.useOpenPBR ?? null;
+    });
+
+    expect(useOpenPBR).toBe(true);
+});
+
+test("toggling useOpenPBR reloads model", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Capture the initial model reference, then toggle useOpenPBR to true.
+    // We use model object identity (not event counting) to detect that a new model was loaded.
+    await page.evaluate(() => {
+        const el = document.querySelector("babylon-viewer") as ViewerElement;
+        (window as any).__prevModel = el.viewerDetails?.model;
+        (el as any).useOpenPBR = true;
+    });
+
+    // Wait until a different model object is present and loading has settled.
+    await page.waitForFunction(() => {
+        const el = document.querySelector("babylon-viewer") as ViewerElement;
+        const model = el.viewerDetails?.model;
+        return model !== null && model !== (window as any).__prevModel && el.viewerDetails?.viewer.loadingProgress === false;
+    });
+
+    // Toggle back to false and verify another reload occurs.
+    await page.evaluate(() => {
+        const el = document.querySelector("babylon-viewer") as ViewerElement;
+        (window as any).__prevModel = el.viewerDetails?.model;
+        (el as any).useOpenPBR = false;
+    });
+
+    await page.waitForFunction(() => {
+        const el = document.querySelector("babylon-viewer") as ViewerElement;
+        const model = el.viewerDetails?.model;
+        return model !== null && model !== (window as any).__prevModel && el.viewerDetails?.viewer.loadingProgress === false;
+    });
+});
+
 test("clear model", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,

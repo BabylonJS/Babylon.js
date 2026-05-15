@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetTextBoundingBox } from "../../src/maths/boundingBox";
-import { DrawLottieText, MeasureLottieText, ResolveLottieText } from "../../src/parsing/textLayout";
+import { BuildCanvasFont, DrawLottieText, MeasureLottieText, ResolveLottieText } from "../../src/parsing/textLayout";
 import { type RawFont, type RawTextData } from "../../src/parsing/rawTypes";
 
 type FakeTextMetrics = {
@@ -337,5 +337,30 @@ describe("GetTextBoundingBox", () => {
         expect(fillDraws[0].x).toBe(baseX + trackingPx * 0);
         expect(fillDraws[1].x).toBe(baseX + 10 + trackingPx * 1); // after A
         expect(fillDraws[2].x).toBe(baseX + 14 + trackingPx * 2); // after A+B
+    });
+});
+
+describe("BuildCanvasFont", () => {
+    it("quotes a single family name containing whitespace", () => {
+        const font: RawFont = { fName: "SegoeUI", fFamily: "Segoe UI", fStyle: "Regular", ascent: 80 };
+        expect(BuildCanvasFont(font, 16)).toBe('400 16px "Segoe UI"');
+    });
+
+    it("does not quote a single family name without whitespace or quote characters", () => {
+        const font: RawFont = { fName: "Roboto", fFamily: "Roboto", fStyle: "Regular", ascent: 80 };
+        expect(BuildCanvasFont(font, 16)).toBe("400 16px Roboto");
+    });
+
+    it("passes a comma-separated CSS font-family list through verbatim", () => {
+        // When the Lottie file already provides a CSS font-family stack, wrapping it in outer quotes
+        // would collapse it into a single (non-existent) family name, causing the canvas to fall
+        // back to its default serif face. Verify the stack is forwarded as-is.
+        const stack = "'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif";
+        const font: RawFont = { fName: "SegoeUI", fFamily: stack, fStyle: "Regular", ascent: 80 };
+        const result = BuildCanvasFont(font, 16);
+
+        expect(result).toBe(`400 16px ${stack}`);
+        // Sanity-check: the stack must not be wrapped in outer double-quotes.
+        expect(result.startsWith(`400 16px "`)).toBe(false);
     });
 });

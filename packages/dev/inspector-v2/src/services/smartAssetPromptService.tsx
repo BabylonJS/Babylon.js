@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { AddSmartAssetManagerCreatedObserver, GetSmartAssetManagerFromScene, GetSmartAssetTextureExtensions, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { GetSmartAssetManager, GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManager";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
@@ -9,6 +9,8 @@ import { type IShellService, ShellServiceIdentity } from "shared-ui-components/m
 import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 
 import { installInspectorAssetNotFoundHandler, SetInspectorAssetNotFoundPromptHandler } from "./smartAssetHandler";
+
+const SmartAssetsPaneKey = "Smart Assets";
 
 type PendingMissingAsset = {
     keyName: string;
@@ -42,7 +44,13 @@ const useStyles = makeStyles({
     },
 });
 
-const SmartAssetMissingPromptHost: FunctionComponent = () => {
+type SmartAssetMissingPromptHostProps = {
+    /** Called once the user has chosen a replacement file (not when they skip). */
+    onAssetSelected: () => void;
+};
+
+const SmartAssetMissingPromptHost: FunctionComponent<SmartAssetMissingPromptHostProps> = (props) => {
+    const { onAssetSelected } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const pendingMissingAssetRef = useRef<PendingMissingAsset | null>(null);
     const [pendingMissingAsset, setPendingMissingAsset] = useState<PendingMissingAsset | null>(null);
@@ -81,10 +89,14 @@ const SmartAssetMissingPromptHost: FunctionComponent = () => {
 
     const onFileSelected = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
-            resolvePendingMissingAsset(event.target.files?.[0] ?? null);
+            const file = event.target.files?.[0] ?? null;
+            resolvePendingMissingAsset(file);
             event.target.value = "";
+            if (file) {
+                onAssetSelected();
+            }
         },
-        [resolvePendingMissingAsset]
+        [resolvePendingMissingAsset, onAssetSelected]
     );
 
     if (!pendingMissingAsset) {
@@ -125,57 +137,34 @@ export const SmartAssetPromptServiceDefinition: ServiceDefinition<[], [IShellSer
     friendlyName: "Smart Asset Prompt Service",
     consumes: [ShellServiceIdentity, SceneContextIdentity],
     factory: (shellService, sceneContext) => {
-        const registration = shellService.addCentralContent({
-            key: "Smart Asset Missing Prompt",
-            component: SmartAssetMissingPromptHost,
-            order: 1000,
-        });
-        // Map entry is removed when the manager's scene is disposed so we don't
-        // accumulate disposed managers across e.g. successive Playground runs.
-        const managerHandlerDisposers = new Map<SmartAssetManager, () => void>();
-
-        const installForManager = (manager: SmartAssetManager) => {
-            if (manager.scene !== sceneContext.currentScene || managerHandlerDisposers.has(manager)) {
-                return;
-            }
-            const restoreHandler = installInspectorAssetNotFoundHandler(manager);
-            const sceneDisposeObserver = manager.scene.onDisposeObservable.add(() => {
-                managerHandlerDisposers.delete(manager);
-            });
-            managerHandlerDisposers.set(manager, () => {
-                manager.scene.onDisposeObservable.remove(sceneDisposeObserver);
-                restoreHandler();
-            });
+        const focusSmartAssetsPane = () => {
+            shellService.sidePanes.find((pane) => pane.key === SmartAssetsPaneKey)?.select();
         };
 
-        const installForCurrentScene = () => {
-            const currentScene = sceneContext.currentScene;
-            if (!currentScene) {
-                return;
-            }
+        const registration = shellService.addCentralContent({
+            key: "Smart Asset Missing Prompt",
+            component: () => <SmartAssetMissingPromptHost onAssetSelected={focusSmartAssetsPane} />,
+            order: 1000,
+        });
 
-            const smartAssetManager = GetSmartAssetManagerFromScene(currentScene);
-            if (smartAssetManager) {
-                installForManager(smartAssetManager);
+        let restoreHandler: (() => void) | null = null;
+        const installForCurrentScene = () => {
+            restoreHandler?.();
+            restoreHandler = null;
+            const currentScene = sceneContext.currentScene;
+            if (currentScene) {
+                restoreHandler = installInspectorAssetNotFoundHandler(GetSmartAssetManager(currentScene));
             }
         };
 
         installForCurrentScene();
-
         const sceneObserver = sceneContext.currentSceneObservable.add(installForCurrentScene);
-        const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
-            installForManager(manager);
-        });
 
         return {
             dispose: () => {
                 registration.dispose();
                 sceneObserver.remove();
-                smartAssetManagerCreatedObserver?.remove();
-                for (const disposeHandler of Array.from(managerHandlerDisposers.values()).reverse()) {
-                    disposeHandler();
-                }
-                managerHandlerDisposers.clear();
+                restoreHandler?.();
             },
         };
     },

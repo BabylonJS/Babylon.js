@@ -9,6 +9,7 @@ uniform Material {
     vec2 renderTargetSize;
 
     vec4 cameraInfo;
+    vec4 vTextureRepetitionHexTilingParams;
     mat4 backgroundRefractionMatrix;
     vec3 vBackgroundRefractionInfos;
 

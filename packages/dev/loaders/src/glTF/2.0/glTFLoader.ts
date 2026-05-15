@@ -214,7 +214,8 @@ export class GLTFLoader implements IGLTFLoader {
 
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
-    private _disposed = false;
+    /** @internal */
+    public _disposed = false;
     private _rootUrl: Nullable<string> = null;
     private _fileName: Nullable<string> = null;
     private _uniqueRootUrl: Nullable<string> = null;
@@ -358,9 +359,6 @@ export class GLTFLoader implements IGLTFLoader {
         this._extensions.forEach((extension) => extension.dispose && extension.dispose());
         this._extensions.length = 0;
 
-        for (const adapter of Array.from(this._materialAdapters)) {
-            adapter.finalize?.();
-        }
         this._materialAdapters.clear();
 
         (this._gltf as Nullable<IGLTF>) = null; // TODO
@@ -527,6 +525,13 @@ export class GLTFLoader implements IGLTFLoader {
                         if (mat.maxSimultaneousLights !== undefined) {
                             mat.maxSimultaneousLights = Math.max(mat.maxSimultaneousLights, this._babylonScene.lights.length);
                         }
+                    }
+
+                    // Finalize all material adapters. finalizeAsync() may return a Promise for async
+                    // work (e.g. GPU texture processing); any returned Promise is pushed into
+                    // _completePromises so it is awaited before the COMPLETE state is reached.
+                    for (const adapter of Array.from(this._materialAdapters)) {
+                        this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
                     this._extensionsOnReady();
