@@ -256,11 +256,14 @@ fn decompose(value: u32) -> vec4f
 fn computeSHWeighted(splat: Splat, dir: vec3f, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
 {
     var sh: array<vec3<f32>, 25>;
+
     sh[0] = vec3f(0., 0., 0.);
+
 #if SH_DEGREE > 0
     let sh00: vec4f = decompose(splat.sh0.x);
     let sh01: vec4f = decompose(splat.sh0.y);
     let sh02: vec4f = decompose(splat.sh0.z);
+
     sh[1] = vec3f(sh00.x, sh00.y, sh00.z);
     sh[2] = vec3f(sh00.w, sh01.x, sh01.y);
     sh[3] = vec3f(sh01.z, sh01.w, sh02.x);
@@ -269,6 +272,7 @@ fn computeSHWeighted(splat: Splat, dir: vec3f, _so1: f32, _so2: f32, _so3: f32, 
     let sh03: vec4f = decompose(splat.sh0.w);
     let sh04: vec4f = decompose(splat.sh1.x);
     let sh05: vec4f = decompose(splat.sh1.y);
+
     sh[4] = vec3f(sh02.y, sh02.z, sh02.w);
     sh[5] = vec3f(sh03.x, sh03.y, sh03.z);
     sh[6] = vec3f(sh03.w, sh04.x, sh04.y);
@@ -282,6 +286,7 @@ fn computeSHWeighted(splat: Splat, dir: vec3f, _so1: f32, _so2: f32, _so3: f32, 
     let sh09: vec4f = decompose(splat.sh2.y);
     let sh10: vec4f = decompose(splat.sh2.z);
     let sh11: vec4f = decompose(splat.sh2.w);
+
     sh[9] = vec3f(sh06.x, sh06.y, sh06.z);
     sh[10] = vec3f(sh06.w, sh07.x, sh07.y);
     sh[11] = vec3f(sh07.z, sh07.w, sh08.x);
@@ -291,12 +296,14 @@ fn computeSHWeighted(splat: Splat, dir: vec3f, _so1: f32, _so2: f32, _so3: f32, 
     sh[15] = vec3f(sh10.z, sh10.w, sh11.x);
 #endif
 #if SH_DEGREE > 3
+    // sh[16] R/G/B are in sh11.y/z/w (j=45,46,47 — last 3 bytes of texture2)
     let sh12: vec4f = decompose(splat.sh3.x);
     let sh13: vec4f = decompose(splat.sh3.y);
     let sh14: vec4f = decompose(splat.sh3.z);
     let sh15: vec4f = decompose(splat.sh3.w);
     let sh16: vec4f = decompose(splat.sh4.x);
     let sh17: vec4f = decompose(splat.sh4.y);
+
     sh[16] = vec3f(sh11.y, sh11.z, sh11.w);
     sh[17] = vec3f(sh12.x, sh12.y, sh12.z);
     sh[18] = vec3f(sh12.w, sh13.x, sh13.y);

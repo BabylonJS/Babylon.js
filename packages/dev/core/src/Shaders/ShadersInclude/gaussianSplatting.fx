@@ -208,11 +208,13 @@ vec4 decompose(uint value)
 vec3 computeSHWeighted(Splat splat, vec3 dir, float _so1, float _so2, float _so3, float _so4)
 {
     vec3 sh[25];
+
     sh[0] = vec3(0.,0.,0.);
 #if SH_DEGREE > 0
     vec4 sh00 = decompose(splat.sh0.x);
     vec4 sh01 = decompose(splat.sh0.y);
     vec4 sh02 = decompose(splat.sh0.z);
+
     sh[1] = vec3(sh00.x, sh00.y, sh00.z);
     sh[2] = vec3(sh00.w, sh01.x, sh01.y);
     sh[3] = vec3(sh01.z, sh01.w, sh02.x);
@@ -221,6 +223,7 @@ vec3 computeSHWeighted(Splat splat, vec3 dir, float _so1, float _so2, float _so3
     vec4 sh03 = decompose(splat.sh0.w);
     vec4 sh04 = decompose(splat.sh1.x);
     vec4 sh05 = decompose(splat.sh1.y);
+
     sh[4] = vec3(sh02.y, sh02.z, sh02.w);
     sh[5] = vec3(sh03.x, sh03.y, sh03.z);
     sh[6] = vec3(sh03.w, sh04.x, sh04.y);
@@ -234,6 +237,7 @@ vec3 computeSHWeighted(Splat splat, vec3 dir, float _so1, float _so2, float _so3
     vec4 sh09 = decompose(splat.sh2.y);
     vec4 sh10 = decompose(splat.sh2.z);
     vec4 sh11 = decompose(splat.sh2.w);
+
     sh[9] = vec3(sh06.x, sh06.y, sh06.z);
     sh[10] = vec3(sh06.w, sh07.x, sh07.y);
     sh[11] = vec3(sh07.z, sh07.w, sh08.x);
@@ -243,12 +247,14 @@ vec3 computeSHWeighted(Splat splat, vec3 dir, float _so1, float _so2, float _so3
     sh[15] = vec3(sh10.z, sh10.w, sh11.x);
 #endif
 #if SH_DEGREE > 3
+    // sh[16] R/G/B are in sh11.y/z/w (j=45,46,47 — last 3 bytes of texture2)
     vec4 sh12 = decompose(splat.sh3.x);
     vec4 sh13 = decompose(splat.sh3.y);
     vec4 sh14 = decompose(splat.sh3.z);
     vec4 sh15 = decompose(splat.sh3.w);
     vec4 sh16 = decompose(splat.sh4.x);
     vec4 sh17 = decompose(splat.sh4.y);
+
     sh[16] = vec3(sh11.y, sh11.z, sh11.w);
     sh[17] = vec3(sh12.x, sh12.y, sh12.z);
     sh[18] = vec3(sh12.w, sh13.x, sh13.y);
