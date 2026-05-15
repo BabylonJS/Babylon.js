@@ -3,7 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { GetAllSmartAssets, GetSmartAssetManager, RegisterSmartAsset } from "core/SmartAssets/smartAssetManager";
 import { AddOverride, DisposeOverrideManager, GetOverrideManager, GetOverrides, type OverrideManager } from "../../src/projects/overrideManager";
-import { DeserializeProject, LoadProjectAsync, SerializeProject } from "../../src/projects/projectSerializer";
+import { DeserializeProject, LoadProjectAsync, SerializeProject } from "../../src/projects/projectFile";
 
 // Store scene reference for mock containers to populate
 let _currentScene: Scene | null = null;

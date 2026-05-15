@@ -27,8 +27,7 @@ import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 
-import { PROJECT_LOCALS_KEY } from "../../../projects/projectSerializer";
-import { loadProjectBundleAsync, saveProjectBundleAsync } from "./projectBundleIO";
+import { PROJECT_LOCALS_KEY, LoadProjectFileAsync, SaveProjectFileAsync } from "../../../projects/projectFile";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Body1, Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
@@ -183,7 +182,7 @@ const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
         setBusy("Saving project...");
         setStatus("");
         try {
-            const blob = await saveProjectBundleAsync(scene);
+            const blob = await SaveProjectFileAsync(scene);
             Tools.Download(blob, "scene.babylonproj");
             setStatus("Saved scene.babylonproj");
         } catch (err) {
@@ -202,7 +201,7 @@ const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
             setBusy("Loading project...");
             setStatus("");
             try {
-                await loadProjectBundleAsync(scene, file);
+                await LoadProjectFileAsync(scene, file);
                 setStatus(`Loaded ${file.name}`);
             } catch (err) {
                 setStatus(`Load error: ${err}`);
