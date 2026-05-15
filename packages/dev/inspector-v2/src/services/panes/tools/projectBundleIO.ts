@@ -1,6 +1,6 @@
 import { zipSync, unzipSync, strToU8, strFromU8 } from "fflate";
 
-import { type SmartAssetManager, IsSmartAssetTextureKey } from "core/SmartAssets/smartAssetManager";
+import { type SmartAssetManager, GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManager";
 import { type OverrideManager } from "core/SmartAssets/overrideManager";
 import { SerializeProject, LoadProjectAsync, PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
 
@@ -47,7 +47,7 @@ export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: 
             continue;
         }
         const { key, entry, arrayBuffer } = result;
-        const ext = _guessExtension(entry.url, key, IsSmartAssetTextureKey(sam, key));
+        const ext = _guessExtension(entry.url, key, _isTextureEntry(entry.url, entry.extension, entry.type));
         const filename = `assets/${key}${ext}`;
         files[filename] = new Uint8Array(arrayBuffer);
         projectAssets[key] = { ...entry, url: filename };
@@ -114,6 +114,47 @@ export async function loadProjectBundleAsync(zipFile: File, sam: SmartAssetManag
     // Clean up blob URLs after loading (SAM has already consumed them)
     // Note: textures and scene files may still reference these URLs internally,
     // so we do NOT revoke them here. They'll be cleaned up when SAM disposes.
+}
+
+/**
+ * Returns true if a serialized asset entry refers to a standalone texture,
+ * based on the registered options or the URL extension.
+ * @param url - The asset URL.
+ * @param extension - Optional explicit extension hint from the registration options.
+ * @param type - Optional explicit type from the registration options.
+ * @returns True if the entry should be treated as a texture.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _isTextureEntry(url: string, extension: string | undefined, type: string | undefined): boolean {
+    if (type === "texture") {
+        return true;
+    }
+    const textureExts = GetSmartAssetTextureExtensions();
+    if (extension && textureExts.has(extension.toLowerCase())) {
+        return true;
+    }
+    const ext = _extractExtension(url);
+    return ext !== "" && textureExts.has(ext);
+}
+
+/**
+ * Extracts the file extension (with leading dot, lowercased) from a URL,
+ * stripping query/hash and ignoring blob/data prefixes.
+ * @param url - The URL to inspect.
+ * @returns The extension including the leading dot, or "" if none found.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _extractExtension(url: string): string {
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+        return "";
+    }
+    const clean = url.split("?")[0].split("#")[0];
+    const lastDot = clean.lastIndexOf(".");
+    const lastSlash = Math.max(clean.lastIndexOf("/"), clean.lastIndexOf("\\"));
+    if (lastDot > lastSlash && lastDot >= 0) {
+        return clean.substring(lastDot).toLowerCase();
+    }
+    return "";
 }
 
 /**

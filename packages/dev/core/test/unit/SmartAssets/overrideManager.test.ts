@@ -4,10 +4,9 @@ import {
     AddOverride,
     ClearOverrides,
     CreateOverrideManager,
-    CreateSmartAssetManager,
+    GetSmartAssetManager,
     DeserializeAndApplyOverrides,
     DisposeOverrideManager,
-    DisposeSmartAssetManager,
     GetOverrideManagerFromScene,
     GetOverrides,
     LoadSmartAssetAsync,
@@ -15,9 +14,8 @@ import {
     RemoveOverride,
     SerializeOverrides,
     type OverrideManager,
-    type SmartAssetManager,
+    type IOverrideEntry,
 } from "core/SmartAssets/index";
-import type { IOverrideEntry } from "core/SmartAssets/index";
 
 const mockDispose = vi.fn();
 
@@ -67,7 +65,6 @@ vi.mock("core/Loading/sceneLoader", () => ({
 describe("OverrideManager", () => {
     let engine: NullEngine;
     let scene: Scene;
-    let sam: SmartAssetManager;
     let overrides: OverrideManager;
 
     beforeEach(() => {
@@ -80,14 +77,16 @@ describe("OverrideManager", () => {
         });
         scene = new Scene(engine);
         _currentScene = scene;
-        sam = CreateSmartAssetManager(scene);
+        // Force the smart asset manager to be created so override-to-asset linking is wired up
+        // in the same observable-fire order as the original tests.
+        GetSmartAssetManager(scene);
         overrides = CreateOverrideManager(scene);
         vi.clearAllMocks();
     });
 
     afterEach(() => {
         DisposeOverrideManager(overrides);
-        DisposeSmartAssetManager(sam);
+        // SmartAssetManager auto-disposes when the scene is disposed.
         scene.dispose();
         engine.dispose();
         _currentScene = null;
@@ -248,7 +247,7 @@ describe("OverrideManager", () => {
 
     describe("override application", () => {
         it("should apply scalar override to a loaded material", async () => {
-            await LoadSmartAssetAsync(sam, "chair", "models/chair.glb");
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
 
             const material = scene.materials.find((m) => m.name === "Material1");
             expect(material).toBeDefined();
@@ -265,7 +264,7 @@ describe("OverrideManager", () => {
         });
 
         it("should apply boolean override", async () => {
-            await LoadSmartAssetAsync(sam, "chair", "models/chair.glb");
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
 
             AddOverride(overrides, {
                 key: "chair",
@@ -287,8 +286,8 @@ describe("OverrideManager", () => {
                 .mockResolvedValueOnce(firstContainer as any)
                 .mockResolvedValueOnce(secondContainer as any);
 
-            await LoadSmartAssetAsync(sam, "first", "first.glb");
-            await LoadSmartAssetAsync(sam, "second", "second.glb");
+            await LoadSmartAssetAsync(scene, "first", "first.glb");
+            await LoadSmartAssetAsync(scene, "second", "second.glb");
 
             AddOverride(overrides, {
                 key: "second",
@@ -396,10 +395,10 @@ describe("OverrideManager", () => {
                 value: 0.7,
             });
 
-            await LoadSmartAssetAsync(sam, "chair", "models/chair.glb");
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
             expect(scene.materials.find((m) => m.name === "Material1")?.alpha).toBe(0.7);
 
-            await ReloadSmartAssetAsync(sam, "chair");
+            await ReloadSmartAssetAsync(scene, "chair");
 
             // After reload the new material instance should also have the override applied.
             const reloadedMaterial = scene.materials.find((m) => m.name === "Material1");

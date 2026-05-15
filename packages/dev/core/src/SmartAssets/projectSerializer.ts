@@ -62,7 +62,7 @@ export interface ISerializedProject {
  * @returns A project bundle containing the JSON document and optional companion file.
  */
 export function SerializeProject(smartAssetManager: SmartAssetManager, overrideManager: OverrideManager, baseUrl?: string): IProjectBundle {
-    const assetMap = SerializeSmartAssetManagerMap(smartAssetManager, baseUrl);
+    const assetMap = SerializeSmartAssetManagerMap(smartAssetManager.scene, baseUrl);
     const overrides = SerializeOverrides(overrideManager);
     const scene = smartAssetManager.scene;
 
@@ -119,9 +119,9 @@ export async function LoadProjectAsync(
     const scene = smartAssetManager.scene;
 
     // Clear existing state so we load fresh from the project file
-    for (const existingKey of Array.from(GetAllSmartAssets(smartAssetManager).keys())) {
+    for (const existingKey of Array.from(GetAllSmartAssets(scene).keys())) {
         // eslint-disable-next-line no-await-in-loop
-        await RemoveSmartAssetAsync(smartAssetManager, existingKey);
+        await RemoveSmartAssetAsync(scene, existingKey);
     }
     ClearOverrides(overrideManager);
 
@@ -146,17 +146,17 @@ export async function LoadProjectAsync(
             continue;
         }
         const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        RegisterSmartAsset(smartAssetManager, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
+        RegisterSmartAsset(scene, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
     }
 
-    await LoadAllSmartAssetsAsync(smartAssetManager);
+    await LoadAllSmartAssetsAsync(scene);
 
     // Now load the companion .babylon — textures are ready so asset:// refs resolve.
     // Pass the .babylon extension hint because blob URLs have no file extension.
     if (hasCompanion) {
         const companionEntry = doc.assets[PROJECT_LOCALS_KEY];
         const companionUrl = resolvedRootUrl ? ResolveAssetUrl(companionEntry.url, resolvedRootUrl) : companionEntry.url;
-        await LoadSmartAssetAsync(smartAssetManager, PROJECT_LOCALS_KEY, companionUrl, { extension: ".babylon" });
+        await LoadSmartAssetAsync(scene, PROJECT_LOCALS_KEY, companionUrl, { extension: ".babylon" });
     }
 
     // Apply overrides
@@ -204,7 +204,7 @@ export function DeserializeProject(data: unknown): ISerializedProject {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _isLocalObject(obj: object, sam: SmartAssetManager): boolean {
-    const key = FindSmartAssetKeyForObject(sam, obj as any);
+    const key = FindSmartAssetKeyForObject(sam.scene, obj as any);
     return key === undefined || key === PROJECT_LOCALS_KEY;
 }
 
@@ -264,7 +264,7 @@ function _rewriteTextureUrls(serializedMaterial: Record<string, unknown>, sam: S
         }
 
         for (const tex of scene.textures) {
-            const key = FindSmartAssetKeyForObject(sam, tex);
+            const key = FindSmartAssetKeyForObject(scene, tex);
             if (key && (tex.name === texName || (tex as any).url === texName || tex.name === texUrl || (tex as any).url === texUrl)) {
                 const assetUrl = `asset://${key}`;
                 texData.name = assetUrl;

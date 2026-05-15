@@ -3,15 +3,14 @@ import { Scene } from "core/scene";
 import {
     AddOverride,
     CreateOverrideManager,
-    CreateSmartAssetManager,
-    DisposeOverrideManager,
-    DisposeSmartAssetManager,
+    GetAllSmartAssets,
     GetOverrides,
-    RegisterSmartAsset,
-    ResolveSmartAsset,
+    GetSmartAssetManager,
+    DisposeOverrideManager,
     type OverrideManager,
     type SmartAssetManager,
 } from "core/SmartAssets/index";
+import { RegisterSmartAsset } from "core/SmartAssets/smartAssetManager";
 import { SerializeProject, DeserializeProject, LoadProjectAsync } from "core/SmartAssets/projectSerializer";
 
 // Store scene reference for mock containers to populate
@@ -70,14 +69,14 @@ describe("ProjectSerializer", () => {
         });
         scene = new Scene(engine);
         _currentScene = scene;
-        sam = CreateSmartAssetManager(scene);
+        sam = GetSmartAssetManager(scene);
         overrides = CreateOverrideManager(scene);
         vi.clearAllMocks();
     });
 
     afterEach(() => {
         DisposeOverrideManager(overrides);
-        DisposeSmartAssetManager(sam);
+        // SmartAssetManager auto-disposes when the scene is disposed.
         scene.dispose();
         engine.dispose();
         _currentScene = null;
@@ -87,8 +86,8 @@ describe("ProjectSerializer", () => {
 
     describe("serializeProject", () => {
         it("should produce a valid project bundle with assets and overrides", async () => {
-            RegisterSmartAsset(sam, "chair", "models/chair.glb");
-            RegisterSmartAsset(sam, "table", "models/table.glb");
+            RegisterSmartAsset(sam.scene, "chair", "models/chair.glb");
+            RegisterSmartAsset(sam.scene, "table", "models/table.glb");
 
             AddOverride(overrides, {
                 key: "",
@@ -109,7 +108,7 @@ describe("ProjectSerializer", () => {
         });
 
         it("should produce empty overrides array when no overrides exist", () => {
-            RegisterSmartAsset(sam, "chair", "chair.glb");
+            RegisterSmartAsset(sam.scene, "chair", "chair.glb");
 
             const bundle = SerializeProject(sam, overrides);
 
@@ -168,8 +167,8 @@ describe("ProjectSerializer", () => {
 
     describe("round-trip", () => {
         it("should produce identical output on serialize → deserialize → serialize", async () => {
-            RegisterSmartAsset(sam, "chair", "chair.glb");
-            RegisterSmartAsset(sam, "table", "table.glb");
+            RegisterSmartAsset(sam.scene, "chair", "chair.glb");
+            RegisterSmartAsset(sam.scene, "table", "table.glb");
 
             AddOverride(overrides, {
                 key: "chair",
@@ -224,7 +223,7 @@ describe("ProjectSerializer", () => {
             await LoadProjectAsync(projectDoc, sam, overrides);
 
             // Asset should be registered and loaded
-            expect(ResolveSmartAsset(sam, "chair")).toBe("chair.glb");
+            expect(GetAllSmartAssets(sam.scene).get("chair")).toBe("chair.glb");
 
             // Override should be applied
             expect(scene.fogDensity).toBe(0.4);
@@ -242,7 +241,7 @@ describe("ProjectSerializer", () => {
 
             await LoadProjectAsync(projectDoc, sam, overrides);
 
-            expect(ResolveSmartAsset(sam, "table")).toBe("table.glb");
+            expect(GetAllSmartAssets(sam.scene).get("table")).toBe("table.glb");
             expect(GetOverrides(overrides).length).toBe(0);
         });
     });

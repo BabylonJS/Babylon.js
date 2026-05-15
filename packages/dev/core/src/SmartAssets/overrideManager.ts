@@ -2,10 +2,25 @@ import { type Scene } from "../scene";
 import { type Observer } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
-import { type SmartAssetManager, AddSmartAssetManagerCreatedObserver, FindSmartAssetKeyForObject, GetSmartAssetManagerFromScene, ResolveSmartAsset } from "./smartAssetManager";
+import { type SmartAssetManager, AddSmartAssetManagerCreatedObserver, FindSmartAssetKeyForObject, GetAllSmartAssets } from "./smartAssetManager";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
+const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
+
 const OVERRIDE_MANAGER_KEY = Symbol.for("babylonjs:overrideManager");
+
+/**
+ * Returns the SmartAssetManager already attached to a scene, or undefined if
+ * none exists. Unlike GetSmartAssetManager from smartAssetManager.ts, this
+ * never creates a new manager — it's a read-only check used by the override
+ * system to decide whether to link to an existing manager.
+ * @param scene - The scene to inspect.
+ * @returns The attached SmartAssetManager, or undefined if none is attached.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _peekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
+    return scene.metadata?.[SMART_ASSET_MANAGER_KEY] as SmartAssetManager | undefined;
+}
 
 /**
  * Stateful handle for a scene's property override registry.
@@ -21,7 +36,7 @@ const OVERRIDE_MANAGER_KEY = Symbol.for("babylonjs:overrideManager");
  *
  * @example
  * ```typescript
- * const sam = CreateSmartAssetManager(scene);
+ * const sam = GetSmartAssetManager(scene);
  * const overrides = CreateOverrideManager(scene);
  *
  * // Add an override: set the material named "canPaint" from key "sodaCan" to red
@@ -94,7 +109,7 @@ export function CreateOverrideManager(scene: Scene): OverrideManager {
 
     // If a SmartAssetManager already exists on this scene, link it now so overrides
     // are reapplied automatically on asset reload.
-    const existingSam = GetSmartAssetManagerFromScene(scene);
+    const existingSam = _peekSmartAssetManager(scene);
     if (existingSam) {
         _linkSmartAssetManager(manager, existingSam);
     }
@@ -364,6 +379,8 @@ function ResolveOverrideManager(managerOrScene: OverrideManagerOrScene): Overrid
 /**
  * Subscribes to the SmartAssetManager's onChangedObservable so overrides are
  * reapplied automatically whenever asset state changes (e.g., after a reload).
+ * @param manager - The override manager being linked.
+ * @param sam - The smart asset manager to listen to for changes.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _linkSmartAssetManager(manager: OverrideManager, sam: SmartAssetManager): void {
@@ -382,9 +399,7 @@ function _linkSmartAssetManager(manager: OverrideManager, sam: SmartAssetManager
 function _applyOverride(manager: OverrideManager, internal: OverrideManagerInternals, entry: IOverrideEntry): void {
     const target = _resolveTarget(manager, entry.key, entry.targetType, entry.targetName);
     if (!target) {
-        Logger.Warn(
-            `OverrideManager._applyOverride: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`
-        );
+        Logger.Warn(`OverrideManager._applyOverride: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`);
         return; // Target not loaded yet — override will be applied on next load
     }
 
@@ -410,7 +425,7 @@ function _resolveTarget(manager: OverrideManager, key: string, targetType: Overr
         return scene as unknown as object;
     }
 
-    const sam = GetSmartAssetManagerFromScene(scene);
+    const sam = _peekSmartAssetManager(scene);
 
     // Empty key = in-tool-created object (not from a smart asset) — look up by name directly
     if (key === "") {
@@ -423,7 +438,7 @@ function _resolveTarget(manager: OverrideManager, key: string, targetType: Overr
     }
 
     // Verify the key is registered before attempting to resolve.
-    if (ResolveSmartAsset(sam, key) === undefined) {
+    if (GetAllSmartAssets(sam.scene).get(key) === undefined) {
         return null;
     }
 
@@ -451,7 +466,7 @@ function _findObjectByName(scene: Scene, sam: SmartAssetManager | undefined, tar
             if (obj.name !== name) {
                 return false;
             }
-            const trackedKey = sam ? FindSmartAssetKeyForObject(sam, obj) : undefined;
+            const trackedKey = sam ? FindSmartAssetKeyForObject(sam.scene, obj) : undefined;
             return key === "" ? trackedKey === undefined : trackedKey === key;
         }) as object) ?? null
     );
@@ -480,6 +495,9 @@ function _resolveValue(manager: OverrideManager, value: OverrideValue): unknown 
 /**
  * Resolves a "ref:name" value by looking up a material, light, or camera
  * in the scene by name.
+ * @param scene - The scene to search.
+ * @param name - The object name to resolve.
+ * @returns The matching material, light, or camera, or undefined if not found.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _resolveObjectReference(scene: Scene, name: string): unknown {
@@ -502,13 +520,16 @@ function _resolveObjectReference(scene: Scene, name: string): unknown {
 /**
  * Resolves a "texture:key" value by finding a texture loaded by the
  * SmartAssetManager under that key. Falls back to searching scene textures by name.
+ * @param scene - The scene to search.
+ * @param key - The smart asset key, or texture name fallback.
+ * @returns The matching texture, or undefined if not found.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _resolveTextureReference(scene: Scene, key: string): unknown {
-    const sam = GetSmartAssetManagerFromScene(scene);
+    const sam = _peekSmartAssetManager(scene);
     if (sam) {
         for (const tex of scene.textures) {
-            if (FindSmartAssetKeyForObject(sam, tex) === key) {
+            if (FindSmartAssetKeyForObject(sam.scene, tex) === key) {
                 return tex;
             }
         }
@@ -536,6 +557,11 @@ function _removeMatchingOverride(internal: OverrideManagerInternals, key: string
 
 /**
  * Creates a unique key for storing original values.
+ * @param key - The smart asset key.
+ * @param targetType - The override target type.
+ * @param targetName - The target object name.
+ * @param propertyPath - The property path.
+ * @returns A composite string key uniquely identifying the original value slot.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _makeOriginalValueKey(key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): string {
@@ -544,6 +570,9 @@ function _makeOriginalValueKey(key: string, targetType: OverrideTargetType, targ
 
 /**
  * Gets a nested property from an object using a dot-separated path.
+ * @param obj - The root object to traverse.
+ * @param path - The dot-separated property path.
+ * @returns The value at the path, or undefined if any segment is missing.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _getNestedProperty(obj: object, path: string): unknown {
@@ -568,6 +597,9 @@ function _getNestedProperty(obj: object, path: string): unknown {
  * `fromArray` method to mutate it in place — preserving the live instance
  * identity that consumers may already hold references to. Otherwise falls
  * back to direct property replacement.
+ * @param obj - The root object to mutate.
+ * @param path - The dot-separated property path.
+ * @param value - The new value to assign.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _setNestedProperty(obj: object, path: string, value: unknown): void {
@@ -603,6 +635,8 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
  * because cloning them would register unwanted duplicates in the scene.
  * Plain math types (Vector3, Color3, etc.) are cloned so mutations to the
  * live object don't corrupt the saved original.
+ * @param value - The value to snapshot.
+ * @returns The snapshot value (cloned for plain math types, by reference for entities).
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _cloneValue(value: unknown): unknown {
