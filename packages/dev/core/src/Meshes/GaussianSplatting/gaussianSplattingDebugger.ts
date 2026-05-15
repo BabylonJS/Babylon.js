@@ -1,4 +1,6 @@
 import { type Nullable } from "../../types";
+import { type Observer } from "../../Misc/observable";
+import { type Node } from "../../node";
 import { type Vector3 } from "../../Maths/math.vector";
 import { GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingDebugMaterialPlugin, type IGaussianSplattingDebugOptions } from "../../Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
@@ -24,6 +26,7 @@ import { type GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
 export class GaussianSplattingDebugger {
     private _plugins: GaussianSplattingDebugMaterialPlugin[] = [];
     private _meshes: GaussianSplattingMeshBase[] = [];
+    private _disposeObservers: Observer<Node>[] = [];
 
     // Cached option state so newly added meshes inherit current settings
     private _clippingBox: Nullable<{ min: Vector3; max: Vector3 }> = null;
@@ -41,6 +44,7 @@ export class GaussianSplattingDebugger {
      * Adds a mesh to the debugger, attaching a debug plugin to its material.
      * The mesh must already have a GaussianSplattingMaterial assigned (i.e., data
      * must have been loaded at least once). Current option values are applied immediately.
+     * The mesh is automatically unregistered if it is disposed.
      * @param mesh The mesh to register.
      */
     public addMesh(mesh: GaussianSplattingMeshBase): void {
@@ -56,6 +60,7 @@ export class GaussianSplattingDebugger {
         this._applyAllTo(plugin);
         this._meshes.push(mesh);
         this._plugins.push(plugin);
+        this._disposeObservers.push(mesh.onDisposeObservable.add(() => this.removeMesh(mesh))!);
     }
 
     /**
@@ -67,18 +72,22 @@ export class GaussianSplattingDebugger {
         if (idx === -1) {
             return;
         }
+        mesh.onDisposeObservable.remove(this._disposeObservers[idx]);
         this._plugins[idx].dispose();
         this._meshes.splice(idx, 1);
         this._plugins.splice(idx, 1);
+        this._disposeObservers.splice(idx, 1);
     }
 
     /** Disposes all debug plugins and clears the mesh list. */
     public dispose(): void {
-        for (const plugin of this._plugins) {
-            plugin.dispose();
+        for (let i = 0; i < this._meshes.length; i++) {
+            this._meshes[i].onDisposeObservable.remove(this._disposeObservers[i]);
+            this._plugins[i].dispose();
         }
         this._meshes.length = 0;
         this._plugins.length = 0;
+        this._disposeObservers.length = 0;
     }
 
     /**
