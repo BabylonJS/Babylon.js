@@ -1,7 +1,7 @@
 import { type Nullable } from "../../types";
 import { type Vector3 } from "../../Maths/math.vector";
 import { GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { GaussianSplattingDebugMaterialPlugin } from "../../Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
+import { GaussianSplattingDebugMaterialPlugin, type IGaussianSplattingDebugOptions } from "../../Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
 import { type GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
 
 /**
@@ -14,11 +14,11 @@ import { type GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
  *
  * @example
  * ```ts
- * const debugger = new GaussianSplattingDebugger();
- * debugger.addMesh(mesh1);
- * debugger.addMesh(mesh2);
- * debugger.clippingBox = { min: new Vector3(-2, -2, -2), max: new Vector3(2, 2, 2) };
- * debugger.shOrder1 = false;
+ * const gsDebugger = new GaussianSplattingDebugger();
+ * gsDebugger.addMesh(mesh1);
+ * gsDebugger.addMesh(mesh2);
+ * gsDebugger.clippingBox = { min: new Vector3(-2, -2, -2), max: new Vector3(2, 2, 2) };
+ * gsDebugger.shOrder1 = false;
  * ```
  */
 export class GaussianSplattingDebugger {
@@ -52,6 +52,7 @@ export class GaussianSplattingDebugger {
             throw new Error("GaussianSplattingDebugger.addMesh: mesh must have a GaussianSplattingMaterial.");
         }
         const plugin = new GaussianSplattingDebugMaterialPlugin(mat);
+        plugin.partCount = (mesh as unknown as { partCount?: number }).partCount ?? 0;
         this._applyAllTo(plugin);
         this._meshes.push(mesh);
         this._plugins.push(plugin);
@@ -227,5 +228,36 @@ export class GaussianSplattingDebugger {
         for (const p of this._plugins) {
             p.shOrder4 = value;
         }
+    }
+
+    // ----- Per-part API (compound meshes only) -----
+
+    /**
+     * Sets per-part debug overrides for a specific part of a compound mesh.
+     * The mesh must already be registered via addMesh(). Logs an error if the mesh
+     * is not compound (partCount is 0).
+     * @param mesh The compound mesh.
+     * @param partIndex The zero-based part index.
+     * @param options Partial set of debug options to override for this part.
+     */
+    public setPartOptions(mesh: GaussianSplattingMeshBase, partIndex: number, options: Partial<IGaussianSplattingDebugOptions>): void {
+        const idx = this._meshes.indexOf(mesh);
+        if (idx < 0) {
+            return;
+        }
+        this._plugins[idx].setPartOptions(partIndex, options);
+    }
+
+    /**
+     * Clears all per-part debug overrides for a specific part, falling back to global settings.
+     * @param mesh The compound mesh.
+     * @param partIndex The zero-based part index.
+     */
+    public clearPartOptions(mesh: GaussianSplattingMeshBase, partIndex: number): void {
+        const idx = this._meshes.indexOf(mesh);
+        if (idx < 0) {
+            return;
+        }
+        this._plugins[idx].clearPartOptions(partIndex);
     }
 }

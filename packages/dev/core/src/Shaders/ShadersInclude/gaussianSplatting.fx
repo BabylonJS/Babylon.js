@@ -116,7 +116,11 @@ Splat readSplat(float splatIndex)
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 // no SH for GS and WebGL1
 // dir = normalized(splat pos - cam pos)
+#if defined(GS_DBG_ENABLED) && IS_COMPOUND
+vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25], float _so1, float _so2, float _so3, float _so4)
+#else
 vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
+#endif
 {
     const float SH_C0 = 0.28209479;
     const float SH_C1 = 0.48860251;
@@ -153,14 +157,23 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
     float x = dir.x;
     float y = dir.y;
     float z = dir.z;
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so1 * (- SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
     result += - SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
     #endif
 
 #if SH_DEGREE > 1
     float xx = x * x, yy = y * y, zz = z * z;
     float xy = x * y, yz = y * z, xz = x * z;
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so2 * (
+        SH_C2[0] * xy * sh[4] +
+        SH_C2[1] * yz * sh[5] +
+        SH_C2[2] * (2.0 * zz - xx - yy) * sh[6] +
+        SH_C2[3] * xz * sh[7] +
+        SH_C2[4] * (xx - yy) * sh[8]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
     result +=
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
@@ -170,7 +183,16 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
     #endif
 
 #if SH_DEGREE > 2
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so3 * (
+        SH_C3[0] * y * (3.0 * xx - yy) * sh[9] +
+        SH_C3[1] * xy * z * sh[10] +
+        SH_C3[2] * y * (4.0 * zz - xx - yy) * sh[11] +
+        SH_C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh[12] +
+        SH_C3[4] * x * (4.0 * zz - xx - yy) * sh[13] +
+        SH_C3[5] * z * (xx - yy) * sh[14] +
+        SH_C3[6] * x * (xx - 3.0 * yy) * sh[15]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
     result +=
         SH_C3[0] * y * (3.0 * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
@@ -182,7 +204,18 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
     #endif
 
 #if SH_DEGREE > 3
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so4 * (
+        SH_C4[0] * x * y * (xx - yy) * sh[16] +
+        SH_C4[1] * y * z * (3.0 * xx - yy) * sh[17] +
+        SH_C4[2] * x * y * (7.0 * zz - 1.0) * sh[18] +
+        SH_C4[3] * y * z * (7.0 * zz - 3.0) * sh[19] +
+        SH_C4[4] * (zz * (35.0 * zz - 30.0) + 3.0) * sh[20] +
+        SH_C4[5] * x * z * (7.0 * zz - 3.0) * sh[21] +
+        SH_C4[6] * (xx - yy) * (7.0 * zz - 1.0) * sh[22] +
+        SH_C4[7] * x * z * (xx - 3.0 * yy) * sh[23] +
+        SH_C4[8] * (xx * (xx - 3.0 * yy) - yy * (3.0 * xx - yy)) * sh[24]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
     result +=
         SH_C4[0] * x * y * (xx - yy) * sh[16] +
         SH_C4[1] * y * z * (3.0 * xx - yy) * sh[17] +
@@ -213,10 +246,69 @@ vec4 decompose(uint value)
     return components * vec4(2./255.) - vec4(1.);
 }
 
+#if defined(GS_DBG_ENABLED) && IS_COMPOUND
+vec3 computeSH(Splat splat, vec3 dir, float _so1, float _so2, float _so3, float _so4)
+{
+    vec3 sh[25];
+    sh[0] = vec3(0.,0.,0.);
+#if SH_DEGREE > 0
+    vec4 sh00 = decompose(splat.sh0.x);
+    vec4 sh01 = decompose(splat.sh0.y);
+    vec4 sh02 = decompose(splat.sh0.z);
+    sh[1] = vec3(sh00.x, sh00.y, sh00.z);
+    sh[2] = vec3(sh00.w, sh01.x, sh01.y);
+    sh[3] = vec3(sh01.z, sh01.w, sh02.x);
+#endif
+#if SH_DEGREE > 1
+    vec4 sh03 = decompose(splat.sh0.w);
+    vec4 sh04 = decompose(splat.sh1.x);
+    vec4 sh05 = decompose(splat.sh1.y);
+    sh[4] = vec3(sh02.y, sh02.z, sh02.w);
+    sh[5] = vec3(sh03.x, sh03.y, sh03.z);
+    sh[6] = vec3(sh03.w, sh04.x, sh04.y);
+    sh[7] = vec3(sh04.z, sh04.w, sh05.x);
+    sh[8] = vec3(sh05.y, sh05.z, sh05.w);
+#endif
+#if SH_DEGREE > 2
+    vec4 sh06 = decompose(splat.sh1.z);
+    vec4 sh07 = decompose(splat.sh1.w);
+    vec4 sh08 = decompose(splat.sh2.x);
+    vec4 sh09 = decompose(splat.sh2.y);
+    vec4 sh10 = decompose(splat.sh2.z);
+    vec4 sh11 = decompose(splat.sh2.w);
+    sh[9] = vec3(sh06.x, sh06.y, sh06.z);
+    sh[10] = vec3(sh06.w, sh07.x, sh07.y);
+    sh[11] = vec3(sh07.z, sh07.w, sh08.x);
+    sh[12] = vec3(sh08.y, sh08.z, sh08.w);
+    sh[13] = vec3(sh09.x, sh09.y, sh09.z);
+    sh[14] = vec3(sh09.w, sh10.x, sh10.y);
+    sh[15] = vec3(sh10.z, sh10.w, sh11.x);
+#endif
+#if SH_DEGREE > 3
+    vec4 sh12 = decompose(splat.sh3.x);
+    vec4 sh13 = decompose(splat.sh3.y);
+    vec4 sh14 = decompose(splat.sh3.z);
+    vec4 sh15 = decompose(splat.sh3.w);
+    vec4 sh16 = decompose(splat.sh4.x);
+    vec4 sh17 = decompose(splat.sh4.y);
+    sh[16] = vec3(sh11.y, sh11.z, sh11.w);
+    sh[17] = vec3(sh12.x, sh12.y, sh12.z);
+    sh[18] = vec3(sh12.w, sh13.x, sh13.y);
+    sh[19] = vec3(sh13.z, sh13.w, sh14.x);
+    sh[20] = vec3(sh14.y, sh14.z, sh14.w);
+    sh[21] = vec3(sh15.x, sh15.y, sh15.z);
+    sh[22] = vec3(sh15.w, sh16.x, sh16.y);
+    sh[23] = vec3(sh16.z, sh16.w, sh17.x);
+    sh[24] = vec3(sh17.y, sh17.z, sh17.w);
+#endif
+    return computeColorFromSHDegree(dir, sh, _so1, _so2, _so3, _so4);
+}
+#endif
+
 vec3 computeSH(Splat splat, vec3 dir)
 {
     vec3 sh[25];
-    
+
     sh[0] = vec3(0.,0.,0.);
 #if SH_DEGREE > 0
     vec4 sh00 = decompose(splat.sh0.x);
@@ -274,7 +366,11 @@ vec3 computeSH(Splat splat, vec3 dir)
     sh[24] = vec3(sh17.y, sh17.z, sh17.w);
 #endif
 
+#if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    return computeColorFromSHDegree(dir, sh, 1.0, 1.0, 1.0, 1.0);
+#else
     return computeColorFromSHDegree(dir, sh);
+#endif
 }
 #else
 vec3 computeSH(Splat splat, vec3 dir)

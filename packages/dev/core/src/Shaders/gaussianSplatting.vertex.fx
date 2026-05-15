@@ -79,13 +79,28 @@ void main () {
     mat3 normWorldRot = inverseMat3(worldRot);
 
     vec3 eyeToSplatLocalSpace = normalize(normWorldRot * (worldPos.xyz - eyePosition));
-    #if defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    {
+        vec4 _row3 = texelFetch(dbgPartData, ivec2(int(splat.partIndex), 3), 0);
+        #if SH_DEGREE > 3
+            float _so4 = texelFetch(dbgPartData, ivec2(int(splat.partIndex), 4), 0).x;
+        #else
+            float _so4 = 1.0;
+        #endif
+        vColor.xyz = _row3.x * splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace, _row3.y, _row3.z, _row3.w, _so4);
+    }
+    #elif defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
         vColor.xyz = computeSH(splat, eyeToSplatLocalSpace);
     #else
         vColor.xyz = splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace);
     #endif
 #else
-    #if defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    {
+        float _shDc = texelFetch(dbgPartData, ivec2(int(splat.partIndex), 3), 0).x;
+        vColor.xyz = _shDc * splat.color.xyz;
+    }
+    #elif defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
         vColor.xyz = vec3(0.0);
     #endif
 #endif

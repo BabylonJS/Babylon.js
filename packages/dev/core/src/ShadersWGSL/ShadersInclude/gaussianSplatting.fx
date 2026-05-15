@@ -157,7 +157,11 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     return splat;
 }
 
+#if defined(GS_DBG_ENABLED) && IS_COMPOUND
+fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
+#else
 fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
+#endif
 {
     let SH_C0: f32 = 0.28209479;
     let SH_C1: f32 = 0.48860251;
@@ -198,7 +202,9 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     let y: f32 = dir.y;
     let z: f32 = dir.z;
 
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so1 * (-SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
     result += -SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
     #endif
 #if SH_DEGREE > 1
@@ -208,7 +214,14 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     let xy: f32 = x * y;
     let yz: f32 = y * z;
     let xz: f32 = x * z;
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so2 * (
+        SH_C2[0] * xy * sh[4] +
+        SH_C2[1] * yz * sh[5] +
+        SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
+        SH_C2[3] * xz * sh[7] +
+        SH_C2[4] * (xx - yy) * sh[8]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
     result +=
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
@@ -218,7 +231,16 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     #endif
 
 #if SH_DEGREE > 2
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so3 * (
+        SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
+        SH_C3[1] * xy * z * sh[10] +
+        SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
+        SH_C3[3] * z * (2.0f * zz - 3.0f * xx - 3.0f * yy) * sh[12] +
+        SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
+        SH_C3[5] * z * (xx - yy) * sh[14] +
+        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
     result +=
         SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
@@ -230,7 +252,18 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     #endif
 
 #if SH_DEGREE > 3
-    #if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    result += _so4 * (
+        SH_C4[0] * x * y * (xx - yy) * sh[16] +
+        SH_C4[1] * y * z * (3.0f * xx - yy) * sh[17] +
+        SH_C4[2] * x * y * (7.0f * zz - 1.0f) * sh[18] +
+        SH_C4[3] * y * z * (7.0f * zz - 3.0f) * sh[19] +
+        SH_C4[4] * (zz * (35.0f * zz - 30.0f) + 3.0f) * sh[20] +
+        SH_C4[5] * x * z * (7.0f * zz - 3.0f) * sh[21] +
+        SH_C4[6] * (xx - yy) * (7.0f * zz - 1.0f) * sh[22] +
+        SH_C4[7] * x * z * (xx - 3.0f * yy) * sh[23] +
+        SH_C4[8] * (xx * (xx - 3.0f * yy) - yy * (3.0f * xx - yy)) * sh[24]);
+    #elif !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
     result +=
         SH_C4[0] * x * y * (xx - yy) * sh[16] +
         SH_C4[1] * y * z * (3.0f * xx - yy) * sh[17] +
@@ -261,10 +294,69 @@ fn decompose(value: u32) -> vec4f
     return components * vec4f(2./255.) - vec4f(1.);
 }
 
+#if defined(GS_DBG_ENABLED) && IS_COMPOUND
+fn computeSHDBG(splat: Splat, dir: vec3f, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
+{
+    var sh: array<vec3<f32>, 25>;
+    sh[0] = vec3f(0., 0., 0.);
+#if SH_DEGREE > 0
+    let sh00: vec4f = decompose(splat.sh0.x);
+    let sh01: vec4f = decompose(splat.sh0.y);
+    let sh02: vec4f = decompose(splat.sh0.z);
+    sh[1] = vec3f(sh00.x, sh00.y, sh00.z);
+    sh[2] = vec3f(sh00.w, sh01.x, sh01.y);
+    sh[3] = vec3f(sh01.z, sh01.w, sh02.x);
+#endif
+#if SH_DEGREE > 1
+    let sh03: vec4f = decompose(splat.sh0.w);
+    let sh04: vec4f = decompose(splat.sh1.x);
+    let sh05: vec4f = decompose(splat.sh1.y);
+    sh[4] = vec3f(sh02.y, sh02.z, sh02.w);
+    sh[5] = vec3f(sh03.x, sh03.y, sh03.z);
+    sh[6] = vec3f(sh03.w, sh04.x, sh04.y);
+    sh[7] = vec3f(sh04.z, sh04.w, sh05.x);
+    sh[8] = vec3f(sh05.y, sh05.z, sh05.w);
+#endif
+#if SH_DEGREE > 2
+    let sh06: vec4f = decompose(splat.sh1.z);
+    let sh07: vec4f = decompose(splat.sh1.w);
+    let sh08: vec4f = decompose(splat.sh2.x);
+    let sh09: vec4f = decompose(splat.sh2.y);
+    let sh10: vec4f = decompose(splat.sh2.z);
+    let sh11: vec4f = decompose(splat.sh2.w);
+    sh[9] = vec3f(sh06.x, sh06.y, sh06.z);
+    sh[10] = vec3f(sh06.w, sh07.x, sh07.y);
+    sh[11] = vec3f(sh07.z, sh07.w, sh08.x);
+    sh[12] = vec3f(sh08.y, sh08.z, sh08.w);
+    sh[13] = vec3f(sh09.x, sh09.y, sh09.z);
+    sh[14] = vec3f(sh09.w, sh10.x, sh10.y);
+    sh[15] = vec3f(sh10.z, sh10.w, sh11.x);
+#endif
+#if SH_DEGREE > 3
+    let sh12: vec4f = decompose(splat.sh3.x);
+    let sh13: vec4f = decompose(splat.sh3.y);
+    let sh14: vec4f = decompose(splat.sh3.z);
+    let sh15: vec4f = decompose(splat.sh3.w);
+    let sh16: vec4f = decompose(splat.sh4.x);
+    let sh17: vec4f = decompose(splat.sh4.y);
+    sh[16] = vec3f(sh11.y, sh11.z, sh11.w);
+    sh[17] = vec3f(sh12.x, sh12.y, sh12.z);
+    sh[18] = vec3f(sh12.w, sh13.x, sh13.y);
+    sh[19] = vec3f(sh13.z, sh13.w, sh14.x);
+    sh[20] = vec3f(sh14.y, sh14.z, sh14.w);
+    sh[21] = vec3f(sh15.x, sh15.y, sh15.z);
+    sh[22] = vec3f(sh15.w, sh16.x, sh16.y);
+    sh[23] = vec3f(sh16.z, sh16.w, sh17.x);
+    sh[24] = vec3f(sh17.y, sh17.z, sh17.w);
+#endif
+    return computeColorFromSHDegree(dir, sh, _so1, _so2, _so3, _so4);
+}
+#endif
+
 fn computeSH(splat: Splat, dir: vec3f) -> vec3f
 {
     var sh: array<vec3<f32>, 25>;
-    
+
     sh[0] = vec3f(0., 0., 0.);
 
 #if SH_DEGREE > 0
@@ -323,7 +415,11 @@ fn computeSH(splat: Splat, dir: vec3f) -> vec3f
     sh[24] = vec3f(sh17.y, sh17.z, sh17.w);
 #endif
 
+#if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    return computeColorFromSHDegree(dir, sh, 1.0, 1.0, 1.0, 1.0);
+#else
     return computeColorFromSHDegree(dir, sh);
+#endif
 }
 
 fn gaussianSplatting(
