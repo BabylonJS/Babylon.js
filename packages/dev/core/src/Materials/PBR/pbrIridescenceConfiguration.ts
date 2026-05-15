@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { IAnimatable } from "../../Animations/animatable.interface";
-import type { EffectFallbacks } from "../effectFallbacks";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
+import { type IAnimatable } from "../../Animations/animatable.interface";
+import { type EffectFallbacks } from "../effectFallbacks";
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
-import type { Scene } from "../../scene";
-import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { type Scene } from "../../scene";
+import { type PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**

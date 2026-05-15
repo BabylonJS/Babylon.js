@@ -1,9 +1,8 @@
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { FreeCamera } from "../../Cameras/freeCamera";
+import { type Observer } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 

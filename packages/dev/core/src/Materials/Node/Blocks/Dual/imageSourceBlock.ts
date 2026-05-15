@@ -1,16 +1,17 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
+import { ThinTexture } from "../../../Textures/thinTexture";
 import { Constants } from "../../../../Engines/constants";
-import type { Effect } from "../../../effect";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine";
+import { type Effect } from "../../../effect";
 import { NodeMaterial } from "../../nodeMaterial";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -18,8 +19,21 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * Block used to provide an image for a TextureBlock
  */
 export class ImageSourceBlock extends NodeMaterialBlock {
+    private static _DefaultTextureByEngine = new WeakMap<AbstractEngine, ThinTexture>();
+
     private _samplerName: string;
     protected _texture: Nullable<Texture>;
+
+    private static _GetDefaultTexture(engine: AbstractEngine): ThinTexture {
+        let texture = ImageSourceBlock._DefaultTextureByEngine.get(engine);
+
+        if (!texture) {
+            texture = new ThinTexture(engine.emptyTexture);
+            ImageSourceBlock._DefaultTextureByEngine.set(engine, texture);
+        }
+
+        return texture;
+    }
     /**
      * Gets or sets the texture associated with the node
      */
@@ -80,6 +94,10 @@ export class ImageSourceBlock extends NodeMaterialBlock {
      */
     public override bind(effect: Effect, _nodeMaterial: NodeMaterial) {
         if (!this.texture) {
+            const engine = effect.getEngine();
+            if (engine.isWebGPU) {
+                effect.setTexture(this._samplerName, ImageSourceBlock._GetDefaultTexture(engine));
+            }
             return;
         }
 

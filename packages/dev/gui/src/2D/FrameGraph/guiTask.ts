@@ -1,4 +1,4 @@
-import type { FrameGraphTextureHandle, FrameGraph } from "core/index";
+import { type FrameGraphTextureHandle, type FrameGraph } from "core/index";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { FrameGraphTask } from "core/FrameGraph/frameGraphTask";
 

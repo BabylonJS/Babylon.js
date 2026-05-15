@@ -1,17 +1,17 @@
-import type { WebGPUEngine } from "../Engines/webgpuEngine";
+import { type WebGPUEngine } from "../Engines/webgpuEngine";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
-import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import type { Buffer, VertexBuffer } from "../Buffers/buffer";
-import type { GPUParticleSystem } from "./gpuParticleSystem";
+import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import { type Buffer, type VertexBuffer } from "../Buffers/buffer";
+import { type GPUParticleSystem } from "./gpuParticleSystem";
 
-import type { DataArray, Nullable } from "../types";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataArray, type Nullable } from "../types";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
-import type { Effect } from "../Materials/effect";
+import { type ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
+import { type Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
 
 import "../ShadersWGSL/gpuUpdateParticles.compute";
@@ -81,6 +81,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         if (this._parent.flowMap) {
             bindingsMapping["flowMapTexture"] = { group: 1, binding: 13 };
         }
+        if (this._parent._meshPositionTexture) {
+            bindingsMapping["meshPositionTexture"] = { group: 1, binding: 14 };
+        }
+        if (this._parent._meshNormalTexture) {
+            bindingsMapping["meshNormalTexture"] = { group: 1, binding: 15 };
+        }
 
         this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
 
@@ -118,6 +124,22 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         }
         if (!this._parent.isLocal) {
             this._simParamsComputeShader.addUniform("emitterWM", 16);
+        }
+        if (this._parent.attractors.length > 0) {
+            this._simParamsComputeShader.addUniform("attractorCount", 1);
+            for (let i = 0; i < this._parent.maxAttractors; i++) {
+                this._simParamsComputeShader.addUniform("attractorPositionAndStrength[" + i + "]", 4);
+            }
+        }
+        if (this._parent._startSizeGradients && this._parent._startSizeGradients.length > 0) {
+            this._simParamsComputeShader.addUniform("startSizeGradientFactor", 1);
+        }
+        if (this._parent._lifeTimeGradients && this._parent._lifeTimeGradients.length > 0) {
+            this._simParamsComputeShader.addUniform("lifeTimeGradientRange", 2);
+        }
+        if (this._parent._meshPositionTexture) {
+            this._simParamsComputeShader.addUniform("meshTriangleCount", 1);
+            this._simParamsComputeShader.addUniform("meshTextureWidth", 1);
         }
         if (this._parent.particleEmitterType) {
             this._parent.particleEmitterType.buildUniformLayout(this._simParamsComputeShader);
@@ -188,6 +210,14 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
 
         if (this._parent.flowMap) {
             this._updateComputeShader.setTexture("flowMapTexture", this._parent.flowMap);
+        }
+
+        if (this._parent._meshPositionTexture) {
+            this._updateComputeShader.setTexture("meshPositionTexture", this._parent._meshPositionTexture, false);
+        }
+
+        if (this._parent._meshNormalTexture) {
+            this._updateComputeShader.setTexture("meshNormalTexture", this._parent._meshNormalTexture, false);
         }
 
         this._updateComputeShader.setStorageBuffer("particlesIn", this._bufferComputeShader[index]);

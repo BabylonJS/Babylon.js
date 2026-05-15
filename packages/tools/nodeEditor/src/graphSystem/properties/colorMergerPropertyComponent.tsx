@@ -1,8 +1,8 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GetGeneralProperties } from "./genericNodePropertyComponent";
-import type { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 

@@ -1,7 +1,6 @@
-import type { ImmutablePrimitiveProps } from "../../primitives/primitive";
-import type { PropertyLineProps } from "./propertyLine";
-import { PropertyLine } from "./propertyLine";
-import type { FunctionComponent } from "react";
+import { type ImmutablePrimitiveProps } from "../../primitives/primitive";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
+import { type FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
 
 type StringifiedPropertyLineProps = PropertyLineProps<number> &

@@ -1,7 +1,7 @@
-import type { DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type DepthTextureCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { AbstractEngine } from "../abstractEngine";
-import type { RenderTargetWrapper } from "../renderTargetWrapper";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type RenderTargetWrapper } from "../renderTargetWrapper";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

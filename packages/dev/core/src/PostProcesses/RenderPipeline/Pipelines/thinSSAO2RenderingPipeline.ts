@@ -1,4 +1,4 @@
-import type { Camera, Nullable, Scene } from "core/index";
+import { type Camera, type Nullable, type Scene } from "core/index";
 import { ThinSSAO2PostProcess } from "core/PostProcesses/thinSSAO2PostProcess";
 import { ThinSSAO2BlurPostProcess } from "core/PostProcesses/thinSSAO2BlurPostProcess";
 import { ThinSSAO2CombinePostProcess } from "core/PostProcesses/thinSSAO2CombinePostProcess";

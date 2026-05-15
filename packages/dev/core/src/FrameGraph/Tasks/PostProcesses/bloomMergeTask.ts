@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { ThinBloomMergePostProcess } from "core/PostProcesses/thinBloomMergePostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 

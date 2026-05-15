@@ -1,10 +1,9 @@
-import type { ColorGradient, FactorGradient } from "core/index";
-import type { Color3Gradient } from "core/Misc/gradients";
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { FunctionComponent } from "react";
+import { type ColorGradient, type FactorGradient } from "core/index";
+import { type Color3Gradient } from "core/Misc/gradients";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type FunctionComponent, useCallback } from "react";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
-import { useCallback } from "react";
 import { Color3 } from "core/Maths/math.color";
 import { ParticleSystem } from "core/Particles/particleSystem";
 

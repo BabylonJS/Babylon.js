@@ -2,9 +2,9 @@ import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Constants } from "../../Engines/constants";
 import { Color3 } from "../../Maths/math.color";
@@ -14,7 +14,7 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { SphericalHarmonics, SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { LightConstants } from "../../Lights/lightConstants";
 import { HDRFiltering } from "core/Materials/Textures/Filtering/hdrFiltering";
-import type { ThinEngine } from "core/Engines";
+import { type ThinEngine } from "core/Engines";
 
 /**
  * Options for Light Estimation feature

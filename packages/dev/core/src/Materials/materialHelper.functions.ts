@@ -1,27 +1,28 @@
 import { Logger } from "../Misc/logger";
-import type { Scene } from "../scene";
-import type { Effect, IEffectCreationOptions } from "./effect";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { type Effect, type IEffectCreationOptions } from "./effect";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import type { Mesh } from "../Meshes/mesh";
-import type { UniformBuffer } from "./uniformBuffer";
-import type { BaseTexture } from "./Textures/baseTexture";
-import type { PrePassConfiguration } from "./prePassConfiguration";
-import type { Light } from "../Lights/light";
-import type { MaterialDefines } from "./materialDefines";
-import type { EffectFallbacks } from "./effectFallbacks";
+import { type Mesh } from "../Meshes/mesh";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type BaseTexture } from "./Textures/baseTexture";
+import { type PrePassConfiguration } from "./prePassConfiguration";
+import { type Light } from "../Lights/light";
+import { type MaterialDefines } from "./materialDefines";
+import { type EffectFallbacks } from "./effectFallbacks";
 import { LightConstants } from "../Lights/lightConstants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Material } from "./material";
-import type { Nullable } from "../types";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Material } from "./material";
+import { type Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import type { MorphTargetManager } from "../Morph/morphTargetManager";
-import type { IColor3Like } from "core/Maths/math.like";
+import { type MorphTargetManager } from "../Morph/morphTargetManager";
+import { type IColor3Like } from "core/Maths/math.like";
 import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
-import type { CubeTexture } from "./Textures/cubeTexture";
-import type { Color3 } from "core/Maths/math.color";
+import { type CubeTexture } from "./Textures/cubeTexture";
+import { type Color3 } from "core/Maths/math.color";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // For backwards compatibility, we export everything from the pure version of this file.
 export * from "./materialHelper.functions.pure";
@@ -330,7 +331,7 @@ export function BindIBLParameters(
                 }
             } else if (usePBR) {
                 // If we're using an irradiance map with a dominant direction assigned, set it.
-                if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION) {
+                if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION && reflectionTexture.irradianceTexture) {
                     ubo.updateVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture!._dominantDirection!);
                 }
             }
@@ -443,10 +444,10 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
     if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
         const skeleton = mesh.skeleton;
 
-        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureInfo") > -1) {
             const boneTexture = skeleton.getTransformMatrixTexture(mesh);
             effect.setTexture("boneSampler", boneTexture);
-            effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+            effect.setFloat2("boneTextureInfo", skeleton._textureWidth, skeleton._textureHeight);
         } else {
             const matrices = skeleton.getTransformMatrices(mesh);
 
@@ -636,12 +637,38 @@ export function PrepareDefinesForMisc(
         defines["RIGHT_HANDED"] = scene.useRightHandedSystem;
 
         const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
+        const isUnIndexed = renderingMesh ? (renderingMesh as any).isUnIndexed : false;
 
-        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
-        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer && !isUnIndexed;
+        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer && !isUnIndexed ? indexBuffer.is32Bits : false;
 
         defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }
+}
+
+/**
+ * Checks whether the texture resources used by the lights that will affect the given mesh are ready.
+ * This mirrors the light iteration performed by {@link PrepareDefinesForLights} and {@link BindLights}:
+ * it only considers lights that can affect the mesh (already filtered into `mesh.lightSources`)
+ * and respects the material's `maxSimultaneousLights` cap and the `disableLighting` flag.
+ * @param scene The scene the mesh belongs to
+ * @param mesh The mesh to check
+ * @param maxSimultaneousLights The material's max simultaneous lights cap
+ * @param disableLighting Whether lighting is disabled for the material
+ * @returns true if all affecting lights report their textures are ready
+ */
+export function AreLightsTexturesReady(scene: Scene, mesh: AbstractMesh, maxSimultaneousLights: number, disableLighting = false): boolean {
+    if (!scene.lightsEnabled || disableLighting) {
+        return true;
+    }
+    const lights = mesh.lightSources;
+    const count = Math.min(lights.length, maxSimultaneousLights);
+    for (let i = 0; i < count; i++) {
+        if (!lights[i].areLightTexturesReady()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
@@ -760,6 +787,7 @@ export function PrepareDefinesForIBL(
         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
         defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
         defines.USEIRRADIANCEMAP = false;
+        defines.LODBASEDMICROSFURACE = scene.getEngine().getCaps().textureLOD;
 
         const engine = scene.getEngine();
         if (realTimeFiltering && realTimeFilteringQuality > 0) {
@@ -1247,9 +1275,9 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_REFLECTIVITY_INDEX",
         },
         {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            define: "PREPASS_IRRADIANCE",
-            index: "PREPASS_IRRADIANCE_INDEX",
+            type: Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE_LEGACY",
+            index: "PREPASS_IRRADIANCE_LEGACY_INDEX",
         },
         {
             type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
@@ -1275,6 +1303,11 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             type: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
             define: "PREPASS_WORLD_NORMAL",
             index: "PREPASS_WORLD_NORMAL_INDEX",
+        },
+        {
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE",
+            index: "PREPASS_IRRADIANCE_INDEX",
         },
     ];
 
@@ -1343,6 +1376,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param iesLightTexture defines if IES texture must be used
  * @param clusteredLightTextures defines if the clustered light textures must be used
  * @param rectAreaLightTexture defines if rect area light is using a emission texture.
+ * @param clusteredLightStorageBuffer defines if the clustered light tile mask uses a storage buffer instead of a texture
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1353,7 +1387,8 @@ export function PrepareUniformsAndSamplersForLight(
     updateOnlyBuffersList = false,
     iesLightTexture = false,
     clusteredLightTextures = false,
-    rectAreaLightTexture = false
+    rectAreaLightTexture = false,
+    clusteredLightStorageBuffer = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1403,7 +1438,9 @@ export function PrepareUniformsAndSamplersForLight(
     }
     if (clusteredLightTextures) {
         samplersList.push("lightDataTexture" + lightIndex);
-        samplersList.push("tileMaskTexture" + lightIndex);
+        if (!clusteredLightStorageBuffer) {
+            samplersList.push("tileMaskTexture" + lightIndex);
+        }
     }
 }
 
@@ -1462,6 +1499,7 @@ export function PrepareUniformsAndSamplersForIBL(uniformsList: string[], sampler
 export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
     let uniformsList: string[];
     let uniformBuffersList: string[] | undefined;
+    let shaderLanguage: Nullable<ShaderLanguage> = null;
 
     if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
         const options = <IEffectCreationOptions>uniformsListOrOptions;
@@ -1470,6 +1508,7 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
         samplersList = options.samplers;
         defines = options.defines;
         maxSimultaneousLights = options.maxSimultaneousLights || 0;
+        shaderLanguage = options.shaderLanguage ?? null;
     } else {
         uniformsList = <string[]>uniformsListOrOptions;
         if (!samplersList) {
@@ -1490,7 +1529,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             false,
             defines["IESLIGHTTEXTURE" + lightIndex],
             defines["CLUSTLIGHT" + lightIndex],
-            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
+            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
+            shaderLanguage === ShaderLanguage.WGSL
         );
     }
 

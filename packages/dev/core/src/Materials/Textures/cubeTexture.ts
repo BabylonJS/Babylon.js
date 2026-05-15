@@ -1,13 +1,13 @@
 import { serialize, serializeAsMatrix, serializeAsVector3 } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { Observable } from "../../Misc/observable";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
@@ -58,6 +58,9 @@ export interface ICubeTextureCreationOptions {
 
     /** useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
     useSRGBBuffer?: boolean;
+
+    /** Target face size for spherical polynomial computation. 0 = full resolution (default). */
+    sphericalPolynomialTargetSize?: number;
 }
 
 // The default scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
@@ -272,6 +275,7 @@ export class CubeTexture extends BaseTexture {
             this._lodOffset = extensionsOrOptions.lodOffset ?? 0;
             this._loaderOptions = extensionsOrOptions.loaderOptions;
             this._useSRGBBuffer = extensionsOrOptions.useSRGBBuffer;
+            this._sphericalPolynomialTargetSize = extensionsOrOptions.sphericalPolynomialTargetSize ?? 0;
             onLoad = extensionsOrOptions.onLoad ?? null;
             onError = extensionsOrOptions.onError ?? null;
         } else {
@@ -572,6 +576,13 @@ export class CubeTexture extends BaseTexture {
     public override clone(): CubeTexture {
         let uniqueId = 0;
 
+        // Save the irradianceTexture before cloning. The irradianceTexture is
+        // stored on the InternalTexture (_texture._irradianceTexture), which may
+        // be shared between the source and clone when loaded from cache.
+        // BaseTexture.clone() returns null, so CopySource sets the shared
+        // irradianceTexture to null, losing it on both the original and the clone.
+        const savedIrradianceTexture = this.irradianceTexture;
+
         const newCubeTexture = SerializationHelper.Clone(() => {
             const cubeTexture = new CubeTexture(this.url, this.getScene() || this._getEngine()!, this._extensions, this._noMipmap, this._files);
             uniqueId = cubeTexture.uniqueId;
@@ -580,6 +591,11 @@ export class CubeTexture extends BaseTexture {
         }, this);
 
         newCubeTexture.uniqueId = uniqueId;
+
+        // Restore the irradianceTexture if it was cleared during cloning.
+        if (savedIrradianceTexture && !this.irradianceTexture) {
+            this.irradianceTexture = savedIrradianceTexture;
+        }
 
         return newCubeTexture;
     }

@@ -1,4 +1,4 @@
-import type { FrameGraph, Scene, IThinGlowLayerOptions } from "core/index";
+import { type FrameGraph, type Scene, type IThinGlowLayerOptions } from "core/index";
 import { ThinGlowLayer } from "core/Layers/thinGlowLayer";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
 

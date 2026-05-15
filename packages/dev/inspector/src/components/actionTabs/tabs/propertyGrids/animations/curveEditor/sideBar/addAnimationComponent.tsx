@@ -1,11 +1,11 @@
 import * as React from "react";
-import type { GlobalState } from "../../../../../../globalState";
-import type { Context } from "../context";
+import { type GlobalState } from "../../../../../../globalState";
+import { type Context } from "../context";
 import { Animation } from "core/Animations/animation";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
-import type { IAnimationKey } from "core/Animations/animationKey";
+import { type IAnimationKey } from "core/Animations/animationKey";
 import { Color3, Color4 } from "core/Maths/math.color";
-import type { TargetedAnimation } from "core/Animations/animationGroup";
+import { type TargetedAnimation } from "core/Animations/animationGroup";
 
 interface IAddAnimationComponentProps {
     globalState: GlobalState;

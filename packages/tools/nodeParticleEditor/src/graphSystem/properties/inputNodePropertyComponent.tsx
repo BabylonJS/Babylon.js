@@ -1,8 +1,8 @@
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 import * as React from "react";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";

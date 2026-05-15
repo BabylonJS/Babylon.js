@@ -1,9 +1,9 @@
 import { StorageBuffer } from "core/Buffers/storageBuffer";
-import type { Camera } from "core/Cameras/camera";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type Camera } from "core/Cameras/camera";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
-import type { Effect } from "core/Materials/effect";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type Effect } from "core/Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -12,20 +12,20 @@ import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { TmpColors } from "core/Maths/math.color";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { serialize } from "core/Misc/decorators";
 import { _WarnImport } from "core/Misc/devTools";
 import { Logger } from "core/Misc/logger";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Node } from "core/node";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 
 import { Light } from "../light";
 import { LightConstants } from "../lightConstants";
-import type { PointLight } from "../pointLight";
-import type { SpotLight } from "../spotLight";
-import type { RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
+import { type PointLight } from "../pointLight";
+import { type SpotLight } from "../spotLight";
+import { type RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "core/Meshes/thinInstanceMesh";
 
@@ -45,7 +45,7 @@ export class ClusteredLightContainer extends Light {
         if (!caps.texelFetch) {
             return 0;
         } else if (engine.isWebGPU) {
-            // On WebGPU we use atomic writes to storage textures
+            // On WebGPU we use atomic writes to storage buffers
             return 32;
         } else if (engine.version > 1) {
             // On WebGL 2 we use additive float blending as the light mask
@@ -173,11 +173,17 @@ export class ClusteredLightContainer extends Light {
     private _sliceBias = 0;
     // List of vec2's that keep track of the min and max index per slice
     private _sliceRanges: Float32Array<ArrayBuffer>;
+    // Tracks the last lightIndex string passed to transferToEffect, or null if the cluster
+    // has not yet been bound. Used to refresh the camera-dependent UBO entries (vSliceData /
+    // vSliceRanges) every frame in cases where material binding is bypassed (e.g. WebGPU FAST
+    // snapshot rendering replays cached bundles and never re-runs Light._bindLight).
+    private _lastBoundLightIndex: Nullable<string> = null;
 
     private _depthSlices = DefaultDepthSlices;
     /**
      * The number of slices to split the depth range by and cluster lights into.
      */
+    @serialize()
     public get depthSlices(): number {
         return this._depthSlices;
     }
@@ -193,6 +199,8 @@ export class ClusteredLightContainer extends Light {
         this._uniformBuffer.dispose();
         this._uniformBuffer = new UniformBuffer(this.getEngine(), undefined, undefined, this.name);
         this._buildUniformLayout();
+        // The UBO has been recreated so previous bindings are no longer valid; transferToEffect will repopulate it.
+        this._lastBoundLightIndex = null;
 
         // CLUSTLIGHT_SLICES is a shader define that sizes the vSliceRanges array in the UBO.
         // Materials must recompile when depthSlices changes so the shader layout matches the rebuilt UBO.
@@ -340,6 +348,13 @@ export class ClusteredLightContainer extends Light {
         this._tileMaskTexture.onBeforeBindObservable.add(() => {
             currentRenderTarget = engine._currentRenderTarget;
             this._updateLightData();
+            // On WebGPU, clear the storage buffer here (before bindFramebuffer) because
+            // clearBuffer is a command encoder operation that cannot run while a render pass is open.
+            // In snapshot rendering mode, bindFramebuffer eagerly creates the render pass, so
+            // clearing must happen before that point.
+            if (engine.isWebGPU) {
+                this._tileMaskBuffer?.clear();
+            }
         });
 
         this._tileMaskTexture.onAfterUnbindObservable.add(() => {
@@ -353,10 +368,7 @@ export class ClusteredLightContainer extends Light {
         });
 
         this._tileMaskTexture.onClearObservable.add(() => {
-            if (engine.isWebGPU) {
-                // Clear the storage buffer for WebGPU
-                this._tileMaskBuffer?.clear();
-            } else {
+            if (!engine.isWebGPU) {
                 // Only clear the texture on WebGL
                 engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
             }
@@ -493,6 +505,18 @@ export class ClusteredLightContainer extends Light {
             engine.flushFramebuffer();
         }
         this._lightDataTexture.update(this._lightDataBuffer);
+
+        // Refresh camera-dependent UBO fields when running under FAST snapshot rendering, where
+        // ObjectRenderer.render bypasses the rendering manager and Light._bindLight is not
+        // re-invoked each frame. Without this, transferToEffect would never run again after the
+        // recording frame and the slice data would stay frozen, producing visibly stale lighting
+        // as the camera moves. STANDARD snapshot mode and non-snapshot rendering still go through
+        // material binding each frame, so transferToEffect already keeps the UBO up to date.
+        if (this._lastBoundLightIndex !== null && engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            this._uniformBuffer.updateFloat2("vSliceData", this._sliceScale, this._sliceBias, this._lastBoundLightIndex);
+            this._uniformBuffer.updateFloatArray("vSliceRanges", this._sliceRanges, this._lastBoundLightIndex);
+            this._uniformBuffer.update();
+        }
     }
 
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
@@ -515,7 +539,22 @@ export class ClusteredLightContainer extends Light {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
             return;
         }
-        this._scene.removeLight(light);
+        if (light._clusteredContainer) {
+            Logger.Warn("Attempting to add a light to a cluster that is already owned by a clustered light container");
+            return;
+        }
+        light._clusteredContainer = this;
+        // scene.removeLight returns -1 if the light wasn't in scene.lights. In that case the
+        // mesh.lightSources cleanup it normally performs didn't happen — but the light may still be
+        // there: lights constructed with `dontAddToScene = true` are pushed into mesh.lightSources
+        // by the Light constructor (the `includedOnlyMeshes` setter calls `_resyncMeshes`).
+        // Without explicit cleanup, the orphan would be picked up by PrepareDefinesForLights and
+        // rendered as a regular point/spot light, bypassing the cluster (notably ignoring `maxRange`).
+        if (this._scene.removeLight(light) === -1) {
+            for (const mesh of this._scene.meshes) {
+                mesh._removeLightSource(light, false);
+            }
+        }
         this._lights.push(light);
         this._sortedLights.push(<PointLight | SpotLight>light);
 
@@ -545,6 +584,9 @@ export class ClusteredLightContainer extends Light {
         if (index !== -1) {
             this._lights.splice(index, 1);
             // We treat the unsorted array as the "real" one so only add back to the scene if it was found in that
+            if (light._clusteredContainer === this) {
+                light._clusteredContainer = null;
+            }
             this._scene.addLight(light);
         }
         return index;
@@ -569,6 +611,7 @@ export class ClusteredLightContainer extends Light {
         this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._verticalTiles, this._tileMaskBatches, lightIndex);
         this._uniformBuffer.updateFloat2("vSliceData", this._sliceScale, this._sliceBias, lightIndex);
         this._uniformBuffer.updateFloatArray("vSliceRanges", this._sliceRanges, lightIndex);
+        this._lastBoundLightIndex = lightIndex;
         return this;
     }
 
@@ -596,6 +639,50 @@ export class ClusteredLightContainer extends Light {
     public override _isReady(): boolean {
         this._updateBatches();
         return this._proxyMesh.isReady(true, true);
+    }
+
+    /**
+     * Serializes the ClusteredLightContainer to a JSON object, including all child lights.
+     * @returns the serialized object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        // Serialize child lights inline so they round-trip with the container.
+        // Child lights are removed from scene.lights by addLight(), so the scene
+        // serializer would not reach them on its own.
+        serializationObject.clusteredLights = [];
+        for (const light of this._lights) {
+            if (!light.doNotSerialize) {
+                serializationObject.clusteredLights.push(light.serialize());
+            }
+        }
+
+        return serializationObject;
+    }
+
+    protected override _onParsed(parsedLight: any, scene: Scene): void {
+        if (parsedLight.clusteredLights) {
+            // Parse child lights first, but defer addLight() until after the loader
+            // fixup passes (parent resolution, excluded/included mesh resolution)
+            // have run on scene.lights. addLight() removes lights from scene.lights,
+            // which would cause those fixups to miss the child lights.
+            const parsedChildLights: Light[] = [];
+            for (const parsedChildLight of parsedLight.clusteredLights) {
+                const childLight = Light.Parse(parsedChildLight, scene);
+                if (childLight) {
+                    parsedChildLights.push(childLight);
+                }
+            }
+
+            if (parsedChildLights.length > 0) {
+                scene.onDataLoadedObservable.addOnce(() => {
+                    for (const childLight of parsedChildLights) {
+                        this.addLight(childLight);
+                    }
+                });
+            }
+        }
     }
 }
 

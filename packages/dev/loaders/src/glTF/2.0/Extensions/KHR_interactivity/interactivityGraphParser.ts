@@ -1,11 +1,10 @@
-import type { IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_OutputSocketReference, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
-import type { IGLTF } from "../../glTFLoaderInterfaces";
-import type { IGLTFToFlowGraphMapping } from "./declarationMapper";
-import { getMappingForDeclaration, getMappingForFullOperationName } from "./declarationMapper";
+import { type IKHRInteractivity_Graph, type IKHRInteractivity_Node, type IKHRInteractivity_OutputSocketReference, type IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
+import { type IGLTF } from "../../glTFLoaderInterfaces";
+import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getMappingForFullOperationName } from "./declarationMapper";
 import { Logger } from "core/Misc/logger";
-import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
+import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphConnection, type ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { type FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 

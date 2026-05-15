@@ -2,8 +2,8 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 
 export enum ParticleLocalVariableBlockScope {
     Particle = 0,

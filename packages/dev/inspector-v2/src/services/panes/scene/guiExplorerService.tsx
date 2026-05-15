@@ -1,17 +1,15 @@
-import type { AdvancedDynamicTexture, Container, Control } from "gui/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type AdvancedDynamicTexture, type Container, type Control } from "gui/index";
+import { type GUIEditor } from "gui-editor/guiEditor";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
 import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EditRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
 function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
@@ -118,8 +116,13 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                     icon: () => <EditRegular />,
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     execute: async () => {
-                        const { GUIEditor } = await import("gui-editor/guiEditor");
-                        await GUIEditor.Show({ liveGuiTexture: texture });
+                        // The UMD inspector bundle externalizes "gui-editor/guiEditor" to BABYLON.GuiEditor,
+                        // which is the GUIEditor class itself rather than a namespace { GUIEditor }.
+                        // Tolerate both shapes so this works in both UMD and module builds.
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        const guiEditorModule: { GUIEditor: typeof GUIEditor } | typeof GUIEditor = await import("gui-editor/guiEditor");
+                        const guiEditor = "GUIEditor" in guiEditorModule ? guiEditorModule.GUIEditor : guiEditorModule;
+                        await guiEditor.Show({ liveGuiTexture: texture });
                     },
                 };
             },

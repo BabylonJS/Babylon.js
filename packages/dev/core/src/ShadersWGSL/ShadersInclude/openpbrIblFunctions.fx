@@ -38,7 +38,7 @@
 
         #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
             var irradianceVector = (iblMatrix * vec4f(surfaceNormal, 0.0f)).xyz;
-            let irradianceView = (iblMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
+            var irradianceView = (iblMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 // Approximate diffuse roughness by bending the surface normal away from the view.
                 #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
@@ -50,11 +50,13 @@
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
-                irradianceVector.z *= -1.0f;
+                irradianceVector.z *= -1.0;
+                irradianceView.z *= -1.0;
             #endif
 
             #ifdef INVERTCUBICMAP
-                irradianceVector.y *= -1.0f;
+                irradianceVector.y *= -1.0;
+                irradianceView.y *= -1.0;
             #endif
         #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
@@ -86,7 +88,7 @@
             #endif
 
             #ifdef GAMMAREFLECTION
-                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
+                environmentIrradiance.rgb = toLinearSpaceVec3(environmentIrradiance.rgb);
             #endif
             // If we have a predominant light direction, use it to compute the diffuse roughness term.abort
             // Otherwise, bend the irradiance vector to simulate retro-reflectivity of diffuse roughness.
@@ -183,7 +185,7 @@
         #endif
 
         #ifdef GAMMAREFLECTION
-            environmentRadiance.rgb = toLinearSpace(environmentRadiance.rgb);
+            environmentRadiance.rgb = toLinearSpaceVec3(environmentRadiance.rgb);
         #endif
 
         // _____________________________ Levels _____________________________________
@@ -303,7 +305,7 @@
                 #ifdef RGBDREFLECTION
                     accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);
                 #elif defined(GAMMAREFLECTION)
-                    accumulatedRadiance += vec3f(sample_weight) * toLinearSpace(radianceSample.rgb);
+                    accumulatedRadiance += vec3f(sample_weight) * toLinearSpaceVec3(radianceSample.rgb);
                 #else
                     accumulatedRadiance += vec3f(sample_weight) * radianceSample.rgb;
                 #endif
@@ -317,14 +319,28 @@
         return environmentRadiance.rgb;
     }
 #endif
+#endif
+#ifdef ENVIRONMENTBRDF
+    fn computeDielectricIblFresnel(reflectance: ReflectanceParams, environmentBrdf: vec3f) -> f32
+    {
+        let dielectricIblFresnel: f32 = getReflectanceFromBRDFWithEnvLookup(vec3f(reflectance.F0), vec3f(reflectance.F90), environmentBrdf).r;
+        // environmentBrdf.y is E_ss (the F0-weighted hemisphere integral).
+        // Boost by the Fdez-Agüera factor so multiscattered light stays in the
+        // specular slab rather than leaking into the (potentially dark) irradiance.
+        let dielectricECF: f32 = 1.0 + reflectance.F0 * (1.0 / environmentBrdf.y - 1.0);
+        return clamp(dielectricIblFresnel * dielectricECF, 0.0, 1.0);
+    }
 
-    fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
+    fn computeConductorIblFresnel(reflectance: ReflectanceParams, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
-            // This is an empirical hack to modify the F0 albedo based on roughness. It's not based on any paper
-            // or anything. Just trying to match results of rough metals in a pathtracer.
-            let albedoF0: vec3f = mix(reflectance.coloredF0, pow(reflectance.coloredF0, vec3f(1.4f)), roughness);
-            return getF82Specular(NdotV, albedoF0, reflectance.coloredF90, roughness);
+            // environmentBrdf comes from the OpenPBR BRDF LUT. Undo the BRDF_Z_SCALE on the z channel.
+            let openPBRBrdf: vec3f = vec3f(environmentBrdf.xy, environmentBrdf.z / BRDF_Z_SCALE);
+            let b: vec3f     = getF82B(reflectance.coloredF0, reflectance.coloredF90);
+            let E_F82: vec3f = getF82DirectionalAlbedo(reflectance.coloredF0, vec3f(1.0), b, openPBRBrdf);
+            let F_avg: vec3f = getF82AverageFresnel(reflectance.coloredF0, b);
+            let ECF: vec3f   = vec3f(1.0) + F_avg * (vec3f(1.0) / openPBRBrdf.y - vec3f(1.0));
+            return clamp(E_F82 * ECF, vec3f(0.0), vec3f(1.0));
         #else
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif

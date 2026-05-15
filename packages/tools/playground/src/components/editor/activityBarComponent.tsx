@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 // activityBarComponent.tsx
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import HistoryIcon from "./icons/history.svg";
 import FilesIcon from "./icons/files.svg";
 import SearchIcon from "./icons/search.svg";

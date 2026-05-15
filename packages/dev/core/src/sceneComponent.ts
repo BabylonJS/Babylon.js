@@ -1,16 +1,16 @@
-import type { Scene } from "./scene";
-import type { SmartArrayNoDuplicate } from "./Misc/smartArray";
-import type { Nullable } from "./types";
-import type { PickingInfo } from "./Collisions/pickingInfo";
-import type { IPointerEvent } from "./Events/deviceInputEvents";
+import { type Scene } from "./scene";
+import { type SmartArrayNoDuplicate } from "./Misc/smartArray";
+import { type Nullable } from "./types";
+import { type PickingInfo } from "./Collisions/pickingInfo";
+import { type IPointerEvent } from "./Events/deviceInputEvents";
 
-import type { Mesh } from "./Meshes/mesh";
-import type { Effect } from "./Materials/effect";
-import type { Camera } from "./Cameras/camera";
-import type { AbstractMesh } from "./Meshes/abstractMesh";
-import type { SubMesh } from "./Meshes/subMesh";
-import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
-import type { IAssetContainer } from "./IAssetContainer";
+import { type Mesh } from "./Meshes/mesh";
+import { type Effect } from "./Materials/effect";
+import { type Camera } from "./Cameras/camera";
+import { type AbstractMesh } from "./Meshes/abstractMesh";
+import { type SubMesh } from "./Meshes/subMesh";
+import { type RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import { type IAssetContainer } from "./IAssetContainer";
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -42,6 +42,7 @@ export class SceneComponentConstants {
     public static readonly NAME_CLUSTEREDLIGHTING = "ClusteredLighting";
 
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
+    public static readonly STEP_ISREADYFORMESH_DEPTHRENDERER = 1;
 
     public static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 

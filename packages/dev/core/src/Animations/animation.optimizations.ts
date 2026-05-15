@@ -1,4 +1,4 @@
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
 /**
  * Interface used to define the optimization options for animations

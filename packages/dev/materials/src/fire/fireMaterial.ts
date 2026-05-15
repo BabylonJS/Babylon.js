@@ -1,25 +1,24 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import type { Matrix } from "core/Maths/math.vector";
+import { type Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Tags } from "core/Misc/tags";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { SubMesh } from "core/Meshes/subMesh";
-import type { Mesh } from "core/Meshes/mesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type SubMesh } from "core/Meshes/subMesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 
-import "./fire.fragment";
-import "./fire.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
@@ -85,9 +84,16 @@ export class FireMaterial extends PushMaterial {
 
     private _scaledDiffuse = new Color3();
     private _lastTime: number = 0;
+    private _shadersLoaded = false;
 
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    /**
+     * Instantiates a Fire Material in the given scene
+     * @param name The friendly name of the material
+     * @param scene The scene to add the material to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     */
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
 
     public override needAlphaBlending(): boolean {
@@ -227,6 +233,18 @@ export class FireMaterial extends PushMaterial {
                         indexParameters: null,
                         maxSimultaneousLights: 4,
                         transformFeedbackVaryings: null,
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/fire.vertex"), import("./wgsl/fire.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./fire.vertex"), import("./fire.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),

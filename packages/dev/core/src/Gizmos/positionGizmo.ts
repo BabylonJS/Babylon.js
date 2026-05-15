@@ -1,24 +1,19 @@
 import { Logger } from "../Misc/logger";
-import type { EventState, Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
-import type { Quaternion } from "../Maths/math.vector";
+import { type EventState, type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { Vector3, type Quaternion } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Node } from "../node";
-import type { Mesh } from "../Meshes/mesh";
-import type { GizmoAnchorPoint, GizmoCoordinatesMode, GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
-import type { IAxisDragGizmo } from "./axisDragGizmo";
-import { AxisDragGizmo } from "./axisDragGizmo";
-import type { IPlaneDragGizmo } from "./planeDragGizmo";
-import { PlaneDragGizmo } from "./planeDragGizmo";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Node } from "../node";
+import { type Mesh } from "../Meshes/mesh";
+import { type GizmoAnchorPoint, type GizmoCoordinatesMode, type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
+import { type IAxisDragGizmo, AxisDragGizmo } from "./axisDragGizmo";
+import { type IPlaneDragGizmo, PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { PointerInfo } from "../Events/pointerEvents";
-import type { GizmoManager } from "./gizmoManager";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { DragEvent, DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
+import { type PointerInfo } from "../Events/pointerEvents";
+import { type GizmoManager } from "./gizmoManager";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type DragEvent, type DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 /**
  * Interface for position gizmo

@@ -1,5 +1,4 @@
-import type { FC } from "react";
-import { useEffect, useRef, useContext } from "react";
+import { type FC, useEffect, useRef, useContext } from "react";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -7,7 +6,7 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Vector3 } from "core/Maths/math";
 import { SceneContext } from "../context/SceneContext";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 /**
  * This component creates and renders the scene.

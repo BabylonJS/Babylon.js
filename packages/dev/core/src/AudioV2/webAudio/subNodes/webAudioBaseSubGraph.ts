@@ -1,16 +1,13 @@
-import type { Nullable } from "../../../types";
-import type { AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
+import { type Nullable } from "../../../types";
+import { type AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
 import { _AbstractAudioSubGraph } from "../../abstractAudio/subNodes/abstractAudioSubGraph";
-import type { _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
+import { type _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
 import { _GetAudioAnalyzerSubNode } from "../../abstractAudio/subNodes/audioAnalyzerSubNode";
 import { AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
-import type { IVolumeAudioOptions } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import { _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import type { IAudioAnalyzerOptions } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
-import { _HasAudioAnalyzerOptions } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
-import type { IWebAudioInNode, IWebAudioSuperNode } from "../webAudioNode";
-import type { _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
-import { _CreateVolumeAudioSubNodeAsync } from "./volumeWebAudioSubNode";
+import { type IVolumeAudioOptions, _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import { type IAudioAnalyzerOptions, _HasAudioAnalyzerOptions } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
+import { type IWebAudioInNode, type IWebAudioSuperNode } from "../webAudioNode";
+import { type _VolumeWebAudioSubNode, _CreateVolumeAudioSubNodeAsync } from "./volumeWebAudioSubNode";
 import { _CreateAudioAnalyzerSubNodeAsync } from "./webAudioAnalyzerSubNode";
 
 /**

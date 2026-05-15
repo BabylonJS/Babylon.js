@@ -1,7 +1,7 @@
-import type { Nullable } from "core/types.js";
+import { type Nullable } from "core/types.js";
 import { ConnectionPointType, type ConnectionPointValue } from "../connection/connectionPointType.js";
-import type { InitializationData, SmartFilter } from "../smartFilter.js";
-import type { ICommandOwner } from "../command/command.js";
+import { type InitializationData, type SmartFilter } from "../smartFilter.js";
+import { type ICommandOwner } from "../command/command.js";
 import { ConnectionPoint, type RuntimeData } from "../connection/connectionPoint.js";
 import { ConnectionPointWithDefault } from "../connection/connectionPointWithDefault.js";
 import { ConnectionPointDirection } from "../connection/connectionPointDirection.js";

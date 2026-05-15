@@ -1,22 +1,22 @@
-import type {
-    FrameGraph,
-    FrameGraphTextureHandle,
-    Scene,
-    Camera,
-    FrameGraphObjectList,
-    FrameGraphRenderContext,
-    ObjectRendererOptions,
-    Light,
-    Nullable,
-    Observer,
-    FrameGraphShadowGeneratorTask,
-    FrameGraphRenderPass,
-    AbstractEngine,
-    BoundingBoxRenderer,
-    ShadowLight,
-    SmartArray,
-    SubMesh,
-    RenderingGroup,
+import {
+    type FrameGraph,
+    type FrameGraphTextureHandle,
+    type Scene,
+    type Camera,
+    type FrameGraphObjectList,
+    type FrameGraphRenderContext,
+    type ObjectRendererOptions,
+    type Light,
+    type Nullable,
+    type Observer,
+    type FrameGraphShadowGeneratorTask,
+    type FrameGraphRenderPass,
+    type AbstractEngine,
+    type BoundingBoxRenderer,
+    type ShadowLight,
+    type SmartArray,
+    type SubMesh,
+    type RenderingGroup,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
@@ -201,7 +201,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
             return;
         }
         this._useOITForTransparentMeshes = value;
-        this._renderer.customRenderTransparentSubMeshes = this._useOITForTransparentMeshes ? this._renderTransparentMeshesWithOIT.bind(this) : undefined;
+        this._renderer.customRenderTransparentSubMeshes = this._useOITForTransparentMeshes
+            ? (transparentSubMeshes: SmartArray<SubMesh>, renderingGroup?: RenderingGroup) => this._renderTransparentMeshesWithOIT(transparentSubMeshes, renderingGroup!)
+            : undefined;
         this._oitRenderer.blendOutput = value && this._rtForOrderIndependentTransparency ? this._rtForOrderIndependentTransparency.renderTargetWrapper! : null;
     }
 

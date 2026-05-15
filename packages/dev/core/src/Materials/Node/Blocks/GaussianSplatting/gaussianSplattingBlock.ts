@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { VertexBuffer } from "core/Meshes/buffer";
-import type { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 
 /**
  * Block used for the Gaussian Splatting

@@ -1,9 +1,9 @@
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
-import type { Nullable } from "../../types";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type Nullable } from "../../types";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 
 /**
  * Raw texture can help creating a texture directly from an array of data.

@@ -1,10 +1,10 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
-import type { PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
-import type { IPhysicsEngine } from "../IPhysicsEngine";
-import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
-import type { PhysicsJoint } from "./physicsJoint";
-import type { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { type PhysicsImpostorJoint, type IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
+import { type IPhysicsEngine } from "../IPhysicsEngine";
+import { type PhysicsImpostor, type IPhysicsEnabledObject } from "./physicsImpostor";
+import { type PhysicsJoint } from "./physicsJoint";
+import { type PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
 
 /**

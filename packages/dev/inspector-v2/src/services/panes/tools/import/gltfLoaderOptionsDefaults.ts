@@ -1,7 +1,5 @@
-import type { SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
-
-import { GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
+import { type SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
+import { type GLTFFileLoader, GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
 
 /**
  * Helper type to make all properties of T nullable.

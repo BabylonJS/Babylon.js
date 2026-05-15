@@ -1,15 +1,15 @@
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import type { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
+import { type NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
-import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
+import { type NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "../../Misc/precisionDate";
-import type { Nullable } from "../../types";
-import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import { type Nullable } from "../../types";
+import { type GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { Logger } from "core/Misc/logger";
-import type { NodeGeometry } from "./nodeGeometry";
+import { type NodeGeometry } from "./nodeGeometry";
 
 /**
  * Defines a block that can be used inside a node based geometry

@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import type { DataBuffer } from "../../Buffers/dataBuffer";
-import type { IndicesArray, DataArray } from "../../types";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
+import { type IndicesArray, type DataArray } from "../../types";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

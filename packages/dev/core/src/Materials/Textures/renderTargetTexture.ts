@@ -1,26 +1,25 @@
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { SmartArray } from "../../Misc/smartArray";
-import type { Nullable, Immutable } from "../../types";
-import type { Camera } from "../../Cameras/camera";
-import type { Scene } from "../../scene";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type SmartArray } from "../../Misc/smartArray";
+import { type Nullable, type Immutable } from "../../types";
+import { type Camera } from "../../Cameras/camera";
+import { type Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import type { Color4 } from "../../Maths/math.color";
-import type { RenderTargetCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type Color4 } from "../../Maths/math.color";
+import { type RenderTargetCreationOptions, type TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
-import type { PostProcess } from "../../PostProcesses/postProcess";
+import { type PostProcess } from "../../PostProcesses/postProcess";
 import { Constants } from "../../Engines/constants";
-import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
+import { type IRenderTargetTexture, type RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
-import type { Material } from "../material";
+import { type Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 import { Effect } from "../effect";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 
@@ -332,12 +331,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * An event triggered when the texture is unbind.
+     * An event triggered before the texture is bound to the output.
      */
     public onBeforeBindObservable = new Observable<RenderTargetTexture>();
 
     /**
-     * An event triggered when the texture is unbind.
+     * An event triggered after the texture is unbound.
      */
     public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
 

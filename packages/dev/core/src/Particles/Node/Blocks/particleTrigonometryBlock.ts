@@ -1,11 +1,11 @@
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { Vector2, Vector3 } from "../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Color4 } from "core/Maths/math.color";
 
 /**

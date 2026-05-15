@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
-import type { PerformanceViewerCollector, Scene } from "core/index";
+import { type PerformanceViewerCollector, type Scene } from "core/index";
 
 import { ArrowDownloadRegular, RecordRegular, StopRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
@@ -14,24 +13,17 @@ import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import type { PerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
+import { type PerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
 import { PerformanceViewer } from "../performanceViewer/performanceViewer";
+import { DefaultPerfStrategies, PerfMetadataCategory } from "../../misc/defaultPerfStrategies";
 
+/**
+ * Adds default and platform-specific performance collection strategies to the collector.
+ * @param perfCollector - The performance viewer collector to add strategies to.
+ */
 function AddStrategies(perfCollector: PerformanceViewerCollector) {
-    perfCollector.addCollectionStrategies(...DefaultStrategiesList);
+    perfCollector.addCollectionStrategies(...DefaultPerfStrategies);
     if (PressureObserverWrapper.IsAvailable) {
-        // Do not enable for now as the Pressure API does not
-        // report factors at the moment.
-        // perfCollector.addCollectionStrategies({
-        //     strategyCallback: PerfCollectionStrategy.ThermalStrategy(),
-        //     category: IPerfMetadataCategory.FrameSteps,
-        //     hidden: true,
-        // });
-        // perfCollector.addCollectionStrategies({
-        //     strategyCallback: PerfCollectionStrategy.PowerSupplyStrategy(),
-        //     category: IPerfMetadataCategory.FrameSteps,
-        //     hidden: true,
-        // });
         perfCollector.addCollectionStrategies({
             strategyCallback: PerfCollectionStrategy.PressureStrategy(),
             category: PerfMetadataCategory.FrameSteps,
@@ -39,37 +31,6 @@ function AddStrategies(perfCollector: PerformanceViewerCollector) {
         });
     }
 }
-
-const enum PerfMetadataCategory {
-    Count = "Count",
-    FrameSteps = "Frame Steps Duration",
-}
-
-// list of strategies to add to perf graph automatically.
-const DefaultStrategiesList = [
-    { strategyCallback: PerfCollectionStrategy.FpsStrategy() },
-    { strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveIndicesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveBonesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveParticlesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalLightsStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalVerticesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalMaterialsStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalTexturesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.AbsoluteFpsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.MeshesSelectionStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.RenderTargetsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ParticlesStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.SpritesStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.AnimationsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.PhysicsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.RenderStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.FrameTotalStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.InterFrameStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
-] as const;
 
 // arbitrary window size
 const InitialWindowSize = { width: 1024, height: 512 };

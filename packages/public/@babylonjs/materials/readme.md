@@ -1,30 +1,23 @@
-Babylon.js Materials Library
-=====================
+# Babylon.js Materials Library
 
-For usage documentation please visit https://doc.babylonjs.com/extensions and choose "materials library".
+For usage documentation please visit the [materials library documentation](https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/).
 
-# Installation instructions
+## Installation
 
-To install using npm :
+To install using npm:
 
-```
-npm install --save @babylonjs/core @babylonjs/materials
-```
-
-# How to use
-
-Afterwards it can be imported to your project using:
-
-```
-import { GridMaterial } from '@babylonjs/materials/Grid';
+```bash
+npm install @babylonjs/core @babylonjs/materials
 ```
 
-And used as usual:
+## Usage
 
-```
-// Some awesome code
-let gridMaterial = new GridMaterial("gridMaterial", scene);
-// Some more awesome code
+Import and use in your project:
+
+```javascript
+import { GridMaterial } from "@babylonjs/materials/grid";
+
+const gridMaterial = new GridMaterial("gridMaterial", scene);
 ```
 
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information, see the [ES6 support documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/).

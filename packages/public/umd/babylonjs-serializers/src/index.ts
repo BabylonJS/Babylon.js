@@ -1,3 +1,2 @@
-import * as serializers from "@lts/serializers/legacy/legacy";
-export { serializers };
-export default serializers;
+import "serializers/legacy/legacy";
+export * from "serializers/legacy/legacy";

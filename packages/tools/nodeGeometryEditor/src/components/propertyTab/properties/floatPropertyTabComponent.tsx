@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
+import { type GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { type GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 
 interface IFloatPropertyTabComponentProps {

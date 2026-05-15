@@ -1,10 +1,10 @@
 import { Tools } from "core/Misc/tools";
 import { Vector3 } from "core/Maths/math.vector";
-import type { int } from "core/types";
+import { type int } from "core/types";
 
 import { Container3D } from "./container3D";
-import type { Control3D } from "./control3D";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Control3D } from "./control3D";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * Abstract class used to create a container panel deployed on the surface of a volume

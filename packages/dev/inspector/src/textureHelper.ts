@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { GlobalState } from "./components/globalState";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type GlobalState } from "./components/globalState";
+import { type Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
 
 /**

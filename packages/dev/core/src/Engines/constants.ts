@@ -163,6 +163,17 @@ export class Constants {
     /** Texture is repeating and mirrored */
     public static readonly TEXTURE_MIRROR_ADDRESSMODE = 2;
 
+    /** No texture repetition breaking — standard tiling (1 texture fetch) */
+    public static readonly TEXTURE_REPETITION_NONE = 0;
+    /** Noise-driven offset blending to break texture repetition (3 texture fetches). Based on Inigo Quilez's technique 3. */
+    public static readonly TEXTURE_REPETITION_NOISE_BLEND = 1;
+    /** Hex-tile grid with per-tile rotation and luminance-weighted blending (3 texture fetches). Based on Mikkelsen, "Practical Real-Time Hex-Tiling", JCGT 2022. */
+    public static readonly TEXTURE_REPETITION_HEX_TILING = 2;
+    /** Per-tile random offset and mirror to break texture repetition (4 texture fetches). Based on Inigo Quilez's technique 1. */
+    public static readonly TEXTURE_REPETITION_TILE_RANDOMIZATION = 3;
+    /** Smooth Voronoi bombing with Gaussian-weighted blending (9 texture fetches). Based on Inigo Quilez's technique 2. */
+    public static readonly TEXTURE_REPETITION_VORONOI_BOMBING = 4;
+
     /** Flag to create a storage texture */
     public static readonly TEXTURE_CREATIONFLAG_STORAGE = 1;
 
@@ -254,8 +265,60 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916;
     /** Compressed ASTC 4x4 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
+    /** Compressed ASTC 5x4 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4 = 37809;
+    /** Compressed ASTC 5x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5 = 37810;
+    /** Compressed ASTC 6x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5 = 37811;
+    /** Compressed ASTC 6x6 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6 = 37812;
+    /** Compressed ASTC 8x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5 = 37813;
+    /** Compressed ASTC 8x6 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6 = 37814;
+    /** Compressed ASTC 8x8 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8 = 37815;
+    /** Compressed ASTC 10x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5 = 37816;
+    /** Compressed ASTC 10x6 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6 = 37817;
+    /** Compressed ASTC 10x8 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8 = 37818;
+    /** Compressed ASTC 10x10 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10 = 37819;
+    /** Compressed ASTC 12x10 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10 = 37820;
+    /** Compressed ASTC 12x12 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12 = 37821;
     /** Compressed ASTC 4x4 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840;
+    /** Compressed ASTC 5x4 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = 37841;
+    /** Compressed ASTC 5x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = 37842;
+    /** Compressed ASTC 6x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = 37843;
+    /** Compressed ASTC 6x6 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = 37844;
+    /** Compressed ASTC 8x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = 37845;
+    /** Compressed ASTC 8x6 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = 37846;
+    /** Compressed ASTC 8x8 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = 37847;
+    /** Compressed ASTC 10x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = 37848;
+    /** Compressed ASTC 10x6 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = 37849;
+    /** Compressed ASTC 10x8 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = 37850;
+    /** Compressed ASTC 10x10 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 37851;
+    /** Compressed ASTC 12x10 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 37852;
+    /** Compressed ASTC 12x12 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 37853;
     /** Compressed ETC1 (RGB) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
     /** Compressed ETC2 (RGB) */
@@ -679,13 +742,13 @@ export class Constants {
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
     /**
-     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
-     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+     * Constant used to retrieve the legacy irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
+    public static readonly PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE = 0;
     /**
      * Constant used to retrieve the position texture index in the textures array in the prepass
-     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
+     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)
      */
     public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
     /**
@@ -753,6 +816,12 @@ export class Constants {
      * Constant used to retrieve normalized camera view depth geometry texture
      */
     public static readonly PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE = 13;
+
+    /**
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 14;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;

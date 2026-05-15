@@ -1,10 +1,10 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Constants } from "../constants";
-import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { type DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
 declare module "../../Engines/abstractEngine" {

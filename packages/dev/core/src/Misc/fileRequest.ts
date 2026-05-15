@@ -1,4 +1,4 @@
-import type { Observable } from "./observable";
+import { type Observable } from "./observable";
 
 /**
  * File request interface

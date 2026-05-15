@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useState } from "react";
 
 import { makeStyles, tokens, Input, Label } from "@fluentui/react-components";
-import { useCallback, useState } from "react";
 import { Animation } from "core/Animations/animation";
 import { Tools } from "core/Misc/tools";
 

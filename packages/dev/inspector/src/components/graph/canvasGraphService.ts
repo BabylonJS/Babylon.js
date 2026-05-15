@@ -1,22 +1,22 @@
-import type {
-    ICanvasGraphServiceSettings,
-    IPerfMinMax,
-    IGraphDrawableArea,
-    IPerfMousePanningPosition,
-    IPerfIndexBounds,
-    IPerfTooltip,
-    IPerfTextMeasureCache,
-    IPerfLayoutSize,
-    IPerfTicker,
-    ITooltipPreprocessedInformation,
-    IPerfTooltipHoverPosition,
-    IVisibleRangeChangedObservableProps,
+import {
+    type ICanvasGraphServiceSettings,
+    type IPerfMinMax,
+    type IGraphDrawableArea,
+    type IPerfMousePanningPosition,
+    type IPerfIndexBounds,
+    type IPerfTooltip,
+    type IPerfTextMeasureCache,
+    type IPerfLayoutSize,
+    type IPerfTicker,
+    type ITooltipPreprocessedInformation,
+    type IPerfTooltipHoverPosition,
+    type IVisibleRangeChangedObservableProps,
+    TimestampUnit,
 } from "./graphSupportingTypes";
-import { TimestampUnit } from "./graphSupportingTypes";
-import type { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { type IPerfDatasets, type IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import { Scalar } from "core/Maths/math.scalar";
 import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
 const DefaultColor = "#000";
 const AxisColor = "#c0c4c8";

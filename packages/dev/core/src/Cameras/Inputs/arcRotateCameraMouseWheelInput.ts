@@ -1,16 +1,13 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { EventState, Observer } from "../../Misc/observable";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type EventState, type Observer } from "../../Misc/observable";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
-import type { IWheelEvent } from "../../Events/deviceInputEvents";
-import { EventConstants } from "../../Events/deviceInputEvents";
+import { type IWheelEvent, EventConstants } from "../../Events/deviceInputEvents";
 import { Clamp } from "../../Maths/math.scalar.functions";
 import { Tools } from "../../Misc/tools";
 
@@ -101,8 +98,11 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                     // If zooming in, estimate the target radius and use that to compute the delta for inertia
                     // this will stop multiple scroll events zooming in from adding too much inertia
                     if (delta > 0) {
+                        // When zoomToMouseLocation is active, the accumulating state lives in our private
+                        // `_zoomToMouseRadiusOffset` field. Otherwise fall back to the legacy surface.
+                        const currentAccumulated = this.zoomToMouseLocation ? this._zoomToMouseRadiusOffset : this.camera.inertialRadiusOffset;
                         let estimatedTargetRadius = this.camera.radius;
-                        let targetInertia = this.camera.inertialRadiusOffset + delta;
+                        let targetInertia = currentAccumulated + delta;
                         for (let i = 0; i < 20; i++) {
                             // 20 iterations should be enough to converge
                             if (estimatedTargetRadius <= targetInertia) {
@@ -120,7 +120,11 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                         delta = this._computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                     }
                 } else {
-                    delta = wheelDelta / (this.wheelPrecision * 40);
+                    // The inputMap entry's `sensitivity` takes precedence so consumers can tune
+                    // wheel zoom feel declaratively; fall back to the legacy `wheelPrecision`.
+                    const wheelEntry = this.camera.movement.input.getEntry("wheel", "zoom");
+                    const wheelScale = wheelEntry?.sensitivity ?? 1 / (this.wheelPrecision * 40);
+                    delta = wheelDelta * wheelScale;
                 }
             }
 
@@ -135,10 +139,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
                     this._zoomToMouse(delta);
                 } else {
-                    this.camera.inertialRadiusOffset += delta;
+                    this.camera.movement.zoomAccumulatedPixels += delta;
                 }
             }
-
             if (event.preventDefault) {
                 if (!noPreventDefault) {
                     event.preventDefault();
@@ -174,18 +177,38 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         }
 
         const camera = this.camera;
-        const motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
+        // Motion check based on our private accumulator state + the legacy inertialRadiusOffset
+        // surface (so user code that still writes to it continues to animate). Legacy also
+        // included alpha/beta offsets in the motion check — keep that for compatibility so
+        // the hit plane stays updated while the camera rotates.
+        const motion =
+            Math.abs(this._zoomToMouseRadiusOffset) +
+            this._inertialPanning.lengthSquared() +
+            Math.abs(camera.inertialAlphaOffset) +
+            Math.abs(camera.inertialBetaOffset) +
+            Math.abs(camera.inertialRadiusOffset);
         if (motion) {
             // if zooming is still happening as a result of inertia, then we also need to update
             // the hit plane.
             this._updateHitPlane();
 
-            // Note we cannot  use arcRotateCamera.inertialPlanning here because arcRotateCamera panning
-            // uses a different panningInertia which could cause this panning to get out of sync with
-            // the zooming, and for this to work they must be exactly in sync.
+            // Apply this frame's coupled radius + pan delta to the camera. They must stay
+            // in lockstep so the cursor remains at the zoom focal point — keep pan here instead
+            // of routing through `arcRotateCamera.inertialPanning` which uses a different
+            // `panningInertia`.
             camera.target.addInPlace(this._inertialPanning);
-            this._inertialPanning.scaleInPlace(camera.inertia);
+            camera.radius -= this._zoomToMouseRadiusOffset;
+
+            // Framerate-independent decay — matches legacy `* camera.inertia` exactly at 60fps
+            // and preserves glide duration at any other fps.
+            const decay = camera.movement.getFrameIndependentDecay(camera.inertia);
+            this._inertialPanning.scaleInPlace(decay);
+            this._zoomToMouseRadiusOffset *= decay;
+
             this._zeroIfClose(this._inertialPanning);
+            if (Math.abs(this._zoomToMouseRadiusOffset) < Epsilon) {
+                this._zoomToMouseRadiusOffset = 0;
+            }
         }
     }
 
@@ -240,19 +263,38 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     private _inertialPanning: Vector3 = Vector3.Zero();
 
+    /**
+     * Decaying accumulator for radius motion in the `zoomToMouseLocation` path.
+     *
+     * Units: world-space radius units. On each frame, this value is *subtracted* from
+     * `camera.radius` and then multiplied by a framerate-independent decay factor (via
+     * `CameraMovement.getFrameIndependentDecay`). New input from `_zoomToMouse(delta)`
+     * is added on top each frame, scaled by the matching framerate-independent input
+     * factor so the steady-state and total-glide-distance match legacy at 60fps at any
+     * actual refresh rate.
+     *
+     * Replaces the use of the legacy `camera.inertialRadiusOffset` for this code path
+     * so the coupled radius + pan motion can be decayed with framerate-independent
+     * semantics without disturbing the public `inertialRadiusOffset` back-compat surface.
+     */
+    private _zoomToMouseRadiusOffset: number = 0;
+
     private _zoomToMouse(delta: number) {
         const camera = this.camera;
         const inertiaComp = 1 - camera.inertia;
+        // inputScale corrects per-frame input so that the decayed sum matches the legacy 60fps total
+        // at any actual framerate. At 60fps inputScale = 1 (no-op).
+        const inputScale = camera.movement.getFrameIndependentInputScale(camera.inertia);
         if (camera.lowerRadiusLimit) {
             const lowerLimit = camera.lowerRadiusLimit ?? 0;
-            if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lowerLimit) {
-                delta = (camera.radius - lowerLimit) * inertiaComp - camera.inertialRadiusOffset;
+            if (camera.radius - (this._zoomToMouseRadiusOffset + delta * inputScale) / inertiaComp < lowerLimit) {
+                delta = ((camera.radius - lowerLimit) * inertiaComp - this._zoomToMouseRadiusOffset) / inputScale;
             }
         }
         if (camera.upperRadiusLimit) {
             const upperLimit = camera.upperRadiusLimit ?? 0;
-            if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > upperLimit) {
-                delta = (camera.radius - upperLimit) * inertiaComp - camera.inertialRadiusOffset;
+            if (camera.radius - (this._zoomToMouseRadiusOffset + delta * inputScale) / inertiaComp > upperLimit) {
+                delta = ((camera.radius - upperLimit) * inertiaComp - this._zoomToMouseRadiusOffset) / inputScale;
             }
         }
 
@@ -267,9 +309,11 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         vec.subtractToRef(camera.target, directionToZoomLocation);
         directionToZoomLocation.scaleInPlace(ratio);
         directionToZoomLocation.scaleInPlace(inertiaComp);
+
+        directionToZoomLocation.scaleInPlace(inputScale);
         this._inertialPanning.addInPlace(directionToZoomLocation);
 
-        camera.inertialRadiusOffset += delta;
+        this._zoomToMouseRadiusOffset += delta * inputScale;
     }
 
     // Sets x y or z of passed in vector to zero if less than Epsilon.

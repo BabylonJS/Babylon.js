@@ -1,10 +1,9 @@
 import { Logger } from "../../Misc/logger";
 import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import { type Nullable } from "../../types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type {} from "../abstractAudio/abstractSound";
-import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
-import { StreamingSound } from "../abstractAudio/streamingSound";
+import { type IStreamingSoundOptions, type IStreamingSoundPlayOptions, type IStreamingSoundStoredOptions, StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
@@ -13,8 +12,8 @@ import { WebRequest } from "../../Misc/webRequest";
 import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode, type IWebAudioOutNode, type IWebAudioSuperNode } from "./webAudioNode";
 
 type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 

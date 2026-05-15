@@ -1,7 +1,7 @@
 import { BlockTools } from "../blockTools";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import type { ConnectionPointPortData } from "./connectionPointPortData";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type ConnectionPointPortData } from "./connectionPointPortData";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {

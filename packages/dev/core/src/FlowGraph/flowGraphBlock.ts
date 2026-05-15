@@ -1,14 +1,14 @@
 import { RandomGUID } from "../Misc/guid";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { RichType } from "./flowGraphRichTypes";
-import type { ISerializedFlowGraphBlock, IObjectAccessor } from "./typeDefinitions";
+import { type RichType } from "./flowGraphRichTypes";
+import { type ISerializedFlowGraphBlock, type IObjectAccessor } from "./typeDefinitions";
 import { defaultValueSerializationFunction } from "./serialization";
-import type { Scene } from "../scene";
-import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { IAssetContainer } from "core/IAssetContainer";
-import type { FlowGraphAction } from "./flowGraphLogger";
+import { type Scene } from "../scene";
+import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { type FlowGraphAction } from "./flowGraphLogger";
 
 /**
  * Options for parsing a block.

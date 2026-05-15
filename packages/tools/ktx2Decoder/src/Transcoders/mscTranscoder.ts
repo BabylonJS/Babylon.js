@@ -2,7 +2,7 @@
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { Transcoder } from "../transcoder";
-import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import { type KTX2FileReader, type IKTX2_ImageDesc } from "../ktx2FileReader";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

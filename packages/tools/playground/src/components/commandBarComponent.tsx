@@ -1,6 +1,6 @@
 /* eslint-disable github/no-then */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { Utilities } from "../tools/utilities";
@@ -205,7 +205,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 tooltip: "Loads the Babylon Toolkit into the playground",
                 storeKey: "babylon-toolkit",
                 defaultValue: false,
-                onCheck: () => {},
+                onCheck: (value: boolean) => {
+                    if (!value) {
+                        try {
+                            localStorage.removeItem("babylon-toolkit-used");
+                        } catch {
+                            // Ignore storage errors
+                        }
+                    }
+                },
             },
             {
                 label: "Auto-run",

@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import { IsWindowObjectExist } from "../Misc/domManagement";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
 import { DualShockPad } from "./dualShockGamepad";

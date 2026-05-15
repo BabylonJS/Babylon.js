@@ -1,4 +1,4 @@
-import type { FrameGraphTextureHandle } from "core/index";
+import { type FrameGraphTextureHandle } from "core/index";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 

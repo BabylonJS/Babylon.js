@@ -1,23 +1,22 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
-import type { Effect } from "../../../effect";
-import type { Scene } from "../../../../scene";
+import { type Effect } from "../../../effect";
+import { type Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { TextureBlock } from "../Dual/textureBlock";
+import { type TextureBlock } from "../Dual/textureBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "./TBNBlock";
 
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { Constants } from "../../../../Engines/constants";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 
 /**
  * Block used to perturb normals based on a normal map
@@ -379,7 +378,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                     replace: replaceString0,
                 },
                 { search: searchExp1, replace: replaceString1 },
-                { search: /texture.+?bumpSampler,.*?vBumpUV\)\.w/g, replace: "height_" },
+                { search: /(?:texture2D|textureSample|TEXRD)\(bumpSampler,.*?vBumpUV\)\.w/g, replace: "height_" },
             ],
         });
 
@@ -391,14 +390,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state.compilationString += state._declareLocalVar(tempOutput, NodeMaterialBlockConnectionPointTypes.Vector3) + ` = vec3${fSuffix}(0.);\n`;
 
         replaceStrings = [
-            { search: new RegExp(`texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\)`, "g"), replace: `${uvForPerturbNormal}` },
+            {
+                search: new RegExp(`(?:${isWebGPU ? "textureSample" : "texture2D"}|TEXRD)\\(bumpSampler${isWebGPU ? ",bumpSamplerSampler,fragmentInputs." : ","}vBumpUV\\)`, "g"),
+                replace: `${uvForPerturbNormal}`,
+            },
             {
                 search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
                 replace: `${state._declareLocalVar("normalMatrix", NodeMaterialBlockConnectionPointTypes.Matrix)} = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : uniformPrefix + this._worldMatrixName});`,
             },
             {
                 search: new RegExp(
-                    `perturbNormal\\(TBN,texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${uniformPrefix}vBumpInfos.y\\)`,
+                    `perturbNormal\\(TBN,(?:${isWebGPU ? "textureSample" : "texture2D"}|TEXRD)\\(bumpSampler${isWebGPU ? ",bumpSamplerSampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${uniformPrefix}vBumpInfos.y\\)`,
                     "g"
                 ),
                 replace: `perturbNormal(TBN, ${uvForPerturbNormal}, ${uniformPrefix}vBumpInfos.y)`,

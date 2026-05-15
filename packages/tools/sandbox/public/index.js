@@ -1,6 +1,7 @@
 /* global BABYLON */
 
 var hostElement = document.getElementById("host-element");
+var cdnPort = 1337;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
@@ -50,21 +51,21 @@ const Versions = {
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
         // Allow an "inspectorv1" query param to force loading Inspector v1.
         ...(window.location.search.toLocaleLowerCase().includes("inspectorv1")
-            ? [{ url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true }]
+            ? [{ url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: false }]
             : [
-                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true, maxVersion: "8.40.0" },
-                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: false, maxVersion: "8.40.0" },
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: false, minVersion: "8.40.1" },
               ]),
     ],
     local: [
-        { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
-        // { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/babylon.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/addons/babylonjs.addons.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/serializers/babylonjs.serializers.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/gui/babylon.gui.min.js`, instantResolve: false },
+        // { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
     ],
 };
 
@@ -132,10 +133,13 @@ let checkBabylonVersionAsync = function () {
 
     let versions = Versions[activeVersion] || Versions["dist"];
     if (snapshot && activeVersion === "dist") {
-        versions = versions.map((v) => ({
-            url: v.url.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot),
-            instantResolve: v.instantResolve,
-        }));
+        versions = versions
+            // Snapshots are always the latest version, so exclude scripts limited to old versions (maxVersion).
+            .filter((v) => !v.maxVersion)
+            .map((v) => ({
+                url: v.url.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot),
+                instantResolve: v.instantResolve,
+            }));
     } else if (version && activeVersion === "dist") {
         versions = versions
             .filter((v) => (!v.minVersion || isVersionGreaterOrEqual(version, v.minVersion)) && (!v.maxVersion || isVersionGreaterOrEqual(v.maxVersion, version)))
@@ -154,7 +158,7 @@ let checkBabylonVersionAsync = function () {
         } else if (version) {
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
         } else if (activeVersion === "local") {
-            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:${cdnPort}/`;
         }
 
         return { version, bundles: versions.map((v) => v.url) };

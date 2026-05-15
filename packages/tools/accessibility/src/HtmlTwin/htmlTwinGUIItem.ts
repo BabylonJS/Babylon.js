@@ -1,12 +1,12 @@
 import { Vector2 } from "core/Maths/math";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { Button } from "gui/2D/controls/button";
-import type { Control } from "gui/2D/controls/control";
+import { type Control } from "gui/2D/controls/control";
 import { Image } from "gui/2D/controls/image";
 import { TextBlock } from "gui/2D/controls/textBlock";
 import { Vector2WithInfo } from "gui/2D/math2D";
 import { HTMLTwinItem } from "./htmlTwinItem";
-import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
+import { type IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 /**
  * A abstract layer to store the html twin tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of html twin tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.

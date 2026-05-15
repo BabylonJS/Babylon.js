@@ -1,19 +1,18 @@
-import type { Crowd } from "@recast-navigation/core";
+import { type Crowd } from "@recast-navigation/core";
 
-import type { Nullable } from "core/types";
-import type { IVector3Like } from "core/Maths/math.like";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { ICrowd } from "core/Navigation/INavigationEngine";
+import { type Nullable } from "core/types";
+import { type IVector3Like } from "core/Maths/math.like";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type ICrowd } from "core/Navigation/INavigationEngine";
 import { Vector3 } from "core/Maths/math.vector";
 import { Epsilon } from "core/Maths/math.constants";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Scene } from "core/scene";
 
-import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ToCrowdAgentParams } from "../common/config";
-import type { IAgentParametersV2 } from "../types";
+import { type IAgentParametersV2 } from "../types";
 import { GetRecast } from "../factory/common";
 
 /**

@@ -1,10 +1,10 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { WithinEpsilon } from "../../../../Maths/math.scalar.functions";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 
 /**
  * Conditions supported by the condition block

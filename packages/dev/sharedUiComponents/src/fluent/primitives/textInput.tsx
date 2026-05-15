@@ -1,8 +1,6 @@
-import type { FunctionComponent, KeyboardEvent, ChangeEvent, FocusEvent } from "react";
-import { useContext, useEffect, useRef, useState } from "react";
-import type { InputOnChangeData } from "@fluentui/react-components";
-import { Input as FluentInput, mergeClasses, useId } from "@fluentui/react-components";
-import type { PrimitiveProps } from "./primitive";
+import { type FunctionComponent, type KeyboardEvent, type ChangeEvent, type FocusEvent, useContext, useEffect, useRef, useState } from "react";
+import { type InputOnChangeData, Input as FluentInput, mergeClasses, useId } from "@fluentui/react-components";
+import { type PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 import { ToolContext } from "../hoc/fluentToolWrapper";

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IColor3Like } from "core/Maths/math.like";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IColor3Like } from "core/Maths/math.like";
 
 /**
  * Creation options for the {@link Atmosphere}.

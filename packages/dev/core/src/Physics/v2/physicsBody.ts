@@ -1,19 +1,25 @@
-import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties } from "./IPhysicsEnginePlugin";
-import { PhysicsMotionType, PhysicsPrestepType } from "./IPhysicsEnginePlugin";
-import type { PhysicsShape } from "./physicsShape";
+import {
+    type IBasePhysicsCollisionEvent,
+    type IPhysicsCollisionEvent,
+    type IPhysicsEnginePluginV2,
+    type PhysicsMassProperties,
+    PhysicsMotionType,
+    PhysicsPrestepType,
+} from "./IPhysicsEnginePlugin";
+import { type PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
-import type { Scene } from "../../scene";
-import type { PhysicsEngine } from "./physicsEngine";
-import type { Nullable } from "../../types";
-import type { PhysicsConstraint } from "./physicsConstraint";
-import type { Bone } from "../../Bones/bone";
+import { type Scene } from "../../scene";
+import { type PhysicsEngine } from "./physicsEngine";
+import { type Nullable } from "../../types";
+import { type PhysicsConstraint } from "./physicsConstraint";
+import { type Bone } from "../../Bones/bone";
 import { Space } from "../../Maths/math.axis";
-import type { Observable, Observer } from "../../Misc/observable";
-import type { Node } from "../../node";
-import type { Mesh } from "../../Meshes/mesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { TransformNode } from "../../Meshes/transformNode";
-import type { BoundingBox } from "../../Culling/boundingBox";
+import { type Observable, type Observer } from "../../Misc/observable";
+import { type Node } from "../../node";
+import { type Mesh } from "../../Meshes/mesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type TransformNode } from "../../Meshes/transformNode";
+import { type BoundingBox } from "../../Culling/boundingBox";
 
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows

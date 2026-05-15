@@ -1,5 +1,4 @@
-import { LoadSnippet } from "@tools/snippet-loader";
-import type { IPlaygroundSnippetResult } from "@tools/snippet-loader";
+import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
 /**
  * Loads a playground snippet by ID and returns the fully-parsed result.

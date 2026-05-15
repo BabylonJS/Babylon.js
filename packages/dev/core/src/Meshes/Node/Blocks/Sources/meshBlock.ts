@@ -1,10 +1,10 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { VertexData } from "../../../../Meshes/mesh.vertexData";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 
 /**

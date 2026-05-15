@@ -1,18 +1,15 @@
-import type { IDisposable } from "../scene";
-import { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { PointerInfoPre } from "../Events/pointerEvents";
-import { PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
+import { type IDisposable, Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Observer, Observable } from "../Misc/observable";
+import { type PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
 import { HemisphericLight } from "../Lights/hemisphericLight";
 import { Vector3 } from "../Maths/math.vector";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { Color3 } from "../Maths/math.color";
-import type { IPointerEvent } from "../Events/deviceInputEvents";
+import { type IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
  * Renders a layer on top of an existing scene

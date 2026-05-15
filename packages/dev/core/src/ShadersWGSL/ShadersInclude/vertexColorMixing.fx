@@ -2,9 +2,9 @@
     vertexOutputs.vColor = vec4f(1.0);
     #ifdef VERTEXCOLOR
         #ifdef VERTEXALPHA
-            vertexOutputs.vColor *= vertexInputs.color;
+            vertexOutputs.vColor *= colorUpdated;
         #else
-            vertexOutputs.vColor = vec4f(vertexOutputs.vColor.rgb * vertexInputs.color.rgb, vertexOutputs.vColor.a);
+            vertexOutputs.vColor = vec4f(vertexOutputs.vColor.rgb * colorUpdated.rgb, vertexOutputs.vColor.a);
         #endif
     #endif
 

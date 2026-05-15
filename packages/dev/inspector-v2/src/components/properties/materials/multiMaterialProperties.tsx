@@ -1,7 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { MultiMaterial } from "core/Materials/multiMaterial";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type MultiMaterial } from "core/Materials/multiMaterial";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 

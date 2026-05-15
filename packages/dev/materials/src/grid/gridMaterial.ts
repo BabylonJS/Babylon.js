@@ -1,22 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, serializeAsVector3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import type { Matrix } from "core/Maths/math.vector";
-import { Vector4, Vector3 } from "core/Maths/math.vector";
+import { type Matrix, Vector4, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { SubMesh } from "core/Meshes/subMesh";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Scene } from "core/scene";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type SubMesh } from "core/Meshes/subMesh";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "./grid.fragment";
-import "./grid.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
@@ -133,10 +131,13 @@ export class GridMaterial extends PushMaterial {
      * constructor
      * @param name The name given to the material in order to identify it afterwards.
      * @param scene The scene the material is used in.
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
+
+    private _shadersLoaded = false;
 
     /**
      * @returns whether or not the grid requires alpha blending.
@@ -259,6 +260,18 @@ export class GridMaterial extends PushMaterial {
                         fallbacks: null,
                         onCompiled: this.onCompiled,
                         onError: this.onError,
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/grid.vertex"), import("./wgsl/grid.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./grid.vertex"), import("./grid.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     scene.getEngine()
                 ),

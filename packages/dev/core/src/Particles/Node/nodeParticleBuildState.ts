@@ -1,9 +1,9 @@
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Particle } from "core/Particles/particle";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Particle } from "core/Particles/particle";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -15,6 +15,8 @@ import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticl
  * Class used to store node based geometry build state
  */
 export class NodeParticleBuildState {
+    private _buildPromises = new Array<Promise<void>>();
+
     /**
      * Gets the capactity of the particle system to build
      */
@@ -73,6 +75,22 @@ export class NodeParticleBuildState {
             // eslint-disable-next-line no-throw-literal
             throw "Build of Node Particle System Set failed:\n" + errorMessage;
         }
+    }
+
+    /**
+     * Registers an asynchronous operation that must complete before the node particle system is ready.
+     * @param promise defines the promise to wait for
+     */
+    public registerBuildPromise(promise: Promise<void>) {
+        this._buildPromises.push(promise);
+    }
+
+    /**
+     * Waits for all asynchronous build operations to complete.
+     * @returns a promise that resolves when all registered build operations are complete
+     */
+    public async waitForBuildPromisesAsync(): Promise<void> {
+        await Promise.all(this._buildPromises);
     }
 
     /**

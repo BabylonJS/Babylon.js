@@ -1,12 +1,13 @@
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import type { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import type { GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type Scene } from "../../scene";
+import { type Matrix } from "../../Maths/math.vector";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { Logger } from "../../Misc/logger";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -26,6 +27,8 @@ import "../../Shaders/gaussianSplattingDepth.fragment";
 import "../../Shaders/gaussianSplattingDepth.vertex";
 import "../../ShadersWGSL/gaussianSplattingDepth.fragment";
 import "../../ShadersWGSL/gaussianSplattingDepth.vertex";
+import "../../Shaders/gaussianSplattingVoxel.fragment";
+import "../../Shaders/gaussianSplattingVoxel.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
@@ -36,6 +39,7 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
+import { Engine } from "../../Engines/engine";
 
 /**
  * Computes the maximum number of Gaussian Splatting compound parts supported by the given engine.
@@ -178,8 +182,33 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
-    protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "partIndicesTexture"];
+    protected static _Samplers = [
+        "covariancesATexture",
+        "covariancesBTexture",
+        "centersTexture",
+        "colorsTexture",
+        "shTexture0",
+        "shTexture1",
+        "shTexture2",
+        "shTexture3",
+        "shTexture4",
+        "partIndicesTexture",
+    ];
     protected static _UniformBuffers = ["Scene", "Mesh"];
+    protected static _VoxelUniforms = [
+        "world",
+        "dataTextureSize",
+        "alpha",
+        "invWorldScale",
+        "viewMatrix",
+        "nearPlane",
+        "farPlane",
+        "stepSize",
+        "partWorld",
+        "partVisibility",
+        "axis",
+    ];
+    protected static _VoxelSamplers = ["rotationsATexture", "rotationsBTexture", "rotationScaleTexture", "centersTexture", "colorsTexture", "partIndicesTexture"];
     protected static _Uniforms = [
         "world",
         "view",
@@ -266,8 +295,16 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // Values that need to be evaluated on every frame
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, false);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // SH is disabled for webGL1
         if (engine.version > 1 || engine.isWebGPU) {
@@ -435,28 +472,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
             if (gsMesh.shTextures) {
-                for (let i = 0; i < gsMesh.shTextures?.length; i++) {
+                for (let i = 0; i < gsMesh.shTextures.length; i++) {
                     effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
                 }
             }
 
             // Bind part indices texture, if the
-            if (gsMesh.partIndicesTexture) {
-                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                // Bind part world matrices
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
-                }
-                effect.setMatrices("partWorld", partWorldData);
-
-                // Bind part visibility data
-                const partVisibilityData: number[] = [];
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
-                }
-                effect.setArray("partVisibility", partVisibilityData);
-            }
+            gsMesh.bindExtraEffectUniforms(effect);
         }
     }
     /**
@@ -571,20 +593,122 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
-            if (gsMesh.partIndicesTexture) {
-                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
+            gsMesh.bindExtraEffectUniforms(effect);
+        }
+    }
+
+    private _voxelMissingTextureWarned = new Set<number>();
+    private _voxelPartWorldData = new Float32Array(0);
+    private readonly _voxelPartVisibilityData: number[] = [];
+
+    protected _bindVoxelEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial): boolean {
+        if (!gsMesh.rotationsATexture) {
+            // Attempt to enable rotation/scale texture generation (no-op if already enabled).
+            // If the mesh is already loaded and splat data is in RAM this triggers updateData() synchronously.
+            // If the mesh was loaded without keepInRam=true the setter will log an error.
+            gsMesh.needsRotationScaleTextures = true;
+
+            if (!gsMesh.rotationsATexture) {
+                // Mesh data was already processed but rotation textures couldn't be generated — warn once.
+                if (gsMesh.centersTexture && !gsMesh.splatsData && !this._voxelMissingTextureWarned.has(gsMesh.uniqueId)) {
+                    this._voxelMissingTextureWarned.add(gsMesh.uniqueId);
+                    Logger.Error(
+                        "IBL voxelization: GaussianSplattingMesh rotation/scale textures are not available. " +
+                            "Create the mesh either with keepInRam=true or needsRotationScaleTextures=true to enable IBL shadow voxelization."
+                    );
                 }
-                effect.setMatrices("partWorld", partWorldData);
-                const partVisibilityData: number[] = [];
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
-                }
-                effect.setArray("partVisibility", partVisibilityData);
+                return false;
             }
         }
+        this._voxelMissingTextureWarned.delete(gsMesh.uniqueId);
+
+        const effect = shaderMaterial.getEffect()!;
+        gsMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+
+        const textureSize = gsMesh.rotationsATexture.getSize();
+        effect.setFloat("alpha", gsMaterial.alpha);
+        effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
+        effect.setTexture("rotationsATexture", gsMesh.rotationsATexture);
+        effect.setTexture("rotationsBTexture", gsMesh.rotationsBTexture);
+        effect.setTexture("rotationScaleTexture", gsMesh.rotationScaleTexture);
+        effect.setTexture("centersTexture", gsMesh.centersTexture);
+        effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+
+        if (gsMesh.partIndicesTexture) {
+            effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
+            const partWorldDataLength = gsMesh.partCount * 16;
+            if (this._voxelPartWorldData.length !== partWorldDataLength) {
+                this._voxelPartWorldData = new Float32Array(partWorldDataLength);
+            }
+            const partWorldData = this._voxelPartWorldData;
+            for (let i = 0; i < gsMesh.partCount; i++) {
+                gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
+            }
+            effect.setMatrices("partWorld", partWorldData);
+            const partVisibilityData = this._voxelPartVisibilityData;
+            partVisibilityData.length = gsMesh.partCount;
+            for (let i = 0; i < gsMesh.partCount; i++) {
+                partVisibilityData[i] = gsMesh.partVisibility[i] ?? 1.0;
+            }
+            effect.setArray("partVisibility", partVisibilityData);
+        }
+        return true;
+    }
+
+    /**
+     * Create a voxel rendering material for a Gaussian Splatting mesh, for use with IBL shadow voxelization.
+     * The returned ShaderMaterial's onBindObservable binds the GS mesh-side uniforms (textures, alpha, dataTextureSize, part data).
+     * The caller (e.g. iblShadowsVoxelRenderer) is responsible for setting the per-slab uniforms on the returned material:
+     * viewMatrix, invWorldScale, nearPlane, farPlane, stepSize.
+     * @param scene scene it belongs to
+     * @param shaderLanguage GLSL or WGSL
+     * @param maxDrawBuffers number of draw buffers (MRT outputs) per voxelization slab
+     * @param compoundMesh whether the mesh is a compound mesh
+     * @returns voxel rendering shader material
+     */
+    public makeVoxelRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, maxDrawBuffers: number, compoundMesh: boolean = false): ShaderMaterial {
+        const defines = [`#define MAX_DRAW_BUFFERS ${maxDrawBuffers}`];
+
+        defines.push("#define IS_FOR_VOXELIZATION");
+
+        if (compoundMesh) {
+            defines.push("#define IS_COMPOUND 1");
+            defines.push(`#define MAX_PART_COUNT ${GetGaussianSplattingMaxPartCount(scene.getEngine())}`);
+        }
+
+        const shaderMaterial = new ShaderMaterial(
+            "gaussianSplattingVoxelRender",
+            scene,
+            {
+                vertex: "gaussianSplattingVoxel",
+                fragment: "gaussianSplattingVoxel",
+            },
+            {
+                attributes: GaussianSplattingMaterial._Attribs,
+                uniforms: GaussianSplattingMaterial._VoxelUniforms,
+                samplers: GaussianSplattingMaterial._VoxelSamplers,
+                uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
+                shaderLanguage: shaderLanguage,
+                defines: defines,
+                needAlphaBlending: false,
+                extraInitializationsAsync: async () => {
+                    if (shaderLanguage === ShaderLanguage.WGSL) {
+                        await Promise.all([import("../../ShadersWGSL/gaussianSplattingVoxel.vertex"), import("../../ShadersWGSL/gaussianSplattingVoxel.fragment")]);
+                    } else {
+                        await Promise.all([import("../../Shaders/gaussianSplattingVoxel.vertex"), import("../../Shaders/gaussianSplattingVoxel.fragment")]);
+                    }
+                },
+            }
+        );
+        shaderMaterial.cullBackFaces = false;
+        shaderMaterial.backFaceCulling = false;
+        shaderMaterial.depthFunction = Engine.ALWAYS;
+        shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
+            const gsMaterial = mesh.material as GaussianSplattingMaterial;
+            const gsMesh = mesh as GaussianSplattingMesh;
+            this._bindVoxelEffectUniforms(gsMesh, gsMaterial, shaderMaterial);
+        });
+        return shaderMaterial;
     }
 
     /**
@@ -603,7 +727,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         if (compoundMesh) {
-            defines.push("#define IS_COMPOUND");
+            defines.push("#define IS_COMPOUND 1");
             defines.push(`#define MAX_PART_COUNT ${GetGaussianSplattingMaxPartCount(scene.getEngine())}`);
         }
 
@@ -624,10 +748,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 needAlphaBlending: alphaBlendedDepth,
             }
         );
+        shaderMaterial.doNotSerialize = true;
         shaderMaterial.backFaceCulling = false;
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
-            const gsMesh = mesh as GaussianSplattingMesh;
+            // Use the source mesh from the material for GS-specific properties (textures, etc.),
+            // since the bound mesh may be a camera mesh proxy without those properties.
+            const gsMesh = (gsMaterial?.getSourceMesh() ?? mesh) as GaussianSplattingMesh;
             GaussianSplattingMaterial._BindEffectUniforms(gsMesh, gsMaterial, shaderMaterial, scene);
         });
         return shaderMaterial;
@@ -649,6 +776,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 shaderLanguage: shaderLanguage,
             }
         );
+        shaderMaterial.doNotSerialize = true;
         shaderMaterial.backFaceCulling = false;
 
         const shadowDepthWrapper = new ShadowDepthWrapper(shaderMaterial, scene, {
@@ -657,7 +785,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
-            const gsMesh = mesh as GaussianSplattingMesh;
+            // Use the source mesh from the material for GS-specific properties (textures, etc.),
+            // since the bound mesh may be a camera mesh proxy without those properties.
+            const gsMesh = (gsMaterial?.getSourceMesh() ?? mesh) as GaussianSplattingMesh;
 
             GaussianSplattingMaterial._BindEffectUniforms(gsMesh, gsMaterial, shaderMaterial, scene);
         });

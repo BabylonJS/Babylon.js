@@ -1,5 +1,5 @@
-import type { IDisposable } from "core/index";
-import type { IWatcherService } from "../services/watcherService";
+import { type IDisposable } from "core/index";
+import { type IWatcherService } from "../services/watcherService";
 
 import { createContext, useContext } from "react";
 

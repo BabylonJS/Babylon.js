@@ -1,4 +1,4 @@
-import type { AbstractEngine, FrameGraphTextureManager, Scene, FrameGraphTextureHandle, Nullable, InternalTexture, IViewportLike } from "core/index";
+import { type AbstractEngine, type FrameGraphTextureManager, type Scene, type FrameGraphTextureHandle, type Nullable, type InternalTexture, type IViewportLike } from "core/index";
 
 /**
  * Base class for frame graph context.

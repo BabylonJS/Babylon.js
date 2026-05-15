@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphContext, FrameGraphPass } from "core/index";
+import { type FrameGraph, type FrameGraphContext, type FrameGraphPass } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
 /**

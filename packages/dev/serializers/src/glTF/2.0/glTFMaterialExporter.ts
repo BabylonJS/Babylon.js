@@ -2,26 +2,38 @@
 /* eslint-disable github/no-then */
 /* eslint-disable babylonjs/available */
 
-import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IImage } from "babylonjs-gltf2interface";
-import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
+import {
+    type ITextureInfo,
+    type IMaterial,
+    type IMaterialPbrMetallicRoughness,
+    type IMaterialOcclusionTextureInfo,
+    type ISampler,
+    type IImage,
+    ImageMimeType,
+    MaterialAlphaMode,
+    TextureMagFilter,
+    TextureMinFilter,
+    TextureWrapMode,
+} from "babylonjs-gltf2interface";
 
-import type { DeepImmutable, Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
 import { GetTextureDataAsync, TextureTools } from "core/Misc/textureTools";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
-import type { GLTFExporter } from "./glTFExporter";
+import { type GLTFExporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
+import { NullEngine } from "core/Engines/nullEngine";
 import { EncodeImageAsync } from "core/Misc/dumpTools";
 
-import type { Material } from "core/Materials/material";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { type Material } from "core/Materials/material";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
@@ -99,7 +111,14 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
         return null;
     }
     if (internalTexture.invertY) {
-        return null;
+        // On a real engine, the GPU has the texture stored flipped (UNPACK_FLIP_Y_WEBGL),
+        // while the glTF loader uploads with invertY=false. Falling back to GPU readback
+        // produces bytes that round-trip correctly. NullEngine has no GPU readback path,
+        // so the cached URL bytes are the only option.
+        const engine = babylonTexture.getScene()?.getEngine();
+        if (!(engine instanceof NullEngine)) {
+            return null;
+        }
     }
 
     const buffer = internalTexture._buffer;
@@ -128,6 +147,11 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     } catch {
         // Failed to load texture data, fall back to GPU texture read via GetTextureDataAsync
         return null;
+    }
+
+    if (data && !mimeType && internalTexture.url) {
+        const dataUriMatch = internalTexture.url.match(/^data:([^;,]+)/);
+        mimeType = dataUriMatch ? dataUriMatch[1] : GetMimeType(internalTexture.url);
     }
 
     if (data && IsSupportedMimeType(mimeType)) {

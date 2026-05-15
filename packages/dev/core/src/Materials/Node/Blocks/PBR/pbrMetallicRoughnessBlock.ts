@@ -1,24 +1,23 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import type { Light } from "../../../../Lights/light";
-import type { Nullable } from "../../../../types";
+import { type Light } from "../../../../Lights/light";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { Effect } from "../../../effect";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { SheenBlock } from "./sheenBlock";
-import type { BaseTexture } from "../../../Textures/baseTexture";
+import { type BaseTexture } from "../../../Textures/baseTexture";
 import { GetEnvironmentBRDFTexture } from "../../../../Misc/brdfTextureTools";
 import { MaterialFlags } from "../../../materialFlags";
 import { AnisotropyBlock } from "./anisotropyBlock";
@@ -26,8 +25,8 @@ import { ReflectionBlock } from "./reflectionBlock";
 import { ClearCoatBlock } from "./clearCoatBlock";
 import { IridescenceBlock } from "./iridescenceBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
-import type { RefractionBlock } from "./refractionBlock";
-import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { type RefractionBlock } from "./refractionBlock";
+import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
 import { Color3 } from "../../../../Maths/math.color";
 import { Logger } from "core/Misc/logger";
@@ -867,7 +866,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 onlyUpdateBuffersList,
                 defines["IESLIGHTTEXTURE" + lightIndex],
                 defines["CLUSTLIGHT" + lightIndex],
-                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
+                state.shaderLanguage === ShaderLanguage.WGSL
             );
         }
     }
@@ -888,6 +888,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             if (!nodeMaterial.imageProcessingConfiguration.isReady()) {
                 return false;
             }
+        }
+
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
         }
 
         return true;
@@ -1247,7 +1251,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
-        state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
+        if (!isWebGPU) {
+            state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
+        }
 
         state._emitFunctionFromInclude("pbrIBLFunctions", comments);
 
@@ -1256,11 +1262,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAmbientOcclusion", comments);
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
-
-        if (!isWebGPU) {
-            // In WebGPU, those functions are part of pbrDirectLightingFunctions
-            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
-        }
 
         //
         // code
@@ -1442,6 +1443,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /SS_REFRACTIONMAP_OPPOSITEZ/g, replace: refractionBlock?._defineOppositeZ ?? "SS_REFRACTIONMAP_OPPOSITEZ" },
             ],
         });
+
+        if (isWebGPU) {
+            state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
+        }
+
+        if (!isWebGPU) {
+            // In WebGPU, those functions are part of pbrDirectLightingFunctions
+            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
+        }
 
         // _____________________________ Direct Lighting Info __________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);

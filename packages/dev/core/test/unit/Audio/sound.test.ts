@@ -2,10 +2,9 @@
  * @vitest-environment jsdom
  */
 
-import type { ISoundOptions } from "core/Audio";
-import type { Nullable } from "core/types";
+import { type ISoundOptions, AudioEngine, Sound } from "core/Audio";
+import { type Nullable } from "core/types";
 
-import { AudioEngine, Sound } from "core/Audio";
 import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 

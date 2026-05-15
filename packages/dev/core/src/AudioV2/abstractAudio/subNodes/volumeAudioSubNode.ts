@@ -1,10 +1,9 @@
-import type { Nullable } from "../../../types";
-import type { IAudioParameterRampOptions } from "../../audioParameter";
-import { AudioParameterRampShape } from "../../audioParameter";
-import type { AudioEngineV2 } from "../audioEngineV2";
+import { type Nullable } from "../../../types";
+import { type IAudioParameterRampOptions, AudioParameterRampShape } from "../../audioParameter";
+import { type AudioEngineV2 } from "../audioEngineV2";
 import { _AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
 import { AudioSubNode } from "../subNodes/audioSubNode";
-import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import { type _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 
 /** @internal */
 export const _VolumeAudioDefaults = {

@@ -1,35 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { serialize } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { Effect } from "../Materials/effect";
-import type { Material } from "../Materials/material";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type Effect } from "../Materials/effect";
+import { type Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { PostProcessOptions } from "../PostProcesses/postProcess";
-import { PostProcess } from "../PostProcesses/postProcess";
+import { type PostProcessOptions, PostProcess } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Color4 } from "../Maths/math.color";
-import { Color3 } from "../Maths/math.color";
+import { type Color4, Color3 } from "../Maths/math.color";
 
-import type { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
-import type { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
-import type { IThinHighlightLayerOptions } from "./thinHighlightLayer";
+import { type ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
+import { type ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+import { type IThinHighlightLayerOptions, ThinHighlightLayer } from "./thinHighlightLayer";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import { ThinHighlightLayer } from "./thinHighlightLayer";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
 
 declare module "../scene" {

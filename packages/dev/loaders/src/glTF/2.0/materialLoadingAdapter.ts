@@ -1,8 +1,8 @@
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
-import type { Color3 } from "core/Maths/math.color";
-import type { Vector3 } from "core/Maths/math.vector";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
+import { type Color3 } from "core/Maths/math.color";
+import { type GLTFLoader } from "./glTFLoader";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface
@@ -13,6 +13,18 @@ export interface IMaterialLoadingAdapter {
      * Gets the underlying material
      */
     readonly material: Material;
+
+    /**
+     * Finalizes material properties after all loading is complete.
+     * May do async work (e.g. GPU texture processing); the returned Promise is tracked
+     * by the loader and awaited before the COMPLETE state is reached, so callers can rely
+     * on onCompleteObservable for fully processed materials.
+     *
+     * Implementations should check `loader._disposed` between awaits to bail out early
+     * when the loader is disposed mid-flight.
+     * @param loader The glTF loader driving the finalize step.
+     */
+    finalizeAsync(loader: GLTFLoader): Promise<void>;
 
     /**
      * Whether the material should be treated as unlit
@@ -107,6 +119,11 @@ export interface IMaterialLoadingAdapter {
     enableSpecularEdgeColor(enableEdgeColor?: boolean): void;
 
     /**
+     * Enable the specular/glossiness workflow and disable metallic/roughness.
+     */
+    configureSpecularGlossiness(): void;
+
+    /**
      * Sets/gets the specular weight
      */
     specularWeight: number;
@@ -140,6 +157,12 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the specular IOR
      */
     specularIor: number;
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    glossiness: number;
 
     // ========================================
     // EMISSION PARAMETERS
@@ -273,6 +296,11 @@ export interface IMaterialLoadingAdapter {
     transmissionScatter: Color3;
 
     /**
+     * Sets the transmission scatter texture
+     */
+    transmissionScatterTexture: Nullable<BaseTexture>;
+
+    /**
      * Sets the scattering anisotropy (-1 to 1)
      */
     transmissionScatterAnisotropy: number;
@@ -302,6 +330,16 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
+     * Configures volume properties for volumetric transmission (KHR_materials_volume)
+     */
+    configureVolume(): void;
+
+    /**
+     * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    geometryThinWalled: boolean;
+
+    /**
      * Sets the thickness texture
      */
     volumeThicknessTexture: Nullable<BaseTexture>;
@@ -319,12 +357,6 @@ export interface IMaterialLoadingAdapter {
      * Configures subsurface properties
      */
     configureSubsurface(): void;
-
-    /**
-     * @internal
-     * Sets/gets the extinction coefficient
-     */
-    extinctionCoefficient: Vector3;
 
     /**
      * Sets/gets the subsurface weight
@@ -347,14 +379,14 @@ export interface IMaterialLoadingAdapter {
     subsurfaceColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the surface tint of the material (when using subsurface scattering)
+     * Sets/gets the diffuse transmission tint of the material
      */
-    subsurfaceConstantTint: Color3;
+    diffuseTransmissionTint: Color3;
 
     /**
-     * Sets/gets the surface tint texture of the material (when using subsurface scattering)
+     * Sets/gets the diffuse transmission tint texture of the material
      */
-    subsurfaceConstantTintTexture: Nullable<BaseTexture>;
+    diffuseTransmissionTintTexture: Nullable<BaseTexture>;
 
     /**
      * Sets/gets the subsurface radius (used for subsurface scattering)
@@ -370,6 +402,11 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the subsurface scattering anisotropy
      */
     subsurfaceScatterAnisotropy: number;
+
+    /**
+     * Does this material have a translucent surface (i.e. either transmission or subsurface)?
+     */
+    isTranslucent(): boolean;
 
     // ========================================
     // FUZZ LAYER (Sheen)

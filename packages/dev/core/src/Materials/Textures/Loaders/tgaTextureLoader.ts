@@ -1,6 +1,6 @@
 import { GetTGAHeader, UploadContent } from "../../../Misc/tga";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "./internalTextureLoader";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 
 /**
  * Implementation of the TGA Texture Loader.

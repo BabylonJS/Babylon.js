@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { Sprite } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type Sprite } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { PlayFilled, StopFilled } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
@@ -14,7 +13,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useColor4Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";

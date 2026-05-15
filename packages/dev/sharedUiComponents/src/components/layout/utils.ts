@@ -1,4 +1,4 @@
-import type { Layout, LayoutColumn, LayoutTabsRow } from "./types";
+import { type Layout, type LayoutColumn, type LayoutTabsRow } from "./types";
 
 /**
  * Given a column and row number in the layout, return the corresponding column/row

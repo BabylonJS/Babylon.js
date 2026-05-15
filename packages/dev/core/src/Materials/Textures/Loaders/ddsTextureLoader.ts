@@ -1,11 +1,10 @@
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "./internalTextureLoader";
-import type { DDSInfo } from "../../../Misc/dds";
-import { DDSTools } from "../../../Misc/dds";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
+import { type DDSInfo, DDSTools } from "../../../Misc/dds";
 
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 
 /**
  * Implementation of the DDS Texture Loader.

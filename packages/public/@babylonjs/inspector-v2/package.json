@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.56.2",
+    "version": "9.7.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -12,7 +12,11 @@
         },
         "./package.json": "./package.json"
     },
+    "bin": {
+        "babylon-inspector": "./bin/inspector-cli.mjs"
+    },
     "files": [
+        "bin/**/*.mjs",
         "lib/**/*.js",
         "lib/**/*.d.ts",
         "lib/**/*.map",
@@ -21,19 +25,21 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run bundle",
-        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
-        "bundle": "npm run bundle:lib",
-        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "clean": "rimraf lib && rimraf bin && rimraf dist && rimraf *.tsbuildinfo -g",
+        "bundle": "npm run bundle:lib && npm run bundle:cli",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs && tsc -p tsconfig.build.dts.json && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS",
+        "bundle:cli": "rollup -c rollup.config.cli.mjs",
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {
-        "@babylonjs/addons": "^8.0.0",
-        "@babylonjs/core": "^8.0.0",
-        "@babylonjs/gui": "^8.0.0",
-        "@babylonjs/gui-editor": "^8.0.0",
-        "@babylonjs/loaders": "^8.0.0",
-        "@babylonjs/materials": "^8.0.0",
-        "@babylonjs/serializers": "^8.0.0",
+        "@babylonjs/addons": "^9.0.0",
+        "@babylonjs/core": "^9.0.0",
+        "@babylonjs/gui": "^9.0.0",
+        "@babylonjs/gui-editor": "^9.0.0",
+        "@babylonjs/loaders": "^9.0.0",
+        "@babylonjs/materials": "^9.0.0",
+        "@babylonjs/serializers": "^9.0.0",
+        "@fluentui-contrib/react-resize-handle": "^0.8.4",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
@@ -48,9 +54,11 @@
         "@rollup/plugin-commonjs": "^26.0.1",
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-typescript": "^11.1.6",
+        "@types/ws": "^8.5.0",
         "chalk": "^5.3.0",
         "rollup": "^4.59.0",
-        "rollup-plugin-dts": "^6.1.1"
+        "rollup-plugin-dts": "^6.1.1",
+        "ws": "^8.18.0"
     },
     "keywords": [
         "3D",

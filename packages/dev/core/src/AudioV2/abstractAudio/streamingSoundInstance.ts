@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
-import type { IAbstractSoundInstanceOptions } from "./abstractSoundInstance";
-import { _AbstractSoundInstance } from "./abstractSoundInstance";
-import type { IStreamingSoundOptionsBase, StreamingSound } from "./streamingSound";
+import { type IAbstractSoundInstanceOptions, _AbstractSoundInstance } from "./abstractSoundInstance";
+import { type IStreamingSoundOptionsBase, type StreamingSound } from "./streamingSound";
 
 /**
  * Options for creating streaming sound instance.

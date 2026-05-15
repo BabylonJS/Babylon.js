@@ -1,6 +1,5 @@
-import type { RefObject } from "react";
-import type { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
-import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import { type RefObject, createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import { type AccordionProps, type AccordionSectionBlockProps, type AccordionSectionItemProps } from "./accordion";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Logger } from "core/Misc/logger";
 
@@ -323,14 +322,14 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
     // Debug: warn if itemId changes (should be stable)
     const prevItemIdRef = useRef(itemId);
     useEffect(() => {
-        if (prevItemIdRef.current !== itemId) {
+        if (accordionCtx && prevItemIdRef.current !== itemId) {
             Logger.Warn(
                 `Accordion: The uniqueId "${itemId}" in section "${sectionCtx?.sectionId}" has changed from "${prevItemIdRef.current}". ` +
                     `Each item must have a unique, stable ID for pin/hide persistence to work correctly.`
             );
         }
         prevItemIdRef.current = itemId;
-    }, [itemId, sectionCtx?.sectionId]);
+    }, [accordionCtx, itemId, sectionCtx?.sectionId]);
 
     // Register item and detect duplicates (skip nested items, as children of other AccordionSectionItem should not participate in pin/hide/search).
     useEffect(() => {

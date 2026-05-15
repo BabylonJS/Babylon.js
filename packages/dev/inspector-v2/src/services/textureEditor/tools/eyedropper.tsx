@@ -1,6 +1,6 @@
 /* eslint-disable babylonjs/available */
-import type { Nullable, Observer, PointerInfo } from "core/index";
-import type { TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
+import { type Nullable, type Observer, type PointerInfo } from "core/index";
+import { type TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
 
 import { EyedropperRegular } from "@fluentui/react-icons";
 

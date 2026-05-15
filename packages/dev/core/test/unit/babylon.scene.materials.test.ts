@@ -1,5 +1,4 @@
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { Material, MultiMaterial, StandardMaterial } from "core/Materials";
 import { Scene } from "core/scene";
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import type { IAudioEngine } from "./Interfaces/IAudioEngine";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type IAudioEngine } from "./Interfaces/IAudioEngine";
 import { Tools } from "../Misc/tools";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";

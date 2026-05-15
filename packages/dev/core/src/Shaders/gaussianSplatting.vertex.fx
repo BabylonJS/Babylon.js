@@ -37,6 +37,10 @@ uniform highp usampler2D shTexture1;
 #if SH_DEGREE > 2
 uniform highp usampler2D shTexture2;
 #endif
+#if SH_DEGREE > 3
+uniform highp usampler2D shTexture3;
+uniform highp usampler2D shTexture4;
+#endif
 
 #if IS_COMPOUND
 uniform sampler2D partIndicesTexture;

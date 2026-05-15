@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
+import { type ISelectionService } from "../../../services/selectionService";
 import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useState } from "react";
 
 import { Tools } from "core/Misc/tools";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
@@ -11,7 +10,7 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../misc/snippetUtils";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";

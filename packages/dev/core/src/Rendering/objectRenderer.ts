@@ -1,17 +1,17 @@
-import type {
-    Nullable,
-    Immutable,
-    Camera,
-    Scene,
-    AbstractMesh,
-    SubMesh,
-    Material,
-    IParticleSystem,
-    InstancedMesh,
-    BoundingBox,
-    BoundingBoxRenderer,
-    AbstractEngine,
-    ClusteredLightContainer,
+import {
+    type Nullable,
+    type Immutable,
+    type Camera,
+    type Scene,
+    type AbstractMesh,
+    type SubMesh,
+    type Material,
+    type IParticleSystem,
+    type InstancedMesh,
+    type BoundingBox,
+    type BoundingBoxRenderer,
+    type AbstractEngine,
+    type ClusteredLightContainer,
 } from "core/index";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Observable } from "../Misc/observable";
@@ -238,12 +238,18 @@ export class ObjectRenderer {
     ) => void;
 
     /**
-     * An event triggered before rendering the objects
+     * An event triggered before rendering the objects.
+     * Note: This observable is also triggered during readiness checks (e.g. when calling scene.isReady()),
+     * in which case the render target is not bound to the output. Observers should avoid performing
+     * GPU state changes (such as clearing or modifying the framebuffer) unless the render target is actually bound.
      */
     public readonly onBeforeRenderObservable = new Observable<number>();
 
     /**
-     * An event triggered after rendering the objects
+     * An event triggered after rendering the objects.
+     * Note: This observable is also triggered during readiness checks (e.g. when calling scene.isReady()),
+     * in which case the render target is not bound to the output. Observers should avoid performing
+     * GPU state changes (such as clearing or modifying the framebuffer) unless the render target is actually bound.
      */
     public readonly onAfterRenderObservable = new Observable<number>();
 
@@ -494,6 +500,7 @@ export class ObjectRenderer {
         ubo.addUniform("view", 16);
         ubo.addUniform("projection", 16);
         ubo.addUniform("vEyePosition", 4);
+        ubo.addUniform("inverseProjection", 16);
         return ubo;
     }
 
@@ -552,9 +559,20 @@ export class ObjectRenderer {
     /**
      * Indicates if the renderer should render the current frame.
      * The output is based on the specified refresh rate.
+     * When snapshot rendering is active, this always returns true to ensure render pass
+     * topology stays consistent between the recording frame and playback frames.
      * @returns true if the renderer should render the current frame
      */
     public shouldRender(): boolean {
+        if (this._engine.snapshotRendering) {
+            // When snapshot rendering is active (recording or playing), we must always render
+            // to ensure the number of render passes stays consistent between the recording frame
+            // and all playback frames. If a render target is skipped during recording but not
+            // during playback (or vice versa), the recorded bundle list indices become misaligned,
+            // causing visual artifacts such as flickering.
+            return true;
+        }
+
         if (this._currentRefreshId === -1) {
             // At least render once
             this._currentRefreshId = 1;

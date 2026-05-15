@@ -1,22 +1,20 @@
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { PointerInfo } from "../Events/pointerEvents";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type PointerInfo } from "../Events/pointerEvents";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Node } from "../node";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import type { LinesMesh } from "../Meshes/linesMesh";
+import { type LinesMesh } from "../Meshes/linesMesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { ScaleGizmo } from "./scaleGizmo";
+import { type ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode";
 import { Epsilon } from "../Maths/math.constants";
 
 /**

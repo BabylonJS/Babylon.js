@@ -1,8 +1,7 @@
 import { Button as FluentButton, makeStyles, Spinner } from "@fluentui/react-components";
-import type { MouseEvent } from "react";
-import { forwardRef, useCallback, useContext, useState } from "react";
-import type { FluentIcon } from "@fluentui/react-icons";
-import type { BasePrimitiveProps } from "./primitive";
+import { type MouseEvent, forwardRef, useCallback, useContext, useState } from "react";
+import { type FluentIcon } from "@fluentui/react-icons";
+import { type BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { TokenMap } from "./utils";
 import { Tooltip } from "./tooltip";

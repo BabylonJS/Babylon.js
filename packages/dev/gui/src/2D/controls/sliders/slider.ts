@@ -1,10 +1,10 @@
 import { BaseSlider } from "./baseSlider";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { Nullable } from "core/types";
-import type { BaseGradient } from "../gradient/BaseGradient";
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type Nullable } from "core/types";
+import { type BaseGradient } from "../gradient/BaseGradient";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Tools } from "core/Misc/tools";
 
 /**

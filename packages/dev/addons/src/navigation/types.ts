@@ -1,10 +1,10 @@
-import type { NavMesh, NavMeshQuery, TileCache, TileCacheMeshProcess } from "@recast-navigation/core";
-import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "@recast-navigation/generators";
+import { type NavMesh, type NavMeshQuery, type TileCache, type TileCacheMeshProcess } from "@recast-navigation/core";
+import { type SoloNavMeshGeneratorIntermediates, type TileCacheGeneratorIntermediates, type TiledNavMeshGeneratorIntermediates } from "@recast-navigation/generators";
 
-import type { IVector3Like } from "core/Maths/math.like";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { IAgentParameters, INavMeshParameters } from "core/Navigation/INavigationEngine";
-import type { Nullable } from "core/types";
+import { type IVector3Like } from "core/Maths/math.like";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type IAgentParameters, type INavMeshParameters } from "core/Navigation/INavigationEngine";
+import { type Nullable } from "core/types";
 
 /**
  * Recast injection type

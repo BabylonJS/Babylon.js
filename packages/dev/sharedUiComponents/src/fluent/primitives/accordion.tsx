@@ -1,7 +1,8 @@
-import type { AccordionPanelProps, AccordionToggleData, AccordionToggleEvent, AccordionProps as FluentAccordionProps } from "@fluentui/react-components";
-import type { ForwardRefExoticComponent, FunctionComponent, PropsWithChildren, RefAttributes } from "react";
-
 import {
+    type AccordionPanelProps,
+    type AccordionToggleData,
+    type AccordionToggleEvent,
+    type AccordionProps as FluentAccordionProps,
     AccordionHeader,
     AccordionItem,
     AccordionPanel,
@@ -15,8 +16,24 @@ import {
     makeStyles,
     tokens,
 } from "@fluentui/react-components";
+import {
+    type ForwardRefExoticComponent,
+    type FunctionComponent,
+    type PropsWithChildren,
+    type RefAttributes,
+    Children,
+    forwardRef,
+    isValidElement,
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+
 import { ArrowCircleUpRegular, CheckmarkFilled, EditRegular, EyeFilled, EyeOffRegular, FilterRegular, PinFilled, PinRegular } from "@fluentui/react-icons";
-import { Children, forwardRef, isValidElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { useKeyState } from "../hooks/keyboardHooks";

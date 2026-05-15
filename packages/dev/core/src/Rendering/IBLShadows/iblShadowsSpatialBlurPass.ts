@@ -1,16 +1,14 @@
 import { Constants } from "../../Engines/constants";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { Scene } from "../../scene";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-import { PostProcess } from "../../PostProcesses/postProcess";
-import type { PostProcessOptions } from "../../PostProcesses/postProcess";
+import { PostProcess, type PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
-import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
-import type { EventState } from "../../Misc/observable";
-import type { Nullable } from "../../types";
+import { ProceduralTexture, type IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import { type EventState } from "../../Misc/observable";
+import { type Nullable } from "../../types";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component

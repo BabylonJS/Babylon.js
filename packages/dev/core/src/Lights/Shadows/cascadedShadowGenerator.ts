@@ -1,24 +1,24 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import type { SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh";
 
-import type { IShadowLight } from "../../Lights/shadowLight";
-import type { Effect } from "../../Materials/effect";
+import { type IShadowLight } from "../../Lights/shadowLight";
+import { type Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { Constants } from "../../Engines/constants";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShadowGenerator } from "./shadowGenerator";
-import type { DirectionalLight } from "../directionalLight";
+import { type DirectionalLight } from "../directionalLight";
 
 import { BoundingInfo } from "../../Culling/boundingInfo";
-import type { DepthRenderer } from "../../Rendering/depthRenderer";
+import { type DepthRenderer } from "../../Rendering/depthRenderer";
 import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
-import type { Camera } from "../../Cameras/camera";
+import { type Camera } from "../../Cameras/camera";
 import { FloatingOriginCurrentScene, GetOffsetTransformMatrices } from "../../Materials/floatingOriginMatrixOverrides";
 
 interface ICascade {

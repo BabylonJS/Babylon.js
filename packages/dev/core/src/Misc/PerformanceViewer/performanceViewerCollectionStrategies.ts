@@ -1,9 +1,9 @@
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { PrecisionDate } from "../precisionDate";
 import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
 import { PressureObserverWrapper } from "../pressureObserverWrapper";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 
 /**
  * Defines the general structure of what is necessary for a collection strategy.

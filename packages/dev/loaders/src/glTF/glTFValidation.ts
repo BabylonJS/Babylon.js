@@ -2,7 +2,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/promise-function-async */
 import type * as GLTF2 from "babylonjs-gltf2interface";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

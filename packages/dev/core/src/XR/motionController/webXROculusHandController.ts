@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness } from "./webXRAbstractMotionController";
-import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
-import type { Scene } from "../../scene";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import {
+    type IMotionControllerLayoutMap,
+    type IMinimalMotionControllerObject,
+    type MotionControllerHandedness,
+    WebXRAbstractMotionController,
+} from "./webXRAbstractMotionController";
+import { type Scene } from "../../scene";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
 
 /**

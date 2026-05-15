@@ -1,7 +1,7 @@
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { Viewport } from "../Maths/math.viewport";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type Viewport } from "../Maths/math.viewport";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 

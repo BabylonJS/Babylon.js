@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { Camera } from "core/Cameras/camera";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";

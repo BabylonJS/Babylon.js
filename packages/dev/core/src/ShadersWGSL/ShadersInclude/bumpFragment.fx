@@ -52,12 +52,12 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
-		normalW = normalize(textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(TEXRD(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3x3f(uniforms.normalMatrix[0].xyz, uniforms.normalMatrix[1].xyz, uniforms.normalMatrix[2].xyz) * normalW);
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz, uniforms.vBumpInfos.y);
+		normalW = perturbNormal(TBN, TEXRD(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz, uniforms.vBumpInfos.y);
     #else
-        var bumpNormal: vec3f = textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz * 2.0 - 1.0;
+        var bumpNormal: vec3f = TEXRD(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
         #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
             detailNormal = vec3f(detailNormal.xy * uniforms.vDetailInfos.z, detailNormal.z);

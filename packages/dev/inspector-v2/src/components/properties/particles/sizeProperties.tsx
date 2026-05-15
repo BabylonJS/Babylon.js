@@ -1,10 +1,9 @@
-import type { FactorGradient } from "core/Misc";
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { FunctionComponent } from "react";
+import { type FactorGradient } from "core/Misc";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type FunctionComponent, useCallback } from "react";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { useCallback } from "react";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";

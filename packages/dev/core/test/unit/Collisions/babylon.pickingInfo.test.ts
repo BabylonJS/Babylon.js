@@ -1,10 +1,8 @@
 import { PickingInfo } from "core/Collisions";
 import { Ray } from "core/Culling";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { Vector2, Vector3 } from "core/Maths";
-import type { Mesh } from "core/Meshes";
-import { MeshBuilder } from "core/Meshes";
+import { type Mesh, MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
 
 describe("PickingInfo", () => {

@@ -1,22 +1,21 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { serializeAsVector3, serialize } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import type { Matrix } from "core/Maths/math.vector";
-import { Vector3, Quaternion, TmpVectors } from "core/Maths/math.vector";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Matrix, Vector3, Quaternion, TmpVectors } from "core/Maths/math.vector";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { SubMesh } from "core/Meshes/subMesh";
-import type { Mesh } from "core/Meshes/mesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type SubMesh } from "core/Meshes/subMesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type IEffectCreationOptions } from "core/Materials/effect";
 
-import "./sky.fragment";
-import "./sky.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import { BindFogParameters, BindLogDepth, PrepareDefinesForAttributes, PrepareDefinesForMisc } from "core/Materials/materialHelper.functions";
@@ -136,6 +135,8 @@ export class SkyMaterial extends PushMaterial {
     private _cameraPosition: Vector3 = Vector3.Zero();
     private _skyOrientation: Quaternion = new Quaternion();
 
+    private _shadersLoaded = false;
+
     /**
      * Instantiates a new sky material.
      * This material allows to create dynamic and texture free
@@ -143,9 +144,10 @@ export class SkyMaterial extends PushMaterial {
      * @see https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
 
     /**
@@ -268,7 +270,36 @@ export class SkyMaterial extends PushMaterial {
             ];
             AddClipPlaneUniforms(uniforms);
             const join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, uniforms, [], join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: [],
+                        samplers: [],
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/sky.vertex"), import("./wgsl/sky.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./sky.vertex"), import("./sky.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
+                    },
+                    scene.getEngine()
+                ),
+                defines,
+                this._materialContext
+            );
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

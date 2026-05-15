@@ -1,14 +1,14 @@
-import type { TileCacheMeshProcess, NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
+import { type TileCacheMeshProcess, type NavMesh, type QueryFilter, type TileCache, type NavMeshQuery } from "@recast-navigation/core";
 
-import type { ICrowd, INavigationEnginePlugin, IObstacle } from "core/Navigation/INavigationEngine";
+import { type ICrowd, type INavigationEnginePlugin, type IObstacle } from "core/Navigation/INavigationEngine";
 import { Logger } from "core/Misc/logger";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Scene } from "core/scene";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Scene } from "core/scene";
 import { TmpVectors, Vector3 } from "core/Maths/math";
-import type { IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 
-import type { CreateNavMeshResult, GeneratorIntermediates, INavMeshParametersV2, RecastInjection } from "../types";
+import { type CreateNavMeshResult, type GeneratorIntermediates, type INavMeshParametersV2, type RecastInjection } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";

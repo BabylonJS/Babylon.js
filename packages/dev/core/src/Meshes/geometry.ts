@@ -1,30 +1,27 @@
-import type { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
-import type { Scene } from "../scene";
-import type { Vector2 } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
+import { type Nullable, type FloatArray, type DataArray, type IndicesArray } from "../types";
+import { type Scene } from "../scene";
+import { type Vector2, Vector3 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
-import { VertexData } from "../Meshes/mesh.vertexData";
-import { VertexBuffer } from "../Buffers/buffer";
+import { type IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
+import { VertexBuffer, type Buffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Effect } from "../Materials/effect";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Effect } from "../Materials/effect";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Constants } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { EngineStore } from "../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../Compat/compatibilityOptions";
 
-import type { Mesh } from "../Meshes/mesh";
-import type { Buffer } from "../Buffers/buffer";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type Mesh } from "../Meshes/mesh";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { CopyFloatData, GetTypedArrayData } from "../Buffers/bufferUtils";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)

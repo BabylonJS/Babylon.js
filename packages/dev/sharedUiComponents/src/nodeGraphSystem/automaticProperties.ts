@@ -1,5 +1,5 @@
-import type { IEditablePropertyOption } from "core/Decorators/nodeDecorator";
-import type { StateManager } from "./stateManager";
+import { type IEditablePropertyOption } from "core/Decorators/nodeDecorator";
+import { type StateManager } from "./stateManager";
 
 /**
  * Function used to force a rebuild of the node system

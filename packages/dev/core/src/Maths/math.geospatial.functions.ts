@@ -1,7 +1,7 @@
 import { Clamp } from "./math.scalar.functions";
-import type { DeepImmutable } from "../types";
-import type { IEllipsoidLike, ILatLonAltLike, ILatLonLike } from "./math.geospatial";
-import type { IVector3Like } from "./math.like";
+import { type DeepImmutable } from "../types";
+import { type IEllipsoidLike, type ILatLonAltLike, type ILatLonLike } from "./math.geospatial";
+import { type IVector3Like } from "./math.like";
 import { Vector3FromFloatsToRef } from "./math.vector.functions";
 
 const HalfPi = Math.PI / 2;

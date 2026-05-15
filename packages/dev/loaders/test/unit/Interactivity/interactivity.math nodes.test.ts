@@ -1,4 +1,4 @@
-import type { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
+import { type IKHRInteractivity_Declaration, type IKHRInteractivity_Graph, type IKHRInteractivity_Node, type IKHRInteractivity_Type } from "babylonjs-gltf2interface";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";

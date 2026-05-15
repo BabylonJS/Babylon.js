@@ -1,4 +1,4 @@
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Engine } from "core/Engines/engine";
 import { Tools } from "core/Misc/tools";
 import { GUIEditor } from "gui-editor/guiEditor";
@@ -13,7 +13,7 @@ let guiEditorContainer: { GUIEditor: typeof GUIEditor };
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function GetGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
-    // UMD Global name detection from Webpack Bundle UMD Name.
+    // UMD global name detection from bundle metadata.
     if (typeof GUIEditor !== "undefined") {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         return { GUIEditor };

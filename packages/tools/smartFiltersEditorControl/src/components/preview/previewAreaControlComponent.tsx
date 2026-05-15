@@ -2,8 +2,8 @@ import * as react from "react";
 import { type GlobalState } from "../../globalState.js";
 
 import popUpIcon from "../../assets/imgs/popOut.svg";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
 import { FillMode, FixedMode, type PreviewSizeMode } from "../../previewSizeManager.js";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent.js";

@@ -1,11 +1,11 @@
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Mesh } from "core/Meshes/mesh";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Mesh } from "core/Meshes/mesh";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { Control3D } from "./control3D";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Tools } from "core/Misc/tools";
 
 /**

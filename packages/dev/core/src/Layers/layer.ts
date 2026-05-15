@@ -1,19 +1,18 @@
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -194,11 +193,17 @@ export class Layer {
         color?: Color4,
         forceGLSL = false
     ) {
+        if (!scene) {
+            scene = EngineStore.LastCreatedScene!;
+        }
+        this.layerMask = scene.defaultRenderableLayerMask;
+
         this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
         this.isBackground = isBackground === undefined ? true : isBackground;
         this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
-        this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
+        this._scene = scene;
+
         const engine = this._scene.getEngine();
         if (engine.isWebGPU && !forceGLSL && !Layer.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;

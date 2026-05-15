@@ -1,7 +1,7 @@
-import type { CustomBlockManager } from "../customBlockManager";
-import type { SerializedBlockDefinition, SmartFilter, SmartFilterDeserializer } from "smart-filters";
-import type { IBlockRegistration } from "smart-filters-blocks";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type CustomBlockManager } from "../customBlockManager";
+import { type SerializedBlockDefinition, type SmartFilter, type SmartFilterDeserializer } from "smart-filters";
+import { type IBlockRegistration } from "smart-filters-blocks";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { CustomBlocksNamespace } from "smart-filters-editor-control";
 
 /**

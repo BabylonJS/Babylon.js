@@ -1,10 +1,10 @@
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import type { GlobalState } from "../globalState";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { type GlobalState } from "../globalState";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { BlockNodeData } from "./blockNodeData";
 
 export const RegisterDefaultInput = (stateManager: StateManager) => {

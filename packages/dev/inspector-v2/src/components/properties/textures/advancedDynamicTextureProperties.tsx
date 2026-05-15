@@ -1,8 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-
-import { useCallback } from "react";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type GUIEditor } from "gui-editor/guiEditor";
 
 import { EditRegular } from "@fluentui/react-icons";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -11,9 +10,9 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { usePollingObservable } from "../../../hooks/pollingHooks";
-import { useResource } from "../../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 import { BoundProperty } from "../boundProperty";
 
 export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
@@ -70,8 +69,13 @@ export const AdvancedDynamicTexturePreviewProperties: FunctionComponent<{ textur
                 label="Edit GUI"
                 icon={EditRegular}
                 onClick={async () => {
-                    const { GUIEditor } = await import("gui-editor/guiEditor");
-                    await GUIEditor.Show({ liveGuiTexture: texture });
+                    // The UMD inspector bundle externalizes "gui-editor/guiEditor" to BABYLON.GuiEditor,
+                    // which is the GUIEditor class itself rather than a namespace { GUIEditor }.
+                    // Tolerate both shapes so this works in both UMD and module builds.
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    const guiEditorModule: { GUIEditor: typeof GUIEditor } | typeof GUIEditor = await import("gui-editor/guiEditor");
+                    const guiEditor = "GUIEditor" in guiEditorModule ? guiEditorModule.GUIEditor : guiEditorModule;
+                    await guiEditor.Show({ liveGuiTexture: texture });
                 }}
             />
         </>

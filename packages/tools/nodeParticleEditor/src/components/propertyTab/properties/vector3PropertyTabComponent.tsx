@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
+import { type GlobalState } from "../../../globalState";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color3 } from "core/Maths/math.color";
 

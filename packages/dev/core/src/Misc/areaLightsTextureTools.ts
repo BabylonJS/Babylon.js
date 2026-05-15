@@ -1,8 +1,8 @@
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { Nullable } from "core/types";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector2 } from "core/Maths/math.vector";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";

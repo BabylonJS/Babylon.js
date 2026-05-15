@@ -1,4 +1,4 @@
-import type { Scene, FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FrameGraphShadowGeneratorTask } from "../../../Tasks/Rendering/shadowGeneratorTask";

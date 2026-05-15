@@ -1,11 +1,10 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { FrameNodePort } from "./frameNodePort";
-import type { NodePort } from "./nodePort";
-import type { GraphNode } from "./graphNode";
-import type { GraphCanvasComponent } from "./graphCanvas";
-import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type FrameNodePort } from "./frameNodePort";
+import { type NodePort } from "./nodePort";
+import { type GraphNode } from "./graphNode";
+import { type GraphCanvasComponent } from "./graphCanvas";
+import { type ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
 import * as commonStyles from "./common.module.scss";
 import * as styles from "./nodeLink.module.scss";
@@ -22,6 +21,7 @@ export class NodeLink {
     private _isVisible = true;
     private _isTargetCandidate = false;
     private _gradient: Nullable<SVGLinearGradientElement>;
+    private _flowAnimationActive = false;
 
     public onDisposedObservable = new Observable<NodeLink>();
 
@@ -298,6 +298,89 @@ export class NodeLink {
         }
 
         stateManager.onSelectionChangedObservable.notifyObservers({ selection: this });
+    }
+
+    /** Ensure the shared SVG glow filter exists, return its id
+     * @param svg the SVG element to check for the filter and add it to if not present
+     * @returns the id of the glow filter to use in this SVG
+     */
+    private static _EnsureGlowFilter(svg: Element): string {
+        const filterId = "flowDotGlow";
+        if (!svg.querySelector(`#${filterId}`)) {
+            const ns = "http://www.w3.org/2000/svg";
+            const doc = svg.ownerDocument;
+            let defs = svg.querySelector("defs");
+            if (!defs) {
+                defs = doc.createElementNS(ns, "defs");
+                svg.prepend(defs);
+            }
+            const filter = doc.createElementNS(ns, "filter");
+            filter.setAttribute("id", filterId);
+            filter.setAttribute("x", "-50%");
+            filter.setAttribute("y", "-50%");
+            filter.setAttribute("width", "200%");
+            filter.setAttribute("height", "200%");
+            const blur = doc.createElementNS(ns, "feGaussianBlur");
+            blur.setAttribute("stdDeviation", "3");
+            blur.setAttribute("result", "blur");
+            const merge = doc.createElementNS(ns, "feMerge");
+            const n1 = doc.createElementNS(ns, "feMergeNode");
+            n1.setAttribute("in", "blur");
+            const n2 = doc.createElementNS(ns, "feMergeNode");
+            n2.setAttribute("in", "SourceGraphic");
+            merge.appendChild(n1);
+            merge.appendChild(n2);
+            filter.appendChild(blur);
+            filter.appendChild(merge);
+            defs.appendChild(filter);
+        }
+        return filterId;
+    }
+
+    /**
+     * Triggers a brief animated dot traveling along the link path from port A to port B.
+     * @param durationMs how long the animation takes (default 600ms)
+     * @param color the color of the dot (default green)
+     */
+    public triggerFlowAnimation(durationMs = 600, color = "#33B766"): void {
+        if (this._flowAnimationActive || !this._path.parentElement) {
+            return;
+        }
+
+        const totalLength = this._path.getTotalLength();
+        if (totalLength === 0) {
+            return;
+        }
+
+        this._flowAnimationActive = true;
+
+        const svg = this._path.parentElement;
+        const ns = "http://www.w3.org/2000/svg";
+        const doc = this._path.ownerDocument;
+        const filterId = NodeLink._EnsureGlowFilter(svg);
+
+        const dot = doc.createElementNS(ns, "circle");
+        dot.setAttribute("r", "6");
+        dot.setAttribute("fill", color);
+        dot.setAttribute("filter", `url(#${filterId})`);
+        dot.style.pointerEvents = "none";
+        svg.appendChild(dot);
+
+        const startTime = performance.now();
+        const animate = (now: number) => {
+            const t = Math.min((now - startTime) / durationMs, 1);
+            const pt = this._path.getPointAtLength(t * totalLength);
+            dot.setAttribute("cx", String(pt.x));
+            dot.setAttribute("cy", String(pt.y));
+
+            if (t < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                dot.remove();
+                this._flowAnimationActive = false;
+            }
+        };
+        requestAnimationFrame(animate);
     }
 
     public dispose(notify = true) {

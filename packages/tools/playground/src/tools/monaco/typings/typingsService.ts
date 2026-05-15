@@ -6,7 +6,7 @@ import type * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { setupTypeAcquisition } from "@typescript/ata";
 import { CreateTsShim } from "./tsService";
 import { BlocklistBase } from "./constants";
-import type { AddPathsFn, RequestLocalResolve } from "./types";
+import { type AddPathsFn, type RequestLocalResolve } from "./types";
 import { BasePackage, BuildSyntheticAtaEntry, CanonicalSpec, IsBare, IsNodeish, NormalizeVirtualPath, ParseSpec, SanitizeSpecifier } from "./utils";
 
 export class TypingsService {

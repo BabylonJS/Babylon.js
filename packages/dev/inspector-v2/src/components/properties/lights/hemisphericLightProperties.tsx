@@ -1,5 +1,5 @@
-import type { HemisphericLight } from "core/index";
-import type { FunctionComponent } from "react";
+import { type HemisphericLight } from "core/index";
+import { type FunctionComponent } from "react";
 
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";

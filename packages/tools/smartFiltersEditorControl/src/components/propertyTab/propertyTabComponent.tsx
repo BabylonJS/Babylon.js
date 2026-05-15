@@ -16,16 +16,16 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent.js";
 import { BlockTools } from "../../blockTools.js";
 
-import type { Nullable } from "core/types";
-import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type Nullable } from "core/types";
+import { type FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ForceWebGL1StorageKey, type GlobalState } from "../../globalState.js";
-import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { type ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { OptimizerDebugMode, SmartFilterCoreVersion } from "smart-filters";
-import type { Observer } from "core/Misc/observable.js";
+import { type Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
-import type { IInspectableOptions } from "core/Misc/iInspectable.js";
+import { type IInspectableOptions } from "core/Misc/iInspectable.js";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;

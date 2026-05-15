@@ -1,11 +1,10 @@
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
 
 /**

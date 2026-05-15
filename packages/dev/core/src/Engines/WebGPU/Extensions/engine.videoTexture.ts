@@ -1,8 +1,8 @@
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../../types";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
-import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

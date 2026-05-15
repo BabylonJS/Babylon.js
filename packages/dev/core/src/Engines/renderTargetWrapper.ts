@@ -1,10 +1,9 @@
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import { InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import type { Nullable } from "../types";
+import { type InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { type RenderTargetCreationOptions, type TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { type Nullable } from "../types";
 import { Constants } from "./constants";
-import type { AbstractEngine } from "./abstractEngine";
-import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
+import { type AbstractEngine } from "./abstractEngine";
+import { type IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 /**

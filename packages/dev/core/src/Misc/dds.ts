@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Clamp } from "../Maths/math.scalar.functions";
-import type { SphericalPolynomial } from "../Maths/sphericalPolynomial";
+import { type SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { Constants } from "../Engines/constants";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { Nullable } from "../types";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
 import "../Engines/AbstractEngine/abstractEngine.cubeTexture";

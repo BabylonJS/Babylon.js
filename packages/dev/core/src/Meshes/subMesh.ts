@@ -1,26 +1,24 @@
-import type { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
-import type { Matrix, Vector3 } from "../Maths/math.vector";
+import { type Nullable, type IndicesArray, type DeepImmutable, type FloatArray } from "../types";
+import { type Matrix, type Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import type { ICullable } from "../Culling/boundingInfo";
-import { BoundingInfo } from "../Culling/boundingInfo";
-import type { Effect } from "../Materials/effect";
+import { type ICullable, BoundingInfo } from "../Culling/boundingInfo";
+import { type Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMaxIndexed } from "../Maths/math.functions";
-import type { Plane } from "../Maths/math.plane";
+import { type Plane } from "../Maths/math.plane";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import type { IMaterialContext } from "../Engines/IMaterialContext";
+import { type IMaterialContext } from "../Engines/IMaterialContext";
 
-import type { Collider } from "../Collisions/collider";
-import type { Material } from "../Materials/material";
-import type { MaterialDefines } from "../Materials/materialDefines";
-import type { MultiMaterial } from "../Materials/multiMaterial";
-import type { AbstractMesh } from "./abstractMesh";
-import type { Mesh } from "./mesh";
-import type { Ray } from "../Culling/ray";
-import type { TrianglePickingPredicate } from "../Culling/ray";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type Collider } from "../Collisions/collider";
+import { type Material } from "../Materials/material";
+import { type MaterialDefines } from "../Materials/materialDefines";
+import { type MultiMaterial } from "../Materials/multiMaterial";
+import { type AbstractMesh } from "./abstractMesh";
+import { type Mesh } from "./mesh";
+import { type Ray, type TrianglePickingPredicate } from "../Culling/ray";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Defines a subdivision inside a mesh

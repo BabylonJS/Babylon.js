@@ -1,14 +1,14 @@
-import type { Nullable } from "core/types";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Nullable } from "core/types";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create 2D buttons

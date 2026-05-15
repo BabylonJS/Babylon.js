@@ -1,4 +1,4 @@
-import type { IndicesArray } from "../types";
+import { type IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";

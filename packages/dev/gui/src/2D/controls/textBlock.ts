@@ -1,11 +1,11 @@
 import { Observable } from "core/Misc/observable";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext, ITextMetrics } from "core/Engines/ICanvas";
+import { type ICanvasRenderingContext, type ITextMetrics } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**

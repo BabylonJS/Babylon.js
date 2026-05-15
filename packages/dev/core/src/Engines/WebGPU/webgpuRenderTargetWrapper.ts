@@ -1,7 +1,7 @@
-import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGPUPerfCounter } from "./webgpuPerfCounter";
-import type { ThinWebGPUEngine } from "../thinWebGPUEngine";
+import { type ThinWebGPUEngine } from "../thinWebGPUEngine";
 
 /**
  * Specialized class used to store a render target of a WebGPU engine

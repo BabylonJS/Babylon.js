@@ -1,5 +1,4 @@
-import type { FunctionComponent, MouseEvent, MouseEventHandler } from "react";
-import { useCallback } from "react";
+import { type FunctionComponent, type MouseEvent, type MouseEventHandler, useCallback } from "react";
 import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses } from "@fluentui/react-components";
 import { useKeyState } from "../hooks/keyboardHooks";
 

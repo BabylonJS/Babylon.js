@@ -1,6 +1,6 @@
 import { makeStyles } from "@fluentui/react-components";
 import { Collapse as FluentCollapse } from "@fluentui/react-motion-components-preview";
-import type { FunctionComponent, PropsWithChildren } from "react";
+import { type FunctionComponent, type PropsWithChildren } from "react";
 
 type CollapseProps = {
     visible: boolean;

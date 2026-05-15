@@ -1,13 +1,13 @@
 import { Scene } from "core/scene";
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { BoundProperty } from "../properties/boundProperty";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";

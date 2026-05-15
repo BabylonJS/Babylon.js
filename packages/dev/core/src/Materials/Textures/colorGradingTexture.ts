@@ -1,11 +1,11 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * This represents a color grading texture. This acts as a lookup table LUT, useful during post process

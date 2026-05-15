@@ -1,9 +1,9 @@
-import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphContext } from "../../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber } from "../../../flowGraphRichTypes";
-import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { AnimationGroup } from "core/Animations/animationGroup";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
 import { FlowGraphAsyncExecutionBlock } from "core/FlowGraph/flowGraphAsyncExecutionBlock";

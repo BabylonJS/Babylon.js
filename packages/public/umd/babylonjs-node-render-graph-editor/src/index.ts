@@ -1,3 +1,2 @@
-import * as nodeRenderGraphEditor from "node-render-graph-editor/legacy/legacy";
-export { nodeRenderGraphEditor };
-export default nodeRenderGraphEditor;
+import "node-render-graph-editor/legacy/legacy";
+export * from "node-render-graph-editor/legacy/legacy";

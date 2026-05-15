@@ -7,14 +7,24 @@ import {
     CopyRegular,
     Copy16Regular,
 } from "@fluentui/react-icons";
-import type { FunctionComponent, HTMLProps, PropsWithChildren, MouseEvent } from "react";
-import type { AccordionSectionItemProps } from "../../primitives/accordion";
-import { AccordionSectionItem } from "../../primitives/accordion";
-import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef, useCallback } from "react";
+import {
+    type FunctionComponent,
+    type HTMLProps,
+    type PropsWithChildren,
+    type MouseEvent,
+    useContext,
+    useState,
+    forwardRef,
+    cloneElement,
+    isValidElement,
+    useRef,
+    useCallback,
+} from "react";
+import { type AccordionSectionItemProps, AccordionSectionItem } from "../../primitives/accordion";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
-import type { PrimitiveProps } from "../../primitives/primitive";
+import { type PrimitiveProps } from "../../primitives/primitive";
 import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";

@@ -1,10 +1,10 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
-import type { VertexData } from "../../../mesh.vertexData";
+import { type INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
+import { type VertexData } from "../../../mesh.vertexData";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
-import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
+import { type INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used as a base for InstantiateXXX blocks

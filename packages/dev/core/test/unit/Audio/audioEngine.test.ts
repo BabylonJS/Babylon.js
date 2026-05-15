@@ -7,9 +7,8 @@ import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Sound } from "core/Audio/sound";
 
-import type { AudioContextMock } from "./helpers/mockedAudioObjects";
+import { type AudioContextMock, MockedAudioObjects } from "./helpers/mockedAudioObjects";
 
-import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { AudioTestHelper } from "./helpers/audioTestHelper";
 

@@ -1,5 +1,5 @@
-import type { SmartFilter } from "../smartFilter.js";
-import type { ConnectionPoint } from "../connection/connectionPoint.js";
+import { type SmartFilter } from "../smartFilter.js";
+import { type ConnectionPoint } from "../connection/connectionPoint.js";
 
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";

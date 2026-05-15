@@ -1,6 +1,6 @@
 import { Observable } from "core/Misc/observable";
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { Nullable } from "core/types";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type Nullable } from "core/types";
 import {
     RenderTargetGenerator,
     ConnectionPointType,

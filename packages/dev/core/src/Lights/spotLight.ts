@@ -1,16 +1,16 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Effect } from "../Materials/effect";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Effect } from "../Materials/effect";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { Texture } from "../Materials/Textures/texture";
-import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import type { Camera } from "../Cameras/camera";
+import { type ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import { type Camera } from "../Cameras/camera";
 import { RegisterClass } from "../Misc/typeStore";
 import { Constants } from "core/Engines/constants";
 
@@ -509,6 +509,17 @@ export class SpotLight extends ShadowLight {
         const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : (activeCamera?.maxZ ?? Constants.ShadowMaxZ);
 
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
+    }
+
+    /** @override */
+    public override areLightTexturesReady(): boolean {
+        if (this._projectionTexture && !this._projectionTexture.isReadyOrNotBlocking()) {
+            return false;
+        }
+        if (this._iesProfileTexture && !this._iesProfileTexture.isReadyOrNotBlocking()) {
+            return false;
+        }
+        return true;
     }
 
     /**

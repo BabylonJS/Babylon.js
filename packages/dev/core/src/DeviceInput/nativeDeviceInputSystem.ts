@@ -1,8 +1,8 @@
-import type { INative } from "../Engines/Native/nativeInterfaces";
-import type { IUIEvent } from "../Events/deviceInputEvents";
+import { type INative } from "../Engines/Native/nativeInterfaces";
+import { type IUIEvent } from "../Events/deviceInputEvents";
 import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType } from "./InputDevices/deviceEnums";
-import type { IDeviceInputSystem } from "./inputInterfaces";
+import { type IDeviceInputSystem } from "./inputInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;

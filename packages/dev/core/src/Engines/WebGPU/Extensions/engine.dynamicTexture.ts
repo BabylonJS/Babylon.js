@@ -1,9 +1,9 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import type { ImageSource, Nullable } from "../../../types";
+import { type ImageSource, type Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { GetExponentOfTwo } from "../../../Misc/tools.functions";
-import type { ICanvas } from "../../../Engines/ICanvas";
+import { type ICanvas } from "../../../Engines/ICanvas";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

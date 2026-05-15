@@ -1,19 +1,18 @@
-import type { Nullable } from "core/types";
-import type { AnimationInput } from "./types";
-import type {
-    AnimationSizeMessagePayload,
-    AnimationUrlMessage,
-    ContainerResizeMessage,
-    DisposeMessage,
-    Message,
-    StartAnimationMessage,
-    PreWarmMessage,
-    WorkerLoadedMessagePayload,
+import { type Nullable } from "core/types";
+import { type AnimationInput } from "./types";
+import {
+    type AnimationSizeMessagePayload,
+    type AnimationUrlMessage,
+    type ContainerResizeMessage,
+    type DisposeMessage,
+    type Message,
+    type StartAnimationMessage,
+    type PreWarmMessage,
+    type WorkerLoadedMessagePayload,
 } from "./messageTypes";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
-import { CalculateScaleFactors } from "./rendering/calculateScaleFactor";
-import type { ScaleFactors } from "./rendering/calculateScaleFactor";
-import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
+import { BlobWorkerWrapper } from "./blobWorkerWrapper";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -185,7 +184,7 @@ export class Player {
 
     private _getOrCreateWorker(): globalThis.Worker {
         if (!this._worker) {
-            const wrapperWorker = new Worker(new URL("./worker", import.meta.url));
+            const wrapperWorker = new BlobWorkerWrapper(new URL("./worker", import.meta.url));
             this._worker = wrapperWorker.getWorker();
             this._worker.onmessage = (evt: MessageEvent) => {
                 this._handleWorkerMessage(evt);
@@ -273,6 +272,10 @@ export class Player {
                 this._preWarmResolve = null;
                 this._preWarmReject = null;
                 this._preWarmPromise = null;
+                break;
+            }
+            case "firstRender": {
+                this._input?.onFirstRender?.();
                 break;
             }
         }

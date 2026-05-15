@@ -1,10 +1,10 @@
-import type { Nullable } from "../../types";
-import type { Observer } from "../../Misc/observable";
-import type { Vector3 } from "../../Maths/math.vector";
-import type { Mesh } from "../../Meshes/mesh";
+import { type Nullable } from "../../types";
+import { type Observer } from "../../Misc/observable";
+import { type Vector3 } from "../../Maths/math.vector";
+import { type Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Node } from "../../node";
-import type { PhysicsImpostor } from "./physicsImpostor";
+import { type Node } from "../../node";
+import { type PhysicsImpostor } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 
 declare module "../../Meshes/abstractMesh" {

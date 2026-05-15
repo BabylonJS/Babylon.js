@@ -1,12 +1,5 @@
-/**
- * Ambient declaration for Monaco's browser-safe TypeScript bundle.
- *
- * This file has `require = void 0` at the top, so none of the Node.js
- * built-ins (`fs`, `path`, etc.) are loaded.  The `typescript` export
- * is the full `ts` namespace.
- */
+// Ambient module declaration for the TypeScript services bundled within monaco-editor.
+// The .js file exists but ships without its own .d.ts.
 declare module "monaco-editor/esm/vs/language/typescript/lib/typescriptServices" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const typescript: typeof import("typescript");
-    export { typescript };
+    export const typescript: typeof import("typescript");
 }

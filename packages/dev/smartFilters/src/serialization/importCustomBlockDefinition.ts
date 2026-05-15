@@ -1,9 +1,9 @@
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { Logger } from "core/Misc/logger.js";
 import { HasGlslHeader, ParseFragmentShader } from "../utils/buildTools/shaderConverter.js";
-import type { SerializedBlockDefinition } from "./serializedBlockDefinition.js";
-import type { SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
-import type { InputAutoBindV1, SerializedInputConnectionPointV1 } from "./v1/shaderBlockSerialization.types.js";
+import { type SerializedBlockDefinition } from "./serializedBlockDefinition.js";
+import { type SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
+import { type InputAutoBindV1, type SerializedInputConnectionPointV1 } from "./v1/shaderBlockSerialization.types.js";
 import { setLogger } from "../utils/buildTools/buildToolsLogger.js";
 
 /**

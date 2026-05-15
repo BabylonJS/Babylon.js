@@ -1,15 +1,15 @@
-import type { Vector3, Quaternion } from "../../Maths/math.vector";
-import type { IRaycastQuery, PhysicsRaycastResult } from "../physicsRaycastResult";
-import type { PhysicsBody } from "./physicsBody";
-import type { PhysicsShape } from "./physicsShape";
-import type { PhysicsConstraint } from "./physicsConstraint";
-import type { BoundingBox } from "../../Culling/boundingBox";
-import type { TransformNode } from "../../Meshes/transformNode";
-import type { PhysicsMaterial } from "./physicsMaterial";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Nullable } from "../../types";
-import type { Observable } from "../../Misc/observable";
-import type { GroundMesh } from "../../Meshes/groundMesh";
+import { type Vector3, type Quaternion } from "../../Maths/math.vector";
+import { type IRaycastQuery, type PhysicsRaycastResult } from "../physicsRaycastResult";
+import { type PhysicsBody } from "./physicsBody";
+import { type PhysicsShape } from "./physicsShape";
+import { type PhysicsConstraint } from "./physicsConstraint";
+import { type BoundingBox } from "../../Culling/boundingBox";
+import { type TransformNode } from "../../Meshes/transformNode";
+import { type PhysicsMaterial } from "./physicsMaterial";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Nullable } from "../../types";
+import { type Observable } from "../../Misc/observable";
+import { type GroundMesh } from "../../Meshes/groundMesh";
 
 /** How a specific axis can be constrained */
 export const enum PhysicsConstraintAxisLimitMode {

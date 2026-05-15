@@ -1,18 +1,18 @@
 import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
-import type { PostProcess } from "../PostProcesses/postProcess";
-import type { Effect } from "../Materials/effect";
+import { type PostProcess } from "../PostProcesses/postProcess";
+import { type Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import { Color4 } from "../Maths/math.color";
-import type { Nullable } from "../types";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Camera } from "../Cameras/camera";
+import { type Nullable } from "../types";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Camera } from "../Cameras/camera";
 import { Material } from "../Materials/material";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
 import "../Engines/Extensions/engine.multiRender";
@@ -124,10 +124,10 @@ export class PrePassRenderer {
      */
     public static TextureFormats = [
         {
-            purpose: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            purpose: Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             format: Constants.TEXTUREFORMAT_RGBA,
-            name: "prePass_Irradiance",
+            name: "prePass_IrradianceLegacy",
         },
         {
             purpose: Constants.PREPASS_POSITION_TEXTURE_TYPE,
@@ -194,6 +194,12 @@ export class PrePassRenderer {
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_VelocityLinear",
+        },
+        {
+            purpose: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_Irradiance",
         },
     ];
 
@@ -279,8 +285,11 @@ export class PrePassRenderer {
 
     private _enabled: boolean = false;
 
+    private readonly _geometryBufferRenderList: AbstractMesh[] = [];
     private _needsCompositionForThisPass = false;
-    private _postProcessesSourceForThisPass: Nullable<PostProcess>[];
+    private readonly _postProcessesSourceForThisPass: PostProcess[] = [];
+    private readonly _postProcessChainForThisPass: PostProcess[] = [];
+    private readonly _postProcessesForUpdate: PostProcess[] = [];
 
     /**
      * Indicates if the prepass is enabled
@@ -511,7 +520,10 @@ export class PrePassRenderer {
         }
 
         if (this._geometryBuffer) {
-            this._geometryBuffer.renderList = [];
+            this._geometryBufferRenderList.length = 0;
+            if (this._geometryBuffer.renderList !== this._geometryBufferRenderList) {
+                this._geometryBuffer.renderList = this._geometryBufferRenderList;
+            }
         }
 
         this._setupOutputForThisPass(this._currentTarget, camera);
@@ -553,7 +565,12 @@ export class PrePassRenderer {
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
 
         if (this._needsCompositionForThisPass) {
-            postProcessChain = postProcessChain.concat([this._currentTarget.imageProcessingPostProcess]);
+            postProcessChain = this._postProcessChainForThisPass;
+            postProcessChain.length = 0;
+            for (let index = 0; index < this._currentTarget._beforeCompositionPostProcesses.length; index++) {
+                postProcessChain.push(this._currentTarget._beforeCompositionPostProcesses[index]);
+            }
+            postProcessChain.push(this._currentTarget.imageProcessingPostProcess);
         }
 
         // Activates and renders the chain
@@ -727,10 +744,14 @@ export class PrePassRenderer {
     private _setupOutputForThisPass(prePassRenderTarget: PrePassRenderTarget, camera?: Camera) {
         // Order is : draw ===> prePassRenderTarget._postProcesses ==> ipp ==> camera._postProcesses
         const secondaryCamera = camera && this._scene.activeCameras && !!this._scene.activeCameras.length && this._scene.activeCameras.indexOf(camera) !== 0;
-        this._postProcessesSourceForThisPass = this._getPostProcessesSource(prePassRenderTarget, camera);
-        this._postProcessesSourceForThisPass = this._postProcessesSourceForThisPass.filter((pp) => {
-            return pp != null;
-        });
+        const postProcessesSource = this._getPostProcessesSource(prePassRenderTarget, camera);
+        this._postProcessesSourceForThisPass.length = 0;
+        for (let index = 0; index < postProcessesSource.length; index++) {
+            const postProcess = postProcessesSource[index];
+            if (postProcess) {
+                this._postProcessesSourceForThisPass.push(postProcess);
+            }
+        }
         this._scene.autoClear = true;
 
         const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
@@ -913,9 +934,15 @@ export class PrePassRenderer {
                 continue;
             }
 
-            postProcesses = <Nullable<PostProcess[]>>postProcesses.filter((pp) => {
-                return pp != null;
-            });
+            const postProcessesSource = postProcesses;
+            postProcesses = this._postProcessesForUpdate;
+            postProcesses.length = 0;
+            for (let j = 0; j < postProcessesSource.length; j++) {
+                const postProcess = postProcessesSource[j];
+                if (postProcess) {
+                    postProcesses.push(postProcess);
+                }
+            }
 
             if (postProcesses) {
                 for (let j = 0; j < postProcesses.length; j++) {

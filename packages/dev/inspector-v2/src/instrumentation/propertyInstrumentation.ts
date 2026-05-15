@@ -1,4 +1,4 @@
-import type { IDisposable, Nullable } from "core/index";
+import { type IDisposable, type Nullable } from "core/index";
 
 /**
  * Gets the property descriptor for a property on an object, including inherited properties.

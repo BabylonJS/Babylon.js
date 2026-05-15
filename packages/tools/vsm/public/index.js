@@ -1,4 +1,5 @@
 /* global BABYLON */
+var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
 let previousHash = "";
@@ -36,7 +37,7 @@ let loadScriptAsync = function (url, instantResolve) {
 
 const Versions = {
     dist: ["https://preview.babylonjs.com/timestamp.js?t=" + Date.now(), "https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/gui/babylon.gui.min.js"],
-    local: ["//localhost:1337/babylon.js", "//localhost:1337/gui/babylon.gui.min.js"],
+    local: [`//localhost:${cdnPort}/babylon.js`, `//localhost:${cdnPort}/gui/babylon.gui.min.js`],
 };
 
 let loadInSequence = async function (versions, index, resolve) {

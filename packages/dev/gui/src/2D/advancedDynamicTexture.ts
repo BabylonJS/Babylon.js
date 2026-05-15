@@ -1,21 +1,16 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Matrix } from "core/Maths/math.vector";
-import { Vector2, Vector3, TmpVectors } from "core/Maths/math.vector";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Matrix, Vector2, Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import type { PointerInfoPre, PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
+import { type PointerInfoPre, type PointerInfo, type PointerInfoBase, PointerEventTypes } from "core/Events/pointerEvents";
 import { ClipboardEventTypes, ClipboardInfo } from "core/Events/clipboardEvents";
-import type { KeyboardInfoPre } from "core/Events/keyboardEvents";
-import { KeyboardEventTypes } from "core/Events/keyboardEvents";
-import type { Camera } from "core/Cameras/camera";
+import { type KeyboardInfoPre, KeyboardEventTypes } from "core/Events/keyboardEvents";
+import { type Camera } from "core/Cameras/camera";
 import { Texture } from "core/Materials/Textures/texture";
-import type { IDynamicTextureOptions } from "core/Materials/Textures/dynamicTexture";
-import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type IDynamicTextureOptions, DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
@@ -25,13 +20,13 @@ import { Constants } from "core/Engines/constants";
 import { Viewport } from "core/Maths/math.viewport";
 import { Color3 } from "core/Maths/math.color";
 import { WebRequest } from "core/Misc/webRequest";
-import type { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
+import { type IPointerEvent, type IWheelEvent } from "core/Events/deviceInputEvents";
 import { RandomGUID } from "core/Misc/guid";
 import { GetClass } from "core/Misc/typeStore";
 import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
-import type { StandardMaterial } from "core/Materials/standardMaterial";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Interface used to define options to create an AdvancedDynamicTexture

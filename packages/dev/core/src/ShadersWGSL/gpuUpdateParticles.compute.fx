@@ -81,6 +81,26 @@ struct SimParams {
         emitterWM : mat4x4<f32>,
     #endif
 
+    #ifdef ATTRACTORS
+        attractorCount : i32,
+        attractorPositionAndStrength : array<vec4<f32>, MAX_ATTRACTORS>,
+    #endif
+
+    #ifdef STARTSIZEGRADIENTS
+        startSizeGradientFactor : f32,
+    #endif
+
+    #ifdef LIFETIMEGRADIENTS
+        lifeTimeGradientRange : vec2<f32>,
+    #endif
+
+    #ifdef MESHEMITTER
+        meshTriangleCount : i32,
+        meshTextureWidth : i32,
+        direction1 : vec3<f32>,
+        direction2 : vec3<f32>,
+    #endif
+
     // Emitter types
 
     #ifdef BOXEMITTER
@@ -179,6 +199,13 @@ struct SimParams {
     @binding(13) @group(1) var flowMapTexture : texture_2d<f32>;
 #endif
 
+#ifdef MESHEMITTER
+    @binding(14) @group(1) var meshPositionTexture : texture_2d<f32>;
+    #ifdef MESHNORMALS
+        @binding(15) @group(1) var meshNormalTexture : texture_2d<f32>;
+    #endif
+#endif
+
 fn getRandomVec3(offset : f32, vertexID : f32) -> vec3<f32> {
     return textureLoad(randomTexture2, vec2<i32>(i32(vertexID * offset / params.currentCount * f32(params.randomTextureSize)) % params.randomTextureSize, 0), 0).rgb;
 }
@@ -224,7 +251,11 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
         // Age and life
         let outLife : f32 = params.lifeTime.x + (params.lifeTime.y - params.lifeTime.x) * randoms.r;
+#ifdef LIFETIMEGRADIENTS
+        particlesOut.particles[index].life = params.lifeTimeGradientRange.x + (params.lifeTimeGradientRange.y - params.lifeTimeGradientRange.x) * randoms.r;
+#else
         particlesOut.particles[index].life = outLife;
+#endif
 #ifdef EMITRATECTRL
         particlesOut.particles[index].age = 0.0;
 #else
@@ -237,9 +268,13 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         // Size
         var sizex : f32;
         #ifdef SIZEGRADIENTS    
-            sizex = textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(0., 0.), 0.).r;
+            let sizeGradientRange = textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(0., 0.), 0.).rg;
+            sizex = sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y;
         #else
             sizex = params.sizeRange.x + (params.sizeRange.y - params.sizeRange.x) * randoms.g;
+        #endif
+        #ifdef STARTSIZEGRADIENTS
+            sizex *= params.startSizeGradientFactor;
         #endif
         particlesOut.particles[index].size = vec3<f32>(
             sizex,
@@ -362,6 +397,38 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
                     newDirection = normalize(newPosition + params.directionRandomizer * randoms3);        
                 }
             #endif
+        #elif defined(MESHEMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+
+            // Pick a random triangle (uniform by count, matching CPU behavior)
+            var triIdx : i32 = i32(floor(randoms2.x * f32(params.meshTriangleCount)));
+            triIdx = min(triIdx, params.meshTriangleCount - 1);
+
+            // Fetch 3 vertex positions via textureLoad (2D texture: linear index to x,y)
+            let baseTexel : i32 = triIdx * 3;
+            let t0 : i32 = baseTexel;
+            let t1 : i32 = baseTexel + 1;
+            let t2 : i32 = baseTexel + 2;
+            let v0 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t0 % params.meshTextureWidth, t0 / params.meshTextureWidth), 0).xyz;
+            let v1 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t1 % params.meshTextureWidth, t1 / params.meshTextureWidth), 0).xyz;
+            let v2 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t2 % params.meshTextureWidth, t2 / params.meshTextureWidth), 0).xyz;
+
+            // Barycentric coordinates
+            let bu : f32 = randoms2.y;
+            let bv : f32 = randoms2.z * (1.0 - bu);
+            let bw : f32 = 1.0 - bu - bv;
+
+            newPosition = bu * v0 + bv * v1 + bw * v2;
+
+            #ifdef MESHNORMALS
+                let n0 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t0 % params.meshTextureWidth, t0 / params.meshTextureWidth), 0).xyz;
+                let n1 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t1 % params.meshTextureWidth, t1 / params.meshTextureWidth), 0).xyz;
+                let n2 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t2 % params.meshTextureWidth, t2 / params.meshTextureWidth), 0).xyz;
+                newDirection = normalize(bu * n0 + bv * n1 + bw * n2);
+            #else
+                newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;
+            #endif
         #elif defined(CUSTOMEMITTER)
             newPosition = particlesIn.particles[index].initialPosition;
             particlesOut.particles[index].initialPosition = newPosition;
@@ -416,11 +483,13 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         let ageGradient : f32 = newAge / life;
 
         #ifdef VELOCITYGRADIENTS
-            directionScale = directionScale * textureSampleLevel(velocityGradientTexture, velocityGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
+            let velocityGradientRange = textureSampleLevel(velocityGradientTexture, velocityGradientSampler, vec2<f32>(ageGradient, 0.), 0.).rg;
+            directionScale = directionScale * (velocityGradientRange.x + (velocityGradientRange.y - velocityGradientRange.x) * seed.w);
         #endif
 
         #ifdef DRAGGRADIENTS
-            directionScale = directionScale * (1.0 - textureSampleLevel(dragGradientTexture, dragGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r);
+            let dragGradientRange = textureSampleLevel(dragGradientTexture, dragGradientSampler, vec2<f32>(ageGradient, 0.), 0.).rg;
+            directionScale = directionScale * (1.0 - (dragGradientRange.x + (dragGradientRange.y - dragGradientRange.x) * seed.x));
         #endif
 
         let position : vec3<f32> = particlesIn.particles[index].position;
@@ -438,8 +507,9 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         #endif
 
         #ifdef SIZEGRADIENTS
+            let sizeGradientRange = textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(ageGradient, 0.), 0.).rg;
             particlesOut.particles[index].size = vec3<f32>(
-                textureSampleLevel(sizeGradientTexture, sizeGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r,
+                sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y,
                 particlesIn.particles[index].size.yz);
         #else
             particlesOut.particles[index].size = particlesIn.particles[index].size;
@@ -464,13 +534,24 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             #endif
 
             #ifdef LIMITVELOCITYGRADIENTS
-                let limitVelocity : f32 = textureSampleLevel(limitVelocityGradientTexture, limitVelocityGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
+                let limitVelocityRange = textureSampleLevel(limitVelocityGradientTexture, limitVelocityGradientSampler, vec2<f32>(ageGradient, 0.), 0.).rg;
+                let limitVelocity : f32 = limitVelocityRange.x + (limitVelocityRange.y - limitVelocityRange.x) * seed.y;
 
                 let currentVelocity : f32 = length(updatedDirection);
 
                 if (currentVelocity > limitVelocity) {
                     updatedDirection = updatedDirection * params.limitVelocityDamping;
                 }
+            #endif
+
+            #ifdef ATTRACTORS
+            {
+                for (var i : i32 = 0; i < params.attractorCount; i = i + 1) {
+                    let toAttractor : vec3<f32> = params.attractorPositionAndStrength[i].xyz - position;
+                    let distSq : f32 = dot(toAttractor, toAttractor) + 1.0;
+                    updatedDirection = updatedDirection + (params.attractorPositionAndStrength[i].w / distSq) * normalize(toAttractor) * timeDelta;
+                }
+            }
             #endif
 
             particlesOut.particles[index].direction = updatedDirection;
@@ -493,7 +574,8 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         #endif 
 
         #ifdef ANGULARSPEEDGRADIENTS
-            let angularSpeed : f32 = textureSampleLevel(angularSpeedGradientTexture, angularSpeedGradientSampler, vec2<f32>(ageGradient, 0.), 0.).r;
+            let angularSpeedRange = textureSampleLevel(angularSpeedGradientTexture, angularSpeedGradientSampler, vec2<f32>(ageGradient, 0.), 0.).rg;
+            let angularSpeed : f32 = angularSpeedRange.x + (angularSpeedRange.y - angularSpeedRange.x) * seed.z;
             particlesOut.particles[index].angle = particlesIn.particles[index].angle + angularSpeed * timeDelta;
         #else
             let angle : vec2<f32> = particlesIn.particles[index].angle;

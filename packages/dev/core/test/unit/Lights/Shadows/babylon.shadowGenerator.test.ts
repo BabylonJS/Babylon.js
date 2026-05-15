@@ -1,5 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 import { PointLight } from "core/Lights/pointLight";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Vector3 } from "core/Maths/math.vector";

@@ -1,21 +1,20 @@
-import type { Observer } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Scene, IDisposable } from "../scene";
+import { type Observer } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type Scene, type IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Camera } from "../Cameras/camera";
-import type { TargetCamera } from "../Cameras/targetCamera";
-import type { Node } from "../node";
-import type { Bone } from "../Bones/bone";
+import { type TargetCamera } from "../Cameras/targetCamera";
+import { type Node } from "../node";
+import { type Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { StandardMaterial } from "../Materials/standardMaterial";
-import type { PointerInfo } from "../Events/pointerEvents";
-import { PointerEventTypes } from "../Events/pointerEvents";
-import type { LinesMesh } from "../Meshes/linesMesh";
-import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { ShadowLight } from "../Lights/shadowLight";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type StandardMaterial } from "../Materials/standardMaterial";
+import { type PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
+import { type LinesMesh } from "../Meshes/linesMesh";
+import { type PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import { type ShadowLight } from "../Lights/shadowLight";
 import { Light } from "../Lights/light";
 
 /**

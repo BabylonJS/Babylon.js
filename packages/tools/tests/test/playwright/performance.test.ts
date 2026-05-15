@@ -28,11 +28,11 @@ export const checkPerformanceOfScene = async (page: Page, baseUrl: string, numbe
         });
     }
     time.sort();
-    // remove edge cases - 2 of each end
+    // remove edge cases - 1 of each end
     time.pop();
     time.shift();
     // return the average rendering time
-    return time.reduce((partialSum, a) => partialSum + a, 0) / (numberOfPasses - 2);
+    return time.reduce((partialSum, a) => partialSum + a, 0) / time.length;
 };
 
 export const evaluateRenderScene = async ({ renderCount }: { renderCount: number }): Promise<number> => {
@@ -80,13 +80,30 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
     const framesToRender = process.env.FRAMES_TO_RENDER ? +process.env.FRAMES_TO_RENDER : 1000;
     const numberOfPasses = process.env.NUMBER_OF_PASSES ? +process.env.NUMBER_OF_PASSES : 6;
 
+    // CDN_VERSION pins the baseline; CDN_VERSION_B pins the candidate ("current").
+    const cdnVersion = process.env.CDN_VERSION || "";
+    const cdnVersionB = process.env.CDN_VERSION_B || "";
+
+    // When CDN_VERSION_B is set, override the "current" base URL to use the CDN
+    // instead of localhost (required for BrowserStack where no local server exists).
+    const currentBaseUrl = cdnVersionB ? (cdnVersionB === "latest" ? "https://cdn.babylonjs.com" : `https://cdn.babylonjs.com/v${cdnVersionB}`) : getGlobalConfig().baseUrl;
+
+    // When CDN_VERSION is set, use it as the sole baseline environment.
+    if (cdnVersion) {
+        environments.length = 0;
+        environments.push(cdnVersion);
+    }
+
     const environmentBaseUrls: { [key: string]: string } = {};
 
     environments.forEach((env) => {
-        if (config.environments[env]) {
+        if (cdnVersion) {
+            // CDN_VERSION explicitly set — resolve as a CDN URL
+            environmentBaseUrls[env] = env === "latest" ? "https://cdn.babylonjs.com" : `https://cdn.babylonjs.com/v${env}`;
+        } else if (config.environments[env]) {
             environmentBaseUrls[env] = config.environments[env].baseUrl;
         } else {
-            // assume the environment is the version, live "v6.20.0"
+            // assume the environment is the version, like "v6.20.0"
             environmentBaseUrls[env] = `https://cdn.babylonjs.com/${env}`;
         }
     });
@@ -167,7 +184,7 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
     async function runTestScenario(browser: Browser, baseUrl: string, title: string, playgroundId: string, renderCount = framesToRender): Promise<number> {
         await preparePage(browser, baseUrl, title);
 
-        const timeToRender = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, numberOfPasses, renderCount, {
+        const timeToRender = await checkPerformanceOfScene(page, baseUrl, numberOfPasses, renderCount, {
             playgroundId,
         });
 
@@ -190,7 +207,7 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
             test.setTimeout(timeout);
             // run the test for each environment and the current environment
             // now run the current environment
-            testResults["current"] = await runTestScenario(browser, getGlobalConfig().baseUrl, testCase.title, testCase.playgroundId, testCase.renderCount);
+            testResults["current"] = await runTestScenario(browser, currentBaseUrl, testCase.title, testCase.playgroundId, testCase.renderCount);
             for (const environment of environments) {
                 testResults[environment] = await runTestScenario(browser, environmentBaseUrls[environment], testCase.title, testCase.playgroundId, testCase.renderCount);
                 expect(testResults[environment] / testResults["current"], `Dev: ${testResults["current"]}ms, ${environment}: ${testResults[environment]}ms`).toBeLessThanOrEqual(

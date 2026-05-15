@@ -1,10 +1,10 @@
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import type { Scene } from "../../scene";
-import type { DeepImmutableObject } from "../../types";
+import { type Scene } from "../../scene";
+import { type DeepImmutableObject } from "../../types";
 import { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
-import type { HavokPlugin } from "./Plugins/havokPlugin";
+import { type HavokPlugin } from "./Plugins/havokPlugin";
 import { BuildArray } from "../../Misc/arrayTools";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observable } from "../../Misc/observable";
@@ -37,7 +37,7 @@ export interface ICharacterControllerCollisionEvent {
      */
     collider: PhysicsBody;
     /**
-     *
+     * Index of the collider in instances
      */
     colliderIndex: number;
     /**
@@ -221,6 +221,7 @@ export class PhysicsCharacterController {
     private _transformNode: TransformNode;
     private _ownShape: boolean;
     private _manifold: IContact[] = [];
+    private _stepUpSavedManifold: IContact[] = [];
     private _lastDisplacement: Vector3;
     private _contactAngleSensitivity = 10.0;
     private _lastInvDeltaTime: number;
@@ -264,6 +265,47 @@ export class PhysicsCharacterController {
      * default 0.5 (value for a 60deg angle)
      */
     public maxSlopeCosine = 0.5;
+    /**
+     * Maximum height the character can automatically step up onto a walkable surface.
+     * When greater than 0 the controller enforces this as a strict cap on step climbing,
+     * independent of the collision shape's geometry:
+     *
+     *  - Obstacles whose top is at most maxStepHeight above the character's foot are
+     *    climbed (either rolled over naturally by the capsule, or snapped up via the
+     *    step-up sweep when the simplex would otherwise be blocked).
+     *  - Obstacles taller than maxStepHeight are blocked, even ones the capsule's
+     *    rounded bottom would otherwise glide over.
+     *
+     * This is enforced by demoting any "walkable" contact that sits more than
+     * maxStepHeight above the foot into an extra horizontal wall constraint, so the
+     * step-height limit does not depend on the capsule radius. As a documented side
+     * effect, slopes whose contact rises above maxStepHeight (roughly when
+     * `capsuleRadius * (1 - cos(slopeAngle)) > maxStepHeight`) are also treated as
+     * walls. Pick maxStepHeight large enough to clear the slope angles you want to
+     * remain walkable, or rely on `maxSlopeCosine` alone (with maxStepHeight = 0)
+     * when the rounded-capsule riding behavior is acceptable.
+     *
+     * Step-up only triggers against STATIC and ANIMATED bodies. Dynamic bodies fall
+     * through to normal contact resolution and pushing behavior.
+     *
+     * Thin walls / fences with floor behind them are not considered steppable: the
+     * landing must be measurably higher than the starting position along `up`.
+     *
+     * The foot is computed as `position - up * footOffset`. Override `footOffset` if
+     * you supply a custom collision shape whose center is not at half-height.
+     *
+     * Assumes `up` is a unit vector.
+     *
+     * default 0 (disabled)
+     */
+    public maxStepHeight = 0;
+    /**
+     * Distance from the body's `position` to the character's foot along `up`.
+     * Used by `maxStepHeight` to measure how high a contact sits above the foot.
+     * Defaults to half the capsule height passed at construction. Override when
+     * supplying a custom collision shape whose center is not at half-height.
+     */
+    public footOffset: number;
     /**
      * character maximum speed
      * default 10
@@ -319,6 +361,7 @@ export class PhysicsCharacterController {
         this._lastVelocity = Vector3.Zero();
         const r = characterShapeOptions.capsuleRadius ?? 0.6;
         const h = characterShapeOptions.capsuleHeight ?? 1.8;
+        this.footOffset = h * 0.5;
         this._tmpVecs[0].set(0, h * 0.5 - r, 0);
         this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
         this._ownShape = !characterShapeOptions.shape;
@@ -679,6 +722,63 @@ export class PhysicsCharacterController {
         return false;
     }
 
+    /**
+     * Adds an extra horizontal wall constraint when a "walkable" contact sits more than
+     * `maxStepHeight` above the character's foot along `up`. Mirrors the structure of
+     * `_addMaxSlopePlane` but gates on contact height rather than slope steepness.
+     *
+     * This makes `maxStepHeight` a strict cap on step climbing independent of the
+     * capsule's curved bottom: without this, the rounded hemisphere produces an up-tilted
+     * (walkable) contact normal for any obstacle shorter than the capsule radius, and
+     * the simplex rides over it regardless of `maxStepHeight`.
+     * @param constraints constraint list being assembled for the current manifold
+     * @param contact source manifold contact backing `constraints[index]`
+     * @param index index of the constraint in `constraints` whose contact is under test
+     * @param allowedPenetration allowed penetration distance for this contact
+     * @returns true if an extra wall constraint was appended
+     */
+    protected _addStepHeightWallPlane(constraints: ISurfaceConstraintInfo[], contact: IContact, index: number, allowedPenetration: number): boolean {
+        const verticalComponent = constraints[index].planeNormal.dot(this.up);
+        // Skip near-flat (≈1) contacts (don't demote plain ground) and near-horizontal
+        // contacts (already wall-like — the regular constraint handles them).
+        if (verticalComponent <= 0.01 || verticalComponent >= 1 - 1e-3) {
+            return false;
+        }
+        // Height of the contact point above the character's foot, projected onto `up`.
+        const contactDelta = this._tmpVecs[24];
+        contact.position.subtractToRef(this._position, contactDelta);
+        const stepHeight = contactDelta.dot(this.up) + this.footOffset;
+        if (stepHeight <= this.maxStepHeight) {
+            return false;
+        }
+        const newConstraint = {
+            planeNormal: constraints[index].planeNormal.clone(),
+            planeDistance: constraints[index].planeDistance,
+            velocity: constraints[index].velocity.clone(),
+            angularVelocity: constraints[index].angularVelocity.clone(),
+            priority: constraints[index].priority,
+            dynamicFriction: constraints[index].dynamicFriction,
+            staticFriction: constraints[index].staticFriction,
+            extraDownStaticFriction: constraints[index].extraDownStaticFriction,
+            extraUpStaticFriction: constraints[index].extraUpStaticFriction,
+        };
+        const distance = newConstraint.planeDistance;
+        const stepWallVerticalProjection = TmpVectors.Vector3[0];
+        this.up.scaleToRef(verticalComponent, stepWallVerticalProjection);
+        newConstraint.planeNormal.subtractInPlace(stepWallVerticalProjection);
+        newConstraint.planeNormal.normalize();
+        if (distance >= 0) {
+            newConstraint.planeDistance = distance * newConstraint.planeNormal.dot(constraints[index].planeNormal);
+        } else {
+            const penetrationToResolve = Math.min(0, distance + allowedPenetration);
+            newConstraint.planeDistance = penetrationToResolve / newConstraint.planeNormal.dot(constraints[index].planeNormal);
+            constraints[index].planeDistance = 0;
+            this._resolveConstraintPenetration(newConstraint, this.penetrationRecoverySpeed);
+        }
+        constraints.push(newConstraint);
+        return true;
+    }
+
     protected _resolveConstraintPenetration(constraint: ISurfaceConstraintInfo, penetrationRecoverySpeed: number) {
         // If penetrating we add extra velocity to push the character back out
         const eps = 1e-6;
@@ -693,7 +793,14 @@ export class PhysicsCharacterController {
         for (let i = 0; i < this._manifold.length; i++) {
             const surfaceConstraint = this._createSurfaceConstraint(dt, this._manifold[i], timeTravelled);
             constraints.push(surfaceConstraint);
-            this._addMaxSlopePlane(this.maxSlopeCosine, this.up, i, constraints, this._manifold[i].allowedPenetration);
+            const slopeDemoted = this._addMaxSlopePlane(this.maxSlopeCosine, this.up, i, constraints, this._manifold[i].allowedPenetration);
+            // Step-height filter: when the contact sits above the foot by more than
+            // `maxStepHeight`, add an extra horizontal wall constraint so the simplex
+            // cannot ride over the contact via the capsule's rounded bottom. Skip when
+            // the slope check already added a wall for the same contact.
+            if (!slopeDemoted && this.maxStepHeight > 0) {
+                this._addStepHeightWallPlane(constraints, this._manifold[i], i, this._manifold[i].allowedPenetration);
+            }
             this._resolveConstraintPenetration(surfaceConstraint, this.penetrationRecoverySpeed);
         }
         return constraints;
@@ -1381,6 +1488,258 @@ export class PhysicsCharacterController {
         }
     }
 
+    /**
+     * Rebuild the contact manifold from a proximity query at the given position.
+     * Used by step-up to validate a candidate landing without the merging logic of `_updateManifold`,
+     * which is not suited to a zero-length cast.
+     * @param position position at which to run the proximity query
+     */
+    protected _refreshManifoldAtPosition(position: Vector3): void {
+        const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
+        const hknp = hk._hknp;
+        const bodyMap = (hk as any)._bodies;
+
+        const startNative = [position.x, position.y, position.z];
+        const orientation = [this._orientation.x, this._orientation.y, this._orientation.z, this._orientation.w];
+        const query /*: ShapeProximityInput*/ = [
+            this._shape._pluginData,
+            startNative,
+            orientation,
+            this.keepDistance + this.keepContactTolerance,
+            false,
+            [this._body._pluginData.hpBodyId[0]],
+        ];
+        hknp.HP_World_ShapeProximityWithCollector(hk.world, this._startCollector, query);
+
+        this._manifold.length = 0;
+        const numHits = hknp.HP_QueryCollector_GetNumHits(this._startCollector)[1];
+        for (let i = 0; i < numHits; i++) {
+            const [distance, , contactWorld] = hknp.HP_QueryCollector_GetShapeProximityResult(this._startCollector, i)[1];
+            this._manifold.push({
+                position: Vector3.FromArray(contactWorld[3]),
+                normal: Vector3.FromArray(contactWorld[4]),
+                distance: distance,
+                fraction: 0,
+                bodyB: bodyMap.get(contactWorld[0][0])!,
+                allowedPenetration: Math.min(Math.max(this.keepDistance - distance, 0.0), this.keepDistance),
+            });
+        }
+    }
+
+    /**
+     * Search the simplex solver output for a constraint that blocks horizontal motion:
+     * touched by the solver, non-walkable along `up`, and opposing the requested horizontal direction.
+     * @param simplexOutput output of `_simplexSolverSolve`
+     * @param constraints constraint array passed to the solver
+     * @param horizDir normalized horizontal direction of intent
+     * @returns the index of the first matching constraint, or -1
+     */
+    protected _findBlockingConstraintIndex(simplexOutput: SimplexSolverOutput, constraints: ISurfaceConstraintInfo[], horizDir: Vector3): number {
+        const oppositionEps = 1e-3;
+        const ceilingThreshold = -0.5;
+        const maxSlopeCosEps = 0.1;
+        const maxSlope = Math.max(this.maxSlopeCosine, maxSlopeCosEps);
+        for (let i = 0; i < constraints.length; i++) {
+            if (!simplexOutput.planeInteractions[i].touched) {
+                continue;
+            }
+            const n = constraints[i].planeNormal;
+            const normalDotUp = n.dot(this.up);
+            if (normalDotUp >= maxSlope) {
+                continue;
+            }
+            if (normalDotUp <= ceilingThreshold) {
+                continue;
+            }
+            if (n.dot(horizDir) > -oppositionEps) {
+                continue;
+            }
+            return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Iterate hits in the cast collector to find the closest one.
+     * @returns object with fraction, normal, body and index of the closest hit; null if there were no hits
+     */
+    protected _getClosestCastHit(): { fraction: number; normal: Vector3; body: { body: PhysicsBody; index: number } | null } | null {
+        const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
+        const hknp = hk._hknp;
+        const bodyMap = (hk as any)._bodies;
+        const numHits = hknp.HP_QueryCollector_GetNumHits(this._castCollector)[1];
+        if (numHits <= 0) {
+            return null;
+        }
+        let bestFrac = Number.POSITIVE_INFINITY;
+        const bestNormal = TmpVectors.Vector3[0];
+        let hasBestNormal = false;
+        let bestBody: { body: PhysicsBody; index: number } | null = null;
+        for (let i = 0; i < numHits; i++) {
+            const [frac, , hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(this._castCollector, i)[1];
+            if (frac < bestFrac) {
+                bestFrac = frac;
+                Vector3.FromArrayToRef(hitWorld[4], 0, bestNormal);
+                hasBestNormal = true;
+                bestBody = bodyMap.get(hitWorld[0][0]) ?? null;
+            }
+        }
+        if (!hasBestNormal) {
+            return null;
+        }
+        return { fraction: bestFrac, normal: bestNormal.clone(), body: bestBody };
+    }
+
+    /**
+     * Attempt a step-up sweep when the character is blocked by a vertical-ish obstacle.
+     * Runs three shape casts (up, forward, down) and, if a valid walkable landing is found,
+     * commits a new position, refreshes the manifold and updates `_lastDisplacement`.
+     *
+     * Caller responsibilities on success:
+     * - subtract the returned time from `remainingTime`
+     * - skip `_resolveContacts`, the recast block and the position update for the iteration
+     *   (the step is a teleport, not a contact-resolution motion)
+     *
+     * @param remainingTime time budget left in the current `_integrateManifolds` iteration
+     * @param inputVelocity character velocity at the start of the integration call
+     * @param simplexOutput output of the iteration's simplex solve
+     * @param constraints constraint array passed to the solver
+     * @returns time consumed by the step on success, -1 on failure (no state mutated)
+     */
+    protected _tryStepUp(remainingTime: number, inputVelocity: Vector3, simplexOutput: SimplexSolverOutput, constraints: ISurfaceConstraintInfo[]): number {
+        const eps = 1e-4;
+        const stepHeight = this.maxStepHeight;
+        if (stepHeight <= 0 || remainingTime <= 0) {
+            return -1;
+        }
+
+        // 1. Intended horizontal displacement (assumes `up` is unit-length)
+        const upUnit = this.up;
+        const upDotVel = inputVelocity.dot(upUnit);
+        const horizVel = this._tmpVecs[28];
+        upUnit.scaleToRef(upDotVel, this._tmpVecs[29]);
+        inputVelocity.subtractToRef(this._tmpVecs[29], horizVel);
+        const horizVelLenSqr = horizVel.lengthSquared();
+        if (horizVelLenSqr < eps * eps) {
+            return -1;
+        }
+        const horizVelLen = Math.sqrt(horizVelLenSqr);
+        const horizDir = this._tmpVecs[30];
+        horizVel.scaleToRef(1 / horizVelLen, horizDir);
+        const horizDist = horizVelLen * remainingTime;
+        if (horizDist <= eps) {
+            return -1;
+        }
+
+        // 2. Solver must have hit a blocking, non-walkable, opposing constraint
+        if (this._findBlockingConstraintIndex(simplexOutput, constraints, horizDir) < 0) {
+            return -1;
+        }
+
+        // 3. Up-cast: find available head-room up to stepHeight
+        const upEnd = this._tmpVecs[31];
+        upUnit.scaleToRef(stepHeight, upEnd);
+        upEnd.addInPlace(this._position);
+        this._castWithCollectors(this._position, upEnd, this._castCollector);
+        const upHit = this._getClosestCastHit();
+        let stepClear = stepHeight;
+        if (upHit != null) {
+            if (upHit.body && upHit.body.body.getMotionType(upHit.body.index) === PhysicsMotionType.DYNAMIC) {
+                return -1;
+            }
+            stepClear = Math.max(0, upHit.fraction * stepHeight - this.keepDistance);
+        }
+        if (stepClear <= eps) {
+            return -1;
+        }
+
+        // 4. Forward-cast: sweep from the elevated position by the requested horizontal distance
+        const elevated = upUnit.scale(stepClear);
+        elevated.addInPlace(this._position);
+        const fwdEnd = horizDir.scale(horizDist);
+        fwdEnd.addInPlace(elevated);
+        this._castWithCollectors(elevated, fwdEnd, this._castCollector);
+        let fwdFrac = 1.0;
+        const fwdHit = this._getClosestCastHit();
+        if (fwdHit != null) {
+            if (fwdHit.body && fwdHit.body.body.getMotionType(fwdHit.body.index) === PhysicsMotionType.DYNAMIC) {
+                return -1;
+            }
+            fwdFrac = fwdHit.fraction;
+        }
+        // Backoff by keepDistance along horizDir
+        const fwdFracAdjusted = Math.max(0, Math.min(1, fwdFrac - this.keepDistance / horizDist));
+        if (fwdFracAdjusted <= eps) {
+            return -1;
+        }
+        const fwdEndAdjusted = horizDir.scale(horizDist * fwdFracAdjusted);
+        fwdEndAdjusted.addInPlace(elevated);
+
+        // 5. Down-cast: drop from forward position to find walkable landing
+        const downDist = stepClear + 2 * this.keepDistance;
+        const downEnd = upUnit.scale(-downDist);
+        downEnd.addInPlace(fwdEndAdjusted);
+        this._castWithCollectors(fwdEndAdjusted, downEnd, this._castCollector);
+        const downHit = this._getClosestCastHit();
+        if (downHit == null) {
+            // No ground found within reach: stepping into the void (e.g., over a fence). Reject.
+            return -1;
+        }
+        if (downHit.body == null) {
+            return -1;
+        }
+        const landingMotion = downHit.body.body.getMotionType(downHit.body.index);
+        if (landingMotion === PhysicsMotionType.DYNAMIC) {
+            return -1;
+        }
+        const maxSlopeCosEps = 0.1;
+        const landingNormalDotUp = downHit.normal.dot(upUnit);
+        if (landingNormalDotUp < Math.max(this.maxSlopeCosine, maxSlopeCosEps)) {
+            return -1;
+        }
+
+        // Landing position = downStart - upUnit * (downFrac * downDist - keepDistance)
+        const landingDrop = downHit.fraction * downDist - this.keepDistance;
+        const landingPos = TmpVectors.Vector3[0];
+        upUnit.scaleToRef(-landingDrop, landingPos);
+        landingPos.addInPlace(fwdEndAdjusted);
+
+        // Thin-wall guard: landing must be measurably higher than where we started.
+        const landingDelta = TmpVectors.Vector3[1];
+        landingPos.subtractToRef(this._position, landingDelta);
+        const heightDelta = landingDelta.dot(upUnit);
+        if (heightDelta < eps) {
+            return -1;
+        }
+
+        // 6. Snapshot manifold, refresh at landing, validate no unacceptable penetration
+        const savedManifold = this._stepUpSavedManifold;
+        savedManifold.length = this._manifold.length;
+        for (let i = 0; i < this._manifold.length; i++) {
+            savedManifold[i] = this._manifold[i];
+        }
+        this._refreshManifoldAtPosition(landingPos);
+        const maxSlope = Math.max(this.maxSlopeCosine, maxSlopeCosEps);
+        for (let i = 0; i < this._manifold.length; i++) {
+            const c = this._manifold[i];
+            if (c.normal.dot(upUnit) < maxSlope && c.distance < -this.keepDistance) {
+                // Penetrating a non-walkable surface at landing — reject and restore manifold
+                this._manifold.length = savedManifold.length;
+                for (let j = 0; j < savedManifold.length; j++) {
+                    this._manifold[j] = savedManifold[j];
+                }
+                return -1;
+            }
+        }
+
+        // 7. Commit
+        const displacement = landingPos.subtract(this._position);
+        this._lastDisplacement.copyFrom(displacement);
+        this._position.copyFrom(landingPos);
+
+        return remainingTime * fwdFracAdjusted;
+    }
+
     protected _resolveContacts(deltaTime: number, gravity: Vector3) {
         const eps = 1e-12;
         //<todo object interactions out
@@ -1505,6 +1864,10 @@ export class PhysicsCharacterController {
 
         let newVelocity = Vector3.Zero();
         let remainingTime = deltaTime;
+        // Snapshot of the input velocity, used to preserve user intent if a step-up succeeds
+        // and the loop exits without running another full solver pass.
+        const inputVelocity = this._velocity;
+        let didStepUp = false;
 
         // Make sure that contact with bodies that have been removed since the call to checkSupport() are removed from the
         // manifold
@@ -1523,6 +1886,21 @@ export class PhysicsCharacterController {
             const newDisplacement = solveResults.position;
             const solverDeltaTime = solveResults.deltaTime;
             newVelocity = solveResults.velocity;
+
+            // Attempt step-up at most once per integrate() call when blocked by a vertical-ish obstacle.
+            if (!didStepUp && this.maxStepHeight > 0) {
+                const timeConsumed = this._tryStepUp(remainingTime, inputVelocity, solveResults, constraints);
+                if (timeConsumed >= 0) {
+                    remainingTime -= timeConsumed;
+                    // Preserve original input velocity so the final `_velocity` reflects user intent
+                    // even if the loop exits without another solver pass.
+                    newVelocity = inputVelocity;
+                    didStepUp = true;
+                    // Skip the normal contact resolution / recast / integrate-position block:
+                    // step-up is a teleport that already updated position, manifold and lastDisplacement.
+                    continue;
+                }
+            }
 
             this._resolveContacts(deltaTime, gravity);
 

@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass } from "core/index";
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { ThinChromaticAberrationPostProcess } from "core/PostProcesses/thinChromaticAberrationPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 

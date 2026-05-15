@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { EffectLayer } from "core/Layers/effectLayer";
+import { type EffectLayer } from "core/Layers/effectLayer";
 import { GlowLayer } from "core/Layers/glowLayer";
 import { HighlightLayer } from "core/Layers/highlightLayer";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";

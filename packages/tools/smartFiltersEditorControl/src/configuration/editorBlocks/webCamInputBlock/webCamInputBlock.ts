@@ -1,4 +1,4 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
+import { type ThinEngine } from "core/Engines/thinEngine.js";
 import { WebCamRuntime } from "./webCamRuntime.js";
 import {
     ConnectionPointType,

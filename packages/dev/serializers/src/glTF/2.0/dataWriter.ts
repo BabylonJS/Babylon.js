@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
-import type { TypedArray } from "core/types";
+import { type TypedArray } from "core/types";
 
 const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffset: number, value: number) => void>([
     [Int8Array, (d, b, v) => d.setInt8(b, v)],

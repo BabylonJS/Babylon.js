@@ -1,6 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { DataArray, FloatArray, IndicesArray, TypedArray, TypedArrayConstructor } from "../types";
+import { type DataArray, type FloatArray, type IndicesArray, type TypedArray, type TypedArrayConstructor } from "../types";
 
 /**
  * Union of TypedArrays that can be used for vertex data.

@@ -1,8 +1,7 @@
-import type { FunctionComponent, ReactNode } from "react";
-import { useState, useCallback, useEffect } from "react";
+import { type FunctionComponent, type ReactNode, useState, useCallback, useEffect } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import type { IDisposable } from "core/scene";
-import type { ISelectionService } from "../../services/selectionService";
+import { type IDisposable } from "core/scene";
+import { type ISelectionService } from "../../services/selectionService";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";

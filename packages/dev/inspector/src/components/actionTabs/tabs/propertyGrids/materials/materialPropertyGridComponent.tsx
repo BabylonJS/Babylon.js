@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
-import type { Material } from "core/Materials/material";
+import { type Observable } from "core/Misc/observable";
+import { type Material } from "core/Materials/material";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
 
 interface IMaterialPropertyGridComponentProps {
     globalState: GlobalState;

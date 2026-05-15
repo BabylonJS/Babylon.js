@@ -1,11 +1,11 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { GroundMesh } from "../groundMesh";
 import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { EngineStore } from "../../Engines/engineStore";
 import { Epsilon } from "../../Maths/math.constants";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
@@ -467,20 +467,36 @@ export function CreateGroundFromHeightMap(
     };
 
     if (typeof url === "string") {
+        // Track the async image load as pending scene data so that scene.isReady()
+        // (and therefore scene.executeWhenReady) waits for it. Without this, an
+        // in-flight heightmap leaves the ground mesh with no subMeshes, which
+        // scene.isReady skips entirely, causing executeWhenReady to fire before
+        // geometry exists.
+        scene.addPendingData(ground);
+
         const onload = (img: HTMLImageElement | ImageBitmap) => {
             const bufferWidth = img.width;
             const bufferHeight = img.height;
 
             if (scene.isDisposed) {
+                scene.removePendingData(ground);
                 return;
             }
 
             const buffer = scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight);
 
             onBufferLoaded(buffer, bufferWidth, bufferHeight);
+            scene.removePendingData(ground);
         };
 
-        Tools.LoadImage(url, onload, options.onError ? options.onError : () => {}, scene.offlineProvider);
+        const onError = (message?: string, exception?: any) => {
+            scene.removePendingData(ground);
+            if (options.onError) {
+                options.onError(message, exception);
+            }
+        };
+
+        Tools.LoadImage(url, onload, onError, scene.offlineProvider);
     } else {
         onBufferLoaded(url.data, url.width, url.height);
     }

@@ -2,28 +2,28 @@ import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import type { DeepImmutable, Nullable } from "../types";
-import type { CameraInputsManager } from "./cameraInputsManager";
-import type { Scene } from "../scene";
+import { type DeepImmutable, type Nullable } from "../types";
+import { type CameraInputsManager } from "./cameraInputsManager";
+import { type Scene } from "../scene";
 import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
-import type { Mesh } from "../Meshes/mesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { ICullable } from "../Culling/boundingInfo";
+import { type Mesh } from "../Meshes/mesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
-import type { Plane } from "../Maths/math.plane";
+import { type Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
-import type { PostProcess } from "../PostProcesses/postProcess";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { FreeCamera } from "./freeCamera";
-import type { TargetCamera } from "./targetCamera";
-import type { Ray } from "../Culling/ray";
-import type { ArcRotateCamera } from "./arcRotateCamera";
+import { type PostProcess } from "../PostProcesses/postProcess";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type FreeCamera } from "./freeCamera";
+import { type TargetCamera } from "./targetCamera";
+import { type Ray } from "../Culling/ray";
+import { type ArcRotateCamera } from "./arcRotateCamera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 /**
@@ -299,7 +299,15 @@ export class Camera extends Node {
      * This helps giving a smooth feeling to the camera movement.
      */
     @serialize()
-    public inertia = 0.9;
+    public get inertia(): number {
+        return this._baseInertia;
+    }
+
+    public set inertia(value: number) {
+        this._baseInertia = value;
+    }
+
+    private _baseInertia = 0.9;
 
     private _mode = Camera.PERSPECTIVE_CAMERA;
 
@@ -474,6 +482,7 @@ export class Camera extends Node {
     constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene, false);
 
+        this.layerMask = this.getScene().defaultCameraLayerMask;
         this.getScene().addCamera(this);
 
         if (setActiveOnSceneIfNoneActive && !this.getScene().activeCamera) {

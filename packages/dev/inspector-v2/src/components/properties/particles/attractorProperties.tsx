@@ -1,8 +1,6 @@
-import type { Attractor } from "core/Particles/attractor";
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { FunctionComponent } from "react";
-
-import { useCallback } from "react";
+import { type Attractor } from "core/Particles/attractor";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type FunctionComponent, useCallback } from "react";
 
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { AttractorList } from "./attractorList";

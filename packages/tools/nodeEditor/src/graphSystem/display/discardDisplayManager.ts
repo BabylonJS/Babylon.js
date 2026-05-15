@@ -1,6 +1,6 @@
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class DiscardDisplayManager implements IDisplayManager {
     public getHeaderClass() {

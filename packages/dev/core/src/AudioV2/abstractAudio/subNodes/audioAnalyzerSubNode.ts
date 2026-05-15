@@ -1,8 +1,7 @@
-import type { Nullable } from "../../../types";
-import type { AudioEngineV2 } from "../audioEngineV2";
-import type { AudioAnalyzerFFTSizeType, IAudioAnalyzerOptions } from "../subProperties/abstractAudioAnalyzer";
-import { _AudioAnalyzerDefaults } from "../subProperties/abstractAudioAnalyzer";
-import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import { type Nullable } from "../../../types";
+import { type AudioEngineV2 } from "../audioEngineV2";
+import { type AudioAnalyzerFFTSizeType, type IAudioAnalyzerOptions, _AudioAnalyzerDefaults } from "../subProperties/abstractAudioAnalyzer";
+import { type _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { AudioSubNode } from "./audioSubNode";
 

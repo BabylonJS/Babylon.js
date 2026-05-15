@@ -1,10 +1,10 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Mesh } from "../mesh";
-import type { VertexData } from "../mesh.vertexData";
-import type { Scene } from "../../scene";
+import { type VertexData } from "../mesh.vertexData";
+import { type Scene } from "../../scene";
 import { GeometryOutputBlock } from "./Blocks/geometryOutputBlock";
-import type { NodeGeometryBlock } from "./nodeGeometryBlock";
+import { type NodeGeometryBlock } from "./nodeGeometryBlock";
 import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
@@ -12,12 +12,12 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock";
-import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import { type GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { PrecisionDate } from "../../Misc/precisionDate";
-import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import { type TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import { type TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
-import type { Color4 } from "../../Maths/math.color";
+import { type Color4 } from "../../Maths/math.color";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
@@ -59,9 +59,17 @@ export class NodeGeometry {
 
     /** @returns the inspector from bundle or global */
     private _getGlobalNodeGeometryEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
+        // Note: rollup-built UMD bundles do not expose the editor class
+        // directly on the namespace - it lives on `.default.NodeGeometryEditor` -
+        // so we unwrap that case before falling back to the BABYLON global.
         if (typeof NODEGEOMETRYEDITOR !== "undefined") {
-            return NODEGEOMETRYEDITOR;
+            if ((NODEGEOMETRYEDITOR as any).NodeGeometryEditor) {
+                return NODEGEOMETRYEDITOR;
+            }
+            if ((NODEGEOMETRYEDITOR as any).default?.NodeGeometryEditor) {
+                return (NODEGEOMETRYEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.

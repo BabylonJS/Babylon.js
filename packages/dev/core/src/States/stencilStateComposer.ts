@@ -1,4 +1,4 @@
-import type { IStencilState } from "./IStencilState";
+import { type IStencilState } from "./IStencilState";
 
 /**
  * @internal

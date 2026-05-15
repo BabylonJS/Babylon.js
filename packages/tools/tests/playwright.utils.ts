@@ -75,6 +75,11 @@ export function getBabylonServerTestsList() {
             use: getUseDefinition("Graph Tools"),
         },
         {
+            name: "flowGraphEditor",
+            testMatch: "**/flowGraphEditor.test.ts",
+            use: getUseDefinition("Flow Graph Editor"),
+        },
+        {
             name: "viewer",
             testMatch: "packages/tools/viewer/test/viewer.test.ts",
             use: getUseDefinition("Viewer"),

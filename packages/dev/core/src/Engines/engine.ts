@@ -1,20 +1,19 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { ILoadingScreen } from "../Loading/loadingScreen";
+import { type ILoadingScreen } from "../Loading/loadingScreen";
 import { EngineStore } from "./engineStore";
-import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
-import type { EngineOptions } from "./thinEngine";
-import { ThinEngine } from "./thinEngine";
+import { type WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
+import { type EngineOptions, ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import { type IViewportLike, type IColor4Like } from "../Maths/math.like";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
@@ -36,7 +35,7 @@ import "./AbstractEngine/abstractEngine.texture";
 import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";
 
-import type { PostProcess } from "../PostProcesses/postProcess";
+import { type PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
 import {
     CreateImageBitmapFromSource,

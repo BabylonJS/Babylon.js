@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { ParsedSpec } from "./types";
+import { type ParsedSpec } from "./types";
 import { NodeBuiltins } from "./constants";
 
 export function IsBare(spec: string) {

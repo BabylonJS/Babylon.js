@@ -1,9 +1,9 @@
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
-import type { Nullable } from "core/types";
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type ParticleGradientValueBlock } from "./particleGradientValueBlock";
+import { type Nullable } from "core/types";
 import { Lerp } from "core/Maths/math.scalar.functions";
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";

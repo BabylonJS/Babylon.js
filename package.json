@@ -10,15 +10,19 @@
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
-        "@typescript-eslint/eslint-plugin": "^8.56.1",
-        "@typescript-eslint/parser": "^8.56.1",
-        "@typescript-eslint/utils": "^8.56.1",
-        "@vitest/coverage-v8": "^4.1.0",
-        "@vitest/eslint-plugin": "^1.6.12",
+        "@rollup/plugin-terser": "^1.0.0",
+        "@rollup/plugin-url": "^8.0.2",
+        "@typescript-eslint/eslint-plugin": "^8.58.2",
+        "@typescript-eslint/parser": "^8.58.2",
+        "@typescript-eslint/utils": "^8.58.2",
+        "@vitejs/plugin-react": "^4.7.0",
+        "@vitest/coverage-v8": "^4.1.3",
+        "@vitest/eslint-plugin": "^1.6.14",
         "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
         "dotenv": "~16.0.0",
         "es-check": "^7.1.1",
+        "esbuild": "^0.25.0",
         "eslint": "^10.0.2",
         "eslint-config-prettier": "^10.1.8",
         "eslint-formatter-azure-devops": "^1.2.0",
@@ -29,19 +33,21 @@
         "eslint-plugin-tsdoc": "^0.5.0",
         "glob": "^13.0.6",
         "globals": "^16.0.0",
-        "mini-css-extract-plugin": "~2.6.0",
+        "jsdom": "^26.1.0",
+        "lint-staged": "^16.2.7",
         "nx": "^22.5.4",
         "prettier": "^3.0.3",
         "rimraf": "^6.1.3",
-        "serialize-javascript": "7.0.4",
+        "rollup-plugin-dts": "^6.4.1",
+        "rollup-plugin-postcss": "^4.0.2",
+        "serialize-javascript": "7.0.5",
         "ts-node": "~10.9.0",
-        "ts-patch": "3.3.0",
         "tslib": "^2.4.0",
         "typedoc": "^0.28.16",
-        "typescript": "~5.9.3",
-        "vitest": "^4.1.0",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1"
+        "typescript": "~6.0.2",
+        "typescript-eslint": "^8.58.2",
+        "vite": "6.4.2",
+        "vitest": "^4.1.3"
     },
     "optionalDependencies": {
         "canvas": "~3.2.1"
@@ -51,13 +57,11 @@
     ],
     "scripts": {
         "build:dev": "npm run build:assets && npm run build:source && npm run build:declaration -w @tools/babylon-server",
-        "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",
-        "build:source:lts": "npx nx run-many --outputStyle=static --target=compile --projects=@lts/core,@lts/gui,@lts/loaders,@lts/materials,@lts/post-processes,@lts/procedural-textures,@lts/serializers --parallel=1",
         "build:source:smart-filters": "npm run build:assets:smart-filters && tsc -b ./tsconfig.smartFilters.json",
         "build:umd": "npm run build:umd:libs && npm run build:umd:tools",
         "build:umd:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-ktx2decoder,babylonjs-accessibility,babylonjs-addons",
-        "build:umd:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector-legacy,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor,babylonjs-inspector",
+        "build:umd:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector-legacy,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor,babylonjs-inspector,create-babylonjs",
         "build:es6": "npm run build:assets:smart-filters && npm run build:es6:libs && npm run build:es6:tools",
         "build:es6:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=@babylonjs/core,@babylonjs/gui,@babylonjs/loaders,@babylonjs/materials,@babylonjs/serializers,@babylonjs/post-processes,@babylonjs/procedural-textures,@babylonjs/viewer,@babylonjs/shared-ui-components,@babylonjs/addons,@babylonjs/accessibility,@babylonjs/ktx2decoder,@babylonjs/smart-filters,@babylonjs/smart-filters-blocks,@babylonjs/lottie-player",
         "build:es6:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=@babylonjs/node-editor,@babylonjs/node-geometry-editor,@babylonjs/node-render-graph-editor,@babylonjs/node-particle-editor,@babylonjs/inspector-legacy,@babylonjs/gui-editor,@tools/smart-filters-editor-control,@tools/smart-filters-debugger,@tools/smart-filters-editor,@babylonjs/inspector",
@@ -65,7 +69,6 @@
         "watch:assets": "build-tools -c pa --global --watch",
         "watch:assets:smart-filters": "npm run build:assets:smart-filters:prerequisites && node ./packages/dev/smartFilters/dist/utils/buildTools/watchShaders.js ./packages/dev/smartFilterBlocks/src/blocks smart-filters core",
         "watch:source:dev": "tsc -b ./tsconfig.devpackages.json -w",
-        "watch:source:lts": "npx nx run-many --target=watch:lts --all --parallel --maxParallel=20",
         "watch:source:smart-filters": "tsc -b ./tsconfig.smartFilters.json -w",
         "build:assets": "build-tools -c pa --global",
         "build:assets:smart-filters:prerequisites": "tsc -p packages/dev/smartFilters/tsconfig.buildTools.json --noCheck",
@@ -73,7 +76,6 @@
         "build:shaders": "build-tools -c build-shaders --global",
         "watch:dev": "npx build-tools -c dw -wa -wd",
         "watch:dev:skip-compile": "npx build-tools -c dw -wa -wd -sc",
-        "watch-lts": "npx nx run-many --target=watch:lts --all --parallel --maxParallel=20",
         "build:babylonjs": "nx build babylonjs",
         "build:tools": "npm run build -w @dev/build-tools && npm run build -w eslint-plugin-babylonjs && npm run build:snippet-loader",
         "build:test-tools": "npm run build -w @tools/test-tools",
@@ -85,27 +87,42 @@
         "test:visualization:devhost": "playwright test -c ./playwright.devhost.config.ts",
         "test:visualization:devhost:ui": "playwright test -c ./playwright.devhost.config.ts --ui",
         "test:integration": "playwright test -c ./playwright.config.ts --project=integration && npm run test -w @tools/memory-leak-tests",
+        "test:memory-leaks": "npm run test -w @tools/memory-leak-tests",
+        "test:memory-leaks:unit": "npm run test:unit -w @tools/memory-leak-tests",
+        "test:memory-leaks:all": "npm run test:all -w @tools/memory-leak-tests",
+        "test:memory-leaks:packages": "npm run test:packages -w @tools/memory-leak-tests",
         "test:performance": "playwright test -c ./playwright.config.ts --project=performance",
         "test:interactions": "playwright test -c ./playwright.config.ts --project=interaction",
         "test:audioV2": "playwright test --project=audioV2",
+        "test:graphTools": "playwright test -c ./playwright.config.ts --project=graphTools",
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
-        "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
+        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "lint": "npm run lint:check",
-        "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
-        "lint:check:changed": "eslint --quiet $(git diff --name-only master | xargs)",
+        "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --cache",
+        "lint:changed": "node scripts/lint-changed.mjs",
+        "lint:changed:fix": "node scripts/lint-changed.mjs --fix",
+        "precommit": "lint-staged",
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops",
+        "lint:cycles": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --rule '{\"import/no-cycle\": [1, {\"maxDepth\": 1, \"ignoreExternal\": true}]}'",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "npx nx run-many --targets watch:dev:skip-compile serve --projects @babylonjs/root @tools/babylon-server --parallel 2 --skipNxCache true --outputStyle stream",
         "start:devhost": "npm run serve -w @tools/dev-host"
     },
+    "lint-staged": {
+        "packages/**/src/**/*.{ts,tsx,js,json}": [
+            "prettier --write",
+            "eslint --quiet --cache --no-warn-ignored"
+        ],
+        "packages/**/src/**/*.{scss,css}": "prettier --write"
+    },
     "engines": {
-        "node": ">=20.11.0 <23.0.0",
+        "node": ">=20.17.0 <23.0.0",
         "npm": ">=8.0.0"
     },
     "changelog": {
@@ -121,9 +138,12 @@
         "eslint-plugin-import": {
             "eslint": "^10.0.0"
         },
-        "typescript-eslint": "^8.56.1",
         "@rollup/plugin-commonjs": {
             "glob": "^13.0.6"
-        }
+        },
+        "eslint-plugin-tsdoc": {
+            "@typescript-eslint/utils": "^8.58.2"
+        },
+        "dompurify": "3.4.0"
     }
 }

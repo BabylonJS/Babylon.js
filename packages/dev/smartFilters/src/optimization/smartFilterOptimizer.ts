@@ -1,14 +1,13 @@
-import type { Nullable } from "core/types.js";
+import { type Nullable } from "core/types.js";
 import { Logger } from "core/Misc/logger.js";
 
-import type { ConnectionPoint } from "../connection/connectionPoint.js";
-import type { ShaderBinding } from "../runtime/shaderRuntime.js";
-import type { InputBlock } from "../blockFoundation/inputBlock.js";
-import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import { type ConnectionPoint } from "../connection/connectionPoint.js";
+import { type ShaderBinding } from "../runtime/shaderRuntime.js";
+import { type InputBlock, IsTextureInputBlock } from "../blockFoundation/inputBlock.js";
+import { type BaseBlock } from "../blockFoundation/baseBlock.js";
 import { SmartFilter } from "../smartFilter.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
-import { IsTextureInputBlock } from "../blockFoundation/inputBlock.js";
 import { OptimizedShaderBlock } from "./optimizedShaderBlock.js";
 import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, type ShaderProgram, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { DependencyGraph } from "./dependencyGraph.js";

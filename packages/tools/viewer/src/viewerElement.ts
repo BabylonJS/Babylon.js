@@ -1,11 +1,23 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, Observable } from "core/index";
-import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, SSAOOptions, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
-import type { CanvasViewerOptions } from "./viewerFactory";
+import { type Nullable, type Observable } from "core/index";
+import { type CSSResultGroup, type PropertyValues, type TemplateResult, LitElement, css, html } from "lit";
+import {
+    type CameraOrbit,
+    type EnvironmentOptions,
+    type HotSpot,
+    type ResetFlag,
+    type ShadowQuality,
+    type SSAOOptions,
+    type ToneMapping,
+    type ViewerDetails,
+    type ViewerHotSpotResult,
+    IsShadowQuality,
+    IsToneMapping,
+    Viewer,
+} from "./viewer";
+import { type CanvasViewerOptions, CreateViewerForCanvas } from "./viewerFactory";
 
-import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";
 
@@ -14,8 +26,6 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsShadowQuality, IsToneMapping, Viewer } from "./viewer";
-import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =
@@ -633,6 +643,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public extension: Nullable<string> = null;
 
     /**
+     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+     * @experimental
+     */
+    @property({ attribute: "use-open-pbr", type: Boolean })
+    public useOpenPBR: boolean = this._options.useOpenPBR ?? false;
+
+    /**
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
     @property({
@@ -843,6 +860,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: false })
     public animationProgress = 0;
 
+    private _loadedSource: Nullable<string | File | ArrayBufferView> = null;
+
     @state()
     private _animations: readonly string[] = [];
 
@@ -993,6 +1012,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
             if (changedProperties.has("source")) {
                 this._updateModel();
+            } else if (changedProperties.has("useOpenPBR")) {
+                this._updateModel(this._loadedSource ?? this.source);
             }
 
             if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
@@ -1357,6 +1378,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                             exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? target.postProcessing?.exposure,
                                             ssao: viewerElement.hasAttribute("ssao") || target.postProcessing?.ssao,
                                         };
+                                    case "useOpenPBR":
+                                        return viewerElement.useOpenPBR || target.useOpenPBR;
                                     case "selectedMaterialVariant":
                                         return viewerElement.getAttribute("material-variant") ?? target.selectedMaterialVariant;
                                     case "onInitialized":
@@ -1400,6 +1423,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 details.viewer.onModelChanged.add((source) => {
+                    if (source) {
+                        this._loadedSource = source;
+                    }
                     this._animations = [...details.viewer.animations];
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
@@ -1473,11 +1499,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         });
     }
 
-    private async _updateModel() {
+    private async _updateModel(source: Nullable<string | File | ArrayBufferView> = this.source) {
         if (this._viewerDetails) {
             try {
-                if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, {
+                if (source) {
+                    await this._viewerDetails.viewer.loadModel(source, {
                         pluginExtension: this.extension ?? undefined,
                     });
                 } else {

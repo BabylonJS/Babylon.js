@@ -4,9 +4,9 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { Nullable } from "core/types.js";
-import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType.js";
-import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
+import { type Nullable } from "core/types.js";
+import { type AllConnectionPointTypes, type ConnectionPointValue } from "../../connection/connectionPointType.js";
+import { type ShaderProgram } from "../../utils/shaderCodeUtils.js";
 
 /**
  * Description of a const property exposed by a shader block.

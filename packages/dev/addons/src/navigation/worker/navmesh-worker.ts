@@ -5,11 +5,17 @@
  * For more info visit: https://forum.babylonjs.com/t/replacing-recastjs-with-recast-navigation-js/56003/46
  */
 import { exportNavMesh, exportTileCache, init as initRecast } from "@recast-navigation/core";
-import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
-import { generateSoloNavMesh, generateTileCache, generateTiledNavMesh } from "@recast-navigation/generators";
+import {
+    type SoloNavMeshGeneratorConfig,
+    type TileCacheGeneratorConfig,
+    type TiledNavMeshGeneratorConfig,
+    generateSoloNavMesh,
+    generateTileCache,
+    generateTiledNavMesh,
+} from "@recast-navigation/generators";
 
 import { CreateSoloNavMeshConfig, CreateTileCacheNavMeshConfig } from "../common/config";
-import type { INavMeshParametersV2 } from "../types";
+import { type INavMeshParametersV2 } from "../types";
 
 /**
  * Generates a navigation mesh in a web worker.

@@ -3,7 +3,8 @@ import { getGlobalConfig } from "@tools/test-tools";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
-const url = (process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.PLAYGROUND_PORT || ":1338")) + snapshot;
+const cdnPort = ":" + (process.env.CDN_PORT || 1337);
+const url = (process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.PLAYGROUND_PORT || ":1338")) + snapshot;
 
 test("Playground is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
@@ -18,6 +19,20 @@ test("Playground is loaded (Desktop)", async ({ page }) => {
     await expect(page.locator("#monacoHost")).toBeVisible();
     await expect(page.locator("#pg-header")).toBeVisible();
     await expect(page.locator("#wait-ring")).toBeHidden({ timeout: 30000 });
+});
+
+test("Playground exposes key desktop toolbar actions", async ({ page }) => {
+    await page.goto(url, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+
+    await expect(page.locator("#wait-ring")).toBeHidden({ timeout: 30000 });
+    await expect(page.getByTitle("Examples")).toBeVisible();
+    await expect(page.getByTitle("Run\nAlt+Enter")).toBeVisible();
 });
 
 test("Playground is loaded (Mobile)", async ({ page }) => {
@@ -71,11 +86,13 @@ test("User can interact with the playground", async ({ page }) => {
     // via the Playground window global... This is a timing hack but the small amount of tests here
     // should make it ok for now.
 
-    await page.waitForTimeout(1500);
+    // Wait for Monaco editor to be fully ready (Vite loads it asynchronously)
+    await page.waitForSelector(".monaco-editor .view-lines", { state: "visible" });
+    await page.waitForTimeout(2000);
     await page.locator(".view-line:nth-of-type(16)").click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2000);
     await page.keyboard.type("camera", { delay: 50 });
-    await expect(page.locator(".editor-widget")).toBeVisible();
+    await expect(page.locator(".editor-widget")).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(100);
     await page.keyboard.press("Escape");
 
@@ -88,5 +105,6 @@ test("User can interact with the playground", async ({ page }) => {
 
     await page.getByTitle("Run\nAlt+Enter").getByRole("img").click();
 
+    await page.evaluate(() => document.fonts.ready);
     await expect(page.locator("#canvasZone")).toHaveScreenshot();
 });

@@ -1,6 +1,6 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import type { MeshUVSpaceRenderer } from "./meshUVSpaceRenderer";
+import { type MeshUVSpaceRenderer } from "./meshUVSpaceRenderer";
 
 declare module "./abstractMesh" {
     /** @internal */

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import type { IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../types";
-import type { ICanvas, IImage, IPath2D } from "../ICanvas";
-import type { NativeData, NativeDataStream } from "./nativeDataStream";
-import type { Matrix } from "../../Maths/math.vector";
+import { type DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
+import { type IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../types";
+import { type ICanvas, type IImage, type IPath2D } from "../ICanvas";
+import { type NativeData, type NativeDataStream } from "./nativeDataStream";
+import { type Matrix } from "../../Maths/math.vector";
 
 export type NativeTexture = NativeData;
 export type NativeFramebuffer = NativeData;

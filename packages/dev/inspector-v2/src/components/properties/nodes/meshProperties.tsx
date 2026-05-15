@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { Mesh, MorphTarget } from "core/index";
+import { type Mesh, type MorphTarget } from "core/index";
 
 import { EditRegular } from "@fluentui/react-icons";
 

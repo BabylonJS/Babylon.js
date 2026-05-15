@@ -1,4 +1,4 @@
-import type { float, int, Tuple } from "../types";
+import { type float, type int, type Tuple } from "../types";
 
 /**
  * @internal

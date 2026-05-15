@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Scene } from "../../../../scene";
-import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import { type Scene } from "../../../../scene";
+import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { Effect } from "../../../effect";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { BindLogDepth } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -30,7 +30,7 @@ export enum FragmentOutputBlockColorSpace {
 export class FragmentOutputBlock extends NodeMaterialBlock {
     private _linearDefineName: string;
     private _gammaDefineName: string;
-    private _additionalColorDefineName: string;
+    private _additionalColorDefineName: string | undefined;
     protected _outputString: string;
 
     /**
@@ -153,7 +153,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
-        defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        if (this._additionalColorDefineName !== undefined) {
+            defines.setValue(this._additionalColorDefineName, !!this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        }
     }
 
     /**

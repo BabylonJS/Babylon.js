@@ -1,11 +1,11 @@
 import { Effect } from "../Materials/effect";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { IMatrixLike, IVector3Like } from "../Maths/math.like";
+import { type IMatrixLike, type IVector3Like } from "../Maths/math.like";
 import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
-import type { Scene } from "../scene";
-import type { DeepImmutable } from "../types";
+import { type Scene } from "../scene";
+import { type DeepImmutable } from "../types";
 import { UniformBuffer } from "./uniformBuffer";
-import type { Plane } from "../Maths/math.plane";
+import { type Plane } from "../Maths/math.plane";
 
 const TempFinalMat: Matrix = new Matrix();
 const TempMat1: Matrix = new Matrix();

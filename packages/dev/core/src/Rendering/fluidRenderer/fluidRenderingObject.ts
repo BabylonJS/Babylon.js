@@ -1,11 +1,11 @@
-import type { VertexBuffer } from "core/Buffers/buffer";
-import type { DataBuffer } from "core/Buffers/dataBuffer";
+import { type VertexBuffer } from "core/Buffers/buffer";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { Constants } from "core/Engines/constants";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { Observable } from "core/Misc/observable";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**

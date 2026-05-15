@@ -47,6 +47,7 @@ These are Azure Front Door endpoint names used in CDN cache purge calls.
 | `CDN_ENDPOINT_NRGE`        | Node Render Graph Editor endpoint |
 | `CDN_ENDPOINT_GUIEDITOR`   | GUI Editor endpoint               |
 | `CDN_ENDPOINT_NPE`         | Node Particle Editor endpoint     |
+| `CDN_ENDPOINT_FGE`         | Flow Graph Editor endpoint        |
 | `CDN_ENDPOINT_DOCS`        | Documentation site endpoint       |
 
 ### CDN Purge Profiles
@@ -60,22 +61,67 @@ Azure Front Door profile names used alongside the endpoints above.
 | `CDN_PROFILE_PLAYGROUND` | Profile for the playground endpoint                     |
 | `CDN_PROFILE_TOOLS`      | Profile for all editor tool and documentation endpoints |
 
+## Variable Group: `BabylonJS-BrowserStack`
+
+BrowserStack credentials shared by pipelines that run browser tests.
+
+| Variable                  | Description             |
+| ------------------------- | ----------------------- |
+| `BROWSERSTACK_ACCESS_KEY` | BrowserStack access key |
+| `BROWSERSTACK_USERNAME`   | BrowserStack username   |
+
+Linked by: ci-monorepo, ci-browser-testing.
+
+### BrowserStack connection
+
+All pipelines connect to BrowserStack directly over CDP using Playwright's
+`connectOptions.wsEndpoint` (configured in `playwright.browserstack.config.ts`).
+The browser, OS, and credentials are passed as capabilities in the WebSocket URL.
+
+**CI invocation (in YAML pipelines):**
+
+```yaml
+- script: npx playwright test --config ./playwright.browserstack.config.ts
+  env:
+      BSTACK_TEST_TYPE: "webgl2" # or webgpu, performance, interaction
+      CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+      BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+      BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+```
+
+**Key environment variables for CI:**
+
+| Variable                          | Description                                                                                    |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `BSTACK_TEST_TYPE`                | Selects test suite and dashboard build name (`webgl2`, `webgpu`, `performance`, `interaction`) |
+| `BSTACK_BROWSER`                  | Override browser for cross-browser runs (e.g. `playwright-firefox`, `playwright-webkit`)       |
+| `BSTACK_OS` / `BSTACK_OS_VERSION` | Override OS/version (e.g. `OS X` / `Sonoma`)                                                   |
+| `BSTACK_SESSIONS_REQUIRED`        | Preferred number of parallel sessions to reserve (default: 1)                                  |
+| `BSTACK_MAX_SESSIONS`             | Max sessions on the BrowserStack plan; caps REQUIRED (default: 5)                              |
+| `CIWORKERS`                       | Number of parallel BrowserStack sessions (default: set by browserstack-wait.sh)                |
+
+## Variable Group: `BabylonJS-Deployment`
+
+Deployment server credentials shared by pipelines that upload snapshots or
+deploy tools.
+
+| Variable            | Description                           |
+| ------------------- | ------------------------------------- |
+| `DEPLOY_TOKEN`        | Deployment server authorization token |
+| `DEPLOYMENT_SERVER` | Deployment server base URL            |
+
+Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools.
+
 ### Secret Variables (per-pipeline)
 
 These must be configured as **secret variables** on each pipeline (not in the
 variable group) because they contain credentials:
 
-| Variable                  | Used By                                                                  | Description                                                   |
-| ------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| `BASIC_AUTH`              | ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools | Deployment server authorization token                         |
-| `DEPLOYMENT_SERVER`       | ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools | Deployment server base URL                                    |
-| `BROWSERSTACK_ACCESS_KEY` | ci-monorepo                                                              | BrowserStack access key                                       |
-| `BROWSERSTACK_USERNAME`   | ci-monorepo                                                              | BrowserStack username                                         |
-| `ACCESS_KEY`              | ci-browser-testing                                                       | BrowserStack access key (alternate name)                      |
-| `USERNAME`                | ci-browser-testing                                                       | BrowserStack username (alternate name)                        |
-| `GitHubPAT`               | cd-publish                                                               | GitHub Personal Access Token for git push and version scripts |
-| `NPM_TOKEN`               | cd-publish                                                               | npm registry auth token for publishing                        |
-| `SEARCH_KEY`              | ci-documentation                                                         | Search API key for documentation builds                       |
+| Variable     | Used By          | Description                                                   |
+| ------------ | ---------------- | ------------------------------------------------------------- |
+| `GitHubPAT`  | cd-publish       | GitHub Personal Access Token for git push and version scripts |
+| `NPM_TOKEN`  | cd-publish       | npm registry auth token for publishing                        |
+| `SEARCH_KEY` | ci-documentation | Search API key for documentation builds                       |
 
 ### Manual YAML Configuration
 

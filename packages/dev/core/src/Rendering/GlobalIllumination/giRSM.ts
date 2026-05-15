@@ -1,4 +1,4 @@
-import type { ReflectiveShadowMap } from "../reflectiveShadowMap";
+import { type ReflectiveShadowMap } from "../reflectiveShadowMap";
 
 /**
  * Class used to store the global illumination parameters for a reflective shadow map.

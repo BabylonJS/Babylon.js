@@ -1,7 +1,7 @@
-import type { IMaterial } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_openpbr";

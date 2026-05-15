@@ -1,28 +1,28 @@
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Color3 } from "core/Maths/math.color";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { LogEntry } from "../log/logComponent";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ParticleSystemSet } from "core/Particles/particleSystemSet";
 import { EngineStore } from "core/Engines";
-import type { ParticleSystem } from "core/Particles";
+import { type ParticleSystem } from "core/Particles";
 import { AxesViewer } from "core/Debug/axesViewer";
 import { TransformNode } from "core/Meshes/transformNode";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
-import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;

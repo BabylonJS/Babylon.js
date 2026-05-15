@@ -1,5 +1,5 @@
-import type { SmartFilter, ISerializedBlockV1, BaseBlock } from "smart-filters";
-import type { Nullable } from "core/types";
+import { type SmartFilter, type ISerializedBlockV1, type BaseBlock } from "smart-filters";
+import { type Nullable } from "core/types";
 import { WebCamInputBlockName } from "./blockNames.js";
 
 /**
@@ -11,7 +11,7 @@ import { WebCamInputBlockName } from "./blockNames.js";
  */
 export async function InputBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlockV1): Promise<Nullable<BaseBlock>> {
     if (serializedBlock.name === WebCamInputBlockName) {
-        const module = await import(/* webpackChunkName: "webCamBlock" */ "./webCamInputBlock/webCamInputBlock.js");
+        const module = await import("./webCamInputBlock/webCamInputBlock.js");
         return new module.WebCamInputBlock(smartFilter);
     }
     return null;

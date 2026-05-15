@@ -1,4 +1,4 @@
-import type { AbstractEngine, Engine, InternalTexture, Nullable, RenderTargetWrapper, Scene, ShadowGenerator, WebGPUEngine } from "core/index";
+import { type AbstractEngine, type Engine, type InternalTexture, type Nullable, type RenderTargetWrapper, type Scene, type ShadowGenerator, type WebGPUEngine } from "core/index";
 import { AbortError } from "core/Misc/error";
 import { Constants } from "core/Engines/constants";
 import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector";

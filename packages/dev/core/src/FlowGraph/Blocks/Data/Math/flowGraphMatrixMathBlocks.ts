@@ -1,7 +1,6 @@
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import {
     FlowGraphTypes,
     getRichTypeByFlowGraphType,
@@ -15,9 +14,9 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import type { FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
+import { type FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
-import type { FlowGraphMatrix } from "core/FlowGraph/utils";
+import { type FlowGraphMatrix } from "core/FlowGraph/utils";
 
 /**
  * Configuration for the matrix blocks.

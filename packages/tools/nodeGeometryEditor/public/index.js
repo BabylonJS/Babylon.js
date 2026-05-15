@@ -1,4 +1,5 @@
 /* global BABYLON */
+var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
 let previousHash = "";
@@ -43,9 +44,9 @@ const Versions = {
         "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
     ],
     local: [
-        `//${window.location.hostname}:1337/babylon.js`,
-        `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`,
-        `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`,
+        `//${window.location.hostname}:${cdnPort}/babylon.js`,
+        `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`,
+        `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`,
     ],
 };
 
@@ -101,7 +102,7 @@ let checkBabylonVersionAsync = function () {
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
         } else if (activeVersion === "local") {
             // eslint-disable-next-line no-undef
-            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:${cdnPort}/`;
         }
     });
 };

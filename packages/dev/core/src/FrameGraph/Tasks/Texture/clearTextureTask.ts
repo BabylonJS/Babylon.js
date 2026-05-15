@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { Color4, TmpColors } from "../../../Maths/math.color";
 import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";

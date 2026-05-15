@@ -1,15 +1,15 @@
 import { Logger } from "../Misc/logger";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Observable } from "../Misc/observable";
-import type { IComputePipelineContext } from "./IComputePipelineContext";
+import { type IComputePipelineContext } from "./IComputePipelineContext";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { Finalize, Initialize, PreProcess } from "../Engines/Processors/shaderProcessor";
-import type { _IProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
+import { type _IProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
@@ -158,9 +158,9 @@ export class ComputeEffect {
 
         if (typeof baseName === "string") {
             computeSource = baseName;
-        } else if (baseName.computeSource) {
+        } else if (typeof baseName.computeSource === "string") {
             computeSource = "source:" + baseName.computeSource;
-        } else if (baseName.computeElement) {
+        } else if (typeof baseName.computeElement === "string") {
             computeSource = hostDocument?.getElementById(baseName.computeElement) || baseName.computeElement;
         } else {
             computeSource = baseName.compute || baseName;

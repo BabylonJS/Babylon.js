@@ -1,16 +1,16 @@
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { Observable } from "../Misc/observable";
-import type { Nullable, FloatArray } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable, type FloatArray } from "../types";
+import { type Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass } from "../Misc/typeStore";
-import type { Animation } from "../Animations/animation";
-import type { MorphTargetManager } from "./morphTargetManager";
+import { type Animation } from "../Animations/animation";
+import { type MorphTargetManager } from "./morphTargetManager";
 
 /**
  * Defines a target to use with MorphTargetManager

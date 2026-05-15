@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
+import { type FrameGraph, type FrameGraphObjectList, type IShadowLight, type WritableObject, type FrameGraphTextureHandle, type Camera } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 

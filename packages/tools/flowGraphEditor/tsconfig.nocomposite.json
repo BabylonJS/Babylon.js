@@ -1,0 +1,15 @@
+{
+    "extends": "../../../tsconfig.build.json",
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "flow-graph-editor/*": ["tools/flowGraphEditor/src/*"]
+        }
+    },
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": ["**/node_modules", "**/dist"]
+}

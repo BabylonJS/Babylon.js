@@ -1,17 +1,16 @@
-import type { _IProcessingOptions, ShaderCustomProcessingFunction, _IShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
+import { type _IProcessingOptions, type ShaderCustomProcessingFunction, type _IShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import type { WebGLContext } from "core/Engines/thinEngine.functions";
-import { getStateObject } from "core/Engines/thinEngine.functions";
+import { type WebGLContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { Effect, IShaderPath } from "./effect";
-import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type Effect, type IShaderPath } from "./effect";
+import { type IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
 import { _LoadFile } from "core/Engines/abstractEngine.functions";
-import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+import { type WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 
 /**
  * Options to be used when creating a pipeline
@@ -136,18 +135,18 @@ export function _ProcessShaderCode(
 
     if (typeof baseName === "string") {
         vertexSource = baseName;
-    } else if (baseName.vertexSource) {
+    } else if (typeof baseName.vertexSource === "string") {
         vertexSource = "source:" + baseName.vertexSource;
-    } else if (baseName.vertexElement) {
+    } else if (typeof baseName.vertexElement === "string") {
         vertexSource = hostDocument?.getElementById(baseName.vertexElement) || baseName.vertexElement;
     } else {
         vertexSource = baseName.vertex || baseName;
     }
     if (typeof baseName === "string") {
         fragmentSource = baseName;
-    } else if (baseName.fragmentSource) {
+    } else if (typeof baseName.fragmentSource === "string") {
         fragmentSource = "source:" + baseName.fragmentSource;
-    } else if (baseName.fragmentElement) {
+    } else if (typeof baseName.fragmentElement === "string") {
         fragmentSource = hostDocument?.getElementById(baseName.fragmentElement) || baseName.fragmentElement;
     } else {
         fragmentSource = baseName.fragment || baseName;

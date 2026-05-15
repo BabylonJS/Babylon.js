@@ -1,15 +1,14 @@
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Effect } from "../../../effect";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**

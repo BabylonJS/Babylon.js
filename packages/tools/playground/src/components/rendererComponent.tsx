@@ -2,18 +2,30 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import { RuntimeMode } from "../globalState";
+import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
+import { type InspectorToken } from "inspector/inspector";
+import { type InspectableToken } from "inspector/inspectable";
+import { type ModularBridgeToken } from "inspector/index";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
-import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
+import {
+    Engine,
+    EngineStore,
+    WebGPUEngine,
+    LastCreatedAudioEngine,
+    Logger,
+    AddSmartAssetManagerCreatedObserver,
+    type Nullable,
+    type Observer,
+    type Scene,
+    type SmartAssetManager,
+    type ThinEngine,
+} from "@dev/core";
 
+import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
-
-type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 const RunnableCreationTimeoutMs = 15000;
 const SceneRunTimeoutMs = 30000;
@@ -37,7 +49,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
-    private _inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectorV2Token: Nullable<InspectorToken> = null;
+    private _inspectableToken: Nullable<InspectableToken> = null;
+    private _bridgeToken: Nullable<ModularBridgeToken> = null;
+    private _smartAssetManagerCreatedObserver: Nullable<Observer<SmartAssetManager>> = null;
 
     /**
      * Create the rendering component.
@@ -69,7 +84,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.downloadAsync();
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(async (action) => {
+        this.props.globalState.onInspectorRequiredObservable.add(async () => {
             if (!this._scene) {
                 return;
             }
@@ -94,7 +109,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             await Promise.resolve();
 
             if (this._inspectorV2Token) {
-                this._inspectorV2Token.dispose();
+                void this._inspectorV2Token.dispose();
                 this._inspectorV2Token = null;
             } else if (this._scene.debugLayer.openedPanes !== 0) {
                 this._scene.debugLayer.hide();
@@ -109,7 +124,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onThemeChangedObservable.add(() => {
             if (this._inspectorV2Token) {
-                this._inspectorV2Token.dispose();
+                void this._inspectorV2Token.dispose();
                 this._showInspectorAsync();
             }
         });
@@ -123,12 +138,64 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
 
         window.addEventListener("error", this._saveError);
+
+        // Bridge SmartAssetManager onAssetNotFound to the Inspector prompt.
+        // Registered for the lifetime of the component (rather than per-run) so
+        // SAMs created asynchronously - after runner.run() returns, e.g. from
+        // a setTimeout, deferred load, or user interaction - still get bridged.
+        // The `if (!manager.onAssetNotFound)` guard makes re-fires across runs safe.
+        this._smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
+            if (!manager.onAssetNotFound) {
+                manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
+            }
+        });
     }
 
-    private async _showInspectorAsync() {
-        if (this._scene) {
+    /**
+     * React lifecycle hook that runs when the component unmounts.
+     */
+    public override componentWillUnmount() {
+        this._smartAssetManagerCreatedObserver?.remove();
+        this._smartAssetManagerCreatedObserver = null;
+    }
+
+    private _ensureBridge() {
+        if (this._bridgeToken && !this._bridgeToken.isDisposed) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.MakeModularBridge) {
+            this._bridgeToken = inspectorV2Module.MakeModularBridge({
+                autoEnable: location.search.includes("inspectable"),
+                serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
+            });
+        }
+    }
+
+    private _ensureInspectable(scene: Scene | null = this._scene) {
+        if (this._inspectableToken && !this._inspectableToken.isDisposed) {
+            return;
+        }
+        if (!scene) {
+            return;
+        }
+        this._ensureBridge();
+        if (!this._bridgeToken) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.StartInspectable) {
+            this._inspectableToken = inspectorV2Module.StartInspectable(scene, {
+                bridgeToken: this._bridgeToken,
+            });
+        }
+    }
+
+    private async _showInspectorAsync(scene: Scene | null = this._scene) {
+        if (scene) {
             const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
             if (inspectorV2Module?.ShowInspector) {
+                this._ensureInspectable(scene);
                 const options = {
                     ...inspectorV2Module.ConvertOptions({
                         embedMode: true,
@@ -136,13 +203,46 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     showThemeSelector: false,
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                 } as const;
-                this._inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+                this._inspectorV2Token = inspectorV2Module.ShowInspector(scene, options);
             } else {
-                await this._scene.debugLayer.show({
+                await scene.debugLayer.show({
                     embedMode: true,
                 });
             }
         }
+    }
+
+    /**
+     * Bridges Smart Asset missing-file requests to the Inspector's locate/skip prompt.
+     *
+     * Opens Inspector v2 if it isn't already open, then forwards the prompt request to
+     * `inspectorAssetNotFoundHandler`. When the user picks a replacement, the wait ring
+     * is shown to indicate the new asset is loading; the ring is hidden by the rest of
+     * the run pipeline once loading completes (downstream `onRunExecutedObservable`
+     * handlers and `_finishRun()` clear it via `onDisplayWaitRingObservable`).
+     * @param scene - The scene that owns the missing asset's manager.
+     * @param key - The smart asset key that was not found.
+     * @param expectedUrl - The URL that failed to load.
+     * @returns A replacement URL, File, or null to skip the asset.
+     */
+    private async _resolveMissingSmartAssetWithInspectorAsync(scene: Scene, key: string, expectedUrl: string): Promise<string | File | null> {
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (!inspectorV2Module?.ShowInspector || !inspectorV2Module.inspectorAssetNotFoundHandler) {
+            Logger.Warn("Playground: Inspector v2 is required to resolve missing Smart Assets.");
+            return null;
+        }
+
+        if (!this._inspectorV2Token) {
+            this.setState({ preferInspector: true });
+            await Promise.resolve();
+            await this._showInspectorAsync(scene);
+        }
+
+        const replacementAsset = await inspectorV2Module.inspectorAssetNotFoundHandler(key, expectedUrl);
+        if (replacementAsset) {
+            this.props.globalState.onDisplayWaitRingObservable.notifyObservers(true);
+        }
+        return replacementAsset;
     }
 
     private _saveError = (_err: ErrorEvent) => {
@@ -264,8 +364,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
 
-        this._inspectorV2Token?.dispose();
+        await this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
+        this._inspectableToken?.dispose();
+        this._inspectableToken = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
@@ -409,6 +511,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
+
             try {
                 [sceneResult, createdEngine] = await this._withTimeout(
                     runner.run(createEngineAsync, canvas),
@@ -428,6 +531,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             (window as any).scene = this._scene;
             (window as any).startRenderLoop(this._engine, canvas);
 
+            // Start the inspectable bridge for the CLI if Inspector v2 is loaded.
+            this._ensureInspectable();
+
             this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();
             });
@@ -435,8 +541,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const isFinalRun = this._finishRun();
 
             // Rehydrate inspector
-            if (isFinalRun && this.state.preferInspector && displayInspector) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+            if (isFinalRun && this.state.preferInspector && displayInspector && !this._inspectorV2Token && !this._scene.debugLayer.isVisible()) {
+                await this._showInspectorAsync();
             }
             return;
         } catch (e) {

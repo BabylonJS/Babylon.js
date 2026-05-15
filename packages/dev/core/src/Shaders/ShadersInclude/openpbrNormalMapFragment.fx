@@ -14,6 +14,12 @@
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vGeometryNormalUV : -vGeometryNormalUV;
 		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vTangentSpaceParams);
+	#elif defined(GEOMETRY_COAT_NORMAL)
+		// TODO - In the case that we're deriving the TBN using the UV mapping,
+		// the base noraml and coat normal should really be generating two different TBNs.
+		// So this code isn't correct if we have both normal maps and they have different UVs.
+		vec2 TBNUV = gl_FrontFacing ? vGeometryCoatNormalUV : -vGeometryCoatNormalUV;
+		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vTangentSpaceParams);
 	#else
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vDetailUV : -vDetailUV;
@@ -48,7 +54,7 @@
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
-	coatNormalW = perturbNormal(TBN, texture2D(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);
+	coatNormalW = perturbNormal(TBN, TEXRD(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);
 #endif
 
 #ifdef GEOMETRY_NORMAL
@@ -56,12 +62,12 @@
 
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
-		normalW = normalize(texture2D(geometryNormalSampler, vGeometryNormalUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(TEXRD(geometryNormalSampler, vGeometryNormalUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3(normalMatrix) * normalW);
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, texture2D(geometryNormalSampler, vGeometryNormalUV + uvOffset).xyz, vGeometryNormalInfos.y);
+		normalW = perturbNormal(TBN, TEXRD(geometryNormalSampler, vGeometryNormalUV + uvOffset).xyz, vGeometryNormalInfos.y);
     #else
-        vec3 sampledNormal = texture2D(geometryNormalSampler, vGeometryNormalUV + uvOffset).xyz * 2.0 - 1.0;
+        vec3 sampledNormal = TEXRD(geometryNormalSampler, vGeometryNormalUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
         #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
             detailNormal.xy *= vDetailInfos.z;

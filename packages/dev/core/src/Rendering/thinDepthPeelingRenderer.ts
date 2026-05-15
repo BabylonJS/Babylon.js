@@ -2,26 +2,26 @@
  * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
  */
 import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Effect } from "../Materials/effect";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Effect } from "../Materials/effect";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import { type InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { SmartArray } from "../Misc/smartArray";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
-import type { PrePassRenderer } from "./prePassRenderer";
-import type { IMaterialContext } from "../Engines/IMaterialContext";
-import type { DrawWrapper } from "../Materials/drawWrapper";
+import { type PrePassRenderer } from "./prePassRenderer";
+import { type IMaterialContext } from "../Engines/IMaterialContext";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { Material } from "../Materials/material";
 
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { Nullable } from "../types";
+import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type Nullable } from "../types";
 
 /**
  * @internal

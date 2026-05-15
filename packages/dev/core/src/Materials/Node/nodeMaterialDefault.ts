@@ -7,7 +7,7 @@ import { GaussianBlock } from "./Blocks/GaussianSplatting/gaussianBlock";
 import { SplatReaderBlock } from "./Blocks/GaussianSplatting/splatReaderBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
-import type { NodeMaterial } from "./nodeMaterial";
+import { type NodeMaterial } from "./nodeMaterial";
 import { MultiplyBlock } from "./Blocks/multiplyBlock";
 import { Texture } from "../Textures/texture";
 import { Tools } from "core/Misc/tools";

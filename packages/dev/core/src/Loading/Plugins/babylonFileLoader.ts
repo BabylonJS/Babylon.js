@@ -1,13 +1,13 @@
 import { Logger } from "../../Misc/logger";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Geometry } from "../../Meshes/geometry";
-import type { Node } from "../../node";
+import { type Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial";
@@ -21,7 +21,7 @@ import { SceneLoaderFlags } from "../sceneLoaderFlags";
 import { Constants } from "../../Engines/constants";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
-import type { IParticleSystem } from "../../Particles/IParticleSystem";
+import { type IParticleSystem } from "../../Particles/IParticleSystem";
 import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/v1/Plugins/cannonJSPlugin";
@@ -34,7 +34,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 import { Observable } from "../../Misc/observable";
-import type { MorphTarget } from "../../Morph/morphTarget";
+import { type MorphTarget } from "../../Morph/morphTarget";
 
 import "../../Physics/joinedPhysicsEngineComponent";
 import "../../Helpers/sceneHelpers";
@@ -464,6 +464,21 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                         instance._parentContainer = container;
                     }
                 }
+                // Load partProxies from GaussianSplattingMesh into AssetContainer
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    const partProxies = (mesh as any)._partProxies as AbstractMesh[] | Map<number, AbstractMesh> | undefined;
+                    const proxies = Array.isArray(partProxies) ? partProxies : partProxies ? Array.from(partProxies.values()) : [];
+                    for (const partProxy of proxies) {
+                        if (!partProxy) {
+                            continue;
+                        }
+                        container.meshes.push(partProxy);
+                        partProxy._parentContainer = container;
+                        if (partProxy._waitingParsedUniqueId != null) {
+                            TempIndexContainer[partProxy._waitingParsedUniqueId] = partProxy;
+                        }
+                    }
+                }
                 log += index === 0 ? "\n\tMeshes:" : "";
                 log += "\n\t\t" + mesh.toString(fullDetails);
             }
@@ -694,6 +709,13 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // freeze world matrix application
+        for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+            const currentTransformNode = scene.transformNodes[index];
+            if (currentTransformNode._waitingFreezeWorldMatrix) {
+                currentTransformNode.freezeWorldMatrix();
+                currentTransformNode._waitingFreezeWorldMatrix = null;
+            }
+        }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const currentMesh = scene.meshes[index];
             if (currentMesh._waitingData.freezeWorldMatrix) {
@@ -1000,6 +1022,17 @@ RegisterSceneLoaderPlugin({
                         meshes.push(mesh);
                         parsedIdToNodeMap.set(mesh._waitingParsedUniqueId!, mesh);
                         mesh._waitingParsedUniqueId = null;
+                        if (mesh.getClassName() === "GaussianSplattingMesh") {
+                            const partProxies = (mesh as any)._partProxies as AbstractMesh[] | Map<number, AbstractMesh> | undefined;
+                            const proxies = Array.isArray(partProxies) ? partProxies : partProxies ? Array.from(partProxies.values()) : [];
+                            for (const partProxy of proxies) {
+                                if (!partProxy || partProxy._waitingParsedUniqueId == null) {
+                                    continue;
+                                }
+                                parsedIdToNodeMap.set(partProxy._waitingParsedUniqueId, partProxy);
+                                partProxy._waitingParsedUniqueId = null;
+                            }
+                        }
                         log += "\n\tMesh " + mesh.toString(fullDetails);
                     }
                 }
@@ -1121,6 +1154,13 @@ RegisterSceneLoaderPlugin({
                 }
 
                 // freeze and compute world matrix application
+                for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                    const currentTransformNode = scene.transformNodes[index];
+                    if (currentTransformNode._waitingFreezeWorldMatrix) {
+                        currentTransformNode.freezeWorldMatrix();
+                        currentTransformNode._waitingFreezeWorldMatrix = null;
+                    }
+                }
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingData.freezeWorldMatrix) {

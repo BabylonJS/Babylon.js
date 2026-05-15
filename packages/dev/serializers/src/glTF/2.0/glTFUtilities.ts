@@ -1,21 +1,19 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import type { INode } from "babylonjs-gltf2interface";
-import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { FloatArray, DataArray, IndicesArray, DeepImmutable } from "core/types";
-import type { Vector4 } from "core/Maths/math.vector";
-import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
+import { type INode, AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
+import { type FloatArray, type DataArray, type IndicesArray, type DeepImmutable } from "core/types";
+import { type Vector4, Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
-import type { Node } from "core/node";
+import { type Node } from "core/node";
 import { Logger } from "core/Misc/logger";
 import { TargetCamera } from "core/Cameras/targetCamera";
-import type { ShadowLight } from "core/Lights/shadowLight";
+import { type ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
 import { ConvertHandednessMatrix } from "../../exportUtils";
-import type { AreaLight } from "core/Lights/areaLight";
+import { type AreaLight } from "core/Lights/areaLight";
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.ZeroReadOnly;

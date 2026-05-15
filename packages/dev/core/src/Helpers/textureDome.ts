@@ -1,16 +1,15 @@
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";
 import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import type { Nullable } from "../types";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type Observer, Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
 
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 
 /**
  * Display a 360/180 degree texture on an approximately spherical surface, useful for VR applications or skyboxes.

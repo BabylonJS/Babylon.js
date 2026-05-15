@@ -1,25 +1,24 @@
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { RawTexture } from "../Textures/rawTexture";
 import { MaterialPluginBase } from "../materialPluginBase";
-import type { Scene } from "../../scene";
-import type { UniformBuffer } from "../uniformBuffer";
+import { type Scene } from "../../scene";
+import { type UniformBuffer } from "../uniformBuffer";
 import { Vector2, TmpVectors } from "../../Maths/math.vector";
-import type { Color3 } from "../../Maths/math.color";
-import type { Nullable } from "../../types";
-import type { Material } from "../material";
+import { type Color3 } from "../../Maths/math.color";
+import { type Nullable } from "../../types";
+import { type Material } from "../material";
 import { MaterialDefines } from "../materialDefines";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { BaseTexture } from "../Textures/baseTexture";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type BaseTexture } from "../Textures/baseTexture";
 import { RegisterClass } from "../../Misc/typeStore";
 import { ShaderLanguage } from "../shaderLanguage";
 
-import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
-import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
+import { type GreasedLineMaterialOptions, type IGreasedLineMaterial, GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GetCustomCode as getCustomCodeGLSL } from "./greasedLinePluginMaterialShadersGLSL";
 import { GetCustomCode as getCustomCodeWGSL } from "./greasedLinePluginMaterialShadersWGSL";
-import type { GreasedLineBaseMesh } from "../../Meshes";
+import { type GreasedLineBaseMesh } from "../../Meshes";
 
 /**
  * @internal

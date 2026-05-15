@@ -1,23 +1,27 @@
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    EffectLayer,
-    Mesh,
-    Nullable,
-    Observer,
-    Scene,
-    WebGPUDrawContext,
-    WebGPUShaderProcessor,
-    WebGPUPipelineContext,
-    GaussianSplattingMesh,
-    DrawWrapper,
-    Camera,
-    SpriteManager,
+import {
+    type AbstractEngine,
+    type AbstractMesh,
+    type EffectLayer,
+    type Mesh,
+    type Nullable,
+    type Observer,
+    type Scene,
+    type WebGPUDrawContext,
+    type WebGPUShaderProcessor,
+    type WebGPUPipelineContext,
+    type GaussianSplattingMesh,
+    type DrawWrapper,
+    type Camera,
+    type SpriteManager,
+    type IParticleSystem,
+    type ParticleSystem,
+    type Matrix,
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
 import { ScenePerformancePriority } from "core/scene";
+import { TmpVectors } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { FrameGraphBaseLayerTask } from "../FrameGraph/Tasks/Layers/baseLayerTask";
 import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";
@@ -104,7 +108,7 @@ export class SnapshotRenderingHelper {
             this._log("onResize", "end");
         });
 
-        this._scene.onBeforeRenderObservable.add(() => {
+        this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             if (!this._fastSnapshotRenderingEnabled) {
                 return;
             }
@@ -157,6 +161,16 @@ export class SnapshotRenderingHelper {
                     const renderer = manager.spriteRenderer;
 
                     this._spriteRendererUpdateEffects(renderer._drawWrapperBase, renderer._drawWrapperDepth, camera);
+                }
+            }
+
+            // Handles fixed-capacity particle systems
+            if (scene.particleSystems && camera) {
+                for (const ps of scene.particleSystems) {
+                    const particleSystem = ps as ParticleSystem;
+                    if (particleSystem._useFixedCapacityForSnapshot) {
+                        this._updateFixedCapacityParticleSystem(particleSystem, camera);
+                    }
                 }
             }
         });
@@ -311,7 +325,13 @@ export class SnapshotRenderingHelper {
     }
 
     /**
-     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling, visibility).
+     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling).
+     * Note: in FAST snapshot mode the GPU bundle is recorded once and replayed every frame, so draw calls
+     * (including instance counts) are baked in. This method updates per-mesh GPU data such as transforms and
+     * `mesh.visibility`, but it cannot change whether a recorded draw call is emitted. To apply changes such as
+     * `mesh.isVisible`, `setEnabled(false)`, or per-instance visibility/state changes that affect instance counts,
+     * wrap the change in a disableSnapshotRendering() / enableSnapshotRendering() pair so the snapshot is
+     * re-recorded.
      * @param mesh The mesh to update. Can be a single mesh or an array of meshes to update.
      * @param updateInstancedMeshes If true, the method will also update instanced meshes. Default is true. If you know instanced meshes won't move (or you don't have instanced meshes), you can set this to false to save some CPU time.
      */
@@ -435,6 +455,127 @@ export class SnapshotRenderingHelper {
     private _spriteRendererUpdateEffects(drawWrapperBase: DrawWrapper, drawWrapperDepth: DrawWrapper, camera: Camera) {
         this._spriteRendererDirectMatrixUpdate(drawWrapperBase, camera);
         this._spriteRendererDirectMatrixUpdate(drawWrapperDepth, camera);
+    }
+
+    /**
+     * Make a CPU particle system compatible with FAST snapshot rendering.
+     * The particle system will always render at full capacity (`getCapacity()` quads), with inactive slots collapsed
+     * to degenerate triangles via zero-fill. This keeps the recorded GPU bundle's draw call valid every frame, while
+     * the live particle data is uploaded to the bundle-referenced vertex buffer through the normal `animate()` path.
+     *
+     * The helper additionally advances the particle simulation and updates view/projection (and `eyePosition`/`invView`
+     * for billboard modes) into the particle system's draw wrappers each frame, because FAST snapshot replay skips the
+     * normal scene particle evaluation path after the bundle is recorded.
+     *
+     * Notes:
+     * - Call this BEFORE `enableSnapshotRendering()` so the recording sees the correct draw count.
+     * - GPU particle systems (`GPUParticleSystem`) are not supported by this method.
+     * - Vertex shader cost scales with `getCapacity()` rather than the live particle count, so size capacity realistically.
+     * - Per-frame uniforms other than camera matrices (e.g. `textureMask`, `translationPivot`, clip planes, fog) are
+     *   baked at recording time and will not update during snapshot replay.
+     * @param particleSystem The particle system to fix
+     */
+    public fixParticleSystem(particleSystem: IParticleSystem): void {
+        if (!this._engine.isWebGPU) {
+            return;
+        }
+
+        if (particleSystem.getClassName() !== "ParticleSystem") {
+            this._log("fixParticleSystem", `skipping ${particleSystem.name}: only CPU ParticleSystem is supported (got ${particleSystem.getClassName()})`);
+            return;
+        }
+
+        const ps = particleSystem as ParticleSystem;
+        const fixedCapacityInitialized = ps._initFixedCapacitySnapshotData();
+
+        // The recorded bundle bakes in the draw-call vertex/instance count. If snapshot rendering is already active
+        // (or in the process of being enabled) when we flip the flag, the bundle was recorded with the live particle
+        // count and is now stale. Cycle disable/enable so the next recording picks up the fixed-capacity draw count.
+        if (fixedCapacityInitialized && (this._fastSnapshotRenderingEnabled || this._isEnabling)) {
+            Logger.Warn(
+                `SnapshotRenderingHelper.fixParticleSystem("${particleSystem.name}") was called after snapshot rendering was enabled. ` +
+                    `Forcing a re-record so the bundle uses the fixed-capacity draw count. Call fixParticleSystem before enableSnapshotRendering to avoid this.`
+            );
+            this.disableSnapshotRendering("fixParticleSystem auto-recover");
+            this.enableSnapshotRendering("fixParticleSystem auto-recover");
+        }
+    }
+
+    private _updateFixedCapacityParticleSystem(ps: ParticleSystem, camera: Camera): void {
+        if (!this._scene.particlesEnabled || !ps.isStarted() || !ps.emitter) {
+            ps._clearFixedCapacitySnapshotData();
+            return;
+        }
+
+        const emitter = ps.emitter as { position?: unknown; isEnabled?: () => boolean };
+        if (!emitter.position || emitter.isEnabled?.()) {
+            ps.animate();
+            this._particleSystemUpdateEffects(ps, camera);
+        } else {
+            ps._clearFixedCapacitySnapshotData();
+        }
+    }
+
+    private _particleSystemUpdateEffects(ps: ParticleSystem, camera: Camera) {
+        const drawWrappers = (ps as unknown as { _drawWrappers: DrawWrapper[][] })._drawWrappers;
+        if (!drawWrappers) {
+            return;
+        }
+
+        const viewMatrix = ps.defaultViewMatrix ?? camera.getViewMatrix();
+        const projectionMatrix = ps.defaultProjectionMatrix ?? camera.getProjectionMatrix();
+        // Compute invView lazily once per system per frame, only if any draw wrapper actually needs it.
+        let invViewMatrix: Nullable<Matrix> = null;
+
+        for (const perPass of drawWrappers) {
+            if (!perPass) {
+                continue;
+            }
+            for (const dw of perPass) {
+                invViewMatrix = this._particleSystemDirectMatrixUpdate(dw, viewMatrix, projectionMatrix, camera, invViewMatrix);
+            }
+        }
+    }
+
+    private _particleSystemBillboardFlags = new WeakMap<object, { billboard: boolean; billboardAll: boolean }>();
+
+    private _particleSystemDirectMatrixUpdate(
+        dw: Nullable<DrawWrapper>,
+        viewMatrix: Matrix,
+        projectionMatrix: Matrix,
+        camera: Camera,
+        invViewMatrix: Nullable<Matrix>
+    ): Nullable<Matrix> {
+        const effect = dw?.effect;
+        if (!effect) {
+            return invViewMatrix;
+        }
+        const dataBuffer = (dw!.drawContext as WebGPUDrawContext).buffers["LeftOver" satisfies (typeof WebGPUShaderProcessor)["LeftOvertUBOName"]];
+        const ubLeftOver = (effect._pipelineContext as WebGPUPipelineContext)?.uniformBuffer;
+        if (!dataBuffer || !ubLeftOver || !ubLeftOver.setDataBuffer(dataBuffer)) {
+            return invViewMatrix;
+        }
+        effect.setMatrix("view", viewMatrix);
+        effect.setMatrix("projection", projectionMatrix);
+        let flags = this._particleSystemBillboardFlags.get(effect);
+        if (!flags) {
+            const defines = effect.defines ?? "";
+            flags = { billboard: defines.indexOf("#define BILLBOARD") >= 0, billboardAll: defines.indexOf("#define BILLBOARDMODE_ALL") >= 0 };
+            this._particleSystemBillboardFlags.set(effect, flags);
+        }
+        if (flags.billboard) {
+            effect.setVector3("eyePosition", camera.globalPosition);
+        }
+        if (flags.billboardAll) {
+            if (!invViewMatrix) {
+                invViewMatrix = TmpVectors.Matrix[0];
+                viewMatrix.invertToRef(invViewMatrix);
+            }
+            effect.setMatrix("invView", invViewMatrix);
+        }
+        ubLeftOver.update();
+
+        return invViewMatrix;
     }
 
     private _executeAtFrame(frameId: number, func: () => void, mode: "whenEnabled" | "whenDisabled" = "whenEnabled") {

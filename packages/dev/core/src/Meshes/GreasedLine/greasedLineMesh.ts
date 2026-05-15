@@ -1,17 +1,15 @@
-import type { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene";
+import { type Matrix, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
-import type { Ray, TrianglePickingPredicate } from "../../Culling/ray";
+import { type Ray, type TrianglePickingPredicate } from "../../Culling/ray";
 import { Buffer, VertexBuffer } from "../../Buffers/buffer";
 import { PickingInfo } from "../../Collisions/pickingInfo";
-import type { Nullable, FloatArray } from "../../types";
-import type { Node } from "../../node";
+import { type Nullable, type FloatArray } from "../../types";
+import { type Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
-import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
-import type { VertexData } from "../mesh.vertexData";
+import { type GreasedLineMeshOptions, GreasedLineBaseMesh } from "./greasedLineBaseMesh";
+import { type VertexData } from "../mesh.vertexData";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);

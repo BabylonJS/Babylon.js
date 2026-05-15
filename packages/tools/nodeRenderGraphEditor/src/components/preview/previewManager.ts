@@ -1,9 +1,9 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IShadowLight } from "core/Lights/shadowLight";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IShadowLight } from "core/Lights/shadowLight";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
@@ -12,11 +12,11 @@ import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { TransformNode } from "core/Meshes/transformNode";
-import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { LogEntry } from "../log/logComponent";
-import type { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import { type NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { Button } from "gui/2D/controls/button";
 import { Control } from "gui/2D/controls/control";
 import { PreviewType } from "./previewType";
@@ -25,14 +25,15 @@ import { FilesInput } from "core/Misc/filesInput";
 import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
-import type { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
+import { type NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { BoundingBox } from "core/Culling/boundingBox";
-import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
-import type { Mesh } from "core/Meshes";
-import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
+import { type NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
+import { type Mesh } from "core/Meshes";
+import { type NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Texture } from "core/Materials/Textures/texture";
-import type { NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
+import { type NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
+import { HDRCubeTexture } from "core/Materials/Textures/hdrCubeTexture";
 
 const DebugTextures = false;
 const LogErrorTrace = true;
@@ -52,7 +53,7 @@ export class PreviewManager {
     private _globalState: GlobalState;
     private _currentType: number;
     private _lightParent: TransformNode;
-    private _hdrTexture: CubeTexture;
+    private _hdrTexture: CubeTexture | HDRCubeTexture;
     private _dummyExternalTexture: Texture;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
@@ -134,11 +135,21 @@ export class PreviewManager {
             // We must wait for a while before disposing the old scene because the HDR texture could be in loading state (and maybe other resources too?).
             // Disposing the scene will dispose the HDR texture too, which will generate an error when the texture is loaded and it tries to set some rendering parameters (sampler info, ...).
             setTimeout(() => {
+                // Remove textures shared with the new scene before disposing
+                const envTex = this._scene.environmentTexture;
+                if (envTex?.irradianceTexture) {
+                    const idx = oldScene.textures.indexOf(envTex.irradianceTexture);
+                    if (idx !== -1) {
+                        oldScene.textures.splice(idx, 1);
+                    }
+                }
                 oldScene.dispose();
             }, 10000);
         }
 
         this._scene = scene;
+
+        this._scene.enableIblCdfGenerator();
 
         const dummyTexture = this._dummyExternalTexture;
 
@@ -404,6 +415,28 @@ export class PreviewManager {
                     gizmoManager.attachableMeshes = this._scene.meshes.filter((m) => m.getTotalVertices() > 0);
                     break;
                 }
+                case "NodeRenderGraphIblShadowsRendererBlock": {
+                    if (!(this._scene.environmentTexture instanceof HDRCubeTexture)) {
+                        // IBL shadows require a HDR environment texture, so we set a default one if the current environment texture is not a HDR texture.
+                        this._scene.environmentTexture = new HDRCubeTexture(
+                            "https://assets.babylonjs.com/environments/umhlanga_sunrise_1k.hdr",
+                            this._scene,
+                            256,
+                            false,
+                            false,
+                            false,
+                            true,
+                            () => {},
+                            (message) => {
+                                this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + message, true));
+                            },
+                            true,
+                            true,
+                            true
+                        );
+                    }
+                    break;
+                }
             }
         }
 
@@ -492,7 +525,7 @@ export class PreviewManager {
     private _prepareBackgroundHDR() {
         this._hdrTexture = null as any;
 
-        let newHDRTexture: Nullable<CubeTexture> = null;
+        let newHDRTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
 
         switch (this._globalState.envType) {
             case PreviewType.Room:

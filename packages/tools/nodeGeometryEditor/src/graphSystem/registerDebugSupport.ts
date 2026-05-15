@@ -1,6 +1,6 @@
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export const RegisterDebugSupport = (stateManager: StateManager) => {
     stateManager.isDebugConnectionAllowed = (a, b) => {

@@ -1,5 +1,4 @@
-import type { ChangeEvent } from "react";
-import { useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { TextInputWithSubmit } from "../TextInputWithSubmit";
 import * as style from "./OptionsLineComponent.module.scss";
 

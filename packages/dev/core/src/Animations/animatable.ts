@@ -1,10 +1,9 @@
-import type { Nullable } from "../types";
-import type { Vector3 } from "../Maths/math.vector";
+import { type Nullable } from "../types";
+import { type Vector3 } from "../Maths/math.vector";
 import { Bone } from "../Bones/bone";
-import type { Node } from "../node";
-import { AddAnimationExtensions } from "./animatable.core";
-import type { Animatable } from "./animatable.core";
-import type { Animation } from "./animation";
+import { type Node } from "../node";
+import { AddAnimationExtensions, type Animatable } from "./animatable.core";
+import { type Animation } from "./animation";
 import { Scene } from "core/scene";
 
 export * from "./animatable.core";

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { DracoDecoder } from "core/Meshes/Compression/dracoDecoder";
-import type { IDracoCodecConfiguration } from "core/Meshes/Compression/dracoCodec";
+import { type IDracoCodecConfiguration } from "core/Meshes/Compression/dracoCodec";
 import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
 
 describe("Draco Mesh Compression tests", () => {

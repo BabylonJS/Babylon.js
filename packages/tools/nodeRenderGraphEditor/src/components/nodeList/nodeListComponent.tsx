@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { DraggableLineWithButtonComponent } from "../../sharedComponents/draggableLineWithButtonComponent";
 import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
@@ -74,6 +74,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         VolumetricLightingBlock: "Applies a volumetric lighting post process",
         LightingVolumeBlock: "Generate lighting volume",
         SelectionOutlineLayerBlock: "Adds a selection outline effect to a texture",
+        IblShadowsRendererBlock: "Computes IBL shadows using voxel tracing",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -208,7 +209,14 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "VolumetricLightingBlock",
             ],
             Output_Nodes: ["OutputBlock"],
-            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "ShadowGeneratorBlock", "CascadedShadowGeneratorBlock", "UtilityLayerRendererBlock"],
+            Rendering: [
+                "ObjectRendererBlock",
+                "GeometryRendererBlock",
+                "ShadowGeneratorBlock",
+                "CascadedShadowGeneratorBlock",
+                "IblShadowsRendererBlock",
+                "UtilityLayerRendererBlock",
+            ],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
         };
 

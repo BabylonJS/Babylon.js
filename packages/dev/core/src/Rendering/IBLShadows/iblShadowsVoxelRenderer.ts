@@ -1,25 +1,26 @@
 import { Constants } from "../../Engines/constants";
-import { Engine } from "../../Engines/engine";
+import { type Engine } from "../../Engines/engine";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../../Materials/Textures/multiRenderTarget";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import type { RenderTargetTextureOptions } from "../../Materials/Textures/renderTargetTexture";
-import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { RenderTargetTexture, type RenderTargetTextureOptions } from "../../Materials/Textures/renderTargetTexture";
+import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../../Maths/math.color";
-import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { type Mesh } from "../../Meshes/mesh";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type Scene } from "../../scene";
+import { type SmartArray } from "../../Misc/smartArray";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
-import { PostProcess } from "../../PostProcesses/postProcess";
-import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
-import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
-import type { RenderTargetWrapper } from "core/Engines";
+import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
+import "../../Engines/Extensions/engine.multiRender";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -28,6 +29,13 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * @see https://playground.babylonjs.com/#8R5SSE#222
  */
 export class _IblShadowsVoxelRenderer {
+    // View matrices for the three voxelization axes.
+    private static readonly _VOXEL_VIEW_MATRICES = [
+        Matrix.LookAtLH(Vector3.Zero(), new Vector3(1, 0, 0), Vector3.Up()),
+        Matrix.LookAtLH(Vector3.Zero(), new Vector3(0, 1, 0), new Vector3(1, 0, 0)),
+        Matrix.LookAtLH(Vector3.Zero(), new Vector3(0, 0, 1), Vector3.Up()),
+    ];
+
     private _scene: Scene;
     private _engine: Engine;
 
@@ -46,7 +54,6 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
 
     private _voxelMaterial: ShaderMaterial;
-    private _voxelSlabDebugMaterial: ShaderMaterial;
     private _voxelClearColor: Color4 = new Color4(0, 0, 0, 1);
 
     /**
@@ -64,23 +71,29 @@ export class _IblShadowsVoxelRenderer {
     }
 
     /**
+     * Return the voxel render target used during voxelization.
+     * @returns The voxel render target.
+     */
+    public getRT(): ProceduralTexture | RenderTargetTexture {
+        if (this._engine.isWebGPU) {
+            return this._voxelGridRT;
+        } else if (this._triPlanarVoxelization) {
+            return this._combinedVoxelGridPT;
+        } else {
+            return this._voxelGridZaxis;
+        }
+    }
+
+    /**
      * Observable that triggers when the voxelization is complete
      */
     public onVoxelizationCompleteObservable: Observable<void> = new Observable<void>();
 
-    /**
-     * The debug pass post process
-     * @returns The debug pass post process
-     */
-    public getDebugPassPP(): PostProcess {
-        if (!this._voxelDebugPass) {
-            this._createDebugPass();
-        }
-        return this._voxelDebugPass;
-    }
-
     private _maxDrawBuffers: number;
     private _renderTargets: RenderTargetTexture[] = [];
+
+    /** Per-mesh voxel ShaderMaterials for GaussianSplattingMesh, keyed by mesh uniqueId. */
+    private _gsVoxelMaterialCache: Map<number, ShaderMaterial> = new Map();
 
     private _triPlanarVoxelization: boolean = true;
 
@@ -118,6 +131,7 @@ export class _IblShadowsVoxelRenderer {
     public setWorldScaleMatrix(matrix: Matrix) {
         this._invWorldScaleMatrix = matrix;
     }
+
     /**
      * @returns Whether voxelization is currently happening.
      */
@@ -150,133 +164,9 @@ export class _IblShadowsVoxelRenderer {
 
     private _copyMipEffectRenderer: EffectRenderer;
     private _copyMipEffectWrapper: EffectWrapper;
+    private _copyMipSourceTexture?: ProceduralTexture;
+    private _copyMipLayer = 0;
     private _mipArray: ProceduralTexture[] = [];
-
-    private _voxelSlabDebugRT: RenderTargetTexture;
-    private _voxelDebugPass: PostProcess;
-    private _voxelDebugEnabled: boolean = false;
-
-    /**
-     * Shows only the voxels that were rendered along a particular axis (while using triPlanarVoxelization).
-     * If not set, the combined voxel grid will be shown.
-     * Note: This only works when the debugMipNumber is set to 0 because we don't generate mips for each axis.
-     * @param axis The axis to show (0 = x, 1 = y, 2 = z)
-     */
-    public set voxelDebugAxis(axis: number) {
-        this._voxelDebugAxis = axis;
-    }
-
-    public get voxelDebugAxis(): number {
-        return this._voxelDebugAxis;
-    }
-    private _voxelDebugAxis: number = -1;
-    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
-    private _includedMeshes: Mesh[] = [];
-
-    /**
-     * Sets params that control the position and scaling of the debug display on the screen.
-     * @param x Screen X offset of the debug display (0-1)
-     * @param y Screen Y offset of the debug display (0-1)
-     * @param widthScale X scale of the debug display (0-1)
-     * @param heightScale Y scale of the debug display (0-1)
-     */
-    public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
-        this._debugSizeParams.set(x, y, widthScale, heightScale);
-    }
-    private _debugMipNumber: number = 0;
-    /**
-     * The mip level to show in the debug display
-     * @param mipNum The mip level to show in the debug display
-     */
-    public setDebugMipNumber(mipNum: number) {
-        this._debugMipNumber = mipNum;
-    }
-    private _debugPassName: string = "Voxelization Debug Pass";
-    /**
-     * Sets the name of the debug pass
-     */
-    public get debugPassName(): string {
-        return this._debugPassName;
-    }
-
-    /**
-     * Enable or disable the debug view for this pass
-     */
-    public get voxelDebugEnabled(): boolean {
-        return this._voxelDebugEnabled;
-    }
-
-    public set voxelDebugEnabled(enabled: boolean) {
-        if (this._voxelDebugEnabled === enabled) {
-            return;
-        }
-        this._voxelDebugEnabled = enabled;
-        if (enabled) {
-            this._voxelSlabDebugRT = new RenderTargetTexture("voxelSlabDebug", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this._scene, {
-                generateDepthBuffer: true,
-                generateMipMaps: false,
-                type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                format: Constants.TEXTUREFORMAT_RGBA,
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            });
-            this._voxelSlabDebugRT.noPrePassRenderer = true;
-        }
-        if (this._voxelSlabDebugRT) {
-            this._removeVoxelRTs([this._voxelSlabDebugRT]);
-        }
-        // Add the slab debug RT if needed.
-        if (this._voxelDebugEnabled) {
-            this._addRTsForRender([this._voxelSlabDebugRT], this._includedMeshes, this._voxelDebugAxis, 1, true);
-            this._setDebugBindingsBound = this._setDebugBindings.bind(this);
-            this._scene.onBeforeRenderObservable.add(this._setDebugBindingsBound);
-        } else {
-            this._scene.onBeforeRenderObservable.removeCallback(this._setDebugBindingsBound);
-        }
-    }
-
-    private _setDebugBindingsBound: () => void;
-    /**
-     * Creates the debug post process effect for this pass
-     */
-    private _createDebugPass() {
-        const isWebGPU = this._engine.isWebGPU;
-        if (!this._voxelDebugPass) {
-            const debugOptions: PostProcessOptions = {
-                width: this._engine.getRenderWidth(),
-                height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_RGBA,
-                textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                uniforms: ["sizeParams", "mipNumber"],
-                samplers: ["voxelTexture", "voxelSlabTexture"],
-                engine: this._engine,
-                reusable: false,
-                shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblVoxelGrid3dDebug.fragment"));
-                    } else {
-                        list.push(import("../../Shaders/iblVoxelGrid3dDebug.fragment"));
-                    }
-                },
-            };
-            this._voxelDebugPass = new PostProcess(this.debugPassName, "iblVoxelGrid3dDebug", debugOptions);
-            this._voxelDebugPass.onApplyObservable.add((effect) => {
-                if (this._voxelDebugAxis === 0) {
-                    effect.setTexture("voxelTexture", this._voxelGridXaxis);
-                } else if (this._voxelDebugAxis === 1) {
-                    effect.setTexture("voxelTexture", this._voxelGridYaxis);
-                } else if (this._voxelDebugAxis === 2) {
-                    effect.setTexture("voxelTexture", this._voxelGridZaxis);
-                } else {
-                    effect.setTexture("voxelTexture", this.getVoxelGrid());
-                }
-                effect.setTexture("voxelSlabTexture", this._voxelSlabDebugRT);
-                effect.setVector4("sizeParams", this._debugSizeParams);
-                effect.setFloat("mipNumber", this._debugMipNumber);
-            });
-        }
-    }
 
     /**
      * Instanciates the voxel renderer
@@ -297,8 +187,11 @@ export class _IblShadowsVoxelRenderer {
         const isWebGPU = this._engine.isWebGPU;
         // Round down to a power of 2 so it evenly divides the power-of-2 voxel resolution,
         // preventing out-of-bounds layer indices in the last MRT slab.
+        // This shader implementation writes up to 16 MRT outputs, so clamp to 16 to keep
+        // active draw buffers aligned with declared/written fragment outputs.
         const rawMaxDrawBuffers = this._engine.getCaps().maxDrawBuffers || 0;
-        this._maxDrawBuffers = rawMaxDrawBuffers >= 1 ? 1 << Math.floor(Math.log2(rawMaxDrawBuffers)) : 0;
+        const cappedMaxDrawBuffers = Math.min(rawMaxDrawBuffers, 16);
+        this._maxDrawBuffers = cappedMaxDrawBuffers >= 1 ? 1 << Math.floor(Math.log2(cappedMaxDrawBuffers)) : 0;
 
         this._copyMipEffectRenderer = new EffectRenderer(this._engine);
         this._copyMipEffectWrapper = new EffectWrapper({
@@ -315,6 +208,15 @@ export class _IblShadowsVoxelRenderer {
                     await import("../../Shaders/copyTexture3DLayerToTexture.fragment");
                 }
             },
+        });
+        this._copyMipEffectWrapper.onApplyObservable.add(() => {
+            const effect = this._copyMipEffectWrapper.effect;
+            if (!effect || !this._copyMipSourceTexture) {
+                return;
+            }
+
+            effect.setTexture("textureSampler", this._copyMipSourceTexture);
+            effect.setInt("layerNum", this._copyMipLayer);
         });
 
         this.voxelResolutionExp = resolutionExp;
@@ -333,6 +235,7 @@ export class _IblShadowsVoxelRenderer {
         if (!mipTarget) {
             return;
         }
+
         mipTarget.setTexture("srcMip", lodLevel === 1 ? this.getVoxelGrid() : this._mipArray[lodLevel - 2]);
         mipTarget.render();
     }
@@ -346,7 +249,6 @@ export class _IblShadowsVoxelRenderer {
 
     private _copyMipMap(lodLevel: number) {
         // Now, copy this mip into the mip chain of the voxel grid.
-        // TODO - this currently isn't working. "textureSampler" isn't being properly set to mipTarget.
         const mipTarget = this._mipArray[lodLevel - 1];
         if (!mipTarget) {
             return;
@@ -360,17 +262,51 @@ export class _IblShadowsVoxelRenderer {
         }
         if (rt) {
             this._copyMipEffectRenderer.saveStates();
+            const previousColorWrite = this._engine.getColorWrite();
+            const previousDepthBuffer = this._engine.getDepthBuffer();
+            const previousDepthWrite = this._engine.getDepthWrite();
+            const previousAlphaMode = this._engine.getAlphaMode();
+            this._engine.setColorWrite(true);
+            this._engine.setDepthBuffer(false);
+            this._engine.setDepthWrite(false);
+            this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
             const bindSize = mipTarget.getSize().width;
+            let sourceDepth = mipTarget.getInternalTexture()?.depth;
+            sourceDepth = Math.max(1, sourceDepth || bindSize);
+            const destinationMipDepth = Math.max(1, this._voxelResolution >> lodLevel);
+            const layersToCopy = Math.min(sourceDepth, destinationMipDepth);
+            const destinationTexture = rt.texture;
+            const previousGenerateMipMaps = destinationTexture?.generateMipMaps;
 
-            // Render to each layer of the voxel grid.
-            for (let layer = 0; layer < bindSize; layer++) {
-                this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
-                this._copyMipEffectRenderer.applyEffectWrapper(this._copyMipEffectWrapper);
-                this._copyMipEffectWrapper.effect.setTexture("textureSampler", mipTarget);
-                this._copyMipEffectWrapper.effect.setInt("layerNum", layer);
-                this._copyMipEffectRenderer.draw();
-                this._engine.unBindFramebuffer(rt, true);
+            if (destinationTexture) {
+                destinationTexture.generateMipMaps = false;
             }
+
+            try {
+                // Render to each layer of the voxel grid.
+                for (let layer = 0; layer < layersToCopy; layer++) {
+                    this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
+                    this._copyMipSourceTexture = mipTarget;
+                    this._copyMipLayer = layer;
+                    this._copyMipEffectRenderer.applyEffectWrapper(this._copyMipEffectWrapper);
+                    this._copyMipEffectRenderer.draw();
+                    this._engine.unBindFramebuffer(rt, true);
+                }
+
+                if (!this._engine.isWebGPU) {
+                    this._engine.unbindAllTextures();
+                }
+            } finally {
+                if (destinationTexture && previousGenerateMipMaps !== undefined) {
+                    destinationTexture.generateMipMaps = previousGenerateMipMaps;
+                }
+                this._engine.setAlphaMode(previousAlphaMode);
+                this._engine.setDepthWrite(previousDepthWrite);
+                this._engine.setDepthBuffer(previousDepthBuffer);
+                this._engine.setColorWrite(previousColorWrite);
+            }
+
+            this._copyMipSourceTexture = undefined;
             this._copyMipEffectRenderer.restoreStates();
         }
     }
@@ -390,7 +326,7 @@ export class _IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             generateMipMaps: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
@@ -415,7 +351,7 @@ export class _IblShadowsVoxelRenderer {
         if (this._engine.isWebGPU) {
             this._voxelGrid = new RenderTargetTexture("voxelGrid", size, this._scene, {
                 ...voxelCombinedOptions,
-                format: Constants.TEXTUREFORMAT_RGBA,
+                format: Constants.TEXTUREFORMAT_R,
                 creationFlags: Constants.TEXTURE_CREATIONFLAG_STORAGE,
             });
             this._voxelGridRT = new RenderTargetTexture(
@@ -544,7 +480,6 @@ export class _IblShadowsVoxelRenderer {
             mip.dispose();
         }
         this._voxelMaterial?.dispose();
-        this._voxelSlabDebugMaterial?.dispose();
         this._mipArray = [];
         this._voxelMrtsXaxis = [];
         this._voxelMrtsYaxis = [];
@@ -565,27 +500,10 @@ export class _IblShadowsVoxelRenderer {
                 }
             },
         });
+
         this._voxelMaterial.cullBackFaces = false;
         this._voxelMaterial.backFaceCulling = false;
-        this._voxelMaterial.depthFunction = Engine.ALWAYS;
-
-        this._voxelSlabDebugMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "iblVoxelSlabDebug", {
-            uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
-            defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
-            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblVoxelSlabDebug.fragment"), import("../../ShadersWGSL/iblVoxelSlabDebug.vertex")]);
-                } else {
-                    await Promise.all([import("../../Shaders/iblVoxelSlabDebug.fragment"), import("../../Shaders/iblVoxelSlabDebug.vertex")]);
-                }
-            },
-        });
-    }
-
-    private _setDebugBindings() {
-        this._voxelSlabDebugMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
-        this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
+        this._voxelMaterial.depthFunction = Constants.ALWAYS;
     }
 
     /**
@@ -644,13 +562,13 @@ export class _IblShadowsVoxelRenderer {
     /**
      * Renders voxel grid of scene for IBL shadows
      * @param includedMeshes
+     * @param registerAfterRenderObservable Whether to register scene onAfterRender callback (legacy path).
      */
-    public updateVoxelGrid(includedMeshes: Mesh[]) {
+    public updateVoxelGrid(includedMeshes: Mesh[], registerAfterRenderObservable: boolean = true) {
         if (this._voxelizationInProgress) {
             return;
         }
         this._stopVoxelization();
-        this._includedMeshes = includedMeshes;
         this._voxelizationInProgress = true;
 
         if (this._engine.isWebGPU) {
@@ -663,11 +581,18 @@ export class _IblShadowsVoxelRenderer {
         } else {
             this._addRTsForRender(this._voxelMrtsZaxis, includedMeshes, 2);
         }
-        if (this._voxelDebugEnabled) {
-            this._addRTsForRender([this._voxelSlabDebugRT], includedMeshes, this._voxelDebugAxis, 1, true);
+        if (registerAfterRenderObservable) {
+            this._renderVoxelGridBound = this._renderVoxelGrid.bind(this);
+            this._scene.onAfterRenderObservable.add(this._renderVoxelGridBound);
         }
-        this._renderVoxelGridBound = this._renderVoxelGrid.bind(this);
-        this._scene.onAfterRenderObservable.add(this._renderVoxelGridBound);
+    }
+
+    /**
+     * Advances voxelization work when running in custom render loops (for example FrameGraph tasks)
+     * where scene onAfterRender timing may differ from classic pipeline flow.
+     */
+    public processVoxelization(): void {
+        this._renderVoxelGrid();
     }
 
     private _renderVoxelGridBound: () => void;
@@ -683,70 +608,191 @@ export class _IblShadowsVoxelRenderer {
                 const rttReady = this._renderTargets[i].isReadyForRendering();
                 allReady &&= rttReady;
             }
-            if (allReady) {
-                if (this._engine.isWebGPU) {
-                    // Clear the voxel grid storage texture.
-                    // Need to clear each layer individually.
-                    // Would a compute shader be faster here to clear all layers in one go?
-                    if (this._voxelGrid && this._voxelGrid.renderTarget) {
-                        for (let layer = 0; layer < this._voxelResolution; layer++) {
-                            this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
-                            this._engine.clear(this._voxelClearColor, true, false, false);
-                            this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
-                        }
+            for (const gsVoxelMat of Array.from(this._gsVoxelMaterialCache.values())) {
+                allReady &&= gsVoxelMat.isReady();
+            }
+            if (!allReady) {
+                return;
+            }
+
+            const copyMipEffect = this._copyMipEffectWrapper.effect;
+            if (!copyMipEffect.isReady()) {
+                return;
+            }
+
+            if (this._engine.isWebGPU) {
+                // Clear the voxel grid storage texture.
+                // Need to clear each layer individually.
+                // Would a compute shader be faster here to clear all layers in one go?
+                if (this._voxelGrid && this._voxelGrid.renderTarget) {
+                    for (let layer = 0; layer < this._voxelResolution; layer++) {
+                        this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
+                        this._engine.clear(this._voxelClearColor, true, false, false);
+                        this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
                     }
                 }
-                for (const rt of this._renderTargets) {
-                    rt.render();
-                }
-                this._stopVoxelization();
-
-                if (this._triPlanarVoxelization && !this._engine.isWebGPU) {
-                    this._combinedVoxelGridPT.render();
-                }
-                this._generateMipMaps();
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                this._copyMipEffectWrapper.effect.whenCompiledAsync().then(() => {
-                    this._copyMipMaps();
-                    this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
-                    this._voxelizationInProgress = false;
-                    this.onVoxelizationCompleteObservable.notifyObservers();
-                });
             }
+
+            for (const rt of this._renderTargets) {
+                rt.render();
+            }
+            this._stopVoxelization();
+
+            if (this._triPlanarVoxelization && !this._engine.isWebGPU) {
+                this._combinedVoxelGridPT.render();
+            }
+            this._generateMipMaps();
+            this._copyMipMaps();
+            this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
+            this._voxelizationInProgress = false;
+            this.onVoxelizationCompleteObservable.notifyObservers();
         }
     }
 
-    private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
-        const slabSize = 1.0 / this._computeNumberOfSlabs();
-        let voxelMaterial: ShaderMaterial;
-        if (shaderType === 0) {
-            voxelMaterial = this._voxelMaterial;
-        } else {
-            voxelMaterial = this._voxelSlabDebugMaterial;
+    /**
+     * Splits rendering for every voxel RT: non–Gaussian splatting meshes use subMesh.render
+     * (material override from setMaterialForRendering); GaussianSplattingMesh uses a custom draw path with its cached voxel ShaderMaterial.
+     * @param rtt - the render target texture to install the custom render function on
+     */
+    private _installVoxelMixedCustomRender(rtt: RenderTargetTexture): void {
+        const scene = this._scene;
+        const engine = scene.getEngine();
+
+        const renderGsSplat = (sm: SubMesh): void => {
+            const renderingMesh = sm.getRenderingMesh();
+            const effectiveMesh = sm.getEffectiveMesh();
+            const gsVoxelMaterial = this._gsVoxelMaterialCache.get(effectiveMesh.uniqueId);
+            if (!gsVoxelMaterial || !gsVoxelMaterial.isReady()) {
+                return;
+            }
+
+            const drawWrapper = gsVoxelMaterial._getDrawWrapper();
+            if (!drawWrapper?.effect) {
+                return;
+            }
+            const effect = drawWrapper.effect;
+
+            const batch = renderingMesh._getInstancesRenderList(sm._id, !!sm.getReplacementMesh());
+            if (batch.mustReturn) {
+                return;
+            }
+
+            const hardwareInstancedRendering =
+                engine.getCaps().instancedArrays && ((batch.visibleInstances[sm._id] !== null && batch.visibleInstances[sm._id] !== undefined) || renderingMesh.hasThinInstances);
+
+            const fillMode = sm.getMaterial()?.fillMode ?? Constants.MATERIAL_TriangleFillMode;
+            engine.enableEffect(drawWrapper);
+            renderingMesh._bind(sm, effect, fillMode);
+            gsVoxelMaterial._preBind(drawWrapper);
+            gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh, effect);
+            // If rotation/scale textures are missing, bind() logged the warning; skip the draw to avoid GPU errors.
+            if (!(effectiveMesh as GaussianSplattingMesh).rotationsATexture) {
+                gsVoxelMaterial.unbind();
+                return;
+            }
+            if (engine.isWebGPU) {
+                // A GSplat is a 3D Gaussian ellipsoid. To approximate its volume in the voxel grid
+                // we rasterize three planar cross-section quads — one per principal axis — each
+                // spanning the ellipsoid cross-section perpendicular to that axis. A quad rendered
+                // edge-on produces zero fragments, so we draw once per world axis: each draw lets
+                // computeVoxelSplatWorldPos pick the quad whose normal best aligns with that view,
+                // guaranteeing every splat is captured face-on from at least one direction.
+                const viewMatrices = _IblShadowsVoxelRenderer._VOXEL_VIEW_MATRICES;
+                for (let axisIdx = 0; axisIdx < 3; axisIdx++) {
+                    effect.setMatrix("viewMatrix", viewMatrices[axisIdx]);
+                    renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => {
+                        effect.setMatrix("world", world);
+                    });
+                }
+            } else {
+                renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));
+            }
+            gsVoxelMaterial.unbind();
+        };
+
+        const processBucket = (subMeshes: SmartArray<SubMesh>, enableAlphaMode: boolean): void => {
+            for (let i = 0; i < subMeshes.length; i++) {
+                const sm = subMeshes.data[i];
+                const effective = sm.getEffectiveMesh();
+                if (effective.getClassName() === "GaussianSplattingMesh") {
+                    renderGsSplat(sm);
+                } else {
+                    sm.render(enableAlphaMode);
+                }
+            }
+        };
+
+        rtt.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ): void => {
+            if (depthOnlySubMeshes.length) {
+                engine.setColorWrite(false);
+                processBucket(depthOnlySubMeshes, false);
+                engine.setColorWrite(true);
+            }
+            processBucket(opaqueSubMeshes, false);
+            processBucket(alphaTestSubMeshes, false);
+            processBucket(transparentSubMeshes, true);
+        };
+    }
+
+    private _addGsMeshToVoxelRT(mrt: RenderTargetTexture, mesh: GaussianSplattingMesh): void {
+        let gsVoxelMaterial = this._gsVoxelMaterialCache.get(mesh.uniqueId);
+        if (!gsVoxelMaterial) {
+            const gsMaterial = mesh.material as GaussianSplattingMaterial;
+            if (!gsMaterial) {
+                return;
+            }
+            const shaderLanguage = this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            gsVoxelMaterial = gsMaterial.makeVoxelRenderingMaterial(this._scene, shaderLanguage, this._maxDrawBuffers, mesh.isCompound);
+            this._gsVoxelMaterialCache.set(mesh.uniqueId, gsVoxelMaterial);
         }
+        mrt.renderList?.push(mesh as Mesh);
+        mrt.setMaterialForRendering(mesh as Mesh, gsVoxelMaterial);
+    }
+
+    private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number) {
+        const slabSize = 1.0 / this._computeNumberOfSlabs();
+        const voxelMaterial = this._voxelMaterial;
 
         // We need to update the world scale uniform for every mesh being rendered to the voxel grid.
         for (let mrtIndex = 0; mrtIndex < mrts.length; mrtIndex++) {
             const mrt = mrts[mrtIndex];
+            mrt._disableEngineStages = true;
+            mrt.useCameraPostProcesses = false;
+            mrt.renderParticles = false;
+            mrt.renderSprites = false;
+            mrt.enableOutlineRendering = false;
+
+            const renderBucket = (bucket: SmartArray<SubMesh>) => {
+                for (let index = 0; index < bucket.length; index++) {
+                    const subMesh = bucket.data[index];
+                    if (subMesh.getMaterial() !== voxelMaterial) {
+                        continue;
+                    }
+                    subMesh.render(false);
+                }
+            };
+
+            mrt.customRenderFunction = (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) => {
+                renderBucket(depthOnlySubMeshes);
+                renderBucket(opaqueSubMeshes);
+                renderBucket(alphaTestSubMeshes);
+                renderBucket(transparentSubMeshes);
+            };
+
             mrt.renderList = [];
             const nearPlane = mrtIndex * slabSize;
             const farPlane = (mrtIndex + 1) * slabSize;
             const stepSize = slabSize / this._maxDrawBuffers;
 
-            const cameraPosition = new Vector3(0, 0, 0);
-            let targetPosition = new Vector3(0, 0, 1);
-            if (axis === 0) {
-                targetPosition = new Vector3(1, 0, 0);
-            } else if (axis === 1) {
-                targetPosition = new Vector3(0, 1, 0);
-            }
-            let upDirection = new Vector3(0, 1, 0);
-            if (axis === 1) {
-                upDirection = new Vector3(1, 0, 0);
-            }
+            const viewMatrix = _IblShadowsVoxelRenderer._VOXEL_VIEW_MATRICES[axis];
             mrt.onBeforeRenderObservable.clear();
             mrt.onBeforeRenderObservable.add(() => {
-                voxelMaterial.setMatrix("viewMatrix", Matrix.LookAtLH(cameraPosition, targetPosition, upDirection));
+                voxelMaterial.setMatrix("viewMatrix", viewMatrix);
                 voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
                 voxelMaterial.setFloat("nearPlane", nearPlane);
                 voxelMaterial.setFloat("farPlane", farPlane);
@@ -755,6 +801,24 @@ export class _IblShadowsVoxelRenderer {
                     this._voxelMaterial.useVertexPulling = true;
                     this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
                 }
+                // Push per-slab uniforms to each GS voxel material in this MRT's render list.
+                for (const m of mrt.renderList ?? []) {
+                    if (m.getClassName() === "GaussianSplattingMesh") {
+                        const gsVoxelMat = this._gsVoxelMaterialCache.get(m.uniqueId);
+                        if (gsVoxelMat) {
+                            gsVoxelMat.setMatrix("invWorldScale", this._invWorldScaleMatrix);
+                            if (this._engine.isWebGPU) {
+                                // WGSL GS voxel shader uses the same viewMatrix approach as WebGL; the per-axis viewMatrix is set per-draw in renderGsSplat.
+                                gsVoxelMat.setTexture("voxel_storage", this.getVoxelGrid());
+                            } else {
+                                gsVoxelMat.setMatrix("viewMatrix", viewMatrix);
+                                gsVoxelMat.setFloat("nearPlane", nearPlane);
+                                gsVoxelMat.setFloat("farPlane", farPlane);
+                                gsVoxelMat.setFloat("stepSize", stepSize);
+                            }
+                        }
+                    }
+                }
             });
 
             // Set this material on every mesh in the scene (for this RT)
@@ -762,53 +826,45 @@ export class _IblShadowsVoxelRenderer {
                 return;
             }
             for (const mesh of includedMeshes) {
-                if (mesh) {
-                    if (mesh.subMeshes && mesh.subMeshes.length > 0) {
-                        mrt.renderList?.push(mesh);
-                        mrt.setMaterialForRendering(mesh, voxelMaterial);
-                    }
-                    const meshes = mesh.getChildMeshes();
-                    for (const childMesh of meshes) {
-                        if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
-                            mrt.renderList?.push(childMesh);
-                            mrt.setMaterialForRendering(childMesh, voxelMaterial);
-                        }
+                if (!mesh) {
+                    continue;
+                }
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    this._addGsMeshToVoxelRT(mrt, mesh as GaussianSplattingMesh);
+                } else if (mesh.subMeshes && mesh.subMeshes.length > 0) {
+                    mrt.renderList?.push(mesh);
+                    mrt.setMaterialForRendering(mesh, voxelMaterial);
+                }
+                const meshes = mesh.getChildMeshes();
+                for (const childMesh of meshes) {
+                    if (childMesh.getClassName() === "GaussianSplattingMesh") {
+                        this._addGsMeshToVoxelRT(mrt, childMesh as GaussianSplattingMesh);
+                    } else if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
+                        mrt.renderList?.push(childMesh);
+                        mrt.setMaterialForRendering(childMesh, voxelMaterial);
                     }
                 }
             }
+
+            this._installVoxelMixedCustomRender(mrt);
         }
 
-        // Add the MRT's to render.
-        if (continuousRender) {
-            for (const mrt of mrts) {
-                if (this._scene.customRenderTargets.indexOf(mrt) === -1) {
-                    this._scene.customRenderTargets.push(mrt);
-                }
-            }
-        } else {
-            this._renderTargets = this._renderTargets.concat(mrts);
-        }
+        this._renderTargets = this._renderTargets.concat(mrts);
     }
 
     /**
      * Called by the pipeline to resize resources.
      */
-    public resize() {
-        this._voxelSlabDebugRT?.resize({ width: this._scene.getEngine().getRenderWidth(), height: this._scene.getEngine().getRenderHeight() });
-    }
+    public resize() {}
 
     /**
      * Disposes the voxel renderer and associated resources
      */
     public dispose() {
         this._disposeVoxelTextures();
-        if (this._voxelSlabDebugRT) {
-            this._removeVoxelRTs([this._voxelSlabDebugRT]);
-            this._voxelSlabDebugRT.dispose();
+        for (const mat of Array.from(this._gsVoxelMaterialCache.values())) {
+            mat.dispose();
         }
-        if (this._voxelDebugPass) {
-            this._voxelDebugPass.dispose();
-        }
-        // TODO - dispose all created voxel materials.
+        this._gsVoxelMaterialCache.clear();
     }
 }

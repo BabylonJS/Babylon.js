@@ -1,14 +1,14 @@
 import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import triangle from "../imgs/triangle.svg";
 import square from "../imgs/square.svg";
 import * as styles from "./blockNodeData.module.scss";
-import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
-import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
+import { type NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
+import { type NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];

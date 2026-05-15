@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
-import { useCallback } from "react";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Scene } from "core/scene";
+import { type FunctionComponent, useCallback } from "react";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Scene } from "core/scene";
 import { Texture } from "core/Materials/Textures/texture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { ReadFile } from "core/Misc/fileTools";

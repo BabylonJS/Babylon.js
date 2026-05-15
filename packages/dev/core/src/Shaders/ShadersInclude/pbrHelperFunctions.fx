@@ -1,6 +1,11 @@
 // AlphaG epsilon to avoid numerical issues
 #define MINIMUMVARIANCE 0.0005
 
+#ifndef TEXRD_DEFINED
+    #define TEXRD(s, uv) texture2D(s, uv)
+    #define TEXRD_DEFINED
+#endif
+
 float convertRoughnessToAverageSlope(float roughness)
 {
     // Calculate AlphaG as square of roughness (add epsilon to avoid numerical issues)

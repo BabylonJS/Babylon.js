@@ -1,17 +1,15 @@
-import type { Nullable } from "../types";
-import { Observable } from "../Misc/observable";
-import type { Observer } from "../Misc/observable";
-import type { IDisposable, Scene } from "../scene";
-import type { Camera } from "../Cameras/camera";
+import { type Nullable } from "../types";
+import { Observable, type Observer } from "../Misc/observable";
+import { type IDisposable, type Scene } from "../scene";
+import { type Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
-import type { WebXRRenderTarget } from "./webXRTypes";
-import { WebXRState } from "./webXRTypes";
+import { type WebXRRenderTarget, WebXRState } from "./webXRTypes";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**

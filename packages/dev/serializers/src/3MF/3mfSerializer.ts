@@ -1,5 +1,5 @@
 // Babylonjs
-import type { SubMesh } from "core/Meshes";
+import { type SubMesh } from "core/Meshes";
 import { Mesh } from "core/Meshes/mesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Matrix } from "core/Maths/math";
@@ -10,7 +10,7 @@ import { ThreeMfMeshBuilder, type ThreeMfModelBuilder } from "./core/model/3mf.b
 import { Matrix3d } from "./core/model/3mf";
 
 import { ST_Unit, type I3mfModel, type I3mfObject } from "./core/model/3mf.interfaces";
-import type { I3mfVertexData } from "./core/model/3mf.types";
+import { type I3mfVertexData } from "./core/model/3mf.types";
 import { AbstractThreeMfSerializer, type IThreeMfSerializerBaseOptions } from "./core/model/3mf.serializer";
 import { ThreeMfSerializerGlobalConfiguration } from "./3mfSerializer.configuration";
 

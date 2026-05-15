@@ -1,18 +1,16 @@
-import type { Behavior } from "../../Behaviors/behavior";
-import type { Camera } from "../../Cameras/camera";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type Behavior } from "../../Behaviors/behavior";
+import { type Camera } from "../../Cameras/camera";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { PointerInfoPre } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { Vector3 } from "../../Maths/math.vector";
-import type { Animatable } from "../../Animations/animatable.core";
+import { type Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 
 /**

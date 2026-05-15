@@ -1,6 +1,6 @@
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { FunctionComponent } from "react";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type FunctionComponent } from "react";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";

@@ -1,7 +1,6 @@
-import { PropertyLine } from "./propertyLine";
-import type { PrimitiveProps } from "../../primitives/primitive";
-import type { PropertyLineProps } from "./propertyLine";
-import type { FunctionComponent } from "react";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import { type PrimitiveProps } from "../../primitives/primitive";
+import { type FunctionComponent } from "react";
 import { Checkbox } from "../../primitives/checkbox";
 
 /**

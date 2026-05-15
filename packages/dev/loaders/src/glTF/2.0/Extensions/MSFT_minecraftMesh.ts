@@ -1,8 +1,8 @@
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { IMaterial } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type IMaterial } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 

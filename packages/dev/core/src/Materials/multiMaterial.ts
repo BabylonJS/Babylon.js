@@ -1,8 +1,8 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
 import { RegisterClass } from "../Misc/typeStore";
@@ -68,7 +68,7 @@ export class MultiMaterial extends Material {
 
         const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
             this._markAllSubMeshesAsTexturesDirty();
 

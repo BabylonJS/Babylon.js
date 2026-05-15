@@ -1,8 +1,6 @@
-import type { SliderOnChangeData } from "@fluentui/react-components";
-import { Slider as FluentSlider } from "@fluentui/react-components";
-import type { ChangeEvent, FunctionComponent } from "react";
-import { useEffect, useState, useRef, useContext } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { type SliderOnChangeData, Slider as FluentSlider } from "@fluentui/react-components";
+import { type ChangeEvent, type FunctionComponent, useEffect, useState, useRef, useContext } from "react";
+import { type PrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type SliderProps = PrimitiveProps<number> & {

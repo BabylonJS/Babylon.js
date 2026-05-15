@@ -1,4 +1,4 @@
-import type { Nullable, IndicesArray, FloatArray } from "../types";
+import { type Nullable, type IndicesArray, type FloatArray } from "../types";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -6,19 +6,19 @@ import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
-import type { Scene, IDisposable } from "../scene";
-import type { Observer } from "../Misc/observable";
+import { type Scene, type IDisposable } from "../scene";
+import { type Observer } from "../Misc/observable";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
-import type { TargetCamera } from "../Cameras/targetCamera";
+import { type TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Axis } from "../Maths/math.axis";
 import { SubMesh } from "../Meshes/subMesh";
-import type { Material } from "../Materials/material";
+import { type Material } from "../Materials/material";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
-import type { PickingInfo } from "../Collisions/pickingInfo";
-import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type PickingInfo } from "../Collisions/pickingInfo";
+import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.

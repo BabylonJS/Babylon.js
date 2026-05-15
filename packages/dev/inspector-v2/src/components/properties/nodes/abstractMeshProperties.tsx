@@ -1,10 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useState } from "react";
 
-import type { AbstractMesh, ShaderMaterial } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useState } from "react";
+import { type AbstractMesh, type ShaderMaterial } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";

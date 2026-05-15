@@ -1,15 +1,15 @@
 import * as React from "react";
 import { useState } from "react";
 
-import type { Scene } from "core/scene";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Scene } from "core/scene";
+import { type Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 
 import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarComponent";
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { type PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerformancePlayheadButtonComponent } from "./performancePlayheadButtonComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
-import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
+import { type IPerfLayoutSize, type IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
 
 interface IPerformanceViewerPopupComponentProps {
     scene: Scene;

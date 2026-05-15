@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IExplorerAdditionalNode, IExplorerExtensibilityGroup, IInspectorContextMenuItem, IInspectorOptions } from "core/Debug/debugLayer";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IExplorerAdditionalNode, type IExplorerExtensibilityGroup, type IInspectorContextMenuItem, type IInspectorOptions } from "core/Debug/debugLayer";
+import { type Scene } from "core/scene";
 import { EngineStore } from "core/Engines/engineStore";
 
 import { TreeItemComponent } from "./treeItemComponent";
@@ -11,7 +11,7 @@ import { Resizable } from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
-import type { GlobalState } from "../../components/globalState";
+import { type GlobalState } from "../../components/globalState";
 import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import { Vector3 } from "core/Maths/math";
 import { PointLight } from "core/Lights/pointLight";
@@ -27,9 +27,9 @@ import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRe
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { SpriteManager } from "core/Sprites/spriteManager";
-import type { TargetCamera } from "core/Cameras/targetCamera";
-import type { Camera } from "core/Cameras/camera";
-import type { PostProcessRenderPipeline } from "core/PostProcesses";
+import { type TargetCamera } from "core/Cameras/targetCamera";
+import { type Camera } from "core/Cameras/camera";
+import { type PostProcessRenderPipeline } from "core/PostProcesses";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 

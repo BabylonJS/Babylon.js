@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type Atmosphere } from "./atmosphere";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp, SmoothStep } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
-import type { DirectionalLight } from "core/Lights/directionalLight";
+import { type DirectionalLight } from "core/Lights/directionalLight";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { FromHalfFloat } from "core/Misc/textureTools";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
@@ -52,7 +52,7 @@ const ComputeLutUVToRef = (properties: AtmospherePhysicalProperties, radius: num
 
 const SampleLutToRef = (
     properties: AtmospherePhysicalProperties,
-    lutData: Uint8Array | Uint16Array,
+    lutData: Float32Array,
     positionDistanceToOrigin: number,
     cosAngleLightToZenith: number,
     result: IColor4Like
@@ -63,7 +63,7 @@ const SampleLutToRef = (
     }
 
     ComputeLutUVToRef(properties, positionDistanceToOrigin, cosAngleLightToZenith, Uv);
-    Sample2DRgbaToRef(Uv.x, Uv.y, LutWidthPx, LutHeightPx, lutData, result, UseHalfFloat ? FromHalfFloat : (value) => value / 255.0);
+    Sample2DRgbaToRef(Uv.x, Uv.y, LutWidthPx, LutHeightPx, lutData, result, null);
 
     const weight = Clamp(SmoothStep(1.0, 0.0, Clamp((Uv.x - TransmittanceMaxUnoccludedU) / TransmittanceHorizonRange)));
     result.r *= weight;
@@ -83,7 +83,7 @@ export class TransmittanceLut {
     public readonly onUpdatedObservable = new Observable<void>();
 
     private readonly _atmosphere: Atmosphere;
-    private _lutData: Uint8Array | Uint16Array = new Uint8Array(0);
+    private _lutData: Float32Array = new Float32Array(0);
     private _renderTarget: Nullable<RenderTargetTexture>;
     private _effectWrapper: Nullable<EffectWrapper>;
     private _effectRenderer: Nullable<EffectRenderer>;
@@ -263,9 +263,19 @@ export class TransmittanceLut {
         }
         this._needsReadPixels = false;
 
-        const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */);
+        const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, true /* noDataConversion */);
         if (value && !this._isDisposed) {
-            this._lutData = value as Uint8Array | Uint16Array;
+            const rawLutData = value as Uint8Array | Uint16Array;
+            const lutData = (this._lutData = new Float32Array(rawLutData.length));
+            if (rawLutData instanceof Uint16Array) {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = FromHalfFloat(rawLutData[i]);
+                }
+            } else {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = rawLutData[i] / 255.0;
+                }
+            }
             this.onUpdatedObservable.notifyObservers();
         }
     }

@@ -1,4 +1,4 @@
-import type { Nullable } from "@dev/core/types";
+import { type Nullable } from "@dev/core/types";
 import { expect, test, Page, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 

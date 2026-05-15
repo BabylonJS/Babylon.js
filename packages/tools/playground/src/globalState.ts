@@ -1,11 +1,10 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { Utilities } from "./tools/utilities";
-import type { CompilationError } from "./components/errorDisplayComponent";
-import { Observable } from "@dev/core";
-import type { Nullable } from "@dev/core";
-import type { V2Runner } from "./tools/monaco/run/runner";
-import type { V2Manifest } from "./tools/snippet";
+import { type CompilationError } from "./components/errorDisplayComponent";
+import { Observable, type Nullable } from "@dev/core";
+import { type V2Runner } from "./tools/monaco/run/runner";
+import { type V2Manifest } from "./tools/snippet";
 
 export enum EditionMode {
     Desktop,
@@ -19,6 +18,19 @@ export enum RuntimeMode {
     Frame = 2,
 }
 
+/**
+ * Optional payload for onSaveRequiredObservable that allows callers to
+ * supply metadata and bypass the metadata dialog.
+ */
+export interface ISaveOptions {
+    /** Snippet title. Defaults to empty string if not provided. */
+    title?: string;
+    /** Snippet description. Defaults to empty string if not provided. */
+    description?: string;
+    /** Snippet tags. Defaults to empty string if not provided. */
+    tags?: string;
+}
+
 export interface IEngineSwitchDialogOptions {
     currentEngine: string;
     targetEngine: string;
@@ -27,6 +39,27 @@ export interface IEngineSwitchDialogOptions {
 export interface IEngineSwitchDialogRequest extends IEngineSwitchDialogOptions {
     resolve: (shouldSwitch: boolean) => void;
 }
+
+/**
+ * A diagnostic marker from the editor.
+ */
+export interface IDiagnosticInfo {
+    /** The file name. */
+    file: string;
+    /** The diagnostic message. */
+    message: string;
+    /** The severity: "error", "warning", or "info". */
+    severity: "error" | "warning" | "info";
+    /** The line number. */
+    line: number;
+    /** The column number. */
+    column: number;
+}
+
+/**
+ * The Inspector v2 UMD module shape, combining its legacy and main exports.
+ */
+export type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 export class GlobalState {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -39,6 +72,7 @@ export class GlobalState {
     public getRunnable: () => Promise<V2Runner> = async () => {
         throw new Error("Must be set in runtime");
     };
+    public getDiagnostics: () => IDiagnosticInfo[] = () => [];
     currentRunner?: V2Runner | null;
 
     public language = Utilities.ReadStringFromStore("language", "JS");
@@ -76,7 +110,7 @@ export class GlobalState {
     public onNewRequiredObservable = new Observable<void>();
     public onInsertSnippetRequiredObservable = new Observable<string>();
     public onClearRequiredObservable = new Observable<void>();
-    public onSaveRequiredObservable = new Observable<void>();
+    public onSaveRequiredObservable = new Observable<ISaveOptions | void>();
     public onLocalSaveRequiredObservable = new Observable<void>();
     public onLoadRequiredObservable = new Observable<string>();
     public onLocalLoadRequiredObservable = new Observable<void>();

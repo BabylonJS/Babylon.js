@@ -4,10 +4,10 @@ import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
 import { DeviceType, PointerInput } from "core/DeviceInput/InputDevices/deviceEnums";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PointerEventTypes, PointerInfo } from "core/Events";
-import type { IMouseEvent } from "core/Events/deviceInputEvents";
+import { type IMouseEvent } from "core/Events/deviceInputEvents";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { TestDeviceInputSystem } from "../DeviceInput/testDeviceInputSystem";
 
 describe("FreeCameraMouseInput", () => {
@@ -110,7 +110,7 @@ describe("FreeCameraMouseInput", () => {
             () => {}
         );
         testDeviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
-        
+
         // Create two events with different movement values
         const moveEvt = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
         moveEvt.movementX = 10;

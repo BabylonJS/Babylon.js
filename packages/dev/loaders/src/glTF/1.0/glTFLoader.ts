@@ -1,36 +1,40 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type {
-    IGLTFRuntime,
-    IGLTFTechniqueParameter,
-    IGLTFAnimation,
-    IGLTFAnimationSampler,
-    IGLTFNode,
-    IGLTFSkins,
-    INodeToRoot,
-    IJointNode,
-    IGLTFMesh,
-    IGLTFAccessor,
-    IGLTFLight,
-    IGLTFAmbienLight,
-    IGLTFDirectionalLight,
-    IGLTFPointLight,
-    IGLTFSpotLight,
-    IGLTFCamera,
-    IGLTFCameraPerspective,
-    IGLTFScene,
-    IGLTFTechnique,
-    IGLTFMaterial,
-    IGLTFProgram,
-    IGLTFBuffer,
-    IGLTFTexture,
-    IGLTFImage,
-    IGLTFSampler,
-    IGLTFShader,
-    IGLTFTechniqueStates,
+import {
+    type IGLTFRuntime,
+    type IGLTFTechniqueParameter,
+    type IGLTFAnimation,
+    type IGLTFAnimationSampler,
+    type IGLTFNode,
+    type IGLTFSkins,
+    type INodeToRoot,
+    type IJointNode,
+    type IGLTFMesh,
+    type IGLTFAccessor,
+    type IGLTFLight,
+    type IGLTFAmbienLight,
+    type IGLTFDirectionalLight,
+    type IGLTFPointLight,
+    type IGLTFSpotLight,
+    type IGLTFCamera,
+    type IGLTFCameraPerspective,
+    type IGLTFScene,
+    type IGLTFTechnique,
+    type IGLTFMaterial,
+    type IGLTFProgram,
+    type IGLTFBuffer,
+    type IGLTFTexture,
+    type IGLTFImage,
+    type IGLTFSampler,
+    type IGLTFShader,
+    type IGLTFTechniqueStates,
+    EParameterType,
+    ETextureFilterType,
+    ECullingType,
+    EBlendingFunction,
+    EShaderType,
 } from "./glTFLoaderInterfaces";
-import { EParameterType, ETextureFilterType, ECullingType, EBlendingFunction, EShaderType } from "./glTFLoaderInterfaces";
 
-import type { FloatArray, Nullable } from "core/types";
+import { type FloatArray, type Nullable } from "core/types";
 import { Quaternion, Vector3, Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
@@ -45,7 +49,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import type { Node } from "core/node";
+import { type Node } from "core/node";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
@@ -56,14 +60,13 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
-import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import type { Scene } from "core/scene";
+import { type ISceneLoaderAsyncResult, type ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { type Scene } from "core/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
-import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
-import { GLTFFileLoader } from "../glTFFileLoader";
+import { type IGLTFLoader, type IGLTFLoaderData, GLTFFileLoader } from "../glTFFileLoader";
 import { Constants } from "core/Engines/constants";
-import type { AssetContainer } from "core/assetContainer";
+import { type AssetContainer } from "core/assetContainer";
 import { GetBlobBufferSource } from "core/Buffers/bufferUtils";
 
 /**

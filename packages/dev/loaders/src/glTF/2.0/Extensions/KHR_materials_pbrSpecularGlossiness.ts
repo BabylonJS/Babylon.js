@@ -1,12 +1,11 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 
-import type { IMaterial } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IMaterial } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsPbrSpecularGlossiness } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsPbrSpecularGlossiness } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
@@ -74,30 +73,27 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadSpecularGlossinessPropertiesAsync(context: string, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.metallic = null;
-        babylonMaterial.roughness = null;
+        adapter.configureSpecularGlossiness();
 
         if (properties.diffuseFactor) {
-            babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
+            adapter.baseColor = Color3.FromArray(properties.diffuseFactor);
             babylonMaterial.alpha = properties.diffuseFactor[3];
         } else {
-            babylonMaterial.albedoColor = Color3.White();
+            adapter.baseColor = Color3.White();
         }
 
-        babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : Color3.White();
-        babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
+        adapter.specularColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : Color3.White();
+        adapter.glossiness = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
 
         if (properties.diffuseTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse)`;
-                    babylonMaterial.albedoTexture = texture;
+                    adapter.baseColorTexture = texture;
                 })
             );
         }
@@ -106,12 +102,9 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
-                    babylonMaterial.reflectivityTexture = texture;
-                    babylonMaterial.reflectivityTexture.hasAlpha = true;
+                    adapter.specularColorTexture = texture;
                 })
             );
-
-            babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
         }
 
         // eslint-disable-next-line github/no-then

@@ -1,8 +1,8 @@
-import type { GlobalState } from "./globalState";
-import type { Nullable } from "core/types";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type GlobalState } from "./globalState";
+import { type Nullable } from "core/types";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 
 export class SerializationTools {
     public static UpdateLocations(renderGraph: NodeRenderGraph, globalState: GlobalState, frame?: Nullable<GraphFrame>) {

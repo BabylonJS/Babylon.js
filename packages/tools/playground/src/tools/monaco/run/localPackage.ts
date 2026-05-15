@@ -34,7 +34,6 @@ async function WalkLocalJs(root: DirHandle) {
     const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
 
     const walkAsync = async (dir: DirHandle, prefix = "") => {
-        // @ts-expect-error dir handle
         for await (const entry of dir.values()) {
             if (entry.kind === "directory") {
                 if (skipDir.test(entry.name)) {

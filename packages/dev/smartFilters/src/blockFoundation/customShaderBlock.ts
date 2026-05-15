@@ -1,17 +1,17 @@
 import { Logger } from "core/Misc/logger.js";
-import type { Effect } from "core/Materials/effect.js";
+import { type Effect } from "core/Materials/effect.js";
 import { ConnectionPointType, type ConnectionPointValue } from "../connection/connectionPointType.js";
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
-import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
-import type { SerializedInputConnectionPointV1, ConstPropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
-import type { SmartFilter } from "../smartFilter.js";
+import { type SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
+import { type SerializedInputConnectionPointV1, type ConstPropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
+import { type SmartFilter } from "../smartFilter.js";
 import { CloneShaderProgram, type ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
-import type { RuntimeData } from "../connection/connectionPoint.js";
-import type { Nullable } from "core/types.js";
+import { type RuntimeData } from "../connection/connectionPoint.js";
+import { type Nullable } from "core/types.js";
 import { EditableInPropertyPage, type IEditablePropertyOption, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
-import type { CustomShaderBlockData } from "./customShaderBlock.serializer.js";
+import { type CustomShaderBlockData } from "./customShaderBlock.serializer.js";
 
 /**
  * The binding for a CustomShaderBlock

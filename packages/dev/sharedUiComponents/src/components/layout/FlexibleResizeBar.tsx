@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { type FC } from "react";
 import { useDrag } from "react-dnd";
 import { ResizeDirections, ElementTypes } from "./types";
 import { ClassNames } from "../classNames";

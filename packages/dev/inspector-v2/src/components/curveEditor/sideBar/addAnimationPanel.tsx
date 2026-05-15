@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
-import type { IAnimationKey } from "core/Animations/animationKey";
-import type { TargetedAnimation } from "core/Animations/animationGroup";
+import { type FunctionComponent, useCallback, useState, useMemo, useEffect } from "react";
+import { type IAnimationKey } from "core/Animations/animationKey";
+import { type TargetedAnimation } from "core/Animations/animationGroup";
 
 import { makeStyles, tokens, Label } from "@fluentui/react-components";
-import { useCallback, useState, useMemo, useEffect } from "react";
 import { Animation } from "core/Animations/animation";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";

@@ -1,10 +1,9 @@
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Scene } from "../scene";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
-import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { IObjectAccessor } from "./typeDefinitions";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type IObjectAccessor } from "./typeDefinitions";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
 
 /**
@@ -32,7 +31,7 @@ export interface IFlowGraphCoordinatorParseOptions {
     /**
      * The path converter to use to convert the path to an object accessor.
      */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+    pathConverter?: IPathToObjectConverter<IObjectAccessor>;
     /**
      * The scene that the flow graph coordinator belongs to.
      */
@@ -119,10 +118,12 @@ export class FlowGraphCoordinator {
 
     /**
      * Creates a new flow graph and adds it to the list of existing flow graphs
+     * @param name - optional name for the new graph. If not provided, an auto-generated name is used.
      * @returns a new flow graph
      */
-    public createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this });
+    public createGraph(name?: string): FlowGraph {
+        const graphName = name ?? `Graph ${this._flowGraphs.length + 1}`;
+        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this, name: graphName });
         this._flowGraphs.push(graph);
         return graph;
     }

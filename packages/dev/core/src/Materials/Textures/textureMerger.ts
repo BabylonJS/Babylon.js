@@ -1,11 +1,11 @@
-import type { Scene } from "../../scene";
-import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { type Scene } from "../../scene";
+import { type IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { ProceduralTexture } from "./Procedurals/proceduralTexture";
-import type { BaseTexture } from "./baseTexture";
-import type { TextureSize } from "./textureCreationOptions";
+import { type BaseTexture } from "./baseTexture";
+import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
-import type { Texture } from "./texture";
+import { type Texture } from "./texture";
 
 /**
  * Configuration for a texture input source
@@ -183,6 +183,7 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
                 await Promise.all([import("../../Shaders/textureMerger.fragment")]);
             }
         },
+        skipSceneRegistration: true,
     };
     const proceduralTexture = new ProceduralTexture(name, outputSize, _ShaderName, scene, outputTextureOptions);
     proceduralTexture.refreshRate = -1; // Do not auto-refresh

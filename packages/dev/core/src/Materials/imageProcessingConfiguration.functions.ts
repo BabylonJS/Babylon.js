@@ -1,5 +1,5 @@
 import { PrepareUniformsForColorCurves } from "./colorCurves.functions";
-import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
+import { type IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 
 /**
  * Prepare the list of uniforms associated with the Image Processing effects.

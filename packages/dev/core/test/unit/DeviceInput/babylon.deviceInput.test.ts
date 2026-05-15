@@ -1,13 +1,12 @@
 import { DeviceSource, DeviceSourceManager, DeviceType, PointerInput } from "core/DeviceInput";
-import type { IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
+import { type IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
 import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
 import { WebDeviceInputSystem } from "core/DeviceInput/webDeviceInputSystem";
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
-import type { IPointerEvent, IUIEvent } from "core/Events";
-import type { Nullable } from "core/types";
-import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
-import { TestDeviceInputSystem } from "./testDeviceInputSystem";
+import { type IPointerEvent, type IUIEvent } from "core/Events";
+import { type Nullable } from "core/types";
+import { type ITestDeviceInputSystem, TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
 
 vi.mock("core/DeviceInput/webDeviceInputSystem", () => {

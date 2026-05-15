@@ -1,26 +1,25 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { Material } from "../Materials/material";
+import { type Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePlugin";
+import { type IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePlugin";
 import { PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode, type IPhysicsEnginePluginV2, type PhysicsMassProperties } from "../Physics/v2/IPhysicsEnginePlugin";
 import { PhysicsImpostor } from "../Physics/v1/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
-import type { ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
-import { CreateCapsule } from "../Meshes/Builders/capsuleBuilder";
+import { type ICreateCapsuleOptions, CreateCapsule } from "../Meshes/Builders/capsuleBuilder";
 import { Logger } from "../Misc/logger";
-import type { PhysicsBody } from "../Physics/v2/physicsBody";
+import { type PhysicsBody } from "../Physics/v2/physicsBody";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { MeshBuilder } from "../Meshes/meshBuilder";
-import type { PhysicsConstraint } from "../Physics/v2/physicsConstraint";
+import { type PhysicsConstraint } from "../Physics/v2/physicsConstraint";
 import { AxesViewer } from "./axesViewer";
 import { TransformNode } from "../Meshes/transformNode";
 import { Epsilon } from "../Maths/math.constants";
@@ -904,28 +903,18 @@ export class PhysicsViewer {
         mesh.material = this._getDebugAxisColoredMaterial(axisNumber, scene);
         mesh.parent = parent;
         const parentScaling = parent.absoluteScaling;
+        const sc = (parentScaling.x + parentScaling.y + parentScaling.z) / 3;
+        mesh.scaling.set(1 / sc, 1 / sc, 1 / sc);
         switch (axisNumber) {
             case 0:
                 mesh.rotation.z = Math.PI * 0.5;
                 mesh.rotation.x = -minLimit + Math.PI * 0.5;
-                // scaling on y,z
-                mesh.scaling.x = 1 / parentScaling.x;
-                mesh.scaling.y = 1 / parentScaling.z;
-                mesh.scaling.z = 1 / parentScaling.y;
                 break;
             case 1:
                 mesh.rotation.y = Math.PI * 1.5 + minLimit;
-                // flip x,z
-                mesh.scaling.x = 1 / parentScaling.z;
-                mesh.scaling.y = 1 / parentScaling.y;
-                mesh.scaling.z = 1 / parentScaling.x;
                 break;
             case 2:
                 mesh.rotation.x = Math.PI * 0.5;
-                // flip z,y
-                mesh.scaling.x = 1 / parentScaling.x;
-                mesh.scaling.y = 1 / parentScaling.z;
-                mesh.scaling.z = 1 / parentScaling.y;
                 break;
         }
         return mesh;

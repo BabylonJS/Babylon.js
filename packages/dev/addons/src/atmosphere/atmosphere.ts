@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";
 import { AtmospherePerCameraVariables } from "./atmospherePerCameraVariables";
 import { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Camera } from "core/Cameras/camera";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Camera } from "core/Cameras/camera";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
-import type { DeepImmutable, Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { DiffuseSkyIrradianceLut } from "./diffuseSkyIrradianceLut";
-import type { DirectionalLight } from "core/Lights/directionalLight";
-import type { Effect } from "core/Materials/effect";
+import { type DirectionalLight } from "core/Lights/directionalLight";
+import { type Effect } from "core/Materials/effect";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
-import type { IAtmosphereOptions } from "./atmosphereOptions";
-import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
-import type { IDisposable, Scene } from "core/scene";
+import { type IAtmosphereOptions } from "./atmosphereOptions";
+import { type IColor3Like, type IVector3Like } from "core/Maths/math.like";
+import { type IDisposable, type Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
-import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
+import { type RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";

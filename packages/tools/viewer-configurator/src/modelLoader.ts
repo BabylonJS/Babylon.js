@@ -1,5 +1,5 @@
-import type { Nullable } from "core/index";
-import type { LoadModelOptions, ViewerElement } from "viewer/index";
+import { type Nullable } from "core/index";
+import { type LoadModelOptions, type ViewerElement } from "viewer/index";
 
 import { Deferred } from "core/Misc/deferred";
 import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";

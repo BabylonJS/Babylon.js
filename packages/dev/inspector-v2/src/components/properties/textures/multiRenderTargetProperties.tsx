@@ -1,6 +1,6 @@
-import type { MultiRenderTarget } from "core/index";
+import { type MultiRenderTarget } from "core/index";
 
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { BoundProperty } from "../boundProperty";

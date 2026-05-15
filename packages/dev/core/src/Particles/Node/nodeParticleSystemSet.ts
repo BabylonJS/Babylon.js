@@ -1,9 +1,9 @@
 import { serialize } from "core/Misc/decorators";
 import { ParticleSystemSet } from "../particleSystemSet";
 import { SystemBlock } from "./Blocks/systemBlock";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { NodeParticleBuildState } from "./nodeParticleBuildState";
-import type { NodeParticleBlock } from "./nodeParticleBlock";
+import { type NodeParticleBlock } from "./nodeParticleBlock";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Observable } from "core/Misc/observable";
 import { GetClass } from "core/Misc/typeStore";
@@ -16,12 +16,12 @@ import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock"
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
-import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import { type ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
+import { type ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
-import type { Color4 } from "core/Maths/math.color";
-import type { Nullable } from "../../types";
+import { type Color4 } from "core/Maths/math.color";
+import { type Nullable } from "../../types";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -199,9 +199,17 @@ export class NodeParticleSystemSet {
      * @returns the global NPE
      */
     private _getGlobalNodeParticleEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
+        // Note: rollup-built UMD bundles do not expose the editor class
+        // directly on the namespace - it lives on `.default.NodeParticleEditor` -
+        // so we unwrap that case before falling back to the BABYLON global.
         if (typeof NODEPARTICLEEDITOR !== "undefined") {
-            return NODEPARTICLEEDITOR;
+            if ((NODEPARTICLEEDITOR as any).NodeParticleEditor) {
+                return NODEPARTICLEEDITOR;
+            }
+            if ((NODEPARTICLEEDITOR as any).default?.NodeParticleEditor) {
+                return (NODEPARTICLEEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.
@@ -255,35 +263,38 @@ export class NodeParticleSystemSet {
      * @returns a promise that resolves to the built particle system set
      */
     public async buildAsync(scene: Scene, verbose = false): Promise<ParticleSystemSet> {
-        return await new Promise<ParticleSystemSet>((resolve) => {
-            const output = new ParticleSystemSet();
+        const output = new ParticleSystemSet();
 
-            // Initialize all blocks
-            for (const block of this._systemBlocks) {
-                this._initializeBlock(block);
-            }
+        // Initialize all blocks
+        for (const block of this._systemBlocks) {
+            this._initializeBlock(block);
+        }
 
-            // Build the blocks
-            for (const block of this.systemBlocks) {
-                const state = new NodeParticleBuildState();
-                state.buildId = this._buildId++;
-                state.scene = scene;
-                state.verbose = verbose;
+        // Build the blocks
+        const buildPromises = new Array<Promise<void>>();
+        for (const block of this.systemBlocks) {
+            const state = new NodeParticleBuildState();
+            state.buildId = this._buildId++;
+            state.scene = scene;
+            state.verbose = verbose;
 
-                const system = block.createSystem(state);
-                system._source = this;
-                system._blockReference = block._internalId;
+            const system = block.createSystem(state);
+            system._source = this;
+            system._blockReference = block._internalId;
 
-                // Errors
-                state.emitErrors();
+            // Errors
+            state.emitErrors();
 
-                output.systems.push(system);
-            }
+            buildPromises.push(state.waitForBuildPromisesAsync());
 
-            this.onBuildObservable.notifyObservers(this);
+            output.systems.push(system);
+        }
 
-            resolve(output);
-        });
+        await Promise.all(buildPromises);
+
+        this.onBuildObservable.notifyObservers(this);
+
+        return output;
     }
 
     /**

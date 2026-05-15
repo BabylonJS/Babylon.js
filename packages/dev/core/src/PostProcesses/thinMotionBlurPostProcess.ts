@@ -1,4 +1,4 @@
-import type { EffectWrapperCreationOptions, Scene } from "core/index";
+import { type EffectWrapperCreationOptions, type Scene } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { Matrix, TmpVectors } from "../Maths/math.vector";
 

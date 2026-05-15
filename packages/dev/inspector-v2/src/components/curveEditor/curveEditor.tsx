@@ -1,12 +1,11 @@
-import type { FunctionComponent } from "react";
-import type { Nullable } from "core/types";
-import type { Animation } from "core/Animations/animation";
-import type { TargetedAnimation, AnimationGroup } from "core/Animations/animationGroup";
-import type { Scene } from "core/scene";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import { type FunctionComponent, useCallback, useEffect, useRef } from "react";
+import { type Nullable } from "core/types";
+import { type Animation } from "core/Animations/animation";
+import { type TargetedAnimation, type AnimationGroup } from "core/Animations/animationGroup";
+import { type Scene } from "core/scene";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useRef } from "react";
 
 import { CurveEditorProvider, useCurveEditor } from "./curveEditorContext";
 import { TopBar } from "./topBar";

@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Vector3, Quaternion } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Light } from "core/Lights/light";
 import { RectAreaLight } from "core/Lights/rectAreaLight";
-import type { TransformNode } from "core/Meshes/transformNode";
-import { TransformNode as BabylonTransformNode } from "core/Meshes/transformNode";
+import { type TransformNode, TransformNode as BabylonTransformNode } from "core/Meshes/transformNode";
 
-import type { IEXTLightsArea_LightReference } from "babylonjs-gltf2interface";
-import { EXTLightsArea_LightType } from "babylonjs-gltf2interface";
-import type { INode, IEXTLightsArea_Light } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IEXTLightsArea_LightReference, EXTLightsArea_LightType } from "babylonjs-gltf2interface";
+import { type INode, type IEXTLightsArea_Light } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 

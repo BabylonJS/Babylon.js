@@ -1,19 +1,19 @@
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
-import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type GLTFLoader } from "./glTFLoader";
+import { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
  */
 export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: PBRMaterial;
-    private _extinctionCoefficient: Vector3 = Vector3.Zero();
-
+    private _specWorkflow: boolean = false;
     /**
      * Creates a new instance of the PBRMaterialLoadingAdapter.
      * @param material - The PBR material to adapt.
@@ -29,6 +29,12 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public get material(): PBRMaterial {
         return this._material;
     }
+
+    /**
+     * No-op: PBRMaterial has no deferred finalization.
+     * @param _loader Unused.
+     */
+    public async finalizeAsync(_loader: GLTFLoader): Promise<void> {}
 
     /**
      * Whether the material should be treated as unlit
@@ -268,6 +274,16 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Enable the specular/glossiness workflow and disable metallic/roughness.
+     */
+    public configureSpecularGlossiness(): void {
+        this._specWorkflow = true;
+        this._material.metallic = null;
+        this._material.roughness = null;
+        this._material.useMicroSurfaceFromReflectivityMapAlpha = true;
+    }
+
+    /**
      * Sets the specular weight (mapped to PBR metallicF0Factor).
      * @param value The specular weight value
      */
@@ -311,7 +327,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The specular color as a Color3
      */
     public set specularColor(value: Color3) {
-        this._material.metallicReflectanceColor = value;
+        if (this._specWorkflow) {
+            this._material.reflectivityColor = value;
+        } else {
+            this._material.metallicReflectanceColor = value;
+        }
     }
 
     /**
@@ -319,7 +339,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns The specular color as a Color3
      */
     public get specularColor(): Color3 {
-        return this._material.metallicReflectanceColor;
+        if (this._specWorkflow) {
+            return this._material.reflectivityColor;
+        } else {
+            return this._material.metallicReflectanceColor;
+        }
     }
 
     /**
@@ -327,7 +351,14 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The specular color texture or null
      */
     public set specularColorTexture(value: Nullable<BaseTexture>) {
-        this._material.reflectanceTexture = value;
+        if (this._specWorkflow) {
+            this._material.reflectivityTexture = value;
+            if (this._material.reflectivityTexture) {
+                this._material.reflectivityTexture.hasAlpha = true;
+            }
+        } else {
+            this._material.reflectanceTexture = value;
+        }
     }
 
     /**
@@ -335,7 +366,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns The specular color texture or null
      */
     public get specularColorTexture(): Nullable<BaseTexture> {
-        return this._material.reflectanceTexture;
+        if (this._specWorkflow) {
+            return this._material.reflectivityTexture;
+        } else {
+            return this._material.reflectanceTexture;
+        }
     }
 
     /**
@@ -389,6 +424,22 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public get specularIor(): number {
         return this._material.indexOfRefraction;
+    }
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    public get glossiness(): number {
+        return this._material.microSurface ?? 1;
+    }
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    public set glossiness(value: number) {
+        this._material.microSurface = value;
     }
 
     // ========================================
@@ -762,6 +813,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._material.subSurface.diffusionDistance;
     }
 
+    public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
+
     /**
      * Sets the transmission scattering anisotropy.
      * @param value The anisotropy intensity value (-1 to 1)
@@ -826,6 +879,23 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // ========================================
 
     /**
+     * Configures volume properties for PBR material. Nothing to do for PBRMaterial.
+     */
+    public configureVolume(): void {}
+
+    /**
+     * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    public set geometryThinWalled(value: boolean) {}
+
+    /**
+     * Gets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    public get geometryThinWalled(): boolean {
+        return this._material.subSurface.maximumThickness === 0;
+    }
+
+    /**
      * Sets the thickness texture (mapped to PBR subSurface.thicknessTexture).
      * Automatically enables refraction.
      * @param value The thickness texture or null
@@ -870,21 +940,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the extinction coefficient of the volume.
-     * @param value The extinction coefficient as a Vector3
-     */
-    public set extinctionCoefficient(value: Vector3) {
-        this._extinctionCoefficient = value;
-    }
-
-    /**
-     * Gets the extinction coefficient of the volume.
-     */
-    public get extinctionCoefficient(): Vector3 {
-        return this._extinctionCoefficient;
-    }
-
-    /**
      * Sets the subsurface weight
      */
     public set subsurfaceWeight(value: number) {
@@ -916,8 +971,9 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // We could set the base color to this value, wherever subsurfaceWeight > 0
         // When scatterAnisotropy is 1, I believe we can approximate the subsurface effect quite well with
         // Translucency and a diffusion distance
-
-        const absorptionCoeff = this.extinctionCoefficient;
+        const extinctionCoefficient = new Vector3(-Math.log(this.transmissionColor.r), -Math.log(this.transmissionColor.g), -Math.log(this.transmissionColor.b));
+        extinctionCoefficient.scaleInPlace(1 / Math.max(this.transmissionDepth, 0.001));
+        const absorptionCoeff = extinctionCoefficient;
         const maxChannel = Math.max(absorptionCoeff.x, Math.max(absorptionCoeff.y, absorptionCoeff.z));
         const attenuationDistance = maxChannel > 0 ? 1.0 / maxChannel : 1;
         this._material.subSurface.diffusionDistance = new Color3(
@@ -938,7 +994,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     /**
      * Sets the surface tint of the material (when using subsurface scattering)
      */
-    public set subsurfaceConstantTint(value: Color3) {
+    public set diffuseTransmissionTint(value: Color3) {
         this._material.subSurface.tintColor = value;
     }
 
@@ -946,7 +1002,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Gets the subsurface constant tint (when using subsurface scattering)
      * @returns The subsurface constant tint as a Color3
      */
-    public get subsurfaceConstantTint(): Color3 {
+    public get diffuseTransmissionTint(): Color3 {
         return this._material.subSurface.tintColor;
     }
 
@@ -954,7 +1010,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Sets the subsurface constant tint texture (when using subsurface scattering)
      * @param value The subsurface constant tint texture or null
      */
-    public set subsurfaceConstantTintTexture(value: Nullable<BaseTexture>) {
+    public set diffuseTransmissionTintTexture(value: Nullable<BaseTexture>) {
         this._material.subSurface.translucencyColorTexture = value;
     }
 
@@ -1001,6 +1057,14 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set subsurfaceScatterAnisotropy(value: number) {
         // No equivalent in PBRMaterial
+    }
+
+    /**
+     * Does this material have a translucent surface (i.e. either transmission or subsurface)?
+     * @returns True if the material is translucent, false otherwise
+     */
+    public isTranslucent(): boolean {
+        return this.transmissionWeight > 0 || this.subsurfaceWeight > 0;
     }
 
     // ========================================

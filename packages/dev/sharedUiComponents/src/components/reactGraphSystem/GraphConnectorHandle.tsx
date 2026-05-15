@@ -1,7 +1,5 @@
-import type { FC, PropsWithChildren } from "react";
-import { useCallback } from "react";
-import type { ConnectableElement, DropTargetMonitor } from "react-dnd";
-import { useDrag, useDrop } from "react-dnd";
+import { type FC, type PropsWithChildren, useCallback } from "react";
+import { type ConnectableElement, type DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 import { ClassNames } from "../classNames";
 import * as style from "./GraphConnectorHandle.module.scss";
 import { useGraphContext } from "./useGraphContext";

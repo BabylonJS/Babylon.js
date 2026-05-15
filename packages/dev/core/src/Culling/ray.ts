@@ -1,12 +1,14 @@
-import type { Nullable } from "../types";
-import type { Matrix } from "../Maths/math.vector";
-import type { PickingInfo } from "../Collisions/pickingInfo";
+import { type Nullable } from "../types";
+import { type Matrix } from "../Maths/math.vector";
+import { type PickingInfo } from "../Collisions/pickingInfo";
 
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 
-import type { MeshPredicate, TrianglePickingPredicate, Ray } from "./ray.core";
 import {
+    type MeshPredicate,
+    type TrianglePickingPredicate,
+    type Ray,
     AddRayExtensions,
     CreatePickingRayInCameraSpace,
     CreatePickingRayInCameraSpaceToRef,

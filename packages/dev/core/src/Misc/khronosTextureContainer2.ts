@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import { Tools } from "./tools";
-import type { Nullable } from "../types";
-import type { ICompressedFormatCapabilities, IDecodedData, IKTX2DecoderOptions } from "core/Materials/Textures/ktx2decoderTypes";
-import { EngineFormat, TranscodeTarget } from "core/Materials/Textures/ktx2decoderTypes";
-import type { AllowedKeys } from "./khronosTextureContainer2Worker";
-import { applyConfig, initializeWebWorker, workerFunction } from "./khronosTextureContainer2Worker";
+import { type Nullable } from "../types";
+import { type ICompressedFormatCapabilities, type IDecodedData, type IKTX2DecoderOptions, EngineFormat, TranscodeTarget } from "core/Materials/Textures/ktx2decoderTypes";
+import { type AllowedKeys, applyConfig, initializeWebWorker, workerFunction } from "./khronosTextureContainer2Worker";
 
 declare let KTX2DECODER: any;
 

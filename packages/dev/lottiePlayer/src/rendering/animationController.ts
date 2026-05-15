@@ -2,16 +2,15 @@ import "core/Engines/Extensions/engine.alpha";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
 
-import type { RawLottieAnimation } from "../parsing/rawTypes";
-import type { AnimationInfo } from "../parsing/parsedTypes";
-import type { Node } from "../nodes/node";
-import type { AnimationConfiguration } from "../animationConfiguration";
+import { type RawLottieAnimation } from "../parsing/rawTypes";
+import { type AnimationInfo } from "../parsing/parsedTypes";
+import { type Node } from "../nodes/node";
+import { type AnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
 
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";
 import { RenderingManager } from "./renderingManager";
 import { ThinMatrix } from "../maths/matrix";
-import { UpdateConfiguration } from "../animationConfiguration";
 import { Parser } from "../parsing/parser";
 import { SpritePacker } from "../parsing/spritePacker";
 
@@ -48,11 +47,13 @@ export class AnimationController {
     private _lastFrameTime: number;
     private _deltaTime: number;
     private _loop: boolean;
+    private _hasRendered: boolean;
 
     private _accumulatedTime: number;
     private _framesToAdvance: number;
 
     private readonly _renderingManager: RenderingManager;
+    private readonly _onFirstRender?: () => void;
 
     /**
      * Gets the canvas used for rendering the animation.
@@ -87,6 +88,7 @@ export class AnimationController {
      * @param variables Map of variables to replace in the animation file.
      * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
      * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
+     * @param onFirstRender Optional callback invoked after the first frame renders.
      */
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -95,7 +97,8 @@ export class AnimationController {
         atlasScale: number,
         variables: Map<string, string>,
         configuration: Partial<AnimationConfiguration>,
-        mainThreadDevicePixelRatio?: number
+        mainThreadDevicePixelRatio?: number,
+        onFirstRender?: () => void
     ) {
         this._isReady = false;
         this._canvas = canvas;
@@ -111,6 +114,8 @@ export class AnimationController {
         this._framesToAdvance = 0;
         this._frameDuration = 1000 / 30; // Default to 30 FPS
         this._firstRun = true;
+        this._hasRendered = false;
+        this._onFirstRender = onFirstRender;
 
         const supportDeviceLost = configuration.supportDeviceLost ?? true;
         this._engine = new ThinEngine(
@@ -145,7 +150,7 @@ export class AnimationController {
         this._engine.setAlphaMode(ALPHA_PREMULTIPLIED);
 
         this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._atlasScale, this._variables, this._configuration);
-        this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
+        this._renderingManager = new RenderingManager(this._engine, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
         this._worldMatrix = new ThinMatrix();
@@ -155,6 +160,10 @@ export class AnimationController {
 
         // Parse the animation
         const parser = new Parser(this._spritePacker, animationData, this._configuration, this._renderingManager);
+
+        if (this._configuration.debug) {
+            parser.debug();
+        }
 
         this._animation = parser.animationInfo;
         this._frameDuration = 1000 / this._animation.frameRate;
@@ -224,7 +233,9 @@ export class AnimationController {
 
         this._engine.dispose();
         this._renderingManager.dispose();
-        this._spritePacker.texture.dispose();
+        for (const texture of this._spritePacker.textures) {
+            texture.dispose();
+        }
     }
 
     /**
@@ -337,15 +348,19 @@ export class AnimationController {
         }
 
         let stoppingAfterThisFrame = false;
-        if (this._currentFrame > this._animation.endFrame) {
-            if (this._loop) {
+        const effectiveEndFrame = this._configuration.stopAtFrame !== undefined ? Math.min(this._configuration.stopAtFrame, this._animation.endFrame) : this._animation.endFrame;
+        // Lottie out-point (op) is exclusive — the last visible frame is op - 1
+        const lastVisibleFrame = this._configuration.stopAtFrame !== undefined ? effectiveEndFrame : effectiveEndFrame - 1;
+
+        if (this._currentFrame > lastVisibleFrame) {
+            if (this._loop && this._configuration.stopAtFrame === undefined) {
                 this._currentFrame = (this._currentFrame % (this._animation.endFrame - this._animation.startFrame)) + this._animation.startFrame;
                 for (let i = 0; i < this._animation.nodes.length; i++) {
                     this._animation.nodes[i].reset();
                 }
             } else {
-                // When not looping, clamp to the last frame of the animation
-                this._currentFrame = this._animation.endFrame;
+                // When not looping, clamp to the last visible frame
+                this._currentFrame = lastVisibleFrame;
                 stoppingAfterThisFrame = true;
             }
         }
@@ -357,8 +372,17 @@ export class AnimationController {
         // Render all layers of the animation
         this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
 
+        if (!this._hasRendered) {
+            this._hasRendered = true;
+            this._onFirstRender?.();
+        }
+
         if (stoppingAfterThisFrame) {
-            this._isPlaying = false;
+            if (this._configuration.stopAtFrame === undefined) {
+                this._isPlaying = false;
+            }
+            // When stopAtFrame is set, the render loop stays alive to prevent
+            // preserveDrawingBuffer:false from clearing the canvas.
         }
     }
 }

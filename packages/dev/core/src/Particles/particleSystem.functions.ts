@@ -1,9 +1,13 @@
 import { Vector3 } from "core/Maths/math.vector";
+import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
+import { type Nullable } from "../types";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Creates a Point Emitter for the particle system (emits directly from the emitter position)
@@ -92,4 +96,22 @@ export function CreateConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticle
 
 export function CreateDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
     return new ConeDirectedParticleEmitter(radius, angle, direction1, direction2);
+}
+
+/**
+ * Creates a Box Emitter for the particle system.
+ * Direction and box bounds are configured on the returned emitter instance.
+ * @returns the emitter
+ */
+export function CreateBoxEmitter(): BoxParticleEmitter {
+    return new BoxParticleEmitter();
+}
+
+/**
+ * Creates a Mesh Emitter for the particle system (emits from the surface of a mesh)
+ * @param mesh The mesh to use as the emitter source
+ * @returns the emitter
+ */
+export function CreateMeshEmitter(mesh: Nullable<AbstractMesh> = null): MeshParticleEmitter {
+    return new MeshParticleEmitter(mesh);
 }

@@ -1,6 +1,6 @@
-import type { GraphFrame } from "../graphFrame";
+import { type GraphFrame } from "../graphFrame";
 
-import type { FrameNodePort } from "../frameNodePort";
+import { type FrameNodePort } from "../frameNodePort";
 
 export type FramePortData = {
     frame: GraphFrame;

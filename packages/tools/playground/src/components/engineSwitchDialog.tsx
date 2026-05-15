@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GlobalState, IEngineSwitchDialogRequest } from "../globalState";
+import { type GlobalState, type IEngineSwitchDialogRequest } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import "../scss/dialogs.scss";
 

@@ -1,57 +1,55 @@
 import { serialize } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import type { IAnimatable } from "../Animations/animatable.interface";
-import type { SmartArray } from "../Misc/smartArray";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Immutable, Nullable } from "../types";
-import type { Matrix } from "../Maths/math.vector";
+import { type IAnimatable } from "../Animations/animatable.interface";
+import { type SmartArray } from "../Misc/smartArray";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Immutable, type Nullable } from "../types";
+import { type Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
-import type { Effect } from "./effect";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { MaterialDefines } from "./materialDefines";
+import { type Effect } from "./effect";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { IInspectable } from "../Misc/iInspectable";
+import { type IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
-import type { ShadowDepthWrapper } from "./shadowDepthWrapper";
-import type { IMaterialContext } from "../Engines/IMaterialContext";
+import { type ShadowDepthWrapper } from "./shadowDepthWrapper";
+import { type IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
-import { ScenePerformancePriority } from "../scene";
-import type { Scene } from "../scene";
-import type {
-    MaterialPluginDisposed,
-    MaterialPluginIsReadyForSubMesh,
-    MaterialPluginGetDefineNames,
-    MaterialPluginBindForSubMesh,
-    MaterialPluginGetActiveTextures,
-    MaterialPluginHasTexture,
-    MaterialPluginGetAnimatables,
-    MaterialPluginPrepareDefines,
-    MaterialPluginPrepareEffect,
-    MaterialPluginPrepareUniformBuffer,
-    MaterialPluginCreated,
-    MaterialPluginFillRenderTargetTextures,
-    MaterialPluginHasRenderTargetTextures,
-    MaterialPluginHardBindForSubMesh,
+import { ScenePerformancePriority, type Scene } from "../scene";
+import {
+    type MaterialPluginDisposed,
+    type MaterialPluginIsReadyForSubMesh,
+    type MaterialPluginGetDefineNames,
+    type MaterialPluginBindForSubMesh,
+    type MaterialPluginGetActiveTextures,
+    type MaterialPluginHasTexture,
+    type MaterialPluginGetAnimatables,
+    type MaterialPluginPrepareDefines,
+    type MaterialPluginPrepareEffect,
+    type MaterialPluginPrepareUniformBuffer,
+    type MaterialPluginCreated,
+    type MaterialPluginFillRenderTargetTextures,
+    type MaterialPluginHasRenderTargetTextures,
+    type MaterialPluginHardBindForSubMesh,
+    MaterialPluginEvent,
 } from "./materialPluginEvent";
-import { MaterialPluginEvent } from "./materialPluginEvent";
-import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
+import { type ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { type IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
-import type { PrePassRenderer } from "../Rendering/prePassRenderer";
-import type { Mesh } from "../Meshes/mesh";
-import type { Animation } from "../Animations/animation";
-import type { InstancedMesh } from "../Meshes/instancedMesh";
+import { type PrePassRenderer } from "../Rendering/prePassRenderer";
+import { type Mesh } from "../Meshes/mesh";
+import { type Animation } from "../Animations/animation";
+import { type InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { IsWrapper } from "./drawWrapper.functions";
 
 declare let BABYLON: any;
@@ -418,6 +416,45 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public get backFaceCulling(): boolean {
         return this._backFaceCulling;
     }
+
+    @serialize("textureRepetitionMode")
+    protected _textureRepetitionMode = Constants.TEXTURE_REPETITION_NONE;
+
+    /**
+     * Sets the texture repetition breaking mode.
+     * Use one of the Constants.TEXTURE_REPETITION_* values to break visible texture tiling patterns.
+     * Ordered by cost: NONE (1 fetch), NOISE_BLEND (3), HEX_TILING (3), TILE_RANDOMIZATION (4), VORONOI_BOMBING (9).
+     * Not supported on WebGL1 — the mode will be forced to NONE.
+     * @see https://iquilezles.org/articles/texturerepetition/
+     * @see https://jcgt.org/published/0011/03/05/
+     */
+    public set textureRepetitionMode(value: number) {
+        const clamped = Math.max(Constants.TEXTURE_REPETITION_NONE, Math.min(value | 0, Constants.TEXTURE_REPETITION_VORONOI_BOMBING));
+        if (this._textureRepetitionMode === clamped) {
+            return;
+        }
+        this._textureRepetitionMode = clamped;
+        this.markAsDirty(Material.TextureDirtyFlag);
+    }
+
+    /**
+     * Gets the texture repetition breaking mode.
+     * @see https://iquilezles.org/articles/texturerepetition/
+     */
+    public get textureRepetitionMode(): number {
+        return this._textureRepetitionMode;
+    }
+
+    /**
+     * Parameters for the hex tiling texture repetition mode (TEXTURE_REPETITION_HEX_TILING).
+     * x = rotation strength (0..1, default 1.0) — how much each hex tile is rotated.
+     * y = fall-off contrast (0..1, default 0.6) — how much luminance affects blending weight at tile borders.
+     * z = exponent (1..20, default 7.0) — controls the sharpness of weight falloff between tiles.
+     * w = contrast (0..1, default 0.5) — boost blending contrast via Gain3 (0.5 = neutral, &gt;0.5 = higher contrast).
+     * @see https://jcgt.org/published/0011/03/05/
+     */
+    @serialize("textureRepetitionHexTilingParams")
+    public textureRepetitionHexTilingParams = [1.0, 0.6, 7.0, 0.5];
 
     /**
      * Specifies if back or front faces should be culled (when culling is enabled)
@@ -1121,7 +1158,22 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * Locks updates for the material
+     * Locks updates for the material.
+     *
+     * Note: while a material is frozen, the scene can still rebind it at least
+     * once per camera render (and again whenever another material was bound in
+     * between). What can be skipped while the frozen material stays cached are
+     * per-mesh updates performed during a rebind.
+     *
+     * This includes per-mesh morph target influences. If the same frozen
+     * material is shared across several meshes that each have different
+     * per-mesh morph influences, only the mesh that triggers the rebind updates
+     * those values. Other meshes rendered afterward with the same cached frozen
+     * material may reuse stale influences and render with the wrong values.
+     *
+     * For that scenario either keep the material unfrozen, clone the material
+     * per mesh and freeze each clone, or `unfreeze()` before changing
+     * influences and `freeze()` again afterwards.
      */
     public freeze(): void {
         this.markDirty();
@@ -1439,6 +1491,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         if (!this._useUBO) {
             effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
             effect.setMatrix("projection", this.getScene().getProjectionMatrix());
+            effect.setMatrix("inverseProjection", this.getScene().getInverseProjectionMatrix());
         } else {
             this._needToBindSceneUbo = true;
         }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
@@ -11,9 +11,8 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { Constants } from "core/Engines/constants";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";

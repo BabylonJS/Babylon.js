@@ -1,16 +1,13 @@
-import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
-import { GetFlowGraphAssetWithType } from "core/FlowGraph/flowGraphAssetsContext";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type AssetType, type FlowGraphAssetType, GetFlowGraphAssetWithType } from "core/FlowGraph/flowGraphAssetsContext";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import type { FlowGraphNumber } from "core/FlowGraph/utils";
-import { getNumericValue } from "core/FlowGraph/utils";
+import { type FlowGraphNumber, getNumericValue } from "core/FlowGraph/utils";
 
 /**
  * Configuration for the get asset block.

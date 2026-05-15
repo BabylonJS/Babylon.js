@@ -1,9 +1,8 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type Observer } from "../../Misc/observable";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { Gamepad } from "../../Gamepads/gamepad";
 /**
  * Manage the gamepad inputs to control an arc rotate camera.
@@ -99,14 +98,16 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
                 if (rsValues.x != 0) {
                     const normalizedRX = rsValues.x / this.gamepadRotationSensibility;
                     if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
-                        camera.inertialAlphaOffset += normalizedRX;
+                        camera.movement.activeInput = true;
+                        camera.movement.rotationAccumulatedPixels.x += normalizedRX;
                     }
                 }
 
                 if (rsValues.y != 0) {
                     const normalizedRY = (rsValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
                     if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
-                        camera.inertialBetaOffset += normalizedRY;
+                        camera.movement.activeInput = true;
+                        camera.movement.rotationAccumulatedPixels.y += normalizedRY;
                     }
                 }
             }
@@ -115,7 +116,8 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
             if (lsValues && lsValues.y != 0) {
                 const normalizedLY = lsValues.y / this.gamepadMoveSensibility;
                 if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
-                    this.camera.inertialRadiusOffset -= normalizedLY;
+                    camera.movement.activeInput = true;
+                    camera.movement.zoomAccumulatedPixels -= normalizedLY;
                 }
             }
         }

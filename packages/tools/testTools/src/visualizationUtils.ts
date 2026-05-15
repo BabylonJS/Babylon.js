@@ -60,7 +60,10 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
     };
 };
 
-export const evaluatePrepareScene = async (
+export const evaluatePrepareScene = async ({
+    sceneMetadata,
+    globalConfig,
+}: {
     sceneMetadata: {
         sceneFolder?: string;
         sceneFilename?: string;
@@ -71,9 +74,9 @@ export const evaluatePrepareScene = async (
         functionToCall?: string;
         replace?: string;
         playgroundId?: string;
-    },
-    globalConfig: { root: string; snippetUrl: any; pgRoot: string }
-) => {
+    };
+    globalConfig: { root: string; snippetUrl: any; pgRoot: string };
+}) => {
     window.seed = 1;
     window.Math.random = function () {
         const x = Math.sin(window.seed++) * 10000;

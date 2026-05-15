@@ -1,15 +1,15 @@
-import type { FresnelParameters } from "../Materials/fresnelParameters";
-import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import { type FresnelParameters } from "../Materials/fresnelParameters";
+import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { _WarnImport } from "./devTools";
-import type { ColorCurves } from "../Materials/colorCurves";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type ColorCurves } from "../Materials/colorCurves";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { Tags } from "./tags";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
 
 /** @internal */

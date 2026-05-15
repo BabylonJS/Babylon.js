@@ -1,8 +1,9 @@
-import type { IMaterial, IKHRMaterialsIor } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsIor } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_ior";
 
@@ -32,12 +33,17 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    private _isExtensionEnabled(mat: PBRMaterial): boolean {
+    private _isExtensionEnabled(mat: PBRMaterial | OpenPBRMaterial): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat.unlit) {
             return false;
         }
-        return mat.indexOfRefraction != undefined && mat.indexOfRefraction != 1.5; // 1.5 is normative default value.
+        if (mat instanceof OpenPBRMaterial) {
+            return mat.specularIor != 1.5; // 1.5 is normative default value.
+        } else if (mat instanceof PBRMaterial) {
+            return mat.indexOfRefraction != undefined && mat.indexOfRefraction != 1.5; // 1.5 is normative default value.
+        }
+        return false;
     }
 
     /**
@@ -55,6 +61,13 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
 
                 const iorInfo: IKHRMaterialsIor = {
                     ior: babylonMaterial.indexOfRefraction,
+                };
+                node.extensions = node.extensions || {};
+                node.extensions[NAME] = iorInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
+                this._wasUsed = true;
+                const iorInfo: IKHRMaterialsIor = {
+                    ior: babylonMaterial.specularIor,
                 };
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = iorInfo;

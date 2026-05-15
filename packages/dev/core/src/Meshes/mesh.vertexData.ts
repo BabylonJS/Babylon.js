@@ -1,21 +1,18 @@
 /* eslint-disable jsdoc/require-returns-check */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
-import type { Matrix, Vector2 } from "../Maths/math.vector";
-import { Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
+import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
+import { type Matrix, type Vector2, Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _WarnImport } from "../Misc/devTools";
-import type { Color3 } from "../Maths/math.color";
-import { Color4 } from "../Maths/math.color";
+import { type Color3, Color4 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
 import { nativeOverride } from "../Misc/decorators";
-import type { Coroutine } from "../Misc/coroutine";
-import { makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
-import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { type Coroutine, makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
+import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
-import type { Geometry } from "../Meshes/geometry";
-import type { Mesh } from "../Meshes/mesh";
+import { type Geometry } from "../Meshes/geometry";
+import { type Mesh } from "../Meshes/mesh";
 import { SubMesh } from "./subMesh";
 
 /**
@@ -592,7 +589,7 @@ export class VertexData implements IVertexDataLike {
         return this;
     }
 
-    @nativeOverride.filter((...[coordinates]: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(coordinates))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(args[0]))
     private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = coordinates.length) {
         const coordinate = TmpVectors.Vector3[0];
         const transformedCoordinate = TmpVectors.Vector3[1];
@@ -605,7 +602,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(normals))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(args[0]))
     private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = normals.length) {
         const normal = TmpVectors.Vector3[0];
         const transformedNormal = TmpVectors.Vector3[1];
@@ -618,7 +615,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(normals))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(args[0]))
     private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = normals.length) {
         const normal = TmpVectors.Vector4[0];
         const transformedNormal = TmpVectors.Vector4[1];
@@ -632,7 +629,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[indices]: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(indices))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(args[0]))
     private static _FlipFaces(indices: IndicesArray, offset = 0, length = indices.length) {
         for (let index = offset; index < offset + length; index += 3) {
             const tmp = indices[index + 1];

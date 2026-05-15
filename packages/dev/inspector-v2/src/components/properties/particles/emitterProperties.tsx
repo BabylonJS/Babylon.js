@@ -1,9 +1,7 @@
-import type { FunctionComponent } from "react";
-import type { AbstractMesh } from "core/index";
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useEffect, useMemo, useState } from "react";
+import { type AbstractMesh } from "core/index";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { Vector3 } from "core/Maths/math.vector";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -102,6 +100,9 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
     useProperty(emitterVector as Vector3 | null | undefined, "_z");
 
     const particleEmitterType = useProperty(system, "particleEmitterType");
+
+    const meshEmitter = particleEmitterType instanceof MeshParticleEmitter ? particleEmitterType : undefined;
+    const useMeshNormalsForDirection = useProperty(meshEmitter, "useMeshNormalsForDirection");
 
     // Use a simple string key for the dropdown, but store an emitter-type instance in the engine.
     type EmitterTypeKey = "box" | "sphere" | "cone" | "cylinder" | "hemispheric" | "point" | "mesh";
@@ -279,6 +280,13 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                                 />
                             ) : (
                                 <Property component={TextPropertyLine} propertyPath="source" label="Source" value="No meshes in scene." />
+                            )}
+                            <BoundProperty component={SwitchPropertyLine} label="Use normals for direction" target={particleEmitterType} propertyKey="useMeshNormalsForDirection" />
+                            {!useMeshNormalsForDirection && (
+                                <>
+                                    <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
+                                    <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
+                                </>
                             )}
                         </>
                     )}

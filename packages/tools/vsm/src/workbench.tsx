@@ -1,7 +1,6 @@
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import { useState, useEffect } from "react";
-import type { FC } from "react";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { useState, useEffect, type FC } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
 import { SceneContext } from "./context/SceneContext";
@@ -9,15 +8,13 @@ import * as style from "./workbench.module.scss";
 import { StateSelectionContext } from "./context/StateSelectionContext";
 import { initialLayout } from "./initialLayout";
 import { StateMachine } from "./stateMachine/StateMachine";
-import type { IStateMachineWrapper } from "./context/StateMachineContext";
-import { StateMachineContext } from "./context/StateMachineContext";
+import { type IStateMachineWrapper, StateMachineContext } from "./context/StateMachineContext";
 import { CommandButtonComponent } from "shared-ui-components/components/bars/CommandButtonComponent";
-import type { State } from "./stateMachine/State";
+import { type State } from "./stateMachine/State";
 
 import playIcon from "./components/imgs/playIcon.svg";
 import pauseIcon from "./components/imgs/pauseIcon.svg";
-import type { IActionSelectionContextWrapper } from "./context/ActionSelectionContext";
-import { ActionSelectionContext } from "./context/ActionSelectionContext";
+import { type IActionSelectionContextWrapper, ActionSelectionContext } from "./context/ActionSelectionContext";
 
 export type WorkbenchProps = {};
 

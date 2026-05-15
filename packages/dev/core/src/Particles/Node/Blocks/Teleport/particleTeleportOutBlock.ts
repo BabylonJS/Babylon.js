@@ -1,10 +1,10 @@
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { ParticleTeleportInBlock } from "./particleTeleportInBlock";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type ParticleTeleportInBlock } from "./particleTeleportInBlock";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 
 /**
  * Defines a block used to receive a value from a teleport entry point

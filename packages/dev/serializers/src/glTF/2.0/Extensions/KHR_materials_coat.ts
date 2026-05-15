@@ -1,14 +1,14 @@
-import type { IMaterial, IKHRMaterialsCoat } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsCoat } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { Texture } from "core/Materials/Textures/texture";
-import type { Nullable } from "core/types";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type Nullable } from "core/types";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 
 const NAME = "KHR_materials_coat";
 

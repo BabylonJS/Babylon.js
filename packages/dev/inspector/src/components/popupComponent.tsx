@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger } from "core/Misc/logger";
 import { CreatePopup } from "shared-ui-components/popupHelper";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 
 export interface IPopupComponentProps {
     id: string;

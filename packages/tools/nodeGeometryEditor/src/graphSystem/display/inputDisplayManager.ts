@@ -1,14 +1,14 @@
-import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { type Vector2, type Vector3, type Vector4 } from "core/Maths/math.vector";
 import { BlockTools } from "../../blockTools";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./inputDisplayManager.module.scss";
-import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { type GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
-import type { Nullable } from "core/types";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type Nullable } from "core/types";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
 const Predicate = (b: NodeGeometryBlock) => !!(b as any).getExecutionIndex;
 

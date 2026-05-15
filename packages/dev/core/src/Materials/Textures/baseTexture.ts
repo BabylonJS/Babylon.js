@@ -1,23 +1,21 @@
 import { serialize, serializeAsTexture } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import { Matrix } from "../../Maths/math.vector";
-import type { Vector3 } from "../../Maths/math.vector";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { Matrix, type Vector3 } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
-import type { IAnimatable } from "../../Animations/animatable.interface";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
 import "../../Misc/fileTools";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { ThinTexture } from "./thinTexture";
 
-import type { Animation } from "../../Animations/animation";
+import { type Animation } from "../../Animations/animation";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Base class of all the textures in babylon.
@@ -719,6 +717,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
      * This will returns an RGBA array buffer containing either in values (0-255) or
      * float values (0-1) depending of the underlying buffer type.
+     * Note that you can use {@link GetTextureDataAsync} instead, which will also support reading from a compressed texture (by rendering it to an intermediate RGBA texture and retrieving the bytes from it).
      * @param faceIndex defines the face of the texture to read (in case of cube texture)
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @param buffer defines a user defined buffer to fill with data (can be null)

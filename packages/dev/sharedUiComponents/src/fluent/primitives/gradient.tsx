@@ -1,6 +1,5 @@
-import type { FunctionComponent } from "react";
-import type { PrimitiveProps } from "./primitive";
-import { useEffect, useState } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
+import { type PrimitiveProps } from "./primitive";
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 import { SyncedSliderInput } from "./syncedSlider";

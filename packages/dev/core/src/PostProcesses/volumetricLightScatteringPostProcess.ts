@@ -1,20 +1,20 @@
 import { serializeAsVector3, serialize, serializeAsMeshReference } from "../Misc/decorators";
-import type { SmartArray } from "../Misc/smartArray";
+import { type SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
 import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { Camera } from "../Cameras/camera";
-import type { Effect, IEffectCreationOptions } from "../Materials/effect";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type Camera } from "../Cameras/camera";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 
@@ -25,10 +25,10 @@ import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from "../Maths/math.color";
 import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 /**
@@ -299,7 +299,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             const uniforms = [
                 "world",
                 "mBones",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "viewProjection",
                 "diffuseMatrix",
                 "morphTargetInfluences",

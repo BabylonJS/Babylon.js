@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState, type IDiagnosticInfo } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
 import { debounce } from "../debounce";
@@ -17,14 +17,12 @@ import { TemplatesService } from "./completion/templatesService";
 import { CompletionService } from "./completion/completionService";
 import { CodeAnalysisService } from "./analysis/codeAnalysisService";
 import { DefinitionService } from "./navigation/definitionService";
-import type { V2RunnerOptions } from "./run/runner";
-import type { SnippetData } from "../snippet";
-import { ManifestVersion, type V2Manifest } from "../snippet";
-import { CreateV2Runner } from "./run/runner";
+import { type V2RunnerOptions, CreateV2Runner } from "./run/runner";
+import { type SnippetData, ManifestVersion, type V2Manifest } from "../snippet";
 import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
-import type { RequestLocalResolve } from "./typings/types";
+import { type RequestLocalResolve } from "./typings/types";
 import { WriteLastLocal, ReadLastLocal } from "../localSession";
 
 interface IRunConfig {
@@ -190,6 +188,29 @@ export class MonacoManager {
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
+            // Create models for any new files that don't have models yet,
+            // and sync content for existing models that have changed externally.
+            for (const [path, code] of Object.entries(this.globalState.files)) {
+                if (!this._files.has(path)) {
+                    this._files.addFile(path, code, (p, c) => {
+                        this.globalState.files[p] = c;
+                        this._files.setDirty(true);
+                    });
+                } else {
+                    const model = this._files.getModel(path);
+                    if (model && model.getValue() !== code) {
+                        model.setValue(code);
+                    }
+                }
+            }
+
+            // Remove models for files that no longer exist.
+            for (const path of this._files.paths()) {
+                if (!(path in this.globalState.files)) {
+                    this._files.removeFile(path);
+                }
+            }
+
             // Prevent worker restart during hydration to avoid race conditions
             if (!this._hydrating) {
                 this._tsPipeline.forceSyncModels();
@@ -208,6 +229,24 @@ export class MonacoManager {
 
         // Initialize getRunnable as a bound method
         this.globalState.getRunnable = this.getRunnableAsync.bind(this);
+
+        // Expose diagnostics from Monaco editor markers.
+        this.globalState.getDiagnostics = () => {
+            const result: IDiagnosticInfo[] = [];
+            const markers = monaco.editor.getModelMarkers({});
+            for (const marker of markers) {
+                const uri = marker.resource?.path ?? "";
+                const fileName = uri.startsWith("/pg/") ? uri.slice(4) : uri;
+                result.push({
+                    file: fileName,
+                    message: marker.message,
+                    severity: marker.severity === monaco.MarkerSeverity.Error ? "error" : marker.severity === monaco.MarkerSeverity.Warning ? "warning" : "info",
+                    line: marker.startLineNumber,
+                    column: marker.startColumn,
+                });
+            }
+            return result;
+        };
     }
 
     private _initializeFileState(entry: string) {
@@ -583,12 +622,18 @@ export class MonacoManager {
         }
 
         if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
+            const cdnPort = (window as any).__CDN_PORT__ || 1337;
             for (let i = 0; i < declarations.length; i++) {
-                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", `//localhost:${cdnPort}/`);
             }
         }
 
-        if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || Utilities.ReadBoolFromStore("babylon-toolkit-used", false)) {
+        const toolkitExplicit = localStorage.getItem("babylon-toolkit");
+        if (
+            location.href.indexOf("BabylonToolkit") !== -1 ||
+            Utilities.ReadBoolFromStore("babylon-toolkit", false) ||
+            (toolkitExplicit !== "false" && Utilities.ReadBoolFromStore("babylon-toolkit-used", false))
+        ) {
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
         }
@@ -966,7 +1011,6 @@ export { Playground };`;
         const files: Array<{ path: string; content: string; lastModified: number }> = [];
         const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
         const walkAsync = async (dir: FileSystemDirectoryHandle, prefix = "") => {
-            // @ts-expect-error: .values() is not in TS lib yet
             for await (const entry of dir.values()) {
                 if (entry.kind === "directory") {
                     if (skipDir.test(entry.name)) {

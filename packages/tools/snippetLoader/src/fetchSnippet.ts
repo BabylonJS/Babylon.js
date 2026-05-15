@@ -1,4 +1,4 @@
-import type { ISnippetServerResponse } from "./types";
+import { type ISnippetServerResponse } from "./types";
 
 /** Default snippet server endpoint. */
 // eslint-disable-next-line @typescript-eslint/naming-convention

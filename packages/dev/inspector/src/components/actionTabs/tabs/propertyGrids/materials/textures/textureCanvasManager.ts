@@ -5,36 +5,35 @@ import { Scene } from "core/scene";
 import { Vector3, Vector2 } from "core/Maths/math.vector";
 import { Color4, Color3 } from "core/Maths/math.color";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { Camera } from "core/Cameras/camera";
 
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { HtmlElementTexture } from "core/Materials/Textures/htmlElementTexture";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import type { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
-import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { type RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
+import { type CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
-import type { ISize } from "core/Maths/math.size";
+import { type ISize } from "core/Maths/math.size";
 import { Tools } from "core/Misc/tools";
 
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
 import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 
 import { TextureHelper } from "../../../../../../textureHelper";
 
-import type { ITool } from "./toolBar";
-import type { IChannel } from "./channelsBar";
-import type { IMetadata } from "./textureEditorComponent";
+import { type ITool } from "./toolBar";
+import { type IChannel } from "./channelsBar";
+import { type IMetadata } from "./textureEditorComponent";
 
 import { canvasShader } from "./canvasShader";
 
-import type { IWheelEvent } from "core/Events/deviceInputEvents";
+import { type IWheelEvent } from "core/Events/deviceInputEvents";
 
 export interface IPixelData {
     x?: number;

@@ -1,8 +1,8 @@
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import type { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { Constants } from "../../constants";
-import type { RenderTargetWrapper } from "../../renderTargetWrapper";
+import { type RenderTargetWrapper } from "../../renderTargetWrapper";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

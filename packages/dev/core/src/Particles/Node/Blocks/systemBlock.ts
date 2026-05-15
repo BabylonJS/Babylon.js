@@ -1,8 +1,8 @@
-import type { Nullable } from "core/types";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";

@@ -7,9 +7,14 @@ export * from "../Execution/flowGraphSetPropertyBlock";
 export * from "./flowGraphConstantBlock";
 export * from "./flowGraphGetAssetBlock";
 export * from "./flowGraphDataSwitchBlock";
+export * from "./flowGraphIsKeyPressedBlock";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Math/index";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Transformers/index";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Utils/index";
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+export * from "./Physics/index";
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+export * from "./Audio/index";

@@ -1,16 +1,15 @@
 import { MeshBuilder } from "core/Meshes/meshBuilder";
-import type { Scene } from "core/scene";
-import { useState, useRef, type ChangeEvent } from "react";
-import type { FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { useState, useRef, type ChangeEvent, type FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { FilesInput } from "core/Misc/filesInput";
 import { SettingsPopover } from "./settingsPopover";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
-import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { QuickCreateSection, QuickCreateRow, QuickCreateItem } from "./quickCreateLayout";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";
 

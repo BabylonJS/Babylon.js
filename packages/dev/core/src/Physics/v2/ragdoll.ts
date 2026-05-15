@@ -1,16 +1,16 @@
-import type { Skeleton } from "../../Bones/skeleton";
+import { type Skeleton } from "../../Bones/skeleton";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../../Maths/math.vector";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
-import type { Mesh } from "../../Meshes/mesh";
+import { type Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "../../Maths/math.axis";
 import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IPhysicsEnginePlugin";
-import type { Nullable } from "../../types";
-import type { Bone } from "../../Bones/bone";
+import { type Nullable } from "../../types";
+import { type Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
 import { TransformNode } from "../../Meshes/transformNode";
-import type { Observer } from "../../Misc/observable";
+import { type Observer } from "../../Misc/observable";
 
 /**
  * Ragdoll bone properties

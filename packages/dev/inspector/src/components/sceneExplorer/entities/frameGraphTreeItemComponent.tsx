@@ -1,10 +1,10 @@
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import frameGraphIcon from "./ic_fluent_flow_24_filled.svg";
 
 interface IFrameGraphItemComponenttProps {

@@ -1,19 +1,18 @@
-import type { IPaneComponentProps } from "../paneComponent";
-import { PaneComponent } from "../paneComponent";
+import { type IPaneComponentProps, PaneComponent } from "../paneComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
 import { PhysicsViewer } from "core/Debug/physicsViewer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { MaterialFlags } from "core/Materials/materialFlags";
 
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
 import "core/Physics/v2/physicsEngineComponent";
 import { FontAsset } from "addons/msdfText/fontAsset";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { TextRenderer } from "addons/msdfText/textRenderer";
 import { Matrix } from "core/Maths/math.vector";
 

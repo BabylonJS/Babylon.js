@@ -1,5 +1,5 @@
 import { Constants } from "../../Engines/constants";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 
 /**
  * Class used to store a texture sampler data

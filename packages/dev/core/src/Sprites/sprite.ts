@@ -1,13 +1,13 @@
 import { Vector3 } from "../Maths/math.vector";
-import type { Nullable } from "../types";
-import type { ActionManager } from "../Actions/actionManager";
-import type { ISpriteManager, SpriteManager } from "./spriteManager";
+import { type Nullable } from "../types";
+import { type ActionManager } from "../Actions/actionManager";
+import { type ISpriteManager, type SpriteManager } from "./spriteManager";
 import { Color4 } from "../Maths/math.color";
 import { Observable } from "../Misc/observable";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { ThinSprite } from "./thinSprite";
 
-import type { Animation } from "../Animations/animation";
+import { type Animation } from "../Animations/animation";
 
 /**
  * Class used to represent a sprite

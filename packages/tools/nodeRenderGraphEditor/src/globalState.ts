@@ -1,23 +1,23 @@
-import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import { type NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import { Observable } from "core/Misc/observable";
 import { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { Nullable } from "core/types";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { FilesInput } from "core/Misc/filesInput";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { PreviewType } from "./components/preview/previewType";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { SerializationTools } from "./serializationTools";
-import type { INodeRenderGraphCustomBlockDescription } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import { type INodeRenderGraphCustomBlockDescription } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 export class GlobalState {
     hostElement: HTMLElement;

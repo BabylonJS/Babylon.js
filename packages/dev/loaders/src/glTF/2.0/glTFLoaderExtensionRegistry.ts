@@ -1,5 +1,5 @@
-import type { GLTFLoader } from "./glTFLoader";
-import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
+import { type GLTFLoader } from "./glTFLoader";
+import { type IGLTFLoaderExtension } from "./glTFLoaderExtension";
 
 import { Logger } from "core/Misc/logger";
 

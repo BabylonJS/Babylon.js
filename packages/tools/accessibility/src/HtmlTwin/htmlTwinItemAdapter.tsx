@@ -1,5 +1,4 @@
-import { getAccessibleTexture, isVisible, getDirectChildrenOf } from "./htmlTwinItem";
-import type { AccessibilityEntity, HTMLTwinItem } from "./htmlTwinItem";
+import { getAccessibleTexture, isVisible, getDirectChildrenOf, type AccessibilityEntity, type HTMLTwinItem } from "./htmlTwinItem";
 import { useContext, useEffect, useReducer, useState } from "react";
 import { SceneContext } from "./htmlTwinSceneContext";
 import { HTMLTwinAccessibilityItem } from "./htmlTwinAccessibilityItem";
@@ -7,11 +6,11 @@ import { Container } from "gui/2D/controls/container";
 import { Control } from "gui/2D/controls/control";
 import { Node } from "core/node";
 import { HTMLTwinNodeItem } from "./htmlTwinNodeItem";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { HTMLTwinGUIItem } from "./htmlTwinGUIItem";
-import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
-import type { Observable, Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
+import { type Observable, type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 
 function GetTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
     if (node instanceof Node) {

@@ -1,19 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Material } from "core/Materials/material";
+import { type Atmosphere } from "./atmosphere";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { Nullable } from "core/types";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type Nullable } from "core/types";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
 import "./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
+    public USE_CUSTOM_REFLECTION = false;
     public USE_AERIAL_PERSPECTIVE_LUT: boolean;
     public APPLY_AERIAL_PERSPECTIVE_INTENSITY = false;
     public APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = false;
@@ -68,7 +69,12 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             PluginName,
             PluginPriority,
             {
-                USE_CUSTOM_REFLECTION: _atmosphere.diffuseSkyIrradianceLut !== null,
+                // USE_CUSTOM_REFLECTION is computed dynamically in prepareDefines because it
+                // depends on whether the material's currently-active reflection setup actually
+                // declares `irradianceSampler` (i.e. has USEIRRADIANCEMAP set). Setting it
+                // unconditionally here would inject shader code that references an undeclared
+                // sampler when the material renders against a cube env. See forum 63276.
+                USE_CUSTOM_REFLECTION: false,
                 CUSTOM_FRAGMENT_BEFORE_FOG: _isAerialPerspectiveEnabled,
                 USE_AERIAL_PERSPECTIVE_LUT: _isAerialPerspectiveEnabled && _atmosphere.isAerialPerspectiveLutEnabled,
                 APPLY_AERIAL_PERSPECTIVE_INTENSITY: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveIntensity !== 1.0,
@@ -190,13 +196,21 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
      * @override
      */
     public override prepareDefines(defines: AtmospherePBRMaterialDefines): void {
+        const lastUseCustomReflection = defines.USE_CUSTOM_REFLECTION;
         const lastUseAerialPerspectiveLut = defines.USE_AERIAL_PERSPECTIVE_LUT;
         const lastApplyAerialPerspectiveIntensity = defines.APPLY_AERIAL_PERSPECTIVE_INTENSITY;
         const lastApplyAerialPerspectiveRadianceBias = defines.APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS;
+        // Only override the PBR reflection block when the surrounding shader actually declares
+        // `irradianceSampler` (USEIRRADIANCEMAP). When the material renders against a non-irradiance-map
+        // env (e.g. a cube env using spherical harmonics), the standard PBR reflection block must run
+        // instead, otherwise the injected `sampleReflection(irradianceSampler, ...)` would reference an
+        // undeclared identifier. See forum 63276.
+        defines.USE_CUSTOM_REFLECTION = this._atmosphere.diffuseSkyIrradianceLut !== null && !!defines.USEIRRADIANCEMAP;
         defines.USE_AERIAL_PERSPECTIVE_LUT = this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled;
         defines.APPLY_AERIAL_PERSPECTIVE_INTENSITY = this._isAerialPerspectiveEnabled && this._atmosphere.aerialPerspectiveIntensity !== 1.0;
         defines.APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = this._isAerialPerspectiveEnabled && this._atmosphere.aerialPerspectiveRadianceBias !== 0.0;
         if (
+            lastUseCustomReflection !== defines.USE_CUSTOM_REFLECTION ||
             lastUseAerialPerspectiveLut !== defines.USE_AERIAL_PERSPECTIVE_LUT ||
             lastApplyAerialPerspectiveIntensity !== defines.APPLY_AERIAL_PERSPECTIVE_INTENSITY ||
             lastApplyAerialPerspectiveRadianceBias !== defines.APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS

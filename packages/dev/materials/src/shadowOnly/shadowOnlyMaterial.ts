@@ -1,24 +1,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import type { Matrix } from "core/Maths/math.vector";
+import { type Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IShadowLight } from "core/Lights/shadowLight";
-import type { IEffectCreationOptions } from "core/Materials/effect";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IShadowLight } from "core/Lights/shadowLight";
+import { type IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { SubMesh } from "core/Meshes/subMesh";
-import type { Mesh } from "core/Meshes/mesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type SubMesh } from "core/Meshes/subMesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "./shadowOnly.fragment";
-import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import type { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
+import { type CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
@@ -61,9 +60,16 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
 export class ShadowOnlyMaterial extends PushMaterial {
     private _activeLight: IShadowLight;
     private _needAlphaBlending = true;
+    private _shadersLoaded = false;
 
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    /**
+     * Instantiates a ShadowOnly Material in the given scene
+     * @param name The friendly name of the material
+     * @param scene The scene to add the material to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     */
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
 
     public shadowColor = Color3.Black();
@@ -227,6 +233,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: 1,
+                shaderLanguage: this._shaderLanguage,
             });
 
             subMesh.setEffect(
@@ -242,6 +249,18 @@ export class ShadowOnlyMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 1 },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/shadowOnly.vertex"), import("./wgsl/shadowOnly.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./shadowOnly.vertex"), import("./shadowOnly.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),

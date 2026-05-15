@@ -1,17 +1,17 @@
 import { ThinParticleSystem } from "./thinParticleSystem";
-import type { IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
+import { type IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Vector3 } from "../Maths/math.vector";
-import type { IParticleSystem } from "./IParticleSystem";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type IParticleSystem } from "./IParticleSystem";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Effect } from "../Materials/effect";
-import type { Particle } from "./particle";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
+import { type Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
@@ -22,21 +22,10 @@ import { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEm
 import { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
-import {
-    CreateConeEmitter,
-    CreateCylinderEmitter,
-    CreateDirectedCylinderEmitter,
-    CreateDirectedSphereEmitter,
-    CreateDirectedConeEmitter,
-    CreateHemisphericEmitter,
-    CreatePointEmitter,
-    CreateSphereEmitter,
-} from "./particleSystem.functions";
 import { Attractor } from "./attractor";
-import type { _IExecutionQueueItem } from "./Queue/executionQueue";
-import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
-import type { FlowMap } from "./flowMap";
-import type { NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
+import { type _IExecutionQueueItem, _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
+import { type FlowMap } from "./flowMap";
+import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
 
 /**
  * This represents a particle system in Babylon.
@@ -87,18 +76,6 @@ export class ParticleSystem extends ThinParticleSystem {
      * Specifies if the particle system should be serialized
      */
     public doNotSerialize = false;
-
-    /**
-     * Creates a Point Emitter for the particle system (emits directly from the emitter position)
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-     * @returns the emitter
-     */
-    public override createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
-        const particleEmitter = CreatePointEmitter(direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
 
     /**
      * Gets or sets a function indicating if the particle system can start.
@@ -166,16 +143,7 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 
     /** Attractors */
-    private _attractors: Attractor[] = [];
     private _attractorUpdate: Nullable<_IExecutionQueueItem> = null;
-
-    /**
-     * The list of attractors used to change the direction of the particles in the system.
-     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
-     */
-    public get attractors(): Attractor[] {
-        return this._attractors.slice(0);
-    }
 
     /**
      * Gets or sets an object used to store user defined information for the particle system
@@ -186,8 +154,8 @@ export class ParticleSystem extends ThinParticleSystem {
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor The attractor to add to the particle system
      */
-    public addAttractor(attractor: Attractor): void {
-        this._attractors.push(attractor);
+    public override addAttractor(attractor: Attractor): void {
+        super.addAttractor(attractor);
 
         if (this._attractors.length === 1) {
             this._attractorUpdate = {
@@ -207,14 +175,11 @@ export class ParticleSystem extends ThinParticleSystem {
      * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor The attractor to remove from the particle system
      */
-    public removeAttractor(attractor: Attractor): void {
-        const index = this._attractors.indexOf(attractor);
-        if (index !== -1) {
-            this._attractors.splice(index, 1);
-        }
+    public override removeAttractor(attractor: Attractor): void {
+        super.removeAttractor(attractor);
 
-        if (this._attractors.length === 0) {
-            _RemoveFromQueue(this._attractorUpdate!);
+        if (this._attractors.length === 0 && this._attractorUpdate) {
+            _RemoveFromQueue(this._attractorUpdate);
         }
     }
 
@@ -227,127 +192,6 @@ export class ParticleSystem extends ThinParticleSystem {
             return;
         }
         super.start(delay);
-    }
-
-    /**
-     * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
-     * @param radius The radius of the hemisphere to emit from
-     * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-     * @returns the emitter
-     */
-    public override createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
-        const particleEmitter = CreateHemisphericEmitter(radius, radiusRange);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
-     * @param radius The radius of the sphere to emit from
-     * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-     * @returns the emitter
-     */
-    public override createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
-        const particleEmitter = CreateSphereEmitter(radius, radiusRange);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
-     * @param radius The radius of the sphere to emit from
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
-     * @returns the emitter
-     */
-    public override createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-        const particleEmitter = CreateDirectedSphereEmitter(radius, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
-     * @param radius The radius of the emission cylinder
-     * @param height The height of the emission cylinder
-     * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
-     * @param directionRandomizer How much to randomize the particle direction [0-1]
-     * @returns the emitter
-     */
-    public override createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
-        const particleEmitter = CreateCylinderEmitter(radius, height, radiusRange, directionRandomizer);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
-     * @param radius The radius of the cylinder to emit from
-     * @param height The height of the emission cylinder
-     * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
-     * @returns the emitter
-     */
-    public override createDirectedCylinderEmitter(
-        radius = 1,
-        height = 1,
-        radiusRange = 1,
-        direction1 = new Vector3(0, 1.0, 0),
-        direction2 = new Vector3(0, 1.0, 0)
-    ): CylinderDirectedParticleEmitter {
-        const particleEmitter = CreateDirectedCylinderEmitter(radius, height, radiusRange, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
-     * @param radius The radius of the cone to emit from
-     * @param angle The base angle of the cone
-     * @returns the emitter
-     */
-    public override createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-        const particleEmitter = CreateConeEmitter(radius, angle);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
-     * @param radius The radius of the cone to emit from
-     * @param angle The base angle of the cone
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cone
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cone
-     * @returns the emitter
-     */
-    public override createDirectedConeEmitter(
-        radius = 1,
-        angle = Math.PI / 4,
-        direction1 = new Vector3(0, 1.0, 0),
-        direction2 = new Vector3(0, 1.0, 0)
-    ): ConeDirectedParticleEmitter {
-        const particleEmitter = CreateDirectedConeEmitter(radius, angle, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-     * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
-     * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
-     * @returns the emitter
-     */
-    public override createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-        const particleEmitter = new BoxParticleEmitter();
-        this.particleEmitterType = particleEmitter;
-        this.direction1 = direction1;
-        this.direction2 = direction2;
-        this.minEmitBox = minEmitBox;
-        this.maxEmitBox = maxEmitBox;
-        return particleEmitter;
     }
 
     private _prepareSubEmitterInternalArray() {

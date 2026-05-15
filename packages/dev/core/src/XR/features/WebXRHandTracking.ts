@@ -1,34 +1,32 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import type { WebXRInput } from "../webXRInput";
-import type { WebXRInputSource } from "../webXRInputSource";
+import { type WebXRInput } from "../webXRInput";
+import { type WebXRInputSource } from "../webXRInputSource";
 import { Matrix, Quaternion } from "../../Maths/math.vector";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
 import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 
-import type { IDisposable, Scene } from "../../scene";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { InstancedMesh } from "../../Meshes/instancedMesh";
-import type { ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
-import { SceneLoader } from "../../Loading/sceneLoader";
+import { type IDisposable, type Scene } from "../../scene";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type InstancedMesh } from "../../Meshes/instancedMesh";
+import { type ISceneLoaderAsyncResult, SceneLoader } from "../../Loading/sceneLoader";
 import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
-import type { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
+import { type InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 import { Constants } from "../../Engines/constants";
-import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
+import { type WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { Tools } from "core/Misc/tools";
-import type { WebXRCamera } from "../webXRCamera";
-import type { Node } from "../../node";
+import { type WebXRCamera } from "../webXRCamera";
+import { type Node } from "../../node";
 
 import "../../Physics/joinedPhysicsEngineComponent";
 

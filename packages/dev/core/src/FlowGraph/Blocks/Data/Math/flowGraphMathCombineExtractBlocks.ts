@@ -1,4 +1,4 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 import {
     RichTypeMatrix,
@@ -12,7 +12,7 @@ import {
 } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";

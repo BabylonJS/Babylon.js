@@ -1,17 +1,17 @@
-import type { SmartArray } from "../../Misc/smartArray";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type SmartArray } from "../../Misc/smartArray";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Matrix, Vector3, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
 
-import type { IShadowLight } from "../../Lights/shadowLight";
+import { type IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-import type { MaterialDefines } from "../../Materials/materialDefines";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import { type MaterialDefines } from "../../Materials/materialDefines";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -23,11 +23,11 @@ import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { Camera } from "../../Cameras/camera";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
+import { type Camera } from "../../Cameras/camera";
 
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     BindBonesParameters,
     BindMorphTargetParameters,
@@ -1799,7 +1799,7 @@ export class ShadowGenerator implements IShadowGenerator {
                     "biasAndScaleSM",
                     "morphTargetInfluences",
                     "morphTargetCount",
-                    "boneTextureWidth",
+                    "boneTextureInfo",
                     "softTransparentShadowSM",
                     "morphTargetTextureInfo",
                     "morphTargetTextureIndices",

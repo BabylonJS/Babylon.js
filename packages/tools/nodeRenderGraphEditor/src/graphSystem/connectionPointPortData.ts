@@ -1,17 +1,16 @@
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
 import {
     NodeRenderGraphConnectionPointDirection,
     NodeRenderGraphConnectionPointCompatibilityStates,
     NodeRenderGraphBlockConnectionPointTypes,
 } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
-import type { Nullable } from "core/types";
-import type { GlobalState } from "node-render-graph-editor/globalState";
-import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type Nullable } from "core/types";
+import { type GlobalState } from "node-render-graph-editor/globalState";
+import { type GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 

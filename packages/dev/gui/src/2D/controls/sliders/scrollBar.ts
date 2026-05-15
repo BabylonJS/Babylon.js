@@ -1,13 +1,13 @@
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
-import type { Control } from "../control";
+import { type Control } from "../control";
 import { Measure } from "../../measure";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { Nullable } from "core/types";
-import type { BaseGradient } from "../gradient/BaseGradient";
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type Nullable } from "core/types";
+import { type BaseGradient } from "../gradient/BaseGradient";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Tools } from "core/Misc/tools";
 import { RegisterClass } from "core/Misc/typeStore";
 

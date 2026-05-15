@@ -1,5 +1,4 @@
-import type { DataCursor } from "./exrLoader.core";
-import { CompressionCodes, DecodeFloat32, ParseFloat16, ParseFloat32, ParseInt32, ParseInt64, ParseUint16, ParseUint32 } from "./exrLoader.core";
+import { type DataCursor, CompressionCodes, DecodeFloat32, ParseFloat16, ParseFloat32, ParseInt32, ParseInt64, ParseUint16, ParseUint32 } from "./exrLoader.core";
 import { UncompressPIZ, UncompressPXR, UncompressRAW, UncompressRLE, UncompressZIP } from "./exrLoader.compression";
 import { FLOAT32_SIZE, INT16_SIZE, type IEXRDecoder, type IEXRHeader } from "./exrLoader.interfaces";
 import { Constants } from "core/Engines/constants";

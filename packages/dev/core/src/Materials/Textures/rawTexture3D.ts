@@ -1,7 +1,7 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 /**
  * Class used to store 3D textures containing user data
  */
