@@ -254,4 +254,8 @@ uniform vec2 vThinFilmThicknessInfos;
     uniform vec3 vBackgroundRefractionInfos;
 #endif
 
+#if TEXTURE_REPETITION_MODE > 0
+uniform vec4 vTextureRepetitionHexTilingParams;
+#endif
+
 #define ADDITIONAL_FRAGMENT_DECLARATION

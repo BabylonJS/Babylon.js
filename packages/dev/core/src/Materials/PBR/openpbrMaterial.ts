@@ -268,6 +268,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public USE_GLTF_STYLE_ANISOTROPY = false;
     public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
     public FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = false;
+    public SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = false;
     public GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = false;
 
     public ENVIRONMENTBRDF = false;
@@ -443,6 +444,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public UNLIT = false;
 
     public DECAL_AFTER_DETAIL = false;
+
+    public TEXTURE_REPETITION_MODE = 0;
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
@@ -1598,6 +1601,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useFuzzRoughnessFromTextureAlpha = false;
 
     /**
+     * Specifies that the subsurface weight is stored in the alpha channel of the texture.
+     * This is for compatibility with glTF where the subsurface weight is stored in
+     * the alpha channel of the diffuseTransmissionTexture.
+     */
+    public _useSubsurfaceWeightFromTextureAlpha = false;
+
+    /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
      * makes the reflect vector face the model (under horizon).
      * @internal
@@ -2435,6 +2445,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("vDebugMode", 2);
         ubo.addUniform("renderTargetSize", 2);
         ubo.addUniform("cameraInfo", 4);
+        ubo.addUniform("vTextureRepetitionHexTilingParams", 4);
         ubo.addUniform("backgroundRefractionMatrix", 16);
         ubo.addUniform("vBackgroundRefractionInfos", 3);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
@@ -2510,6 +2521,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         } else {
             this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
         }
+
+        const hexParams = this.textureRepetitionHexTilingParams;
+        this._uniformBuffer.updateFloat4("vTextureRepetitionHexTilingParams", hexParams[0], hexParams[1], hexParams[2], hexParams[3]);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
@@ -2957,6 +2971,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
             "cameraInfo",
+            "vTextureRepetitionHexTilingParams",
             "backgroundRefractionMatrix",
             "vBackgroundRefractionInfos",
         ];
@@ -3155,6 +3170,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.COAT_ROUGHNESS_FROM_GREEN_CHANNEL = this._useCoatRoughnessFromGreenChannel;
                 defines.SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = this._useFuzzRoughnessFromTextureAlpha;
+                defines.SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = this._useSubsurfaceWeightFromTextureAlpha;
                 defines.BASE_METALNESS_FROM_METALNESS_TEXTURE_BLUE = this._useMetallicFromMetallicTextureBlue;
                 defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
                 defines.GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = this._useGeometryThicknessFromGreenChannel;
@@ -3241,6 +3257,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
             defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
             defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
+        }
+
+        if (defines._areTexturesDirty) {
+            defines.TEXTURE_REPETITION_MODE = engine.version > 1 || engine.isWebGPU ? this.textureRepetitionMode : 0;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {

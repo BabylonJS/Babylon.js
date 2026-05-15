@@ -4,14 +4,14 @@ import { type PointerTouch } from "../../Events/pointerEvents";
 import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 import { Vector3Distance } from "../../Maths/math.vector.functions";
+import { type PointerConditions, type PointerInputMapEntry } from "../inputMapper";
 
 /**
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
  * This class will update the GeospatialCameraMovement class's movementDeltaCurrentFrame, and the camera is responsible for using these updates to calculate viewMatrix appropriately
  *
- * Left mouse button: drag globe
- * Middle mouse button: tilt globe
- * Right mouse button: tilt globe
+ * Uses the inputMap on the movement class to determine which button maps to which interaction.
+ * Default: Left mouse button = pan (drag globe), Middle/Right mouse button = rotate (tilt)
  *
  */
 export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
@@ -20,17 +20,51 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     private _initialPinchSquaredDistance: number = 0;
     private _pinchCentroid: Nullable<PointerTouch> = null;
 
-    /**
-     * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch)
-     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
-     */
-    public pitchSensitivity = 1.0;
+    /** Cached resolved inputMap entry for the current pointer gesture */
+    private _activeEntry: Nullable<PointerInputMapEntry> = null;
 
     /**
-     * Defines the rotation sensitivity of the pointer when rotating the camera around the Y axis (yaw)
-     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     * Modifier state stored separately from `_pointerConditions` so it can be typed as a
+     * concrete (non-optional) object. This avoids non-null assertions when updating modifier
+     * fields on every pointer-down, and the conditions object holds the same reference so
+     * resolveInteraction sees the live state.
      */
-    public yawSensitivity: number = 1.0;
+    private _pointerModifiers: { ctrl: boolean; alt: boolean; shift: boolean } = { ctrl: false, alt: false, shift: false };
+
+    /** Cached conditions object for pointer-down resolution */
+    private _pointerConditions: PointerConditions = { modifiers: this._pointerModifiers };
+
+    /**
+     * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch).
+     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     * @deprecated Use the `sensitivity` field on the pointer rotate entry in `camera.movement.input.inputMap` instead.
+     */
+    public get pitchSensitivity(): number {
+        const entry = this.camera?.movement.input.getEntry("pointer", "rotate");
+        return entry?.sensitivityY ?? entry?.sensitivity ?? 1;
+    }
+
+    public set pitchSensitivity(value: number) {
+        for (const entry of this.camera?.movement.input.getEntries("pointer", "rotate") ?? []) {
+            entry.sensitivityY = value;
+        }
+    }
+
+    /**
+     * Defines the rotation sensitivity of the pointer when rotating the camera around the Y axis (yaw).
+     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     * @deprecated Use the `sensitivity` field on the pointer rotate entry in `camera.movement.input.inputMap` instead.
+     */
+    public get yawSensitivity(): number {
+        const entry = this.camera?.movement.input.getEntry("pointer", "rotate");
+        return entry?.sensitivityX ?? entry?.sensitivity ?? 1;
+    }
+
+    public set yawSensitivity(value: number) {
+        for (const entry of this.camera?.movement.input.getEntries("pointer", "rotate") ?? []) {
+            entry.sensitivityX = value;
+        }
+    }
 
     /**
      * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
@@ -43,30 +77,39 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         return "GeospatialCameraPointersInput";
     }
 
+    /**
+     * Handles the pointer-down event. Captures the active button + modifier state, resolves which
+     * inputMap entry should drive the gesture, and starts pan tracking if the resolved interaction is "pan".
+     * @param evt - The pointer-down event.
+     */
     public override onButtonDown(evt: IPointerEvent): void {
         this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
-        switch (evt.button) {
-            case 0: // Left button - drag/pan globe under cursor
-                this.camera.movement.startDrag(scene.pointerX, scene.pointerY);
-                break;
-            default:
-                break;
+
+        this._pointerConditions.button = evt.button;
+        this._pointerModifiers.ctrl = evt.ctrlKey;
+        this._pointerModifiers.alt = evt.altKey;
+        this._pointerModifiers.shift = evt.shiftKey;
+        this._activeEntry = this.camera.movement.input.resolveInteraction("pointer", this._pointerConditions);
+
+        if (this._activeEntry?.interaction === "pan") {
+            this.camera.movement.input.handlers.pan.start(scene.pointerX, scene.pointerY);
         }
     }
 
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
-        // Single finger touch (no button property) or left button (button 0) = drag
-        const button = point?.button ?? 0; // Default to button 0 (drag) if undefined
+        if (!this._activeEntry) {
+            return;
+        }
+        const sens = this._activeEntry.sensitivity ?? 1;
+        const sensX = this._activeEntry.sensitivityX ?? sens;
+        const sensY = this._activeEntry.sensitivityY ?? sens;
         const scene = this.camera.getScene();
-        switch (button) {
-            case 0: // Left button / single touch - drag/pan globe under cursor
-                this.camera.movement.handleDrag(scene.pointerX, scene.pointerY);
-                break;
-            case 1: // Middle button - tilt camera
-            case 2: // Right button - tilt camera
-                this._handleTilt(offsetX, offsetY);
-                break;
+
+        if (this._activeEntry.interaction === "pan") {
+            this.camera.movement.input.handlers.pan.update(scene.pointerX, scene.pointerY);
+        } else if (this._activeEntry.interaction === "rotate") {
+            this.camera.movement.input.handlers.rotate(offsetX * sensX, -offsetY * sensY);
         }
     }
 
@@ -124,7 +167,13 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            this._handleTilt(moveDeltaX, moveDeltaY);
+            // Multi-touch is a gesture (no button), so `_activeEntry` is null. Resolve a fresh
+            // pointer→rotate entry so the configured rotate sensitivity (yaw/pitch) is honored.
+            const rotateEntry = this.camera.movement.input.getEntry("pointer", "rotate");
+            const sens = rotateEntry?.sensitivity ?? 1;
+            const sensX = rotateEntry?.sensitivityX ?? sens;
+            const sensY = rotateEntry?.sensitivityY ?? sens;
+            this.camera.movement.input.handlers.rotate(moveDeltaX * sensX, -moveDeltaY * sensY);
         }
     }
 
@@ -135,6 +184,17 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         }
     }
 
+    /**
+     * Handles a multi-touch (pinch / two-finger pan) gesture. Detects whether the gesture should be
+     * interpreted as a pinch zoom or a two-finger pan based on cumulative finger distance change,
+     * and forwards the gesture to the parent class once a mode is decided.
+     * @param pointA - First active touch point, or null if it just ended.
+     * @param pointB - Second active touch point, or null if it just ended.
+     * @param previousPinchSquaredDistance - Squared distance between the two touches on the previous frame.
+     * @param pinchSquaredDistance - Squared distance between the two touches on the current frame.
+     * @param previousMultiTouchPanPosition - Centroid of the two touches on the previous frame, or null if unavailable.
+     * @param multiTouchPanPosition - Centroid of the two touches on the current frame, or null if the gesture ended.
+     */
     public override onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
@@ -167,7 +227,10 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public override onButtonUp(_evt: IPointerEvent): void {
-        this.camera.movement.stopDrag();
+        if (this._activeEntry?.interaction === "pan") {
+            this.camera.movement.input.handlers.pan.stop();
+        }
+        this._activeEntry = null;
         this.camera.movement.activeInput = false;
         this._initialPinchSquaredDistance = 0;
         this._pinchCentroid = null;
@@ -175,13 +238,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public override onLostFocus(): void {
+        this._activeEntry = null;
         this._initialPinchSquaredDistance = 0;
         this._pinchCentroid = null;
         super.onLostFocus();
-    }
-
-    private _handleTilt(deltaX: number, deltaY: number): void {
-        this.camera.movement.rotationAccumulatedPixels.y += deltaX * this.yawSensitivity; // yaw - looking side to side
-        this.camera.movement.rotationAccumulatedPixels.x -= deltaY * this.pitchSensitivity; // pitch - look up towards sky / down towards ground
     }
 }

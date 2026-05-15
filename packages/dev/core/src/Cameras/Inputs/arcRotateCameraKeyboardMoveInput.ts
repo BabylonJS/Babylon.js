@@ -7,6 +7,7 @@ import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsM
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type KeyboardConditions } from "../inputMapper";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -50,6 +51,20 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public keysReset = [220];
 
     /**
+     * Defines the list of key codes associated with the zoom in action.
+     * Only used when CameraMovement is active — these keys always trigger zoom regardless of modifiers.
+     */
+    @serialize()
+    public keysZoomIn: number[] = [187, 107]; // 187 = +/= key, 107 = numpad +
+
+    /**
+     * Defines the list of key codes associated with the zoom out action.
+     * Only used when CameraMovement is active — these keys always trigger zoom regardless of modifiers.
+     */
+    @serialize()
+    public keysZoomOut: number[] = [189, 109]; // 189 = -/_ key, 109 = numpad -
+
+    /**
      * Defines the panning sensibility of the inputs.
      * (How fast is the camera panning)
      */
@@ -64,17 +79,46 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public zoomingSensibility: number = 25.0;
 
     /**
-     * Defines whether maintaining the alt key down switch the movement mode from
-     * orientation to zoom.
-     */
-    @serialize()
-    public useAltToZoom: boolean = true;
-
-    /**
      * Rotation speed of the camera
      */
     @serialize()
     public angularSpeed = 0.01;
+
+    private _useAltToZoom: boolean = true;
+
+    /**
+     * Defines whether alt+arrows/wasd triggers zoom instead of rotation/pan.
+     * When disabled, alt+keyboard events are ignored by the zoom inputMap entry.
+     * Setting this updates the corresponding inputMap entry on the camera's movement system.
+     * If set before the camera is attached, the value is cached and applied during `attachControl`.
+     */
+    @serialize()
+    public get useAltToZoom(): boolean {
+        return this._useAltToZoom;
+    }
+
+    public set useAltToZoom(value: boolean) {
+        this._useAltToZoom = value;
+        this._applyUseAltToZoomToInputMap();
+    }
+
+    /**
+     * Applies the cached `_useAltToZoom` value to the camera's inputMap.
+     * Safe to call before the camera is attached: it is a no-op until `this.camera.movement` is available.
+     * Idempotent — calling it when the inputMap already matches the cached value is a no-op.
+     */
+    private _applyUseAltToZoomToInputMap(): void {
+        if (!this.camera?.movement) {
+            return;
+        }
+        const input = this.camera.movement.input;
+        const entry = input.getEntry("keyboard", "zoom", { modifiers: { alt: true } });
+        if (!this._useAltToZoom && entry) {
+            input.inputMap.splice(input.inputMap.indexOf(entry), 1);
+        } else if (this._useAltToZoom && !entry) {
+            input.addEntry({ source: "keyboard", modifiers: { alt: true }, interaction: "zoom" });
+        }
+    }
 
     private _keys = new Array<number>();
     private _ctrlPressed: boolean;
@@ -83,6 +127,17 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
     private _scene: Scene;
+
+    /**
+     * Modifier state stored separately from `_keyboardConditions` so it can be typed as a
+     * concrete (non-optional) object. This avoids non-null assertions when updating modifier
+     * fields each frame, and the conditions object holds the same reference so
+     * resolveInteraction sees the live state.
+     */
+    private _keyboardModifiers: { ctrl: boolean; alt: boolean } = { ctrl: false, alt: false };
+
+    /** Cached conditions object to avoid per-frame allocations in checkInputs */
+    private _keyboardConditions: KeyboardConditions = { modifiers: this._keyboardModifiers };
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -98,6 +153,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
         this._scene = this.camera.getScene();
         this._engine = this._scene.getEngine();
+
+        this._applyUseAltToZoomToInputMap();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
             this._keys.length = 0;
@@ -115,7 +172,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1
+                        this.keysReset.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomIn.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomOut.indexOf(evt.keyCode) !== -1
                     ) {
                         const index = this._keys.indexOf(evt.keyCode);
 
@@ -135,7 +194,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1
+                        this.keysReset.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomIn.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomOut.indexOf(evt.keyCode) !== -1
                     ) {
                         const index = this._keys.indexOf(evt.keyCode);
 
@@ -179,38 +240,60 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
+            const input = camera.movement.input;
+
+            this._keyboardModifiers.ctrl = this._ctrlPressed;
+            this._keyboardModifiers.alt = this._altPressed;
 
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningX -= 1 / this.panningSensibility;
-                    } else {
-                        camera.inertialAlphaOffset -= this.angularSpeed;
+
+                this._keyboardConditions.key = keyCode;
+
+                // Skip resolveInteraction for the reset key — it has no inputMap entry of its own
+                // and would otherwise spuriously match the catch-all keyboard→rotate entry.
+                if (this.keysReset.indexOf(keyCode) === -1) {
+                    const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
+
+                    if (resolved) {
+                        // Per-frame impulse magnitude. The inputMap entry's `sensitivity` takes precedence
+                        // when set so consumers can tune feel declaratively (and so we can phase out the
+                        // legacy sensibility/angularSpeed properties over time). When `sensitivity` is
+                        // undefined, fall back to the legacy properties for backward compatibility.
+                        if (resolved.interaction === "pan") {
+                            const panSens = resolved.sensitivity ?? 1 / this.panningSensibility;
+                            if (this.keysLeft.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(-panSens, 0);
+                            } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(panSens, 0);
+                            } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(0, panSens);
+                            } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(0, -panSens);
+                            }
+                        } else if (resolved.interaction === "zoom") {
+                            const zoomSens = resolved.sensitivity ?? 1 / this.zoomingSensibility;
+                            if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
+                                input.handlers.zoom(zoomSens);
+                            } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
+                                input.handlers.zoom(-zoomSens);
+                            }
+                        } else if (resolved.interaction === "rotate") {
+                            const rotateSens = resolved.sensitivity ?? this.angularSpeed;
+                            if (this.keysLeft.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(-rotateSens, 0);
+                            } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(rotateSens, 0);
+                            } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(0, -rotateSens);
+                            } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(0, rotateSens);
+                            }
+                        }
                     }
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningY += 1 / this.panningSensibility;
-                    } else if (this._altPressed && this.useAltToZoom) {
-                        camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
-                    } else {
-                        camera.inertialBetaOffset -= this.angularSpeed;
-                    }
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningX += 1 / this.panningSensibility;
-                    } else {
-                        camera.inertialAlphaOffset += this.angularSpeed;
-                    }
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningY -= 1 / this.panningSensibility;
-                    } else if (this._altPressed && this.useAltToZoom) {
-                        camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
-                    } else {
-                        camera.inertialBetaOffset += this.angularSpeed;
-                    }
-                } else if (this.keysReset.indexOf(keyCode) !== -1) {
+                }
+
+                if (this.keysReset.indexOf(keyCode) !== -1) {
                     if (camera.useInputToRestoreState) {
                         camera.restoreState();
                     }

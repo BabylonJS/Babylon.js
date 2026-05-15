@@ -1,4 +1,5 @@
-// _____________________________ Diffuse ________________________________________
+ 
+ // _____________________________ Diffuse ________________________________________
 vec3 finalDiffuse = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
 
@@ -18,7 +19,7 @@ finalAmbient *= surfaceAlbedo.rgb;
 // _____________________________ Emissive ________________________________________
 vec3 finalEmissive = vEmissiveColor;
 #ifdef EMISSIVE
-vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb;
+vec3 emissiveColorTex = TEXRD(emissiveSampler, vEmissiveUV + uvOffset).rgb;
 #ifdef GAMMAEMISSIVE
     finalEmissive *= toLinearSpace(emissiveColorTex.rgb);
 #else

@@ -567,6 +567,12 @@ export type ViewerOptions = Partial<{
      * Boolean indicating if the scene must use right-handed coordinates system.
      */
     useRightHandedSystem: boolean;
+
+    /**
+     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+     * @experimental
+     */
+    useOpenPBR: boolean;
 }>;
 
 /**
@@ -599,6 +605,7 @@ export const DefaultViewerOptions = {
         ssao: "auto",
     },
     useRightHandedSystem: false,
+    useOpenPBR: false,
 } as const satisfies ViewerOptions;
 
 export type EnvironmentOptions = Partial<
@@ -1679,6 +1686,7 @@ export class Viewer implements IDisposable {
                     // Enable transparency as coverage by default to be 3D Commerce compliant by default.
                     // https://doc.babylonjs.com/setup/support/3D_commerce_certif
                     transparencyAsCoverage: true,
+                    useOpenPBR: this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
                     extensionOptions: {
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {
