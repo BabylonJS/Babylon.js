@@ -162,6 +162,79 @@ describe("InputMapper", () => {
         });
     });
 
+    describe("setInteraction", () => {
+        it("should mutate the matching entry in place when it is as specific as the conditions", () => {
+            mapper.inputMap = [
+                { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" },
+                { source: "pointer", button: 0, interaction: "rotate" },
+            ];
+
+            const result = mapper.setInteraction("pointer", { button: 0, modifiers: { ctrl: true } }, "rotate");
+
+            expect(result).toBe(true);
+            expect(mapper.inputMap.length).toBe(2);
+            expect(mapper.inputMap[0].interaction).toBe("rotate");
+            expect(mapper.inputMap[1].interaction).toBe("rotate");
+        });
+
+        it("should add a new specific entry when the matched entry is broader (modifier-broader case)", () => {
+            // The catch-all { button: 0, interaction: "pan" } would match a ctrl+left-drag query
+            // but does not constrain ctrl. Old behavior would mutate it and break unmodified left-drag;
+            // new behavior must add a more-specific entry instead.
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "pan" }];
+
+            const result = mapper.setInteraction("pointer", { button: 0, modifiers: { ctrl: true } }, "rotate");
+
+            expect(result).toBe(true);
+            expect(mapper.inputMap.length).toBe(2);
+            // The new specific entry must come first so it wins for ctrl+left-drag
+            const ctrlMatch = mapper.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } });
+            expect(ctrlMatch?.interaction).toBe("rotate");
+            // Plain left-drag still resolves to the original catch-all
+            const plainMatch = mapper.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: false } });
+            expect(plainMatch?.interaction).toBe("pan");
+        });
+
+        it("should add a new specific entry when the matched entry is broader (button-broader case)", () => {
+            // The catch-all { source: "wheel", interaction: "zoom" } does not constrain modifiers.
+            // Adding a shift+wheel→pan binding via setInteraction must not flip the catch-all.
+            mapper.inputMap = [{ source: "wheel", interaction: "zoom" }];
+
+            mapper.setInteraction("wheel", { modifiers: { shift: true } }, "pan");
+
+            expect(mapper.inputMap.length).toBe(2);
+            expect(mapper.resolveInteraction("wheel", { modifiers: { shift: true } })?.interaction).toBe("pan");
+            expect(mapper.resolveInteraction("wheel", { modifiers: { shift: false } })?.interaction).toBe("zoom");
+        });
+
+        it("should add a new entry when no entry matches at all", () => {
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "pan" }];
+
+            mapper.setInteraction("keyboard", { modifiers: { ctrl: true } }, "rotate");
+
+            expect(mapper.inputMap.length).toBe(2);
+            expect(mapper.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+        });
+
+        it("should add a new less-specific entry when conditions don't match any existing entry (entries are more specific)", () => {
+            // Entry constrains { button: 0, modifiers: { ctrl: true } }; conditions only specify
+            // { modifiers: { ctrl: true } }. resolveInteraction returns null because entries are
+            // not wildcards in reverse (an entry with button: 0 doesn't match conditions without
+            // a button). The new behavior adds a new entry that matches the request.
+            mapper.inputMap = [
+                { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" },
+            ];
+
+            mapper.setInteraction("pointer", { modifiers: { ctrl: true } }, "rotate");
+
+            expect(mapper.inputMap.length).toBe(2);
+            // The button-constrained original entry stays first (more specific) and wins for
+            // ctrl+left-drag; the new less-specific entry handles ctrl+other-buttons.
+            expect(mapper.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } })?.interaction).toBe("pan");
+            expect(mapper.resolveInteraction("pointer", { button: 2, modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+        });
+    });
+
     describe("setInteractions", () => {
         it("should update every matching entry and return the count", () => {
             mapper.inputMap = [

@@ -296,24 +296,93 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
     }
 
     /**
-     * Changes the interaction for the first inputMap entry matching the given source and conditions.
-     * This is the simplest way to remap a single input without rebuilding the entire inputMap.
+     * Sets the interaction for the input combination described by `conditions`. Smart enough to
+     * either mutate an existing entry in place or insert a new entry, depending on whether
+     * the matched entry is as specific as the request:
      *
-     * Note: only the first matching entry is updated. To update every matching entry use
-     * {@link setInteractions}; to address an individual entry beyond the first, look it up via
-     * {@link getEntries} and assign `entry.interaction` directly.
+     * - If a matching entry already exists and constrains every field present in `conditions`
+     *   (i.e. it is at least as specific as the request), its `interaction` is updated in place.
+     * - If a matching entry exists but is *broader* than the request — for example, the
+     *   conditions specify `{ button: 0, modifiers: { ctrl: true } }` and the only match is
+     *   the catch-all `{ button: 0 }` — a new, more-specific entry is inserted via
+     *   {@link addEntry} so the new mapping wins for the requested combination without
+     *   clobbering the broader entry. This avoids the footgun where `setInteraction` would
+     *   silently mutate the catch-all and break unrelated gestures.
+     * - If no entry matches at all, a new entry is inserted via {@link addEntry}.
+     *
+     * Note: only the first matching entry is considered. To force an update on every matching
+     * entry use {@link setInteractions}; to address an individual entry beyond the first, look
+     * it up via {@link getEntries} and assign `entry.interaction` directly.
      * @param source - The physical input source to match
-     * @param conditions - Conditions to match (button, modifiers, key, etc.)
-     * @param interaction - The new interaction to assign to the matched entry
-     * @returns true if a matching entry was found and updated, false otherwise
+     * @param conditions - Conditions describing the input combination (button, modifiers, key, etc.)
+     * @param interaction - The interaction to assign / insert
+     * @returns true (the mapping is always made effective; the boolean is preserved for source
+     *   compatibility with the previous "found and updated" semantics)
      */
     public setInteraction(source: InputSource, conditions: InputConditions | undefined, interaction: InteractionName<THandlers>): boolean {
         const entry = this.resolveInteraction(source, conditions);
-        if (entry) {
+        if (entry && this._entryIsAtLeastAsSpecificAsConditions(entry, conditions)) {
             entry.interaction = interaction;
             return true;
         }
-        return false;
+        // No matching entry, or matched entry is broader than the request — add a new
+        // more-specific entry so the requested conditions resolve to the new interaction
+        // without clobbering the broader entry.
+        this.addEntry({ source, ...(conditions ?? {}), interaction } as InputMapEntry<InteractionName<THandlers>>);
+        return true;
+    }
+
+    /**
+     * Returns true when `entry` constrains at least every field that `conditions` specifies,
+     * i.e. `entry` is at least as specific as the request. Used by {@link setInteraction} to
+     * decide whether to mutate an existing entry or add a more-specific one.
+     * @param entry - The matched inputMap entry to test
+     * @param conditions - The conditions the caller supplied to `setInteraction`
+     * @returns true if `entry` constrains every field present in `conditions`
+     */
+    private _entryIsAtLeastAsSpecificAsConditions(entry: InputMapEntry<InteractionName<THandlers>>, conditions?: InputConditions): boolean {
+        if (!conditions) {
+            return true;
+        }
+        switch (entry.source) {
+            case "pointer":
+                if (conditions.button !== undefined && entry.button === undefined) {
+                    return false;
+                }
+                return this._modifiersAtLeastAsSpecific(entry.modifiers, conditions.modifiers);
+            case "wheel":
+                return this._modifiersAtLeastAsSpecific(entry.modifiers, conditions.modifiers);
+            case "touch":
+                if (conditions.touchCount !== undefined && entry.touchCount === undefined) {
+                    return false;
+                }
+                return true;
+            case "keyboard":
+                if (conditions.key !== undefined && entry.key === undefined) {
+                    return false;
+                }
+                return this._modifiersAtLeastAsSpecific(entry.modifiers, conditions.modifiers);
+        }
+    }
+
+    /**
+     * Returns true when `entryMods` constrains every modifier key that `condMods` specifies
+     * with a defined value.
+     * @param entryMods - Modifier constraints on the inputMap entry (or undefined for no constraint)
+     * @param condMods - Modifier constraints on the request conditions (or undefined for no constraint)
+     * @returns true if `entryMods` constrains every modifier key present in `condMods`
+     */
+    private _modifiersAtLeastAsSpecific(entryMods: InputModifiers | undefined, condMods: InputModifiers | undefined): boolean {
+        if (!condMods) {
+            return true;
+        }
+        const mods = entryMods ?? {};
+        for (const key of Object.keys(condMods) as (keyof InputModifiers)[]) {
+            if (condMods[key] !== undefined && mods[key] === undefined) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
