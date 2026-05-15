@@ -296,20 +296,33 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         const deltaZ = this.position.z - listenerPosition.z;
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
         const minDistance = Math.max(this.minDistance, 0);
-        const maxDistance = Math.max(this.maxDistance, minDistance);
-        const clampedDistance = Math.min(Math.max(distance, minDistance), maxDistance);
         let attenuation = 1;
 
         switch (this.distanceModel) {
             case "linear":
-                attenuation =
-                    maxDistance === minDistance ? (distance <= minDistance ? 1 : 0) : 1 - (this.rolloffFactor * (clampedDistance - minDistance)) / (maxDistance - minDistance);
+                {
+                    const maxDistance = Math.max(this.maxDistance, minDistance);
+                    const clampedDistance = Math.min(Math.max(distance, minDistance), maxDistance);
+
+                    attenuation =
+                        maxDistance === minDistance ? (distance <= minDistance ? 1 : 0) : 1 - (this.rolloffFactor * (clampedDistance - minDistance)) / (maxDistance - minDistance);
+                }
                 break;
             case "inverse":
-                attenuation = minDistance === 0 && clampedDistance === 0 ? 1 : minDistance / (minDistance + this.rolloffFactor * (clampedDistance - minDistance));
+                if (minDistance === 0) {
+                    attenuation = 0;
+                    break;
+                }
+
+                attenuation = minDistance / (minDistance + this.rolloffFactor * (Math.max(distance, minDistance) - minDistance));
                 break;
             case "exponential":
-                attenuation = minDistance === 0 && clampedDistance === 0 ? 1 : Math.pow(clampedDistance / minDistance, -this.rolloffFactor);
+                if (minDistance === 0) {
+                    attenuation = 0;
+                    break;
+                }
+
+                attenuation = Math.pow(Math.max(distance, minDistance) / minDistance, -this.rolloffFactor);
                 break;
         }
 

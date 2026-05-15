@@ -86,6 +86,7 @@ export interface ISpatialAudioOptions {
      * Whether to spatially pan the audio source. Defaults to `true`.
      *
      * When set to `false`, the source keeps distance attenuation but does not pan between the left and right channels.
+     * Sound cone attenuation is not applied while panning is disabled.
      */
     spatialPanningEnabled: boolean;
     /**
@@ -217,6 +218,7 @@ export abstract class AbstractSpatialAudio {
      * Whether to spatially pan the audio source. Defaults to `true`.
      *
      * When set to `false`, the source keeps distance attenuation but does not pan between the left and right channels.
+     * Sound cone attenuation is not applied while panning is disabled.
      */
     public abstract panningEnabled: boolean;
 
