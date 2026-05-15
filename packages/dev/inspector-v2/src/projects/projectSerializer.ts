@@ -1,5 +1,4 @@
 import {
-    type SmartAssetManager,
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
     LoadAllSmartAssetsAsync,
@@ -7,11 +6,11 @@ import {
     RegisterSmartAsset,
     RemoveSmartAssetAsync,
     SerializeSmartAssetManagerMap,
-} from "./smartAssetManager";
-import { type OverrideManager, ClearOverrides, DeserializeAndApplyOverrides, SerializeOverrides } from "./overrideManager";
-import { type ISerializedSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "./smartAssetSerializer";
+} from "core/SmartAssets/smartAssetManager";
+import { ClearOverrides, DeserializeAndApplyOverrides, SerializeOverrides } from "./overrideManager";
+import { type ISerializedSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "core/SmartAssets/smartAssetSerializer";
 import { type IOverrideEntry } from "./overrideEntry";
-import { type Scene } from "../scene";
+import { type Scene } from "core/scene";
 
 /**
  * Reserved smart asset key for user-created objects (materials, lights, cameras)
@@ -51,23 +50,24 @@ export interface ISerializedProject {
 }
 
 /**
- * Serializes both a SmartAssetManager and an OverrideManager into a project
+ * Serializes a scene's smart asset map and override registry into a project
  * bundle. User-created objects (materials, lights, cameras not owned by any
  * smart asset) are serialized into a companion `.babylon` file rather than
  * embedded in the project JSON.
  *
- * @param smartAssetManager - The asset manager to serialize.
- * @param overrideManager - The override manager to serialize.
+ * Both managers are looked up (and created if missing) via their respective
+ * `Get…Manager(scene)` accessors, so this function can be called on any scene.
+ *
+ * @param scene - The scene to serialize.
  * @param baseUrl - Optional base URL for making asset paths relative.
  * @returns A project bundle containing the JSON document and optional companion file.
  */
-export function SerializeProject(smartAssetManager: SmartAssetManager, overrideManager: OverrideManager, baseUrl?: string): IProjectBundle {
-    const assetMap = SerializeSmartAssetManagerMap(smartAssetManager.scene, baseUrl);
-    const overrides = SerializeOverrides(overrideManager);
-    const scene = smartAssetManager.scene;
+export function SerializeProject(scene: Scene, baseUrl?: string): IProjectBundle {
+    const assetMap = SerializeSmartAssetManagerMap(scene, baseUrl);
+    const overrides = SerializeOverrides(scene);
 
     // Build a minimal .babylon JSON with only user-created objects
-    const companion = _serializeCompanionBabylon(scene, smartAssetManager);
+    const companion = _serializeCompanionBabylon(scene);
     let companionBabylon: Blob | undefined;
 
     const assets = { ...assetMap.assets };
@@ -91,39 +91,31 @@ export function SerializeProject(smartAssetManager: SmartAssetManager, overrideM
 
 /**
  * Loads a project file from a URL, File, or pre-parsed object.
- * Registers all asset entries in the SmartAssetManager, loads all assets
- * (including the companion `.babylon` for user-created objects), then
+ * Registers all asset entries on the scene's SmartAssetManager, loads all
+ * assets (including the companion `.babylon` for user-created objects), then
  * applies all overrides via the OverrideManager.
  *
+ * @param scene - The scene to populate.
  * @param source - A URL string, File object, or pre-parsed ISerializedProject.
- * @param smartAssetManager - The asset manager to populate.
- * @param overrideManager - The override manager to populate.
  * @param rootUrl - Optional root URL for resolving relative asset paths.
  */
-export async function LoadProjectAsync(
-    source: string | File | ISerializedProject,
-    smartAssetManager: SmartAssetManager,
-    overrideManager: OverrideManager,
-    rootUrl?: string
-): Promise<void> {
+export async function LoadProjectAsync(scene: Scene, source: string | File | ISerializedProject, rootUrl?: string): Promise<void> {
     let resolvedRootUrl = rootUrl ?? "";
 
     if (typeof source === "string" && !rootUrl) {
-        const { Tools } = await import("../Misc/tools");
+        const { Tools } = await import("core/Misc/tools");
         resolvedRootUrl = Tools.GetFolderPath(source);
     }
 
     const raw = await ReadJsonSourceAsync(source);
     const doc = DeserializeProject(raw);
 
-    const scene = smartAssetManager.scene;
-
     // Clear existing state so we load fresh from the project file
     for (const existingKey of Array.from(GetAllSmartAssets(scene).keys())) {
         // eslint-disable-next-line no-await-in-loop
         await RemoveSmartAssetAsync(scene, existingKey);
     }
-    ClearOverrides(overrideManager);
+    ClearOverrides(scene);
 
     // Clear asset-loaded meshes, animation groups, and materials.
     // Preserve cameras and lights — they are scene furniture managed by the host.
@@ -161,7 +153,7 @@ export async function LoadProjectAsync(
 
     // Apply overrides
     if (doc.overrides.length > 0) {
-        DeserializeAndApplyOverrides(overrideManager, doc.overrides);
+        DeserializeAndApplyOverrides(scene, doc.overrides);
     }
 }
 
@@ -198,13 +190,13 @@ export function DeserializeProject(data: unknown): ISerializedProject {
 /**
  * Returns true if a scene object is a "local" — not owned by any external
  * smart asset, or owned by the reserved `__project_locals__` key.
+ * @param scene - The scene that owns the object.
  * @param obj - The scene object to check.
- * @param sam - The SmartAssetManager to check ownership against.
  * @returns True if the object should be included in the companion file.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _isLocalObject(obj: object, sam: SmartAssetManager): boolean {
-    const key = FindSmartAssetKeyForObject(sam.scene, obj as any);
+function _isLocalObject(scene: Scene, obj: object): boolean {
+    const key = FindSmartAssetKeyForObject(scene, obj as any);
     return key === undefined || key === PROJECT_LOCALS_KEY;
 }
 
@@ -218,18 +210,17 @@ function _isLocalObject(obj: object, sam: SmartAssetManager): boolean {
  * file. User-created lights/cameras will not survive a save/load cycle.
  *
  * @param scene - The scene to extract locals from.
- * @param sam - The SmartAssetManager to check object ownership.
  * @returns A `.babylon`-format object, or null if there are no local objects.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _serializeCompanionBabylon(scene: Scene, sam: SmartAssetManager): Record<string, unknown> | null {
+function _serializeCompanionBabylon(scene: Scene): Record<string, unknown> | null {
     const materials: any[] = [];
 
     for (const mat of scene.materials) {
-        if (mat.name !== "default material" && _isLocalObject(mat, sam)) {
+        if (mat.name !== "default material" && _isLocalObject(scene, mat)) {
             const serialized = mat.serialize();
             if (serialized) {
-                _rewriteTextureUrls(serialized, sam);
+                _rewriteTextureUrls(scene, serialized);
                 materials.push(serialized);
             }
         }
@@ -246,12 +237,11 @@ function _serializeCompanionBabylon(scene: Scene, sam: SmartAssetManager): Recor
  * Rewrites texture URLs in serialized material data to use `asset://key`
  * for textures tracked by the SmartAssetManager. When the companion .babylon
  * is loaded, the SAM protocol hook resolves these to real URLs.
+ * @param scene - The scene that owns the textures.
  * @param serializedMaterial - The serialized material data to rewrite in-place.
- * @param sam - The SmartAssetManager to look up texture keys.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _rewriteTextureUrls(serializedMaterial: Record<string, unknown>, sam: SmartAssetManager): void {
-    const scene = sam.scene;
+function _rewriteTextureUrls(scene: Scene, serializedMaterial: Record<string, unknown>): void {
     for (const [propName, propValue] of Object.entries(serializedMaterial)) {
         if (!propName.endsWith("Texture") || typeof propValue !== "object" || propValue === null) {
             continue;

@@ -13,7 +13,7 @@ import {
     UnloadSmartAssetAsync,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
-import { ApplyAllOverrides, ApplyOverridesForKey, AddOverride, GetOrCreateOverrideManager, GetOverrideManagerFromScene, GetOverrides } from "core/SmartAssets/overrideManager";
+import { ApplyAllOverrides, ApplyOverridesForKey, AddOverride, GetOverrides } from "../../../projects/overrideManager";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Material } from "core/Materials/material";
 
@@ -25,7 +25,7 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
 
-import { PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
+import { PROJECT_LOCALS_KEY } from "../../../projects/projectSerializer";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
@@ -265,7 +265,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
         (key: string) => {
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
                 const sam = GetSmartAssetManager(scene);
-                const overrides = GetOrCreateOverrideManager(scene);
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
                 const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
@@ -305,7 +304,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Re-apply overrides that reference this texture key
-                    ApplyAllOverrides(overrides);
+                    ApplyAllOverrides(scene);
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
                     await UnloadSmartAssetAsync(scene, key);
@@ -328,7 +327,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Re-apply overrides for the reloaded asset
-                    ApplyOverridesForKey(overrides, key);
+                    ApplyOverridesForKey(scene, key);
                 }
 
                 // Notify after everything is loaded and tracked so the UI re-renders
@@ -490,9 +489,8 @@ const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene:
             mesh.material = mat;
 
             // Persist as an override
-            const overrides = GetOrCreateOverrideManager(scene);
             const key = FindSmartAssetKeyForObject(scene, mesh) ?? "";
-            AddOverride(overrides, {
+            AddOverride(scene, {
                 key,
                 targetType: "meshes",
                 targetName: mesh.name,
@@ -548,13 +546,7 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
     const [overrideList, setOverrideList] = useState<Array<{ key: string; target: string; prop: string; value: string }>>([]);
 
     const refresh = useCallback(() => {
-        const overrides = GetOverrideManagerFromScene(scene);
-        if (!overrides) {
-            setOverrideList([]);
-            return;
-        }
-
-        const entries = GetOverrides(overrides).map((o) => ({
+        const entries = GetOverrides(scene).map((o) => ({
             key: o.key || "(scene)",
             target: `${o.targetType}.${o.targetName}`,
             prop: o.propertyPath,

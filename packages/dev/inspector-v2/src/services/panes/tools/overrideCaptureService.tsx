@@ -3,8 +3,8 @@ import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../properties/propertiesService";
 
 import { FindSmartAssetKeyForObject, GetSmartAssetManager, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
-import { AddOverride, GetOrCreateOverrideManager, RenameOverrideTarget } from "core/SmartAssets/overrideManager";
-import { type OverrideTargetType } from "core/SmartAssets/overrideEntry";
+import { AddOverride, RenameOverrideTarget } from "../../../projects/overrideManager";
+import { type OverrideTargetType } from "../../../projects/overrideEntry";
 import { type Scene } from "core/scene";
 import { type Node } from "core/node";
 import { type Material } from "core/Materials/material";
@@ -37,7 +37,6 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
         }
 
         const sam = GetSmartAssetManager(scene);
-        const overrides = GetOrCreateOverrideManager(scene);
 
         // Track the previous name of each entity so renames can update
         // existing overrides to follow the new name.
@@ -55,7 +54,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
                 if (key !== null && targetType !== null) {
                     const oldName = previousNames.get(entity as object) ?? "";
                     if (oldName && oldName !== newValue) {
-                        RenameOverrideTarget(overrides, key, targetType, oldName, newValue);
+                        RenameOverrideTarget(scene, key, targetType, oldName, newValue);
                     }
                     previousNames.set(entity as object, newValue);
                 }
@@ -96,7 +95,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
             }
 
             AddOverride(
-                overrides,
+                scene,
                 {
                     key,
                     targetType,

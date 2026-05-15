@@ -1,17 +1,9 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import {
-    AddOverride,
-    CreateOverrideManager,
-    GetAllSmartAssets,
-    GetOverrides,
-    GetSmartAssetManager,
-    DisposeOverrideManager,
-    type OverrideManager,
-    type SmartAssetManager,
-} from "core/SmartAssets/index";
-import { RegisterSmartAsset } from "core/SmartAssets/smartAssetManager";
-import { SerializeProject, DeserializeProject, LoadProjectAsync } from "core/SmartAssets/projectSerializer";
+import { GetAllSmartAssets, GetSmartAssetManager, RegisterSmartAsset } from "core/SmartAssets/smartAssetManager";
+import { AddOverride, DisposeOverrideManager, GetOverrideManager, GetOverrides, type OverrideManager } from "../../src/projects/overrideManager";
+import { DeserializeProject, LoadProjectAsync, SerializeProject } from "../../src/projects/projectSerializer";
 
 // Store scene reference for mock containers to populate
 let _currentScene: Scene | null = null;
@@ -56,7 +48,6 @@ vi.mock("core/Loading/sceneLoader", () => ({
 describe("ProjectSerializer", () => {
     let engine: NullEngine;
     let scene: Scene;
-    let sam: SmartAssetManager;
     let overrides: OverrideManager;
 
     beforeEach(() => {
@@ -69,8 +60,9 @@ describe("ProjectSerializer", () => {
         });
         scene = new Scene(engine);
         _currentScene = scene;
-        sam = GetSmartAssetManager(scene);
-        overrides = CreateOverrideManager(scene);
+        // Force both managers to be created so tests can assert on a known starting state.
+        GetSmartAssetManager(scene);
+        overrides = GetOverrideManager(scene);
         vi.clearAllMocks();
     });
 
@@ -86,10 +78,10 @@ describe("ProjectSerializer", () => {
 
     describe("serializeProject", () => {
         it("should produce a valid project bundle with assets and overrides", async () => {
-            RegisterSmartAsset(sam.scene, "chair", "models/chair.glb");
-            RegisterSmartAsset(sam.scene, "table", "models/table.glb");
+            RegisterSmartAsset(scene, "chair", "models/chair.glb");
+            RegisterSmartAsset(scene, "table", "models/table.glb");
 
-            AddOverride(overrides, {
+            AddOverride(scene, {
                 key: "",
                 targetType: "scene",
                 targetName: "",
@@ -97,7 +89,7 @@ describe("ProjectSerializer", () => {
                 value: 0.2,
             });
 
-            const bundle = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(scene);
 
             expect(bundle.project.version).toBe(2);
             expect(bundle.project.assets["chair"].url).toBe("models/chair.glb");
@@ -108,15 +100,15 @@ describe("ProjectSerializer", () => {
         });
 
         it("should produce empty overrides array when no overrides exist", () => {
-            RegisterSmartAsset(sam.scene, "chair", "chair.glb");
+            RegisterSmartAsset(scene, "chair", "chair.glb");
 
-            const bundle = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(scene);
 
             expect(bundle.project.overrides).toEqual([]);
         });
 
         it("should produce empty assets when no assets registered", () => {
-            const bundle = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(scene);
 
             expect(Object.keys(bundle.project.assets).length).toBe(0);
             expect(bundle.project.overrides).toEqual([]);
@@ -167,10 +159,10 @@ describe("ProjectSerializer", () => {
 
     describe("round-trip", () => {
         it("should produce identical output on serialize → deserialize → serialize", async () => {
-            RegisterSmartAsset(sam.scene, "chair", "chair.glb");
-            RegisterSmartAsset(sam.scene, "table", "table.glb");
+            RegisterSmartAsset(scene, "chair", "chair.glb");
+            RegisterSmartAsset(scene, "table", "table.glb");
 
-            AddOverride(overrides, {
+            AddOverride(scene, {
                 key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
@@ -178,7 +170,7 @@ describe("ProjectSerializer", () => {
                 value: 0.5,
             });
 
-            AddOverride(overrides, {
+            AddOverride(scene, {
                 key: "",
                 targetType: "scene",
                 targetName: "",
@@ -186,7 +178,7 @@ describe("ProjectSerializer", () => {
                 value: 0.1,
             });
 
-            const bundle = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(scene);
             const json = JSON.stringify(bundle.project);
             const parsed = JSON.parse(json);
             const deserialized = DeserializeProject(parsed);
@@ -220,14 +212,14 @@ describe("ProjectSerializer", () => {
                 ],
             };
 
-            await LoadProjectAsync(projectDoc, sam, overrides);
+            await LoadProjectAsync(scene, projectDoc);
 
             // Asset should be registered and loaded
-            expect(GetAllSmartAssets(sam.scene).get("chair")).toBe("chair.glb");
+            expect(GetAllSmartAssets(scene).get("chair")).toBe("chair.glb");
 
             // Override should be applied
             expect(scene.fogDensity).toBe(0.4);
-            expect(GetOverrides(overrides).length).toBe(1);
+            expect(GetOverrides(scene).length).toBe(1);
         });
 
         it("should work with empty overrides", async () => {
@@ -239,10 +231,10 @@ describe("ProjectSerializer", () => {
                 overrides: [],
             };
 
-            await LoadProjectAsync(projectDoc, sam, overrides);
+            await LoadProjectAsync(scene, projectDoc);
 
-            expect(GetAllSmartAssets(sam.scene).get("table")).toBe("table.glb");
-            expect(GetOverrides(overrides).length).toBe(0);
+            expect(GetAllSmartAssets(scene).get("table")).toBe("table.glb");
+            expect(GetOverrides(scene).length).toBe(0);
         });
     });
 });

@@ -1,26 +1,16 @@
-import { type Scene } from "../scene";
-import { type Observer } from "../Misc/observable";
-import { Logger } from "../Misc/logger";
+import { type Scene } from "core/scene";
+import { Observable, type Observer } from "core/Misc/observable";
+import { Logger } from "core/Misc/logger";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
-import { type SmartAssetManager, AddSmartAssetManagerCreatedObserver, FindSmartAssetKeyForObject, GetAllSmartAssets } from "./smartAssetManager";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
+import { FindSmartAssetKeyForObject, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
 const OVERRIDE_MANAGER_KEY = Symbol.for("babylonjs:overrideManager");
 
-/**
- * Returns the SmartAssetManager already attached to a scene, or undefined if
- * none exists. Unlike GetSmartAssetManager from smartAssetManager.ts, this
- * never creates a new manager — it's a read-only check used by the override
- * system to decide whether to link to an existing manager.
- * @param scene - The scene to inspect.
- * @returns The attached SmartAssetManager, or undefined if none is attached.
- */
+// Mirror of the symbol used by smartAssetManager.ts. Read-only peek so the
+// override system can use SAM tracking when one is present, without forcing
+// SAM creation on scenes that don't have one yet.
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _peekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
-    return scene.metadata?.[SMART_ASSET_MANAGER_KEY] as SmartAssetManager | undefined;
-}
+const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
 
 /**
  * Stateful handle for a scene's property override registry.
@@ -28,19 +18,19 @@ function _peekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
  * Override behavior is exposed through module-level functions rather than
  * class methods so callers can import only the operations they need.
  *
- * Overrides are property diffs applied after an asset is loaded. They persist
- * across reloads and are stored alongside the asset map in the project file.
+ * Overrides are property diffs applied to scene objects. They persist across
+ * reloads and are typically saved alongside a project file.
  *
- * The override manager is host-agnostic — it works with any Babylon Scene
- * without requiring Inspector, Playground, or any specific host environment.
+ * The override manager is independent of {@link SmartAssetManager} — it works
+ * with any Babylon Scene. When a SmartAssetManager is also attached to the
+ * scene, overrides may target objects loaded by a specific smart asset key.
  *
  * @example
  * ```typescript
- * const sam = GetSmartAssetManager(scene);
- * const overrides = CreateOverrideManager(scene);
+ * const overrides = GetOverrideManager(scene);
  *
- * // Add an override: set the material named "canPaint" from key "sodaCan" to red
- * AddOverride(overrides, {
+ * // Set the material named "canPaint" from key "sodaCan" to red
+ * AddOverride(scene, {
  *     key: "sodaCan",
  *     targetType: "materials",
  *     targetName: "canPaint",
@@ -54,48 +44,40 @@ export type OverrideManager = {
      * The scene this manager is attached to.
      */
     readonly scene: Scene;
-};
 
-/**
- * An OverrideManager handle, or a scene that should use its attached manager.
- * When a scene is supplied to override functions, the scene's manager is
- * created automatically if needed.
- */
-export type OverrideManagerOrScene = OverrideManager | Scene;
+    /**
+     * Fires whenever the override registry or applied state changes.
+     */
+    readonly onChangedObservable: Observable<void>;
+};
 
 type OverrideManagerInternals = {
     overrides: IOverrideEntry[];
     originalValues: Map<string, unknown>;
-    sceneDisposeObserver: Observer<Scene> | null;
-    samCreatedObserver: Observer<SmartAssetManager> | null;
-    samChangedObserver: Observer<void> | null;
-    linkedSam: SmartAssetManager | null;
+    sceneDisposeObserver: ReturnType<Scene["onDisposeObservable"]["add"]> | null;
 };
 
 const OverrideManagerInternals = new WeakMap<OverrideManager, OverrideManagerInternals>();
+const OnOverrideManagerCreatedObservable = new Observable<OverrideManager>();
 
 /**
  * Creates a new OverrideManager state object and attaches it to the scene.
  *
- * Throws if the scene already has an OverrideManager — use {@link GetOrCreateOverrideManager}
- * if you don't know whether one already exists.
+ * Internal: callers should use {@link GetOverrideManager} which returns the
+ * existing manager when one is already attached.
  * @param scene - The scene this manager operates on.
  * @returns The created override manager state.
  */
-export function CreateOverrideManager(scene: Scene): OverrideManager {
-    if (GetOverrideManagerFromScene(scene)) {
-        throw new Error("OverrideManager: A manager already exists for this scene. Use GetOrCreateOverrideManager instead.");
-    }
-
-    const manager: OverrideManager = { scene };
+function CreateOverrideManager(scene: Scene): OverrideManager {
+    const manager: OverrideManager = {
+        scene,
+        onChangedObservable: new Observable<void>(),
+    };
 
     const internal: OverrideManagerInternals = {
         overrides: [],
         originalValues: new Map(),
         sceneDisposeObserver: null,
-        samCreatedObserver: null,
-        samChangedObserver: null,
-        linkedSam: null,
     };
     OverrideManagerInternals.set(manager, internal);
 
@@ -107,39 +89,33 @@ export function CreateOverrideManager(scene: Scene): OverrideManager {
     // Auto-dispose when the scene is disposed so the manager doesn't outlive it.
     internal.sceneDisposeObserver = scene.onDisposeObservable.add(() => DisposeOverrideManager(manager));
 
-    // If a SmartAssetManager already exists on this scene, link it now so overrides
-    // are reapplied automatically on asset reload.
-    const existingSam = _peekSmartAssetManager(scene);
-    if (existingSam) {
-        _linkSmartAssetManager(manager, existingSam);
-    }
-
-    // If a SmartAssetManager is created later on this same scene, link to it then.
-    internal.samCreatedObserver = AddSmartAssetManagerCreatedObserver((sam) => {
-        if (sam.scene === scene) {
-            _linkSmartAssetManager(manager, sam);
-        }
-    });
+    OnOverrideManagerCreatedObservable.notifyObservers(manager);
 
     return manager;
 }
 
 /**
- * Returns the OverrideManager attached to a scene, or undefined if none exists.
- * @param scene - The scene to look up.
- * @returns The OverrideManager, or undefined.
- */
-export function GetOverrideManagerFromScene(scene: Scene): OverrideManager | undefined {
-    return scene.metadata?.[OVERRIDE_MANAGER_KEY] as OverrideManager | undefined;
-}
-
-/**
- * Returns the OverrideManager attached to a scene, creating one when needed.
+ * Returns the OverrideManager attached to the given scene, creating and
+ * attaching one if none exists.
  * @param scene - The scene to look up or attach a manager to.
  * @returns The existing or newly created OverrideManager.
  */
-export function GetOrCreateOverrideManager(scene: Scene): OverrideManager {
-    return GetOverrideManagerFromScene(scene) ?? CreateOverrideManager(scene);
+export function GetOverrideManager(scene: Scene): OverrideManager {
+    const existing = scene.metadata?.[OVERRIDE_MANAGER_KEY] as OverrideManager | undefined;
+    if (existing) {
+        return existing;
+    }
+    return CreateOverrideManager(scene);
+}
+
+/**
+ * Adds an observer that is notified whenever an OverrideManager is created.
+ * @param callback - The callback to invoke with each newly created manager.
+ * @returns The observer registration.
+ */
+export function AddOverrideManagerCreatedObserver(callback: (manager: OverrideManager) => void): Observer<OverrideManager> {
+    // Wrap so the EventState second-arg from Observable.add isn't passed through to the caller.
+    return OnOverrideManagerCreatedObservable.add((manager) => callback(manager));
 }
 
 // ── Override CRUD ──
@@ -147,13 +123,13 @@ export function GetOrCreateOverrideManager(scene: Scene): OverrideManager {
 /**
  * Adds an override entry and immediately applies it if the target is loaded.
  * If an override with the same key/target/property already exists, it is replaced.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose override registry to update.
  * @param entry - The override to add.
  * @param skipApply - If true, records the override without applying it immediately.
  *                    Use this when the value has already been set (e.g., by Inspector).
  */
-export function AddOverride(managerOrScene: OverrideManagerOrScene, entry: IOverrideEntry, skipApply: boolean = false): void {
-    const manager = ResolveOverrideManager(managerOrScene);
+export function AddOverride(scene: Scene, entry: IOverrideEntry, skipApply: boolean = false): void {
+    const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
     _removeMatchingOverride(internal, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
@@ -161,20 +137,21 @@ export function AddOverride(managerOrScene: OverrideManagerOrScene, entry: IOver
     if (!skipApply) {
         _applyOverride(manager, internal, entry);
     }
+    manager.onChangedObservable.notifyObservers();
 }
 
 /**
  * Removes an override by matching key, target, and property path.
  * Restores the original value if one was captured.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose override registry to update.
  * @param key - The smart asset key.
  * @param targetType - The target type.
  * @param targetName - The target object name.
  * @param propertyPath - The property path to un-override.
  * @returns True if an override was removed.
  */
-export function RemoveOverride(managerOrScene: OverrideManagerOrScene, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): boolean {
-    const manager = ResolveOverrideManager(managerOrScene);
+export function RemoveOverride(scene: Scene, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): boolean {
+    const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
     const idx = _findOverrideIndex(internal, key, targetType, targetName, propertyPath);
@@ -194,17 +171,18 @@ export function RemoveOverride(managerOrScene: OverrideManagerOrScene, key: stri
         internal.originalValues.delete(origKey);
     }
 
+    manager.onChangedObservable.notifyObservers();
     return true;
 }
 
 /**
  * Returns all overrides, optionally filtered by key.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose override registry to read.
  * @param key - If provided, returns only overrides for this key.
  * @returns A read-only array of override entries.
  */
-export function GetOverrides(managerOrScene: OverrideManagerOrScene, key?: string): readonly IOverrideEntry[] {
-    const internal = GetOverrideInternals(ResolveOverrideManager(managerOrScene));
+export function GetOverrides(scene: Scene, key?: string): readonly IOverrideEntry[] {
+    const internal = GetOverrideInternals(GetOverrideManager(scene));
     if (key !== undefined) {
         return internal.overrides.filter((o) => o.key === key);
     }
@@ -213,38 +191,43 @@ export function GetOverrides(managerOrScene: OverrideManagerOrScene, key?: strin
 
 /**
  * Removes all overrides, optionally restoring original values.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose override registry to clear.
  * @param restoreOriginals - If true, restores all captured original values.
  */
-export function ClearOverrides(managerOrScene: OverrideManagerOrScene, restoreOriginals: boolean = false): void {
-    const manager = ResolveOverrideManager(managerOrScene);
+export function ClearOverrides(scene: Scene, restoreOriginals: boolean = false): void {
+    const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
     if (restoreOriginals) {
         for (const entry of [...internal.overrides]) {
-            RemoveOverride(manager, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
+            RemoveOverride(scene, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
         }
-    } else {
-        internal.overrides.length = 0;
-        internal.originalValues.clear();
+        return;
     }
+
+    internal.overrides.length = 0;
+    internal.originalValues.clear();
+    manager.onChangedObservable.notifyObservers();
 }
 
 /**
  * Updates the targetName on all overrides that match a given key, type, and old name.
  * Use this when an entity is renamed so existing overrides follow the new name.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose override registry to update.
  * @param key - The smart asset key.
  * @param targetType - The target type (meshes, materials, etc.).
  * @param oldName - The old entity name.
  * @param newName - The new entity name.
  */
-export function RenameOverrideTarget(managerOrScene: OverrideManagerOrScene, key: string, targetType: OverrideTargetType, oldName: string, newName: string): void {
-    const internal = GetOverrideInternals(ResolveOverrideManager(managerOrScene));
+export function RenameOverrideTarget(scene: Scene, key: string, targetType: OverrideTargetType, oldName: string, newName: string): void {
+    const manager = GetOverrideManager(scene);
+    const internal = GetOverrideInternals(manager);
 
+    let changed = false;
     for (const entry of internal.overrides) {
         if (entry.key === key && entry.targetType === targetType && entry.targetName === oldName) {
             (entry as { targetName: string }).targetName = newName;
+            changed = true;
         }
     }
 
@@ -258,18 +241,26 @@ export function RenameOverrideTarget(managerOrScene: OverrideManagerOrScene, key
             internal.originalValues.delete(origKey);
         }
     }
+
+    if (changed) {
+        manager.onChangedObservable.notifyObservers();
+    }
 }
 
 // ── Application ──
 
 /**
  * Applies all overrides for a specific smart asset key.
- * Called automatically when the linked SmartAssetManager reloads assets.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ *
+ * Call this after reloading a smart asset so persisted overrides reapply to
+ * the freshly loaded objects. The override manager does not auto-subscribe to
+ * smart asset changes — coordination is the caller's responsibility, which
+ * keeps the two systems independent.
+ * @param scene - The scene whose overrides to apply.
  * @param key - The smart asset key to apply overrides for.
  */
-export function ApplyOverridesForKey(managerOrScene: OverrideManagerOrScene, key: string): void {
-    const manager = ResolveOverrideManager(managerOrScene);
+export function ApplyOverridesForKey(scene: Scene, key: string): void {
+    const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
     for (const entry of internal.overrides) {
         if (entry.key === key) {
@@ -280,10 +271,10 @@ export function ApplyOverridesForKey(managerOrScene: OverrideManagerOrScene, key
 
 /**
  * Applies all overrides (all keys + scene-level).
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose overrides to apply.
  */
-export function ApplyAllOverrides(managerOrScene: OverrideManagerOrScene): void {
-    const manager = ResolveOverrideManager(managerOrScene);
+export function ApplyAllOverrides(scene: Scene): void {
+    const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
     for (const entry of internal.overrides) {
         _applyOverride(manager, internal, entry);
@@ -295,31 +286,30 @@ export function ApplyAllOverrides(managerOrScene: OverrideManagerOrScene): void 
 /**
  * Serializes all overrides to a JSON-compatible array.
  * The on-disk shape is identical to the in-memory `IOverrideEntry`.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose overrides to serialize.
  * @returns An array of override entries (shallow copies).
  */
-export function SerializeOverrides(managerOrScene: OverrideManagerOrScene): IOverrideEntry[] {
-    const internal = GetOverrideInternals(ResolveOverrideManager(managerOrScene));
+export function SerializeOverrides(scene: Scene): IOverrideEntry[] {
+    const internal = GetOverrideInternals(GetOverrideManager(scene));
     return internal.overrides.map((o) => ({ ...o }));
 }
 
 /**
  * Loads overrides from a serialized array and applies them.
- * @param managerOrScene - The override manager state, or a scene that owns one.
+ * @param scene - The scene whose override registry to populate.
  * @param data - Array of override entries.
  */
-export function DeserializeAndApplyOverrides(managerOrScene: OverrideManagerOrScene, data: IOverrideEntry[]): void {
+export function DeserializeAndApplyOverrides(scene: Scene, data: IOverrideEntry[]): void {
     if (!Array.isArray(data)) {
         throw new Error("OverrideManager: Expected an array of override entries.");
     }
 
-    const manager = ResolveOverrideManager(managerOrScene);
     for (const entry of data) {
         if (entry.key === undefined || !entry.targetType || entry.targetName === undefined || !entry.propertyPath || entry.value === undefined) {
             Logger.Warn("OverrideManager: Skipping invalid override entry.");
             continue;
         }
-        AddOverride(manager, entry);
+        AddOverride(scene, entry);
     }
 }
 
@@ -342,20 +332,11 @@ export function DisposeOverrideManager(manager: OverrideManager): void {
         manager.scene.onDisposeObservable.remove(internal.sceneDisposeObserver);
         internal.sceneDisposeObserver = null;
     }
-    if (internal.samCreatedObserver) {
-        // The created observable lives on the smart asset manager module; remove via the
-        // returned observer's parent to keep this dispose self-contained.
-        internal.samCreatedObserver.remove();
-        internal.samCreatedObserver = null;
-    }
-    if (internal.samChangedObserver && internal.linkedSam) {
-        internal.linkedSam.onChangedObservable.remove(internal.samChangedObserver);
-    }
-    internal.samChangedObserver = null;
-    internal.linkedSam = null;
 
     internal.overrides.length = 0;
     internal.originalValues.clear();
+
+    manager.onChangedObservable.clear();
 
     if (manager.scene.metadata) {
         delete manager.scene.metadata[OVERRIDE_MANAGER_KEY];
@@ -372,29 +353,26 @@ function GetOverrideInternals(manager: OverrideManager): OverrideManagerInternal
     return internal;
 }
 
-function ResolveOverrideManager(managerOrScene: OverrideManagerOrScene): OverrideManager {
-    return OverrideManagerInternals.has(managerOrScene as OverrideManager) ? (managerOrScene as OverrideManager) : GetOrCreateOverrideManager(managerOrScene as Scene);
+/**
+ * Reads the SmartAssetManager attached to the scene, if any, without creating
+ * one. Used by target/texture resolution so overrides can take advantage of
+ * SAM-tracked ownership when present, while keeping the two systems
+ * independent (no auto-create, no observable subscription).
+ * @param scene - The scene to inspect.
+ * @returns The attached SmartAssetManager, or undefined if none is attached.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _peekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
+    return scene.metadata?.[SMART_ASSET_MANAGER_KEY] as SmartAssetManager | undefined;
 }
 
 /**
- * Subscribes to the SmartAssetManager's onChangedObservable so overrides are
- * reapplied automatically whenever asset state changes (e.g., after a reload).
- * @param manager - The override manager being linked.
- * @param sam - The smart asset manager to listen to for changes.
+ * Applies a single override entry to its target, capturing the original value
+ * on the first application so {@link RemoveOverride} can restore it later.
+ * @param manager - The override manager owning the entry.
+ * @param internal - The manager's internal state.
+ * @param entry - The override to apply.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _linkSmartAssetManager(manager: OverrideManager, sam: SmartAssetManager): void {
-    const internal = GetOverrideInternals(manager);
-    if (internal.linkedSam === sam) {
-        return;
-    }
-    if (internal.samChangedObserver && internal.linkedSam) {
-        internal.linkedSam.onChangedObservable.remove(internal.samChangedObserver);
-    }
-    internal.linkedSam = sam;
-    internal.samChangedObserver = sam.onChangedObservable.add(() => ApplyAllOverrides(manager));
-}
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _applyOverride(manager: OverrideManager, internal: OverrideManagerInternals, entry: IOverrideEntry): void {
     const target = _resolveTarget(manager, entry.key, entry.targetType, entry.targetName);
@@ -416,6 +394,16 @@ function _applyOverride(manager: OverrideManager, internal: OverrideManagerInter
     _setNestedProperty(target, entry.propertyPath, resolvedValue);
 }
 
+/**
+ * Locates a scene object by override entry coordinates. When a SmartAssetManager
+ * is attached, ownership is checked via {@link FindSmartAssetKeyForObject}. When
+ * no SAM exists, only empty-key (in-tool) overrides can be resolved.
+ * @param manager - The override manager owning the lookup scene.
+ * @param key - The smart asset key, or "" for in-tool/scene-level objects.
+ * @param targetType - The override target type (meshes, materials, etc.).
+ * @param targetName - The target object name.
+ * @returns The matching scene object, or null if not found.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _resolveTarget(manager: OverrideManager, key: string, targetType: OverrideTargetType, targetName: string): object | null {
     const scene = manager.scene;
@@ -437,14 +425,19 @@ function _resolveTarget(manager: OverrideManager, key: string, targetType: Overr
         return null;
     }
 
-    // Verify the key is registered before attempting to resolve.
-    if (GetAllSmartAssets(sam.scene).get(key) === undefined) {
-        return null;
-    }
-
     return _findObjectByName(scene, sam, targetType, targetName, key);
 }
 
+/**
+ * Finds a scene object by name, optionally requiring it be tracked by a
+ * specific smart asset key.
+ * @param scene - The scene to search.
+ * @param sam - The attached SmartAssetManager, or undefined for scene-only lookup.
+ * @param targetType - The collection to search.
+ * @param name - The object name to match.
+ * @param key - The smart asset key required ("" for objects not tracked by any key).
+ * @returns The matching object, or null if none found.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _findObjectByName(scene: Scene, sam: SmartAssetManager | undefined, targetType: OverrideTargetType, name: string, key: string): object | null {
     const collections: Record<string, unknown[]> = {
@@ -472,6 +465,13 @@ function _findObjectByName(scene: Scene, sam: SmartAssetManager | undefined, tar
     );
 }
 
+/**
+ * Resolves an override value, expanding string references like "ref:name" or
+ * "texture:key" into the actual scene object they refer to.
+ * @param manager - The override manager (used for scene access).
+ * @param value - The serialized override value.
+ * @returns The runtime value to assign to the target property.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _resolveValue(manager: OverrideManager, value: OverrideValue): unknown {
     // String references: "ref:materialName" or "texture:smartAssetKey"
@@ -542,11 +542,29 @@ function _resolveTextureReference(scene: Scene, key: string): unknown {
     return undefined;
 }
 
+/**
+ * Finds the index of an override matching the given coordinates.
+ * @param internal - The manager's internal state.
+ * @param key - The smart asset key.
+ * @param targetType - The target type.
+ * @param targetName - The target object name.
+ * @param propertyPath - The property path.
+ * @returns The matching index, or -1 if none found.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _findOverrideIndex(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): number {
     return internal.overrides.findIndex((o) => o.key === key && o.targetType === targetType && o.targetName === targetName && o.propertyPath === propertyPath);
 }
 
+/**
+ * Removes any existing override that matches the given coordinates. Used by
+ * {@link AddOverride} to enforce one entry per (key, target, property).
+ * @param internal - The manager's internal state.
+ * @param key - The smart asset key.
+ * @param targetType - The target type.
+ * @param targetName - The target object name.
+ * @param propertyPath - The property path.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _removeMatchingOverride(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): void {
     const idx = _findOverrideIndex(internal, key, targetType, targetName, propertyPath);

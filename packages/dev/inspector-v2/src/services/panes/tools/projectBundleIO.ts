@@ -1,8 +1,8 @@
 import { zipSync, unzipSync, strToU8, strFromU8 } from "fflate";
 
-import { type SmartAssetManager, GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManager";
-import { type OverrideManager } from "core/SmartAssets/overrideManager";
-import { SerializeProject, LoadProjectAsync, PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
+import { type Scene } from "core/scene";
+import { GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManager";
+import { SerializeProject, LoadProjectAsync, PROJECT_LOCALS_KEY } from "../../../projects/projectSerializer";
 
 /**
  * Serializes a project into a `.babylonproject` zip bundle.
@@ -14,13 +14,12 @@ import { SerializeProject, LoadProjectAsync, PROJECT_LOCALS_KEY } from "core/Sma
  *
  * Remote URLs (http/https) are left as references and not bundled.
  *
- * @param sam - The SmartAssetManager to serialize.
- * @param overrides - The OverrideManager to serialize.
+ * @param scene - The scene to serialize.
  * @returns A Blob containing the zip bundle.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: OverrideManager): Promise<Blob> {
-    const bundle = SerializeProject(sam, overrides);
+export async function saveProjectBundleAsync(scene: Scene): Promise<Blob> {
+    const bundle = SerializeProject(scene);
     const files: Record<string, Uint8Array> = {};
 
     // Collect local (blob/data URI) assets to bundle inside the zip.
@@ -77,12 +76,11 @@ export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: 
  * Loads a `.babylonproject` zip bundle. Extracts all files, creates blob
  * URLs for bundled assets, and loads the project through SAM.
  *
+ * @param scene - The scene to load the project into.
  * @param zipFile - The zip file to load.
- * @param sam - The SmartAssetManager to populate.
- * @param overrides - The OverrideManager to populate.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export async function loadProjectBundleAsync(zipFile: File, sam: SmartAssetManager, overrides: OverrideManager): Promise<void> {
+export async function loadProjectBundleAsync(scene: Scene, zipFile: File): Promise<void> {
     const arrayBuffer = await zipFile.arrayBuffer();
     const extracted = unzipSync(new Uint8Array(arrayBuffer));
 
@@ -109,7 +107,7 @@ export async function loadProjectBundleAsync(zipFile: File, sam: SmartAssetManag
     }
 
     // Load through the standard path
-    await LoadProjectAsync(projectJson, sam, overrides);
+    await LoadProjectAsync(scene, projectJson);
 
     // Clean up blob URLs after loading (SAM has already consumed them)
     // Note: textures and scene files may still reference these URLs internally,
