@@ -87,7 +87,7 @@ void main () {
         #else
             float _so4 = 1.0;
         #endif
-        vColor.xyz = _row3.x * splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace, _row3.y, _row3.z, _row3.w, _so4);
+        vColor.xyz = _row3.x * splat.color.xyz + computeSHWeighted(splat, eyeToSplatLocalSpace, _row3.y, _row3.z, _row3.w, _so4);
     }
     #elif defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
         vColor.xyz = computeSH(splat, eyeToSplatLocalSpace);

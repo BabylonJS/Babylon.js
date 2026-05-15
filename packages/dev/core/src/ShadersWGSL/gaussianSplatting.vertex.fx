@@ -89,7 +89,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
         #else
             let _so4: f32 = 1.0;
         #endif
-        vertexOutputs.vColor = vec4f(_row3.x * splat.color.xyz + computeSHDBG(splat, eyeToSplatLocalSpace, _row3.y, _row3.z, _row3.w, _so4), splat.color.w * uniforms.alpha);
+        vertexOutputs.vColor = vec4f(_row3.x * splat.color.xyz + computeSHWeighted(splat, eyeToSplatLocalSpace, _row3.y, _row3.z, _row3.w, _so4), splat.color.w * uniforms.alpha);
     }
     #elif defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
         vertexOutputs.vColor = vec4f(computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
