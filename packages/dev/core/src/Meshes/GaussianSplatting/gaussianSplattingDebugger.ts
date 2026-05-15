@@ -16,11 +16,18 @@ import { type GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
  *
  * @example
  * ```ts
+ * // Global options — applied to every registered mesh
  * const gsDebugger = new GaussianSplattingDebugger();
  * gsDebugger.addMesh(mesh1);
- * gsDebugger.addMesh(mesh2);
+ * gsDebugger.addMesh(compoundMesh); // compound mesh with multiple parts
  * gsDebugger.clippingBox = { min: new Vector3(-2, -2, -2), max: new Vector3(2, 2, 2) };
  * gsDebugger.shOrder1 = false;
+ *
+ * // Per-part override — saturate opacity on part 0 of the compound mesh only,
+ * // leaving all other parts (and mesh1) unaffected
+ * gsDebugger.setPartOptions(compoundMesh, 0, { opacitySaturate: true });
+ * // Later, restore part 0 to the global setting
+ * gsDebugger.clearPartOptions(compoundMesh, 0);
  * ```
  */
 export class GaussianSplattingDebugger {
