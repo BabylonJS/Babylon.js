@@ -321,7 +321,7 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
      */
     public setInteraction(source: InputSource, conditions: InputConditions | undefined, interaction: InteractionName<THandlers>): boolean {
         const entry = this.resolveInteraction(source, conditions);
-        if (entry && this._entryIsAtLeastAsSpecificAsConditions(entry, conditions)) {
+        if (entry && this._entryConstrainsAllOf(entry, conditions)) {
             entry.interaction = interaction;
             return true;
         }
@@ -336,50 +336,33 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
      * Returns true when `entry` constrains at least every field that `conditions` specifies,
      * i.e. `entry` is at least as specific as the request. Used by {@link setInteraction} to
      * decide whether to mutate an existing entry or add a more-specific one.
+     *
+     * `InputConditions` is a flat type covering all source-specific fields (`button`, `key`,
+     * `touchCount`, `modifiers`); for any given source the irrelevant fields are `undefined`
+     * on both `entry` and `conditions`, so checking them all is harmless.
      * @param entry - The matched inputMap entry to test
      * @param conditions - The conditions the caller supplied to `setInteraction`
      * @returns true if `entry` constrains every field present in `conditions`
      */
-    private _entryIsAtLeastAsSpecificAsConditions(entry: InputMapEntry<InteractionName<THandlers>>, conditions?: InputConditions): boolean {
+    private _entryConstrainsAllOf(entry: InputMapEntry<InteractionName<THandlers>>, conditions?: InputConditions): boolean {
         if (!conditions) {
             return true;
         }
-        switch (entry.source) {
-            case "pointer":
-                if (conditions.button !== undefined && entry.button === undefined) {
-                    return false;
-                }
-                return this._modifiersAtLeastAsSpecific(entry.modifiers, conditions.modifiers);
-            case "wheel":
-                return this._modifiersAtLeastAsSpecific(entry.modifiers, conditions.modifiers);
-            case "touch":
-                if (conditions.touchCount !== undefined && entry.touchCount === undefined) {
-                    return false;
-                }
-                return true;
-            case "keyboard":
-                if (conditions.key !== undefined && entry.key === undefined) {
-                    return false;
-                }
-                return this._modifiersAtLeastAsSpecific(entry.modifiers, conditions.modifiers);
-        }
-    }
-
-    /**
-     * Returns true when `entryMods` constrains every modifier key that `condMods` specifies
-     * with a defined value.
-     * @param entryMods - Modifier constraints on the inputMap entry (or undefined for no constraint)
-     * @param condMods - Modifier constraints on the request conditions (or undefined for no constraint)
-     * @returns true if `entryMods` constrains every modifier key present in `condMods`
-     */
-    private _modifiersAtLeastAsSpecific(entryMods: InputModifiers | undefined, condMods: InputModifiers | undefined): boolean {
-        if (!condMods) {
-            return true;
-        }
-        const mods = entryMods ?? {};
-        for (const key of Object.keys(condMods) as (keyof InputModifiers)[]) {
-            if (condMods[key] !== undefined && mods[key] === undefined) {
+        // `as any` here because `entry` is a discriminated union and TypeScript can't narrow it
+        // from a string-keyed loop. The runtime check is harmless: irrelevant-for-this-source
+        // fields are undefined on both entry and conditions and skip the early return.
+        const e = entry as any;
+        for (const field of ["button", "key", "touchCount"] as const) {
+            if (conditions[field] !== undefined && e[field] === undefined) {
                 return false;
+            }
+        }
+        if (conditions.modifiers) {
+            const entryMods = e.modifiers ?? {};
+            for (const key of Object.keys(conditions.modifiers) as (keyof InputModifiers)[]) {
+                if (conditions.modifiers[key] !== undefined && entryMods[key] === undefined) {
+                    return false;
+                }
             }
         }
         return true;
