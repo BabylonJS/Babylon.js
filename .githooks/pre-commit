@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+set -e
+
 npm run precommit
 
 # Auto-fix tree-shaking artifacts if any core source files are staged
