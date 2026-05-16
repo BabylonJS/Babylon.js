@@ -1,4 +1,5 @@
 import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { type Scene } from "core/scene";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
@@ -9,12 +10,25 @@ import { type Observer, Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { type Color4 } from "core/Maths/math.color";
-import { type GLTFLoader } from "../glTFLoader";
+import { type IMaterialLoadingAdapter } from "../materialLoadingAdapter";
+
+/**
+ * Describes a material class and its corresponding loading adapter.
+ * Passed to TransmissionHelper so it can classify and interact with materials
+ * independently of any specific loader instance.
+ */
+export interface ITransmissionHelperMaterialImpl {
+    /** The material class constructor */
+    materialClass: typeof Material;
+    /** The adapter class constructor */
+    adapterClass: new (material: Material) => IMaterialLoadingAdapter;
+}
 
 /**
  * @internal
  */
 export interface ITransmissionHelperHolder {
+    /** The transmission helper instance, if created on the scene */
     _transmissionHelper: TransmissionHelper | undefined;
 }
 
@@ -87,7 +101,12 @@ export class TransmissionHelper {
     private _opaqueMeshesCache: AbstractMesh[] = [];
     private _transparentMeshesCache: AbstractMesh[] = [];
     private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
-    private _loader: GLTFLoader;
+
+    // Material implementations registered by loaders. Each entry maps a material class
+    // to its adapter class so the helper can classify and interact with materials
+    // independently of whichever loader originally created them.
+    private readonly _materialImpls: ITransmissionHelperMaterialImpl[] = [];
+    private readonly _adapterCache: WeakMap<Material, IMaterialLoadingAdapter> = new WeakMap();
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -107,16 +126,14 @@ export class TransmissionHelper {
      * constructor
      * @param options Defines the options we want to customize the helper
      * @param scene The scene to add the material to
-     * @param loader The glTF loader loading the asset
      */
-    constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene, loader: GLTFLoader) {
+    constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene) {
         this._options = {
             ...TransmissionHelper._GetDefaultOptions(),
             ...options,
         };
         this._scene = scene as any;
         this._scene._transmissionHelper = this;
-        this._loader = loader;
 
         this.onErrorObservable = new Observable();
         this._scene.onDisposeObservable.addOnce(() => {
@@ -125,6 +142,18 @@ export class TransmissionHelper {
 
         this._parseScene();
         this._setupRenderTargets();
+    }
+
+    /**
+     * Registers a material implementation with the helper so it can classify and create
+     * adapters for materials of that type. Safe to call multiple times with the same
+     * implementation — duplicates are ignored.
+     * @param impl The material implementation to register
+     */
+    public addMaterialImpl(impl: ITransmissionHelperMaterialImpl): void {
+        if (!this._materialImpls.some((i) => i.materialClass === impl.materialClass)) {
+            this._materialImpls.push(impl);
+        }
     }
 
     /**
@@ -168,6 +197,20 @@ export class TransmissionHelper {
         return this._opaqueRenderTarget;
     }
 
+    private _getOrCreateAdapter(material: Material): IMaterialLoadingAdapter | undefined {
+        let adapter = this._adapterCache.get(material);
+        if (!adapter) {
+            for (const impl of this._materialImpls) {
+                if (material instanceof impl.materialClass) {
+                    adapter = new impl.adapterClass(material);
+                    this._adapterCache.set(material, adapter);
+                    break;
+                }
+            }
+        }
+        return adapter;
+    }
+
     /**
      * Classify a mesh's materials as transparent, opaque, or mixed.
      * Sets the refraction background texture on any translucent materials found.
@@ -184,10 +227,10 @@ export class TransmissionHelper {
 
         // Single material case
         if (!(material instanceof MultiMaterial)) {
-            if (!this._loader.isMatchingMaterialType(material)) {
+            const adapter = this._getOrCreateAdapter(material);
+            if (!adapter) {
                 return "opaque";
             }
-            const adapter = this._loader._getOrCreateMaterialAdapter(material);
             if (adapter.isTranslucent()) {
                 adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
                 return "transparent";
@@ -206,8 +249,8 @@ export class TransmissionHelper {
                 hasOpaque = true;
                 continue;
             }
-            if (this._loader.isMatchingMaterialType(subMat)) {
-                const adapter = this._loader._getOrCreateMaterialAdapter(subMat);
+            const adapter = this._getOrCreateAdapter(subMat);
+            if (adapter) {
                 if (adapter.isTranslucent()) {
                     adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
                     hasTranslucent = true;

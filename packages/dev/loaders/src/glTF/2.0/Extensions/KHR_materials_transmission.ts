@@ -89,11 +89,15 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         // Handle transmission helper setup (only needed for PBR materials)
         if (transmissionWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
             const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
-            if (!scene._transmissionHelper) {
-                new TransmissionHelper({}, babylonMaterial.getScene(), this._loader);
-            } else if (!scene._transmissionHelper?._isRenderTargetValid()) {
-                // If the render target is not valid, recreate it.
-                scene._transmissionHelper?._setupRenderTargets();
+            const existingHelper = scene._transmissionHelper;
+            const helper = existingHelper ?? new TransmissionHelper({}, babylonMaterial.getScene());
+            // Register all material implementations known to this loader so the helper
+            // can classify and create adapters for them independently of the loader's lifetime.
+            for (const impl of Array.from(this._loader._pbrMaterialImpls.values())) {
+                helper.addMaterialImpl(impl);
+            }
+            if (existingHelper && !existingHelper._isRenderTargetValid()) {
+                existingHelper._setupRenderTargets();
             }
         }
 
