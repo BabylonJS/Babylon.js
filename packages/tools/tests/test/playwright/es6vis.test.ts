@@ -21,8 +21,11 @@ import { test, expect } from "@playwright/test";
 
 const STYLES = ["barrel", "deep", "pure"] as const;
 
+type Es6VisWindow = Window & { __ready?: boolean };
+
 /** Maximum allowed pixel difference ratio (0.01 = 1%). */
 const MAX_DIFF_PIXEL_RATIO = 0.01;
+const READY_TIMEOUT_MS = 30_000;
 
 /** Auto-discover scene directories. */
 const scenesDir = path.resolve(__dirname, "../../es6Vis/src/scenes");
@@ -38,7 +41,7 @@ for (const sceneName of SCENES) {
                 await page.goto(`/?scene=${sceneName}&style=${style}`);
 
                 // Wait for the render loop to signal readiness
-                await page.waitForFunction(() => (window as Record<string, unknown>).__ready === true, null, { timeout: 20_000 });
+                await page.waitForFunction(() => (window as Es6VisWindow).__ready === true, null, { timeout: READY_TIMEOUT_MS });
 
                 // Grab the canvas element
                 const canvas = page.locator("#renderCanvas");

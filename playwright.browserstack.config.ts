@@ -73,6 +73,10 @@ if (!activeConfig) {
     throw new Error(`Unknown BSTACK_TEST_TYPE: "${testType}". Valid values: ${Object.keys(testConfigs).join(", ")}`);
 }
 
+if (activeConfig.local) {
+    process.env.ES6VIS_PREBUNDLE = "true";
+}
+
 // ---------------------------------------------------------------------------
 // Reporters
 // ---------------------------------------------------------------------------
@@ -84,7 +88,7 @@ if (isPerformanceRun) {
 // ES6 vis tests need a local Vite server tunnelled to BrowserStack
 const es6visWebServer = activeConfig.local
     ? {
-          command: "npx vite --config packages/tools/tests/es6Vis/vite.config.ts",
+          command: "npx vite --config packages/tools/tests/es6Vis/vite.config.ts --force",
           url: "http://localhost:1340",
           reuseExistingServer: false,
           timeout: 60_000,
@@ -93,12 +97,14 @@ const es6visWebServer = activeConfig.local
       }
     : undefined;
 
+const testTimeout = testType === "es6vis" ? 60_000 : isPerformanceRun ? 300_000 : undefined;
+
 export default defineConfig({
     fullyParallel: true,
     forbidOnly: true,
     retries: testType === "es6vis" ? 1 : 2,
     workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 2,
-    timeout: isPerformanceRun ? 300_000 : undefined,
+    timeout: testTimeout,
     reporter: baseReporters,
     testMatch: activeConfig.testMatch,
     use: {
