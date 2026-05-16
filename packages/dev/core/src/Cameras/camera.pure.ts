@@ -301,7 +301,15 @@ export class Camera extends Node {
      * This helps giving a smooth feeling to the camera movement.
      */
     @serialize()
-    public inertia = 0.9;
+    public get inertia(): number {
+        return this._baseInertia;
+    }
+
+    public set inertia(value: number) {
+        this._baseInertia = value;
+    }
+
+    private _baseInertia = 0.9;
 
     private _mode = Camera.PERSPECTIVE_CAMERA;
 

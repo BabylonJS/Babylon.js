@@ -36,7 +36,7 @@ export type GeospatialCameraOptions = {
 export class GeospatialCamera extends Camera {
     override inputs: GeospatialCameraInputsManager;
 
-    /** Movement controller that turns input pixelDeltas into currentFrameDeltas used by camera*/
+    /** Movement controller that provides input mapping and framerate-independent physics for geospatial interactions */
     public readonly movement: GeospatialCameraMovement;
 
     // Temp vars
@@ -69,6 +69,7 @@ export class GeospatialCamera extends Camera {
         this.addBehavior(this._flyingBehavior);
 
         this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, options.pickPredicate, this._flyingBehavior);
+
         this._resetToDefault(this._limits);
 
         this.inputs = new GeospatialCameraInputsManager(this);
@@ -218,10 +219,10 @@ export class GeospatialCamera extends Camera {
      * If camera is actively in flight, will update the target properties and use up the remaining duration from original flyTo call
      *
      * To start a new flyTo curve entirely, call into flyToAsync again (it will stop the inflight animation)
-     * @param targetYaw the new target yaw angle in radians
-     * @param targetPitch the new target pitch angle in radians
-     * @param targetRadius the new target camera radius
-     * @param targetCenter the new target center point
+     * @param targetYaw - Target yaw in radians, or undefined to keep the current yaw.
+     * @param targetPitch - Target pitch in radians, or undefined to keep the current pitch.
+     * @param targetRadius - Target radius (distance from the look-at center), or undefined to keep the current radius.
+     * @param targetCenter - Target look-at center in scene coordinates, or undefined to keep the current center.
      */
     public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
         this._flyToTargets.clear();
@@ -238,12 +239,12 @@ export class GeospatialCamera extends Camera {
 
     /**
      * Animate camera towards passed in property values. If undefined, will use current value
-     * @param targetYaw the target yaw angle in radians
-     * @param targetPitch the target pitch angle in radians
-     * @param targetRadius the target camera radius
-     * @param targetCenter the target center point
-     * @param flightDurationMs the duration of the flight animation in milliseconds
-     * @param easingFunction an optional easing function for the animation
+     * @param targetYaw - Target yaw in radians, or undefined to keep the current yaw.
+     * @param targetPitch - Target pitch in radians, or undefined to keep the current pitch.
+     * @param targetRadius - Target radius (distance from the look-at center), or undefined to keep the current radius.
+     * @param targetCenter - Target look-at center in scene coordinates, or undefined to keep the current center.
+     * @param flightDurationMs - Total duration of the animation in milliseconds. Defaults to 1000ms.
+     * @param easingFunction - Optional easing function applied to the animation curve.
      * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */

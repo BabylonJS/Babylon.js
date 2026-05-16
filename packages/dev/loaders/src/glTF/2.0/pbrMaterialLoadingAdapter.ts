@@ -5,6 +5,7 @@ import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type GLTFLoader } from "./glTFLoader";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**
@@ -28,6 +29,12 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public get material(): PBRMaterial {
         return this._material;
     }
+
+    /**
+     * No-op: PBRMaterial has no deferred finalization.
+     * @param _loader Unused.
+     */
+    public async finalizeAsync(_loader: GLTFLoader): Promise<void> {}
 
     /**
      * Whether the material should be treated as unlit
