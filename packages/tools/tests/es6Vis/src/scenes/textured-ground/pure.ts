@@ -17,11 +17,12 @@ import {
     CreateCylinder,
     CreateGround,
     CreateTorusKnot,
+    RegisterNoiseProceduralTexture,
     RegisterStandardEngineExtensions,
 } from "@babylonjs/core/pure";
-import "@babylonjs/core/Shaders/noise.fragment";
 
 RegisterStandardEngineExtensions();
+RegisterNoiseProceduralTexture();
 
 export function run(canvas: HTMLCanvasElement): void {
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });

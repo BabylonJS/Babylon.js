@@ -4,8 +4,17 @@ import { type Nullable } from "../../../types";
 import { type Scene } from "../../../scene.pure";
 import { EngineStore } from "../../../Engines/engineStore";
 import { type Texture } from "../../../Materials/Textures/texture.pure";
-import { ProceduralTexture } from "./proceduralTexture.pure";
+import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
+
+let _NoiseProceduralTextureShaderPromise: Promise<void> | undefined;
+
+async function _EnsureNoiseProceduralTextureShaderAsync(): Promise<void> {
+    _NoiseProceduralTextureShaderPromise ??= (async () => {
+        await import("../../../Shaders/noise.fragment");
+    })();
+    await _NoiseProceduralTextureShaderPromise;
+}
 
 /**
  * Class used to generate noise procedural textures
@@ -35,7 +44,12 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * @param generateMipMaps defines if mipmaps must be generated (true by default)
      */
     constructor(name: string, size: number = 256, scene: Nullable<Scene> = EngineStore.LastCreatedScene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-        super(name, size, "noise", scene, fallbackTexture, generateMipMaps);
+        const creationOptions: IProceduralTextureCreationOptions = {
+            fallbackTexture,
+            extraInitializationsAsync: _EnsureNoiseProceduralTextureShaderAsync,
+        };
+
+        super(name, size, "noise", scene, creationOptions, generateMipMaps);
         this.autoClear = false;
         this._updateShaderUniforms();
     }
@@ -147,5 +161,6 @@ export function RegisterNoiseProceduralTexture(): void {
     }
     _Registered = true;
 
+    void _EnsureNoiseProceduralTextureShaderAsync();
     RegisterClass("BABYLON.NoiseProceduralTexture", NoiseProceduralTexture);
 }
