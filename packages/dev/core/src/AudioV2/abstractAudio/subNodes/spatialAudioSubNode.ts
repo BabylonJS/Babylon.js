@@ -24,6 +24,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract maxDistance: number;
     public abstract minDistance: number;
     public abstract orientation: Vector3;
+    public abstract panningEnabled: boolean;
     public abstract panningModel: PanningModelType;
     public abstract position: Vector3;
     public abstract rolloffFactor: number;
@@ -69,6 +70,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefaults.maxDistance;
         this.minDistance = options.spatialMinDistance ?? _SpatialAudioDefaults.minDistance;
         this.orientation = options.spatialOrientation ?? _SpatialAudioDefaults.orientation;
+        this.panningEnabled = options.spatialPanningEnabled ?? _SpatialAudioDefaults.panningEnabled;
         this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.panningModel;
         this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.rolloffFactor;
 
