@@ -90,7 +90,7 @@ The import path should be relative to the consuming file. No named imports are n
 
 ### Alternative: Pure path with registration functions (Phase 9)
 
-Each side-effect file now has a three-file split:
+Each side-effect file now has a three-file split. This applies to files that actually own legacy side effects; do not create this split for side-effect-free modules or generated shader files.
 
 - **`component.types.ts`** — `declare module` augmentation (types only, zero runtime bytes)
 - **`component.pure.ts`** — registration function + pure code

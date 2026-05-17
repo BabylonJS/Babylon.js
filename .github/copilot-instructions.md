@@ -24,13 +24,13 @@ Feature documentation lives in `/specs/`. Each feature has its own folder named 
 
 ## Tree-Shaking Architecture
 
-The `@babylonjs/core` package uses a three-file split for tree-shaking. Every source file under `packages/dev/core/src/` is split into:
+The `@babylonjs/core` package uses a three-file split only for modules that need a side-effect-free implementation plus a backward-compatible side-effect wrapper:
 
-- **`foo.pure.ts`** — All logic. Imports only from other `.pure.ts` files. No side effects.
-- **`foo.ts`** — Thin wrapper that re-exports from `.pure.ts` and calls the registration function.
-- **`foo.types.ts`** — `declare module` augmentations (only when the file augments another class).
+- **`foo.pure.ts`** — Pure implementation and idempotent registration function. Imports only from other pure-safe modules. No top-level side effects.
+- **`foo.ts`** — Thin wrapper that re-exports from `.pure.ts`, re-exports `.types.ts` when present, and calls the registration function.
+- **`foo.types.ts`** — `declare module` augmentations only when the module augments another class or namespace.
 
-When modifying or creating files in core, always edit the `.pure.ts` file for logic. Side effects (RegisterClass, prototype augmentations, ShaderStore writes) go inside the `register*()` function in `.pure.ts`. See [instructions/tree-shaking.instructions.md](instructions/tree-shaking.instructions.md) for the full guide.
+Do not create `.pure.ts` plus an empty wrapper for side-effect-free modules. If a module has no runtime side effects or registration work, keep it as a single plain `.ts` file. Generated shader files under `Shaders/`, `ShadersWGSL/`, and `ShadersInclude/` are generated side-effect modules; never create `.pure.ts` variants for them. When modifying an existing split module in core, edit the `.pure.ts` file for logic. Side effects (RegisterClass, prototype augmentations, static API reattachment, generated shader imports, etc.) are owned by the registration function in `.pure.ts` and invoked by the wrapper. See [instructions/tree-shaking.instructions.md](instructions/tree-shaking.instructions.md) for the full guide.
 
 ## Public APIs
 
