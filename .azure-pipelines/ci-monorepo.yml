@@ -842,6 +842,28 @@ jobs:
             displayName: "Run visualization tests"
             retryCountOnTaskFailure: 3
 
+          - pwsh: |
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Results" | Out-Null
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Errors" | Out-Null
+            displayName: "Ensure native visualization output dirs"
+            condition: not(canceled())
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Rendered Pictures"
+            condition: not(canceled())
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Results"
+                artifact: "native-rendered-pictures"
+                publishLocation: "pipeline"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Error Pictures"
+            condition: failed()
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Errors"
+                artifact: "native-error-pictures"
+                publishLocation: "pipeline"
+
     # ============================================================================
     # PERFORMANCE TESTS
     # Depends on: Build, FormatLint
