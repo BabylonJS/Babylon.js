@@ -232,7 +232,7 @@ function GetFallbackFontOffset(font: string): { ascent: number; height: number; 
 }
 
 function GetCssPixelFontSize(font: string): number {
-    const match = /(?:^|\s)([0-9]+(?:\.[0-9]+)?)px(?:\s|$)/.exec(String(font || ""));
+    const match = /(?:^|\s)([0-9]+(?:\.[0-9]+)?)px(?:\/|\s|$)/.exec(String(font || ""));
     return match ? Number(match[1]) : 16;
 }
 
