@@ -14,7 +14,7 @@ import {
     type SmartAssetLoadOptions,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
-import { ApplyAllOverrides, ApplyOverridesForKey, AddOverride, GetOverrides } from "../../../projects/overrideManager";
+import { ApplyAllOverrides, AddOverride, GetOverrides } from "../../../projects/overrideManager";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Material } from "core/Materials/material";
 import { Tools } from "core/Misc/tools";
@@ -398,7 +398,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Re-apply overrides for the reloaded asset
-                    ApplyOverridesForKey(scene, key);
+                    ApplyAllOverrides(scene);
                 }
 
                 // Notify after everything is loaded and tracked so the UI re-renders
@@ -555,12 +555,13 @@ const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene:
 
             mesh.material = mat;
 
-            // Persist as an override
-            const key = FindSmartAssetKeyForObject(scene, mesh) ?? "";
+            // Persist as an override. Use the mesh's index among same-name siblings so
+            // we re-target the same instance after reload if duplicates exist.
+            const targetIndex = scene.meshes.filter((m) => m.name === mesh.name).indexOf(mesh);
             AddOverride(scene, {
-                key,
                 targetType: "meshes",
                 targetName: mesh.name,
+                targetIndex: Math.max(targetIndex, 0),
                 propertyPath: "material",
                 value: `ref:${mat.name}`,
             });
@@ -610,15 +611,17 @@ const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene:
 const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
     const { scene } = props;
     const styles = useStyles();
-    const [overrideList, setOverrideList] = useState<Array<{ key: string; target: string; prop: string; value: string }>>([]);
+    const [overrideList, setOverrideList] = useState<Array<{ target: string; prop: string; value: string }>>([]);
 
     const refresh = useCallback(() => {
-        const entries = GetOverrides(scene).map((o) => ({
-            key: o.key || "(scene)",
-            target: `${o.targetType}.${o.targetName}`,
-            prop: o.propertyPath,
-            value: String(o.value),
-        }));
+        const entries = GetOverrides(scene).map((o) => {
+            const nameLabel = o.targetName === "" ? "(scene)" : o.targetIndex > 0 ? `${o.targetName}[${o.targetIndex}]` : o.targetName;
+            return {
+                target: `${o.targetType}.${nameLabel}`,
+                prop: o.propertyPath,
+                value: String(o.value),
+            };
+        });
         setOverrideList(entries);
     }, [scene]);
 
@@ -638,11 +641,9 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
         <>
             {overrideList.map((o, i) => (
                 <div key={i} className={styles.overrideRow}>
-                    <span>{o.key}</span>
-                    <span className={styles.dimSeparator}>→</span>
-                    <span>
-                        {o.target}.{o.prop}
-                    </span>
+                    <span>{o.target}</span>
+                    <span className={styles.dimSeparator}>.</span>
+                    <span>{o.prop}</span>
                     <span className={styles.dimSeparator}>=</span>
                     <span className={styles.overrideValue}>{ShortenValue(o.value)}</span>
                 </div>

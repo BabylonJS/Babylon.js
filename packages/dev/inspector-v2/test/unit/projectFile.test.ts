@@ -82,9 +82,9 @@ describe("ProjectSerializer", () => {
             RegisterSmartAsset(scene, "table", "models/table.glb");
 
             AddOverride(scene, {
-                key: "",
                 targetType: "scene",
                 targetName: "",
+                targetIndex: 0,
                 propertyPath: "fogDensity",
                 value: 0.2,
             });
@@ -127,9 +127,9 @@ describe("ProjectSerializer", () => {
                 },
                 overrides: [
                     {
-                        key: "chair",
                         targetType: "materials",
                         targetName: "Wood",
+                        targetIndex: 0,
                         propertyPath: "alpha",
                         value: 0.5,
                     },
@@ -163,17 +163,17 @@ describe("ProjectSerializer", () => {
             RegisterSmartAsset(scene, "table", "table.glb");
 
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
             AddOverride(scene, {
-                key: "",
                 targetType: "scene",
                 targetName: "",
+                targetIndex: 0,
                 propertyPath: "fogDensity",
                 value: 0.1,
             });
@@ -203,9 +203,9 @@ describe("ProjectSerializer", () => {
                 },
                 overrides: [
                     {
-                        key: "" as const,
                         targetType: "scene" as const,
                         targetName: "",
+                        targetIndex: 0,
                         propertyPath: "fogDensity",
                         value: 0.4,
                     },

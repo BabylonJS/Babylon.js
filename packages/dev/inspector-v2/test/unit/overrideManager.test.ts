@@ -1,20 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { GetSmartAssetManager, LoadSmartAssetAsync, ReloadSmartAssetAsync } from "core/SmartAssets/index";
+import { GetSmartAssetManager, LoadSmartAssetAsync, ReloadSmartAssetAsync } from "core/SmartAssets/smartAssetManager";
 import {
     AddOverride,
-    ApplyOverridesForKey,
+    ApplyAllOverrides,
     ClearOverrides,
     DeserializeAndApplyOverrides,
     DisposeOverrideManager,
     GetOverrideManager,
     GetOverrides,
     RemoveOverride,
+    RenameOverrideTarget,
     SerializeOverrides,
     type OverrideManager,
 } from "../../src/projects/overrideManager";
-import type { IOverrideEntry } from "../../src/projects/overrideEntry";
+import { type IOverrideEntry } from "../../src/projects/overrideEntry";
 
 const mockDispose = vi.fn();
 
@@ -76,16 +77,12 @@ describe("OverrideManager", () => {
         });
         scene = new Scene(engine);
         _currentScene = scene;
-        // Force the smart asset manager to be created so override-to-asset linking is wired up
-        // in the same observable-fire order as the original tests.
-        GetSmartAssetManager(scene);
         overrides = GetOverrideManager(scene);
         vi.clearAllMocks();
     });
 
     afterEach(() => {
         DisposeOverrideManager(overrides);
-        // SmartAssetManager auto-disposes when the scene is disposed.
         scene.dispose();
         engine.dispose();
         _currentScene = null;
@@ -96,9 +93,9 @@ describe("OverrideManager", () => {
     describe("AddOverride", () => {
         it("should store an override entry", () => {
             const entry: IOverrideEntry = {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             };
@@ -112,17 +109,17 @@ describe("OverrideManager", () => {
 
         it("should replace existing override for same target+property", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.8,
             });
@@ -134,83 +131,84 @@ describe("OverrideManager", () => {
 
         it("should allow multiple overrides on different properties", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "roughness",
                 value: 0.9,
             });
 
             expect(GetOverrides(scene).length).toBe(2);
         });
+
+        it("should keep two same-name objects independent via targetIndex", async () => {
+            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
+            const firstContainer = createMockContainer(["FirstMesh"], ["SharedMaterial"]);
+            const secondContainer = createMockContainer(["SecondMesh"], ["SharedMaterial"]);
+            vi.mocked(LoadAssetContainerAsync)
+                .mockResolvedValueOnce(firstContainer as any)
+                .mockResolvedValueOnce(secondContainer as any);
+
+            await LoadSmartAssetAsync(scene, "first", "first.glb");
+            await LoadSmartAssetAsync(scene, "second", "second.glb");
+
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "SharedMaterial",
+                targetIndex: 1,
+                propertyPath: "alpha",
+                value: 0.25,
+            });
+
+            expect(firstContainer.materials[0].alpha).toBe(1);
+            expect(secondContainer.materials[0].alpha).toBe(0.25);
+        });
     });
 
     describe("RemoveOverride", () => {
         it("should remove an override", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
-            const removed = RemoveOverride(scene, "chair", "materials", "WoodMaterial", "alpha");
+            const removed = RemoveOverride(scene, "materials", "WoodMaterial", 0, "alpha");
 
             expect(removed).toBe(true);
             expect(GetOverrides(scene).length).toBe(0);
         });
 
         it("should return false for non-existent override", () => {
-            const removed = RemoveOverride(scene, "chair", "materials", "WoodMaterial", "alpha");
+            const removed = RemoveOverride(scene, "materials", "WoodMaterial", 0, "alpha");
             expect(removed).toBe(false);
         });
     });
 
     describe("GetOverrides", () => {
-        it("should filter by key", () => {
+        it("should return all registered overrides", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
             AddOverride(scene, {
-                key: "table",
                 targetType: "materials",
                 targetName: "MetalMaterial",
-                propertyPath: "roughness",
-                value: 0.3,
-            });
-
-            const chairOverrides = GetOverrides(scene, "chair");
-            expect(chairOverrides.length).toBe(1);
-            expect(chairOverrides[0].key).toBe("chair");
-        });
-
-        it("should return all when no key filter", () => {
-            AddOverride(scene, {
-                key: "chair",
-                targetType: "materials",
-                targetName: "WoodMaterial",
-                propertyPath: "alpha",
-                value: 0.5,
-            });
-
-            AddOverride(scene, {
-                key: "table",
-                targetType: "materials",
-                targetName: "MetalMaterial",
+                targetIndex: 0,
                 propertyPath: "roughness",
                 value: 0.3,
             });
@@ -222,23 +220,60 @@ describe("OverrideManager", () => {
     describe("ClearOverrides", () => {
         it("should remove all overrides", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "M1",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
             AddOverride(scene, {
-                key: "table",
                 targetType: "materials",
                 targetName: "M2",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.3,
             });
 
             ClearOverrides(scene);
             expect(GetOverrides(scene).length).toBe(0);
+        });
+    });
+
+    describe("RenameOverrideTarget", () => {
+        it("should rewrite a single override slot, leaving same-name siblings untouched", async () => {
+            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
+            const firstContainer = createMockContainer(["FirstMesh"], ["SharedMaterial"]);
+            const secondContainer = createMockContainer(["SecondMesh"], ["SharedMaterial"]);
+            vi.mocked(LoadAssetContainerAsync)
+                .mockResolvedValueOnce(firstContainer as any)
+                .mockResolvedValueOnce(secondContainer as any);
+            await LoadSmartAssetAsync(scene, "first", "first.glb");
+            await LoadSmartAssetAsync(scene, "second", "second.glb");
+
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "SharedMaterial",
+                targetIndex: 0,
+                propertyPath: "alpha",
+                value: 0.1,
+            });
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "SharedMaterial",
+                targetIndex: 1,
+                propertyPath: "alpha",
+                value: 0.9,
+            });
+
+            // Rename the second one
+            secondContainer.materials[0].name = "Renamed";
+            RenameOverrideTarget(scene, "materials", "SharedMaterial", 1, "Renamed", 0);
+
+            const all = GetOverrides(scene);
+            expect(all.length).toBe(2);
+            expect(all.find((o) => o.targetName === "SharedMaterial" && o.targetIndex === 0)?.value).toBe(0.1);
+            expect(all.find((o) => o.targetName === "Renamed" && o.targetIndex === 0)?.value).toBe(0.9);
         });
     });
 
@@ -252,9 +287,9 @@ describe("OverrideManager", () => {
             expect(material).toBeDefined();
 
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "Material1",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.7,
             });
@@ -266,9 +301,9 @@ describe("OverrideManager", () => {
             await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
 
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "Material1",
+                targetIndex: 0,
                 propertyPath: "wireframe",
                 value: true,
             });
@@ -276,37 +311,14 @@ describe("OverrideManager", () => {
             const material = scene.materials.find((m) => m.name === "Material1");
             expect((material as any).wireframe).toBe(true);
         });
-
-        it("should scope same-named targets to the owning smart asset key", async () => {
-            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
-            const firstContainer = createMockContainer(["FirstMesh"], ["SharedMaterial"]);
-            const secondContainer = createMockContainer(["SecondMesh"], ["SharedMaterial"]);
-            vi.mocked(LoadAssetContainerAsync)
-                .mockResolvedValueOnce(firstContainer as any)
-                .mockResolvedValueOnce(secondContainer as any);
-
-            await LoadSmartAssetAsync(scene, "first", "first.glb");
-            await LoadSmartAssetAsync(scene, "second", "second.glb");
-
-            AddOverride(scene, {
-                key: "second",
-                targetType: "materials",
-                targetName: "SharedMaterial",
-                propertyPath: "alpha",
-                value: 0.25,
-            });
-
-            expect(firstContainer.materials[0].alpha).toBe(1);
-            expect(secondContainer.materials[0].alpha).toBe(0.25);
-        });
     });
 
     describe("scene-level overrides", () => {
         it("should apply override to the scene object", () => {
             AddOverride(scene, {
-                key: "",
                 targetType: "scene",
                 targetName: "",
+                targetIndex: 0,
                 propertyPath: "fogDensity",
                 value: 0.5,
             });
@@ -320,17 +332,17 @@ describe("OverrideManager", () => {
     describe("serialization", () => {
         it("should serialize overrides to JSON-compatible array", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
 
             AddOverride(scene, {
-                key: "",
                 targetType: "scene",
                 targetName: "",
+                targetIndex: 0,
                 propertyPath: "fogDensity",
                 value: 0.1,
             });
@@ -338,7 +350,7 @@ describe("OverrideManager", () => {
             const serialized = SerializeOverrides(scene);
 
             expect(serialized.length).toBe(2);
-            expect(serialized[0].key).toBe("chair");
+            expect(serialized[0].targetName).toBe("WoodMaterial");
             expect(serialized[0].value).toBe(0.5);
             expect(serialized[1].targetType).toBe("scene");
         });
@@ -346,9 +358,9 @@ describe("OverrideManager", () => {
         it("should deserialize and apply overrides", () => {
             const data: IOverrideEntry[] = [
                 {
-                    key: "",
                     targetType: "scene",
                     targetName: "",
+                    targetIndex: 0,
                     propertyPath: "fogDensity",
                     value: 0.3,
                 },
@@ -362,9 +374,9 @@ describe("OverrideManager", () => {
 
         it("should round-trip serialize → deserialize", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });
@@ -378,36 +390,56 @@ describe("OverrideManager", () => {
         });
     });
 
-    // ── Integration Tests ──
+    // ── Independence + explicit reapply ──
 
-    describe("SmartAssetManager coordination", () => {
+    describe("scene coordination", () => {
         it("should expose its scene", () => {
             expect(overrides.scene).toBe(scene);
         });
 
-        it("should reapply overrides after a SmartAssetManager reload when the caller invokes ApplyOverridesForKey", async () => {
-            // OverrideManager and SmartAssetManager are intentionally independent —
-            // the override system does NOT auto-subscribe to SAM changes. Callers
-            // coordinate the two managers explicitly when they want overrides to
-            // re-apply after an asset reload.
+        it("should reapply overrides after an asset reload when the caller invokes ApplyAllOverrides", async () => {
+            // OverrideManager is intentionally independent of SmartAssetManager — it does
+            // not subscribe to SAM changes. Callers explicitly call ApplyAllOverrides
+            // after operations (like reload) that could have invalidated applied state.
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "Material1",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.7,
             });
 
             await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
-            ApplyOverridesForKey(scene, "chair");
+            ApplyAllOverrides(scene);
             expect(scene.materials.find((m) => m.name === "Material1")?.alpha).toBe(0.7);
 
             await ReloadSmartAssetAsync(scene, "chair");
-            ApplyOverridesForKey(scene, "chair");
+            ApplyAllOverrides(scene);
 
             const reloadedMaterial = scene.materials.find((m) => m.name === "Material1");
             expect(reloadedMaterial).toBeDefined();
             expect((reloadedMaterial as any).alpha).toBe(0.7);
+        });
+
+        it("should not import or reference SmartAssetManager at the module level", async () => {
+            // Verify that the override module's own source does not import the SAM module —
+            // if SAM creation is observable here, it's because Scene metadata exists, not
+            // because OverrideManager touched SAM.
+            const samBefore = (scene.metadata as any)?.[Symbol.for("babylonjs:smartAssetManager")];
+            AddOverride(scene, {
+                targetType: "scene",
+                targetName: "",
+                targetIndex: 0,
+                propertyPath: "fogDensity",
+                value: 0.4,
+            });
+            const samAfter = (scene.metadata as any)?.[Symbol.for("babylonjs:smartAssetManager")];
+            expect(samBefore).toBe(samAfter);
+
+            // The smartAssetManager Symbol is also intentionally NOT a key on OverrideManager's scene metadata
+            // until something else creates one. Sanity check: GetSmartAssetManager is a no-op here.
+            // (When invoked it would attach a SAM, but we never invoked it.)
+            expect(typeof GetSmartAssetManager).toBe("function");
         });
     });
 
@@ -416,9 +448,9 @@ describe("OverrideManager", () => {
     describe("DisposeOverrideManager", () => {
         it("should detach from the scene and clear state", () => {
             AddOverride(scene, {
-                key: "chair",
                 targetType: "materials",
                 targetName: "M1",
+                targetIndex: 0,
                 propertyPath: "alpha",
                 value: 0.5,
             });

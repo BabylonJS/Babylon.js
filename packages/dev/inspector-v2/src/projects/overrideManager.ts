@@ -2,14 +2,8 @@ import { type Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
-import { FindSmartAssetKeyForObject, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
 const OverrideManagerKey = Symbol.for("babylonjs:overrideManager");
-
-// Mirror of the symbol used by smartAssetManager.ts. Read-only peek so the
-// override system can use SAM tracking when one is present, without forcing
-// SAM creation on scenes that don't have one yet.
-const SmartAssetManagerKey = Symbol.for("babylonjs:smartAssetManager");
 
 /**
  * Stateful handle for a scene's property override registry.
@@ -17,22 +11,24 @@ const SmartAssetManagerKey = Symbol.for("babylonjs:smartAssetManager");
  * Override behavior is exposed through module-level functions rather than
  * class methods so callers can import only the operations they need.
  *
- * Overrides are property diffs applied to scene objects. They persist across
- * reloads and are typically saved alongside a project file.
+ * Overrides are property diffs applied to scene objects identified by name.
+ * They persist across reloads and are typically saved alongside a project
+ * file. The override manager is fully independent of any other scene
+ * subsystem (SmartAssetManager, loaders, etc.) — it works with any object
+ * in the scene's standard collections (meshes, materials, lights, …)
+ * regardless of how that object was created.
  *
- * The override manager is independent of {@link SmartAssetManager} — it works
- * with any Babylon Scene. When a SmartAssetManager is also attached to the
- * scene, overrides may target objects loaded by a specific smart asset key.
+ * When multiple objects share a name (e.g. two materials both called
+ * "Default" loaded from different glTFs), {@link IOverrideEntry.targetIndex}
+ * disambiguates: it stores the object's position among same-named siblings
+ * at capture time and is used to pick the correct one at apply time.
  *
  * @example
  * ```typescript
- * const overrides = GetOverrideManager(scene);
- *
- * // Set the material named "canPaint" from key "sodaCan" to red
  * AddOverride(scene, {
- *     key: "sodaCan",
  *     targetType: "materials",
  *     targetName: "canPaint",
+ *     targetIndex: 0,
  *     propertyPath: "albedoColor",
  *     value: [1, 0, 0],
  * });
@@ -113,7 +109,6 @@ export function GetOverrideManager(scene: Scene): OverrideManager {
  * @returns The observer registration.
  */
 export function AddOverrideManagerCreatedObserver(callback: (manager: OverrideManager) => void): Observer<OverrideManager> {
-    // Wrap so the EventState second-arg from Observable.add isn't passed through to the caller.
     return OnOverrideManagerCreatedObservable.add((manager) => callback(manager));
 }
 
@@ -121,7 +116,7 @@ export function AddOverrideManagerCreatedObserver(callback: (manager: OverrideMa
 
 /**
  * Adds an override entry and immediately applies it if the target is loaded.
- * If an override with the same key/target/property already exists, it is replaced.
+ * If an override with the same target coordinates already exists, it is replaced.
  * @param scene - The scene whose override registry to update.
  * @param entry - The override to add.
  * @param skipApply - If true, records the override without applying it immediately.
@@ -131,7 +126,7 @@ export function AddOverride(scene: Scene, entry: IOverrideEntry, skipApply: bool
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
-    RemoveMatchingOverride(internal, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
+    RemoveMatchingOverride(internal, entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
     internal.overrides.push(entry);
     if (!skipApply) {
         ApplyOverrideEntry(manager, internal, entry);
@@ -140,30 +135,30 @@ export function AddOverride(scene: Scene, entry: IOverrideEntry, skipApply: bool
 }
 
 /**
- * Removes an override by matching key, target, and property path.
- * Restores the original value if one was captured.
+ * Removes a single override matching the given coordinates. Restores the
+ * original value if one was captured.
  * @param scene - The scene whose override registry to update.
- * @param key - The smart asset key.
  * @param targetType - The target type.
  * @param targetName - The target object name.
+ * @param targetIndex - The target index among same-named siblings.
  * @param propertyPath - The property path to un-override.
  * @returns True if an override was removed.
  */
-export function RemoveOverride(scene: Scene, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): boolean {
+export function RemoveOverride(scene: Scene, targetType: OverrideTargetType, targetName: string, targetIndex: number, propertyPath: string): boolean {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
-    const idx = FindOverrideIndex(internal, key, targetType, targetName, propertyPath);
+    const idx = FindOverrideIndex(internal, targetType, targetName, targetIndex, propertyPath);
     if (idx < 0) {
         return false;
     }
 
     internal.overrides.splice(idx, 1);
 
-    const origKey = MakeOriginalValueKey(key, targetType, targetName, propertyPath);
+    const origKey = MakeOriginalValueKey(targetType, targetName, targetIndex, propertyPath);
     const original = internal.originalValues.get(origKey);
     if (original !== undefined) {
-        const target = ResolveTarget(manager, key, targetType, targetName);
+        const target = ResolveTarget(manager.scene, targetType, targetName, targetIndex);
         if (target) {
             SetNestedProperty(target, propertyPath, original);
         }
@@ -175,17 +170,12 @@ export function RemoveOverride(scene: Scene, key: string, targetType: OverrideTa
 }
 
 /**
- * Returns all overrides, optionally filtered by key.
+ * Returns all overrides currently registered with the scene.
  * @param scene - The scene whose override registry to read.
- * @param key - If provided, returns only overrides for this key.
  * @returns A read-only array of override entries.
  */
-export function GetOverrides(scene: Scene, key?: string): readonly IOverrideEntry[] {
-    const internal = GetOverrideInternals(GetOverrideManager(scene));
-    if (key !== undefined) {
-        return internal.overrides.filter((o) => o.key === key);
-    }
-    return internal.overrides;
+export function GetOverrides(scene: Scene): readonly IOverrideEntry[] {
+    return GetOverrideInternals(GetOverrideManager(scene)).overrides;
 }
 
 /**
@@ -199,7 +189,7 @@ export function ClearOverrides(scene: Scene, restoreOriginals: boolean = false):
 
     if (restoreOriginals) {
         for (const entry of [...internal.overrides]) {
-            RemoveOverride(scene, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
+            RemoveOverride(scene, entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
         }
         return;
     }
@@ -210,33 +200,40 @@ export function ClearOverrides(scene: Scene, restoreOriginals: boolean = false):
 }
 
 /**
- * Updates the targetName on all overrides that match a given key, type, and old name.
- * Use this when an entity is renamed so existing overrides follow the new name.
+ * Updates the target coordinates on the override matching a specific (type,
+ * old-name, old-index) so it follows an entity rename. Used by capture services
+ * to keep overrides attached to a specific object after the user renames it.
+ *
+ * Only the override at the exact `(targetType, oldName, oldIndex)` slot is
+ * updated, so other same-named siblings keep their own overrides untouched.
+ *
  * @param scene - The scene whose override registry to update.
- * @param key - The smart asset key.
- * @param targetType - The target type (meshes, materials, etc.).
- * @param oldName - The old entity name.
- * @param newName - The new entity name.
+ * @param targetType - The target type.
+ * @param oldName - The previous name of the renamed entity.
+ * @param oldIndex - The previous index of the renamed entity among same-named siblings.
+ * @param newName - The new name of the renamed entity.
+ * @param newIndex - The new index of the renamed entity among same-named siblings.
  */
-export function RenameOverrideTarget(scene: Scene, key: string, targetType: OverrideTargetType, oldName: string, newName: string): void {
+export function RenameOverrideTarget(scene: Scene, targetType: OverrideTargetType, oldName: string, oldIndex: number, newName: string, newIndex: number): void {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
     let changed = false;
-    for (const entry of internal.overrides) {
-        if (entry.key === key && entry.targetType === targetType && entry.targetName === oldName) {
-            (entry as { targetName: string }).targetName = newName;
+    for (let i = 0; i < internal.overrides.length; i++) {
+        const entry = internal.overrides[i];
+        if (entry.targetType === targetType && entry.targetName === oldName && entry.targetIndex === oldIndex) {
+            internal.overrides[i] = { ...entry, targetName: newName, targetIndex: newIndex };
             changed = true;
         }
     }
 
-    // Update original-value keys to match the new name
+    // Update original-value keys to match the new identity
+    const oldPrefix = `${targetType}::${oldName}::${oldIndex}::`;
+    const newPrefix = `${targetType}::${newName}::${newIndex}::`;
     for (const [origKey, value] of Array.from(internal.originalValues.entries())) {
-        const prefix = `${key}::${targetType}::${oldName}::`;
-        if (origKey.startsWith(prefix)) {
-            const propertyPath = origKey.substring(prefix.length);
-            const newOrigKey = `${key}::${targetType}::${newName}::${propertyPath}`;
-            internal.originalValues.set(newOrigKey, value);
+        if (origKey.startsWith(oldPrefix)) {
+            const propertyPath = origKey.substring(oldPrefix.length);
+            internal.originalValues.set(newPrefix + propertyPath, value);
             internal.originalValues.delete(origKey);
         }
     }
@@ -249,27 +246,12 @@ export function RenameOverrideTarget(scene: Scene, key: string, targetType: Over
 // ── Application ──
 
 /**
- * Applies all overrides for a specific smart asset key.
+ * Applies all overrides to their current targets in the scene.
  *
- * Call this after reloading a smart asset so persisted overrides reapply to
- * the freshly loaded objects. The override manager does not auto-subscribe to
- * smart asset changes — coordination is the caller's responsibility, which
- * keeps the two systems independent.
- * @param scene - The scene whose overrides to apply.
- * @param key - The smart asset key to apply overrides for.
- */
-export function ApplyOverridesForKey(scene: Scene, key: string): void {
-    const manager = GetOverrideManager(scene);
-    const internal = GetOverrideInternals(manager);
-    for (const entry of internal.overrides) {
-        if (entry.key === key) {
-            ApplyOverrideEntry(manager, internal, entry);
-        }
-    }
-}
-
-/**
- * Applies all overrides (all keys + scene-level).
+ * Call this after any scene mutation that might have invalidated previously
+ * applied state (asset reload, object recreation, project load). The override
+ * manager does not auto-subscribe to other scene subsystems — coordination is
+ * the caller's responsibility, which keeps the override system independent.
  * @param scene - The scene whose overrides to apply.
  */
 export function ApplyAllOverrides(scene: Scene): void {
@@ -304,7 +286,7 @@ export function DeserializeAndApplyOverrides(scene: Scene, data: IOverrideEntry[
     }
 
     for (const entry of data) {
-        if (entry.key === undefined || !entry.targetType || entry.targetName === undefined || !entry.propertyPath || entry.value === undefined) {
+        if (!entry.targetType || entry.targetName === undefined || typeof entry.targetIndex !== "number" || !entry.propertyPath || entry.value === undefined) {
             Logger.Warn("OverrideManager: Skipping invalid override entry.");
             continue;
         }
@@ -353,18 +335,6 @@ function GetOverrideInternals(manager: OverrideManager): OverrideManagerInternal
 }
 
 /**
- * Reads the SmartAssetManager attached to the scene, if any, without creating
- * one. Used by target/texture resolution so overrides can take advantage of
- * SAM-tracked ownership when present, while keeping the two systems
- * independent (no auto-create, no observable subscription).
- * @param scene - The scene to inspect.
- * @returns The attached SmartAssetManager, or undefined if none is attached.
- */
-function PeekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
-    return scene.metadata?.[SmartAssetManagerKey] as SmartAssetManager | undefined;
-}
-
-/**
  * Applies a single override entry to its target, capturing the original value
  * on the first application so {@link RemoveOverride} can restore it later.
  * @param manager - The override manager owning the entry.
@@ -372,16 +342,14 @@ function PeekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
  * @param entry - The override to apply.
  */
 function ApplyOverrideEntry(manager: OverrideManager, internal: OverrideManagerInternals, entry: IOverrideEntry): void {
-    const target = ResolveTarget(manager, entry.key, entry.targetType, entry.targetName);
+    const target = ResolveTarget(manager.scene, entry.targetType, entry.targetName, entry.targetIndex);
     if (!target) {
-        Logger.Warn(
-            `OverrideManager.ApplyOverrideEntry: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`
-        );
-        return; // Target not loaded yet — override will be applied on next load
+        Logger.Warn(`OverrideManager: target not found for type="${entry.targetType}" name="${entry.targetName}" index=${entry.targetIndex} prop="${entry.propertyPath}"`);
+        return; // Target not loaded yet — override will be applied on next ApplyAllOverrides
     }
 
     // Capture original value before first override
-    const origKey = MakeOriginalValueKey(entry.key, entry.targetType, entry.targetName, entry.propertyPath);
+    const origKey = MakeOriginalValueKey(entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
     if (!internal.originalValues.has(origKey)) {
         const currentValue = GetNestedProperty(target, entry.propertyPath);
         if (currentValue !== undefined) {
@@ -389,96 +357,78 @@ function ApplyOverrideEntry(manager: OverrideManager, internal: OverrideManagerI
         }
     }
 
-    const resolvedValue = ResolveOverrideValue(manager, entry.value);
+    const resolvedValue = ResolveOverrideValue(manager.scene, entry.value);
     SetNestedProperty(target, entry.propertyPath, resolvedValue);
 }
 
 /**
- * Locates a scene object by override entry coordinates. When a SmartAssetManager
- * is attached, ownership is checked via {@link FindSmartAssetKeyForObject}. When
- * no SAM exists, only empty-key (in-tool) overrides can be resolved.
- * @param manager - The override manager owning the lookup scene.
- * @param key - The smart asset key, or "" for in-tool/scene-level objects.
- * @param targetType - The override target type (meshes, materials, etc.).
- * @param targetName - The target object name.
+ * Locates a scene object by (targetType, targetName, targetIndex). The scene
+ * collection is filtered to objects matching `targetName`; the N-th survivor
+ * (per `targetIndex`) is returned. Falls back to the first match if the index
+ * is out of range — useful when the scene shape has changed since capture.
+ * @param scene - The scene to search.
+ * @param targetType - The override target type.
+ * @param targetName - The target object name (or "" for scene-level).
+ * @param targetIndex - The target's position among same-named siblings.
  * @returns The matching scene object, or null if not found.
  */
-function ResolveTarget(manager: OverrideManager, key: string, targetType: OverrideTargetType, targetName: string): object | null {
-    const scene = manager.scene;
-
+function ResolveTarget(scene: Scene, targetType: OverrideTargetType, targetName: string, targetIndex: number): object | null {
     // Scene-level overrides target the scene itself
     if (targetType === "scene") {
         return scene as unknown as object;
     }
 
-    const sam = PeekSmartAssetManager(scene);
-
-    // Empty key = in-tool-created object (not from a smart asset) — look up by name directly
-    if (key === "") {
-        return FindObjectByName(scene, sam, targetType, targetName, key);
-    }
-
-    // Without a SAM, only scene-level / empty-key lookups are possible.
-    if (!sam) {
-        return null;
-    }
-
-    return FindObjectByName(scene, sam, targetType, targetName, key);
-}
-
-/**
- * Finds a scene object by name, optionally requiring it be tracked by a
- * specific smart asset key.
- * @param scene - The scene to search.
- * @param sam - The attached SmartAssetManager, or undefined for scene-only lookup.
- * @param targetType - The collection to search.
- * @param name - The object name to match.
- * @param key - The smart asset key required ("" for objects not tracked by any key).
- * @returns The matching object, or null if none found.
- */
-function FindObjectByName(scene: Scene, sam: SmartAssetManager | undefined, targetType: OverrideTargetType, name: string, key: string): object | null {
-    const collections: Record<string, unknown[]> = {
-        meshes: scene.meshes,
-        materials: scene.materials,
-        textures: scene.textures,
-        lights: scene.lights,
-        cameras: scene.cameras,
-        animationGroups: scene.animationGroups,
-    };
-
-    const collection = collections[targetType];
+    const collection = GetCollection(scene, targetType);
     if (!collection) {
         return null;
     }
 
-    return (
-        (collection.find((obj: any) => {
-            if (obj.name !== name) {
-                return false;
-            }
-            const trackedKey = sam ? FindSmartAssetKeyForObject(sam.scene, obj) : undefined;
-            return key === "" ? trackedKey === undefined : trackedKey === key;
-        }) as object) ?? null
-    );
+    const matches = collection.filter((obj) => (obj as { name?: string }).name === targetName);
+    if (matches.length === 0) {
+        return null;
+    }
+    return (matches[targetIndex] ?? matches[0]) as object;
+}
+
+/**
+ * Returns the scene collection corresponding to an override target type.
+ * @param scene - The scene to inspect.
+ * @param targetType - The target type.
+ * @returns The collection, or null if the type has no collection.
+ */
+function GetCollection(scene: Scene, targetType: OverrideTargetType): readonly unknown[] | null {
+    switch (targetType) {
+        case "meshes":
+            return scene.meshes;
+        case "materials":
+            return scene.materials;
+        case "textures":
+            return scene.textures;
+        case "lights":
+            return scene.lights;
+        case "cameras":
+            return scene.cameras;
+        case "animationGroups":
+            return scene.animationGroups;
+        default:
+            return null;
+    }
 }
 
 /**
  * Resolves an override value, expanding string references like "ref:name" or
- * "texture:key" into the actual scene object they refer to.
- * @param manager - The override manager (used for scene access).
+ * "texture:name" into the actual scene object they refer to.
+ * @param scene - The scene used to look up references.
  * @param value - The serialized override value.
  * @returns The runtime value to assign to the target property.
  */
-function ResolveOverrideValue(manager: OverrideManager, value: OverrideValue): unknown {
-    // String references: "ref:materialName" or "texture:smartAssetKey"
+function ResolveOverrideValue(scene: Scene, value: OverrideValue): unknown {
     if (typeof value === "string") {
         if (value.startsWith("ref:")) {
-            const refName = value.substring(4);
-            return ResolveObjectReference(manager.scene, refName);
+            return ResolveObjectReference(scene, value.substring(4));
         }
         if (value.startsWith("texture:")) {
-            const textureKey = value.substring(8);
-            return ResolveTextureReference(manager.scene, textureKey);
+            return ResolveTextureReference(scene, value.substring(8));
         }
     }
 
@@ -513,53 +463,44 @@ function ResolveObjectReference(scene: Scene, name: string): unknown {
 }
 
 /**
- * Resolves a "texture:key" value by finding a texture loaded by the
- * SmartAssetManager under that key. Falls back to searching scene textures by name.
+ * Resolves a "texture:name" value by looking up a texture in the scene by name.
  * @param scene - The scene to search.
- * @param key - The smart asset key, or texture name fallback.
+ * @param name - The texture name to resolve.
  * @returns The matching texture, or undefined if not found.
  */
-function ResolveTextureReference(scene: Scene, key: string): unknown {
-    const sam = PeekSmartAssetManager(scene);
-    if (sam) {
-        for (const tex of scene.textures) {
-            if (FindSmartAssetKeyForObject(sam.scene, tex) === key) {
-                return tex;
-            }
-        }
-    }
-    const tex = scene.textures.find((t) => t.name === key);
+function ResolveTextureReference(scene: Scene, name: string): unknown {
+    const tex = scene.textures.find((t) => t.name === name);
     if (tex) {
         return tex;
     }
-    Logger.Warn(`OverrideManager: Texture reference "${key}" not found.`);
+    Logger.Warn(`OverrideManager: Texture reference "${name}" not found.`);
     return undefined;
 }
 
 /**
  * Finds the index of an override matching the given coordinates.
  * @param internal - The manager's internal state.
- * @param key - The smart asset key.
  * @param targetType - The target type.
  * @param targetName - The target object name.
+ * @param targetIndex - The target index among same-named siblings.
  * @param propertyPath - The property path.
  * @returns The matching index, or -1 if none found.
  */
-function FindOverrideIndex(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): number {
-    return internal.overrides.findIndex((o) => o.key === key && o.targetType === targetType && o.targetName === targetName && o.propertyPath === propertyPath);
+function FindOverrideIndex(internal: OverrideManagerInternals, targetType: OverrideTargetType, targetName: string, targetIndex: number, propertyPath: string): number {
+    return internal.overrides.findIndex((o) => o.targetType === targetType && o.targetName === targetName && o.targetIndex === targetIndex && o.propertyPath === propertyPath);
 }
 
 /**
  * Removes any existing override that matches the given coordinates. Used by
- * {@link AddOverride} to enforce one entry per (key, target, property).
+ * {@link AddOverride} to enforce one entry per (type, name, index, property).
  * @param internal - The manager's internal state.
- * @param key - The smart asset key.
  * @param targetType - The target type.
  * @param targetName - The target object name.
+ * @param targetIndex - The target index among same-named siblings.
  * @param propertyPath - The property path.
  */
-function RemoveMatchingOverride(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): void {
-    const idx = FindOverrideIndex(internal, key, targetType, targetName, propertyPath);
+function RemoveMatchingOverride(internal: OverrideManagerInternals, targetType: OverrideTargetType, targetName: string, targetIndex: number, propertyPath: string): void {
+    const idx = FindOverrideIndex(internal, targetType, targetName, targetIndex, propertyPath);
     if (idx >= 0) {
         internal.overrides.splice(idx, 1);
     }
@@ -567,14 +508,14 @@ function RemoveMatchingOverride(internal: OverrideManagerInternals, key: string,
 
 /**
  * Creates a unique key for storing original values.
- * @param key - The smart asset key.
  * @param targetType - The override target type.
  * @param targetName - The target object name.
+ * @param targetIndex - The target index among same-named siblings.
  * @param propertyPath - The property path.
  * @returns A composite string key uniquely identifying the original value slot.
  */
-function MakeOriginalValueKey(key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): string {
-    return `${key}::${targetType}::${targetName}::${propertyPath}`;
+function MakeOriginalValueKey(targetType: OverrideTargetType, targetName: string, targetIndex: number, propertyPath: string): string {
+    return `${targetType}::${targetName}::${targetIndex}::${propertyPath}`;
 }
 
 /**

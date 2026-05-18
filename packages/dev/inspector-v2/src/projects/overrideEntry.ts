@@ -1,16 +1,22 @@
 /**
  * Defines the shape of an override entry — a property diff applied to a
- * scene object loaded via a smart asset key.
+ * scene object identified by name. Overrides target any object in the
+ * scene's standard collections (meshes, materials, lights, etc.) regardless
+ * of how that object was created.
  */
 export interface IOverrideEntry {
-    /** Smart asset key this override targets. Empty string means scene-level. */
-    readonly key: string;
-
     /** The type of object to target (e.g., "meshes", "materials", "lights"). */
     readonly targetType: OverrideTargetType;
 
-    /** The name of the target object within the key's asset container. */
+    /** The name of the target object. Use "" for scene-level overrides. */
     readonly targetName: string;
+
+    /**
+     * Disambiguator for when multiple objects in `scene[targetType]` share the
+     * same `targetName`. The override applies to the N-th match (0-based) at
+     * apply time. When names are unique, use 0.
+     */
+    readonly targetIndex: number;
 
     /** Dot-separated property path on the target (e.g., "albedoColor", "position.x"). */
     readonly propertyPath: string;
@@ -27,8 +33,7 @@ export type OverrideTargetType = "meshes" | "materials" | "textures" | "lights" 
 /**
  * An override value. Supports scalars, color/vector arrays, and object references.
  * - number: scalar property (e.g., intensity, alpha)
- * - string: string property, material reference (prefixed with "ref:"), or
- *   texture reference (prefixed with "texture:") pointing to a smart asset key
+ * - string: string property, or "ref:name" / "texture:name" object reference
  * - boolean: boolean property
  * - number[]: array property mapped to Vector3, Color3, Color4, etc.
  */
