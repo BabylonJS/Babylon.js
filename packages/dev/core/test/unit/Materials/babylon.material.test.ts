@@ -1,7 +1,14 @@
-import { Engine, NullEngine } from "core/Engines";
-import { PBRMaterial, StandardMaterial, Texture } from "core/Materials";
-import { MeshBuilder } from "core/Meshes";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { type Engine } from "core/Engines/engine";
+import { NullEngine } from "core/Engines/nullEngine";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { Vector3 } from "core/Maths/math.vector";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Texture } from "core/Materials/Textures/texture";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Describes the test suite.
@@ -23,6 +30,33 @@ describe("Babylon Material", function () {
     });
 
     describe("#PBRMaterial", () => {
+        it("binds lights for frozen materials when uniform buffers must be rebound every draw", async () => {
+            subject._features.needToAlwaysBindUniformBuffers = true;
+
+            const scene = new Scene(subject);
+            new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+            scene.updateTransformMatrix(true);
+            const mesh = MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
+            const material = new StandardMaterial("material", scene);
+            const light = new HemisphericLight("light", Vector3.Up(), scene);
+            const bindLight = vi.spyOn(light, "_bindLight");
+            mesh.material = material;
+
+            const subMesh = mesh.subMeshes[0];
+            await material.forceCompilationAsync(mesh);
+            expect(material.isReadyForSubMesh(mesh, subMesh, false)).toBe(true);
+
+            material.freeze();
+            material.bindForSubMesh(mesh.getWorldMatrix(), mesh, subMesh);
+            bindLight.mockClear();
+
+            material.bindForSubMesh(mesh.getWorldMatrix(), mesh, subMesh);
+
+            expect(bindLight).toHaveBeenCalledTimes(1);
+
+            scene.dispose();
+        });
+
         it("forceCompilation of a single material", async () => {
             const scene = new Scene(subject);
             const mesh = MeshBuilder.CreateBox("mesh", { size: 1 }, scene);

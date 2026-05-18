@@ -1983,6 +1983,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         }
 
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
+        const needToAlwaysBindUniformBuffers = engine._features.needToAlwaysBindUniformBuffers;
 
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
@@ -2204,16 +2205,15 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             BindClipPlane(this._activeEffect, this, scene);
 
             this.bindEyePosition(effect);
-        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+        } else if (needToAlwaysBindUniformBuffers) {
             this._needToBindSceneUbo = true;
         }
 
-        if (mustRebind || !this.isFrozen) {
-            // Lights
-            if (scene.lightsEnabled && !this._disableLighting) {
-                BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
-            }
+        if ((mustRebind || !this.isFrozen || needToAlwaysBindUniformBuffers) && scene.lightsEnabled && !this._disableLighting) {
+            BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+        }
 
+        if (mustRebind || !this.isFrozen) {
             // View
             if (
                 (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) ||

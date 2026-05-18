@@ -959,6 +959,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
             return;
         }
         this._activeEffect = effect;
+        const needToAlwaysBindUniformBuffers = scene.getEngine()._features.needToAlwaysBindUniformBuffers;
 
         // Matrices
         this.bindOnlyWorldMatrix(world);
@@ -1038,16 +1039,16 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
             BindClipPlane(this._activeEffect, this, scene);
 
             scene.bindEyePosition(effect);
-        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+        } else if (needToAlwaysBindUniformBuffers) {
             this._uniformBuffer.bindToEffect(effect, "Material");
             this._needToBindSceneUbo = true;
         }
 
-        if (mustRebind || !this.isFrozen) {
-            if (scene.lightsEnabled) {
-                BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
-            }
+        if ((mustRebind || !this.isFrozen || needToAlwaysBindUniformBuffers) && scene.lightsEnabled) {
+            BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+        }
 
+        if (mustRebind || !this.isFrozen) {
             // View
             this.bindView(effect);
 
