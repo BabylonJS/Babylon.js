@@ -34,6 +34,9 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
+import { ProjectLocalsKey } from "../../projects/projectFile";
+import { ApplyAllOverrides } from "../../projects/overrideManager";
+
 const ProjectAuthoringPaneKey = "Project Authoring";
 
 const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
@@ -160,9 +163,11 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     // Subscribe reactively to changes — re-renders the asset list whenever
     // RegisterSmartAsset / Load / Remove / Reload fire onChangedObservable.
+    // Filter out the reserved companion key so it does not appear as a user
+    // asset alongside dragged-in textures/models.
     const sam = GetSmartAssetManager(scene);
     const assets = useObservableState(
-        useCallback(() => Array.from(GetAllSmartAssets(scene), ([key, url]) => ({ key, url })), [scene]),
+        useCallback(() => Array.from(GetAllSmartAssets(scene), ([key, url]) => ({ key, url })).filter((a) => a.key !== ProjectLocalsKey), [scene]),
         sam.onChangedObservable
     );
 
@@ -227,6 +232,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const onReloadAsset = useCallback(
         async (key: string) => {
             await ReloadSmartAssetAsync(scene, key);
+            // ReloadSmartAssetAsync disposes the old asset and loads fresh
+            // instances — those new objects have no knowledge of previously
+            // applied overrides, so we must re-apply them. (The swap path
+            // does the same.) Without this, overrides on a smart asset
+            // appear to silently revert whenever the user hits Reload.
+            ApplyAllOverrides(scene);
             setStatus(`Reloaded: ${key}`);
         },
         [scene]

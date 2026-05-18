@@ -1,6 +1,14 @@
 import { zipSync, unzipSync, strToU8, strFromU8 } from "fflate";
 
+// Side-effect import: registers the `.babylon` SceneLoader plugin so the
+// companion `.babylon` file produced by SerializeProject can be loaded back.
+// Without this, LoadAssetContainerAsync logs "Unable to find a plugin to
+// load .babylon files" and the companion load fails.
+import "core/Loading/Plugins/babylonFileLoader";
+
 import { type Scene } from "core/scene";
+import { Mesh } from "core/Meshes/mesh";
+import { SceneSerializer } from "core/Misc/sceneSerializer";
 import {
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
@@ -14,6 +22,43 @@ import {
 import { type ISerializedSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "core/SmartAssets/smartAssetSerializer";
 import { ClearOverrides, DeserializeAndApplyOverrides, SerializeOverrides } from "./overrideManager";
 import { type IOverrideEntry } from "./overrideEntry";
+
+/**
+ * ## `.babylonproj` project file format
+ *
+ * The `.babylonproj` zip on disk packages three layers:
+ * 1. **SmartAsset registry** — URL references to external assets (glb/gltf/textures
+ *    loaded via SAM). Local blob/data assets are bundled inside the zip and
+ *    extracted to fresh blob URLs on load.
+ * 2. **OverrideManager state** — declarative property overrides applied after load.
+ * 3. **Companion `.babylon`** — meshes, lights, cameras, transform nodes, and
+ *    materials that are *not* tracked by SAM (i.e. user-created scene content).
+ *    Plus a `companionBindings` side table mapping material texture slots back
+ *    to SAM-tracked textures so re-attachment works without embedding texture
+ *    bytes in the companion.
+ *
+ * ### What round-trips cleanly
+ * - SAM-tracked assets (re-fetched from their URLs or extracted from the zip)
+ * - User-created `Mesh` geometry, `Material`s (Standard/PBR/Multi/Node), and
+ *   `*Texture` slot bindings to SAM textures
+ * - `Light`s, `Camera`s, `TransformNode`s, scene/material image processing,
+ *   clear color, fog, environment intensity
+ * - Property overrides on any of the above
+ *
+ * ### Known gaps (not preserved on save/load)
+ * - `PostProcess` attachments to cameras (a post-process attaches to a *specific*
+ *   camera instance; we dispose+recreate cameras, leaving post-processes orphaned).
+ * - `AdvancedDynamicTexture` GUI controls — not in `.babylon` format.
+ * - Audio (`Sound` / `AudioEngine` state).
+ * - Particle systems with runtime state, baked vertex animations.
+ * - Complex shader-driven content like GaussianSplatting: the mesh round-trips
+ *   but its companion utility materials (`gaussianSplattingDepth`, `ProxyMaterial`)
+ *   get duplicated on each load cycle.
+ * - Skeleton animation playback state.
+ *
+ * If you hit a "the scene looks different after load" issue, it's almost
+ * certainly one of the gaps above rather than camera or mesh state drift.
+ */
 
 /**
  * Reserved smart asset key for user-created objects (materials, lights, cameras)
@@ -37,6 +82,15 @@ export interface IProjectBundle {
 }
 
 /**
+ * Maps each user-created material (by name) to its texture-slot bindings.
+ * A binding records "this `*Texture` slot on this material should be
+ * re-attached to the SmartAsset registered under this key" so that texture
+ * references survive a save/load round-trip without embedding the texture
+ * data inside the companion `.babylon`.
+ */
+export type CompanionTextureBindings = Record<string, Record<string, string>>;
+
+/**
  * A versioned project file that composes a smart asset map with overrides.
  * This is the unified on-disk format for persisting a complete project.
  */
@@ -49,6 +103,13 @@ export interface ISerializedProject {
 
     /** Property overrides (from OverrideManager). */
     readonly overrides: IOverrideEntry[];
+
+    /**
+     * Optional bindings that re-attach SmartAsset-tracked textures to
+     * user-created material slots after the companion `.babylon` loads.
+     * Omitted when no user-created material references a SmartAsset texture.
+     */
+    readonly companionBindings?: CompanionTextureBindings;
 }
 
 // ── JSON layer (scene ↔ ISerializedProject) ──
@@ -70,24 +131,28 @@ export function SerializeProject(scene: Scene, baseUrl?: string): IProjectBundle
     const assetMap = SerializeSmartAssetManagerMap(scene, baseUrl);
     const overrides = SerializeOverrides(scene);
 
-    // Build a minimal .babylon JSON with only user-created objects
-    const companion = SerializeCompanionBabylon(scene);
+    // Build a minimal .babylon JSON with only user-created objects, plus the
+    // texture-binding side table that records which SmartAsset textures should
+    // be re-attached to which material slots after load.
+    const companionResult = SerializeCompanionBabylon(scene);
     let companionBabylon: Blob | undefined;
 
     const assets = { ...assetMap.assets };
 
-    if (companion) {
-        companionBabylon = new Blob([JSON.stringify(companion)], { type: "application/json" });
+    if (companionResult) {
+        companionBabylon = new Blob([JSON.stringify(companionResult.companion)], { type: "application/json" });
         assets[ProjectLocalsKey] = { url: ProjectLocalsKey + ".babylon" };
     } else {
         // Remove stale companion entry if no locals exist
         delete assets[ProjectLocalsKey];
     }
 
+    const hasBindings = companionResult && Object.keys(companionResult.bindings).length > 0;
     const project: ISerializedProject = {
         version: 2,
         assets,
         overrides,
+        ...(hasBindings ? { companionBindings: companionResult.bindings } : {}),
     };
 
     return { project, companionBabylon };
@@ -118,47 +183,97 @@ export async function LoadProjectAsync(scene: Scene, source: string | File | ISe
     const raw = await ReadJsonSourceAsync(source);
     const doc = DeserializeProject(raw);
 
-    // Clear existing state so we load fresh from the project file
-    await Promise.all(Array.from(GetAllSmartAssets(scene).keys()).map(async (existingKey) => await RemoveSmartAssetAsync(scene, existingKey)));
-    ClearOverrides(scene);
+    // Pause the engine's render loops for the duration of the swap. Disposing
+    // cameras mid-frame would throw "No camera defined" out of `scene.render`,
+    // which kills the render loop entirely (it is not re-queued after an
+    // uncaught exception). Snapshot the active loops first so we can restore
+    // exactly what was running, even if multiple callbacks were registered.
+    const engine = scene.getEngine();
+    const savedRenderLoops = [...engine.activeRenderLoops];
+    engine.stopRenderLoop();
 
-    // Clear asset-loaded meshes, animation groups, and materials.
-    // Preserve cameras and lights — they are scene furniture managed by the host.
-    for (const mesh of [...scene.meshes]) {
-        mesh.dispose();
-    }
-    for (const ag of [...scene.animationGroups]) {
-        ag.dispose();
-    }
-    for (const mat of [...scene.materials]) {
-        mat.dispose();
-    }
+    try {
+        // Clear existing state so we load fresh from the project file.
+        // The companion `.babylon` (when present) is the source of truth for all
+        // user-created scene content, so dispose user-owned meshes, lights,
+        // cameras, materials, and animation groups before reloading.
+        await Promise.all(Array.from(GetAllSmartAssets(scene).keys()).map(async (existingKey) => await RemoveSmartAssetAsync(scene, existingKey)));
+        ClearOverrides(scene);
 
-    // Register all assets. Defer the companion .babylon — it must load after
-    // textures are available because its materials use asset:// texture refs.
-    let hasCompanion = false;
-    for (const [key, entry] of Object.entries(doc.assets)) {
-        if (key === ProjectLocalsKey) {
-            hasCompanion = true;
-            continue;
+        for (const mesh of [...scene.meshes]) {
+            mesh.dispose();
         }
-        const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        RegisterSmartAsset(scene, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
-    }
+        for (const tn of [...scene.transformNodes]) {
+            tn.dispose();
+        }
+        for (const ag of [...scene.animationGroups]) {
+            ag.dispose();
+        }
+        for (const mat of [...scene.materials]) {
+            mat.dispose();
+        }
+        for (const light of [...scene.lights]) {
+            light.dispose();
+        }
+        for (const camera of [...scene.cameras]) {
+            camera.dispose();
+        }
 
-    await LoadAllSmartAssetsAsync(scene);
+        // Register all assets. Defer the companion .babylon — it must load after
+        // textures are available so binding re-attachment can find them.
+        let hasCompanion = false;
+        for (const [key, entry] of Object.entries(doc.assets)) {
+            if (key === ProjectLocalsKey) {
+                hasCompanion = true;
+                continue;
+            }
+            const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
+            RegisterSmartAsset(scene, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
+        }
 
-    // Now load the companion .babylon — textures are ready so asset:// refs resolve.
-    // Pass the .babylon extension hint because blob URLs have no file extension.
-    if (hasCompanion) {
-        const companionEntry = doc.assets[ProjectLocalsKey];
-        const companionUrl = resolvedRootUrl ? ResolveAssetUrl(companionEntry.url, resolvedRootUrl) : companionEntry.url;
-        await LoadSmartAssetAsync(scene, ProjectLocalsKey, companionUrl, { extension: ".babylon" });
-    }
+        await LoadAllSmartAssetsAsync(scene);
 
-    // Apply overrides
-    if (doc.overrides.length > 0) {
-        DeserializeAndApplyOverrides(scene, doc.overrides);
+        // Now load the companion .babylon. Its materials were saved with texture
+        // slots stripped (the binding side table records which SmartAsset texture
+        // each slot should be re-attached to), so the loader never sees a broken
+        // texture URL. Pass the .babylon extension hint because blob URLs have
+        // no file extension.
+        if (hasCompanion) {
+            const companionEntry = doc.assets[ProjectLocalsKey];
+            const companionUrl = resolvedRootUrl ? ResolveAssetUrl(companionEntry.url, resolvedRootUrl) : companionEntry.url;
+            await LoadSmartAssetAsync(scene, ProjectLocalsKey, companionUrl, { extension: ".babylon" });
+
+            if (doc.companionBindings) {
+                ApplyCompanionBindings(scene, doc.companionBindings);
+            }
+        }
+
+        // Apply overrides
+        if (doc.overrides.length > 0) {
+            DeserializeAndApplyOverrides(scene, doc.overrides);
+        }
+
+        // Re-assign the active camera if the companion brought in fresh cameras.
+        // The .babylon scene loader populates scene.cameras but does not set
+        // scene.activeCamera, so render would otherwise throw "No camera defined".
+        if (!scene.activeCamera && scene.cameras.length > 0) {
+            scene.activeCamera = scene.cameras[0];
+        }
+
+        // Attach controls so the user can rotate/zoom/pan after load. New
+        // camera instances from the companion .babylon are not attached to
+        // the canvas by the loader — without this, the camera renders but
+        // ignores mouse/touch input.
+        const canvas = engine.getRenderingCanvas();
+        if (scene.activeCamera && canvas) {
+            scene.activeCamera.attachControl(canvas, true);
+        }
+    } finally {
+        // Always restore the render loops, even if loading threw — otherwise
+        // the canvas stays frozen forever and the user has no way to recover.
+        for (const loop of savedRenderLoops) {
+            engine.runRenderLoop(loop);
+        }
     }
 }
 
@@ -185,6 +300,13 @@ export function DeserializeProject(data: unknown): ISerializedProject {
     // Validate overrides array
     if (!Array.isArray(doc.overrides)) {
         throw new Error("ProjectFile: Invalid project file — 'overrides' must be an array.");
+    }
+
+    // Validate optional companion bindings (shape-only check)
+    if (doc.companionBindings !== undefined) {
+        if (typeof doc.companionBindings !== "object" || doc.companionBindings === null || Array.isArray(doc.companionBindings)) {
+            throw new Error("ProjectFile: Invalid project file — 'companionBindings' must be an object.");
+        }
     }
 
     return data as ISerializedProject;
@@ -315,45 +437,112 @@ function IsLocalObject(scene: Scene, obj: object): boolean {
 }
 
 /**
- * Builds a minimal `.babylon`-compatible JSON containing only scene materials
- * that are not owned by any external smart asset. Texture references on
- * materials are rewritten to `asset://key` for SAM-tracked textures so they
- * resolve correctly via the protocol hook.
+ * Builds a `.babylon`-compatible JSON containing all user-created scene
+ * content (meshes, lights, cameras, transform nodes, and materials not owned
+ * by any external smart asset), plus a side table recording which `*Texture`
+ * slots on each material should be re-attached to which SmartAsset textures
+ * after load.
  *
- * Note: lights and cameras are not currently serialized into the companion
- * file. User-created lights/cameras will not survive a save/load cycle.
+ * Mesh, light, camera, and standalone material serialization is delegated to
+ * `SceneSerializer.SerializeMesh`, which auto-handles geometries, sub-materials,
+ * and skeletons. Texture slots that map to a SmartAsset-tracked texture are
+ * stripped from the serialized material so the `.babylon` loader never sees a
+ * broken URL; the binding table is the sole source of truth for re-attachment.
  *
  * @param scene - The scene to extract locals from.
- * @returns A `.babylon`-format object, or null if there are no local objects.
+ * @returns The companion document and binding table, or null if there are no local objects.
  */
-function SerializeCompanionBabylon(scene: Scene): Record<string, unknown> | null {
-    const materials: any[] = [];
+function SerializeCompanionBabylon(scene: Scene): { companion: Record<string, unknown>; bindings: CompanionTextureBindings } | null {
+    const meshes = scene.meshes.filter((m) => m instanceof Mesh && m.name !== "__root__" && IsLocalObject(scene, m));
+    const lights = scene.lights.filter((l) => IsLocalObject(scene, l));
+    const cameras = scene.cameras.filter((c) => IsLocalObject(scene, c));
+    const transformNodes = scene.transformNodes.filter((t) => IsLocalObject(scene, t));
 
-    for (const mat of scene.materials) {
-        if (mat.name !== "default material" && IsLocalObject(scene, mat)) {
-            const serialized = mat.serialize();
-            if (serialized) {
-                RewriteTextureUrls(scene, serialized);
-                materials.push(serialized);
-            }
-        }
-    }
+    // Standalone materials (not attached to any included mesh) need to be
+    // added explicitly — SerializeMesh only picks up materials reachable from
+    // the supplied meshes.
+    const meshMaterialIds = new Set(meshes.map((m) => m.material?.uniqueId).filter((id): id is number => id !== undefined));
+    const standaloneMaterials = scene.materials.filter((mat) => mat.name !== "default material" && IsLocalObject(scene, mat) && !meshMaterialIds.has(mat.uniqueId));
 
-    if (materials.length === 0) {
+    if (meshes.length === 0 && lights.length === 0 && cameras.length === 0 && transformNodes.length === 0 && standaloneMaterials.length === 0) {
         return null;
     }
 
-    return { materials };
+    const companion = SceneSerializer.SerializeMesh([...meshes, ...lights, ...cameras, ...transformNodes], false, false) as Record<string, unknown>;
+
+    const allMaterials = (companion.materials as any[]) ?? [];
+    companion.materials = allMaterials;
+    for (const mat of standaloneMaterials) {
+        const serialized = mat.serialize();
+        if (serialized && !allMaterials.some((m: any) => m.uniqueId === serialized.uniqueId)) {
+            allMaterials.push(serialized);
+        }
+    }
+
+    // Strip non-JSON-serializable metadata (e.g. metadata that references
+    // another scene object) to avoid `Converting circular structure to JSON`
+    // when the companion is stringified. Simple JSON metadata is preserved.
+    SanitizeMetadataInPlace(companion);
+
+    // Walk every serialized material (mesh-attached + standalone + multi-material
+    // children) and extract SmartAsset texture bindings, stripping those slots
+    // from the serialized data.
+    const bindings: CompanionTextureBindings = {};
+    for (const serializedMat of allMaterials) {
+        const matBindings = ExtractTextureBindings(scene, serializedMat);
+        if (Object.keys(matBindings).length > 0 && typeof serializedMat.name === "string") {
+            bindings[serializedMat.name] = matBindings;
+        }
+    }
+    const multiMaterials = (companion.multiMaterials as any[]) ?? [];
+    for (const serializedMat of multiMaterials) {
+        const matBindings = ExtractTextureBindings(scene, serializedMat);
+        if (Object.keys(matBindings).length > 0 && typeof serializedMat.name === "string") {
+            bindings[serializedMat.name] = matBindings;
+        }
+    }
+
+    return { companion, bindings };
 }
 
 /**
- * Rewrites texture URLs in serialized material data to use `asset://key`
- * for textures tracked by the SmartAssetManager. When the companion .babylon
- * is loaded, the SAM protocol hook resolves these to real URLs.
+ * Walks the top-level entity arrays in a serialized companion document and
+ * strips `metadata` fields that cannot be JSON-stringified (typically because
+ * the user put a reference to another scene object in metadata). Simple
+ * JSON-serializable metadata is preserved.
+ * @param companion - The serialized companion document to mutate in-place.
+ */
+function SanitizeMetadataInPlace(companion: Record<string, unknown>): void {
+    const arrays: (keyof typeof companion)[] = ["meshes", "transformNodes", "lights", "cameras", "materials", "multiMaterials"];
+    for (const arrayKey of arrays) {
+        const arr = companion[arrayKey];
+        if (!Array.isArray(arr)) {
+            continue;
+        }
+        for (const item of arr) {
+            if (item && typeof item === "object" && "metadata" in item && item.metadata !== undefined) {
+                try {
+                    item.metadata = JSON.parse(JSON.stringify(item.metadata));
+                } catch {
+                    delete item.metadata;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Walks a serialized material's `*Texture` slots and, for any that reference a
+ * SmartAsset-tracked texture, records a `{slot: samKey}` binding and removes
+ * the slot from the serialized data so the `.babylon` loader does not try to
+ * fetch the (now-dead) original URL.
  * @param scene - The scene that owns the textures.
  * @param serializedMaterial - The serialized material data to rewrite in-place.
+ * @returns A map of stripped slot names to their SmartAsset keys.
  */
-function RewriteTextureUrls(scene: Scene, serializedMaterial: Record<string, unknown>): void {
+function ExtractTextureBindings(scene: Scene, serializedMaterial: Record<string, unknown>): Record<string, string> {
+    const bindings: Record<string, string> = {};
+
     for (const [propName, propValue] of Object.entries(serializedMaterial)) {
         if (!propName.endsWith("Texture") || typeof propValue !== "object" || propValue === null) {
             continue;
@@ -368,12 +557,34 @@ function RewriteTextureUrls(scene: Scene, serializedMaterial: Record<string, unk
         for (const tex of scene.textures) {
             const key = FindSmartAssetKeyForObject(scene, tex);
             if (key && (tex.name === texName || (tex as any).url === texName || tex.name === texUrl || (tex as any).url === texUrl)) {
-                const assetUrl = `asset://${key}`;
-                texData.name = assetUrl;
-                if (typeof texData.url === "string") {
-                    texData.url = assetUrl;
-                }
+                bindings[propName] = key;
+                delete serializedMaterial[propName];
                 break;
+            }
+        }
+    }
+
+    return bindings;
+}
+
+/**
+ * Re-attaches SmartAsset-tracked textures to user-created material slots
+ * after the companion `.babylon` has loaded. Silently skips bindings whose
+ * material or texture is no longer present (e.g. the underlying SmartAsset
+ * was removed before reload).
+ * @param scene - The scene that owns the materials and textures.
+ * @param bindings - The binding table from the project document.
+ */
+function ApplyCompanionBindings(scene: Scene, bindings: CompanionTextureBindings): void {
+    for (const [materialName, slots] of Object.entries(bindings)) {
+        const mat = scene.materials.find((m) => m.name === materialName);
+        if (!mat) {
+            continue;
+        }
+        for (const [slotName, samKey] of Object.entries(slots)) {
+            const texture = scene.textures.find((tex) => FindSmartAssetKeyForObject(scene, tex) === samKey);
+            if (texture) {
+                (mat as any)[slotName] = texture;
             }
         }
     }
