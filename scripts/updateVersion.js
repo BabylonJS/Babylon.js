@@ -13,11 +13,11 @@ const baseDirectory = path.resolve(".");
 
 const updateEngineVersion = async (version) => {
     // get thinEngine.ts
-    const abstractEngineFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Engines", "abstractEngine.ts");
+    const abstractEngineFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Engines", "abstractEngine.pure.ts");
     const abstractEngineData = fs.readFileSync(abstractEngineFile, "utf-8");
     const array = /"babylonjs@(.*)"/.exec(abstractEngineData);
     if (!array) {
-        throw new Error("Could not find babylonjs version in abstractEngine.ts");
+        throw new Error("Could not find babylonjs version in abstractEngine.pure.ts");
     }
 
     const regexp = new RegExp(array[1] + '"', "g");

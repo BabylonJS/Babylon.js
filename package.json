@@ -120,7 +120,7 @@
         "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --cache && npm run check:treeshaking && npm run check:side-effects-sync",
         "lint:changed": "node scripts/lint-changed.mjs",
         "lint:changed:fix": "node scripts/lint-changed.mjs --fix",
-        "precommit": "lint-staged",
+        "precommit": "lint-staged --allow-empty",
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops && npm run check:treeshaking && npm run check:side-effects-sync",
         "lint:cycles": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --rule '{\"import/no-cycle\": [1, {\"maxDepth\": 1, \"ignoreExternal\": true}]}'",
         "update-all-dependencies": "npm update -ws",
