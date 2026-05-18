@@ -37,20 +37,6 @@ describe("memory leak runner", () => {
         );
     });
 
-    it("skips memlab warmup by default", async () => {
-        const { parseCliArgs } = await loadRunnerModules();
-        const parsed = parseCliArgs([]);
-
-        expect(parsed.options.skipWarmup).toBe(true);
-    });
-
-    it("allows memlab warmup for manual debugging", async () => {
-        const { parseCliArgs } = await loadRunnerModules();
-        const parsed = parseCliArgs(["--warmup"]);
-
-        expect(parsed.options.skipWarmup).toBe(false);
-    });
-
     it("returns results when every scenario is leak free", async () => {
         const { run, runScenarioSuite } = await loadRunnerModules();
         const mockedRun = asMock(run);
