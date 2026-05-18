@@ -17,9 +17,9 @@ import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(__dirname, "../..");
+const REPO_ROOT = join(__dirname, "../../..");
 const SRC = join(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = join(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
 
 const PURE_HEADER = "/** This file must only contain pure code and pure imports */\n\n";
 const BARE_RE = /^import\s+["']([^"']+)["']\s*;?\s*$/;

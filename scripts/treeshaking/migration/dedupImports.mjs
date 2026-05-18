@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(__dirname, "../..");
+const REPO_ROOT = join(__dirname, "../../..");
 const SRC_ROOT = join(REPO_ROOT, "packages/dev/core/src");
 
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -38,14 +38,20 @@ function parseImportLine(line) {
     // import type { A, B } from "path"
     const typeMatch = t.match(/^import\s+type\s+\{([^}]+)\}\s+from\s+["']([^"']+)["']\s*;?\s*$/);
     if (typeMatch) {
-        const names = typeMatch[1].split(",").map((n) => n.trim()).filter(Boolean);
+        const names = typeMatch[1]
+            .split(",")
+            .map((n) => n.trim())
+            .filter(Boolean);
         return { kind: "type", names, fromPath: typeMatch[2], line: t };
     }
 
     // import { A, type B, C } from "path" — handle inline type qualifiers
     const valMatch = t.match(/^import\s+\{([^}]+)\}\s+from\s+["']([^"']+)["']\s*;?\s*$/);
     if (valMatch) {
-        const rawNames = valMatch[1].split(",").map((n) => n.trim()).filter(Boolean);
+        const rawNames = valMatch[1]
+            .split(",")
+            .map((n) => n.trim())
+            .filter(Boolean);
         const valueNames = [];
         const inlineTypeNames = [];
         for (const n of rawNames) {

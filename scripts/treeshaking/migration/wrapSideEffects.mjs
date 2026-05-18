@@ -14,7 +14,7 @@
  *                              + imports and calls the registration function
  *
  * Usage:
- *   node scripts/treeshaking/wrapSideEffects.mjs [--dry-run] [--file <relpath>]
+ *   node scripts/treeshaking/migration/wrapSideEffects.mjs [--dry-run] [--file <relpath>]
  *
  * Options:
  *   --dry-run   Print what would be done without writing files
@@ -27,7 +27,7 @@ import { execSync } from "child_process";
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
-const SRC_ROOT = resolve(new URL(".", import.meta.url).pathname, "../../packages/dev/core/src");
+const SRC_ROOT = resolve(new URL(".", import.meta.url).pathname, "../../../packages/dev/core/src");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const SINGLE_FILE = (() => {

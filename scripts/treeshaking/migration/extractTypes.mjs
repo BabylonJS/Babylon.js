@@ -13,7 +13,7 @@
  *      are removed from `.pure.ts` (moved to `.types.ts`).
  *   4. `export * from "./<name>.types"` is added to the wrapper `.ts` file (NOT `.pure.ts`).
  *
- * Usage: node scripts/treeshaking/extractTypes.mjs [--dry-run]
+ * Usage: node scripts/treeshaking/migration/extractTypes.mjs [--dry-run]
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";

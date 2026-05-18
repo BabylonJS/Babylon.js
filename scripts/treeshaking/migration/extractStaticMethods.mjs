@@ -21,7 +21,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const FRESH_ROOT = path.resolve(__dirname, "../..");
+const FRESH_ROOT = path.resolve(__dirname, "../../..");
 const ORIGINAL_ROOT = path.resolve(FRESH_ROOT, "../experimentingWithTreeShaking");
 const CORE_SRC = path.join(FRESH_ROOT, "packages/dev/core/src");
 const DRY_RUN = process.argv.includes("--dry-run");

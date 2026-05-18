@@ -15,7 +15,7 @@
  *   - Barrel pure.ts files that export from side-effectful modules
  *
  * Usage:
- *   node scripts/treeshaking/verifyAllPhases.mjs [--verbose]
+ *   node scripts/treeshaking/migration/verifyAllPhases.mjs [--verbose]
  */
 
 import { readFileSync, existsSync, readdirSync } from "fs";
@@ -23,9 +23,9 @@ import { resolve, dirname, relative, join } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT = resolve(__dirname, "../../..");
 const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = resolve(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
 
 const VERBOSE = process.argv.includes("--verbose");
 

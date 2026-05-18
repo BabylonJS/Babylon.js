@@ -11,7 +11,7 @@
  * 4. Reports gaps: files not in the tracking table, incorrect counts, missing extractions
  *
  * Usage:
- *   node scripts/treeshaking/verifyPhase4.mjs [--verbose] [--verify-extractions]
+ *   node scripts/treeshaking/migration/verifyPhase4.mjs [--verbose] [--verify-extractions]
  */
 
 import { readFileSync, existsSync } from "fs";
@@ -20,7 +20,7 @@ import { fileURLToPath } from "url";
 import { globSync } from "glob";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SRC_ROOT = resolve(__dirname, "../../packages/dev/core/src");
+const SRC_ROOT = resolve(__dirname, "../../../packages/dev/core/src");
 
 const VERBOSE = process.argv.includes("--verbose");
 const VERIFY_EXTRACTIONS = process.argv.includes("--verify-extractions");

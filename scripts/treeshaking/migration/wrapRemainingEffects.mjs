@@ -27,7 +27,7 @@
  *   - Prevents duplicate const/let declarations
  *
  * Usage:
- *   node scripts/treeshaking/wrapRemainingEffects.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/migration/wrapRemainingEffects.mjs [--dry-run] [--verbose]
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
@@ -35,7 +35,7 @@ import { join, relative, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(__dirname, "../..");
+const REPO_ROOT = join(__dirname, "../../..");
 const SRC_ROOT = join(REPO_ROOT, "packages/dev/core/src");
 
 const DRY_RUN = process.argv.includes("--dry-run");

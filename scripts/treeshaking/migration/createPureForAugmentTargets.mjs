@@ -14,7 +14,7 @@
  * - The .pure.ts gets all the code
  * - The .ts becomes `export * from "./foo.pure"`
  *
- * Usage: node scripts/treeshaking/createPureForAugmentTargets.mjs
+ * Usage: node scripts/treeshaking/migration/createPureForAugmentTargets.mjs
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";

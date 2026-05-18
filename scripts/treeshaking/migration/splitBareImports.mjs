@@ -12,7 +12,7 @@
  * This ensures the pure barrel chain only references side-effect-free modules.
  *
  * Usage:
- *   node scripts/treeshaking/splitBareImports.mjs [--dry-run] [--verbose] [--file <rel-path>]
+ *   node scripts/treeshaking/migration/splitBareImports.mjs [--dry-run] [--verbose] [--file <rel-path>]
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
@@ -21,7 +21,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT = resolve(__dirname, "../../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 
 const args = process.argv.slice(2);

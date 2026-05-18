@@ -23,7 +23,7 @@
  *   - class/interface/type/enum/function/const declarations
  *
  * Usage:
- *   node scripts/treeshaking/splitSideEffects.mjs [--dry-run] [--file <rel-path>] [--verbose] [--resplit]
+ *   node scripts/treeshaking/migration/splitSideEffects.mjs [--dry-run] [--file <rel-path>] [--verbose] [--resplit]
  *
  * Flags:
  *   --dry-run   Show what would be done without writing files
@@ -39,7 +39,7 @@ import { execSync } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT = resolve(__dirname, "../../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
 

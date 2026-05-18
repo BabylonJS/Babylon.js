@@ -11,7 +11,7 @@
  * never pull in side-effectful wrappers when traversing the pure entry point.
  *
  * Usage:
- *   node scripts/treeshaking/rewritePureImports.mjs [--dry-run] [--verbose] [--file <rel-path>]
+ *   node scripts/treeshaking/migration/rewritePureImports.mjs [--dry-run] [--verbose] [--file <rel-path>]
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
@@ -20,7 +20,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT = resolve(__dirname, "../../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 
 const args = process.argv.slice(2);

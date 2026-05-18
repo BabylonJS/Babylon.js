@@ -15,7 +15,7 @@
  * (core/foo/bar).
  *
  * Usage:
- *   node scripts/treeshaking/fixPureImports.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/migration/fixPureImports.mjs [--dry-run] [--verbose]
  *
  * Options:
  *   --dry-run   Report violations without modifying files
@@ -28,7 +28,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT = resolve(__dirname, "../../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 
 const args = process.argv.slice(2);
