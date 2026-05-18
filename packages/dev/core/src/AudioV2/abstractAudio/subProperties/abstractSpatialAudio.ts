@@ -11,6 +11,7 @@ export const _SpatialAudioDefaults = {
     maxDistance: 10000 as number,
     minDistance: 1 as number,
     orientation: Vector3.Right(),
+    panningEnabled: true as boolean,
     panningModel: "equalpower" as PanningModelType,
     position: Vector3.Zero(),
     rolloffFactor: 1 as number,
@@ -82,6 +83,13 @@ export interface ISpatialAudioOptions {
      */
     spatialOrientation: Vector3;
     /**
+     * Whether to spatially pan the audio source. Defaults to `true`.
+     *
+     * When set to `false`, the source keeps distance attenuation but does not pan between the left and right channels.
+     * Sound cone attenuation is not applied while panning is disabled.
+     */
+    spatialPanningEnabled: boolean;
+    /**
      * Possible values are:
      * - `"equalpower"`: Represents the equal-power panning algorithm, generally regarded as simple and efficient.
      * - `"HRTF"`: Renders a stereo output of higher quality than `"equalpower"` — it uses a convolution with measured impulse responses from human subjects.
@@ -129,6 +137,7 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
         options.spatialMinDistance !== undefined ||
         options.spatialMinUpdateTime !== undefined ||
         options.spatialOrientation !== undefined ||
+        options.spatialPanningEnabled !== undefined ||
         options.spatialPanningModel !== undefined ||
         options.spatialPosition !== undefined ||
         options.spatialRolloffFactor !== undefined ||
@@ -206,6 +215,14 @@ export abstract class AbstractSpatialAudio {
     public abstract orientation: Vector3;
 
     /**
+     * Whether to spatially pan the audio source. Defaults to `true`.
+     *
+     * When set to `false`, the source keeps distance attenuation but does not pan between the left and right channels.
+     * Sound cone attenuation is not applied while panning is disabled.
+     */
+    public abstract panningEnabled: boolean;
+
+    /**
      * The spatial panning model. Defaults to "equalpower".
      *
      * Possible values are:
@@ -260,5 +277,8 @@ export abstract class AbstractSpatialAudio {
      */
     public abstract update(): void;
 
+    /**
+     * Releases associated resources.
+     */
     public abstract dispose(): void;
 }

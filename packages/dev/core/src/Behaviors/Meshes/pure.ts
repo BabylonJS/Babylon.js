@@ -1,0 +1,11 @@
+/** Pure barrel — re-exports only side-effect-free modules */
+export * from "./attachToBoxBehavior";
+export * from "./fadeInOutBehavior";
+export * from "./multiPointerScaleBehavior";
+export * from "./pointerDragBehavior";
+export * from "./pointerDragEvents";
+export * from "./sixDofDragBehavior";
+export * from "./surfaceMagnetismBehavior";
+export * from "./baseSixDofDragBehavior";
+export * from "./followBehavior";
+export * from "./handConstraintBehavior";

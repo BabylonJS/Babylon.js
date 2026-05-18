@@ -1,6 +1,7 @@
 import { type Camera, type IReadonlyObservable, type PostProcessRenderPipeline } from "core/index";
 
 import { Observable } from "../../Misc/observable";
+import { RegisterPostProcessRenderPipelineManagerSceneComponent } from "./postProcessRenderPipelineManagerSceneComponent.pure";
 
 /**
  * PostProcessRenderPipelineManager class
@@ -15,7 +16,9 @@ export class PostProcessRenderPipelineManager {
      * Initializes a PostProcessRenderPipelineManager
      * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
      */
-    constructor() {}
+    constructor() {
+        RegisterPostProcessRenderPipelineManagerSceneComponent(PostProcessRenderPipelineManager);
+    }
 
     /**
      * An event triggered when a pipeline is added to the manager

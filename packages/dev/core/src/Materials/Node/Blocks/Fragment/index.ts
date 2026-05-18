@@ -41,3 +41,19 @@ export * from "../../../../ShadersWGSL/ShadersInclude/shadowMapFragment";
 export * from "../../../../Shaders/ShadersInclude/shadowMapVertexMetric";
 export * from "../../../../Shaders/ShadersInclude/packingFunctions";
 export * from "../../../../Shaders/ShadersInclude/shadowMapFragment";
+
+// imageProcessingCompatibility
+export * from "../../../../ShadersWGSL/ShadersInclude/imageProcessingCompatibility";
+export * from "../../../../Shaders/ShadersInclude/imageProcessingCompatibility";
+
+// depthPrePass
+export * from "../../../../ShadersWGSL/ShadersInclude/depthPrePass";
+export * from "../../../../Shaders/ShadersInclude/depthPrePass";
+
+// logDepth
+export * from "../../../../ShadersWGSL/ShadersInclude/logDepthDeclaration";
+export * from "../../../../ShadersWGSL/ShadersInclude/logDepthFragment";
+export * from "../../../../ShadersWGSL/ShadersInclude/logDepthVertex";
+export * from "../../../../Shaders/ShadersInclude/logDepthDeclaration";
+export * from "../../../../Shaders/ShadersInclude/logDepthFragment";
+export * from "../../../../Shaders/ShadersInclude/logDepthVertex";

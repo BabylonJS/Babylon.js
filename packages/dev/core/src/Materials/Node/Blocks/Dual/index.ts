@@ -25,6 +25,12 @@ export * from "../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration";
 // fogBlock
 export * from "../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration";
 export * from "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
+export * from "../../../../ShadersWGSL/ShadersInclude/fogFragment";
+export * from "../../../../ShadersWGSL/ShadersInclude/fogVertex";
+export * from "../../../../ShadersWGSL/ShadersInclude/fogVertexDeclaration";
+export * from "../../../../Shaders/ShadersInclude/fogFragment";
+export * from "../../../../Shaders/ShadersInclude/fogVertex";
+export * from "../../../../Shaders/ShadersInclude/fogVertexDeclaration";
 
 // lightBlock
 export * from "../../../../ShadersWGSL/ShadersInclude/lightFragment";
@@ -47,3 +53,19 @@ export * from "../../../../Shaders/ShadersInclude/shadowsVertex";
 // reflectionTextureBlock
 export * from "../../../../ShadersWGSL/ShadersInclude/reflectionFunction";
 export * from "../../../../Shaders/ShadersInclude/reflectionFunction";
+
+// scene declarations
+export * from "../../../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
+export * from "../../../../Shaders/ShadersInclude/sceneUboDeclaration";
+export * from "../../../../Shaders/ShadersInclude/sceneFragmentDeclaration";
+export * from "../../../../Shaders/ShadersInclude/sceneVertexDeclaration";
+
+// vertexColorMixing
+export * from "../../../../ShadersWGSL/ShadersInclude/vertexColorMixing";
+export * from "../../../../Shaders/ShadersInclude/vertexColorMixing";
+
+// lightVxFragmentDeclaration (WGSL)
+export * from "../../../../ShadersWGSL/ShadersInclude/lightVxFragmentDeclaration";
+
+// clusteredLightingFunctions
+export * from "../../../../Shaders/ShadersInclude/clusteredLightingFunctions";
