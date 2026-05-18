@@ -1,7 +1,7 @@
 {
   "stats": {
-    "totalFiles": 3243,
-    "filesWithSideEffects": 1451,
+    "totalFiles": 3237,
+    "filesWithSideEffects": 1445,
     "filesWithoutSideEffects": 1792,
     "byType": {
       "top-level-call": 639,
@@ -9,7 +9,7 @@
       "bare-import": 248,
       "static-property-assignment": 2,
       "RegisterClass": 3,
-      "shader-store-write": 643
+      "shader-store-write": 637
     },
     "filesByType": {
       "top-level-call": 639,
@@ -17,7 +17,7 @@
       "bare-import": 111,
       "static-property-assignment": 2,
       "RegisterClass": 3,
-      "shader-store-write": 643
+      "shader-store-write": 637
     }
   },
   "manifest": [
@@ -9317,36 +9317,6 @@
       ]
     },
     {
-      "file": "Shaders/iblVoxelGrid3dDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 20,
-          "text": "if (!ShaderStore.ShadersStore[name]) {"
-        }
-      ]
-    },
-    {
-      "file": "Shaders/iblVoxelSlabDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 9,
-          "text": "if (!ShaderStore.ShadersStore[name]) {"
-        }
-      ]
-    },
-    {
-      "file": "Shaders/iblVoxelSlabDebug.vertex.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 7,
-          "text": "if (!ShaderStore.ShadersStore[name]) {"
-        }
-      ]
-    },
-    {
       "file": "Shaders/imageProcessing.fragment.ts",
       "sideEffects": [
         {
@@ -12908,36 +12878,6 @@
     },
     {
       "file": "ShadersWGSL/iblVoxelGrid2dArrayDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 8,
-          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
-        }
-      ]
-    },
-    {
-      "file": "ShadersWGSL/iblVoxelGrid3dDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 19,
-          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
-        }
-      ]
-    },
-    {
-      "file": "ShadersWGSL/iblVoxelSlabDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 10,
-          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
-        }
-      ]
-    },
-    {
-      "file": "ShadersWGSL/iblVoxelSlabDebug.vertex.ts",
       "sideEffects": [
         {
           "type": "shader-store-write",
