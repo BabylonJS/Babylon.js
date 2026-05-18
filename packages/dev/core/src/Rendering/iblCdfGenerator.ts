@@ -17,6 +17,7 @@ import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "../Misc/logger";
 import { _RetryWithInterval } from "../Misc/timingTools";
+import { RegisterIblCdfGeneratorSceneComponent } from "./iblCdfGeneratorSceneComponent.pure";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -217,6 +218,7 @@ export class IblCdfGenerator {
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
         this._dummyTexture = new RawTexture(blackPixels, 1, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         if (this._scene) {
+            RegisterIblCdfGeneratorSceneComponent(IblCdfGenerator);
             IblCdfGenerator._SceneComponentInitialization(this._scene);
         }
     }

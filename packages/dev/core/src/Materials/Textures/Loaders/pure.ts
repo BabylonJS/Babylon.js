@@ -1,0 +1,13 @@
+/** Pure barrel — re-exports only side-effect-free modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
+export * from "./internalTextureLoader";
+export * from "./ddsTextureLoader";
+export * from "./envTextureLoader";
+export * from "./ktxTextureLoader";
+export * from "./tgaTextureLoader";
+export * from "./hdrTextureLoader";
+export * from "./basisTextureLoader";
+export * from "./exrTextureLoader";
+export * from "./iesTextureLoader";
+export * from "./textureLoaderManager";
+export * from "./EXR/pure";

@@ -22,6 +22,16 @@ For a full index of all coding practice, review, and workflow instruction files,
 
 Feature documentation lives in `/specs/`. Each feature has its own folder named `<feature-name>/` containing `goals.md`, `requirements.md`, and `architecture.md` as applicable. Within that folder, a `.temp/` directory holds files that don't need to be kept after development is complete (e.g., `mocks.html`, `mocks.context.md`, `implementation_plan/`).
 
+## Tree-Shaking Architecture
+
+The `@babylonjs/core` package uses a three-file split only for modules that need a side-effect-free implementation plus a backward-compatible side-effect wrapper:
+
+- **`foo.pure.ts`** — Pure implementation and idempotent registration function. Imports only from other pure-safe modules. No top-level side effects.
+- **`foo.ts`** — Thin wrapper that re-exports from `.pure.ts`, re-exports `.types.ts` when present, and calls the registration function.
+- **`foo.types.ts`** — `declare module` augmentations only when the module augments another class or namespace.
+
+Do not create `.pure.ts` plus an empty wrapper for side-effect-free modules. If a module has no runtime side effects or registration work, keep it as a single plain `.ts` file. Generated shader files under `Shaders/`, `ShadersWGSL/`, and `ShadersInclude/` are generated side-effect modules; never create `.pure.ts` variants for them. When modifying an existing split module in core, edit the `.pure.ts` file for logic. Side effects (RegisterClass, prototype augmentations, static API reattachment, generated shader imports, etc.) are owned by the registration function in `.pure.ts` and invoked by the wrapper. See [instructions/tree-shaking.instructions.md](instructions/tree-shaking.instructions.md) for the full guide.
+
 ## Public APIs
 
 All public APIs exported from a package's root index file (except those prefixed with an underscore) are considered public APIs.

@@ -1,0 +1,10 @@
+/** Pure barrel — re-exports only side-effect-free modules */
+export * from "./boxParticleEmitter";
+export * from "./coneParticleEmitter";
+export * from "./cylinderParticleEmitter";
+export * from "./hemisphericParticleEmitter";
+export * from "./IParticleEmitterType";
+export * from "./pointParticleEmitter";
+export * from "./sphereParticleEmitter";
+export * from "./customParticleEmitter";
+export * from "./meshParticleEmitter";
