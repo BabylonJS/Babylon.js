@@ -851,6 +851,29 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Replaces the underlying WebGL handle of a texture previously created via {@link wrapWebGLTexture}, preserving
+     * the InternalTexture identity.
+     *
+     * Intended for the context-loss / context-restored flow: when the host application recreates its external resource
+     * on the new WebGL context, it calls this method to repoint Babylon's wrapper at the new handle without losing
+     * references held by materials, render-target wrappers, particle systems, etc.
+     *
+     * Dimensions, sampling mode and mip-map flag are properties of the logical wrapped texture and are left unchanged;
+     * to alter those, dispose the wrapped texture and call {@link wrapWebGLTexture} again.
+     *
+     * Throws if the target was not produced by {@link wrapWebGLTexture}.
+     * @param internalTexture defines the wrapped InternalTexture to repoint
+     * @param texture defines the new WebGL handle to wrap
+     */
+    public updateWrappedWebGLTexture(internalTexture: InternalTexture, texture: WebGLTexture): void {
+        if (internalTexture.source !== InternalTextureSource.Unknown) {
+            throw new Error("updateWrappedWebGLTexture: target InternalTexture was not produced by wrapWebGLTexture.");
+        }
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        internalTexture.isReady = true;
+    }
+
+    /**
      * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {

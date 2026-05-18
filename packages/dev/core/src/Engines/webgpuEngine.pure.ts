@@ -2581,6 +2581,26 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return internalTexture;
     }
 
+    /**
+     * Replaces the underlying GPUTexture of a texture previously created via {@link wrapWebGPUTexture}, preserving the
+     * InternalTexture identity.
+     *
+     * Intended for the device-loss / device-restored flow: when the host recreates its external resource on the new
+     * GPU device, it calls this method to repoint Babylon's wrapper at the new handle without losing references held
+     * by materials, render-target wrappers, particle systems, etc.
+     *
+     * Throws if the target was not produced by {@link wrapWebGPUTexture}.
+     * @param internalTexture defines the wrapped InternalTexture to repoint
+     * @param texture defines the new GPUTexture to wrap
+     */
+    public updateWrappedWebGPUTexture(internalTexture: InternalTexture, texture: GPUTexture): void {
+        if (internalTexture.source !== InternalTextureSource.Unknown) {
+            throw new Error("updateWrappedWebGPUTexture: target InternalTexture was not produced by wrapWebGPUTexture.");
+        }
+        internalTexture._hardwareTexture = new WebGPUHardwareTexture(this, texture);
+        internalTexture.isReady = true;
+    }
+
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Wraps an external web gl texture in a Babylon texture.
@@ -2588,6 +2608,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public wrapWebGLTexture(): InternalTexture {
         throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
+    }
+
+    /**
+     * Throws because the engine is WebGPU. Use {@link updateWrappedWebGPUTexture} instead.
+     */
+    public updateWrappedWebGLTexture(): void {
+        throw new Error("updateWrappedWebGLTexture is not supported, use updateWrappedWebGPUTexture instead.");
     }
 
     /**

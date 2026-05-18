@@ -1999,6 +1999,34 @@ export class ThinNativeEngine extends ThinEngine {
         return internalTexture;
     }
 
+    /**
+     * Replaces the underlying native texture handle of a texture previously created via {@link wrapNativeTexture},
+     * preserving the InternalTexture identity.
+     *
+     * Intended for the device-loss / device-restored flow (a DisableRendering / EnableRendering cycle from the host
+     * application): when the host recreates its external resource on the new graphics device, it calls this method to
+     * repoint Babylon's wrapper at the new handle without losing references held by materials, render-target wrappers,
+     * particle systems, etc.
+     *
+     * Sampling mode and mip-map flag are properties of the logical wrapped texture and are left unchanged; dimensions
+     * are re-read from the new native texture in case the host recreates it at a different size.
+     *
+     * Throws if the target was not produced by {@link wrapNativeTexture}.
+     * @param internalTexture defines the wrapped InternalTexture to repoint
+     * @param texture defines the new native texture handle to wrap
+     */
+    public updateWrappedNativeTexture(internalTexture: InternalTexture, texture: NativeTexture): void {
+        if (internalTexture.source !== InternalTextureSource.Unknown) {
+            throw new Error("updateWrappedNativeTexture: target InternalTexture was not produced by wrapNativeTexture.");
+        }
+        internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this._engine);
+        internalTexture.baseWidth = this._engine.getTextureWidth(texture);
+        internalTexture.baseHeight = this._engine.getTextureHeight(texture);
+        internalTexture.width = internalTexture.baseWidth;
+        internalTexture.height = internalTexture.baseHeight;
+        internalTexture.isReady = true;
+    }
+
     public override _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         // TODO: handle other options?
         const generateStencil = options.generateStencil || false;
