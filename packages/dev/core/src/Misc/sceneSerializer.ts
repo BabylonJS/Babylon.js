@@ -12,6 +12,7 @@ import { type Node } from "../node";
 import { type TransformNode } from "../Meshes/transformNode";
 import { type Camera } from "../Cameras/camera";
 import { Logger } from "core/Misc/logger";
+import { _IsSideEffectImplemented } from "./devTools";
 
 let SerializedGeometries: Geometry[] = [];
 const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -173,7 +174,7 @@ export class SceneSerializer {
         }
 
         //Physics
-        if (scene.isPhysicsEnabled && scene.isPhysicsEnabled()) {
+        if (_IsSideEffectImplemented(scene.isPhysicsEnabled) && scene.isPhysicsEnabled()) {
             const physicEngine = scene.getPhysicsEngine();
 
             if (physicEngine) {

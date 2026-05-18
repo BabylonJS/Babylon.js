@@ -14,5 +14,6 @@
         }
     },
 
-    "include": ["./src/**/*", "../../../dev/core/src/**/*", "../../../lts/core/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/core/src/**/*", "../../../lts/core/src/**/*"],
+    "exclude": ["**/node_modules", "**/dist", "../../../dev/core/src/**/*.test.ts"]
 }

@@ -849,7 +849,351 @@ const plugin: IPlugin = {
                 };
             },
         },
+
+        /**
+         * Require `#__PURE__` annotations on top-level call / new expressions
+         * and static field initializers inside `.pure.ts` files.
+         *
+         * These annotations tell bundlers (Rollup, Webpack) that the call has no
+         * side effects and can be tree-shaken when the result is unused.
+         */
+        "require-pure-annotation": {
+            meta: {
+                type: "problem",
+                fixable: "code",
+                docs: {
+                    description: "Require /*#__PURE__*/ on call/new expressions at module scope in .pure.ts files",
+                },
+                messages: {
+                    "missing-pure-annotation":
+                        "Call/new expression in a .pure.ts file must be annotated with /*#__PURE__*/. " + "Without it, bundlers cannot tree-shake this code. Expression: {{expr}}",
+                },
+            },
+            create(context: { filename?: string; getFilename?: () => string; sourceCode?: any; getSourceCode?: () => any; report: (desc: any) => void }) {
+                const filename = context.filename ?? context.getFilename?.() ?? "";
+                if (!filename.endsWith(".pure.ts")) {
+                    return {};
+                }
+
+                const sourceCode = context.sourceCode ?? context.getSourceCode?.();
+
+                /**
+                 * Unwrap TS type assertions (e.g. `new Foo() as Bar`) to find the
+                 * underlying CallExpression or NewExpression.
+                 * @param node - The AST node to unwrap.
+                 * @returns The unwrapped CallExpression/NewExpression, or null.
+                 */
+                function findCallOrNew(node: any): any {
+                    if (!node) {
+                        return null;
+                    }
+                    if (node.type === "NewExpression" || node.type === "CallExpression") {
+                        return node;
+                    }
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression") {
+                        return findCallOrNew(node.expression);
+                    }
+                    return null;
+                }
+
+                /**
+                 * Check whether the node is preceded by a PURE block comment.
+                 * @param node - The AST node to check.
+                 * @returns True if a #__PURE__ annotation precedes the node.
+                 */
+                function hasPureAnnotation(node: any): boolean {
+                    // getCommentsBefore returns leading comments attached to the node
+                    const comments = sourceCode.getCommentsBefore?.(node) ?? [];
+                    for (const c of comments) {
+                        if (c.type === "Block" && c.value.trim() === "#__PURE__") {
+                            return true;
+                        }
+                    }
+                    // Also check the immediately preceding token (comment) in case
+                    // ESLint attached it differently
+                    const prev = sourceCode.getTokenBefore?.(node, { includeComments: true });
+                    if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") {
+                        return true;
+                    }
+                    return false;
+                }
+
+                function reportMissing(callOrNew: any) {
+                    const text = sourceCode.getText(callOrNew);
+                    context.report({
+                        node: callOrNew,
+                        messageId: "missing-pure-annotation",
+                        data: { expr: text.length > 60 ? text.slice(0, 57) + "..." : text },
+                        fix(fixer: any) {
+                            return fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ");
+                        },
+                    });
+                }
+
+                return {
+                    // Static class field initializers:  static foo = new Bar() / Bar.Create()
+                    "PropertyDefinition[static=true]"(node: any) {
+                        const callOrNew = findCallOrNew(node.value);
+                        if (callOrNew && !hasPureAnnotation(callOrNew)) {
+                            reportMissing(callOrNew);
+                        }
+                    },
+
+                    // Top-level variable initializers:  const x = new Foo()
+                    "Program > VariableDeclaration > VariableDeclarator"(node: any) {
+                        const callOrNew = findCallOrNew(node.init);
+                        if (callOrNew && !hasPureAnnotation(callOrNew)) {
+                            reportMissing(callOrNew);
+                        }
+                    },
+
+                    // Top-level expression statements:  Object.defineProperties(...)
+                    "Program > ExpressionStatement"(node: any) {
+                        const callOrNew = findCallOrNew(node.expression);
+                        if (callOrNew && !hasPureAnnotation(callOrNew)) {
+                            reportMissing(callOrNew);
+                        }
+                    },
+                };
+            },
+        },
+
+        /**
+         * Disallow side-effect (bare) imports in `.pure.ts` files and ensure
+         * barrel `pure.ts` files only re-export from safe (pure) sources.
+         *
+         * `.pure.ts` files should be completely free of runtime side effects.
+         * Bare imports like `import "some/module"` exist solely for their side
+         * effects (prototype augmentation, shader registration, etc.) and defeat
+         * the purpose of the pure split.
+         *
+         * Barrel `pure.ts` files should only re-export from modules that are
+         * side-effect-free according to the manifest (or by naming convention).
+         */
+        "no-side-effect-imports-in-pure": {
+            meta: {
+                type: "problem",
+                docs: {
+                    description: "Disallow side-effect imports in .pure.ts files",
+                    recommended: false,
+                },
+                messages: {
+                    bareImport:
+                        'Bare import "{{source}}" introduces side effects in a .pure.ts file. ' + "Move it to the non-pure counterpart or guard with an eslint-disable comment.",
+                    unsafeBarrelReExport: 'Import or re-export from "{{source}}" in a pure file pulls in a module with side effects. ' + "Only reference side-effect-free modules.",
+                    unsafeValueImport:
+                        'Import from "{{source}}" in a .pure.ts file pulls in a module with side effects. ' +
+                        "Import from the .pure counterpart instead, or use a type-only import.",
+                },
+                schema: [],
+            },
+            create(context: eslint.Rule.RuleContext) {
+                const filename = (context as unknown as any).filename ?? (context as unknown as any).getFilename?.() ?? "";
+
+                // Only applies to files ending in .pure.ts or named pure.ts
+                const isPureFile = /\.pure\.[tj]sx?$/.test(filename) || /[/\\]pure\.[tj]sx?$/.test(filename);
+                if (!isPureFile) {
+                    return {};
+                }
+
+                const isBarrelPure = /[/\\]pure\.[tj]sx?$/.test(filename);
+
+                // ── Manifest-based side-effect lookup (cached across files) ──
+                // The manifest lists files WITH side effects.  If a resolved
+                // import target is NOT in the set, it's safe.
+
+                // Static cache shared across all files in this ESLint run
+                const sideEffectFiles = loadSideEffectsSet();
+
+                /**
+                 * Resolve an import source relative to the current file and
+                 * return the manifest-style path (relative to packages/dev/core/src/).
+                 * Returns null if the file is outside core/src.
+                 * @param source - The import specifier to resolve.
+                 * @returns The manifest-relative path if the source has side effects, or null.
+                 */
+                function resolveToManifestPath(source: string): string | null {
+                    let rel: string;
+                    if (source.startsWith(".")) {
+                        const dir = path.dirname(filename);
+                        const resolved = path.resolve(dir, source);
+
+                        // Find core/src/ anchor
+                        const anchor = path.sep + path.join("packages", "dev", "core", "src") + path.sep;
+                        const idx = resolved.indexOf(anchor);
+                        if (idx === -1) {
+                            return null;
+                        }
+                        rel = resolved.substring(idx + anchor.length);
+                    } else if (source === "core") {
+                        rel = "index";
+                    } else if (source.startsWith("core/")) {
+                        rel = source.substring("core/".length);
+                    } else {
+                        return null; // external / absolute — skip
+                    }
+
+                    // Normalise to forward-slashes (Windows)
+                    rel = rel.replace(/\\/g, "/");
+                    rel = rel.replace(/\.(?:js|mjs|ts|tsx)$/, "");
+
+                    // Try common extensions
+                    for (const ext of [".ts", ".tsx", "/index.ts"]) {
+                        const candidate = rel + ext;
+                        if (sideEffectFiles.has(candidate)) {
+                            return candidate; // it HAS side effects
+                        }
+                    }
+                    // Not in the side-effects set → pure (or unknown)
+                    return null;
+                }
+
+                /**
+                 * Check whether an import source is known to have side effects
+                 * according to the manifest.  Falls back to naming-convention
+                 * heuristics when the manifest is unavailable.
+                 * @param source - The import specifier to check.
+                 * @returns True if the source has side effects.
+                 */
+                function hasSideEffects(source: string): boolean {
+                    if (sideEffectFiles.size > 0) {
+                        return resolveToManifestPath(source) !== null;
+                    }
+                    // Fallback: naming-convention check (inverse — safe sources)
+                    return !isSafeSourceByName(source);
+                }
+
+                function isSafeSourceByName(source: string): boolean {
+                    return (
+                        /\.pure$/.test(source) ||
+                        /\.functions$/.test(source) ||
+                        /[/\\]pure$/.test(source) ||
+                        /ThinMaths[/\\]/.test(source) ||
+                        /math\.constants$/.test(source) ||
+                        /math\.like$/.test(source) ||
+                        /[/\\]types$/.test(source) ||
+                        /arrayTools$/.test(source) ||
+                        /[/\\]tensor$/.test(source)
+                    );
+                }
+
+                return {
+                    // Bare imports: import "foo"
+                    ImportDeclaration(node: any) {
+                        // import type { ... } from "..." — always safe
+                        if (node.importKind === "type") {
+                            return;
+                        }
+
+                        const source: string = node.source?.value ?? "";
+
+                        // Bare import (no specifiers) — always a side-effect import
+                        if (node.specifiers.length === 0) {
+                            context.report({
+                                node,
+                                messageId: "bareImport",
+                                data: { source },
+                            });
+                            return;
+                        }
+
+                        // Check that value imports come from side-effect-free sources
+                        if (hasSideEffects(source)) {
+                            // Check if ALL specifiers are type-only
+                            const allTypeOnly = node.specifiers.every((s: any) => s.importKind === "type");
+                            if (!allTypeOnly) {
+                                context.report({
+                                    node,
+                                    messageId: isBarrelPure ? "unsafeBarrelReExport" : "unsafeValueImport",
+                                    data: { source },
+                                });
+                            }
+                        }
+                    },
+
+                    // Re-exports: export * from "foo", export { x } from "foo"
+                    ExportNamedDeclaration(node: any) {
+                        if (!node.source) {
+                            return;
+                        }
+                        // export type { ... } from "..." — always safe
+                        if (node.exportKind === "type") {
+                            return;
+                        }
+                        const source: string = node.source.value ?? "";
+                        if (hasSideEffects(source)) {
+                            const allTypeOnly = node.specifiers.length > 0 && node.specifiers.every((s: any) => s.exportKind === "type");
+                            if (!allTypeOnly) {
+                                context.report({
+                                    node,
+                                    messageId: "unsafeBarrelReExport",
+                                    data: { source },
+                                });
+                            }
+                        }
+                    },
+
+                    ExportAllDeclaration(node: any) {
+                        if (!node.source) {
+                            return;
+                        }
+                        if (node.exportKind === "type") {
+                            return;
+                        }
+                        const source: string = node.source.value ?? "";
+                        if (hasSideEffects(source)) {
+                            context.report({
+                                node,
+                                messageId: "unsafeBarrelReExport",
+                                data: { source },
+                            });
+                        }
+                    },
+                };
+            },
+        },
     },
 };
+
+/**
+ * Load the side-effects manifest and return a Set of file paths that HAVE
+ * side effects.  Cached across the entire ESLint process.
+ */
+let _sideEffectFilesCache: Set<string> | undefined;
+function loadSideEffectsSet(): Set<string> {
+    if (_sideEffectFilesCache) {
+        return _sideEffectFilesCache;
+    }
+    _sideEffectFilesCache = new Set<string>();
+    try {
+        // Walk up from this compiled plugin file to the repo root
+        // Plugin is at packages/tools/eslintBabylonPlugin/dist/index.js
+        // Manifest is at scripts/treeshaking/side-effects-manifest.json
+        let dir = __dirname;
+        for (let i = 0; i < 10; i++) {
+            const candidate = path.join(dir, "scripts", "treeshaking", "side-effects-manifest.json");
+            if (fs.existsSync(candidate)) {
+                const raw = fs.readFileSync(candidate, "utf-8");
+                const manifest = JSON.parse(raw);
+                if (Array.isArray(manifest.manifest)) {
+                    for (const entry of manifest.manifest) {
+                        if (entry.file) {
+                            _sideEffectFilesCache.add(entry.file);
+                        }
+                    }
+                }
+                break;
+            }
+            const parent = path.dirname(dir);
+            if (parent === dir) {
+                break;
+            }
+            dir = parent;
+        }
+    } catch {
+        // Manifest not available — fall back to naming conventions
+    }
+    return _sideEffectFilesCache;
+}
 
 export = plugin;

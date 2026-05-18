@@ -12,7 +12,7 @@ import { type ThinTexture } from "../Materials/Textures/thinTexture";
 import { type Scene } from "../scene";
 import { type ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
-import { BindLogDepth } from "../Materials/materialHelper.functions.pure";
+import { BindLogDepth } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { Vector3 } from "../Maths/math.vector";
 

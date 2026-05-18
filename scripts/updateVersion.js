@@ -27,7 +27,7 @@ const updateEngineVersion = async (version) => {
 
 const updateCdnVersion = (version) => {
     // Update Tools._CdnVersion in core so CDN URLs are versioned at runtime
-    const toolsFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Misc", "tools.ts");
+    const toolsFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Misc", "tools.pure.ts");
     const toolsData = fs.readFileSync(toolsFile, "utf-8");
     const newToolsData = toolsData.replace(/static _CdnVersion = "(.*)"/, `static _CdnVersion = "${version}"`);
     if (newToolsData === toolsData) {

@@ -2,6 +2,7 @@ import { type Nullable } from "../types";
 import { type _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import { type Effect } from "../Materials/effect";
 import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBufferDeduceStride } from "./buffer.pure";
 
 const VertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {
     [VertexBuffer.PositionKind]: true,
@@ -78,7 +79,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
             }
             pipelineContext.vertexBufferKindToType[kind] = currentVertexBufferType;
             if (currentVertexBufferType !== VertexBuffer.FLOAT) {
-                shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] = VertexBuffer.DeduceStride(kind);
+                shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] = VertexBufferDeduceStride(kind);
                 if (IsSignedType(currentVertexBufferType)) {
                     shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] *= -1;
                 }

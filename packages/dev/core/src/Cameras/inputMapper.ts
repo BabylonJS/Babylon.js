@@ -1,3 +1,5 @@
+/** This file must only contain pure code and pure imports */
+
 /**
  * Physical input source that generated an interaction.
  */
