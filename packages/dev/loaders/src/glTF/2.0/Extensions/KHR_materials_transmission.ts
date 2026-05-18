@@ -6,7 +6,7 @@ import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { type IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { TransmissionHelper, type ITransmissionHelperHolder } from "./transmissionHelper";
+import { ensureTransmissionHelper } from "./transmissionHelper";
 
 const NAME = "KHR_materials_transmission";
 
@@ -86,19 +86,8 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         adapter.configureTransmission();
         adapter.transmissionWeight = transmissionWeight;
 
-        // Handle transmission helper setup (only needed for PBR materials)
-        if (transmissionWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
-            const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
-            const existingHelper = scene._transmissionHelper;
-            const helper = existingHelper ?? new TransmissionHelper({}, babylonMaterial.getScene());
-            // Register all material implementations known to this loader so the helper
-            // can classify and create adapters for them independently of the loader's lifetime.
-            for (const impl of Array.from(this._loader._pbrMaterialImpls.values())) {
-                helper.addMaterialImpl(impl);
-            }
-            if (existingHelper && !existingHelper._isRenderTargetValid()) {
-                existingHelper._setupRenderTargets();
-            }
+        if (transmissionWeight > 0) {
+            ensureTransmissionHelper(this._loader, babylonMaterial);
         }
 
         // Load texture if present

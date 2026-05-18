@@ -187,7 +187,6 @@ export function LoadBoundingInfoFromPositionAccessor(accessor: IAccessor): Nulla
 }
 
 type PBRMaterialImplementation = {
-    key: string;
     materialClass: typeof Material;
     adapterClass: new (material: Material) => IMaterialLoadingAdapter;
 };
@@ -463,9 +462,15 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (!this.parent.skipMaterials) {
                     const needsOpenPBR = this.parent.useOpenPBR || this.isExtensionUsed("KHR_materials_openpbr");
-                    // PBR is needed when useOpenPBR is not forcing everything to OpenPBR AND at least
-                    // one material in the file either has no extensions or lacks KHR_materials_openpbr.
-                    const needsPBR = !this.parent.useOpenPBR && (!this._gltf.materials?.length || this._gltf.materials.some((m) => !m.extensions?.["KHR_materials_openpbr"]));
+
+                    let needsPBR = false;
+                    if (!this.parent.useOpenPBR) {
+                        // PBR is needed when useOpenPBR is turned off.
+                        needsPBR = true;
+                    } else if (this._gltf.materials?.length && this._gltf.materials.some((m) => !m.extensions?.["KHR_materials_openpbr"])) {
+                        // PBR is needed if there is at least one material that does not use the KHR_materials_openpbr extension (i.e. relies on the default PBR implementation).
+                        needsPBR = true;
+                    }
 
                     const implPromises: Promise<void>[] = [];
 
@@ -474,7 +479,6 @@ export class GLTFLoader implements IGLTFLoader {
                             Promise.all([import("core/Materials/PBR/openpbrMaterial"), import("./openpbrMaterialLoadingAdapter")]).then(
                                 ([{ OpenPBRMaterial: openPBRMaterialClass }, { OpenPBRMaterialLoadingAdapter: openPBRAdapterClass }]) => {
                                     this._pbrMaterialImpls.set("openpbr", {
-                                        key: "openpbr",
                                         materialClass: openPBRMaterialClass,
                                         adapterClass: openPBRAdapterClass,
                                     });
@@ -488,7 +492,6 @@ export class GLTFLoader implements IGLTFLoader {
                             Promise.all([import("core/Materials/PBR/pbrMaterial"), import("./pbrMaterialLoadingAdapter")]).then(
                                 ([{ PBRMaterial: pbrMaterialClass }, { PBRMaterialLoadingAdapter: pbrAdapterClass }]) => {
                                     this._pbrMaterialImpls.set("pbr", {
-                                        key: "pbr",
                                         materialClass: pbrMaterialClass,
                                         adapterClass: pbrAdapterClass,
                                     });

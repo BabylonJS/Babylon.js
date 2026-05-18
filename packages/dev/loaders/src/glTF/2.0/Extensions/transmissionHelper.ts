@@ -11,6 +11,7 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { type Color4 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "../materialLoadingAdapter";
+import { type GLTFLoader } from "../glTFLoader";
 
 /**
  * Describes a material class and its corresponding loading adapter.
@@ -462,5 +463,29 @@ export class TransmissionHelper {
         this._translucentMaterialIndices.clear();
         this._opaqueOnlySubMeshes.clear();
         this._savedSubMeshes.clear();
+    }
+}
+
+/**
+ * Ensures a TransmissionHelper exists on the scene and has all of the loader's material
+ * implementations registered with it. Creates the helper if one does not yet exist on the
+ * scene, and recreates its render target if it has been disposed. Does nothing when the
+ * loader's parent has `dontUseTransmissionHelper` set.
+ * @param loader The glTF loader whose material implementations should be registered
+ * @param babylonMaterial A material belonging to the scene where the helper should live
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function ensureTransmissionHelper(loader: GLTFLoader, babylonMaterial: Material): void {
+    if (loader.parent.dontUseTransmissionHelper) {
+        return;
+    }
+    const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
+    const existingHelper = scene._transmissionHelper;
+    const helper = existingHelper ?? new TransmissionHelper({}, babylonMaterial.getScene());
+    for (const impl of Array.from(loader._pbrMaterialImpls.values())) {
+        helper.addMaterialImpl(impl);
+    }
+    if (existingHelper && !existingHelper._isRenderTargetValid()) {
+        existingHelper._setupRenderTargets();
     }
 }
