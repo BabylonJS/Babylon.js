@@ -11,6 +11,7 @@ import {
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
     UnloadSmartAssetAsync,
+    type SmartAssetLoadOptions,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
 import { ApplyAllOverrides, ApplyOverridesForKey, AddOverride, GetOverrides } from "../../../projects/overrideManager";
@@ -27,7 +28,7 @@ import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 
-import { PROJECT_LOCALS_KEY, LoadProjectFileAsync, SaveProjectFileAsync } from "../../../projects/projectFile";
+import { ProjectLocalsKey, LoadProjectFileAsync, SaveProjectFileAsync } from "../../../projects/projectFile";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Body1, Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
@@ -268,7 +269,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             }
             const entries: Array<{ key: string; url: string }> = [];
             for (const [key, url] of GetAllSmartAssets(sam.scene)) {
-                if (key !== PROJECT_LOCALS_KEY) {
+                if (key !== ProjectLocalsKey) {
                     entries.push({ key, url });
                 }
             }
@@ -288,37 +289,36 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 return;
             }
 
-            const sam = GetSmartAssetManager(scene);
+            // Master's RegisterSmartAsset takes an `extension` option, so the
+            // loader can detect the format from a blob URL on the first attempt —
+            // the branch's per-file `onAssetNotFound` hack is no longer needed,
+            // which means we can also load all selected files in parallel.
+            const results = await Promise.allSettled(
+                Array.from(files).map(async (file) => {
+                    const key = file.name.replace(/\.[^/.]+$/, "");
+                    const ext = GetExtension(file.name).toLowerCase();
+                    const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const key = file.name.replace(/\.[^/.]+$/, "");
-                const ext = _getExtension(file.name).toLowerCase();
-                const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
+                    const blobUrl = URL.createObjectURL(file);
+                    RegisterSmartAsset(scene, key, blobUrl, isTexture ? { type: "texture", extension: ext } : { extension: ext });
 
-                const blobUrl = URL.createObjectURL(file);
-                RegisterSmartAsset(scene, key, blobUrl, isTexture ? { type: "texture", extension: ext } : { extension: ext });
-
-                try {
                     if (isTexture) {
-                        // eslint-disable-next-line no-await-in-loop
                         await LoadSmartAssetTextureAsync(scene, key);
                     } else {
-                        // Temporarily set onAssetNotFound to return the File so the loader's
-                        // retry path can use the extension hint embedded on the File.
-                        const savedHandler = sam.onAssetNotFound;
-                        sam.onAssetNotFound = async () => file;
-                        try {
-                            // eslint-disable-next-line no-await-in-loop
-                            await LoadSmartAssetAsync(scene, key);
-                        } finally {
-                            sam.onAssetNotFound = savedHandler;
-                        }
+                        await LoadSmartAssetAsync(scene, key);
                     }
-                    setStatus(`Added: ${key}`);
-                } catch {
-                    setStatus(`Failed to load: ${key}`);
-                }
+                    return key;
+                })
+            );
+
+            const succeeded = results.filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled").map((r) => r.value);
+            const failed = results.length - succeeded.length;
+            if (failed > 0) {
+                setStatus(`Added: ${succeeded.length} of ${results.length}; ${failed} failed`);
+            } else if (succeeded.length === 1) {
+                setStatus(`Added: ${succeeded[0]}`);
+            } else {
+                setStatus(`Added: ${succeeded.length} assets`);
             }
 
             if (fileInputRef.current) {
@@ -349,7 +349,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
                 const sam = GetSmartAssetManager(scene);
                 const blobUrl = URL.createObjectURL(file);
-                const ext = _getExtension(file.name).toLowerCase();
+                const ext = GetExtension(file.name).toLowerCase();
                 const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
 
                 if (isTexture) {
@@ -365,13 +365,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     // Load the new texture via SAM so it's tracked for override resolution.
                     // Pass reloadSource on Load so Reload can re-read the file from disk.
                     RegisterSmartAsset(scene, key, blobUrl, { type: "texture", extension: ext });
-                    const newTex = await LoadSmartAssetTextureAsync(
-                        scene,
-                        key,
-                        undefined,
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        fileHandle ? { reloadSource: async () => await fileHandle.getFile() } : undefined
-                    );
+                    const newTex = await LoadSmartAssetTextureAsync(scene, key, undefined, BuildReloadOptions(fileHandle));
 
                     // Replace references on all materials that used the old texture
                     if (oldTex) {
@@ -398,13 +392,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     const savedHandler = sam.onAssetNotFound;
                     sam.onAssetNotFound = async () => file;
                     try {
-                        await LoadSmartAssetAsync(
-                            scene,
-                            key,
-                            undefined,
-                            // eslint-disable-next-line @typescript-eslint/naming-convention
-                            fileHandle ? { reloadSource: async () => await fileHandle.getFile() } : undefined
-                        );
+                        await LoadSmartAssetAsync(scene, key, undefined, BuildReloadOptions(fileHandle));
                     } finally {
                         sam.onAssetNotFound = savedHandler;
                     }
@@ -425,18 +413,14 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             if (typeof windowWithPicker.showOpenFilePicker === "function") {
                 const pickerAsync = async () => {
                     try {
+                        // Tuple-array `fromEntries` so the MIME-glob keys ("model/*", "image/*")
+                        // don't appear as object-literal property names.
+                        const accept: Record<string, string[]> = Object.fromEntries([
+                            ["model/*", [".glb", ".gltf", ".babylon", ".obj"]],
+                            ["image/*", [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"]],
+                        ]);
                         const [handle] = await windowWithPicker.showOpenFilePicker!({
-                            types: [
-                                {
-                                    description: "Assets",
-                                    accept: {
-                                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                                        "model/*": [".glb", ".gltf", ".babylon", ".obj"],
-                                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                                        "image/*": [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"],
-                                    },
-                                },
-                            ],
+                            types: [{ description: "Assets", accept }],
                         });
                         const file = await handle.getFile();
                         await doSwapAsync(file, handle);
@@ -489,7 +473,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             {assets.length === 0 && <div className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</div>}
             {assets.map((a) => {
                 // Find the first mesh produced by this key for click-to-select
-                const provEntity = sam ? _findFirstEntityForKey(a.key, scene, sam) : null;
+                const provEntity = sam ? FindFirstEntityForKey(a.key, scene, sam) : null;
 
                 return (
                     <div key={a.key} className={styles.assetRow}>
@@ -502,7 +486,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                             <span className={styles.assetKey}>{a.key}</span>
                         )}
                         <span className={styles.assetUrl} title={a.url}>
-                            {_shortenUrl(a.url)}
+                            {ShortenUrl(a.url)}
                         </span>
                         <span className={styles.assetActions}>
                             <LinkRegular fontSize={14} className={styles.iconButton} title="Swap URL" onClick={() => onSwapAsset(a.key)} />
@@ -529,7 +513,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 <Body1>
                     Key: <b>{pendingNotFound?.key}</b>
                 </Body1>
-                <Caption1>{_shortenUrl(pendingNotFound?.url ?? "")}</Caption1>
+                <Caption1>{ShortenUrl(pendingNotFound?.url ?? "")}</Caption1>
                 <Body1>Locate the file or click Skip to continue without it.</Body1>
             </Dialog>
             <input
@@ -660,7 +644,7 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
                         {o.target}.{o.prop}
                     </span>
                     <span className={styles.dimSeparator}>=</span>
-                    <span className={styles.overrideValue}>{_shortenValue(o.value)}</span>
+                    <span className={styles.overrideValue}>{ShortenValue(o.value)}</span>
                 </div>
             ))}
             <ButtonLine label="Refresh" icon={DocumentTextRegular} onClick={refresh} />
@@ -671,6 +655,23 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
 // ── Utilities ──
 
 /**
+ * Builds a {@link SmartAssetLoadOptions} object containing a `reloadSource`
+ * that re-reads from the given {@link FileSystemFileHandle}, or returns
+ * undefined when no handle is available. Centralised so the load-options
+ * construction stays out of the call sites' inline argument lists and so
+ * the function-valued property doesn't trip the object-literal-method
+ * naming-convention check.
+ * @param fileHandle - Optional file system handle for the live source file.
+ * @returns Load options with a `reloadSource`, or undefined.
+ */
+function BuildReloadOptions(fileHandle: FileSystemFileHandle | undefined): SmartAssetLoadOptions | undefined {
+    if (!fileHandle) {
+        return undefined;
+    }
+    return { reloadSource: fileHandle.getFile.bind(fileHandle) };
+}
+
+/**
  * Finds the first scene entity produced by a smart asset key, for click-to-select.
  * Walks the scene's collections and returns the first object tracked by the
  * given smart asset key (preferring non-root meshes).
@@ -679,8 +680,7 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
  * @param sam - The SmartAssetManager instance.
  * @returns The first matching entity, or null if not found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): { name: string } | null {
+function FindFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): { name: string } | null {
     for (const mesh of scene.meshes) {
         if (mesh.name === "__root__") {
             continue;
@@ -718,8 +718,7 @@ function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManage
  * @param url - The URL to shorten.
  * @returns A shortened display string.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _shortenUrl(url: string): string {
+function ShortenUrl(url: string): string {
     if (url.startsWith("blob:")) {
         return "(local file — blob)";
     }
@@ -737,8 +736,7 @@ function _shortenUrl(url: string): string {
  * @param value - The value string to shorten.
  * @returns The truncated string, with an ellipsis if it was shortened.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _shortenValue(value: string): string {
+function ShortenValue(value: string): string {
     return value.length > 30 ? value.substring(0, 27) + "…" : value;
 }
 
@@ -747,8 +745,7 @@ function _shortenValue(value: string): string {
  * @param url - The URL or filename to extract the extension from.
  * @returns The extension string (e.g. ".glb"), or empty string if none found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _getExtension(url: string): string {
+function GetExtension(url: string): string {
     const clean = url.split("?")[0].split("#")[0];
     const lastDot = clean.lastIndexOf(".");
     const lastSlash = Math.max(clean.lastIndexOf("/"), clean.lastIndexOf("\\"));

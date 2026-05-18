@@ -19,8 +19,7 @@ import { type IOverrideEntry } from "./overrideEntry";
  * Reserved smart asset key for user-created objects (materials, lights, cameras)
  * that are persisted as a companion `.babylon` file alongside the project JSON.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const PROJECT_LOCALS_KEY = "__project_locals__";
+export const ProjectLocalsKey = "__project_locals__";
 
 /**
  * The result of serializing a project. Contains the project JSON and,
@@ -72,17 +71,17 @@ export function SerializeProject(scene: Scene, baseUrl?: string): IProjectBundle
     const overrides = SerializeOverrides(scene);
 
     // Build a minimal .babylon JSON with only user-created objects
-    const companion = _serializeCompanionBabylon(scene);
+    const companion = SerializeCompanionBabylon(scene);
     let companionBabylon: Blob | undefined;
 
     const assets = { ...assetMap.assets };
 
     if (companion) {
         companionBabylon = new Blob([JSON.stringify(companion)], { type: "application/json" });
-        assets[PROJECT_LOCALS_KEY] = { url: PROJECT_LOCALS_KEY + ".babylon" };
+        assets[ProjectLocalsKey] = { url: ProjectLocalsKey + ".babylon" };
     } else {
         // Remove stale companion entry if no locals exist
-        delete assets[PROJECT_LOCALS_KEY];
+        delete assets[ProjectLocalsKey];
     }
 
     const project: ISerializedProject = {
@@ -120,10 +119,7 @@ export async function LoadProjectAsync(scene: Scene, source: string | File | ISe
     const doc = DeserializeProject(raw);
 
     // Clear existing state so we load fresh from the project file
-    for (const existingKey of Array.from(GetAllSmartAssets(scene).keys())) {
-        // eslint-disable-next-line no-await-in-loop
-        await RemoveSmartAssetAsync(scene, existingKey);
-    }
+    await Promise.all(Array.from(GetAllSmartAssets(scene).keys()).map(async (existingKey) => await RemoveSmartAssetAsync(scene, existingKey)));
     ClearOverrides(scene);
 
     // Clear asset-loaded meshes, animation groups, and materials.
@@ -142,7 +138,7 @@ export async function LoadProjectAsync(scene: Scene, source: string | File | ISe
     // textures are available because its materials use asset:// texture refs.
     let hasCompanion = false;
     for (const [key, entry] of Object.entries(doc.assets)) {
-        if (key === PROJECT_LOCALS_KEY) {
+        if (key === ProjectLocalsKey) {
             hasCompanion = true;
             continue;
         }
@@ -155,9 +151,9 @@ export async function LoadProjectAsync(scene: Scene, source: string | File | ISe
     // Now load the companion .babylon — textures are ready so asset:// refs resolve.
     // Pass the .babylon extension hint because blob URLs have no file extension.
     if (hasCompanion) {
-        const companionEntry = doc.assets[PROJECT_LOCALS_KEY];
+        const companionEntry = doc.assets[ProjectLocalsKey];
         const companionUrl = resolvedRootUrl ? ResolveAssetUrl(companionEntry.url, resolvedRootUrl) : companionEntry.url;
-        await LoadSmartAssetAsync(scene, PROJECT_LOCALS_KEY, companionUrl, { extension: ".babylon" });
+        await LoadSmartAssetAsync(scene, ProjectLocalsKey, companionUrl, { extension: ".babylon" });
     }
 
     // Apply overrides
@@ -219,7 +215,7 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
     const projectAssets = { ...bundle.project.assets };
 
     // Fetch all blob/data URIs in parallel (avoid serial awaits in a loop).
-    const blobEntries = Object.entries(projectAssets).filter(([key, entry]) => key !== PROJECT_LOCALS_KEY && (entry.url.startsWith("blob:") || entry.url.startsWith("data:")));
+    const blobEntries = Object.entries(projectAssets).filter(([key, entry]) => key !== ProjectLocalsKey && (entry.url.startsWith("blob:") || entry.url.startsWith("data:")));
     const fetched = await Promise.all(
         blobEntries.map(async ([key, entry]) => {
             try {
@@ -238,7 +234,7 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
             continue;
         }
         const { key, entry, arrayBuffer } = result;
-        const ext = _guessExtension(entry.url, _isTextureEntry(entry.url, entry.extension, entry.type));
+        const ext = GuessExtension(entry.url, IsTextureEntry(entry.url, entry.extension, entry.type));
         const filename = `assets/${key}${ext}`;
         files[filename] = new Uint8Array(arrayBuffer);
         projectAssets[key] = { ...entry, url: filename };
@@ -247,9 +243,9 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
     // Add companion .babylon if it exists
     if (bundle.companionBabylon) {
         const companionBuffer = await bundle.companionBabylon.arrayBuffer();
-        const companionFilename = PROJECT_LOCALS_KEY + ".babylon";
+        const companionFilename = ProjectLocalsKey + ".babylon";
         files[companionFilename] = new Uint8Array(companionBuffer);
-        projectAssets[PROJECT_LOCALS_KEY] = { url: companionFilename };
+        projectAssets[ProjectLocalsKey] = { url: companionFilename };
     }
 
     // Write the project JSON with updated asset paths
@@ -287,7 +283,7 @@ export async function LoadProjectFileAsync(scene: Scene, zipFile: File): Promise
         const filename = entry.url;
         const fileBytes = extracted[filename];
         if (fileBytes) {
-            const mimeType = _guessMimeType(filename);
+            const mimeType = GuessMimeType(filename);
             // Use a named File so LoadAssetContainerAsync can detect the
             // format from the filename (blob URLs alone have no extension).
             const file = new File([fileBytes as BlobPart], filename, { type: mimeType });
@@ -313,10 +309,9 @@ export async function LoadProjectFileAsync(scene: Scene, zipFile: File): Promise
  * @param obj - The scene object to check.
  * @returns True if the object should be included in the companion file.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _isLocalObject(scene: Scene, obj: object): boolean {
+function IsLocalObject(scene: Scene, obj: object): boolean {
     const key = FindSmartAssetKeyForObject(scene, obj as any);
-    return key === undefined || key === PROJECT_LOCALS_KEY;
+    return key === undefined || key === ProjectLocalsKey;
 }
 
 /**
@@ -331,15 +326,14 @@ function _isLocalObject(scene: Scene, obj: object): boolean {
  * @param scene - The scene to extract locals from.
  * @returns A `.babylon`-format object, or null if there are no local objects.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _serializeCompanionBabylon(scene: Scene): Record<string, unknown> | null {
+function SerializeCompanionBabylon(scene: Scene): Record<string, unknown> | null {
     const materials: any[] = [];
 
     for (const mat of scene.materials) {
-        if (mat.name !== "default material" && _isLocalObject(scene, mat)) {
+        if (mat.name !== "default material" && IsLocalObject(scene, mat)) {
             const serialized = mat.serialize();
             if (serialized) {
-                _rewriteTextureUrls(scene, serialized);
+                RewriteTextureUrls(scene, serialized);
                 materials.push(serialized);
             }
         }
@@ -359,8 +353,7 @@ function _serializeCompanionBabylon(scene: Scene): Record<string, unknown> | nul
  * @param scene - The scene that owns the textures.
  * @param serializedMaterial - The serialized material data to rewrite in-place.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _rewriteTextureUrls(scene: Scene, serializedMaterial: Record<string, unknown>): void {
+function RewriteTextureUrls(scene: Scene, serializedMaterial: Record<string, unknown>): void {
     for (const [propName, propValue] of Object.entries(serializedMaterial)) {
         if (!propName.endsWith("Texture") || typeof propValue !== "object" || propValue === null) {
             continue;
@@ -394,8 +387,7 @@ function _rewriteTextureUrls(scene: Scene, serializedMaterial: Record<string, un
  * @param type - Optional explicit type from the registration options.
  * @returns True if the entry should be treated as a texture.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _isTextureEntry(url: string, extension: string | undefined, type: string | undefined): boolean {
+function IsTextureEntry(url: string, extension: string | undefined, type: string | undefined): boolean {
     if (type === "texture") {
         return true;
     }
@@ -403,7 +395,7 @@ function _isTextureEntry(url: string, extension: string | undefined, type: strin
     if (extension && textureExts.has(extension.toLowerCase())) {
         return true;
     }
-    const ext = _extractExtension(url);
+    const ext = ExtractExtension(url);
     return ext !== "" && textureExts.has(ext);
 }
 
@@ -413,8 +405,7 @@ function _isTextureEntry(url: string, extension: string | undefined, type: strin
  * @param url - The URL to inspect.
  * @returns The extension including the leading dot, or "" if none found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _extractExtension(url: string): string {
+function ExtractExtension(url: string): string {
     if (url.startsWith("blob:") || url.startsWith("data:")) {
         return "";
     }
@@ -433,13 +424,12 @@ function _extractExtension(url: string): string {
  * @param isTexture - Whether the key is known to be a texture.
  * @returns A file extension including the dot (e.g. ".glb", ".png").
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _guessExtension(url: string, isTexture: boolean): string {
+function GuessExtension(url: string, isTexture: boolean): string {
     // Try to extract from data URI mime type
     if (url.startsWith("data:")) {
         const mimeMatch = url.match(/^data:([^;,]+)/);
         if (mimeMatch) {
-            const ext = _mimeToExtension(mimeMatch[1]);
+            const ext = MimeToExtension(mimeMatch[1]);
             if (ext) {
                 return ext;
             }
@@ -448,30 +438,41 @@ function _guessExtension(url: string, isTexture: boolean): string {
     return isTexture ? ".png" : ".glb";
 }
 
+// Tuple-array `Map`s rather than object literals so the MIME and extension
+// keys (e.g. "model/gltf-binary", ".glb") don't trigger the naming-convention
+// rule that runs on object-literal property names.
+const MimeToExtensionMap = new Map<string, string>([
+    ["model/gltf-binary", ".glb"],
+    ["model/gltf+json", ".gltf"],
+    ["image/png", ".png"],
+    ["image/jpeg", ".jpg"],
+    ["image/webp", ".webp"],
+    ["application/octet-stream", ".glb"],
+    ["application/json", ".babylon"],
+]);
+
+const ExtensionToMimeMap = new Map<string, string>([
+    [".glb", "model/gltf-binary"],
+    [".gltf", "model/gltf+json"],
+    [".babylon", "application/json"],
+    [".png", "image/png"],
+    [".jpg", "image/jpeg"],
+    [".jpeg", "image/jpeg"],
+    [".env", "application/octet-stream"],
+    [".hdr", "application/octet-stream"],
+    [".dds", "application/octet-stream"],
+    [".ktx", "application/octet-stream"],
+    [".ktx2", "application/octet-stream"],
+    [".json", "application/json"],
+]);
+
 /**
  * Maps a MIME type to a file extension.
  * @param mime - The MIME type string.
  * @returns The file extension including the dot, or empty string if unknown.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _mimeToExtension(mime: string): string {
-    const map: Record<string, string> = {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "model/gltf-binary": ".glb",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "model/gltf+json": ".gltf",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "image/png": ".png",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "image/jpeg": ".jpg",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "image/webp": ".webp",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "application/octet-stream": ".glb",
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "application/json": ".babylon",
-    };
-    return map[mime] ?? "";
+function MimeToExtension(mime: string): string {
+    return MimeToExtensionMap.get(mime) ?? "";
 }
 
 /**
@@ -479,22 +480,7 @@ function _mimeToExtension(mime: string): string {
  * @param filename - The filename to check.
  * @returns The guessed MIME type string.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _guessMimeType(filename: string): string {
+function GuessMimeType(filename: string): string {
     const ext = filename.substring(filename.lastIndexOf(".")).toLowerCase();
-    const map: Record<string, string> = {
-        ".glb": "model/gltf-binary",
-        ".gltf": "model/gltf+json",
-        ".babylon": "application/json",
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".env": "application/octet-stream",
-        ".hdr": "application/octet-stream",
-        ".dds": "application/octet-stream",
-        ".ktx": "application/octet-stream",
-        ".ktx2": "application/octet-stream",
-        ".json": "application/json",
-    };
-    return map[ext] ?? "application/octet-stream";
+    return ExtensionToMimeMap.get(ext) ?? "application/octet-stream";
 }

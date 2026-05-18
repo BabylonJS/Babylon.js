@@ -49,8 +49,8 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
             // When "name" changes, update existing overrides to use the new name
             // instead of creating a new override.
             if (propertyKey === "name" && typeof newValue === "string") {
-                const key = _findKeyForEntity(sam, entity, scene);
-                const targetType = key !== null ? _classifyEntity(entity, scene) : null;
+                const key = FindKeyForEntity(sam, entity, scene);
+                const targetType = key !== null ? ClassifyEntity(entity, scene) : null;
                 if (key !== null && targetType !== null) {
                     const oldName = previousNames.get(entity as object) ?? "";
                     if (oldName && oldName !== newValue) {
@@ -65,21 +65,21 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
                 return;
             }
 
-            let key = _findKeyForEntity(sam, entity, scene);
-            let targetType = key !== null ? _classifyEntity(entity, scene) : null;
+            let key = FindKeyForEntity(sam, entity, scene);
+            let targetType = key !== null ? ClassifyEntity(entity, scene) : null;
             let targetName: string;
             let propertyPath = String(propertyKey);
 
             if (key !== null && targetType !== null) {
                 // Direct entity (scene, mesh, material, etc.)
-                targetName = key === "" ? "" : _getEntityName(entity);
+                targetName = key === "" ? "" : GetEntityName(entity);
                 // Seed the previous name on first contact so rename tracking works
                 if (!previousNames.has(entity as object) && targetName) {
                     previousNames.set(entity as object, targetName);
                 }
             } else {
                 // Sub-object: check if this is a property of a known parent
-                const parentInfo = _findParentEntity(entity, scene, sam);
+                const parentInfo = FindParentEntity(entity, scene, sam);
                 if (!parentInfo) {
                     return;
                 }
@@ -89,7 +89,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
                 propertyPath = `${parentInfo.parentProperty}.${propertyPath}`;
             }
 
-            const serializedValue = _serializeValue(newValue, scene, sam);
+            const serializedValue = SerializeOverrideValueForCapture(newValue, scene, sam);
             if (serializedValue === undefined) {
                 return;
             }
@@ -123,8 +123,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
  * @param scene - The scene the entity belongs to.
  * @returns The smart asset key, "" for scene-level objects, or null if unrecognized.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _findKeyForEntity(sam: SmartAssetManager, entity: unknown, scene: Scene): string | null {
+function FindKeyForEntity(sam: SmartAssetManager, entity: unknown, scene: Scene): string | null {
     // Scene-level properties
     if (entity === scene) {
         return "";
@@ -138,7 +137,7 @@ function _findKeyForEntity(sam: SmartAssetManager, entity: unknown, scene: Scene
 
     // For objects not tracked by SAM (in-tool-created cameras, lights, materials),
     // use empty key so overrides are still captured
-    if (_classifyEntity(entity, scene) !== null) {
+    if (ClassifyEntity(entity, scene) !== null) {
         return "";
     }
 
@@ -151,8 +150,7 @@ function _findKeyForEntity(sam: SmartAssetManager, entity: unknown, scene: Scene
  * @param scene - The scene to check collections against.
  * @returns The target type, or null if unrecognized.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _classifyEntity(entity: unknown, scene: Scene): OverrideTargetType | null {
+function ClassifyEntity(entity: unknown, scene: Scene): OverrideTargetType | null {
     if (entity === scene) {
         return "scene";
     }
@@ -190,8 +188,7 @@ function _classifyEntity(entity: unknown, scene: Scene): OverrideTargetType | nu
  * @param entity - The entity to get the name from.
  * @returns The entity name, or an empty string if unavailable.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _getEntityName(entity: unknown): string {
+function GetEntityName(entity: unknown): string {
     const obj = entity as any;
     return obj?.name ?? "";
 }
@@ -204,8 +201,7 @@ function _getEntityName(entity: unknown): string {
  * @param sam - Optional SmartAssetManager for resolving texture references.
  * @returns The serialized value, or undefined if unsupported.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _serializeValue(value: unknown, scene?: Scene, sam?: SmartAssetManager): number | string | boolean | number[] | undefined {
+function SerializeOverrideValueForCapture(value: unknown, scene?: Scene, sam?: SmartAssetManager): number | string | boolean | number[] | undefined {
     if (value === null) {
         return "";
     }
@@ -273,8 +269,7 @@ function _serializeValue(value: unknown, scene?: Scene, sam?: SmartAssetManager)
  * @param sam - The SmartAssetManager for key lookup.
  * @returns The parent entity info, or null if not found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _findParentEntity(
+function FindParentEntity(
     entity: unknown,
     scene: Scene,
     sam: SmartAssetManager

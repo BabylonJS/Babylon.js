@@ -4,13 +4,12 @@ import { Logger } from "core/Misc/logger";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
 import { FindSmartAssetKeyForObject, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
-const OVERRIDE_MANAGER_KEY = Symbol.for("babylonjs:overrideManager");
+const OverrideManagerKey = Symbol.for("babylonjs:overrideManager");
 
 // Mirror of the symbol used by smartAssetManager.ts. Read-only peek so the
 // override system can use SAM tracking when one is present, without forcing
 // SAM creation on scenes that don't have one yet.
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
+const SmartAssetManagerKey = Symbol.for("babylonjs:smartAssetManager");
 
 /**
  * Stateful handle for a scene's property override registry.
@@ -84,7 +83,7 @@ function CreateOverrideManager(scene: Scene): OverrideManager {
     if (!scene.metadata) {
         scene.metadata = {};
     }
-    scene.metadata[OVERRIDE_MANAGER_KEY] = manager;
+    scene.metadata[OverrideManagerKey] = manager;
 
     // Auto-dispose when the scene is disposed so the manager doesn't outlive it.
     internal.sceneDisposeObserver = scene.onDisposeObservable.add(() => DisposeOverrideManager(manager));
@@ -101,7 +100,7 @@ function CreateOverrideManager(scene: Scene): OverrideManager {
  * @returns The existing or newly created OverrideManager.
  */
 export function GetOverrideManager(scene: Scene): OverrideManager {
-    const existing = scene.metadata?.[OVERRIDE_MANAGER_KEY] as OverrideManager | undefined;
+    const existing = scene.metadata?.[OverrideManagerKey] as OverrideManager | undefined;
     if (existing) {
         return existing;
     }
@@ -132,10 +131,10 @@ export function AddOverride(scene: Scene, entry: IOverrideEntry, skipApply: bool
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
-    _removeMatchingOverride(internal, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
+    RemoveMatchingOverride(internal, entry.key, entry.targetType, entry.targetName, entry.propertyPath);
     internal.overrides.push(entry);
     if (!skipApply) {
-        _applyOverride(manager, internal, entry);
+        ApplyOverrideEntry(manager, internal, entry);
     }
     manager.onChangedObservable.notifyObservers();
 }
@@ -154,19 +153,19 @@ export function RemoveOverride(scene: Scene, key: string, targetType: OverrideTa
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
-    const idx = _findOverrideIndex(internal, key, targetType, targetName, propertyPath);
+    const idx = FindOverrideIndex(internal, key, targetType, targetName, propertyPath);
     if (idx < 0) {
         return false;
     }
 
     internal.overrides.splice(idx, 1);
 
-    const origKey = _makeOriginalValueKey(key, targetType, targetName, propertyPath);
+    const origKey = MakeOriginalValueKey(key, targetType, targetName, propertyPath);
     const original = internal.originalValues.get(origKey);
     if (original !== undefined) {
-        const target = _resolveTarget(manager, key, targetType, targetName);
+        const target = ResolveTarget(manager, key, targetType, targetName);
         if (target) {
-            _setNestedProperty(target, propertyPath, original);
+            SetNestedProperty(target, propertyPath, original);
         }
         internal.originalValues.delete(origKey);
     }
@@ -264,7 +263,7 @@ export function ApplyOverridesForKey(scene: Scene, key: string): void {
     const internal = GetOverrideInternals(manager);
     for (const entry of internal.overrides) {
         if (entry.key === key) {
-            _applyOverride(manager, internal, entry);
+            ApplyOverrideEntry(manager, internal, entry);
         }
     }
 }
@@ -277,7 +276,7 @@ export function ApplyAllOverrides(scene: Scene): void {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
     for (const entry of internal.overrides) {
-        _applyOverride(manager, internal, entry);
+        ApplyOverrideEntry(manager, internal, entry);
     }
 }
 
@@ -339,7 +338,7 @@ export function DisposeOverrideManager(manager: OverrideManager): void {
     manager.onChangedObservable.clear();
 
     if (manager.scene.metadata) {
-        delete manager.scene.metadata[OVERRIDE_MANAGER_KEY];
+        delete manager.scene.metadata[OverrideManagerKey];
     }
 }
 
@@ -361,9 +360,8 @@ function GetOverrideInternals(manager: OverrideManager): OverrideManagerInternal
  * @param scene - The scene to inspect.
  * @returns The attached SmartAssetManager, or undefined if none is attached.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _peekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
-    return scene.metadata?.[SMART_ASSET_MANAGER_KEY] as SmartAssetManager | undefined;
+function PeekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
+    return scene.metadata?.[SmartAssetManagerKey] as SmartAssetManager | undefined;
 }
 
 /**
@@ -373,25 +371,26 @@ function _peekSmartAssetManager(scene: Scene): SmartAssetManager | undefined {
  * @param internal - The manager's internal state.
  * @param entry - The override to apply.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _applyOverride(manager: OverrideManager, internal: OverrideManagerInternals, entry: IOverrideEntry): void {
-    const target = _resolveTarget(manager, entry.key, entry.targetType, entry.targetName);
+function ApplyOverrideEntry(manager: OverrideManager, internal: OverrideManagerInternals, entry: IOverrideEntry): void {
+    const target = ResolveTarget(manager, entry.key, entry.targetType, entry.targetName);
     if (!target) {
-        Logger.Warn(`OverrideManager._applyOverride: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`);
+        Logger.Warn(
+            `OverrideManager.ApplyOverrideEntry: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`
+        );
         return; // Target not loaded yet — override will be applied on next load
     }
 
     // Capture original value before first override
-    const origKey = _makeOriginalValueKey(entry.key, entry.targetType, entry.targetName, entry.propertyPath);
+    const origKey = MakeOriginalValueKey(entry.key, entry.targetType, entry.targetName, entry.propertyPath);
     if (!internal.originalValues.has(origKey)) {
-        const currentValue = _getNestedProperty(target, entry.propertyPath);
+        const currentValue = GetNestedProperty(target, entry.propertyPath);
         if (currentValue !== undefined) {
-            internal.originalValues.set(origKey, _cloneValue(currentValue));
+            internal.originalValues.set(origKey, CloneValue(currentValue));
         }
     }
 
-    const resolvedValue = _resolveValue(manager, entry.value);
-    _setNestedProperty(target, entry.propertyPath, resolvedValue);
+    const resolvedValue = ResolveOverrideValue(manager, entry.value);
+    SetNestedProperty(target, entry.propertyPath, resolvedValue);
 }
 
 /**
@@ -404,8 +403,7 @@ function _applyOverride(manager: OverrideManager, internal: OverrideManagerInter
  * @param targetName - The target object name.
  * @returns The matching scene object, or null if not found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _resolveTarget(manager: OverrideManager, key: string, targetType: OverrideTargetType, targetName: string): object | null {
+function ResolveTarget(manager: OverrideManager, key: string, targetType: OverrideTargetType, targetName: string): object | null {
     const scene = manager.scene;
 
     // Scene-level overrides target the scene itself
@@ -413,11 +411,11 @@ function _resolveTarget(manager: OverrideManager, key: string, targetType: Overr
         return scene as unknown as object;
     }
 
-    const sam = _peekSmartAssetManager(scene);
+    const sam = PeekSmartAssetManager(scene);
 
     // Empty key = in-tool-created object (not from a smart asset) — look up by name directly
     if (key === "") {
-        return _findObjectByName(scene, sam, targetType, targetName, key);
+        return FindObjectByName(scene, sam, targetType, targetName, key);
     }
 
     // Without a SAM, only scene-level / empty-key lookups are possible.
@@ -425,7 +423,7 @@ function _resolveTarget(manager: OverrideManager, key: string, targetType: Overr
         return null;
     }
 
-    return _findObjectByName(scene, sam, targetType, targetName, key);
+    return FindObjectByName(scene, sam, targetType, targetName, key);
 }
 
 /**
@@ -438,8 +436,7 @@ function _resolveTarget(manager: OverrideManager, key: string, targetType: Overr
  * @param key - The smart asset key required ("" for objects not tracked by any key).
  * @returns The matching object, or null if none found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _findObjectByName(scene: Scene, sam: SmartAssetManager | undefined, targetType: OverrideTargetType, name: string, key: string): object | null {
+function FindObjectByName(scene: Scene, sam: SmartAssetManager | undefined, targetType: OverrideTargetType, name: string, key: string): object | null {
     const collections: Record<string, unknown[]> = {
         meshes: scene.meshes,
         materials: scene.materials,
@@ -472,21 +469,20 @@ function _findObjectByName(scene: Scene, sam: SmartAssetManager | undefined, tar
  * @param value - The serialized override value.
  * @returns The runtime value to assign to the target property.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _resolveValue(manager: OverrideManager, value: OverrideValue): unknown {
+function ResolveOverrideValue(manager: OverrideManager, value: OverrideValue): unknown {
     // String references: "ref:materialName" or "texture:smartAssetKey"
     if (typeof value === "string") {
         if (value.startsWith("ref:")) {
             const refName = value.substring(4);
-            return _resolveObjectReference(manager.scene, refName);
+            return ResolveObjectReference(manager.scene, refName);
         }
         if (value.startsWith("texture:")) {
             const textureKey = value.substring(8);
-            return _resolveTextureReference(manager.scene, textureKey);
+            return ResolveTextureReference(manager.scene, textureKey);
         }
     }
 
-    // Number arrays are passed through as-is. _setNestedProperty will use
+    // Number arrays are passed through as-is. SetNestedProperty will use
     // the live target's `fromArray` method (Vector3, Color3, etc.) to push
     // values in-place, preserving the math instance identity.
     return value;
@@ -499,8 +495,7 @@ function _resolveValue(manager: OverrideManager, value: OverrideValue): unknown 
  * @param name - The object name to resolve.
  * @returns The matching material, light, or camera, or undefined if not found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _resolveObjectReference(scene: Scene, name: string): unknown {
+function ResolveObjectReference(scene: Scene, name: string): unknown {
     const mat = scene.materials.find((m) => m.name === name);
     if (mat) {
         return mat;
@@ -524,9 +519,8 @@ function _resolveObjectReference(scene: Scene, name: string): unknown {
  * @param key - The smart asset key, or texture name fallback.
  * @returns The matching texture, or undefined if not found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _resolveTextureReference(scene: Scene, key: string): unknown {
-    const sam = _peekSmartAssetManager(scene);
+function ResolveTextureReference(scene: Scene, key: string): unknown {
+    const sam = PeekSmartAssetManager(scene);
     if (sam) {
         for (const tex of scene.textures) {
             if (FindSmartAssetKeyForObject(sam.scene, tex) === key) {
@@ -551,8 +545,7 @@ function _resolveTextureReference(scene: Scene, key: string): unknown {
  * @param propertyPath - The property path.
  * @returns The matching index, or -1 if none found.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _findOverrideIndex(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): number {
+function FindOverrideIndex(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): number {
     return internal.overrides.findIndex((o) => o.key === key && o.targetType === targetType && o.targetName === targetName && o.propertyPath === propertyPath);
 }
 
@@ -565,9 +558,8 @@ function _findOverrideIndex(internal: OverrideManagerInternals, key: string, tar
  * @param targetName - The target object name.
  * @param propertyPath - The property path.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _removeMatchingOverride(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): void {
-    const idx = _findOverrideIndex(internal, key, targetType, targetName, propertyPath);
+function RemoveMatchingOverride(internal: OverrideManagerInternals, key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): void {
+    const idx = FindOverrideIndex(internal, key, targetType, targetName, propertyPath);
     if (idx >= 0) {
         internal.overrides.splice(idx, 1);
     }
@@ -581,8 +573,7 @@ function _removeMatchingOverride(internal: OverrideManagerInternals, key: string
  * @param propertyPath - The property path.
  * @returns A composite string key uniquely identifying the original value slot.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _makeOriginalValueKey(key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): string {
+function MakeOriginalValueKey(key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): string {
     return `${key}::${targetType}::${targetName}::${propertyPath}`;
 }
 
@@ -592,8 +583,7 @@ function _makeOriginalValueKey(key: string, targetType: OverrideTargetType, targ
  * @param path - The dot-separated property path.
  * @returns The value at the path, or undefined if any segment is missing.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _getNestedProperty(obj: object, path: string): unknown {
+function GetNestedProperty(obj: object, path: string): unknown {
     const parts = path.split(".");
     let current: unknown = obj;
 
@@ -619,8 +609,7 @@ function _getNestedProperty(obj: object, path: string): unknown {
  * @param path - The dot-separated property path.
  * @param value - The new value to assign.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _setNestedProperty(obj: object, path: string, value: unknown): void {
+function SetNestedProperty(obj: object, path: string, value: unknown): void {
     const parts = path.split(".");
     let current: unknown = obj;
 
@@ -656,8 +645,7 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
  * @param value - The value to snapshot.
  * @returns The snapshot value (cloned for plain math types, by reference for entities).
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _cloneValue(value: unknown): unknown {
+function CloneValue(value: unknown): unknown {
     if (value === null || value === undefined) {
         return value;
     }
