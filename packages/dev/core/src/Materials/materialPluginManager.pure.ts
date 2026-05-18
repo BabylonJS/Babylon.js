@@ -56,12 +56,6 @@ export class MaterialPluginManager {
     protected _samplerList: string[];
     protected _uboList: string[];
 
-    static {
-        EngineStore.OnEnginesDisposedObservable.add(() => {
-            UnregisterAllMaterialPlugins();
-        });
-    }
-
     /**
      * Creates a new instance of the plugin manager
      * @param material material that this manager will manage the plugins for
@@ -462,6 +456,22 @@ export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPlu
 const Plugins: Array<[string, PluginMaterialFactory]> = [];
 let Inited = false;
 let MaterialObserver: Nullable<Observer<Material>> = null;
+let _MaterialPluginManagerRegistered = false;
+
+/**
+ * Registers side effects for the material plugin manager.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMaterialPluginManager(): void {
+    if (_MaterialPluginManagerRegistered) {
+        return;
+    }
+    _MaterialPluginManagerRegistered = true;
+
+    EngineStore.OnEnginesDisposedObservable.add(() => {
+        UnregisterAllMaterialPlugins();
+    });
+}
 
 /**
  * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
@@ -470,7 +480,6 @@ let MaterialObserver: Nullable<Observer<Material>> = null;
  * @param pluginName The plugin name
  * @param factory The factory function which allows to create the plugin
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
     if (!Inited) {
         MaterialObserver = Material.OnEventObservable.add((material: Material) => {

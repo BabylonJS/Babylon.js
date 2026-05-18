@@ -515,6 +515,7 @@
         "Materials/material.decalMap.js",
         "Materials/material.decalMapConfiguration.js",
         "Materials/materialPluginBase.js",
+        "Materials/materialPluginManager.js",
         "Materials/materialPluginManager.types.js",
         "Materials/meshDebugPluginMaterial.js",
         "Materials/multiMaterial.js",

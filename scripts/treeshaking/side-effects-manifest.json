@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalFiles": 3237,
-    "filesWithSideEffects": 1444,
-    "filesWithoutSideEffects": 1793,
+    "filesWithSideEffects": 1445,
+    "filesWithoutSideEffects": 1792,
     "byType": {
-      "top-level-call": 638,
+      "top-level-call": 639,
       "declare-module": 129,
       "bare-import": 248,
       "static-property-assignment": 2,
@@ -12,7 +12,7 @@
       "shader-store-write": 637
     },
     "filesByType": {
-      "top-level-call": 638,
+      "top-level-call": 639,
       "declare-module": 111,
       "bare-import": 111,
       "static-property-assignment": 2,
@@ -3738,6 +3738,16 @@
           "type": "top-level-call",
           "line": 8,
           "text": "RegisterMaterialPluginBase();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/materialPluginManager.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 5,
+          "text": "RegisterMaterialPluginManager();"
         }
       ]
     },
