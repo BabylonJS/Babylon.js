@@ -21,3 +21,15 @@ export * from "../../../../Shaders/ShadersInclude/morphTargetsVertex";
 export * from "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
 export * from "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal";
 export * from "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
+
+// instancesBlock
+export * from "../../../../ShadersWGSL/ShadersInclude/instancesDeclaration";
+export * from "../../../../ShadersWGSL/ShadersInclude/instancesVertex";
+export * from "../../../../Shaders/ShadersInclude/instancesDeclaration";
+export * from "../../../../Shaders/ShadersInclude/instancesVertex";
+
+// bakedVertexAnimation
+export * from "../../../../ShadersWGSL/ShadersInclude/bakedVertexAnimation";
+export * from "../../../../ShadersWGSL/ShadersInclude/bakedVertexAnimationDeclaration";
+export * from "../../../../Shaders/ShadersInclude/bakedVertexAnimation";
+export * from "../../../../Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
