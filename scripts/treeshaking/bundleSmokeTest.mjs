@@ -62,6 +62,7 @@ function fileSize(path) {
  * @property {string} name
  * @property {string} entryCode - JS code for the entry file
  * @property {number} maxBundleSizeBytes - Threshold for the test to pass
+ * @property {number} [minBundleSizeBytes] - Lower threshold for sanity cases that must retain imported code
  * @property {string} description
  */
 
@@ -172,8 +173,9 @@ const TEST_CASES = [
     },
     {
         name: "registration-pure-named-call",
-        entryCode: `import { RegisterRay } from "${CORE_DIST}/Culling/ray.pure.js";\nregisterRay();\n`,
+        entryCode: `import { RegisterRay } from "${CORE_DIST}/Culling/ray.pure.js";\nRegisterRay();\n`,
         maxBundleSizeBytes: Infinity,
+        minBundleSizeBytes: 100,
         description: "Import + call of registration function should bundle correctly (sanity check)",
     },
     {
@@ -190,8 +192,9 @@ const TEST_CASES = [
     },
     {
         name: "registration-engine-pure-named-call",
-        entryCode: `import { RegisterDepthRendererSceneComponent } from "${CORE_DIST}/Rendering/depthRendererSceneComponent.pure.js";\nregisterDepthRendererSceneComponent();\n`,
+        entryCode: `import { RegisterDepthRendererSceneComponent } from "${CORE_DIST}/Rendering/depthRendererSceneComponent.pure.js";\nimport { DepthRenderer } from "${CORE_DIST}/Rendering/depthRenderer.pure.js";\nRegisterDepthRendererSceneComponent(DepthRenderer);\n`,
         maxBundleSizeBytes: Infinity,
+        minBundleSizeBytes: 100,
         description: "Import + call of scene component registration function should bundle correctly",
     },
 ];
@@ -250,13 +253,15 @@ async function testWithRollup(testCase) {
 
         const size = fileSize(outPath);
         const content = readFileSync(outPath, "utf-8").trim();
-        const passed = size <= testCase.maxBundleSizeBytes;
+        const minSize = testCase.minBundleSizeBytes ?? 0;
+        const passed = size >= minSize && size <= testCase.maxBundleSizeBytes;
 
         return {
             bundler: "rollup",
             name: testCase.name,
             passed,
             size,
+            minSize,
             maxSize: testCase.maxBundleSizeBytes,
             contentPreview: content.substring(0, 200),
         };
@@ -355,13 +360,15 @@ async function testWithWebpack(testCase) {
             const bundlePath = join(outDir, "bundle.js");
             const size = fileSize(bundlePath);
             const content = size > 0 ? readFileSync(bundlePath, "utf-8").trim() : "";
-            const passed = size <= testCase.maxBundleSizeBytes;
+            const minSize = testCase.minBundleSizeBytes ?? 0;
+            const passed = size >= minSize && size <= testCase.maxBundleSizeBytes;
 
             resolvePromise({
                 bundler: "webpack",
                 name: testCase.name,
                 passed,
                 size,
+                minSize,
                 maxSize: testCase.maxBundleSizeBytes,
                 contentPreview: content.substring(0, 200),
             });
@@ -397,7 +404,9 @@ async function main() {
         const rollupResult = await testWithRollup(tc);
         results.push(rollupResult);
         const rollupIcon = rollupResult.passed ? "PASS" : "FAIL";
-        console.log(`  Rollup:  ${rollupIcon}  (${rollupResult.size ?? "N/A"} bytes${rollupResult.maxSize !== Infinity ? `, max ${rollupResult.maxSize}` : ""})`);
+        console.log(
+            `  Rollup:  ${rollupIcon}  (${rollupResult.size ?? "N/A"} bytes${rollupResult.minSize ? `, min ${rollupResult.minSize}` : ""}${rollupResult.maxSize !== Infinity ? `, max ${rollupResult.maxSize}` : ""})`
+        );
         if (rollupResult.error) {
             console.log(`    Error: ${rollupResult.error}`);
         }
@@ -408,7 +417,9 @@ async function main() {
         const webpackResult = await testWithWebpack(tc);
         results.push(webpackResult);
         const webpackIcon = webpackResult.passed ? "PASS" : "FAIL";
-        console.log(`  Webpack: ${webpackIcon}  (${webpackResult.size ?? "N/A"} bytes${webpackResult.maxSize !== Infinity ? `, max ${webpackResult.maxSize}` : ""})`);
+        console.log(
+            `  Webpack: ${webpackIcon}  (${webpackResult.size ?? "N/A"} bytes${webpackResult.minSize ? `, min ${webpackResult.minSize}` : ""}${webpackResult.maxSize !== Infinity ? `, max ${webpackResult.maxSize}` : ""})`
+        );
         if (webpackResult.error) {
             console.log(`    Error: ${webpackResult.error}`);
         }

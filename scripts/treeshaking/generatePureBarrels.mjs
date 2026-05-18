@@ -44,6 +44,8 @@ const HEADER = `/** Pure barrel — re-exports only side-effect-free modules */\
 const writtenFiles = [];
 /** @type {Map<string, string>} path → expected content (used in --check mode) */
 const expectedContents = new Map();
+/** @type {Set<string>} Generated barrel paths expected from this run */
+const expectedBarrelPaths = new Set();
 
 // ── Load side-effects manifest ──────────────────────────────────────────────
 const manifestData = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
@@ -66,6 +68,19 @@ function scanForPureFiles(dir) {
     }
 }
 scanForPureFiles(SRC_ROOT);
+
+function collectPureBarrels(dir) {
+    const results = [];
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+            results.push(...collectPureBarrels(fullPath));
+        } else if (entry.isFile() && entry.name === "pure.ts") {
+            results.push(fullPath);
+        }
+    }
+    return results;
+}
 
 if (VERBOSE) {
     console.log(`Found ${pureFileSet.size} .pure.ts files`);
@@ -219,6 +234,7 @@ function processDirectory(dir) {
 
     // Build the file
     const purePath = join(dir, "pure.ts");
+    expectedBarrelPaths.add(purePath);
     const eslintLine = outputLines.find((l) => l.includes("eslint-disable"));
     const exportLines = outputLines.filter((l) => !l.includes("eslint-disable") && !l.startsWith("//") && !l.startsWith("/*"));
     const commentLines = outputLines.filter((l) => l.startsWith("//") || (l.startsWith("/*") && !l.includes("eslint-disable")));
@@ -473,6 +489,7 @@ function postPassOrphans(dir) {
 
     // Generate pure.ts for this directory
     const purePath = join(dir, "pure.ts");
+    expectedBarrelPaths.add(purePath);
     let fileContent = HEADER;
     for (const pf of localPureFiles.sort()) {
         fileContent += `export * from "./${pf}";\n`;
@@ -595,6 +612,25 @@ if (CHECK) {
             }
         }
     }
+
+    for (const filePath of collectPureBarrels(SRC_ROOT)) {
+        if (expectedBarrelPaths.has(filePath)) {
+            continue;
+        }
+        let actual = "";
+        try {
+            actual = readFileSync(filePath, "utf-8");
+        } catch {
+            // Ignore unreadable files; the normal expected comparison handles missing files.
+        }
+        if (actual.startsWith(HEADER)) {
+            driftCount++;
+            if (driftCount <= 10) {
+                console.error(`  STALE: ${relative(REPO_ROOT, filePath)}`);
+            }
+        }
+    }
+
     if (driftCount > 0) {
         if (driftCount > 10) {
             console.error(`  ... and ${driftCount - 10} more`);

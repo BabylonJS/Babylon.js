@@ -409,7 +409,20 @@ for (const [targetFile, classMap] of stubsByFile) {
 
     lines.push(REGION_END);
 
-    if (fileStubCount === 0) continue;
+    if (fileStubCount === 0) {
+        if (contentWithoutRegion !== content) {
+            if (DRY_RUN) {
+                console.log(`[DRY RUN] Would remove stale stubs from ${relative(ROOT, targetFile)}`);
+            } else if (CHECK) {
+                expectedContents.set(targetFile, contentWithoutRegion);
+            } else {
+                writeFileSync(targetFile, contentWithoutRegion, "utf-8");
+                writtenFiles.push(targetFile);
+            }
+            filesModified++;
+        }
+        continue;
+    }
 
     const stubBlock = lines.join(eol) + eol;
 
@@ -499,6 +512,25 @@ if (CHECK) {
             }
         }
     }
+
+    for (const filePath of globSync("**/*.ts", { cwd: ROOT, absolute: true })) {
+        if (expectedContents.has(filePath)) {
+            continue;
+        }
+        let actual = "";
+        try {
+            actual = readFileSync(filePath, "utf-8");
+        } catch {
+            continue;
+        }
+        if (actual.includes(REGION_START)) {
+            driftCount++;
+            if (driftCount <= 10) {
+                console.error(`  STALE: ${relative(REPO_ROOT, filePath)}`);
+            }
+        }
+    }
+
     if (driftCount > 0) {
         if (driftCount > 10) {
             console.error(`  ... and ${driftCount - 10} more`);

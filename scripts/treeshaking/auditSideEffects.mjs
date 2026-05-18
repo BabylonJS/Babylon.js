@@ -80,6 +80,14 @@ function collectTsFiles(dir) {
 // Patterns that indicate we are inside a class/function/method body (heuristic)
 // We track brace depth to determine top-level scope.
 
+function isEscaped(text, index) {
+    let slashCount = 0;
+    for (let i = index - 1; i >= 0 && text[i] === "\\"; i--) {
+        slashCount++;
+    }
+    return slashCount % 2 === 1;
+}
+
 /**
  * Analyze a single file for top-level side effects.
  * @param {string} filePath
@@ -152,10 +160,9 @@ function analyzeFile(filePath) {
         let inDoubleQuote = false;
         for (let c = 0; c < line.length; c++) {
             const ch = line[c];
-            const prev = c > 0 ? line[c - 1] : "";
 
             // Skip escaped characters
-            if (prev === "\\") {
+            if (isEscaped(line, c)) {
                 continue;
             }
 
