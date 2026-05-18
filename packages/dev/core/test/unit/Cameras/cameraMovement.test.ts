@@ -4,7 +4,7 @@ import { InputMapper } from "core/Cameras/inputMapper";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 describe("InputMapper", () => {
     // Dummy handlers for testing — InputMapper needs handler keys to match interaction strings
@@ -221,9 +221,7 @@ describe("InputMapper", () => {
             // { modifiers: { ctrl: true } }. resolveInteraction returns null because entries are
             // not wildcards in reverse (an entry with button: 0 doesn't match conditions without
             // a button). The new behavior adds a new entry that matches the request.
-            mapper.inputMap = [
-                { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" },
-            ];
+            mapper.inputMap = [{ source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" }];
 
             mapper.setInteraction("pointer", { modifiers: { ctrl: true } }, "rotate");
 
@@ -232,6 +230,27 @@ describe("InputMapper", () => {
             // ctrl+left-drag; the new less-specific entry handles ctrl+other-buttons.
             expect(mapper.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } })?.interaction).toBe("pan");
             expect(mapper.resolveInteraction("pointer", { button: 2, modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+        });
+
+        it("should not mutate a stricter existing entry; should add a new entry at the requested specificity", () => {
+            // The only existing pointer-button-0 entry is *stricter* than the
+            // request (requires ctrl+alt, request only specifies ctrl). resolveInteraction
+            // filters that stricter entry out (alt isn't held in the conditions), so the mutate
+            // branch is never reached. The new ctrl-only entry is added without disturbing the
+            // stricter ctrl+alt entry.
+            mapper.inputMap = [{ source: "pointer", button: 0, modifiers: { ctrl: true, alt: true }, interaction: "pan" }];
+
+            const result = mapper.setInteraction("pointer", { button: 0, modifiers: { ctrl: true } }, "rotate");
+
+            expect(result).toBe(true);
+            expect(mapper.inputMap.length).toBe(2);
+            // The original ctrl+alt entry is untouched.
+            const ctrlAltEntry = mapper.inputMap.find((e) => e.source === "pointer" && (e as any).modifiers?.alt === true);
+            expect(ctrlAltEntry?.interaction).toBe("pan");
+            // ctrl+alt+left-drag still resolves to "pan" (the stricter entry wins because it's more specific).
+            expect(mapper.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true, alt: true } })?.interaction).toBe("pan");
+            // ctrl-only+left-drag now resolves to the newly added "rotate" entry.
+            expect(mapper.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } })?.interaction).toBe("rotate");
         });
     });
 

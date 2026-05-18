@@ -299,18 +299,27 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
 
     /**
      * Sets the interaction for the input combination described by `conditions`. Smart enough to
-     * either mutate an existing entry in place or insert a new entry, depending on whether
-     * the matched entry is as specific as the request:
+     * either mutate an existing entry in place or insert a new entry, depending on how the
+     * closest matching entry relates to the request:
      *
-     * - If a matching entry already exists and constrains every field present in `conditions`
-     *   (i.e. it is at least as specific as the request), its `interaction` is updated in place.
-     * - If a matching entry exists but is *broader* than the request — for example, the
+     * - If an existing entry has **exactly** the same constrained fields as `conditions`
+     *   (same button/key/touchCount, same modifier set — no broader, no stricter), its
+     *   `interaction` is updated in place.
+     * - If the closest matching entry is **broader** than `conditions` — for example, the
      *   conditions specify `{ button: 0, modifiers: { ctrl: true } }` and the only match is
      *   the catch-all `{ button: 0 }` — a new, more-specific entry is inserted via
-     *   {@link addEntry} so the new mapping wins for the requested combination without
-     *   clobbering the broader entry. This avoids the footgun where `setInteraction` would
-     *   silently mutate the catch-all and break unrelated gestures.
+     *   {@link addEntry} so the requested combination wins without clobbering the broader
+     *   entry. This avoids the footgun where `setInteraction` would silently mutate the
+     *   catch-all and break unrelated gestures.
      * - If no entry matches at all, a new entry is inserted via {@link addEntry}.
+     *
+     * Entries strictly **stricter** than `conditions` (e.g. an existing
+     * `{ button: 0, modifiers: { ctrl: true, alt: true } }` entry when the request is
+     * `{ button: 0, modifiers: { ctrl: true } }`) are deliberately ignored: they wouldn't
+     * fire for the requested input combination, so they aren't the right target to mutate.
+     * Mechanically this happens because {@link resolveInteraction} treats `conditions` as
+     * an event-like state and only returns entries whose constraints are satisfied by it,
+     * so stricter entries never reach the mutate branch.
      *
      * Note: only the first matching entry is considered. To force an update on every matching
      * entry use {@link setInteractions}; to address an individual entry beyond the first, look
@@ -322,6 +331,11 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
      *   compatibility with the previous "found and updated" semantics)
      */
     public setInteraction(source: InputSource, conditions: InputConditions | undefined, interaction: InteractionName<THandlers>): boolean {
+        // resolveInteraction already filters out any entry stricter than `conditions` (its
+        // constraints wouldn't be satisfied by the conditions read as event state), so the
+        // returned entry is guaranteed to be no stricter than the request. _entryConstrainsAllOf
+        // then enforces the other direction (no broader). Together they identify the
+        // exactly-as-specific entry; anything else falls through to addEntry.
         const entry = this.resolveInteraction(source, conditions);
         if (entry && this._entryConstrainsAllOf(entry, conditions)) {
             entry.interaction = interaction;
@@ -335,9 +349,15 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
     }
 
     /**
-     * Returns true when `entry` constrains at least every field that `conditions` specifies,
-     * i.e. `entry` is at least as specific as the request. Used by {@link setInteraction} to
-     * decide whether to mutate an existing entry or add a more-specific one.
+     * Returns true when `entry` constrains at least every field that `conditions` specifies.
+     * Used by {@link setInteraction} as one half of the "exactly as specific" check: combined
+     * with {@link resolveInteraction}'s guarantee that the returned entry is no *stricter*
+     * than the request, a true result here means `entry` and `conditions` constrain the same
+     * fields, and mutating `entry.interaction` is safe.
+     *
+     * On its own this predicate does not exclude entries that are stricter than `conditions`
+     * (those would also trivially constrain every field present in `conditions`); callers must
+     * rely on the upstream resolve step to rule them out.
      *
      * `InputConditions` is a flat type covering all source-specific fields (`button`, `key`,
      * `touchCount`, `modifiers`); for any given source the irrelevant fields are `undefined`
