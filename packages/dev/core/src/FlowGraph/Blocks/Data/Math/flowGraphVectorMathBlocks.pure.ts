@@ -11,7 +11,7 @@ import {
     getRichTypeByFlowGraphType,
     RichTypeQuaternion,
     RichTypeBoolean,
-} from "core/FlowGraph/flowGraphRichTypes";
+} from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";

@@ -11,7 +11,7 @@ import {
     RichTypeVector3,
     RichTypeVector4,
     type RichType,
-} from "core/FlowGraph/flowGraphRichTypes";
+} from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { type Nullable } from "core/types";

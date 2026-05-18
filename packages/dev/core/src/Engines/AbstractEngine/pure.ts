@@ -13,4 +13,3 @@ export * from "./abstractEngine.alpha.pure";
 export * from "./abstractEngine.views.pure";
 export * from "./abstractEngine.loadFile.pure";
 export * from "./abstractEngine.textureSelector.pure";
-export * from "./abstractEngine.textureSelector.pure";

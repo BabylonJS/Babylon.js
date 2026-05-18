@@ -11,7 +11,7 @@ import {
     RichTypeNumber,
     RichTypeQuaternion,
     RichTypeVector3,
-} from "core/FlowGraph/flowGraphRichTypes";
+} from "core/FlowGraph/flowGraphRichTypes.pure";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";

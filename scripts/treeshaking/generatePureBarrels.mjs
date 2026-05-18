@@ -82,6 +82,19 @@ function collectPureBarrels(dir) {
     return results;
 }
 
+function dedupePreservingOrder(lines) {
+    const seen = new Set();
+    const result = [];
+    for (const line of lines) {
+        if (seen.has(line)) {
+            continue;
+        }
+        seen.add(line);
+        result.push(line);
+    }
+    return result;
+}
+
 if (VERBOSE) {
     console.log(`Found ${pureFileSet.size} .pure.ts files`);
     console.log(`Manifest has ${sideEffectFiles.size} files with side effects`);
@@ -235,9 +248,10 @@ function processDirectory(dir) {
     // Build the file
     const purePath = join(dir, "pure.ts");
     expectedBarrelPaths.add(purePath);
-    const eslintLine = outputLines.find((l) => l.includes("eslint-disable"));
-    const exportLines = outputLines.filter((l) => !l.includes("eslint-disable") && !l.startsWith("//") && !l.startsWith("/*"));
-    const commentLines = outputLines.filter((l) => l.startsWith("//") || (l.startsWith("/*") && !l.includes("eslint-disable")));
+    const uniqueOutputLines = dedupePreservingOrder(outputLines);
+    const eslintLine = uniqueOutputLines.find((l) => l.includes("eslint-disable"));
+    const exportLines = uniqueOutputLines.filter((l) => !l.includes("eslint-disable") && !l.startsWith("//") && !l.startsWith("/*"));
+    const commentLines = uniqueOutputLines.filter((l) => l.startsWith("//") || (l.startsWith("/*") && !l.includes("eslint-disable")));
 
     let fileContent = HEADER;
     if (eslintLine) {

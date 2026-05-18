@@ -980,8 +980,7 @@ const plugin: IPlugin = {
                 messages: {
                     bareImport:
                         'Bare import "{{source}}" introduces side effects in a .pure.ts file. ' + "Move it to the non-pure counterpart or guard with an eslint-disable comment.",
-                    unsafeBarrelReExport:
-                        'Re-export from "{{source}}" in a pure barrel file pulls in a module with side effects. ' + "Only re-export from side-effect-free modules.",
+                    unsafeBarrelReExport: 'Import or re-export from "{{source}}" in a pure file pulls in a module with side effects. ' + "Only reference side-effect-free modules.",
                     unsafeValueImport:
                         'Import from "{{source}}" in a .pure.ts file pulls in a module with side effects. ' +
                         "Import from the .pure counterpart instead, or use a type-only import.",
@@ -1014,25 +1013,32 @@ const plugin: IPlugin = {
                  * @returns The manifest-relative path if the source has side effects, or null.
                  */
                 function resolveToManifestPath(source: string): string | null {
-                    if (!source.startsWith(".")) {
+                    let rel: string;
+                    if (source.startsWith(".")) {
+                        const dir = path.dirname(filename);
+                        const resolved = path.resolve(dir, source);
+
+                        // Find core/src/ anchor
+                        const anchor = path.sep + path.join("packages", "dev", "core", "src") + path.sep;
+                        const idx = resolved.indexOf(anchor);
+                        if (idx === -1) {
+                            return null;
+                        }
+                        rel = resolved.substring(idx + anchor.length);
+                    } else if (source === "core") {
+                        rel = "index";
+                    } else if (source.startsWith("core/")) {
+                        rel = source.substring("core/".length);
+                    } else {
                         return null; // external / absolute — skip
                     }
-                    const dir = path.dirname(filename);
-                    const resolved = path.resolve(dir, source);
-
-                    // Find core/src/ anchor
-                    const anchor = path.sep + path.join("packages", "dev", "core", "src") + path.sep;
-                    const idx = resolved.indexOf(anchor);
-                    if (idx === -1) {
-                        return null;
-                    }
-                    let rel = resolved.substring(idx + anchor.length);
 
                     // Normalise to forward-slashes (Windows)
                     rel = rel.replace(/\\/g, "/");
+                    rel = rel.replace(/\.(?:js|mjs|ts|tsx)$/, "");
 
                     // Try common extensions
-                    for (const ext of ["", ".ts", ".tsx"]) {
+                    for (const ext of [".ts", ".tsx", "/index.ts"]) {
                         const candidate = rel + ext;
                         if (sideEffectFiles.has(candidate)) {
                             return candidate; // it HAS side effects
@@ -1107,7 +1113,7 @@ const plugin: IPlugin = {
 
                     // Re-exports: export * from "foo", export { x } from "foo"
                     ExportNamedDeclaration(node: any) {
-                        if (!isBarrelPure || !node.source) {
+                        if (!node.source) {
                             return;
                         }
                         // export type { ... } from "..." — always safe
@@ -1128,7 +1134,7 @@ const plugin: IPlugin = {
                     },
 
                     ExportAllDeclaration(node: any) {
-                        if (!isBarrelPure || !node.source) {
+                        if (!node.source) {
                             return;
                         }
                         if (node.exportKind === "type") {
