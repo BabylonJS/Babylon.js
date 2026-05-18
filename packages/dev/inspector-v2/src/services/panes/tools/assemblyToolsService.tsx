@@ -47,33 +47,9 @@ export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsServic
 
         contentRegistrations.push(
             toolsService.addSectionContent({
-                key: "Project File",
-                section: "Project File",
-                component: (props: { context: Scene }) => <ProjectFileTools scene={props.context} />,
-            })
-        );
-
-        contentRegistrations.push(
-            toolsService.addSectionContent({
                 key: "Smart Assets",
                 section: "Smart Assets",
                 component: (props: { context: Scene }) => <SmartAssetList scene={props.context} selectionService={selectionService} />,
-            })
-        );
-
-        contentRegistrations.push(
-            toolsService.addSectionContent({
-                key: "Material Assignment",
-                section: "Material Assignment",
-                component: (props: { context: Scene }) => <MaterialAssignment scene={props.context} />,
-            })
-        );
-
-        contentRegistrations.push(
-            toolsService.addSectionContent({
-                key: "Override Summary",
-                section: "Override Summary",
-                component: (props: { context: Scene }) => <OverrideSummary scene={props.context} />,
             })
         );
 
@@ -169,7 +145,7 @@ const useStyles = makeStyles({
  * @param props - Component props.
  * @returns The project file controls.
  */
-const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
+export const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
     const { scene } = props;
     const styles = useStyles();
     const [status, setStatus] = useState("");
@@ -529,7 +505,23 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
 // ── Material Assignment ──
 
-const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
+/**
+ * Pane content for assigning materials to meshes. Each assignment is also
+ * recorded as an override so it survives a reload.
+ * @param props - Component props.
+ * @returns A list of meshes with material selectors.
+ */
+export const MaterialAssignment: FunctionComponent<{
+    /**
+     * The scene whose meshes / materials to expose.
+     */
+    scene: Scene;
+}> = (props: {
+    /**
+     *
+     */
+    scene: Scene;
+}) => {
     const { scene } = props;
     const styles = useStyles();
     const [meshes, setMeshes] = useState<AbstractMesh[]>([]);
@@ -608,10 +600,38 @@ const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene:
 
 // ── Override Summary ──
 
-const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
+/**
+ * Pane content that lists all registered overrides for the scene.
+ * @param props - Component props.
+ * @returns The override list view.
+ */
+export const OverrideSummary: FunctionComponent<{
+    /**
+     * The scene whose overrides to display.
+     */
+    scene: Scene;
+}> = (props: {
+    /**
+     *
+     */
+    scene: Scene;
+}) => {
     const { scene } = props;
     const styles = useStyles();
-    const [overrideList, setOverrideList] = useState<Array<{ target: string; prop: string; value: string }>>([]);
+    const [overrideList, setOverrideList] = useState<
+        Array<{
+            /**
+             *
+             */
+            target: string; /**
+             *
+             */
+            prop: string; /**
+             *
+             */
+            value: string;
+        }>
+    >([]);
 
     const refresh = useCallback(() => {
         const entries = GetOverrides(scene).map((o) => {

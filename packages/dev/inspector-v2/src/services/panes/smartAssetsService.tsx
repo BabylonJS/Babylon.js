@@ -27,6 +27,8 @@ import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
+import { MaterialAssignment, OverrideSummary, ProjectFileTools } from "./tools/assemblyToolsService";
+
 import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -34,7 +36,7 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
-const SmartAssetsPaneKey = "Smart Assets";
+const ProjectAuthoringPaneKey = "Project Authoring";
 
 const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
 const TextureFileAccept = Array.from(GetSmartAssetTextureExtensions());
@@ -46,15 +48,17 @@ function _isTextureExtension(ext: string): boolean {
 }
 
 /**
- * Inspector pane service that hosts the Smart Assets pane.
+ * Inspector pane service that hosts the Project Authoring pane. Combines
+ * smart-asset management (assets list, asset map I/O) with override-driven
+ * scene authoring (material assignment, override summary).
  */
 export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
-    friendlyName: "Smart Assets",
+    friendlyName: "Project Authoring",
     consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
     factory: (shellService, sceneContext, selectionService) => {
         const paneRegistration = shellService.addSidePane({
-            key: SmartAssetsPaneKey,
-            title: SmartAssetsPaneKey,
+            key: ProjectAuthoringPaneKey,
+            title: ProjectAuthoringPaneKey,
             icon: CubeRegular,
             horizontalLocation: "right",
             verticalLocation: "top",
@@ -128,12 +132,21 @@ const SmartAssetsPane: FunctionComponent<{ scene: Scene; selectionService: ISele
     const { scene, selectionService } = props;
 
     return (
-        <Accordion uniqueId="SmartAssets" enablePinnedItems enableHiddenItems enableSearchItems>
+        <Accordion uniqueId="ProjectAuthoring" enablePinnedItems enableHiddenItems enableSearchItems>
+            <AccordionSection title="Project File">
+                <ProjectFileTools scene={scene} />
+            </AccordionSection>
             <AccordionSection title="Assets">
                 <SmartAssetList scene={scene} selectionService={selectionService} />
             </AccordionSection>
             <AccordionSection title="Asset Map">
                 <SmartAssetProjectTools scene={scene} />
+            </AccordionSection>
+            <AccordionSection title="Material Assignment">
+                <MaterialAssignment scene={scene} />
+            </AccordionSection>
+            <AccordionSection title="Override Summary">
+                <OverrideSummary scene={scene} />
             </AccordionSection>
         </Accordion>
     );
