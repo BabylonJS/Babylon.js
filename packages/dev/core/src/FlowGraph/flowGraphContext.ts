@@ -7,6 +7,7 @@ import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { type FlowGraph } from "./flowGraph";
 import { defaultValueSerializationFunction } from "./serialization";
 import { type FlowGraphCoordinator } from "./flowGraphCoordinator";
+import { type FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator";
 import { Observable } from "../Misc/observable";
 import { type AssetType, type FlowGraphAssetType, GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
 import { type IAssetContainer } from "core/IAssetContainer";
@@ -39,6 +40,14 @@ export interface IFlowGraphContextConfiguration {
      * The event coordinator used by the flow graph context.
      */
     readonly coordinator: FlowGraphCoordinator;
+
+    /**
+     * The scene event coordinator that tracks runtime event state
+     * (e.g. currently pressed keyboard keys).
+     * When not provided, keyboard polling blocks (e.g. IsKeyPressed) will
+     * report no keys pressed.
+     */
+    readonly sceneEventCoordinator?: FlowGraphSceneEventCoordinator;
 
     /**
      * The assets context used by the flow graph context.

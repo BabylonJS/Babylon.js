@@ -6,6 +6,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { AssetContainer } from "core/assetContainer";
 import { NullEngine } from "core/Engines/nullEngine";
 import { LoadAssetContainerFromSerializedScene } from "core/Loading/Plugins/babylonFileLoader";
+import "core/Materials/standardMaterial";
 
 /**
  * Describes the test suite.

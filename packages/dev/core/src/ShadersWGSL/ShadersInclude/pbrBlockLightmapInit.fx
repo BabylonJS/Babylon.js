@@ -1,5 +1,5 @@
 #ifdef LIGHTMAP
-    var lightmapColor: vec4f = textureSample(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
+    var lightmapColor: vec4f = TEXRD(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
 
     #ifdef RGBDLIGHTMAP
         lightmapColor = vec4f(fromRGBD(lightmapColor), lightmapColor.a);

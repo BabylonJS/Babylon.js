@@ -55,7 +55,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
-	coatNormalW = perturbNormal(TBN, textureSample(geometryCoatNormalSampler, geometryCoatNormalSamplerSampler, fragmentInputs.vGeometryCoatNormalUV + uvOffset).xyz, uniforms.vGeometryCoatNormalInfos.y);
+	coatNormalW = perturbNormal(TBN, TEXRD(geometryCoatNormalSampler, geometryCoatNormalSamplerSampler, fragmentInputs.vGeometryCoatNormalUV + uvOffset).xyz, uniforms.vGeometryCoatNormalInfos.y);
 #endif
 
 #ifdef GEOMETRY_NORMAL
@@ -63,12 +63,12 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
-		normalW = normalize(textureSample(geometryNormalSampler, geometryNormalSamplerSampler, fragmentInputs.vGeometryNormalUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(TEXRD(geometryNormalSampler, geometryNormalSamplerSampler, fragmentInputs.vGeometryNormalUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3x3f(uniforms.normalMatrix[0].xyz, uniforms.normalMatrix[1].xyz, uniforms.normalMatrix[2].xyz) * normalW);
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, textureSample(geometryNormalSampler, geometryNormalSamplerSampler, fragmentInputs.vGeometryNormalUV + uvOffset).xyz, uniforms.vGeometryNormalInfos.y);
+		normalW = perturbNormal(TBN, TEXRD(geometryNormalSampler, geometryNormalSamplerSampler, fragmentInputs.vGeometryNormalUV + uvOffset).xyz, uniforms.vGeometryNormalInfos.y);
     #else
-        var sampledNormal: vec3f = textureSample(geometryNormalSampler, geometryNormalSamplerSampler, fragmentInputs.vGeometryNormalUV + uvOffset).xyz * 2.0 - 1.0;
+        var sampledNormal: vec3f = TEXRD(geometryNormalSampler, geometryNormalSamplerSampler, fragmentInputs.vGeometryNormalUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
         #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
             detailNormal = vec3f(detailNormal.xy * uniforms.vDetailInfos.z, detailNormal.z);

@@ -625,6 +625,13 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
     public extension: Nullable<string> = null;
 
     /**
+     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+     * @experimental
+     */
+    @property({ attribute: "use-open-pbr", type: Boolean })
+    public useOpenPBR: boolean = this._options.useOpenPBR ?? false;
+
+    /**
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
     @property({
@@ -973,7 +980,7 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
         } else {
             this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer());
 
-            if (changedProperties.has("source")) {
+            if (changedProperties.has("source") || changedProperties.has("useOpenPBR")) {
                 this._updateModel();
             }
 
@@ -1464,6 +1471,7 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
                 if (this.source) {
                     await this._viewer.loadModel(this.source, {
                         pluginExtension: this.extension ?? undefined,
+                        useOpenPBR: this.useOpenPBR,
                     });
                 } else {
                     await this._viewer.resetModel();

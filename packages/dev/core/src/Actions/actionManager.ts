@@ -14,6 +14,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { GetClass } from "../Misc/typeStore";
 import { AbstractActionManager } from "./abstractActionManager";
 import { Constants } from "../Engines/constants";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -554,7 +555,7 @@ export class ActionManager extends AbstractActionManager {
                         value = scene.getNodeByName(value);
                     } else if (name === "sound") {
                         // Can not externalize to component, so only checks for the presence off the API.
-                        if (scene.getSoundByName) {
+                        if (_IsSideEffectImplemented(scene.getSoundByName)) {
                             value = scene.getSoundByName(value);
                         }
                     } else if (name !== "propertyPath") {

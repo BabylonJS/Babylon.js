@@ -1138,6 +1138,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                     // Enable transparency as coverage by default to be 3D Commerce compliant by default.
                     // https://doc.babylonjs.com/setup/support/3D_commerce_certif
                     transparencyAsCoverage: true,
+                    useOpenPBR: (options as ViewerLoadModelOptions | undefined)?.useOpenPBR ?? this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
                     extensionOptions: {
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {

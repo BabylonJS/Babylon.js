@@ -3,6 +3,15 @@ import { type Node } from "../node";
 import { type FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { type FlowGraphMatrix2D, type FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 import { FlowGraphTypes } from "./flowGraphRichTypes";
+import { IsNavigatorAvailable } from "core/Misc/domManagement";
+
+/**
+ * Whether the current platform is macOS / iOS.
+ * Used by keyboard blocks to resolve the platform-appropriate
+ * "command or control" modifier (Cmd on Mac, Ctrl elsewhere).
+ * @internal
+ */
+export const _IsMacPlatform: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
 /**
  * @internal

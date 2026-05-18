@@ -5,6 +5,7 @@ import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { AsyncLoop } from "../Misc/tools";
 import { Epsilon } from "../Maths/math.constants";
+import { RegisterMeshSimplificationSceneComponent } from "./meshSimplificationSceneComponent.pure";
 /**
  * A simplifier interface for future simplification implementations
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/simplifyingMeshes
@@ -103,6 +104,7 @@ export class SimplificationQueue {
      * Creates a new queue
      */
     constructor() {
+        RegisterMeshSimplificationSceneComponent(SimplificationQueue);
         this.running = false;
         this._simplificationArray = [];
     }

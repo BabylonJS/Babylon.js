@@ -179,6 +179,13 @@
                     <option value="high">High (environment shadow)</option>
                 </select>
             </div>
+            <div>
+                <span>Material</span>
+                <select id="materialSelect" oninput="onMaterial()">
+                    <option value="pbr">PBR</option>
+                    <option value="openpbr">OpenPBR</option>
+                </select>
+            </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/lite/index.ts"></script>
         <script type="module">
@@ -418,6 +425,9 @@
             };
             globalThis.onShadowQuality = () => {
                 viewerElement.shadowQuality = document.querySelector("#shadowQualityInput").value;
+            };
+            globalThis.onMaterial = () => {
+                viewerElement.useOpenPBR = document.querySelector("#materialSelect").value === "openpbr";
             };
         </script>
     </body>

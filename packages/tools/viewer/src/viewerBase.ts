@@ -316,6 +316,13 @@ export type ViewerLoadModelOptions = Partial<
          * The file extension to use for determining the loader plugin (e.g. ".glb", ".gltf").
          */
         pluginExtension: string;
+
+        /**
+         * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+         * Overrides the corresponding constructor option for this load.
+         * @experimental
+         */
+        useOpenPBR: boolean;
     }>
 >;
 
@@ -418,6 +425,12 @@ export type ViewerBaseOptions = Partial<{
     useRightHandedSystem: boolean;
 
     /**
+     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+     * @experimental
+     */
+    useOpenPBR: boolean;
+
+    /**
      * Called when a fatal error occurs that prevents the viewer from functioning.
      */
     onFaulted: (error: Error) => void;
@@ -454,6 +467,7 @@ export const DefaultViewerBaseOptions = {
         ssao: "auto",
     },
     useRightHandedSystem: false,
+    useOpenPBR: false,
 } as const satisfies ViewerBaseOptions;
 
 /**

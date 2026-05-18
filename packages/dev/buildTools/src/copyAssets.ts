@@ -58,7 +58,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
             })
             .on("all", (event, file) => {
                 // don't track directory changes
-                if (event === "addDir" || event === "unlinkDir") {
+                if (event === "addDir" || event === "unlinkDir" || event === "unlink") {
                     return;
                 }
                 let verb: string;
@@ -69,12 +69,24 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
                     case "change":
                         verb = "Changing";
                         break;
-                    case "unlink":
-                        verb = "Removing";
-                        break;
                 }
                 verbose && console.log(`${verb} asset: ${file}`);
-                ProcessFile(file, processOptions);
+                try {
+                    ProcessFile(file, processOptions);
+                } catch (e: any) {
+                    if (e.code === "ENOENT") {
+                        verbose && console.log(`File no longer exists, skipping: ${file}`);
+                    } else {
+                        console.error(`Error processing asset ${file}:`, e.message);
+                    }
+                }
+            })
+            .on("error", (error: NodeJS.ErrnoException) => {
+                if (error.code === "ENOENT") {
+                    verbose && console.log(`Watcher target no longer exists: ${error.path}`);
+                } else {
+                    console.error("Watcher error:", error.message);
+                }
             });
         console.log("watching for asset changes...");
     } else {

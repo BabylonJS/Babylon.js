@@ -9,7 +9,12 @@ import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
-import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import {
+    MaterialGeneralProperties,
+    MaterialStencilProperties,
+    MaterialTextureRepetitionProperties,
+    MaterialTransparencyProperties,
+} from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
 import { NodeMaterialGeneralProperties, NodeMaterialInputProperties } from "../../../components/properties/materials/nodeMaterialProperties";
 import { NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
@@ -69,6 +74,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "Stencil",
                     component: ({ context }) => <MaterialStencilProperties material={context} />,
+                },
+                {
+                    section: "Texture Repetition",
+                    component: ({ context }) => <MaterialTextureRepetitionProperties material={context} />,
                 },
             ],
         });

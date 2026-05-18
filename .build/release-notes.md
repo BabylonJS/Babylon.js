@@ -1,13 +1,6 @@
 
 ### Core
 
-- Fix NodeMaterial SSS with clustered lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18413](https://github.com/BabylonJS/Babylon.js/pull/18413))
-- Add Bevel node to Node Geometry Editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#18420](https://github.com/BabylonJS/Babylon.js/pull/18420))
-
-### Materials
-
-- Fix NodeMaterial SSS with clustered lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18413](https://github.com/BabylonJS/Babylon.js/pull/18413))
-
-### Node Geometry Editor
-
-- Add Bevel node to Node Geometry Editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#18420](https://github.com/BabylonJS/Babylon.js/pull/18420))
+- Tree-shaking - the pure barrel - by [RaananW](https://github.com/RaananW) ([#18441](https://github.com/BabylonJS/Babylon.js/pull/18441))
+- Add distance-only spatial mode to Audio Engine V2 - by [VicenteCartas](https://github.com/VicenteCartas) ([#18462](https://github.com/BabylonJS/Babylon.js/pull/18462))
+- Camera input mapping system with backward-compatible legacy flag support - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18379](https://github.com/BabylonJS/Babylon.js/pull/18379))

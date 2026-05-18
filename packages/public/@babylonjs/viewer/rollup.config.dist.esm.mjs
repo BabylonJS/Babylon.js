@@ -4,7 +4,6 @@ import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import terser from "@rollup/plugin-terser";
 import { minifyTemplateLiterals } from "rollup-plugin-minify-template-literals";
-import Sonda from "sonda/rollup";
 
 const source = "dev";
 
@@ -73,7 +72,7 @@ const minConfig = {
         entryFileNames: "babylon-viewer.esm.min.js",
         chunkFileNames: "chunks/[name]-[hash].esm.min.js",
     },
-    plugins: [Sonda({ open: false, filename: "viewer-bundle-report.html" }), ...commonConfig.plugins, terser(), minifyTemplateLiterals()],
+    plugins: [...commonConfig.plugins, terser(), minifyTemplateLiterals()],
 };
 
 const liteMaxConfig = {
