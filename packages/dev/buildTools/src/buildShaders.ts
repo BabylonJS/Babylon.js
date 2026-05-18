@@ -98,7 +98,7 @@ function GetIncludes(sourceCode: string) {
 }
 
 /**
- * Resolve all transitive includes for a shader file by recursively scanning .fx include files.
+ * Resolve all transitive includes for a shader file by recursively scanning shader include source files.
  * Returns the full closure of include names needed (in dependency order — deps before dependents).
  * Checks both a local ShadersInclude directory and a core ShadersInclude directory.
  * @param directIncludes - direct includes from the main shader
@@ -110,7 +110,22 @@ function GetIncludes(sourceCode: string) {
 function GetTransitiveIncludesMultiDir(directIncludes: Set<string>, localShadersIncludeDir: string, coreShadersIncludeDir: string, isWGSL: boolean): string[] {
     const visited = new Set<string>();
     const result: string[] = [];
-    const ext = isWGSL ? ".wgsl" : ".fx";
+    const extensions = isWGSL ? [".fx", ".wgsl"] : [".fx"];
+
+    function resolveIncludeFilePath(includeName: string): string | undefined {
+        for (const includeDir of [localShadersIncludeDir, coreShadersIncludeDir]) {
+            if (!includeDir) {
+                continue;
+            }
+            for (const extension of extensions) {
+                const includeFilePath = path.join(includeDir, includeName + extension);
+                if (fs.existsSync(includeFilePath)) {
+                    return includeFilePath;
+                }
+            }
+        }
+        return undefined;
+    }
 
     function visit(includeName: string) {
         // Strip any "core/" prefix for file resolution
@@ -120,14 +135,11 @@ function GetTransitiveIncludesMultiDir(directIncludes: Set<string>, localShaders
         }
         visited.add(resolvedName);
 
-        // Try to read the .fx file for this include to find nested includes.
+        // Try to read the source file for this include to find nested includes.
         // Check local directory first, then core.
-        let includeFilePath = path.join(localShadersIncludeDir, resolvedName + ext);
-        if (!fs.existsSync(includeFilePath) && coreShadersIncludeDir) {
-            includeFilePath = path.join(coreShadersIncludeDir, resolvedName + ext);
-        }
+        const includeFilePath = resolveIncludeFilePath(resolvedName);
 
-        if (fs.existsSync(includeFilePath)) {
+        if (includeFilePath) {
             const includeSource = fs.readFileSync(includeFilePath, "utf8");
             const nestedIncludes = GetIncludes(includeSource);
             for (const nested of nestedIncludes) {

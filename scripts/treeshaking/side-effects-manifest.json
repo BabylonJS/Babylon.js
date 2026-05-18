@@ -12101,7 +12101,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 221,
+          "line": 224,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -12111,7 +12111,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 121,
+          "line": 122,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -12291,7 +12291,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 401,
+          "line": 405,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -12301,7 +12301,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 221,
+          "line": 223,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -12491,7 +12491,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 27,
+          "line": 29,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -12511,7 +12511,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 38,
+          "line": 40,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13141,7 +13141,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 287,
+          "line": 295,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13151,7 +13151,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 281,
+          "line": 283,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13221,7 +13221,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 629,
+          "line": 638,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13231,7 +13231,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 295,
+          "line": 297,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -15026,7 +15026,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 37,
+          "line": 39,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
