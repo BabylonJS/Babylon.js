@@ -349,6 +349,17 @@ export async function LoadSmartAssetTextureAsync(scene: Scene, key: string, url?
     }
 
     internal.objectToKeyMap.set(texture, key);
+
+    // Surface the registry key as the texture's display name when the texture
+    // doesn't already have one. For blob/data-URL textures (e.g. user-uploaded
+    // files) the underlying `texture.name` is an opaque blob URL, so without
+    // this any UI that shows texture names (Scene Explorer, material slot
+    // pickers, override summaries) would render the blob URL instead of the
+    // user-chosen key. We never overwrite a display name the caller already set.
+    if (!texture.displayName) {
+        texture.displayName = key;
+    }
+
     manager.onChangedObservable.notifyObservers();
     return texture;
 }
