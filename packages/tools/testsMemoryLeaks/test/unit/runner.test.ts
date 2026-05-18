@@ -37,6 +37,20 @@ describe("memory leak runner", () => {
         );
     });
 
+    it("skips memlab warmup by default", async () => {
+        const { parseCliArgs } = await loadRunnerModules();
+        const parsed = parseCliArgs([]);
+
+        expect(parsed.options.skipWarmup).toBe(true);
+    });
+
+    it("allows memlab warmup for manual debugging", async () => {
+        const { parseCliArgs } = await loadRunnerModules();
+        const parsed = parseCliArgs(["--warmup"]);
+
+        expect(parsed.options.skipWarmup).toBe(false);
+    });
+
     it("returns results when every scenario is leak free", async () => {
         const { run, runScenarioSuite } = await loadRunnerModules();
         const mockedRun = asMock(run);
@@ -52,6 +66,7 @@ describe("memory leak runner", () => {
         expect(results).toHaveLength(1);
         expect(results[0].definition.id).toBe("core-playground-T90MQ4-14");
         expect(mockedRun).toHaveBeenCalledTimes(1);
+        expect(mockedRun).toHaveBeenCalledWith(expect.objectContaining({ skipWarmup: true }));
     });
 
     it("throws a typed error when a scenario leaks", async () => {
