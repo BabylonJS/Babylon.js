@@ -85,7 +85,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
         if (adapter.subsurfaceWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
             const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (!scene._transmissionHelper) {
-                new TransmissionHelper({}, babylonMaterial.getScene(), this._loader);
+                new TransmissionHelper({}, babylonMaterial.getScene());
             } else if (!scene._transmissionHelper?._isRenderTargetValid()) {
                 // If the render target is not valid, recreate it.
                 scene._transmissionHelper?._setupRenderTargets();
