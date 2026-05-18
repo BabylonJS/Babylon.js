@@ -58,7 +58,7 @@
         "chalk": "^5.3.0",
         "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.1.1",
-        "ws": "^8.18.0"
+        "ws": "^8.20.1"
     },
     "keywords": [
         "3D",

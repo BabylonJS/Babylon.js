@@ -13,7 +13,7 @@
         "@types/ws": "^8.5.2"
     },
     "dependencies": {
-        "ws": "^8.5.0"
+        "ws": "^8.20.1"
     },
     "optionalDependencies": {
         "bufferutil": "^4.0.3",
