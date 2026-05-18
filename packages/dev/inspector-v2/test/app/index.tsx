@@ -12,6 +12,9 @@ import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoad
 import { LoadSmartAssetAsync, RemoveSmartAssetAsync } from "core/SmartAssets/smartAssetManager";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Vector3 } from "core/Maths/math.vector";
+import { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsAggregate } from "core/Physics/v2/physicsAggregate";
+import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
@@ -94,10 +97,18 @@ function createPostProcess() {
 }
 
 async function createPhysics() {
-    // Physics removed from this test app: Vite's dev server doesn't serve
-    // @babylonjs/havok's HavokPhysics.wasm at a path the runtime can resolve,
-    // so the load fails with a MIME-type / WASM-magic mismatch. Project
-    // Authoring (the pane this app is used to validate) doesn't need physics.
+    const { default: HavokPhysics } = await import("@babylonjs/havok");
+    await import("core/Physics/v2/physicsEngineComponent");
+    const havok = await HavokPhysics();
+    const hkPlugin = new HavokPlugin(true, havok);
+    scene.enablePhysics(new Vector3(0, -9.81, 0), hkPlugin);
+    // create kinematic convex hull for aerobatic plane
+    const plane = scene.getMeshByName("aerobatic_plane.2");
+    if (plane) {
+        const aggregate = new PhysicsAggregate(plane, PhysicsShapeType.CONVEX_HULL, { mass: 1, restitution: 0.75 }, scene);
+        aggregate.body.disablePreStep = false;
+        aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+    }
 }
 
 function createTestPBRSphere() {
