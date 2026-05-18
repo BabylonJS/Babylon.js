@@ -13,7 +13,8 @@
  *   4. Node.AddNodeConstructor(...)
  *   5. Bare top-level function calls (e.g. initSideEffects())
  *   6. Top-level assignments to static class properties (Class.staticProp = ...)
- *   7. declare module augmentations
+ *   7. Class static blocks on top-level classes
+ *   8. declare module augmentations
  *
  * Usage:
  *   node scripts/treeshaking/auditSideEffects.mjs [--json] [--summary] [--out <path>]
@@ -218,6 +219,16 @@ function analyzeFile(filePath) {
         }
         if (inDeclareModule) {
             continue;
+        }
+
+        // Class static blocks execute when the containing class is evaluated.
+        // For top-level classes, that happens at module import time, so they are side effects.
+        if (prevDepth === 1 && prevBracketDepth === 0 && /^static\s*\{/.test(trimmed)) {
+            sideEffects.push({
+                type: "class-static-block",
+                line: lineNum,
+                text: trimmed.substring(0, 120),
+            });
         }
 
         // Only detect side effects at top-level (braceDepth and bracketDepth were 0 before this line)
