@@ -4,29 +4,6 @@
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./index.d.ts",
-            "import": "./index.js",
-            "default": "./index.js"
-        },
-        "./pure": {
-            "types": "./pure.d.ts",
-            "import": "./pure.js",
-            "sideEffects": false,
-            "default": "./pure.js"
-        },
-        "./*": {
-            "types": "./*.d.ts",
-            "import": "./*.js",
-            "default": "./*.js"
-        },
-        "./*.js": {
-            "types": "./*.d.ts",
-            "import": "./*.js",
-            "default": "./*.js"
-        }
-    },
     "files": [
         "**/*.js",
         "**/*.d.ts",
