@@ -14,7 +14,7 @@ import {
     type SmartAssetLoadOptions,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
-import { ApplyAllOverrides, GetOverrides } from "../../../projects/overrideManager";
+import { ApplyAllOverrides, GetOverrideManager, GetOverrides } from "../../../projects/overrideManager";
 import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -30,7 +30,7 @@ import { ProjectLocalsKey, LoadProjectFileAsync, SaveProjectFileAsync } from "..
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Body1, Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
-import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, DocumentTextRegular, SaveRegular } from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, SaveRegular } from "@fluentui/react-icons";
 
 /**
  * Inspector Tools service that provides an assembly-focused UX for composing
@@ -495,7 +495,9 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 // ── Override Summary ──
 
 /**
- * Pane content that lists all registered overrides for the scene.
+ * Pane content that lists all registered overrides for the scene. Subscribes
+ * directly to the manager's change observable so loads, deletes, and
+ * Inspector-driven edits update the view instantly.
  * @param props - Component props.
  * @returns The override list view.
  */
@@ -504,48 +506,24 @@ export const OverrideSummary: FunctionComponent<{
      * The scene whose overrides to display.
      */
     scene: Scene;
-}> = (props: {
-    /**
-     *
-     */
-    scene: Scene;
-}) => {
+}> = (props: { scene: Scene }) => {
     const { scene } = props;
     const styles = useStyles();
-    const [overrideList, setOverrideList] = useState<
-        Array<{
-            /**
-             *
-             */
-            target: string; /**
-             *
-             */
-            prop: string; /**
-             *
-             */
-            value: string;
-        }>
-    >([]);
+    const overrideManager = GetOverrideManager(scene);
 
-    const refresh = useCallback(() => {
-        const entries = GetOverrides(scene).map((o) => {
-            const nameLabel = o.targetName === "" ? "(scene)" : o.targetIndex > 0 ? `${o.targetName}[${o.targetIndex}]` : o.targetName;
-            return {
-                target: `${o.targetType}.${nameLabel}`,
-                prop: o.propertyPath,
-                value: String(o.value),
-            };
-        });
-        setOverrideList(entries);
-    }, [scene]);
-
-    useEffect(() => {
-        refresh();
-        // Auto-refresh every 2 seconds to pick up new overrides from
-        // Inspector edits, project loads, and programmatic changes
-        const interval = setInterval(refresh, 2000);
-        return () => clearInterval(interval);
-    }, [refresh]);
+    const overrideList = useObservableState(
+        useCallback(() => {
+            return GetOverrides(scene).map((o) => {
+                const nameLabel = o.targetName === "" ? "(scene)" : o.targetIndex > 0 ? `${o.targetName}[${o.targetIndex}]` : o.targetName;
+                return {
+                    target: `${o.targetType}.${nameLabel}`,
+                    prop: o.propertyPath,
+                    value: String(o.value),
+                };
+            });
+        }, [scene]),
+        overrideManager.onChangedObservable
+    );
 
     if (overrideList.length === 0) {
         return <div className={styles.emptyMessage}>No overrides tracked. Edit properties in Inspector to create overrides.</div>;
@@ -562,7 +540,6 @@ export const OverrideSummary: FunctionComponent<{
                     <span className={styles.overrideValue}>{ShortenValue(o.value)}</span>
                 </div>
             ))}
-            <ButtonLine label="Refresh" icon={DocumentTextRegular} onClick={refresh} />
         </>
     );
 };
