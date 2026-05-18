@@ -4,6 +4,13 @@ import { globSync } from "glob";
 import * as path from "path";
 import { checkArgs } from "./utils.js";
 
+function ValidateRelativeImport(file: string, specifier: string, message: string) {
+    if (specifier.startsWith(".") && !fs.existsSync(path.resolve(path.dirname(file), specifier))) {
+        console.log(file, path.resolve(path.dirname(file), specifier));
+        throw new Error(message);
+    }
+}
+
 function ProcessSource(sourceCode: string, forceMJS: boolean) {
     const extension = forceMJS ? ".mjs" : ".js";
     const addExtension = (specifier: string) => {
@@ -36,20 +43,18 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
         const sourceCode = fs.readFileSync(file, "utf-8");
         const processed = ProcessSource(sourceCode, forceMJS);
 
-        const regex = /(?:import|export)\s+(?:(?!;)[\s\S])*?\bfrom\s*"(\..*?)";/g;
+        const regex = /(?:import|export)\s+(?:(?!;)[\s\S])*?\bfrom\s*["'](\..*?)["'];/g;
         let match;
         while ((match = regex.exec(processed)) !== null) {
-            if (!fs.existsSync(path.resolve(path.dirname(file), match[1]))) {
-                console.log(file, path.resolve(path.dirname(file), match[1]));
-                throw new Error(`File ${match[1]} does not exist. Are you importing from an index/directory?`);
-            }
+            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you importing from an index/directory?`);
         }
-        const dynamicRegex = /import\("(\..*?)"\)/g;
+        const bareImportRegex = /import\s*["'](\..*?)["'];/g;
+        while ((match = bareImportRegex.exec(processed)) !== null) {
+            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you side-effect importing from an index/directory?`);
+        }
+        const dynamicRegex = /import\(["'](\..*?)["']\)/g;
         while ((match = dynamicRegex.exec(processed)) !== null) {
-            if (!fs.existsSync(path.resolve(path.dirname(file), match[1]))) {
-                console.log(file, path.resolve(path.dirname(file), match[1]));
-                throw new Error(`File ${match[1]} does not exist. Are you dynamically importing from an index/directory?`);
-            }
+            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you dynamically importing from an index/directory?`);
         }
         fs.writeFileSync(file, processed);
     });

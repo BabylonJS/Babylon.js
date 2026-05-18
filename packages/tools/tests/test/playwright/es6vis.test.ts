@@ -17,7 +17,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 const STYLES = ["barrel", "deep", "pure"] as const;
 
@@ -26,6 +26,24 @@ type Es6VisWindow = Window & { __ready?: boolean };
 /** Maximum allowed pixel difference ratio (0.01 = 1%). */
 const MAX_DIFF_PIXEL_RATIO = 0.01;
 const READY_TIMEOUT_MS = 30_000;
+const RENDER_STABILIZATION_FRAMES = 2;
+
+async function waitForAnimationFrames(page: Page, frameCount: number): Promise<void> {
+    await page.evaluate((frames) => {
+        return new Promise<void>((resolve) => {
+            let remainingFrames = frames;
+            const tick = () => {
+                remainingFrames--;
+                if (remainingFrames <= 0) {
+                    resolve();
+                    return;
+                }
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        });
+    }, frameCount);
+}
 
 /** Auto-discover scene directories. */
 const scenesDir = path.resolve(__dirname, "../../es6Vis/src/scenes");
@@ -42,6 +60,7 @@ for (const sceneName of SCENES) {
 
                 // Wait for the render loop to signal readiness
                 await page.waitForFunction(() => (window as Es6VisWindow).__ready === true, null, { timeout: READY_TIMEOUT_MS });
+                await waitForAnimationFrames(page, RENDER_STABILIZATION_FRAMES);
 
                 // Grab the canvas element
                 const canvas = page.locator("#renderCanvas");
