@@ -3696,7 +3696,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 64,
+          "line": 95,
           "text": "import \"./material.decalMap\";"
         }
       ]

@@ -61,4 +61,35 @@ export * from "../Shaders/greasedLine.vertex";
 export * from "../ShadersWGSL/greasedLine.fragment";
 export * from "../ShadersWGSL/greasedLine.vertex";
 
+// Shared shader includes used by external material packages in UMD builds
+export * from "../Shaders/ShadersInclude/bakedVertexAnimation";
+export * from "../Shaders/ShadersInclude/bakedVertexAnimationDeclaration";
+export * from "../Shaders/ShadersInclude/depthPrePass";
+export * from "../Shaders/ShadersInclude/fogFragment";
+export * from "../Shaders/ShadersInclude/fogVertex";
+export * from "../Shaders/ShadersInclude/fogVertexDeclaration";
+export * from "../Shaders/ShadersInclude/imageProcessingCompatibility";
+export * from "../Shaders/ShadersInclude/instancesDeclaration";
+export * from "../Shaders/ShadersInclude/instancesVertex";
+export * from "../Shaders/ShadersInclude/logDepthFragment";
+export * from "../Shaders/ShadersInclude/logDepthVertex";
+export * from "../Shaders/ShadersInclude/sceneFragmentDeclaration";
+export * from "../Shaders/ShadersInclude/sceneUboDeclaration";
+export * from "../Shaders/ShadersInclude/sceneVertexDeclaration";
+export * from "../Shaders/ShadersInclude/vertexColorMixing";
+export * from "../ShadersWGSL/ShadersInclude/bakedVertexAnimation";
+export * from "../ShadersWGSL/ShadersInclude/bakedVertexAnimationDeclaration";
+export * from "../ShadersWGSL/ShadersInclude/depthPrePass";
+export * from "../ShadersWGSL/ShadersInclude/fogFragment";
+export * from "../ShadersWGSL/ShadersInclude/fogVertex";
+export * from "../ShadersWGSL/ShadersInclude/fogVertexDeclaration";
+export * from "../ShadersWGSL/ShadersInclude/imageProcessingCompatibility";
+export * from "../ShadersWGSL/ShadersInclude/instancesDeclaration";
+export * from "../ShadersWGSL/ShadersInclude/instancesVertex";
+export * from "../ShadersWGSL/ShadersInclude/lightVxFragmentDeclaration";
+export * from "../ShadersWGSL/ShadersInclude/logDepthFragment";
+export * from "../ShadersWGSL/ShadersInclude/logDepthVertex";
+export * from "../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
+export * from "../ShadersWGSL/ShadersInclude/vertexColorMixing";
+
 import "./material.decalMap";
