@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useRef, useState, type FunctionComponent } from "react";
+import { useCallback, useRef, useState, useContext, useMemo, type FunctionComponent } from "react";
 
 import { type Scene } from "core/scene";
 import {
@@ -12,6 +12,7 @@ import {
     RemoveSmartAssetAsync,
     UnloadSmartAssetAsync,
 } from "core/SmartAssets/smartAssetManager";
+import { Tools } from "core/Misc/tools";
 
 import { type Material } from "core/Materials/material";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -26,16 +27,15 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-
-import { OverrideSummary, ProjectFileTools } from "./tools/assemblyToolsService";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
+import { Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
+import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, SaveRegular } from "@fluentui/react-icons";
 
-import { ProjectLocalsKey } from "../../projects/projectFile";
-import { ApplyAllOverrides } from "../../projects/overrideManager";
+import { ProjectLocalsKey, LoadProjectFileAsync, SaveProjectFileAsync } from "../../projects/projectFile";
+import { ApplyAllOverrides, GetOverrideManager, GetOverrides } from "../../projects/overrideManager";
 
 const ProjectAuthoringPaneKey = "Project Authoring";
 
@@ -53,7 +53,7 @@ function _isTextureExtension(ext: string): boolean {
  * smart-asset management (assets list, asset map I/O) with override-driven
  * scene authoring (material assignment, override summary).
  */
-export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
+export const BabylonProjectAuthoringServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
     friendlyName: "Project Authoring",
     consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
     factory: (shellService, sceneContext, selectionService) => {
@@ -67,7 +67,7 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
             teachingMoment: false,
             content: () => {
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
+                return scene ? <BabylonProjectAuthoringPane scene={scene} selectionService={selectionService} /> : null;
             },
         });
 
@@ -125,11 +125,30 @@ const useStyles = makeStyles({
     hiddenInput: {
         display: "none",
     },
+    overrideRow: {
+        display: "flex",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+        fontSize: "10px",
+        fontFamily: "monospace",
+    },
+    dimSeparator: {
+        opacity: 0.5,
+    },
+    overrideValue: {
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    busyMessage: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+    },
 });
 
-// ── Smart Assets Pane ──
+// ── Project Authoring Pane ──
 
-const SmartAssetsPane: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = (props) => {
+const BabylonProjectAuthoringPane: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = (props) => {
     const { scene, selectionService } = props;
 
     return (
@@ -144,6 +163,73 @@ const SmartAssetsPane: FunctionComponent<{ scene: Scene; selectionService: ISele
                 <OverrideSummary scene={scene} />
             </AccordionSection>
         </Accordion>
+    );
+};
+
+// ── Project File ──
+
+/**
+ * Save/load controls for the `.babylonproj` zip bundle that captures the
+ * scene's smart assets and overrides as a single project file.
+ * @param props - Component props.
+ * @returns The project file controls.
+ */
+const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
+    const { scene } = props;
+    const styles = useStyles();
+    const [status, setStatus] = useState("");
+    const [busy, setBusy] = useState("");
+    const isBusy = busy !== "";
+
+    const onSaveProject = useCallback(async () => {
+        if (isBusy) {
+            return;
+        }
+        setBusy("Saving project...");
+        setStatus("");
+        try {
+            const blob = await SaveProjectFileAsync(scene);
+            Tools.Download(blob, "scene.babylonproj");
+            setStatus("Saved scene.babylonproj");
+        } catch (err) {
+            setStatus(`Save error: ${err}`);
+        } finally {
+            setBusy("");
+        }
+    }, [scene, isBusy]);
+
+    const onLoadProject = useCallback(
+        async (files: FileList) => {
+            const file = files[0];
+            if (!file || isBusy) {
+                return;
+            }
+            setBusy("Loading project...");
+            setStatus("");
+            try {
+                await LoadProjectFileAsync(scene, file);
+                setStatus(`Loaded ${file.name}`);
+            } catch (err) {
+                setStatus(`Load error: ${err}`);
+            } finally {
+                setBusy("");
+            }
+        },
+        [scene, isBusy]
+    );
+
+    return (
+        <>
+            <ButtonLine label="Save Project (.babylonproj)" icon={SaveRegular} onClick={onSaveProject} disabled={isBusy} />
+            <FileUploadLine label="Load Project (.babylonproj)" accept=".babylonproj" onClick={onLoadProject} disabled={isBusy} />
+            {isBusy && (
+                <div className={styles.busyMessage}>
+                    <Spinner size="extra-small" />
+                    <Caption1>{busy}</Caption1>
+                </div>
+            )}
+            {status && <div className={styles.statusMessage}>{status}</div>}
+        </>
     );
 };
 
@@ -407,6 +493,55 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
 // ── Utilities ──
 
+// ── Override Summary ──
+
+/**
+ * Pane content that lists all registered overrides for the scene. Subscribes
+ * directly to the manager's change observable so loads, deletes, and
+ * Inspector-driven edits update the view instantly.
+ * @param props - Component props.
+ * @returns The override list view.
+ */
+const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props) => {
+    const { scene } = props;
+    const styles = useStyles();
+    const overrideManager = GetOverrideManager(scene);
+
+    const overrideList = useObservableState(
+        useCallback(() => {
+            return GetOverrides(scene).map((o) => {
+                const nameLabel = o.targetName === "" ? "(scene)" : o.targetIndex > 0 ? `${o.targetName}[${o.targetIndex}]` : o.targetName;
+                return {
+                    target: `${o.targetType}.${nameLabel}`,
+                    prop: o.propertyPath,
+                    value: String(o.value),
+                };
+            });
+        }, [scene]),
+        overrideManager.onChangedObservable
+    );
+
+    if (overrideList.length === 0) {
+        return <div className={styles.emptyMessage}>No overrides tracked. Edit properties in Inspector to create overrides.</div>;
+    }
+
+    return (
+        <>
+            {overrideList.map((o, i) => (
+                <div key={i} className={styles.overrideRow}>
+                    <span>{o.target}</span>
+                    <span className={styles.dimSeparator}>.</span>
+                    <span>{o.prop}</span>
+                    <span className={styles.dimSeparator}>=</span>
+                    <span className={styles.overrideValue}>{ShortenValue(o.value)}</span>
+                </div>
+            ))}
+        </>
+    );
+};
+
+// ── Utilities ──
+
 /**
  * Finds the first scene entity produced by a smart asset key, for click-to-select.
  * Prefers non-root meshes, then materials, then textures.
@@ -470,4 +605,13 @@ function _getExtension(url: string): string {
         return clean.substring(lastDot);
     }
     return "";
+}
+
+/**
+ * Truncates a value string to a maximum display length.
+ * @param value - The value string to shorten.
+ * @returns The truncated string, with an ellipsis if it was shortened.
+ */
+function ShortenValue(value: string): string {
+    return value.length > 30 ? value.substring(0, 27) + "…" : value;
 }
