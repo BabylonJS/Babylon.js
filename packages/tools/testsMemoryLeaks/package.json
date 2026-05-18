@@ -21,6 +21,6 @@
     },
     "sideEffects": true,
     "dependencies": {
-        "memlab": "^1.1.28"
+        "memlab": "^2.0.2"
     }
 }
