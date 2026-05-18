@@ -713,6 +713,26 @@ export default tseslint.config(
     },
 
     // ===========================================
+    // Pure files: require /*#__PURE__*/ on top-level calls
+    // ===========================================
+    {
+        files: ["packages/dev/core/src/**/*.pure.ts"],
+        rules: {
+            "babylonjs/require-pure-annotation": "error",
+        },
+    },
+
+    // ===========================================
+    // Pure files: no side-effect (bare) imports
+    // ===========================================
+    {
+        files: ["packages/dev/core/src/**/*.pure.ts", "packages/dev/core/src/**/pure.ts"],
+        rules: {
+            "babylonjs/no-side-effect-imports-in-pure": "error",
+        },
+    },
+
+    // ===========================================
     // UMD ES5 downlevel iteration guard
     // These dev packages are compiled into UMD bundles targeting ES5
     // without --downlevelIteration. for...of and spread on non-array

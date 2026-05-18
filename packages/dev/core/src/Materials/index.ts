@@ -46,7 +46,6 @@ export * from "./materialStencilState";
 export * from "./uv.defines";
 export * from "./floatingOriginMatrixOverrides";
 export * from "./vertexPullingHelper.functions";
-import "./material.decalMap";
 
 // async-loaded shaders
 
@@ -61,3 +60,5 @@ export * from "../Shaders/greasedLine.fragment";
 export * from "../Shaders/greasedLine.vertex";
 export * from "../ShadersWGSL/greasedLine.fragment";
 export * from "../ShadersWGSL/greasedLine.vertex";
+
+import "./material.decalMap";

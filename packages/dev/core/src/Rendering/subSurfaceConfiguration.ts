@@ -7,6 +7,7 @@ import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _WarnImport } from "../Misc/devTools";
 import { Constants } from "../Engines/constants";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RegisterSubSurfaceSceneComponent } from "./subSurfaceSceneComponent.pure";
 
 /**
  * Contains all parameters needed for the prepass to perform
@@ -106,6 +107,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
         this.addDiffusionProfile(new Color3(1, 1, 1));
         this._scene = scene;
 
+        RegisterSubSurfaceSceneComponent(SubSurfaceConfiguration);
         SubSurfaceConfiguration._SceneComponentInitialization(this._scene);
     }
 

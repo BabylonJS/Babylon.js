@@ -1152,3 +1152,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         return shadowGenerator;
     }
 }
+
+// Register the CSG parser on ShadowGenerator so the scene component can dispatch without importing this file directly.
+ShadowGenerator._CascadedShadowGeneratorParser = (parsedShadowGenerator: any, scene: Scene) => CascadedShadowGenerator.Parse(parsedShadowGenerator, scene);

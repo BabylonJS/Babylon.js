@@ -1,65 +1,8 @@
-import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type NodeRenderGraphBuildState, type FrameGraphTextureHandle } from "core/index";
-import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
-import { FrameGraphCopyToBackbufferColorTask } from "../../Tasks/Texture/copyToBackbufferColorTask";
-
 /**
- * Block used to generate the final graph
+ * Re-exports pure implementation and applies runtime side effects.
+ * Import outputBlock.pure for tree-shakeable, side-effect-free usage.
  */
-export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: FrameGraphCopyToBackbufferColorTask;
+export * from "./outputBlock.pure";
 
-    /**
-     * Gets the frame graph task associated with this block
-     */
-    public override get task() {
-        return this._frameGraphTask;
-    }
-
-    /**
-     * Create a new NodeRenderGraphOutputBlock
-     * @param name defines the block name
-     * @param frameGraph defines the hosting frame graph
-     * @param scene defines the hosting scene
-     */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
-        super(name, frameGraph, scene);
-
-        this._isUnique = true;
-
-        this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this._addDependenciesInput();
-
-        this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-
-        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name, frameGraph);
-    }
-
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "NodeRenderGraphOutputBlock";
-    }
-    /**
-     * Gets the texture input component
-     */
-    public get texture(): NodeRenderGraphConnectionPoint {
-        return this._inputs[0];
-    }
-
-    protected override _buildBlock(state: NodeRenderGraphBuildState) {
-        super._buildBlock(state);
-
-        this._frameGraphTask.name = this.name;
-
-        const textureConnectedPoint = this.texture.connectedPoint;
-        if (textureConnectedPoint) {
-            this._frameGraphTask.sourceTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
-        }
-    }
-}
-
-RegisterClass("BABYLON.NodeRenderGraphOutputBlock", NodeRenderGraphOutputBlock);
+import { RegisterOutputBlock } from "./outputBlock.pure";
+RegisterOutputBlock();

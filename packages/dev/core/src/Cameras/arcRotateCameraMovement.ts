@@ -1,8 +1,10 @@
+/** This file must only contain pure code and pure imports */
+
 import { CameraMovement } from "./cameraMovement";
-import { type Scene } from "../scene";
-import { type Vector3 } from "../Maths/math.vector";
+import { type Scene } from "../scene.pure";
+import { type Vector3 } from "../Maths/math.vector.pure";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
-import { type ArcRotateCamera } from "./arcRotateCamera";
+import { type ArcRotateCamera } from "./arcRotateCamera.pure";
 import { type InputMapEntry, InputMapper } from "./inputMapper";
 
 // ── ArcRotate handler types ────────────────────────────────────────
