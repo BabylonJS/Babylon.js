@@ -1,9 +1,9 @@
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
-import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
-import { type IPropertiesService, PropertiesServiceIdentity } from "../properties/propertiesService";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./panes/properties/propertiesService";
 
-import { AddOverride, RenameOverrideTarget } from "../../../projects/overrideManager";
-import { type OverrideTargetType } from "../../../projects/overrideEntry";
+import { AddOverride, RenameOverrideTarget } from "../projects/overrideManager";
+import { type OverrideTargetType } from "../projects/overrideEntry";
 import { type Scene } from "core/scene";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Light } from "core/Lights/light";
