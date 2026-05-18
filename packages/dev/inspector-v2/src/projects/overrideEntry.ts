@@ -33,7 +33,7 @@ export type OverrideTargetType = "meshes" | "materials" | "textures" | "lights" 
 /**
  * An override value. Supports scalars, color/vector arrays, and object references.
  * - number: scalar property (e.g., intensity, alpha)
- * - string: string property, or "ref:name" / "texture:name" object reference
+ * - string: string property, or "ref:name" / "samTexture:key" / "texture:name" object reference
  * - boolean: boolean property
  * - number[]: array property mapped to Vector3, Color3, Color4, etc.
  */

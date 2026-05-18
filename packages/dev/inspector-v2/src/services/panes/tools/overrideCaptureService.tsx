@@ -9,6 +9,7 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
 import { type AnimationGroup } from "core/Animations/animationGroup";
+import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager";
 
 /**
  * Inspector service that captures property edits made through Inspector and
@@ -230,10 +231,17 @@ function SerializeOverrideValueForCapture(value: unknown, scene?: Scene): number
         }
     }
 
-    // Texture reference → "texture:name"
+    // Texture reference → "samTexture:<key>" if SmartAsset-tracked, else "texture:<name>".
+    // The SAM key is stable across save/load; `texture.name` for a SAM-tracked
+    // texture is the blob URL, which dies on page reload — using it as the
+    // override identifier would break the override after every reload.
     if (value && typeof value === "object" && "getClassName" in value && scene) {
         const className = (value as any).getClassName() as string;
         if (className.includes("Texture") || className.includes("texture")) {
+            const samKey = FindSmartAssetKeyForObject(scene, value as BaseTexture);
+            if (samKey !== undefined) {
+                return `samTexture:${samKey}`;
+            }
             return `texture:${(value as any).name}`;
         }
     }

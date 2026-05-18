@@ -1,6 +1,7 @@
 import { type Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
+import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
 
 const OverrideManagerKey = Symbol.for("babylonjs:overrideManager");
@@ -416,8 +417,8 @@ function GetCollection(scene: Scene, targetType: OverrideTargetType): readonly u
 }
 
 /**
- * Resolves an override value, expanding string references like "ref:name" or
- * "texture:name" into the actual scene object they refer to.
+ * Resolves an override value, expanding string references like "ref:name",
+ * "samTexture:key", or "texture:name" into the actual scene object they refer to.
  * @param scene - The scene used to look up references.
  * @param value - The serialized override value.
  * @returns The runtime value to assign to the target property.
@@ -426,6 +427,9 @@ function ResolveOverrideValue(scene: Scene, value: OverrideValue): unknown {
     if (typeof value === "string") {
         if (value.startsWith("ref:")) {
             return ResolveObjectReference(scene, value.substring(4));
+        }
+        if (value.startsWith("samTexture:")) {
+            return ResolveSamTextureReference(scene, value.substring(11));
         }
         if (value.startsWith("texture:")) {
             return ResolveTextureReference(scene, value.substring(8));
@@ -474,6 +478,25 @@ function ResolveTextureReference(scene: Scene, name: string): unknown {
         return tex;
     }
     Logger.Warn(`OverrideManager: Texture reference "${name}" not found.`);
+    return undefined;
+}
+
+/**
+ * Resolves a "samTexture:key" value by looking up a SmartAsset-tracked texture
+ * by its registry key. The SAM key is stable across save/load whereas the
+ * texture's `name` (for SAM textures, the blob URL) changes on every reload,
+ * so this is the only reliable way to round-trip texture references on
+ * user-uploaded SmartAsset textures.
+ * @param scene - The scene to search.
+ * @param key - The SmartAsset key to resolve.
+ * @returns The matching texture, or undefined if not found.
+ */
+function ResolveSamTextureReference(scene: Scene, key: string): unknown {
+    const tex = scene.textures.find((t) => FindSmartAssetKeyForObject(scene, t) === key);
+    if (tex) {
+        return tex;
+    }
+    Logger.Warn(`OverrideManager: SmartAsset texture "${key}" not found.`);
     return undefined;
 }
 
