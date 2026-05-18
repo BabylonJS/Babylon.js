@@ -29,8 +29,6 @@ import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 import { MaterialAssignment, OverrideSummary, ProjectFileTools } from "./tools/assemblyToolsService";
 
-import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
-
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
@@ -138,9 +136,6 @@ const SmartAssetsPane: FunctionComponent<{ scene: Scene; selectionService: ISele
             </AccordionSection>
             <AccordionSection title="Assets">
                 <SmartAssetList scene={scene} selectionService={selectionService} />
-            </AccordionSection>
-            <AccordionSection title="Asset Map">
-                <SmartAssetProjectTools scene={scene} />
             </AccordionSection>
             <AccordionSection title="Material Assignment">
                 <MaterialAssignment scene={scene} />
