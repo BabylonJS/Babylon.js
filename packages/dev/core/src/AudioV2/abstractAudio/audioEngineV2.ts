@@ -1,4 +1,6 @@
+import { type IDisposable } from "../../scene";
 import { type Nullable } from "../../types";
+import { type IReadonlyObservable, Observable } from "../../Misc/observable";
 import { type IAudioParameterRampOptions } from "../audioParameter";
 import { type AbstractAudioNode, type AbstractNamedAudioNode } from "./abstractAudioNode";
 import { type AbstractSound } from "./abstractSound";
@@ -11,6 +13,13 @@ import { type IStreamingSoundOptions, type StreamingSound } from "./streamingSou
 import { type AbstractSpatialAudioListener, type ISpatialAudioListenerOptions } from "./subProperties/abstractSpatialAudioListener";
 
 const Instances: AudioEngineV2[] = [];
+const OnAudioEngineV2CreatedObservableInternal = new Observable<AudioEngineV2>();
+
+/**
+ * Observable that notifies when a new v2 audio engine instance has been created.
+ * - Fires from the {@link AudioEngineV2} constructor, after the new instance has been added to {@link AudioEngineV2.Instances}.
+ */
+export const OnAudioEngineV2CreatedObservable: IReadonlyObservable<AudioEngineV2> = OnAudioEngineV2CreatedObservableInternal;
 
 /**
  * Gets the most recently created v2 audio engine.
@@ -49,7 +58,15 @@ export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspend
  *
  * A v2 audio engine based on the WebAudio API can be created with the {@link CreateAudioEngineAsync} function.
  */
-export abstract class AudioEngineV2 {
+export abstract class AudioEngineV2 implements IDisposable {
+    /**
+     * The list of v2 audio engines that have been created and not yet disposed.
+     * - Engines are added on construction and removed on {@link AudioEngineV2.dispose}.
+     */
+    public static get Instances(): ReadonlyArray<AudioEngineV2> {
+        return Instances;
+    }
+
     /** Not owned, but all items should be in `_nodes` container, too, which is owned. */
     private readonly _mainBuses = new Set<MainAudioBus>();
     private readonly _sounds = new Set<AbstractSound>();
@@ -62,12 +79,40 @@ export abstract class AudioEngineV2 {
 
     private _parameterRampDuration: number = 0.01;
 
+    private readonly _onNodeAddedObservable = new Observable<AbstractNamedAudioNode>();
+    private readonly _onNodeRemovedObservable = new Observable<AbstractNamedAudioNode>();
+    private readonly _onDisposeObservable = new Observable<AudioEngineV2>();
+
+    /**
+     * Observable that notifies when a top-level audio node (sound, sound source, bus, or main bus) is added to this engine.
+     */
+    public get onNodeAddedObservable(): IReadonlyObservable<AbstractNamedAudioNode> {
+        return this._onNodeAddedObservable;
+    }
+
+    /**
+     * Observable that notifies when a top-level audio node (sound, sound source, bus, or main bus) is removed from this engine.
+     */
+    public get onNodeRemovedObservable(): IReadonlyObservable<AbstractNamedAudioNode> {
+        return this._onNodeRemovedObservable;
+    }
+
+    /**
+     * Observable that notifies when this engine is disposed.
+     * - Fires from {@link AudioEngineV2.dispose} after the engine has been removed from {@link AudioEngineV2.Instances}.
+     */
+    public get onDisposeObservable(): IReadonlyObservable<AudioEngineV2> {
+        return this._onDisposeObservable;
+    }
+
     protected constructor(options: Partial<IAudioEngineV2Options>) {
         Instances.push(this);
 
         if (typeof options.parameterRampDuration === "number") {
             this.parameterRampDuration = options.parameterRampDuration;
         }
+
+        OnAudioEngineV2CreatedObservableInternal.notifyObservers(this);
     }
 
     /**
@@ -139,6 +184,13 @@ export abstract class AudioEngineV2 {
             this._soundsArray = Array.from(this._sounds);
         }
         return this._soundsArray;
+    }
+
+    /**
+     * The list of top-level audio nodes (sounds, sound sources, buses, main buses) owned by the audio engine.
+     */
+    public get nodes(): ReadonlySet<AbstractNamedAudioNode> {
+        return this._nodes;
     }
 
     /**
@@ -227,6 +279,11 @@ export abstract class AudioEngineV2 {
         this._disposeSoundsArray();
 
         this._defaultMainBus = null;
+
+        this._onDisposeObservable.notifyObservers(this);
+        this._onDisposeObservable.clear();
+        this._onNodeAddedObservable.clear();
+        this._onNodeRemovedObservable.clear();
     }
 
     /**
@@ -282,10 +339,12 @@ export abstract class AudioEngineV2 {
 
     protected _addNode(node: AbstractNamedAudioNode): void {
         this._nodes.add(node);
+        this._onNodeAddedObservable.notifyObservers(node);
     }
 
     protected _removeNode(node: AbstractNamedAudioNode): void {
         this._nodes.delete(node);
+        this._onNodeRemovedObservable.notifyObservers(node);
     }
 
     protected _addSound(sound: AbstractSound): void {

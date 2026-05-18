@@ -33,6 +33,13 @@ export class _SpatialAudioAttacherComponent {
     }
 
     /**
+     * The scene node this attacher is currently attached to, or `null` if not attached.
+     */
+    public get sceneNode(): Nullable<Node> {
+        return this._sceneNode;
+    }
+
+    /**
      * Attaches to a scene node.
      *
      * Detaches automatically before attaching to the given scene node.

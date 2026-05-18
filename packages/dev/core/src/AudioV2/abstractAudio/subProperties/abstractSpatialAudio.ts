@@ -190,6 +190,11 @@ export abstract class AbstractSpatialAudio {
     public abstract isAttached: boolean;
 
     /**
+     * The scene node this spatial audio is currently attached to, or `null` if not attached.
+     */
+    public abstract attachedNode: Nullable<Node>;
+
+    /**
      * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
      * - This value is used only when the {@link distanceModel} is set to `"linear"`.
      * @see {@link distanceModel}

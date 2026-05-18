@@ -38,6 +38,11 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     }
 
     /** @internal */
+    public get attachedNode(): Nullable<Node> {
+        return this._attacherComponent?.sceneNode ?? null;
+    }
+
+    /** @internal */
     public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
         this.detach();
 

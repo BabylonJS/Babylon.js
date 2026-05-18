@@ -100,6 +100,11 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public get attachedNode(): Nullable<Node> {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.attachedNode ?? null;
+    }
+
+    /** @internal */
     public get maxDistance(): number {
         return this._maxDistance;
     }
