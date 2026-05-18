@@ -118,12 +118,14 @@ function ensureDir(dir: string) {
     mkdirSync(dir, { recursive: true });
 }
 
-function fileSize(p: string): number {
-    try {
-        return statSync(p).size;
-    } catch {
-        return -1;
+function readBundleOutput(filePath: string): { content: string; size: number } {
+    if (!existsSync(filePath)) {
+        throw new Error(`Expected bundle output was not emitted: ${filePath}`);
     }
+
+    const size = statSync(filePath).size;
+    const content = size > 0 ? readFileSync(filePath, "utf-8") : "";
+    return { content, size };
 }
 
 // ---------------------------------------------------------------------------
@@ -166,8 +168,7 @@ async function bundleWithRollup(name: string, entryCode: string, distDir: string
     await bundle.write({ file: outPath, format: "esm", inlineDynamicImports: true });
     await bundle.close();
 
-    const content = readFileSync(outPath, "utf-8");
-    return { content, size: fileSize(outPath) };
+    return readBundleOutput(outPath);
 }
 
 /**
@@ -232,8 +233,7 @@ async function bundleWithWebpack(name: string, entryCode: string, distDir: strin
                 );
             }
             const bundlePath = join(outDir, "bundle.js");
-            const content = fileSize(bundlePath) > 0 ? readFileSync(bundlePath, "utf-8") : "";
-            resolvePromise({ content, size: fileSize(bundlePath) });
+            resolvePromise(readBundleOutput(bundlePath));
         });
     });
 }
