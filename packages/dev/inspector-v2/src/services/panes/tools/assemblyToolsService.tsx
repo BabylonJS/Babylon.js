@@ -14,9 +14,7 @@ import {
     type SmartAssetLoadOptions,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
-import { ApplyAllOverrides, AddOverride, GetOverrides } from "../../../projects/overrideManager";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { type Material } from "core/Materials/material";
+import { ApplyAllOverrides, GetOverrides } from "../../../projects/overrideManager";
 import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -113,15 +111,6 @@ const useStyles = makeStyles({
         ":hover": {
             opacity: 1,
         },
-    },
-    materialSelect: {
-        flex: 1,
-        fontSize: "11px",
-        padding: "2px 4px",
-        backgroundColor: tokens.colorNeutralBackground3,
-        color: tokens.colorNeutralForeground1,
-        border: `1px solid ${tokens.colorNeutralStroke1}`,
-        borderRadius: tokens.borderRadiusMedium,
     },
     dimSeparator: {
         opacity: 0.5,
@@ -499,101 +488,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 style={{ display: "none" }}
                 onChange={handleNotFoundFileSelected}
             />
-        </>
-    );
-};
-
-// ── Material Assignment ──
-
-/**
- * Pane content for assigning materials to meshes. Each assignment is also
- * recorded as an override so it survives a reload.
- * @param props - Component props.
- * @returns A list of meshes with material selectors.
- */
-export const MaterialAssignment: FunctionComponent<{
-    /**
-     * The scene whose meshes / materials to expose.
-     */
-    scene: Scene;
-}> = (props: {
-    /**
-     *
-     */
-    scene: Scene;
-}) => {
-    const { scene } = props;
-    const styles = useStyles();
-    const [meshes, setMeshes] = useState<AbstractMesh[]>([]);
-    const [materials, setMaterials] = useState<Material[]>([]);
-    const [status, setStatus] = useState("");
-
-    const refresh = useCallback(() => {
-        setMeshes(scene.meshes.filter((m) => m.name !== "__root__" && !m.name.startsWith("__")));
-        setMaterials(scene.materials.filter((m) => m.name !== "default material"));
-    }, [scene]);
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
-
-    const onAssignMaterial = useCallback(
-        (meshName: string, materialName: string) => {
-            const mesh = scene.meshes.find((m) => m.name === meshName);
-            const mat = scene.materials.find((m) => m.name === materialName);
-            if (!mesh || !mat) {
-                return;
-            }
-
-            mesh.material = mat;
-
-            // Persist as an override. Use the mesh's index among same-name siblings so
-            // we re-target the same instance after reload if duplicates exist.
-            const targetIndex = scene.meshes.filter((m) => m.name === mesh.name).indexOf(mesh);
-            AddOverride(scene, {
-                targetType: "meshes",
-                targetName: mesh.name,
-                targetIndex: Math.max(targetIndex, 0),
-                propertyPath: "material",
-                value: `ref:${mat.name}`,
-            });
-
-            setStatus(`Assigned ${mat.name} → ${mesh.name}`);
-        },
-        [scene]
-    );
-
-    if (meshes.length === 0) {
-        return <div className={styles.emptyMessage}>No meshes in scene. Add assets first.</div>;
-    }
-
-    return (
-        <>
-            {meshes.map((mesh) => (
-                <div key={mesh.name} className={styles.assetRow}>
-                    <span className={styles.assetKey} title={mesh.name}>
-                        {mesh.name}
-                    </span>
-                    <select
-                        value={mesh.material?.name ?? ""}
-                        onChange={(e) => {
-                            if (e.target.value) {
-                                onAssignMaterial(mesh.name, e.target.value);
-                            }
-                        }}
-                        className={styles.materialSelect}
-                    >
-                        <option value="">(none)</option>
-                        {materials.map((m, idx) => (
-                            <option key={`${m.name}-${idx}`} value={m.name}>
-                                {m.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            ))}
-            <ButtonLine label="Refresh" icon={ArrowSyncRegular} onClick={refresh} />
-            {status && <div className={styles.statusMessage}>{status}</div>}
         </>
     );
 };

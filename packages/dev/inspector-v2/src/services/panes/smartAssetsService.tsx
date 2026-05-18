@@ -27,7 +27,7 @@ import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
-import { MaterialAssignment, OverrideSummary, ProjectFileTools } from "./tools/assemblyToolsService";
+import { OverrideSummary, ProjectFileTools } from "./tools/assemblyToolsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -136,9 +136,6 @@ const SmartAssetsPane: FunctionComponent<{ scene: Scene; selectionService: ISele
             </AccordionSection>
             <AccordionSection title="Assets">
                 <SmartAssetList scene={scene} selectionService={selectionService} />
-            </AccordionSection>
-            <AccordionSection title="Material Assignment">
-                <MaterialAssignment scene={scene} />
             </AccordionSection>
             <AccordionSection title="Override Summary">
                 <OverrideSummary scene={scene} />
