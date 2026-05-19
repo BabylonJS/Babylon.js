@@ -92,8 +92,6 @@ const LazySSAODependenciesPromise = new Lazy(() =>
 );
 
 const WebGPUSnapshotRenderingEnabled = true;
-const WebGPUSnapshotRenderingLoggingEnabled = false;
-// Logger.LogLevels = Logger.AllLogLevel;
 
 // TODO: Consider moving this to core after the 9.0 release.
 async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal): Promise<T> {
@@ -158,7 +156,7 @@ async function createCubeTexture(url: string, scene: Scene, extension?: string) 
     const instantiateTexture = await (async () => {
         if (extension === ".hdr") {
             const { HDRCubeTexture } = await import("core/Materials/Textures/hdrCubeTexture");
-            return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
+            return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, true, true, true);
         } else {
             const { CubeTexture } = await import("core/Materials/Textures/cubeTexture");
             return () => new CubeTexture(url, scene, null, false, null, null, null, undefined, true, extension, true);
@@ -646,7 +644,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._scene.skipPointerMovePicking = true;
         if (WebGPUSnapshotRenderingEnabled) {
             this._snapshotHelper = new SnapshotRenderingHelper(this._scene, { morphTargetsNumMaxInfluences: 30 });
-            this._snapshotHelper.showDebugLogs = WebGPUSnapshotRenderingLoggingEnabled;
             this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
                 this._snapshotHelper?.updateMesh(this._scene.meshes);
             });

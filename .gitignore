@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 dist
 tmp
 .tmp*
@@ -58,3 +59,62 @@ packages/tools/smartFiltersEditor/www/index.html
 # Sonda bundle analysis reports
 .sonda/
 docs/tree-shaking/
+=======
+dist
+tmp
+temp
+.temp
+.tempChromeCanaryProfileForDebug
+.tempChromeProfileForDebug
+node_modules
+.idea
+.tsbuildinfo
+.snapshot
+generated
+src/[Ss]haders/**/*.ts
+*.tsbuildinfo
+.rollup.cache
+# second-level package-json should not be commited
+**/package-lock.json
+**/*.vertex.ts
+**/*.fragment.ts
+*.compute.ts
+**/ShadersInclude/**/*.ts
+shaders/**/*.ts
+**/[Ss]haders/**/*.ts
+**/[Ss]hadersInclude/**/*.ts
+**/[Ss]hadersWGSL/**/*.ts
+junit.xml
+.env
+*.pem
+packages/tools/babylonServer/public/localDev
+packages/tools/babylonServer/public/localDevWebGPU
+packages/tools/devHost/public/localDev
+packages/tools/playground/public/temp
+#playwright
+test-results
+playwright-report
+playwright/.cache/
+.playwright
+.playwright-cli
+.nx
+.DS_Store
+.eslintcache
+log/*
+
+# generated Smart Filter block TS files
+**/*.block.ts
+
+# Smart Filters publish their src files - we copy them during the build - ignore them
+packages/public/@babylonjs/smart-filters/src
+packages/public/@babylonjs/smart-filters-blocks/src
+
+# Smart Filters Editor files
+packages/tools/smartFiltersEditor/www/scripts/**
+packages/tools/smartFiltersEditor/www/index.html
+
+# Sonda bundle analysis reports
+.sonda/
+
+.claude/
+>>>>>>> Stashed changes
