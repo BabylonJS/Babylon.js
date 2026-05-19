@@ -2,12 +2,13 @@ import { type FunctionComponent, useCallback } from "react";
 
 import { type AudioEngineV2 } from "core/AudioV2/abstractAudio/audioEngineV2";
 import { type AbstractAudioBus } from "core/AudioV2/abstractAudio/abstractAudioBus";
-import { type AudioBus } from "core/AudioV2/abstractAudio/audioBus";
+import { type AudioBus, type PrimaryAudioBus } from "core/AudioV2/abstractAudio/audioBus";
 import { type AbstractSound } from "core/AudioV2/abstractAudio/abstractSound";
 import { type AbstractSoundSource } from "core/AudioV2/abstractAudio/abstractSoundSource";
 import { type StaticSound } from "core/AudioV2/abstractAudio/staticSound";
 import { type StreamingSound } from "core/AudioV2/abstractAudio/streamingSound";
 import { SoundState } from "core/AudioV2/soundState";
+import { type Nullable } from "core/types";
 
 import { PauseRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
 
@@ -23,6 +24,30 @@ import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { usePollingObservable } from "../../../hooks/pollingHooks";
 import { BoundProperty, Property } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+
+// -----------------------------------------------------------------------------
+// Shared helpers
+// -----------------------------------------------------------------------------
+
+/**
+ * Anything that has a writable `outBus` property. There is no common base class for this in core
+ * — `AbstractSoundSource` and `AudioBus` each declare it independently — so we structurally type it here.
+ */
+type HasOutBus = { readonly name: string; outBus: Nullable<PrimaryAudioBus> };
+
+/**
+ * Renders a clickable "Output Bus" property line for any audio entity that routes to a downstream bus.
+ * @returns The rendered property line.
+ */
+const AudioV2OutputBusLink: FunctionComponent<{ target: HasOutBus; description?: string; selectionService: ISelectionService }> = ({ target, description, selectionService }) => {
+    const outBus = useObservableState(
+        useCallback(() => target.outBus, [target]),
+        useInterceptObservable("property", target, "outBus")
+    );
+    return (
+        <LinkToEntityPropertyLine label="Output Bus" description={description ?? "The bus this entity routes its output to."} entity={outBus} selectionService={selectionService} />
+    );
+};
 
 // -----------------------------------------------------------------------------
 // Engine
@@ -94,47 +119,35 @@ export const AudioV2EngineCommandsProperties: FunctionComponent<{ engine: AudioE
 // -----------------------------------------------------------------------------
 
 /**
- * General properties shared by main buses and regular audio buses.
+ * General properties shared by all v2 audio buses (main and regular).
  * @returns The rendered component.
  */
-export const AudioV2BusGeneralProperties: FunctionComponent<{ bus: AbstractAudioBus; selectionService: ISelectionService }> = ({ bus, selectionService }) => {
-    // Only AudioBus has an outBus; MainAudioBus does not. We use `"outBus" in bus` as a structural check
-    // so we can call hooks unconditionally below.
-    const audioBus = "outBus" in bus ? (bus as AudioBus) : null;
-
+export const AudioV2BusGeneralProperties: FunctionComponent<{ bus: AbstractAudioBus }> = ({ bus }) => {
     const volume = useObservableState(
         useCallback(() => bus.volume, [bus]),
         useInterceptObservable("function", bus, "setVolume")
     );
 
-    const outBusChangedObservable = useInterceptObservable("property", audioBus, "outBus");
-    const outBus = useObservableState(
-        useCallback(() => audioBus?.outBus ?? null, [audioBus]),
-        outBusChangedObservable
-    );
-
     return (
-        <>
-            <Property
-                component={SyncedSliderPropertyLine}
-                label="Volume"
-                functionPath="setVolume"
-                value={volume}
-                min={0}
-                max={1}
-                step={0.01}
-                onChange={(value) => bus.setVolume(value)}
-            />
-            {audioBus && (
-                <LinkToEntityPropertyLine
-                    label="Output Bus"
-                    description="The bus this bus routes its output to."
-                    entity={outBus ? { name: outBus.name } : null}
-                    selectionService={selectionService}
-                />
-            )}
-        </>
+        <Property
+            component={SyncedSliderPropertyLine}
+            label="Volume"
+            functionPath="setVolume"
+            value={volume}
+            min={0}
+            max={1}
+            step={0.01}
+            onChange={(value) => bus.setVolume(value)}
+        />
     );
+};
+
+/**
+ * Additional properties specific to {@link AudioBus} (a non-main bus that can be routed to another bus).
+ * @returns The rendered component.
+ */
+export const AudioV2AudioBusGeneralProperties: FunctionComponent<{ bus: AudioBus; selectionService: ISelectionService }> = ({ bus, selectionService }) => {
+    return <AudioV2OutputBusLink target={bus} description="The bus this bus routes its output to." selectionService={selectionService} />;
 };
 
 // -----------------------------------------------------------------------------
@@ -185,11 +198,6 @@ export const AudioV2SoundGeneralProperties: FunctionComponent<{ sound: AbstractS
         useInterceptObservable("function", sound, "setVolume")
     );
 
-    const outBus = useObservableState(
-        useCallback(() => sound.outBus, [sound]),
-        useInterceptObservable("property", sound, "outBus")
-    );
-
     return (
         <>
             <TextPropertyLine label="State" value={GetSoundStateLabel(state)} />
@@ -203,12 +211,7 @@ export const AudioV2SoundGeneralProperties: FunctionComponent<{ sound: AbstractS
                 step={0.01}
                 onChange={(value) => sound.setVolume(value)}
             />
-            <LinkToEntityPropertyLine
-                label="Output Bus"
-                description="The bus this sound routes its output to."
-                entity={outBus ? { name: outBus.name } : null}
-                selectionService={selectionService}
-            />
+            <AudioV2OutputBusLink target={sound} description="The bus this sound routes its output to." selectionService={selectionService} />
         </>
     );
 };
@@ -320,11 +323,6 @@ export const AudioV2SoundSourceGeneralProperties: FunctionComponent<{ source: Ab
         useInterceptObservable("function", source, "setVolume")
     );
 
-    const outBus = useObservableState(
-        useCallback(() => source.outBus, [source]),
-        useInterceptObservable("property", source, "outBus")
-    );
-
     return (
         <>
             <Property
@@ -337,12 +335,7 @@ export const AudioV2SoundSourceGeneralProperties: FunctionComponent<{ source: Ab
                 step={0.01}
                 onChange={(value) => source.setVolume(value)}
             />
-            <LinkToEntityPropertyLine
-                label="Output Bus"
-                description="The bus this source routes its output to."
-                entity={outBus ? { name: outBus.name } : null}
-                selectionService={selectionService}
-            />
+            <AudioV2OutputBusLink target={source} description="The bus this source routes its output to." selectionService={selectionService} />
         </>
     );
 };

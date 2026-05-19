@@ -6,6 +6,7 @@ import { Sound } from "core/Audio/sound";
 import { AbstractAudioBus } from "core/AudioV2/abstractAudio/abstractAudioBus";
 import { AbstractSound } from "core/AudioV2/abstractAudio/abstractSound";
 import { AbstractSoundSource } from "core/AudioV2/abstractAudio/abstractSoundSource";
+import { AudioBus } from "core/AudioV2/abstractAudio/audioBus";
 import { AudioEngineV2 } from "core/AudioV2/abstractAudio/audioEngineV2";
 import { StaticSound } from "core/AudioV2/abstractAudio/staticSound";
 import { StreamingSound } from "core/AudioV2/abstractAudio/streamingSound";
@@ -13,6 +14,7 @@ import { StreamingSound } from "core/AudioV2/abstractAudio/streamingSound";
 import { SoundCommandProperties, SoundGeneralProperties } from "../../../components/properties/audio/soundProperties";
 import { AudioV2SpatialAttachmentProperties } from "../../../components/properties/audio/audioV2SpatialProperties";
 import {
+    AudioV2AudioBusGeneralProperties,
     AudioV2BusGeneralProperties,
     AudioV2EngineCommandsProperties,
     AudioV2EngineGeneralProperties,
@@ -28,7 +30,7 @@ export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertie
     friendlyName: "Audio Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService, selectionService) => {
-        // --- v1 Sound (unchanged) ---
+        // --- v1 Sound ---
         const soundV1ContentRegistration = propertiesService.addSectionContent({
             key: "Sound General Properties",
             predicate: (entity: unknown) => entity instanceof Sound,
@@ -60,14 +62,26 @@ export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertie
             ],
         });
 
-        // --- v2 Buses (Main + Audio) ---
+        // --- v2 Buses (any AbstractAudioBus — covers Main + Audio) ---
         const busV2ContentRegistration = propertiesService.addSectionContent({
             key: "Audio V2 Bus Properties",
             predicate: (entity: unknown): entity is AbstractAudioBus => entity instanceof AbstractAudioBus,
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <AudioV2BusGeneralProperties bus={context} selectionService={selectionService} />,
+                    component: ({ context }) => <AudioV2BusGeneralProperties bus={context} />,
+                },
+            ],
+        });
+
+        // --- v2 AudioBus (non-main bus; adds an Output Bus link) ---
+        const audioBusV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 AudioBus Properties",
+            predicate: (entity: unknown): entity is AudioBus => entity instanceof AudioBus,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <AudioV2AudioBusGeneralProperties bus={context} selectionService={selectionService} />,
                 },
             ],
         });
@@ -145,6 +159,7 @@ export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertie
                 soundV1ContentRegistration.dispose();
                 engineV2ContentRegistration.dispose();
                 busV2ContentRegistration.dispose();
+                audioBusV2ContentRegistration.dispose();
                 soundV2ContentRegistration.dispose();
                 staticSoundV2ContentRegistration.dispose();
                 streamingSoundV2ContentRegistration.dispose();
