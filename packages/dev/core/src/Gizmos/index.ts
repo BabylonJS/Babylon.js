@@ -10,3 +10,4 @@ export * from "./scaleGizmo";
 export * from "./lightGizmo";
 export * from "./cameraGizmo";
 export * from "./planeDragGizmo";
+export * from "./spatialAudioGizmo";

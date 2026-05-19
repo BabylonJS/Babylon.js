@@ -11,11 +11,13 @@ import { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { LightGizmo } from "core/Gizmos/lightGizmo";
+import { SpatialAudioGizmo } from "core/Gizmos/spatialAudioGizmo";
 import { Light as LightClass } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Observable } from "core/Misc/observable";
 import { Node as NodeClass } from "core/node";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { type AbstractSoundSource } from "core/AudioV2/abstractAudio/abstractSoundSource";
 
 type Reference<T> = {
     value: T;
@@ -58,6 +60,14 @@ export interface IGizmoService extends IService<typeof GizmoServiceIdentity> {
      * @returns A ref-counted reference to the light gizmo. Dispose to release.
      */
     getLightGizmo(light: Light): Reference<LightGizmo>;
+
+    /**
+     * Gets a ref-counted spatial-audio gizmo for the specified v2 sound source.
+     * @param soundSource The sound source to get the gizmo for.
+     * @param scene The scene that will host the gizmo's utility layer.
+     * @returns A ref-counted reference to the gizmo. Dispose to release.
+     */
+    getSpatialAudioGizmo(soundSource: AbstractSoundSource, scene: Scene): Reference<SpatialAudioGizmo>;
 
     /**
      * Gets all camera gizmos currently active for the specified scene.
@@ -194,6 +204,43 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
 
         const lightGizmos = new WeakMap<Light, { gizmo: LightGizmo; refCount: number }>();
         const getLightGizmo = (light: Light) => getGizmo(light, light.getScene(), LightGizmo, lightGizmos, (light, gizmo) => (gizmo.light = light));
+
+        // Ref-counted spatial audio gizmos. Sound sources are not Babylon Nodes, so we can't reuse the helper above directly.
+        const spatialAudioGizmos = new WeakMap<AbstractSoundSource, { gizmo: SpatialAudioGizmo; refCount: number }>();
+        const getSpatialAudioGizmo = (soundSource: AbstractSoundSource, scene: Scene): Reference<SpatialAudioGizmo> => {
+            let refCounted = spatialAudioGizmos.get(soundSource);
+            if (!refCounted) {
+                const utilityLayerRef = getUtilityLayer(scene);
+                const gizmo = new SpatialAudioGizmo(utilityLayerRef.value);
+                gizmo.soundSource = soundSource;
+                const sourceDisposedObserver = soundSource.onDisposeObservable.addOnce(() => gizmo.dispose());
+                const disposeGizmo = gizmo.dispose.bind(gizmo);
+                gizmo.dispose = () => {
+                    sourceDisposedObserver?.remove();
+                    disposeGizmo();
+                    utilityLayerRef.dispose();
+                };
+                refCounted = { gizmo, refCount: 0 };
+                spatialAudioGizmos.set(soundSource, refCounted);
+            }
+
+            refCounted.refCount++;
+
+            let disposed = false;
+            return {
+                value: refCounted.gizmo,
+                dispose: () => {
+                    if (!disposed) {
+                        disposed = true;
+                        refCounted.refCount--;
+                        if (refCounted.refCount === 0) {
+                            refCounted.gizmo.dispose();
+                            spatialAudioGizmos.delete(soundSource);
+                        }
+                    }
+                },
+            };
+        };
 
         // Gizmo mode/coordinates state and GizmoManager lifecycle.
         let gizmoModeState: GizmoMode | undefined = undefined;
@@ -344,6 +391,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
             getUtilityLayer,
             getCameraGizmo,
             getLightGizmo,
+            getSpatialAudioGizmo,
             getCameraGizmos: (scene) => scene.cameras.map((camera) => cameraGizmos.get(camera)?.gizmo).filter(Boolean) as readonly CameraGizmo[],
             getLightGizmos: (scene) => scene.lights.map((light) => lightGizmos.get(light)?.gizmo).filter(Boolean) as readonly LightGizmo[],
 

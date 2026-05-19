@@ -1,9 +1,11 @@
-import { type AbstractNamedAudioNode, type AudioEngineV2, type IDisposable } from "core/index";
+import { type AbstractNamedAudioNode, type AudioEngineV2, type IDisposable, type Nullable } from "core/index";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
-import { ArrowEnterUpRegular, CatchUpRegular, HeadphonesSoundWaveRegular, SoundWaveCircleFilled, SoundWaveCircleRegular } from "@fluentui/react-icons";
+import { ArrowEnterUpRegular, CatchUpRegular, EyeOffRegular, EyeRegular, HeadphonesSoundWaveRegular, SoundWaveCircleFilled, SoundWaveCircleRegular } from "@fluentui/react-icons";
 
 import { AbstractAudioBus } from "core/AudioV2/abstractAudio/abstractAudioBus";
 import { AbstractSoundSource } from "core/AudioV2/abstractAudio/abstractSoundSource";
@@ -14,7 +16,7 @@ import { StaticSound } from "core/AudioV2/abstractAudio/staticSound";
 import { StreamingSound } from "core/AudioV2/abstractAudio/streamingSound";
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 
 type AudioV2Entity = AudioEngineV2 | AbstractNamedAudioNode;
 
@@ -26,10 +28,10 @@ function GetEngineDisplayName(engine: AudioEngineV2): string {
     return LastCreatedAudioEngine() === engine ? "Last Created Audio Engine" : "Other Audio Engine";
 }
 
-export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService]> = {
     friendlyName: "Audio V2 Explorer",
-    consumes: [SceneExplorerServiceIdentity],
-    factory: (sceneExplorerService) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, gizmoService) => {
         // Section-level observables driven by per-engine subscriptions below.
         const entityAddedObservable = new Observable<AudioV2Entity>();
         const entityRemovedObservable = new Observable<AudioV2Entity>();
@@ -196,6 +198,48 @@ export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
             getEntityMovedObservables: () => [entityMovedObservable],
         });
 
+        // Spatial-audio visualization gizmo toggle.
+        const spatialGizmoCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is AbstractSoundSource => entity instanceof AbstractSoundSource && entity._isSpatial,
+            order: DefaultCommandsOrder.GizmoActive,
+            getCommand: (source) => {
+                const onChangeObservable = new Observable<void>();
+                let gizmoRef: Nullable<IDisposable> = null;
+
+                return {
+                    type: "toggle",
+                    get displayName() {
+                        return `Turn ${gizmoRef ? "Off" : "On"} Gizmo`;
+                    },
+                    icon: () => (gizmoRef ? <EyeRegular /> : <EyeOffRegular />),
+                    get isEnabled() {
+                        return !!gizmoRef;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        if (enabled) {
+                            if (!gizmoRef) {
+                                const scene = sceneContext.currentScene;
+                                if (scene) {
+                                    gizmoRef = gizmoService.getSpatialAudioGizmo(source, scene);
+                                    onChangeObservable.notifyObservers();
+                                }
+                            }
+                        } else if (gizmoRef) {
+                            gizmoRef.dispose();
+                            gizmoRef = null;
+                            onChangeObservable.notifyObservers();
+                        }
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        gizmoRef?.dispose();
+                        gizmoRef = null;
+                        onChangeObservable.clear();
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 engineCreatedObserver.remove();
@@ -211,6 +255,7 @@ export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                 entityRemovedObservable.clear();
                 entityMovedObservable.clear();
                 engineDisplayNameChangedObservable.clear();
+                spatialGizmoCommandRegistration.dispose();
                 sectionRegistration.dispose();
             },
         };
