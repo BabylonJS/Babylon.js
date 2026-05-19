@@ -121,7 +121,7 @@ type EnvironmentMode = (typeof environmentMode)[number];
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
-export type LoadModelOptions = LoadAssetContainerOptions;
+export type LoadModelOptions = ViewerLoadModelOptions & LoadAssetContainerOptions;
 
 type ShadowState = {
     normal?: {
@@ -1281,6 +1281,17 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         }
+    }
+
+    /**
+     * Loads a 3D model from the specified source.
+     * @param source The source of the model to load.
+     * @param options Options for loading the model. See {@link LoadModelOptions}.
+     * @param abortSignal Optional signal that can be used to abort the load externally.
+     * @returns A promise that resolves when the model has finished loading.
+     */
+    public override async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
+        return await super.loadModel(source, options, abortSignal);
     }
 
     /** @internal */
