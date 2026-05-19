@@ -1,4 +1,4 @@
-import { type IHeapNode, type IHeapSnapshot, type IScenario } from "@memlab/core";
+import { type IScenario } from "@memlab/core";
 
 /**
  * Tuning options for the Babylon-specific memlab leak filter.
@@ -33,7 +33,7 @@ export function CreateBabylonLeakFilter(options: ILeakFilterOptions = {}): NonNu
     const ignoredTypes = new Set(options.ignoredTypes ?? DefaultIgnoredTypes);
     const ignoredEdgeTypes = new Set(options.ignoredEdgeTypes ?? DefaultIgnoredEdgeTypes);
 
-    return (node: IHeapNode, _snapshot: IHeapSnapshot, _leakedNodeIds: Set<number>) => {
+    return (node) => {
         if (node.retainedSize < minRetainedSize) {
             return false;
         }

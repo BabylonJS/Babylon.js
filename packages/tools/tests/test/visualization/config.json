@@ -4622,7 +4622,7 @@
         },
         {
             "title": "Particles - Helper - Smoke",
-            "playgroundId": "#XRRTC0#5",
+            "playgroundId": "#XRRTC0#6",
             "referenceImage": "particles-helper-smoke.png",
             "dependsOn": ["Lights", "PBR", "Particles", "PostProcesses", "Textures"]
         },

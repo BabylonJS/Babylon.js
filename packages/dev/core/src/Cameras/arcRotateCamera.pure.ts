@@ -751,20 +751,6 @@ export class ArcRotateCamera extends TargetCamera {
         }
     }
 
-    /**
-     * @deprecated The movement system is always active. This setter is a no-op kept for backward compatibility.
-     */
-    public set useMovementSystem(_value: boolean) {
-        // no-op: movement system is always active
-    }
-
-    /**
-     * @deprecated The movement system is always active. Always returns true.
-     */
-    public get useMovementSystem(): boolean {
-        return true;
-    }
-
     /** @internal */
     public override _reset: () => void;
 
