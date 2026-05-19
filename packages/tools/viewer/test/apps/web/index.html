@@ -240,8 +240,7 @@
             })();
 
             function getLoadModelOptions() {
-                const materialValue = document.querySelector("#materialSelect").value;
-                return materialValue === "openpbr" ? { pluginOptions: { gltf: { useOpenPBR: true } } } : undefined;
+                return { useOpenPBR: document.querySelector("#materialSelect").value === "openpbr" };
             }
 
             globalThis.onDrop = async (event) => {
@@ -410,7 +409,7 @@
                 viewer.updateShadows({ quality: value });
             };
             globalThis.onMaterial = () => {
-                viewerDetails.viewer.loadModel(currentSource, getLoadModelOptions());
+                viewerDetails?.viewer.loadModel(currentSource, getLoadModelOptions());
             };
         </script>
     </body>
