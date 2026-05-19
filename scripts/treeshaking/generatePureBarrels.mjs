@@ -40,6 +40,14 @@ function adoError(msg) {
     }
 }
 
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function toPosixPath(filePath) {
+    return filePath.split(/[/\\]+/).join("/");
+}
+
 const HEADER = `/** Pure barrel — re-exports only side-effect-free modules */\n`;
 const writtenFiles = [];
 /** @type {Map<string, string>} path → expected content (used in --check mode) */
@@ -51,7 +59,7 @@ const expectedBarrelPaths = new Set();
 const manifestData = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
 // manifest is an array of { file, sideEffects }
 // file paths are relative to SRC_ROOT (e.g. "Actions/action.ts")
-const sideEffectFiles = new Set(manifestData.manifest.map((e) => e.file));
+const sideEffectFiles = new Set(manifestData.manifest.map((e) => toPosixPath(e.file)));
 
 // ── Scan for existing .pure.ts files ────────────────────────────────────────
 const pureFileSet = new Set();
@@ -61,7 +69,7 @@ function scanForPureFiles(dir) {
             scanForPureFiles(join(dir, entry.name));
         } else if (entry.name.endsWith(".pure.ts") && entry.name !== "pure.ts") {
             // e.g. "math.color.pure.ts" — store relative to SRC_ROOT without extension
-            const rel = relative(SRC_ROOT, join(dir, entry.name));
+            const rel = toPosixPath(relative(SRC_ROOT, join(dir, entry.name)));
             // Store without ".ts" extension so we can match against specifiers
             pureFileSet.add(rel.replace(/\.ts$/, ""));
         }
@@ -154,7 +162,7 @@ function processDirectory(dir) {
             const bareMatch = trimmed.match(/^import\s+["'](.+?)["']\s*;?\s*$/);
             if (bareMatch) {
                 const bareSpec = bareMatch[1];
-                const bareRelPath = relative(SRC_ROOT, resolve(dir, bareSpec));
+                const bareRelPath = toPosixPath(relative(SRC_ROOT, resolve(dir, bareSpec)));
                 const barePureRelPath = bareRelPath + ".pure";
                 if (pureFileSet.has(barePureRelPath)) {
                     rewrittenToPure++;
@@ -220,7 +228,7 @@ function processDirectory(dir) {
             }
         }
     }
-    const relDir = relative(SRC_ROOT, dir) || ".";
+    const relDir = toPosixPath(relative(SRC_ROOT, dir)) || ".";
     for (const pf of pureFileSet) {
         // pf is e.g. "Maths/math.color.pure" (relative to SRC_ROOT, without .ts)
         const pfDir = dirname(pf);
@@ -304,7 +312,7 @@ function isBarrelWithSideEffects(filePath, contextDir) {
     // Check if any target is in the side-effects manifest
     const barrelDir = dirname(filePath);
     for (const spec of specifiers) {
-        const targetRel = relative(SRC_ROOT, resolve(barrelDir, spec)) + ".ts";
+        const targetRel = toPosixPath(relative(SRC_ROOT, resolve(barrelDir, spec))) + ".ts";
         if (sideEffectFiles.has(targetRel)) {
             return true;
         }
@@ -340,7 +348,7 @@ function resolveExport(dir, specifier, originalLine) {
 
     // Case 2: File reference — check for .pure.ts or pure file
     const resolvedFile = resolve(dir, specifier + ".ts");
-    const relPath = relative(SRC_ROOT, resolve(dir, specifier));
+    const relPath = toPosixPath(relative(SRC_ROOT, resolve(dir, specifier)));
     const pureSpecifier = specifier + ".pure";
     const pureRelPath = relPath + ".pure"; // e.g. "Maths/math.color.pure"
 
@@ -417,7 +425,7 @@ function resolveExport(dir, specifier, originalLine) {
  * @returns {string|null} The resolved export line for pure.ts, or null to skip
  */
 function resolveNamedExport(dir, specifier, names, originalLine) {
-    const relPath = relative(SRC_ROOT, resolve(dir, specifier));
+    const relPath = toPosixPath(relative(SRC_ROOT, resolve(dir, specifier)));
     const pureSpecifier = specifier + ".pure";
     const pureRelPath = relPath + ".pure";
 
@@ -479,7 +487,7 @@ function postPassOrphans(dir) {
     // Skip if already processed (has index.ts) or is the SRC_ROOT itself
     if (processedDirs.has(dir)) return;
 
-    const relDir = relative(SRC_ROOT, dir) || ".";
+    const relDir = toPosixPath(relative(SRC_ROOT, dir)) || ".";
 
     // Collect .pure.ts files in this directory
     const localPureFiles = [];

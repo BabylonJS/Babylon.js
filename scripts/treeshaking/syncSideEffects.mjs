@@ -60,6 +60,34 @@ function getTopDir(filePath) {
 }
 
 /**
+ * Generated shader .ts files are ignored by git and can survive locally after their .fx source is deleted.
+ * Exclude those stale artifacts so local generated output cannot drift package metadata.
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isStaleGeneratedShader(filePath) {
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
+    if (!relPath.startsWith("Shaders/") && !relPath.startsWith("ShadersWGSL/")) {
+        return false;
+    }
+
+    const sourcePath = filePath.replace(/\.ts$/, "");
+    return !statSyncNoThrow(`${sourcePath}.fx`)?.isFile() && !statSyncNoThrow(`${sourcePath}.wgsl`)?.isFile();
+}
+
+/**
+ * @param {string} filePath
+ * @returns {import("fs").Stats | undefined}
+ */
+function statSyncNoThrow(filePath) {
+    try {
+        return statSync(filePath);
+    } catch {
+        return undefined;
+    }
+}
+
+/**
  * Recursively count all .ts files (excluding .d.ts, .test.ts, .spec.ts) per
  * top-level directory.
  * @returns {Record<string, number>}
@@ -72,6 +100,9 @@ function countTsFilesByTopDir() {
             if (entry.isDirectory()) {
                 walk(fullPath);
             } else if (entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && !entry.name.endsWith(".test.ts") && !entry.name.endsWith(".spec.ts")) {
+                if (isStaleGeneratedShader(fullPath)) {
+                    continue;
+                }
                 const topDir = getTopDir(relative(CORE_SRC, fullPath));
                 counts[topDir] = (counts[topDir] || 0) + 1;
             }
