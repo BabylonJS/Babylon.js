@@ -52,6 +52,7 @@ describe("memory leak runner", () => {
         expect(results).toHaveLength(1);
         expect(results[0].definition.id).toBe("core-playground-T90MQ4-14");
         expect(mockedRun).toHaveBeenCalledTimes(1);
+        expect(mockedRun).toHaveBeenCalledWith(expect.objectContaining({ skipWarmup: true }));
     });
 
     it("throws a typed error when a scenario leaks", async () => {

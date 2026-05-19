@@ -34,6 +34,14 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function toPosixPath(filePath) {
+    return filePath.split(/[/\\]+/).join("/");
+}
+
 // ---------------------------------------------------------------------------
 // File collection
 // ---------------------------------------------------------------------------
@@ -67,7 +75,7 @@ function collectTsFiles(dir) {
  * @returns {boolean}
  */
 function isStaleGeneratedShader(filePath) {
-    const relPath = relative(CORE_SRC, filePath);
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
     if (!relPath.startsWith("Shaders/") && !relPath.startsWith("ShadersWGSL/")) {
         return false;
     }
@@ -128,7 +136,7 @@ function isEscaped(text, index) {
 function analyzeFile(filePath) {
     const source = readFileSync(filePath, "utf-8");
     const lines = source.split("\n");
-    const relPath = relative(CORE_SRC, filePath);
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
     const sideEffects = [];
 
     // Track brace depth to distinguish top-level from nested scope.
