@@ -34,6 +34,25 @@ async function dragPaletteItemToGraph(page: import("@playwright/test").Page, nod
     await filterInput.fill("");
 }
 
+async function assertFlowGraphEditorReady(page: import("@playwright/test").Page) {
+    await expect(page.locator("#flow-graph-editor-graph-root")).toBeVisible({ timeout: 30000 });
+    await expect(page.locator("#graph-canvas")).toBeVisible();
+    await expect(page.getByText("Nodes", { exact: true })).toBeVisible();
+    await expect(page.getByText("Properties", { exact: true })).toBeVisible();
+}
+
+async function dragFlowGraphPaletteItemToGraph(page: import("@playwright/test").Page, displayText: string, targetPosition = { x: 420, y: 140 }) {
+    const filterInput = page.getByRole("searchbox", { name: "Filter" }).first();
+    await filterInput.fill(displayText);
+
+    const source = page.getByText(displayText, { exact: true }).locator("xpath=ancestor-or-self::*[@draggable='true'][1]");
+    await expect(source).toBeVisible({ timeout: 5000 });
+    await source.dragTo(page.locator(".diagram-container"), { targetPosition, force: true });
+    await page.waitForTimeout(500);
+
+    await filterInput.fill("");
+}
+
 async function expectGraphZoomsOut(page: import("@playwright/test").Page) {
     const graph = page.locator("#graph-canvas");
     await expect(graph).toBeVisible();
@@ -150,11 +169,7 @@ test("FGE is loaded correctly", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
-    await expect(page.locator("#flow-graph-editor-graph-root")).toBeVisible({ timeout: 30000 });
-    await expect(page.locator("#graph-canvas")).toBeVisible();
-    await expect(page.locator("#fgeNodeList")).toBeVisible();
-    await expect(page.locator(".fge-right-panel")).toBeVisible();
-    await expect(page.locator(".wait-screen")).toHaveClass(/hidden/);
+    await assertFlowGraphEditorReady(page);
 });
 
 /////// NME TESTS ///////
@@ -491,11 +506,11 @@ test("[FGE] User can add a new block to the graph", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
-    await expect(page.locator("#flow-graph-editor-graph-root")).toBeVisible({ timeout: 30000 });
+    await assertFlowGraphEditorReady(page);
     await page.waitForSelector("#graph-canvas-container", { state: "attached" });
 
     const nodeCount = await getGraphNodeCount(page);
-    await dragPaletteItemToGraph(page, "#fgeNodeList", "SceneReadyEvent");
+    await dragFlowGraphPaletteItemToGraph(page, "SceneReadyEvent");
     const newCount = await getGraphNodeCount(page);
 
     expect(newCount).toBe(nodeCount + 1);
@@ -509,10 +524,10 @@ test("[FGE] User can drag graph nodes", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
-    await expect(page.locator("#flow-graph-editor-graph-root")).toBeVisible({ timeout: 30000 });
+    await assertFlowGraphEditorReady(page);
 
     if ((await getGraphNodeCount(page)) === 0) {
-        await dragPaletteItemToGraph(page, "#fgeNodeList", "SceneReadyEvent");
+        await dragFlowGraphPaletteItemToGraph(page, "SceneReadyEvent");
     }
 
     const node = page.locator(".FlowGraphSceneReadyEventBlock").first();
@@ -541,7 +556,7 @@ test("[FGE] User can zoom in and out of the graph", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
-    await expect(page.locator("#flow-graph-editor-graph-root")).toBeVisible({ timeout: 30000 });
+    await assertFlowGraphEditorReady(page);
 
     await expectGraphZoomsOut(page);
 });

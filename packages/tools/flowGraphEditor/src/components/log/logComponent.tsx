@@ -56,7 +56,8 @@ const useStyles = makeStyles({
  * click-to-navigate for entries with an attached block.
  * @returns The rendered log panel.
  */
-export const LogComponent: FunctionComponent<ILogComponentProps> = ({ globalState }) => {
+export const LogComponent: FunctionComponent<ILogComponentProps> = (props) => {
+    const { globalState } = props;
     const classes = useStyles();
     const consoleRef = useRef<HTMLDivElement>(null);
     const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -94,7 +95,7 @@ export const LogComponent: FunctionComponent<ILogComponentProps> = ({ globalStat
     };
 
     return (
-        <div ref={consoleRef} className={classes.console}>
+        <div ref={consoleRef} id="fge-log-console" role="log" aria-label="Flow graph log" className={classes.console}>
             {logs.map((l, i) => {
                 const hasBlock = !!l.block;
                 return (

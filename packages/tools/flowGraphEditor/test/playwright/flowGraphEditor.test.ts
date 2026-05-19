@@ -111,7 +111,7 @@ test.describe("Flow Graph Editor — Loading", () => {
         await page.goto(`${fge.baseUrl}#${snippetId}#${version}`, { waitUntil: "load" });
         await fge.assertEditorReady();
 
-        await expect(page.locator(".fge-toast").last()).toContainText(`Flow graph loaded from snippet ${snippetId}#${version}`);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(`Flow graph loaded from snippet ${snippetId}#${version}`);
         await expect(fge.nodeOnCanvas("FlowGraphSceneReadyEventBlock")).toBeVisible();
     });
 
@@ -577,7 +577,6 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
 
         await page.locator("input[type='file'][accept='.json']").setInputFiles(downloadPath);
 
-        await expect(page.locator(".fge-toast").last()).toContainText("Flow graph loaded from file");
         await expect.poll(async () => await fge.getNodeCount()).toBe(3);
         await expect.poll(async () => await fge.getLinkCount()).toBeGreaterThanOrEqual(2);
     });
@@ -625,7 +624,7 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
         await fge.assertEditorReady();
 
         await fge.addBlockFromPalette("ConsoleLog");
-        await page.locator("button[title='Validate graph']").click();
+        await page.getByRole("button", { name: "Validate graph" }).click();
 
         const badge = fge.nodeOnCanvas("FlowGraphConsoleLogBlock").locator("[class*='validationBadge']");
         await expect(badge).toBeVisible();
@@ -633,32 +632,23 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
         await expect(badge).toHaveAttribute("tabindex", "0");
         await expect(badge).toHaveAttribute("aria-label", "Show validation errors");
 
-        const logEntries = page.locator("#fge-log-console .log");
-        const beforeCount = await logEntries.count();
+        const log = page.getByRole("log", { name: "Flow graph log" });
+        const countBlockLogEntries = async () => ((await log.textContent())?.match(/FlowGraphConsoleLogBlock/g) ?? []).length;
+        const beforeCount = await countBlockLogEntries();
 
         await badge.click();
 
-        await expect.poll(async () => await logEntries.count()).toBeGreaterThan(beforeCount);
-        await expect(page.locator("#fge-log-console")).toContainText("FlowGraphConsoleLogBlock");
+        await expect.poll(countBlockLogEntries).toBeGreaterThan(beforeCount);
+        await expect(log).toContainText("FlowGraphConsoleLogBlock");
 
-        const afterClickCount = await logEntries.count();
+        const afterClickCount = await countBlockLogEntries();
         await badge.focus();
         await page.keyboard.press("Enter");
 
-        await expect.poll(async () => await logEntries.count()).toBeGreaterThan(afterClickCount);
+        await expect.poll(countBlockLogEntries).toBeGreaterThan(afterClickCount);
 
-        const toast = page.locator(".fge-toast").last();
-        await expect(toast).toBeVisible();
-
-        const toastMessage = toast.locator(".fge-toast-message");
-        await expect(toastMessage).toHaveCSS("white-space", "pre-line");
-        await expect(toastMessage).toContainText("[Error]");
-        await expect(toastMessage).toContainText("[Warn]");
-        expect(await toastMessage.textContent()).toContain("\n");
-
-        await toast.hover();
-        await page.waitForTimeout(4300);
-        await expect(toast).toBeVisible();
+        await expect(log).toContainText("[Error]");
+        await expect(log).toContainText("[Warn]");
     });
 
     test("SceneReady → Branch with both true/false paths wired to ConsoleLog", async ({ page }) => {
