@@ -246,7 +246,8 @@ export class GLTFLoader implements IGLTFLoader {
         if (!material) {
             return false;
         }
-        for (const impl of Array.from(this._pbrMaterialImpls.values())) {
+        const materialImpls = Array.from(this._pbrMaterialImpls.values());
+        for (const impl of materialImpls) {
             if (material instanceof impl.materialClass) {
                 return true;
             }
@@ -345,7 +346,8 @@ export class GLTFLoader implements IGLTFLoader {
     public _getOrCreateMaterialAdapter(material: Material): IMaterialLoadingAdapter {
         let adapter = this._materialAdapterCache.get(material);
         if (!adapter) {
-            for (const impl of Array.from(this._pbrMaterialImpls.values())) {
+            const materialImpls = Array.from(this._pbrMaterialImpls.values());
+            for (const impl of materialImpls) {
                 if (material instanceof impl.materialClass) {
                     adapter = new impl.adapterClass(material);
                     break;
