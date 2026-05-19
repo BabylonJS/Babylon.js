@@ -1,15 +1,15 @@
 {
   "stats": {
-    "totalFiles": 3243,
-    "filesWithSideEffects": 1449,
-    "filesWithoutSideEffects": 1794,
+    "totalFiles": 3242,
+    "filesWithSideEffects": 1447,
+    "filesWithoutSideEffects": 1795,
     "byType": {
       "top-level-call": 640,
       "declare-module": 129,
       "bare-import": 250,
       "static-property-assignment": 2,
       "RegisterClass": 3,
-      "shader-store-write": 639
+      "shader-store-write": 637
     },
     "filesByType": {
       "top-level-call": 640,
@@ -17,7 +17,7 @@
       "bare-import": 112,
       "static-property-assignment": 2,
       "RegisterClass": 3,
-      "shader-store-write": 639
+      "shader-store-write": 637
     }
   },
   "manifest": [
@@ -3706,7 +3706,7 @@
       "sideEffects": [
         {
           "type": "bare-import",
-          "line": 95,
+          "line": 96,
           "text": "import \"./material.decalMap\";"
         }
       ]
@@ -5746,12 +5746,12 @@
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 2,
+          "line": 3,
           "text": "declare module \"../scene.pure\" {"
         },
         {
           "type": "declare-module",
-          "line": 16,
+          "line": 17,
           "text": "declare module \"../Meshes/mesh.pure\" {"
         }
       ]
@@ -9342,16 +9342,6 @@
       ]
     },
     {
-      "file": "Shaders/iblVoxelGrid3dDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 20,
-          "text": "if (!ShaderStore.ShadersStore[name]) {"
-        }
-      ]
-    },
-    {
       "file": "Shaders/imageProcessing.fragment.ts",
       "sideEffects": [
         {
@@ -12917,16 +12907,6 @@
         {
           "type": "shader-store-write",
           "line": 8,
-          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
-        }
-      ]
-    },
-    {
-      "file": "ShadersWGSL/iblVoxelGrid3dDebug.fragment.ts",
-      "sideEffects": [
-        {
-          "type": "shader-store-write",
-          "line": 19,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]

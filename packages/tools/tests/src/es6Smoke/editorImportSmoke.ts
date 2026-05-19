@@ -4,6 +4,7 @@ import * as InspectorLegacy from "@babylonjs/inspector-legacy";
 import * as NodeEditor from "@babylonjs/node-editor";
 import * as NodeGeometryEditor from "@babylonjs/node-geometry-editor";
 import * as NodeParticleEditor from "@babylonjs/node-particle-editor";
+import { NodeParticleEditor as NodeParticleEditorClass } from "@babylonjs/node-particle-editor";
 import * as NodeRenderGraphEditor from "@babylonjs/node-render-graph-editor";
 
 const editorNamespaces = {
@@ -21,4 +22,8 @@ globalObject.__babylonEs6EditorImportSmoke = editorNamespaces;
 
 if (Object.keys(editorNamespaces).length !== 7) {
     throw new Error("The ES6 editor import smoke test is missing an editor namespace.");
+}
+
+if (!NodeParticleEditorClass) {
+    throw new Error("@babylonjs/node-particle-editor does not expose the NodeParticleEditor named export.");
 }
