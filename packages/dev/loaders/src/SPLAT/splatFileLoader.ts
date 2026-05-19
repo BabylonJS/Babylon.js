@@ -24,7 +24,7 @@ import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { ParseSogMeta, type SOGRootData } from "./sog";
+import { ParseSogMeta, ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
 import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
@@ -215,18 +215,24 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            if (parsedSOG.sogTextures) {
+                gaussianSplatting.setSogTextureData(parsedSOG.sogTextures);
+            } else {
+                gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            }
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
         };
+
+        const sogParser = this._loadingOptions.useSogTextures ? ParseSogMetaAsTextures : ParseSogMeta;
 
         // check if data is json string
         if (typeof data === "string") {
             const dataSOG = JSON.parse(data) as SOGRootData;
             if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
                 return new Promise((resolve) => {
-                    ParseSogMeta(dataSOG, rootUrl, scene)
+                    sogParser(dataSOG, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
@@ -246,7 +252,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             return new Promise((resolve) => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._unzipWithFFlateAsync(u8).then((files) => {
-                    ParseSogMeta(files, rootUrl, scene)
+                    sogParser(files, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);

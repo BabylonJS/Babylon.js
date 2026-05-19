@@ -28,16 +28,38 @@ uniform sampler2D covariancesBTexture;
 uniform sampler2D centersTexture;
 uniform sampler2D colorsTexture;
 
+#ifdef USE_SOG
+uniform sampler2D sogQuatsTexture;
+uniform vec3 sogMeansMin;
+uniform vec3 sogMeansMax;
+#ifdef USE_SOG_V2
+uniform sampler2D sogCodebookTexture; // 768x1 R32F, packed [scales|sh0|shN]
+#else
+uniform vec3 sogScalesMin;
+uniform vec3 sogScalesMax;
+uniform vec4 sogSh0Min;
+uniform vec4 sogSh0Max;
+uniform float sogShnMin;
+uniform float sogShnMax;
+#endif
 #if SH_DEGREE > 0
+uniform sampler2D sogShNCentroidsTexture;
+uniform sampler2D sogShNLabelsTexture;
+uniform float sogShCoeffCount;
+uniform float sogShCentroidsWidth;
+#endif
+#endif
+
+#if SH_DEGREE > 0 && !defined(USE_SOG)
 uniform highp usampler2D shTexture0;
 #endif
-#if SH_DEGREE > 1
+#if SH_DEGREE > 1 && !defined(USE_SOG)
 uniform highp usampler2D shTexture1;
 #endif
-#if SH_DEGREE > 2
+#if SH_DEGREE > 2 && !defined(USE_SOG)
 uniform highp usampler2D shTexture2;
 #endif
-#if SH_DEGREE > 3
+#if SH_DEGREE > 3 && !defined(USE_SOG)
 uniform highp usampler2D shTexture3;
 uniform highp usampler2D shTexture4;
 #endif
