@@ -64,9 +64,11 @@ const useStyles = makeStyles({
  * Built on Fluent's `TabList` for native keyboard navigation and roving-tabindex behaviour.
  * Each `Tab` shows the graph name (or an inline rename `Input` when the user double-clicks)
  * plus a close button. A trailing `+` button creates a new graph.
+ * @param props The component props.
  * @returns The rendered tab bar.
  */
-export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ globalState }) => {
+export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = (props) => {
+    const { globalState } = props;
     const classes = useStyles();
 
     const [graphs, setGraphs] = useState(() => globalState.coordinator?.flowGraphs.map((g) => ({ name: g.name, uniqueId: g.uniqueId })) ?? []);
@@ -120,7 +122,6 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
 
     const onAddGraph = useCallback(() => {
         globalState.addGraph();
-        globalState.onResetRequiredObservable.notifyObservers(true);
         globalState.onClearUndoStack.notifyObservers();
     }, [globalState]);
 
@@ -132,7 +133,6 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
                 return;
             }
             globalState.removeGraph(index);
-            globalState.onResetRequiredObservable.notifyObservers(true);
             globalState.onClearUndoStack.notifyObservers();
         },
         [graphs.length, globalState]

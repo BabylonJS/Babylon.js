@@ -85,7 +85,7 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>▶</td><td><b>Start</b></td><td>Starts executing the flow graph. Enabled when the graph is stopped or paused.</td></tr>
 <tr><td>⏸</td><td><b>Pause</b></td><td>Pauses execution. The graph can be resumed with Start.</td></tr>
 <tr><td>⏹</td><td><b>Stop</b></td><td>Stops execution and resets execution state.</td></tr>
-<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and reloads the scene from its snippet (if one was loaded).</td></tr>
+<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and recreates the default scene or reloads the loaded snippet.</td></tr>
 </table>
 <p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
             },

@@ -1,5 +1,3 @@
-import { type IDisposable } from "core/index";
-
 import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 import { GlobalState } from "../globalState";
@@ -17,6 +15,7 @@ export const GlobalStateServiceIdentity = Symbol("GlobalStateService");
  * the existing instance available via the modular tool's service container.
  */
 export interface IGlobalStateService extends IService<typeof GlobalStateServiceIdentity> {
+    /** The active Flow Graph Editor global state. */
     readonly globalState: GlobalState;
 }
 
@@ -61,6 +60,12 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
             globalState.hostWindow = hostElement.ownerDocument.defaultView!;
             globalState.stateManager.hostDocument = globalState.hostDocument;
 
+            const babylonGlobal = (globalThis as { BABYLON?: Record<string, unknown> }).BABYLON;
+            const flowGraphEditorGlobal = babylonGlobal?.["FlowGraphEditor"] as Record<string, unknown> | undefined;
+            if (flowGraphEditorGlobal) {
+                flowGraphEditorGlobal["_CurrentState"] = globalState;
+            }
+
             // Wire the optional load observable that callers can use to push
             // serialized graph state back into the editor at any time.
             const loadObserver = options.customLoadObservable?.add((data) => {
@@ -74,6 +79,9 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
                 globalState,
                 dispose: () => {
                     options.customLoadObservable?.remove(loadObserver ?? null);
+                    if (flowGraphEditorGlobal?.["_CurrentState"] === globalState) {
+                        flowGraphEditorGlobal["_CurrentState"] = undefined;
+                    }
                 },
             };
         },

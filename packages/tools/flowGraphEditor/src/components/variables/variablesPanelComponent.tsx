@@ -569,7 +569,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
 
     // --- Scene object helpers ---
 
-    /** Cache: sceneUid → typeName → { lengths, options } */
+    /** Cache of scene object picker options by scene and type. */
     private _sceneObjectCache = new Map<string, Map<string, { lengths: number[]; options: { name: string; uniqueId: number }[] }>>();
 
     private _getSceneObjectsForType(typeName: VariableTypeName): { name: string; uniqueId: number }[] {
@@ -779,6 +779,30 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
             );
         }
 
+        // --- String: text input ---
+        if (typeName === "string") {
+            const fg = this.props.globalState.flowGraph;
+            const ctx = fg?.getContext(this.props.globalState.selectedContextIndex);
+            const currentVal = ctx?.userVariables[varName];
+            return (
+                <Input
+                    size="small"
+                    value={typeof currentVal === "string" ? currentVal : ""}
+                    onFocus={() => {
+                        this.props.globalState.lockObject.lock = true;
+                    }}
+                    onBlur={() => {
+                        this.props.globalState.lockObject.lock = false;
+                    }}
+                    onChange={(_, data) => {
+                        ctx?.setVariable(varName, data.value);
+                        this._pollRuntimeValues();
+                    }}
+                    onKeyDown={(e) => e.stopPropagation()}
+                />
+            );
+        }
+
         // --- Vector / Color: component inputs ---
         if (IsVectorOrColorType(typeName)) {
             const fg = this.props.globalState.flowGraph;
@@ -848,7 +872,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
             );
         }
 
-        // --- String / Any: text input ---
+        // --- Any: text input ---
         if (editingValueIndex === idx) {
             return (
                 <Input

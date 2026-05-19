@@ -139,6 +139,7 @@ const SpeedPresets = [0.1, 0.25, 0.5, 1] as const;
  *
  * Help and How-to-use buttons have moved to the shell's bottom-right toolbar (registered
  * by `toolbarService.tsx`).  Everything else stays in this in-canvas controls bar.
+ * @param props - The component props.
  * @returns The rendered controls toolbar.
  */
 export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({ globalState }) => {
@@ -224,7 +225,11 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
             // Wire the flow graph to the preview scene so events fire on the visible scene.
             const previewScene = globalState.sceneContext?.scene;
             if (previewScene) {
+                globalState.snapshotUserVariables();
                 globalState.flowGraph.setScene(previewScene);
+                globalState.restoreSavedContexts();
+                const inputElement = previewScene.getEngine().getInputElement();
+                inputElement?.focus();
             }
             globalState.flowGraph.start();
             log("Flow graph started.");
@@ -246,6 +251,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
         try {
             globalState.snapshotUserVariables();
             globalState.flowGraph.stop();
+            globalState.restoreSavedContexts();
             setBreakpointPaused(false);
             log("Flow graph stopped.");
         } catch (err) {
@@ -274,9 +280,12 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
 
     const onResetAsync = useCallback(async () => {
         try {
+            globalState.snapshotUserVariables();
             globalState.flowGraph.stop();
-            if (globalState.snippetId && globalState.sceneContext) {
-                log("Reloading scene snippet...");
+            globalState.restoreSavedContexts();
+            const canReloadScene = globalState.sceneSource === "snippet" || globalState.sceneSource === "default" || (!globalState.sceneSource && !globalState.snippetId);
+            if (canReloadScene && globalState.sceneContext) {
+                log(globalState.sceneSource === "snippet" ? "Reloading scene snippet..." : "Recreating default scene...");
                 const sceneContextReady = new Promise<void>((resolve, reject) => {
                     const observer = globalState.onSceneContextChanged.add((ctx) => {
                         globalState.onSceneContextChanged.remove(observer);
@@ -288,7 +297,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                     });
                     setTimeout(() => {
                         globalState.onSceneContextChanged.remove(observer);
-                        reject(new Error("Snippet reload timed out"));
+                        reject(new Error("Scene reload timed out"));
                     }, 30_000);
                 });
                 globalState.onReloadSnippetRequested.notifyObservers();

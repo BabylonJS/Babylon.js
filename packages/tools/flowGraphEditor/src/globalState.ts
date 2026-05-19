@@ -864,6 +864,8 @@ export class GlobalState {
 
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
+    /** The source used to create the current preview scene, if known. */
+    sceneSource: "default" | "snippet" | "file" | null = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
     onSceneContextChanged = new Observable<Nullable<SceneContext>>();
 
@@ -1466,6 +1468,30 @@ export class GlobalState {
      */
     public snapshotUserVariables(): void {
         this._snapshotUserVariablesFrom();
+    }
+
+    /**
+     * Recreate saved execution contexts after an operation that clears them.
+     * Keeps stopped graphs editable in the editor without starting execution.
+     */
+    public restoreSavedContexts(): void {
+        if (!this._flowGraph) {
+            return;
+        }
+
+        const previousContextCount = this._flowGraph.contextCount;
+        this._restoreContextsFromSnapshots(this._flowGraph);
+        const currentContextCount = this._flowGraph.contextCount;
+
+        if (currentContextCount === previousContextCount) {
+            return;
+        }
+
+        if (currentContextCount > 0 && this._selectedContextIndex >= currentContextCount) {
+            this._selectedContextIndex = currentContextCount - 1;
+        }
+        this.onContextListChanged.notifyObservers();
+        this.onSelectedContextChanged.notifyObservers(this._selectedContextIndex);
     }
 
     /**

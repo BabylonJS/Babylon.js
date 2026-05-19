@@ -32,8 +32,8 @@ export class FlowGraphEditorPage {
         this.editorRoot = page.locator("#flow-graph-editor-graph-root");
         this.graphCanvas = page.locator("#graph-canvas");
         this.graphCanvasContainer = page.locator("#graph-canvas-container");
-        this.nodeList = page.locator("#fgeNodeList");
-        this.rightPanel = page.locator(".fge-right-panel");
+        this.nodeList = page.locator("body");
+        this.rightPanel = page.locator("body");
         this.diagramContainer = page.locator(".diagram-container");
         this.svgContainer = page.locator("#graph-svg-container");
     }
@@ -65,11 +65,12 @@ export class FlowGraphEditorPage {
      */
     async assertEditorReady() {
         await expect(this.graphCanvas).toBeVisible();
-        await expect(this.nodeList).toBeVisible();
-        await expect(this.rightPanel).toBeVisible();
-        // Wait screen should be hidden
+        await expect(this.page.getByText("Nodes", { exact: true })).toBeVisible();
+        await expect(this.page.getByText("Properties", { exact: true })).toBeVisible();
         const waitScreen = this.page.locator(".wait-screen");
-        await expect(waitScreen).toHaveClass(/hidden/);
+        if ((await waitScreen.count()) > 0) {
+            await expect(waitScreen).toHaveClass(/hidden/);
+        }
     }
 
     /**
@@ -97,6 +98,40 @@ export class FlowGraphEditorPage {
     }
 
     /**
+     * Add a new graph tab and wait for the canvas to rebuild.
+     */
+    async addGraphTab(): Promise<void> {
+        await this.page.getByRole("button", { name: "Add new graph" }).click();
+        await this.page.waitForTimeout(300);
+    }
+
+    /**
+     * Get graph names from the editor's coordinator.
+     */
+    async getGraphNames(): Promise<string[]> {
+        return await this.page.evaluate(() => {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            return editor?._CurrentState?.coordinator?.flowGraphs.map((graph: { name: string }) => graph.name) ?? [];
+        });
+    }
+
+    /**
+     * Select a graph tab by its visible graph name.
+     */
+    async selectGraphTab(name: string): Promise<void> {
+        await this.page.getByRole("tab", { name: new RegExp(name) }).click();
+        await this.page.waitForTimeout(300);
+    }
+
+    /**
+     * Close a graph tab by its visible graph name.
+     */
+    async closeGraphTab(name: string): Promise<void> {
+        await this.page.getByRole("button", { name: `Close ${name}` }).click();
+        await this.page.waitForTimeout(300);
+    }
+
+    /**
      * Locate a specific block node on the canvas by its class name.
      * E.g., "FlowGraphBranchBlock" → `.FlowGraphBranchBlock`
      */
@@ -113,12 +148,27 @@ export class FlowGraphEditorPage {
     }
 
     /**
+     * Get a node's canvas-space position from its absolute style coordinates.
+     */
+    async getNodeCanvasPosition(blockClassName: string, index = 0): Promise<{ x: number; y: number }> {
+        const node = this.nthNodeOnCanvas(blockClassName, index);
+        await expect(node).toBeVisible();
+        return await node.evaluate((element) => {
+            const htmlElement = element as HTMLElement;
+            return {
+                x: parseFloat(htmlElement.style.left) || 0,
+                y: parseFloat(htmlElement.style.top) || 0,
+            };
+        });
+    }
+
+    /**
      * Locate a draggable block item in the node list palette by its display text.
      * The palette strips "FlowGraph" prefix and "Block" suffix.
      * Uses exact text matching to avoid substring collisions (e.g., "LessThan" vs "LessThanOrEqual").
      */
     paletteItem(displayText: string): Locator {
-        return this.nodeList.locator(`.draggableLine:text-is("${displayText}")`);
+        return this.page.getByText(displayText, { exact: true }).locator("xpath=ancestor-or-self::*[@draggable='true'][1]");
     }
 
     /**
@@ -331,7 +381,7 @@ export class FlowGraphEditorPage {
      * Filter the node list palette by typing in the search box.
      */
     async filterNodeList(text: string): Promise<void> {
-        const filterInput = this.nodeList.locator("input[type='text']").first();
+        const filterInput = this.page.getByRole("searchbox", { name: "Filter" }).first();
         await filterInput.fill(text);
         await this.page.waitForTimeout(300);
     }
@@ -340,7 +390,7 @@ export class FlowGraphEditorPage {
      * Clear the node list filter.
      */
     async clearNodeListFilter(): Promise<void> {
-        const filterInput = this.nodeList.locator("input[type='text']").first();
+        const filterInput = this.page.getByRole("searchbox", { name: "Filter" }).first();
         await filterInput.fill("");
         await this.page.waitForTimeout(200);
     }

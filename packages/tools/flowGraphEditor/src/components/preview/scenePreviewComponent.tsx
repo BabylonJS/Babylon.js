@@ -158,8 +158,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
         // When a reload is requested (e.g. from the Reset button), re-run the current snippet
         this._onReloadSnippetRequestedObserver = this.props.globalState.onReloadSnippetRequested.add(() => {
-            if (this.state.snippetId) {
+            const sceneSource = this.props.globalState.sceneSource;
+            if ((sceneSource === "snippet" || (!sceneSource && this.state.snippetId)) && this.state.snippetId) {
                 void this.loadSnippetAsync();
+            } else if (sceneSource === "default" || (!sceneSource && !this.state.snippetId)) {
+                void this._createDefaultSceneAsync();
             }
         });
 
@@ -231,6 +234,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             oldCtx.engine.dispose();
             oldCtx.dispose();
             this.props.globalState.sceneContext = null;
+            this.props.globalState.sceneSource = null;
         }
     }
 
@@ -276,11 +280,13 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     /**
      * Build a SceneContext and publish it to the editor.
      * @param scene - the scene to wrap in a SceneContext
+     * @param source - the source used to create the preview scene
      * @returns the newly created SceneContext
      */
-    private _publishSceneContext(scene: Scene) {
+    private _publishSceneContext(scene: Scene, source: "default" | "snippet" | "file") {
         const sceneContext = new SceneContext(scene);
         this.props.globalState.sceneContext = sceneContext;
+        this.props.globalState.sceneSource = source;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
@@ -354,7 +360,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
             this._setupEngineRenderLoop(scene, engine);
 
-            const sceneContext = this._publishSceneContext(scene);
+            const sceneContext = this._publishSceneContext(scene, "default");
+            this.props.globalState.snippetId = "";
+            this.setState({ snippetId: "" });
             this.props.globalState.onLogRequiredObservable.notifyObservers(
                 new LogEntry(
                     `Default scene created with ${sceneContext.entries.length} objects. Drop a .glb/.gltf/.babylon file or load a Playground snippet to replace it.`,
@@ -529,7 +537,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
             await scene.whenReadyAsync(true);
 
-            const sceneContext = this._publishSceneContext(scene);
+            const sceneContext = this._publishSceneContext(scene, "file");
             this.props.globalState.snippetId = "";
 
             // Detect flow graphs from the loaded file:
@@ -703,7 +711,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             await scene.whenReadyAsync(true);
 
             // Build the scene context
-            const sceneContext = this._publishSceneContext(scene);
+            const sceneContext = this._publishSceneContext(scene, "snippet");
             this.props.globalState.snippetId = this.state.snippetId;
 
             this.setState({ isLoading: false });
@@ -765,7 +773,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     )}
                 </div>
                 <div className={classes.canvasContainer} onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
-                    <canvas ref={this._canvasRef} className={classes.canvas} />
+                    <canvas ref={this._canvasRef} className={classes.canvas} tabIndex={0} />
                 </div>
                 {ctx && <div className={classes.summary}>{this._renderCategorySummary(ctx)}</div>}
             </div>

@@ -311,6 +311,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _beforeActiveGraphObserver: Nullable<Observer<any>> = null;
     private _activeGraphObserver: Nullable<Observer<any>> = null;
     private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
+    private _buildVersion = 0;
     /** Cache for O(1) block→GraphNode lookups (rebuilt on graph load) */
     private _blockToNodeMap = new Map<FlowGraphBlock, GraphNode>();
 
@@ -817,6 +818,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     /** @internal */
     build(ignoreEditorData = false) {
+        const buildVersion = ++this._buildVersion;
+        const flowGraph = this.props.globalState.flowGraph;
         let editorData = ignoreEditorData ? null : (this.props.globalState.flowGraph as any)._editorData;
         this._graphCanvas._isLoading = true;
 
@@ -827,7 +830,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         // Reset the diagram
-        this._graphCanvas.reset();
+        this._graphCanvas.reset(false);
         this._blockToNodeMap.clear();
 
         // Load graph of nodes from the flow graph
@@ -844,6 +847,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // has completed layout and paint. rAF alone is not sufficient
             // because it fires *before* layout in some browsers.
             setTimeout(() => {
+                if (buildVersion !== this._buildVersion || flowGraph !== this.props.globalState.flowGraph) {
+                    return;
+                }
                 this.reOrganize(null);
             }, 0);
         }
