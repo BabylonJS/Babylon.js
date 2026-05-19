@@ -43,7 +43,7 @@ export function ParseCliArgs(argv: string[]) {
     const chromiumBinary = GetArgValue(argv, "chromium-binary");
     const failFast = !argv.includes("--no-fail-fast");
     const listOnly = argv.includes("--list");
-    const skipWarmup = argv.includes("--skip-warmup");
+    const skipWarmup = !argv.includes("--warmup");
 
     const options: IMemoryLeakRunnerOptions = {
         suite,

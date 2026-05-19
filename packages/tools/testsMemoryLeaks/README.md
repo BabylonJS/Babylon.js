@@ -57,6 +57,9 @@ Run a specific scenario:
 npm run test -w @tools/memory-leak-tests -- --scenario core-playground-2FDQT5-1508
 ```
 
+The runner skips memlab's warmup phase by default because these scenarios already perform deterministic setup/settling and memlab's generic warmup can hang before
+the leak snapshots. Pass `--warmup` to enable memlab warmup when debugging that behavior explicitly.
+
 ## Required servers
 
 The `ci` and `extended` suites expect the Babylon server at `http://localhost:1337` unless `CDN_BASE_URL` is set.

@@ -323,6 +323,18 @@ export class PBRCustomMaterial extends PBRMaterial {
 
         PBRCustomMaterial.ShaderIndexer++;
         this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
+
+        this.onEffectCreatedObservable.add(({ effect, subMesh }) => {
+            const previousEffect = subMesh?.effect;
+            if (
+                (!this.allowShaderHotSwapping || effect.isReady()) &&
+                previousEffect &&
+                previousEffect !== effect &&
+                previousEffect._key.startsWith(this._createdShaderName + "+")
+            ) {
+                previousEffect.dispose();
+            }
+        });
     }
 
     /**
