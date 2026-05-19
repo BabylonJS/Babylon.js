@@ -49,7 +49,10 @@ export class SpatialAudioGizmo extends Gizmo implements ISpatialAudioGizmo {
 
         const utilityScene = this.gizmoLayer.utilityLayerScene;
 
+        // Parent under _rootMesh so super.dispose() — which only disposes _rootMesh —
+        // also tears down our attachedMesh and avoids leaking it in the utility layer scene.
         this.attachedMesh = new Mesh("spatialAudioGizmo", utilityScene);
+        this.attachedMesh.parent = this._rootMesh;
 
         this._material = new StandardMaterial("spatialAudio", utilityScene);
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
@@ -156,7 +159,7 @@ export class SpatialAudioGizmo extends Gizmo implements ISpatialAudioGizmo {
         this.onClickedObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this._material.dispose();
-        this._audioMesh.dispose();
+        // _audioMesh and attachedMesh are children of _rootMesh, so super.dispose() handles them.
         super.dispose();
     }
 
