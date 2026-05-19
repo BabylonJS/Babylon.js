@@ -51,10 +51,41 @@ function collectTsFiles(dir) {
         if (entry.isDirectory()) {
             results.push(...collectTsFiles(fullPath));
         } else if (entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && !entry.name.endsWith(".test.ts") && !entry.name.endsWith(".spec.ts")) {
+            if (isStaleGeneratedShader(fullPath)) {
+                continue;
+            }
             results.push(fullPath);
         }
     }
     return results;
+}
+
+/**
+ * Generated shader .ts files are ignored by git and can survive locally after their .fx source is deleted.
+ * Exclude those stale artifacts so local generated output cannot drift the committed manifest.
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isStaleGeneratedShader(filePath) {
+    const relPath = relative(CORE_SRC, filePath);
+    if (!relPath.startsWith("Shaders/") && !relPath.startsWith("ShadersWGSL/")) {
+        return false;
+    }
+
+    const sourcePath = filePath.replace(/\.ts$/, "");
+    return !statSyncNoThrow(`${sourcePath}.fx`)?.isFile() && !statSyncNoThrow(`${sourcePath}.wgsl`)?.isFile();
+}
+
+/**
+ * @param {string} filePath
+ * @returns {import("fs").Stats | undefined}
+ */
+function statSyncNoThrow(filePath) {
+    try {
+        return statSync(filePath);
+    } catch {
+        return undefined;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -199,10 +230,6 @@ function analyzeFile(filePath) {
                 }
             }
         }
-        // Reset string state at end of line (single/double quotes don't span lines)
-        inSingleQuote = false;
-        inDoubleQuote = false;
-
         // Track declare module blocks
         if (prevDepth === 0 && /^\s*declare\s+module\s+/.test(lines[i])) {
             inDeclareModule = true;
