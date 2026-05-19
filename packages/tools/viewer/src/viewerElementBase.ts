@@ -1315,12 +1315,14 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
                 // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const viewerElement = this;
                 const options = new Proxy(this._options, {
-                    get(target: any, prop: string) {
-                        switch (prop) {
+                    get(target, prop) {
+                        switch (prop as keyof Options) {
                             case "autoSuspendRendering":
                                 return !(viewerElement.hasAttribute("render-when-idle") || target.autoSuspendRendering === false);
                             case "source":
                                 return viewerElement.getAttribute("source") ?? target.source;
+                            case "useOpenPBR":
+                                return viewerElement.hasAttribute("use-open-pbr") ? true : (viewerElement.useOpenPBR ?? target.useOpenPBR);
                             case "environmentLighting":
                                 return viewerElement.getAttribute("environment-lighting") ?? viewerElement.getAttribute("environment") ?? target.environmentLighting;
                             case "environmentSkybox":
@@ -1367,7 +1369,7 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
                                     viewerElement._tearDownViewer();
                                 };
                             default:
-                                return target[prop];
+                                return target[prop as keyof Options];
                         }
                     },
                 });
