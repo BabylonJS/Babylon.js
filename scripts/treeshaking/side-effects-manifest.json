@@ -1,8 +1,8 @@
 {
   "stats": {
-    "totalFiles": 3237,
+    "totalFiles": 3238,
     "filesWithSideEffects": 1445,
-    "filesWithoutSideEffects": 1792,
+    "filesWithoutSideEffects": 1793,
     "byType": {
       "top-level-call": 639,
       "declare-module": 129,
@@ -5721,12 +5721,12 @@
       "sideEffects": [
         {
           "type": "declare-module",
-          "line": 2,
+          "line": 3,
           "text": "declare module \"../scene.pure\" {"
         },
         {
           "type": "declare-module",
-          "line": 16,
+          "line": 17,
           "text": "declare module \"../Meshes/mesh.pure\" {"
         }
       ]

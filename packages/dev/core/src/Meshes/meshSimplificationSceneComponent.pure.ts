@@ -5,7 +5,8 @@ import { Scene } from "../scene.pure";
 import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent";
 
 import { Mesh } from "./mesh.pure";
-import { type ISimplificationSettings, type SimplificationQueue, SimplificationType } from "./meshSimplification";
+import { type SimplificationQueue } from "./meshSimplification";
+import { type ISimplificationSettings, SimplificationType } from "./meshSimplification.common";
 
 /**
  * Defines the simplification queue scene component responsible to help scheduling the various simplification task
