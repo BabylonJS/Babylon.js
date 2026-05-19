@@ -644,10 +644,10 @@ export abstract class AbstractEngine {
         const currentState = this._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
 
         for (const renderTargetWrapper of currentState) {
-            // Wrapped textures (source === Unknown) are host-owned; their format is opaque to Babylon, so we can't
+            // Wrapped textures (source === External) are host-owned; their format is opaque to Babylon, so we can't
             // rebuild them. The host re-supplies a fresh handle via updateWrappedWebGLTexture /
             // updateWrappedNativeTexture from its onContextRestoredObservable handler.
-            if (renderTargetWrapper.texture?.source === InternalTextureSource.Unknown) {
+            if (renderTargetWrapper.texture?.source === InternalTextureSource.External) {
                 continue;
             }
             renderTargetWrapper._rebuild();

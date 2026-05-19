@@ -72,6 +72,13 @@ export const enum InternalTextureSource {
      * Texture content is a depth texture
      */
     Depth,
+    /**
+     * Texture is externally owned: the underlying graphics resource (WebGL handle,
+     * GPUTexture, native handle, etc.) is supplied and lifetime-managed by the host
+     * application via wrapWebGLTexture / wrapNativeTexture / wrapWebGPUTexture.
+     * Babylon owns only the wrapping InternalTexture, not the resource.
+     */
+    External,
 }
 
 /**
@@ -553,6 +560,13 @@ export class InternalTexture extends TextureSampler {
             case InternalTextureSource.DepthStencil:
             case InternalTextureSource.Depth: {
                 // Will be handled at the RenderTargetWrapper level
+                break;
+            }
+
+            case InternalTextureSource.External: {
+                // The underlying resource is owned by the host application; Babylon cannot rebuild it.
+                // The host re-supplies a fresh handle via updateWrappedWebGLTexture / updateWrappedNativeTexture /
+                // updateWrappedWebGPUTexture from its onContextRestoredObservable handler.
                 break;
             }
         }

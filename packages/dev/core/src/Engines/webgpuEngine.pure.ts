@@ -2575,7 +2575,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
         const hardwareTexture = new WebGPUHardwareTexture(this, texture);
-        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
         return internalTexture;
@@ -2594,11 +2594,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param texture defines the new GPUTexture to wrap
      */
     public updateWrappedWebGPUTexture(internalTexture: InternalTexture, texture: GPUTexture): void {
-        if (internalTexture.source !== InternalTextureSource.Unknown) {
+        if (internalTexture.source !== InternalTextureSource.External) {
             throw new Error("updateWrappedWebGPUTexture: target InternalTexture was not produced by wrapWebGPUTexture.");
         }
         internalTexture._hardwareTexture = new WebGPUHardwareTexture(this, texture);
         internalTexture.isReady = true;
+
+        // WebGPUMaterialContext and WebGPUCacheBindGroups key on InternalTexture.uniqueId; bump it so caches detect
+        // the new resource and re-resolve bind groups against the new GPUTexture / GPUTextureView.
+        internalTexture._setUniqueId(InternalTexture._Counter++);
     }
 
     // eslint-disable-next-line jsdoc/require-returns-check

@@ -1987,7 +1987,7 @@ export class ThinNativeEngine extends ThinEngine {
      */
     public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
-        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = this._engine.getTextureWidth(texture);
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
@@ -2008,23 +2008,54 @@ export class ThinNativeEngine extends ThinEngine {
      * repoint Babylon's wrapper at the new handle without losing references held by materials, render-target wrappers,
      * particle systems, etc.
      *
-     * Sampling mode and mip-map flag are properties of the logical wrapped texture and are left unchanged; dimensions
-     * are re-read from the new native texture in case the host recreates it at a different size.
+     * The new handle must match the wrapped texture's recorded dimensions. To change dimensions, dispose the wrapped
+     * texture and call {@link wrapNativeTexture} again. Sampling mode and mip-map flag are properties of the logical
+     * wrapped texture and are re-applied to the new resource. Any render-target wrapper holding this texture as its
+     * color attachment has its framebuffer rebuilt with the new handle.
      *
-     * Throws if the target was not produced by {@link wrapNativeTexture}.
+     * Throws if the target was not produced by {@link wrapNativeTexture}, if the new handle's dimensions don't match,
+     * or if the wrapped texture is part of a multi render-target.
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new native texture handle to wrap
      */
     public updateWrappedNativeTexture(internalTexture: InternalTexture, texture: NativeTexture): void {
-        if (internalTexture.source !== InternalTextureSource.Unknown) {
+        if (internalTexture.source !== InternalTextureSource.External) {
             throw new Error("updateWrappedNativeTexture: target InternalTexture was not produced by wrapNativeTexture.");
         }
+
+        const newWidth = this._engine.getTextureWidth(texture);
+        const newHeight = this._engine.getTextureHeight(texture);
+        if (newWidth !== internalTexture.baseWidth || newHeight !== internalTexture.baseHeight) {
+            throw new Error(
+                `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
+            );
+        }
+
         internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this._engine);
-        internalTexture.baseWidth = this._engine.getTextureWidth(texture);
-        internalTexture.baseHeight = this._engine.getTextureHeight(texture);
-        internalTexture.width = internalTexture.baseWidth;
-        internalTexture.height = internalTexture.baseHeight;
         internalTexture.isReady = true;
+        this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
+
+        // Rebuild the framebuffer of any render-target wrapper holding this wrapped texture as its color attachment.
+        // After a DisableRendering / EnableRendering cycle the bgfx framebuffer handle is stale; the consumer-supplied
+        // new texture is the moment we have a fresh handle to rebuild against.
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (rtWrapper.texture !== internalTexture) {
+                continue;
+            }
+            if (rtWrapper.isMulti) {
+                throw new Error("updateWrappedNativeTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
+            }
+            const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+            this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
+            nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+                texture,
+                internalTexture.baseWidth,
+                internalTexture.baseHeight,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                rtWrapper.samples ?? 1
+            );
+        }
     }
 
     public override _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {

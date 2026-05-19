@@ -27,9 +27,9 @@ describe("Externally-wrapped texture context-loss restore", () => {
             const handle = {} as WebGLTexture;
             const wrapped = engine.wrapWebGLTexture(handle, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 256, 256);
 
-            // Sanity: wrapWebGLTexture leaves source = Unknown and format/type at the
+            // Sanity: wrapWebGLTexture marks the source External and leaves format/type at the
             // InternalTexture ctor defaults of -1 because the wrap is opaque.
-            expect(wrapped.source).toBe(InternalTextureSource.Unknown);
+            expect(wrapped.source).toBe(InternalTextureSource.External);
             expect(wrapped.type).toBe(-1);
             expect(wrapped.format).toBe(-1);
 
@@ -80,7 +80,7 @@ describe("Externally-wrapped texture context-loss restore", () => {
             expect(wrapped._hardwareTexture).not.toBe(originalHardware);
             expect(wrapped._hardwareTexture!.underlyingResource).toBe(newHandle);
             expect(wrapped.isReady).toBe(true);
-            expect(wrapped.source).toBe(InternalTextureSource.Unknown);
+            expect(wrapped.source).toBe(InternalTextureSource.External);
             expect(wrapped.baseWidth).toBe(256);
             expect(wrapped.baseHeight).toBe(256);
         });
@@ -89,7 +89,7 @@ describe("Externally-wrapped texture context-loss restore", () => {
             const engine = makeEngine();
             const rt = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, generateStencilBuffer: false });
             const rtTexture = rt.texture!;
-            expect(rtTexture.source).not.toBe(InternalTextureSource.Unknown);
+            expect(rtTexture.source).not.toBe(InternalTextureSource.External);
             expect(() => engine.updateWrappedWebGLTexture(rtTexture, {} as WebGLTexture)).toThrow(/was not produced by wrapWebGLTexture/);
         });
     });
