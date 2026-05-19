@@ -3,7 +3,10 @@ import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { Vector3 } from "core/Maths/math.vector";
+import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type PushMaterial } from "core/Materials/pushMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
@@ -29,15 +32,20 @@ describe("Babylon Material", function () {
         });
     });
 
-    describe("#PBRMaterial", () => {
-        it("binds lights for frozen materials when uniform buffers must be rebound every draw", async () => {
+    describe("#FrozenMaterialLightBinding", () => {
+        it.each([
+            { materialName: "StandardMaterial", createMaterial: (scene: Scene) => new StandardMaterial("material", scene) },
+            { materialName: "PBRMaterial", createMaterial: (scene: Scene) => new PBRMaterial("material", scene) },
+            { materialName: "OpenPBRMaterial", createMaterial: (scene: Scene) => new OpenPBRMaterial("material", scene) },
+            { materialName: "BackgroundMaterial", createMaterial: (scene: Scene) => new BackgroundMaterial("material", scene) },
+        ])("binds lights for frozen $materialName when uniform buffers must be rebound every draw", async ({ createMaterial }) => {
             subject._features.needToAlwaysBindUniformBuffers = true;
 
             const scene = new Scene(subject);
             new FreeCamera("camera", new Vector3(0, 0, -5), scene);
             scene.updateTransformMatrix(true);
             const mesh = MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
-            const material = new StandardMaterial("material", scene);
+            const material: PushMaterial = createMaterial(scene);
             const light = new HemisphericLight("light", Vector3.Up(), scene);
             const bindLight = vi.spyOn(light, "_bindLight");
             mesh.material = material;
@@ -56,7 +64,9 @@ describe("Babylon Material", function () {
 
             scene.dispose();
         });
+    });
 
+    describe("#PBRMaterial", () => {
         it("forceCompilation of a single material", async () => {
             const scene = new Scene(subject);
             const mesh = MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
