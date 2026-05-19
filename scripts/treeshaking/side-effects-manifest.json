@@ -14756,7 +14756,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 7,
+          "line": 6,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
