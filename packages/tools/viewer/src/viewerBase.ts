@@ -1230,11 +1230,14 @@ export abstract class ViewerBase {
      */
     protected readonly _clearColor: IColor4Like = { r: 0, g: 0, b: 0, a: 0 };
 
-    public get clearColor(): IColor4Like {
+    /**
+     * The viewer clear color (e.g. background).
+     */
+    public get clearColor(): Readonly<IColor4Like> {
         return this._clearColor;
     }
 
-    public set clearColor(value: IColor4Like) {
+    public set clearColor(value: Readonly<IColor4Like>) {
         this._clearColor.r = value.r;
         this._clearColor.g = value.g;
         this._clearColor.b = value.b;
@@ -1255,6 +1258,9 @@ export abstract class ViewerBase {
     /** @internal Pure state — no engine state. Subclasses initialize via the public `hotSpots` setter in their constructor body. */
     private _hotSpots: Record<string, HotSpot> = {};
 
+    /**
+     * The set of defined hotspots.
+     */
     public get hotSpots(): Record<string, HotSpot> {
         return this._hotSpots;
     }
@@ -1430,11 +1436,24 @@ export abstract class ViewerBase {
             return;
         }
 
-        // Commit `_shadowQuality` BEFORE running the impl: the engine-specific shadow setup may
-        // read `this._shadowQuality` internally as a sanity check ("did the user change quality
-        // while I was initializing?"), so the new value needs to be visible during the impl.
+        // Commit `_shadowQuality` BEFORE running the impl: the engine-specific shadow setup (and
+        // other handlers that may fire while shadows are being reconfigured, e.g. environment
+        // rotation) read `this._shadowQuality` as the target value, so it needs to be visible
+        // during the impl. On failure/abort we roll back below so the public `shadowConfig` stays
+        // in sync with the actually-applied engine state and a retry with the same quality isn't
+        // short-circuited by the early-return above.
+        const previousQuality = this._shadowQuality;
         this._shadowQuality = value.quality;
-        await this._updateShadows(this._shadowQuality, abortSignal);
+        try {
+            await this._updateShadows(this._shadowQuality, abortSignal);
+        } catch (error) {
+            // Only roll back if a newer `updateShadows` hasn't already committed its own value on
+            // top of ours; otherwise we'd clobber the newer caller's intent.
+            if (this._shadowQuality === value.quality) {
+                this._shadowQuality = previousQuality;
+            }
+            throw error;
+        }
         this.onShadowsConfigurationChanged.notifyObservers();
     }
 

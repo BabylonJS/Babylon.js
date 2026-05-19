@@ -474,6 +474,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._scene.clearColor.g = this._clearColor.g;
         this._scene.clearColor.b = this._clearColor.b;
         this._scene.clearColor.a = this._clearColor.a;
+        this._markSceneMutated();
     }
 
     /**
@@ -604,6 +605,10 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
             scene.onClearColorChangedObservable.add(() => {
                 this._markSceneMutated();
+                this._clearColor.a = scene.clearColor.a;
+                this._clearColor.r = scene.clearColor.r;
+                this._clearColor.g = scene.clearColor.g;
+                this._clearColor.b = scene.clearColor.b;
                 this.onClearColorChanged.notifyObservers();
             });
 
