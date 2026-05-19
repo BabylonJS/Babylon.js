@@ -19,8 +19,4 @@ export * from "./subEmitter";
 export * from "./attractor";
 export * from "./flowMap";
 export * from "./Node/pure";
-export * from "../Shaders/particles.fragment";
-export * from "../Shaders/particles.vertex";
-export * from "../ShadersWGSL/particles.fragment";
-export * from "../ShadersWGSL/particles.vertex";
 export * from "./thinParticleSystem.pure";

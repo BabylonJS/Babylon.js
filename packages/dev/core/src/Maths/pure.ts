@@ -12,7 +12,6 @@ export * from "./math.plane";
 export * from "./math.size";
 export * from "./math.vertexFormat";
 export * from "./math.viewport";
-export * from "./math";
 export * from "./sphericalPolynomial.pure";
 export * from "./halton2DSequence";
 export * from "./math.vector.functions";
