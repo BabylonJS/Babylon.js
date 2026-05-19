@@ -1424,6 +1424,7 @@ export class StandardMaterial extends StandardMaterialBase {
         }
 
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
+        const needToAlwaysBindUniformBuffers = scene.getEngine()._features.needToAlwaysBindUniformBuffers;
 
         // Bones
         BindBonesParameters(mesh, effect);
@@ -1616,16 +1617,16 @@ export class StandardMaterial extends StandardMaterialBase {
 
             // Colors
             this.bindEyePosition(effect);
-        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+        } else if (needToAlwaysBindUniformBuffers) {
             this._needToBindSceneUbo = true;
         }
 
-        if (mustRebind || !this.isFrozen) {
-            // Lights
-            if (scene.lightsEnabled && !this._disableLighting) {
-                BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
-            }
+        // Lights
+        if ((mustRebind || !this.isFrozen || needToAlwaysBindUniformBuffers) && scene.lightsEnabled && !this._disableLighting) {
+            BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
+        }
 
+        if (mustRebind || !this.isFrozen) {
             // View
             if (
                 (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) ||
