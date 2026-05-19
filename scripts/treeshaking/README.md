@@ -50,7 +50,8 @@ The supported scripts are wired into the repository in a few places:
 
 | Location                                        | Wiring                                                                                                             |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Root `lint:check` and `lint:check-ci`           | Run ESLint, then `check:treeshaking`, then `check:side-effects-sync`.                                              |
+| Root `lint:check`                               | Runs ESLint, then `check:treeshaking`, then `check:side-effects-sync`.                                             |
+| Root `lint:check-ci`                            | Runs ESLint, `lint:cycles`, `check:treeshaking`, and `check:side-effects-sync`.                                    |
 | Root `build:es6`                                | Runs the normal ES6 build and then `check:treeshaking-all`.                                                        |
 | Root `check:treeshaking-all`                    | Runs `check:treeshaking`, `check:side-effects-sync`, and `test:treeshaking`.                                       |
 | `packages/dev/core` `precompile`                | Regenerates the side-effects manifest, syncs package `sideEffects`, and regenerates pure barrels before compiling. |
