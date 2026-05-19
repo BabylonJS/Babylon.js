@@ -11,23 +11,23 @@ float transmission_dispersion_abbe_number = vTransmissionDispersionAbbeNumber;
 
 // Sample Coat Layer properties from textures
 #ifdef TRANSMISSION_WEIGHT
-    vec4 transmissionWeightFromTexture = texture2D(transmissionWeightSampler, vTransmissionWeightUV + uvOffset);
+    vec4 transmissionWeightFromTexture = TEXRD(transmissionWeightSampler, vTransmissionWeightUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_COLOR
-    vec4 transmissionColorFromTexture = texture2D(transmissionColorSampler, vTransmissionColorUV + uvOffset);
+    vec4 transmissionColorFromTexture = TEXRD(transmissionColorSampler, vTransmissionColorUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_DEPTH
-    vec4 transmissionDepthFromTexture = texture2D(transmissionDepthSampler, vTransmissionDepthUV + uvOffset);
+    vec4 transmissionDepthFromTexture = TEXRD(transmissionDepthSampler, vTransmissionDepthUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_SCATTER
-    vec4 transmissionScatterFromTexture = texture2D(transmissionScatterSampler, vTransmissionScatterUV + uvOffset);
+    vec4 transmissionScatterFromTexture = TEXRD(transmissionScatterSampler, vTransmissionScatterUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_DISPERSION_SCALE
-    vec4 transmissionDispersionScaleFromTexture = texture2D(transmissionDispersionScaleSampler, vTransmissionDispersionScaleUV + uvOffset);
+    vec4 transmissionDispersionScaleFromTexture = TEXRD(transmissionDispersionScaleSampler, vTransmissionDispersionScaleUV + uvOffset);
 #endif
 
 // Apply texture values to coat layer properties

@@ -2,6 +2,7 @@ import { type Material } from "core/Materials/material";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { type Color3 } from "core/Maths/math.color";
+import { type GLTFLoader } from "./glTFLoader";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface
@@ -14,9 +15,16 @@ export interface IMaterialLoadingAdapter {
     readonly material: Material;
 
     /**
-     * Finalizes material properties after loading is complete.
+     * Finalizes material properties after all loading is complete.
+     * May do async work (e.g. GPU texture processing); the returned Promise is tracked
+     * by the loader and awaited before the COMPLETE state is reached, so callers can rely
+     * on onCompleteObservable for fully processed materials.
+     *
+     * Implementations should check `loader._disposed` between awaits to bail out early
+     * when the loader is disposed mid-flight.
+     * @param loader The glTF loader driving the finalize step.
      */
-    finalize?(): void;
+    finalizeAsync(loader: GLTFLoader): Promise<void>;
 
     /**
      * Whether the material should be treated as unlit
@@ -111,6 +119,11 @@ export interface IMaterialLoadingAdapter {
     enableSpecularEdgeColor(enableEdgeColor?: boolean): void;
 
     /**
+     * Enable the specular/glossiness workflow and disable metallic/roughness.
+     */
+    configureSpecularGlossiness(): void;
+
+    /**
      * Sets/gets the specular weight
      */
     specularWeight: number;
@@ -144,6 +157,12 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the specular IOR
      */
     specularIor: number;
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    glossiness: number;
 
     // ========================================
     // EMISSION PARAMETERS
@@ -310,6 +329,9 @@ export interface IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for volumetric transmission (KHR_materials_volume)
+     */
     configureVolume(): void;
 
     /**

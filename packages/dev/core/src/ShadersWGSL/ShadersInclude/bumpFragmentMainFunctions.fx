@@ -1,3 +1,10 @@
+#ifndef TEXRD_DEFINED
+	fn TEXRD(t: texture_2d<f32>, ts: sampler, uv: vec2f) -> vec4f {
+		return textureSample(t, ts, uv);
+	}
+	#define TEXRD_DEFINED
+#endif
+
 #if defined(BUMP) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC) || defined(DETAIL)
 	#if defined(TANGENT) && defined(NORMAL) 
 		varying vTBN0: vec3f;

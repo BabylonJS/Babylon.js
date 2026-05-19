@@ -1,4 +1,3 @@
-import { _WarnImport } from "core/Misc/devTools";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { type IFileRequest } from "core/Misc/fileRequest";
 import { type LoadFileError } from "core/Misc/fileTools";
@@ -6,20 +5,15 @@ import { type IWebRequest } from "core/Misc/interfaces/iWebRequest";
 import { type WebRequest } from "core/Misc/webRequest";
 import { type IOfflineProvider } from "core/Offline/IOfflineProvider";
 import { type Nullable } from "core/types";
+import { LoadFile } from "core/Misc/fileTools.pure";
 import { Constants } from "./constants";
 
+/**
+ * @deprecated Use direct imports from fileTools.pure instead.
+ * Kept for backwards compatibility — will be removed in a future version.
+ * @internal
+ */
 export const EngineFunctionContext: {
-    /**
-     * Loads a file from a url
-     * @param url url to load
-     * @param onSuccess callback called when the file successfully loads
-     * @param onProgress callback called while file is loading (if the server supports this mode)
-     * @param offlineProvider defines the offline provider for caching
-     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-     * @param onError callback called when the file fails to load
-     * @returns a file request object
-     * @internal
-     */
     loadFile?: (
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
@@ -56,12 +50,9 @@ export function _LoadFile(
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest
 ): IFileRequest {
-    const loadFile = injectedLoadFile || EngineFunctionContext.loadFile;
-    if (loadFile) {
-        const request = loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
-        return request;
-    }
-    throw _WarnImport("FileTools");
+    const loadFileFn = injectedLoadFile || EngineFunctionContext.loadFile || LoadFile;
+    const request = loadFileFn(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+    return request;
 }
 
 /**

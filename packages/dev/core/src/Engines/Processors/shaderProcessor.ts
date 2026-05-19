@@ -9,13 +9,13 @@ import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAnd
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
 import { type _IProcessingOptions } from "./shaderProcessingOptions";
-import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 import { type WebRequest } from "../../Misc/webRequest";
 import { type LoadFileError } from "../../Misc/fileTools";
 import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { type IFileRequest } from "../../Misc/fileRequest";
+import { LoadFile } from "../../Misc/fileTools.pure";
 import { _GetGlobalDefines } from "../abstractEngine.functions";
 import { type AbstractEngine } from "../abstractEngine";
 
@@ -499,7 +499,7 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
         } else {
             const includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-            _FunctionContainer.loadFile(includeShaderUrl, (fileContent) => {
+            LoadFile(includeShaderUrl, (fileContent) => {
                 options.includesShadersStore[includeFile] = fileContent as string;
                 ProcessIncludes(parts.join(""), options, callback);
             });
@@ -517,27 +517,17 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
     }
 }
 
-/** @internal */
+/**
+ * @deprecated Use direct imports from fileTools.pure instead. Kept for backwards compatibility.
+ * @internal
+ */
 export const _FunctionContainer = {
-    /**
-     * Loads a file from a url
-     * @param url url to load
-     * @param onSuccess callback called when the file successfully loads
-     * @param onProgress callback called while file is loading (if the server supports this mode)
-     * @param offlineProvider defines the offline provider for caching
-     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-     * @param onError callback called when the file fails to load
-     * @returns a file request object
-     * @internal
-     */
-    loadFile: (
+    loadFile: LoadFile as (
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (ev: ProgressEvent) => void,
         offlineProvider?: IOfflineProvider,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
-    ): IFileRequest => {
-        throw _WarnImport("FileTools");
-    },
+    ) => IFileRequest,
 };

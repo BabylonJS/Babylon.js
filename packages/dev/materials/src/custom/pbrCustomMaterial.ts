@@ -323,6 +323,30 @@ export class PBRCustomMaterial extends PBRMaterial {
 
         PBRCustomMaterial.ShaderIndexer++;
         this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
+
+        this.onEffectCreatedObservable.add(({ effect, subMesh }) => {
+            const previousEffect = subMesh?.effect;
+            if (
+                (!this.allowShaderHotSwapping || effect.isReady()) &&
+                previousEffect &&
+                previousEffect !== effect &&
+                previousEffect._key.startsWith(this._createdShaderName + "+")
+            ) {
+                previousEffect.dispose();
+            }
+        });
+    }
+
+    /**
+     * Disposes the material
+     * @param forceDisposeEffect specifies if effects should be forcefully disposed
+     * @param forceDisposeTextures specifies if textures should be forcefully disposed
+     */
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        delete Effect.ShadersStore[this._createdShaderName + "VertexShader"];
+        delete Effect.ShadersStore[this._createdShaderName + "PixelShader"];
+
+        super.dispose(forceDisposeEffect, forceDisposeTextures);
     }
 
     protected override _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {

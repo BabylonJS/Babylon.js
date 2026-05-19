@@ -36,6 +36,7 @@ uniform metallicReflectanceMatrix: mat4x4f;
 uniform vReflectanceInfos: vec2f;
 uniform reflectanceMatrix: mat4x4f;
 uniform cameraInfo: vec4f;
+uniform vTextureRepetitionHexTilingParams: vec4f;
 
 uniform vReflectionInfos: vec2f;
 uniform reflectionMatrix: mat4x4f;

@@ -643,6 +643,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public extension: Nullable<string> = null;
 
     /**
+     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+     * @experimental
+     */
+    @property({ attribute: "use-open-pbr", type: Boolean })
+    public useOpenPBR: boolean = this._options.useOpenPBR ?? false;
+
+    /**
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
     @property({
@@ -853,6 +860,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({ attribute: false })
     public animationProgress = 0;
 
+    private _loadedSource: Nullable<string | File | ArrayBufferView> = null;
+
     @state()
     private _animations: readonly string[] = [];
 
@@ -1003,6 +1012,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
             if (changedProperties.has("source")) {
                 this._updateModel();
+            } else if (changedProperties.has("useOpenPBR")) {
+                this._updateModel(this._loadedSource ?? this.source);
             }
 
             if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
@@ -1367,6 +1378,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                             exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? target.postProcessing?.exposure,
                                             ssao: viewerElement.hasAttribute("ssao") || target.postProcessing?.ssao,
                                         };
+                                    case "useOpenPBR":
+                                        return viewerElement.useOpenPBR || target.useOpenPBR;
                                     case "selectedMaterialVariant":
                                         return viewerElement.getAttribute("material-variant") ?? target.selectedMaterialVariant;
                                     case "onInitialized":
@@ -1410,6 +1423,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 details.viewer.onModelChanged.add((source) => {
+                    if (source) {
+                        this._loadedSource = source;
+                    }
                     this._animations = [...details.viewer.animations];
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
@@ -1483,11 +1499,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         });
     }
 
-    private async _updateModel() {
+    private async _updateModel(source: Nullable<string | File | ArrayBufferView> = this.source) {
         if (this._viewerDetails) {
             try {
-                if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, {
+                if (source) {
+                    await this._viewerDetails.viewer.loadModel(source, {
                         pluginExtension: this.extension ?? undefined,
                     });
                 } else {

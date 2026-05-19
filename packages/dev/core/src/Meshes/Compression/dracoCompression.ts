@@ -1,7 +1,7 @@
 import { _GetDefaultNumWorkers, _IsConfigurationAvailable, type IDracoCodecConfiguration } from "./dracoCodec";
 import { DracoDecoder } from "./dracoDecoder";
 import { type MeshData } from "./dracoDecoder.types";
-import { VertexBuffer } from "../buffer";
+import { VertexBufferGetDataType, VertexBufferGetFloatData } from "../../Buffers/buffer.pure";
 import { VertexData } from "../mesh.vertexData";
 import { type Nullable } from "core/types";
 import { type Geometry } from "../geometry";
@@ -201,10 +201,10 @@ export class DracoCompression {
             vertexData.indices = meshData.indices;
         }
         for (const attribute of meshData.attributes) {
-            const floatData = VertexBuffer.GetFloatData(
+            const floatData = VertexBufferGetFloatData(
                 attribute.data,
                 attribute.size,
-                VertexBuffer.GetDataType(attribute.data),
+                VertexBufferGetDataType(attribute.data),
                 attribute.byteOffset,
                 attribute.byteStride,
                 attribute.normalized,

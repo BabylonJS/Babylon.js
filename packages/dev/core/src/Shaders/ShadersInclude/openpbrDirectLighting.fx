@@ -294,11 +294,17 @@
         float sin2 = 1.0 - cosTheta_view * cosTheta_view;
         // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
         // is just coat_ior since the incident medium is air (IOR = 1.0).
-        sin2 = sin2 / (coat_ior * coat_ior);
+        sin2 = sin2 / (coat_ior * coat_ior) * coat_weight;
         float cos_t = sqrt(1.0 - sin2);
         float coatPathLength = 1.0 / cos_t;
-        vec3 colored_transmission = pow(coat_color, vec3(coatPathLength));
-        coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
+        // Scale the optical path length by coat_weight (thickness model) so that
+        // a strongly-absorbing coat_color retains significant color at reduced weight,
+        // matching the Beer-Lambert expectation. Using a linear mix of the final
+        // absorption value instead would rapidly bleach the color toward white at
+        // half-weight for any strongly absorbing coat_color.
+        float effectivePathLength = coatPathLength * coat_weight;
+        vec3 colored_transmission = pow(coat_color, vec3(effectivePathLength));
+        coatAbsorption = colored_transmission * mix(1.0, darkened_transmission, coat_weight);
     }
 
     #ifdef FUZZ

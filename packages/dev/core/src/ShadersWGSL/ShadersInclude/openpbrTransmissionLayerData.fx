@@ -11,23 +11,23 @@ var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionA
 
 // Sample Coat Layer properties from textures
 #ifdef TRANSMISSION_WEIGHT
-    let transmissionWeightFromTexture: vec4f = textureSample(transmissionWeightSampler, transmissionWeightSamplerSampler, fragmentInputs.vTransmissionWeightUV + uvOffset);
+    let transmissionWeightFromTexture: vec4f = TEXRD(transmissionWeightSampler, transmissionWeightSamplerSampler, fragmentInputs.vTransmissionWeightUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_COLOR
-    let transmissionColorFromTexture: vec4f = textureSample(transmissionColorSampler, transmissionColorSamplerSampler, fragmentInputs.vTransmissionColorUV + uvOffset);
+    let transmissionColorFromTexture: vec4f = TEXRD(transmissionColorSampler, transmissionColorSamplerSampler, fragmentInputs.vTransmissionColorUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_DEPTH
-    let transmissionDepthFromTexture: vec4f = textureSample(transmissionDepthSampler, transmissionDepthSamplerSampler, fragmentInputs.vTransmissionDepthUV + uvOffset);
+    let transmissionDepthFromTexture: vec4f = TEXRD(transmissionDepthSampler, transmissionDepthSamplerSampler, fragmentInputs.vTransmissionDepthUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_SCATTER
-    let transmissionScatterFromTexture: vec4f = textureSample(transmissionScatterSampler, transmissionScatterSamplerSampler, fragmentInputs.vTransmissionScatterUV + uvOffset);
+    let transmissionScatterFromTexture: vec4f = TEXRD(transmissionScatterSampler, transmissionScatterSamplerSampler, fragmentInputs.vTransmissionScatterUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_DISPERSION_SCALE
-    let transmissionDispersionScaleFromTexture: vec4f = textureSample(transmissionDispersionScaleSampler, transmissionDispersionScaleSamplerSampler, fragmentInputs.vTransmissionDispersionScaleUV + uvOffset);
+    let transmissionDispersionScaleFromTexture: vec4f = TEXRD(transmissionDispersionScaleSampler, transmissionDispersionScaleSamplerSampler, fragmentInputs.vTransmissionDispersionScaleUV + uvOffset);
 #endif
 
 // Apply texture values to coat layer properties
@@ -37,7 +37,7 @@ var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionA
 
 #ifdef TRANSMISSION_COLOR
     #ifdef TRANSMISSION_COLOR_GAMMA
-        transmission_color *= toLinearSpace(transmissionColorFromTexture.rgb);
+        transmission_color *= toLinearSpaceVec3(transmissionColorFromTexture.rgb);
     #else
         transmission_color *= transmissionColorFromTexture.rgb;
     #endif
