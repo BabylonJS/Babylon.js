@@ -646,8 +646,9 @@ export abstract class AbstractEngine {
         for (const renderTargetWrapper of currentState) {
             // Wrapped textures (source === External) are host-owned; their format is opaque to Babylon, so we can't
             // rebuild them. The host re-supplies a fresh handle via updateWrappedWebGLTexture /
-            // updateWrappedNativeTexture from its onContextRestoredObservable handler.
-            if (renderTargetWrapper.texture?.source === InternalTextureSource.External) {
+            // updateWrappedNativeTexture / updateWrappedWebGPUTexture from its onContextRestoredObservable handler.
+            // Scan all attachments for the multi-RT case (rtWrapper.texture only returns _textures[0]).
+            if (renderTargetWrapper.textures?.some((t) => t.source === InternalTextureSource.External)) {
                 continue;
             }
             renderTargetWrapper._rebuild();

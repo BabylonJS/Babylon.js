@@ -2577,6 +2577,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const hardwareTexture = new WebGPUHardwareTexture(this, texture);
         const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.baseWidth = texture.width;
+        internalTexture.baseHeight = texture.height;
+        internalTexture.width = texture.width;
+        internalTexture.height = texture.height;
         internalTexture.isReady = true;
         return internalTexture;
     }
@@ -2589,13 +2593,22 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * GPU device, it calls this method to repoint Babylon's wrapper at the new handle without losing references held
      * by materials, render-target wrappers, particle systems, etc.
      *
-     * Throws if the target was not produced by {@link wrapWebGPUTexture}.
+     * The new GPUTexture must have the same dimensions as the original. To change dimensions, dispose the wrapped
+     * texture and call {@link wrapWebGPUTexture} again.
+     *
+     * Throws if the target was not produced by {@link wrapWebGPUTexture}, or if the new GPUTexture's dimensions don't
+     * match.
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new GPUTexture to wrap
      */
     public updateWrappedWebGPUTexture(internalTexture: InternalTexture, texture: GPUTexture): void {
         if (internalTexture.source !== InternalTextureSource.External) {
             throw new Error("updateWrappedWebGPUTexture: target InternalTexture was not produced by wrapWebGPUTexture.");
+        }
+        if (texture.width !== internalTexture.baseWidth || texture.height !== internalTexture.baseHeight) {
+            throw new Error(
+                `updateWrappedWebGPUTexture: new GPUTexture dimensions (${texture.width}x${texture.height}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
+            );
         }
         internalTexture._hardwareTexture = new WebGPUHardwareTexture(this, texture);
         internalTexture.isReady = true;

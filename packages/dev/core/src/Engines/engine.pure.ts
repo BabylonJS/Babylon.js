@@ -859,14 +859,15 @@ export class Engine extends ThinEngine {
      * on the new WebGL context, it calls this method to repoint Babylon's wrapper at the new handle without losing
      * references held by materials, render-target wrappers, particle systems, etc.
      *
-     * The new handle must describe a texture with the same dimensions the wrapped texture was created with (we cannot
-     * introspect a WebGL handle to check, so it is the consumer's responsibility). Sampling mode and mip-map flag are
-     * properties of the logical wrapped texture and are re-applied to the new resource. Any render-target wrapper
-     * holding this texture as its color attachment has its framebuffer rebuilt with the new handle (including a fresh
-     * depth/stencil renderbuffer, since the old one came from the dead context).
+     * The new handle must describe a texture with the same dimensions the wrapped texture was created with. A WebGL
+     * handle is opaque (the dimensions can't be introspected), so we can't validate this -- passing a mismatched
+     * handle is undefined behaviour. Sampling mode and mip-map flag are properties of the logical wrapped texture and
+     * are re-applied to the new resource. Any render-target wrapper holding this texture as its color attachment has
+     * its framebuffer rebuilt with the new handle (including a fresh depth/stencil renderbuffer, since the old one
+     * came from the dead context).
      *
      * Throws if the target was not produced by {@link wrapWebGLTexture}, or if the wrapped texture is part of a multi
-     * render-target.
+     * render-target or an MSAA render-target wrapper (neither is supported in this version; dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new WebGL handle to wrap
      */
@@ -874,6 +875,22 @@ export class Engine extends ThinEngine {
         if (internalTexture.source !== InternalTextureSource.External) {
             throw new Error("updateWrappedWebGLTexture: target InternalTexture was not produced by wrapWebGLTexture.");
         }
+
+        // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
+        // Note: rtWrapper.texture only returns _textures[0]; walk every attachment to catch the multi-RT case where
+        // the wrapped texture is at index > 0.
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (!rtWrapper.textures?.includes(internalTexture)) {
+                continue;
+            }
+            if (rtWrapper.isMulti) {
+                throw new Error("updateWrappedWebGLTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
+            }
+            if (rtWrapper.samples > 1) {
+                throw new Error("updateWrappedWebGLTexture: wrapped texture is bound to an MSAA render-target; not supported. Dispose and re-wrap.");
+            }
+        }
+
         internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         internalTexture.isReady = true;
 
@@ -894,16 +911,12 @@ export class Engine extends ThinEngine {
         this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
 
         // Rebuild the framebuffer of any render-target wrapper holding this wrapped texture as its color attachment.
-        // After a context-loss / restore cycle the GL framebuffer + depth/stencil renderbuffer + any MSAA renderbuffer
-        // came from the dead context; the consumer-supplied new texture is the moment we have a fresh handle to
-        // rebuild against.
+        // After a context-loss / restore cycle the GL framebuffer + depth/stencil renderbuffer came from the dead
+        // context; the consumer-supplied new texture is the moment we have a fresh handle to rebuild against.
         const gl = this._gl;
         for (const rtWrapper of this._renderTargetWrapperCache) {
             if (rtWrapper.texture !== internalTexture) {
                 continue;
-            }
-            if (rtWrapper.isMulti) {
-                throw new Error("updateWrappedWebGLTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
             }
             const webGLRtWrapper = rtWrapper as WebGLRenderTargetWrapper;
 

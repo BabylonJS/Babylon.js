@@ -1,7 +1,7 @@
 import { NullEngine } from "core/Engines";
 import { Constants } from "core/Engines/constants";
 import { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 
 function makeEngine(): NullEngine {
     const engine = new NullEngine();
@@ -11,8 +11,8 @@ function makeEngine(): NullEngine {
     return engine;
 }
 
-function attachAsRenderTarget(engine: NullEngine, wrapped: ReturnType<NullEngine["wrapWebGLTexture"]>): RenderTargetWrapper {
-    const rtw = new RenderTargetWrapper(false, false, { width: wrapped.baseWidth, height: wrapped.baseHeight }, engine);
+function attachAsRenderTarget(engine: NullEngine, wrapped: ReturnType<NullEngine["wrapWebGLTexture"]>, isMulti: boolean = false): RenderTargetWrapper {
+    const rtw = new RenderTargetWrapper(isMulti, false, { width: wrapped.baseWidth, height: wrapped.baseHeight }, engine);
     rtw.setTextures(wrapped);
     rtw._generateDepthBuffer = false;
     rtw._generateStencilBuffer = false;
@@ -21,14 +21,29 @@ function attachAsRenderTarget(engine: NullEngine, wrapped: ReturnType<NullEngine
 }
 
 describe("Externally-wrapped texture context-loss restore", () => {
+    describe("InternalTextureSource.External marker", () => {
+        it("is the source set by wrapWebGLTexture", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            expect(wrapped.source).toBe(InternalTextureSource.External);
+        });
+
+        it("is distinct from Unknown -- a non-wrap-produced Unknown texture is rejected by updateWrappedWebGLTexture", () => {
+            const engine = makeEngine();
+            // Mimic an XR / multiview internal texture: source = Unknown but not produced by wrapWebGLTexture.
+            // Before the External marker, this would have been silently accepted as if it were a wrapped texture.
+            const fauxUnknown = new InternalTexture(engine, InternalTextureSource.Unknown, true);
+            expect(fauxUnknown.source).toBe(InternalTextureSource.Unknown);
+            expect(() => engine.updateWrappedWebGLTexture(fauxUnknown, {} as WebGLTexture)).toThrow(/was not produced by wrapWebGLTexture/);
+        });
+    });
+
     describe("_rebuildRenderTargetWrappers", () => {
         it("does not clobber the wrapped texture's underlying handle", () => {
             const engine = makeEngine();
             const handle = {} as WebGLTexture;
             const wrapped = engine.wrapWebGLTexture(handle, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 256, 256);
 
-            // Sanity: wrapWebGLTexture marks the source External and leaves format/type at the
-            // InternalTexture ctor defaults of -1 because the wrap is opaque.
             expect(wrapped.source).toBe(InternalTextureSource.External);
             expect(wrapped.type).toBe(-1);
             expect(wrapped.format).toBe(-1);
@@ -39,10 +54,9 @@ describe("Externally-wrapped texture context-loss restore", () => {
 
             attachAsRenderTarget(engine, wrapped);
 
-            // _rebuildRenderTargetWrappers is what fires from the context-restored
-            // path. Pre-fix: clone path runs createRenderTargetTexture with format=-1
-            // and _swapAndDie replaces the wrapped hardware texture (silent on WebGL,
-            // throws on Native). Post-fix: the wrapped RTW is skipped.
+            // _rebuildRenderTargetWrappers is what fires from the context-restored path. Pre-fix: clone path runs
+            // createRenderTargetTexture with format=-1 and _swapAndDie replaces the wrapped hardware texture (silent
+            // on WebGL, throws on Native). Post-fix: the wrapped RTW is skipped.
             (engine as any)._rebuildRenderTargetWrappers();
 
             expect(wrapped._hardwareTexture).toBe(originalHardware);
@@ -58,11 +72,14 @@ describe("Externally-wrapped texture context-loss restore", () => {
             const regularRt = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, generateStencilBuffer: false });
             const regularTexture = regularRt.texture!;
             expect(regularTexture.source).toBe(InternalTextureSource.RenderTarget);
+            const originalHardware = regularTexture._hardwareTexture;
 
             (engine as any)._rebuildRenderTargetWrappers();
 
-            // The cloned RTW path sets target.isReady = true after _swapAndDie.
-            expect(regularTexture.isReady).toBe(true);
+            // For non-wrapped RTWs, _rebuild creates a clone RTW then _swapAndDie moves the clone's hardware texture
+            // onto the original InternalTexture. Identity-equal would mean the rebuild was skipped, which is what
+            // the wrapped-RTW path does -- so different identity here proves the regular path was exercised.
+            expect(regularTexture._hardwareTexture).not.toBe(originalHardware);
         });
     });
 
@@ -91,6 +108,83 @@ describe("Externally-wrapped texture context-loss restore", () => {
             const rtTexture = rt.texture!;
             expect(rtTexture.source).not.toBe(InternalTextureSource.External);
             expect(() => engine.updateWrappedWebGLTexture(rtTexture, {} as WebGLTexture)).toThrow(/was not produced by wrapWebGLTexture/);
+        });
+
+        it("throws when the wrapped texture is part of a multi render-target", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            attachAsRenderTarget(engine, wrapped, /*isMulti*/ true);
+            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow(/multi render-target/);
+        });
+
+        it("throws when the wrapped texture is at index > 0 of a multi render-target", () => {
+            // rtWrapper.texture only returns _textures[0]. A naive .texture-only check would miss the multi-RT case
+            // where the wrapped attachment is at index 1+, then mutate state thinking the RTW is unrelated.
+            const engine = makeEngine();
+            const other = new InternalTexture(engine, InternalTextureSource.RenderTarget);
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            const rtw = new RenderTargetWrapper(true, false, { width: 64, height: 64 }, engine);
+            rtw.setTextures([other, wrapped]);
+            engine._renderTargetWrapperCache.push(rtw);
+
+            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow(/multi render-target/);
+        });
+
+        it("throws when the wrapped texture is bound to an MSAA render-target", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            const rtw = attachAsRenderTarget(engine, wrapped);
+            (rtw as any)._samples = 4;
+            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow(/MSAA render-target/);
+        });
+
+        it("does not mutate the wrapped texture when the multi-RT precondition trips", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            const originalHardware = wrapped._hardwareTexture;
+            attachAsRenderTarget(engine, wrapped, /*isMulti*/ true);
+
+            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow();
+            // Pre-validation runs before any mutation, so identity is preserved even on throw.
+            expect(wrapped._hardwareTexture).toBe(originalHardware);
+        });
+
+        it("clears the wrapped texture's cached sampler params so the next bind re-applies them", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            // Pre-populate the per-InternalTexture sampler cache that _setTexture would normally fill in.
+            wrapped._cachedCoordinatesMode = 5;
+            wrapped._cachedWrapU = 1;
+            wrapped._cachedWrapV = 2;
+            wrapped._cachedWrapR = 3;
+            wrapped._cachedAnisotropicFilteringLevel = 4;
+
+            engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture);
+
+            expect(wrapped._cachedCoordinatesMode).toBeNull();
+            expect(wrapped._cachedWrapU).toBeNull();
+            expect(wrapped._cachedWrapV).toBeNull();
+            expect(wrapped._cachedWrapR).toBeNull();
+            expect(wrapped._cachedAnisotropicFilteringLevel).toBeNull();
+        });
+
+        it("clears every _boundTexturesCache slot pointing at the wrapped texture, leaving other slots intact", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            const other = new InternalTexture(engine, InternalTextureSource.Raw, true);
+
+            const cache = (engine as any)._boundTexturesCache as { [key: string]: any };
+            cache[0] = wrapped;
+            cache[1] = other;
+            cache[3] = wrapped;
+
+            engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture);
+
+            // Without clearing these slots, the identity short-circuit in _setTexture (cache[ch] === internalTexture)
+            // would skip the rebind, and the engine would still issue draws against the stale binding.
+            expect(cache[0]).toBeNull();
+            expect(cache[3]).toBeNull();
+            expect(cache[1]).toBe(other);
         });
     });
 });

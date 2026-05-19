@@ -2014,7 +2014,8 @@ export class ThinNativeEngine extends ThinEngine {
      * color attachment has its framebuffer rebuilt with the new handle.
      *
      * Throws if the target was not produced by {@link wrapNativeTexture}, if the new handle's dimensions don't match,
-     * or if the wrapped texture is part of a multi render-target.
+     * or if the wrapped texture is part of a multi render-target or an MSAA render-target wrapper (neither is
+     * supported in this version; dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new native texture handle to wrap
      */
@@ -2031,6 +2032,21 @@ export class ThinNativeEngine extends ThinEngine {
             );
         }
 
+        // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
+        // Note: rtWrapper.texture only returns _textures[0]; walk every attachment to catch the multi-RT case where
+        // the wrapped texture is at index > 0.
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (!rtWrapper.textures?.includes(internalTexture)) {
+                continue;
+            }
+            if (rtWrapper.isMulti) {
+                throw new Error("updateWrappedNativeTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
+            }
+            if (rtWrapper.samples > 1) {
+                throw new Error("updateWrappedNativeTexture: wrapped texture is bound to an MSAA render-target; not supported. Dispose and re-wrap.");
+            }
+        }
+
         internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         internalTexture.isReady = true;
         this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
@@ -2041,9 +2057,6 @@ export class ThinNativeEngine extends ThinEngine {
         for (const rtWrapper of this._renderTargetWrapperCache) {
             if (rtWrapper.texture !== internalTexture) {
                 continue;
-            }
-            if (rtWrapper.isMulti) {
-                throw new Error("updateWrappedNativeTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
             }
             const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
             this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
