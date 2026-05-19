@@ -23,6 +23,7 @@ import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes 
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { type Vector2 } from "../Maths/math.vector";
 
 /**
@@ -432,7 +433,7 @@ export class ThinEffectLayer {
         this._objectRenderer.renderList = null;
 
         // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
-        const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
+        const hasBoundingBoxRenderer = _IsSideEffectImplemented(this._scene.getBoundingBoxRenderer);
 
         let boundingBoxRendererEnabled = false;
         if (hasBoundingBoxRenderer) {

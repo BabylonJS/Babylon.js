@@ -30,7 +30,7 @@ export class InstantiationTools {
 
         const arr = className.split(".");
 
-        let fn: any = window || this;
+        let fn: any = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : this;
         for (let i = 0, len = arr.length; i < len; i++) {
             fn = fn[arr[i]];
         }

@@ -1,0 +1,50 @@
+/** This file must only contain pure code and pure imports */
+
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { BaseMathBlock } from "./baseMathBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
+
+/**
+ * Block used to divide 2 vectors
+ */
+export class DivideBlock extends BaseMathBlock {
+    /**
+     * Creates a new DivideBlock
+     * @param name defines the block name
+     */
+    public constructor(name: string) {
+        super(name);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public override getClassName() {
+        return "DivideBlock";
+    }
+
+    protected override _buildBlock(state: NodeMaterialBuildState) {
+        super._buildBlock(state);
+
+        const output = this._outputs[0];
+
+        state.compilationString += state._declareOutput(output) + ` = ${this.left.associatedVariableName} / ${this.right.associatedVariableName};\n`;
+
+        return this;
+    }
+}
+
+let _Registered = false;
+/**
+ * Register side effects for divideBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterDivideBlock(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    RegisterClass("BABYLON.DivideBlock", DivideBlock);
+}

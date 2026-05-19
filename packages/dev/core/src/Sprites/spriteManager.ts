@@ -4,6 +4,7 @@ import { type Observer, Observable } from "../Misc/observable";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent, type InternalSpriteAugmentedScene } from "./spriteSceneComponent";
+import { RegisterSpriteSceneComponent } from "./spriteSceneComponent.pure";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { type Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
@@ -113,6 +114,7 @@ export interface ISpriteManager extends IDisposable {
 
     /**
      * Serializes the sprite manager to a JSON object
+     * @param serializeTexture defines whether the texture must be serialized as well (false by default)
      */
     serialize(serializeTexture?: boolean): any;
 }
@@ -339,6 +341,8 @@ export class SpriteManager implements ISpriteManager {
             scene = EngineStore.LastCreatedScene!;
         }
         this.layerMask = scene.defaultRenderableLayerMask;
+
+        RegisterSpriteSceneComponent();
 
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));

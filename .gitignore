@@ -1,5 +1,6 @@
 dist
 tmp
+.tmp*
 temp
 .temp
 .tempChromeCanaryProfileForDebug
@@ -51,5 +52,9 @@ packages/public/@babylonjs/smart-filters-blocks/src
 packages/tools/smartFiltersEditor/www/scripts/**
 packages/tools/smartFiltersEditor/www/index.html
 
+# Tree-shaking test temp dirs
+.tmp-treeshake
+
 # Sonda bundle analysis reports
 .sonda/
+docs/tree-shaking/

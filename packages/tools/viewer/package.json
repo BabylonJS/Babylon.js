@@ -35,7 +35,7 @@
         "@rollup/plugin-typescript": "^11.1.6",
         "chalk": "^5.3.0",
         "cross-env": "^7.0.3",
-        "nyc": "^17.0.0",
+        "nyc": "^18.0.0",
         "open": "^10.1.0",
         "rollup": "^4.59.0",
         "rollup-plugin-minify-template-literals": "^1.1.7",
