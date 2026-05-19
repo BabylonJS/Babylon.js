@@ -1,7 +1,7 @@
 import { type Quaternion, type Vector3 } from "../../../Maths/math.vector";
 import { type Node } from "../../../node";
 import { type Nullable } from "../../../types";
-import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
+import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import { type AudioEngineV2 } from "../audioEngineV2";
 import { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
 import { type ISpatialAudioOptions, _SpatialAudioDefaults } from "../subProperties/abstractSpatialAudio";
@@ -40,6 +40,16 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     /** @internal */
     public get attachedNode(): Nullable<Node> {
         return this._attacherComponent?.sceneNode ?? null;
+    }
+
+    /** @internal */
+    public get useBoundingBox(): boolean {
+        return this._attacherComponent?.useBoundingBox ?? false;
+    }
+
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attacherComponent?.attachmentType ?? SpatialAudioAttachmentType.PositionAndRotation;
     }
 
     /** @internal */

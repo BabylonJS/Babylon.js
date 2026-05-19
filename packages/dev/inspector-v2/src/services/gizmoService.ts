@@ -206,36 +206,44 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
         const getLightGizmo = (light: Light) => getGizmo(light, light.getScene(), LightGizmo, lightGizmos, (light, gizmo) => (gizmo.light = light));
 
         // Ref-counted spatial audio gizmos. Sound sources are not Babylon Nodes, so we can't reuse the helper above directly.
-        const spatialAudioGizmos = new WeakMap<AbstractSoundSource, { gizmo: SpatialAudioGizmo; refCount: number }>();
+        // Unlike `getGizmo`, this doesn't override `gizmo.dispose` — it routes shared cleanup through a lambda
+        // (avoiding both Function.bind and Function.call, which are prohibited by the repo's performance/style rules).
+        const spatialAudioGizmos = new WeakMap<AbstractSoundSource, { gizmo: SpatialAudioGizmo; cleanup: () => void; refCount: number }>();
         const getSpatialAudioGizmo = (soundSource: AbstractSoundSource, scene: Scene): Reference<SpatialAudioGizmo> => {
             let refCounted = spatialAudioGizmos.get(soundSource);
             if (!refCounted) {
                 const utilityLayerRef = getUtilityLayer(scene);
                 const gizmo = new SpatialAudioGizmo(utilityLayerRef.value);
                 gizmo.soundSource = soundSource;
-                const sourceDisposedObserver = soundSource.onDisposeObservable.addOnce(() => gizmo.dispose());
-                const disposeGizmo = gizmo.dispose.bind(gizmo);
-                gizmo.dispose = () => {
-                    sourceDisposedObserver?.remove();
-                    disposeGizmo();
+                let isCleanedUp = false;
+                const cleanup = () => {
+                    if (isCleanedUp) {
+                        return;
+                    }
+                    isCleanedUp = true;
+                    sourceDisposedObserver.remove();
+                    gizmo.dispose();
                     utilityLayerRef.dispose();
+                    spatialAudioGizmos.delete(soundSource);
                 };
-                refCounted = { gizmo, refCount: 0 };
+                // If the underlying sound source is disposed externally, tear the gizmo down too.
+                const sourceDisposedObserver = soundSource.onDisposeObservable.addOnce(cleanup);
+                refCounted = { gizmo, cleanup, refCount: 0 };
                 spatialAudioGizmos.set(soundSource, refCounted);
             }
 
             refCounted.refCount++;
 
+            const refCountedCapture = refCounted;
             let disposed = false;
             return {
                 value: refCounted.gizmo,
                 dispose: () => {
                     if (!disposed) {
                         disposed = true;
-                        refCounted.refCount--;
-                        if (refCounted.refCount === 0) {
-                            refCounted.gizmo.dispose();
-                            spatialAudioGizmos.delete(soundSource);
+                        refCountedCapture.refCount--;
+                        if (refCountedCapture.refCount === 0) {
+                            refCountedCapture.cleanup();
                         }
                     }
                 },

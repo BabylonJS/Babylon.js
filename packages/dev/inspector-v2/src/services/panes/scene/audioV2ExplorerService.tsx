@@ -2,6 +2,7 @@ import { type AbstractNamedAudioNode, type AudioEngineV2, type IDisposable, type
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
@@ -28,10 +29,10 @@ function GetEngineDisplayName(engine: AudioEngineV2): string {
     return LastCreatedAudioEngine() === engine ? "Last Created Audio Engine" : "Other Audio Engine";
 }
 
-export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService]> = {
+export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, ISelectionService]> = {
     friendlyName: "Audio V2 Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, gizmoService) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, SelectionServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, gizmoService, selectionService) => {
         // Section-level observables driven by per-engine subscriptions below.
         const entityAddedObservable = new Observable<AudioV2Entity>();
         const entityRemovedObservable = new Observable<AudioV2Entity>();
@@ -132,6 +133,11 @@ export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                     for (const node of entity.nodes) {
                         if (node instanceof MainAudioBus) {
                             children.push(node);
+                        } else if (IsRoutable(node) && !node.outBus) {
+                            // Surface routable nodes that don't route through a bus (e.g. microphone
+                            // sound sources, or sounds with outBus explicitly cleared) directly under
+                            // the engine so they remain visible in the tree.
+                            children.push(node);
                         }
                     }
                     return children;
@@ -205,6 +211,14 @@ export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
             getCommand: (source) => {
                 const onChangeObservable = new Observable<void>();
                 let gizmoRef: Nullable<IDisposable> = null;
+                let onClickedObserver: Nullable<IDisposable> = null;
+
+                const releaseGizmo = () => {
+                    onClickedObserver?.dispose();
+                    onClickedObserver = null;
+                    gizmoRef?.dispose();
+                    gizmoRef = null;
+                };
 
                 return {
                     type: "toggle",
@@ -220,20 +234,26 @@ export const AudioV2ExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                             if (!gizmoRef) {
                                 const scene = sceneContext.currentScene;
                                 if (scene) {
-                                    gizmoRef = gizmoService.getSpatialAudioGizmo(source, scene);
+                                    const ref = gizmoService.getSpatialAudioGizmo(source, scene);
+                                    gizmoRef = ref;
+                                    // Clicking the gizmo in the viewport selects the underlying sound source
+                                    // so the inspector navigates to it (mirrors how camera/light gizmos behave
+                                    // via the scene picking path).
+                                    const observer = ref.value.onClickedObservable.add((clickedSource) => {
+                                        selectionService.selectedEntity = clickedSource;
+                                    });
+                                    onClickedObserver = { dispose: () => observer.remove() };
                                     onChangeObservable.notifyObservers();
                                 }
                             }
                         } else if (gizmoRef) {
-                            gizmoRef.dispose();
-                            gizmoRef = null;
+                            releaseGizmo();
                             onChangeObservable.notifyObservers();
                         }
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
-                        gizmoRef?.dispose();
-                        gizmoRef = null;
+                        releaseGizmo();
                         onChangeObservable.clear();
                     },
                 };

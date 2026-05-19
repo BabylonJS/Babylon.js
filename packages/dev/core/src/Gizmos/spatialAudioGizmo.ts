@@ -1,6 +1,7 @@
 import { type Nullable } from "../types";
 import { Quaternion, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
@@ -11,6 +12,7 @@ import { type PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { type Observer, Observable } from "../Misc/observable";
 import { type Scene } from "../scene";
 import { type AbstractSoundSource } from "../AudioV2/abstractAudio/abstractSoundSource";
+import { SpatialAudioAttachmentType } from "../AudioV2/spatialAudioAttachmentType";
 
 /**
  * Interface for a spatial audio gizmo.
@@ -116,17 +118,31 @@ export class SpatialAudioGizmo extends Gizmo implements ISpatialAudioGizmo {
         attachedMesh.rotationQuaternion ??= new Quaternion();
 
         // When the sound is attached to a scene node, the actual world transform is on the node;
-        // the spatial facade only caches the most recent user-set position/rotation. Read from the
-        // node directly so the gizmo tracks movement of the attached entity.
+        // the spatial facade only caches the most recent user-set position/rotation. Decompose
+        // the node's world matrix directly so the gizmo tracks movement of the attached entity,
+        // and honor the spatial sub-property's attachment options (useBoundingBox, attachmentType).
         const spatial = source.spatial;
         const attachedNode = spatial.attachedNode;
         if (attachedNode) {
-            const worldMatrix = attachedNode.getWorldMatrix();
-            const position = TmpVectors.Vector3[0];
-            const rotation = TmpVectors.Quaternion[0];
-            worldMatrix.decompose(undefined, rotation, position);
-            attachedMesh.position.copyFrom(position);
-            attachedMesh.rotationQuaternion.copyFrom(rotation);
+            const worldRotation = TmpVectors.Quaternion[0];
+            const worldPosition = TmpVectors.Vector3[0];
+            attachedNode.getWorldMatrix().decompose(undefined, worldRotation, worldPosition);
+
+            if (spatial.attachmentType & SpatialAudioAttachmentType.Position) {
+                if (spatial.useBoundingBox && (attachedNode as AbstractMesh).getBoundingInfo) {
+                    attachedMesh.position.copyFrom((attachedNode as AbstractMesh).getBoundingInfo().boundingBox.centerWorld);
+                } else {
+                    attachedMesh.position.copyFrom(worldPosition);
+                }
+            } else {
+                attachedMesh.position.copyFrom(spatial.position);
+            }
+
+            if (spatial.attachmentType & SpatialAudioAttachmentType.Rotation) {
+                attachedMesh.rotationQuaternion.copyFrom(worldRotation);
+            } else {
+                attachedMesh.rotationQuaternion.copyFrom(spatial.rotationQuaternion);
+            }
         } else {
             attachedMesh.position.copyFrom(spatial.position);
             attachedMesh.rotationQuaternion.copyFrom(spatial.rotationQuaternion);

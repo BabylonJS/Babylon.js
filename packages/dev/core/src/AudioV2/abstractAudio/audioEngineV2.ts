@@ -13,13 +13,13 @@ import { type IStreamingSoundOptions, type StreamingSound } from "./streamingSou
 import { type AbstractSpatialAudioListener, type ISpatialAudioListenerOptions } from "./subProperties/abstractSpatialAudioListener";
 
 const Instances: AudioEngineV2[] = [];
-const OnAudioEngineV2CreatedObservableInternal = new Observable<AudioEngineV2>();
 
 /**
  * Observable that notifies when a new v2 audio engine instance has been created.
- * - Fires from the {@link AudioEngineV2} constructor, after the new instance has been added to {@link AudioEngineV2.Instances}.
+ * - Fires after the engine has been fully constructed and initialized (e.g. from {@link CreateAudioEngineAsync}),
+ *   so subclass state (audio context, listener, etc.) is guaranteed to be available to observers.
  */
-export const OnAudioEngineV2CreatedObservable: IReadonlyObservable<AudioEngineV2> = OnAudioEngineV2CreatedObservableInternal;
+export const OnAudioEngineV2CreatedObservable = new Observable<AudioEngineV2>();
 
 /**
  * Gets the most recently created v2 audio engine.
@@ -112,7 +112,12 @@ export abstract class AudioEngineV2 implements IDisposable {
             this.parameterRampDuration = options.parameterRampDuration;
         }
 
-        OnAudioEngineV2CreatedObservableInternal.notifyObservers(this);
+        // Intentionally do NOT notify {@link OnAudioEngineV2CreatedObservable} here:
+        // - This base constructor runs before subclass fields (audio context, listener, ...) are initialized
+        //   and before any async {@link CreateAudioEngineAsync}-style setup completes, so observers would
+        //   see a partially constructed engine.
+        // - Engine factory functions (e.g. {@link CreateAudioEngineAsync}) call `notifyObservers` themselves
+        //   once the engine is fully constructed and initialized.
     }
 
     /**

@@ -195,6 +195,18 @@ export abstract class AbstractSpatialAudio {
     public abstract attachedNode: Nullable<Node>;
 
     /**
+     * Whether the spatial audio is positioned using the attached scene node's bounding box (when the node is a mesh) instead of its world transform.
+     * - Only meaningful while {@link isAttached} is `true`.
+     */
+    public abstract useBoundingBox: boolean;
+
+    /**
+     * Which components (position, rotation, or both) of the attached scene node's world transform drive the spatial audio.
+     * - Only meaningful while {@link isAttached} is `true`.
+     */
+    public abstract attachmentType: SpatialAudioAttachmentType;
+
+    /**
      * The maximum distance between the audio source and the listener, after which the volume is not reduced any further. Defaults to 10000.
      * - This value is used only when the {@link distanceModel} is set to `"linear"`.
      * @see {@link distanceModel}

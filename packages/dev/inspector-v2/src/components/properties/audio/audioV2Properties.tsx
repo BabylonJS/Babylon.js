@@ -97,7 +97,10 @@ export const AudioV2EngineGeneralProperties: FunctionComponent<{ engine: AudioEn
 };
 
 /**
- * Resume / pause / unlock controls for an {@link AudioEngineV2}.
+ * Resume / pause controls for an {@link AudioEngineV2}.
+ *
+ * No separate Unlock button — `engine.unlockAsync()` is just a thin wrapper around
+ * `engine.resumeAsync()` on the base class, so Resume already covers the autoplay-blocked path.
  * @returns The rendered component.
  */
 export const AudioV2EngineCommandsProperties: FunctionComponent<{ engine: AudioEngineV2 }> = ({ engine }) => {
@@ -111,6 +114,28 @@ export const AudioV2EngineCommandsProperties: FunctionComponent<{ engine: AudioE
                 <ButtonLine uniqueId="audiov2-engine-resume" label="Resume" icon={PlayRegular} onClick={() => void engine.resumeAsync()} />
             )}
         </>
+    );
+};
+
+/**
+ * Listener spatial-attachment property line for an {@link AudioEngineV2}.
+ * @returns The rendered component.
+ */
+export const AudioV2EngineListenerProperties: FunctionComponent<{ engine: AudioEngineV2; selectionService: ISelectionService }> = ({ engine, selectionService }) => {
+    const listener = engine.listener;
+
+    const onAttach = useInterceptObservable("function", listener, "attach");
+    const onDetach = useInterceptObservable("function", listener, "detach");
+
+    const attachedNode = useObservableState(() => listener.attachedNode, onAttach, onDetach);
+
+    return (
+        <LinkToEntityPropertyLine
+            label="Attached Node"
+            description="The scene node the audio listener is attached to via spatial audio."
+            entity={attachedNode}
+            selectionService={selectionService}
+        />
     );
 };
 
@@ -178,11 +203,17 @@ function useSoundState(sound: AbstractSound): SoundState {
         useInterceptObservable("function", sound, "pause"),
         useInterceptObservable("function", sound, "resume"),
         useInterceptObservable("function", sound, "stop"),
+        // Engine-level hook fires for every state transition on every sound (including async
+        // Starting → Started, FailedToStart, and natural Stopped after stop()), covering changes
+        // that the per-method intercepts above miss.
+        useInterceptObservable("function", sound.engine, "_onSoundPlaybackStateChanged"),
     ] as const;
 
     return useObservableState(
         useCallback(() => sound.state, [sound]),
-        ...stateChangedObservables
+        ...stateChangedObservables,
+        // Fires when the sound ends naturally (full duration, non-looping).
+        sound.onEndedObservable
     );
 }
 

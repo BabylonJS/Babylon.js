@@ -105,6 +105,16 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public get useBoundingBox(): boolean {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.useBoundingBox ?? false;
+    }
+
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._subGraph.getSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL)?.attachmentType ?? SpatialAudioAttachmentType.PositionAndRotation;
+    }
+
+    /** @internal */
     public get maxDistance(): number {
         return this._maxDistance;
     }

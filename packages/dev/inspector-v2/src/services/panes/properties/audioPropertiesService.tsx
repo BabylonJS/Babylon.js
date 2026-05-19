@@ -18,6 +18,7 @@ import {
     AudioV2BusGeneralProperties,
     AudioV2EngineCommandsProperties,
     AudioV2EngineGeneralProperties,
+    AudioV2EngineListenerProperties,
     AudioV2SoundCommandsProperties,
     AudioV2SoundGeneralProperties,
     AudioV2SoundPlaybackProperties,
@@ -54,6 +55,10 @@ export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertie
                 {
                     section: "General",
                     component: ({ context }) => <AudioV2EngineGeneralProperties engine={context} />,
+                },
+                {
+                    section: "Listener",
+                    component: ({ context }) => <AudioV2EngineListenerProperties engine={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Commands",
