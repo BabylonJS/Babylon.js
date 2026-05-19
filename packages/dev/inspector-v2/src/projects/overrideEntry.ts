@@ -31,10 +31,12 @@ export interface IOverrideEntry {
 export type OverrideTargetType = "meshes" | "materials" | "textures" | "lights" | "cameras" | "animationGroups" | "scene";
 
 /**
- * An override value. Supports scalars, color/vector arrays, and object references.
+ * An override value. Supports scalars, color/vector arrays, object references,
+ * and null (used to clear a slot, e.g. removing a material assignment).
  * - number: scalar property (e.g., intensity, alpha)
  * - string: string property, or "ref:name" / "samTexture:key" / "texture:name" object reference
  * - boolean: boolean property
  * - number[]: array property mapped to Vector3, Color3, Color4, etc.
+ * - null: explicitly clear an object-typed slot
  */
-export type OverrideValue = number | string | boolean | number[];
+export type OverrideValue = number | string | boolean | number[] | null;

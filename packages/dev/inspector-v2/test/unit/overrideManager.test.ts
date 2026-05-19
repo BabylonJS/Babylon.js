@@ -194,6 +194,54 @@ describe("OverrideManager", () => {
             const removed = RemoveOverride(scene, "materials", "WoodMaterial", 0, "alpha");
             expect(removed).toBe(false);
         });
+
+        it("should restore the original value captured at apply time", async () => {
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
+            const material = scene.materials.find((m) => m.name === "Material1") as any;
+            expect(material.alpha).toBe(1.0);
+
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "Material1",
+                targetIndex: 0,
+                propertyPath: "alpha",
+                value: 0.25,
+            });
+            expect(material.alpha).toBe(0.25);
+
+            RemoveOverride(scene, "materials", "Material1", 0, "alpha");
+            expect(material.alpha).toBe(1.0);
+        });
+
+        it("should restore the originalValue seeded by the caller (Inspector path)", async () => {
+            // The Inspector flow: caller has already mutated the entity, so it
+            // passes the prior value via `originalValue` instead of letting the
+            // manager observe the (post-edit) live value as the original.
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
+            const material = scene.materials.find((m) => m.name === "Material1") as any;
+
+            // Simulate what Inspector does: it already wrote 0.4 to the entity.
+            material.alpha = 0.4;
+
+            AddOverride(
+                scene,
+                {
+                    targetType: "materials",
+                    targetName: "Material1",
+                    targetIndex: 0,
+                    propertyPath: "alpha",
+                    value: 0.4,
+                },
+                { originalValue: 1.0 }
+            );
+
+            // Manager did not overwrite the already-applied value.
+            expect(material.alpha).toBe(0.4);
+
+            // RemoveOverride restores the seeded pre-edit value.
+            RemoveOverride(scene, "materials", "Material1", 0, "alpha");
+            expect(material.alpha).toBe(1.0);
+        });
     });
 
     describe("GetOverrides", () => {
@@ -238,6 +286,43 @@ describe("OverrideManager", () => {
 
             ClearOverrides(scene);
             expect(GetOverrides(scene).length).toBe(0);
+        });
+
+        it("should restore originals and fire a single change notification when restoreOriginals=true", async () => {
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
+            const material = scene.materials.find((m) => m.name === "Material1") as any;
+
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "Material1",
+                targetIndex: 0,
+                propertyPath: "alpha",
+                value: 0.25,
+            });
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "Material1",
+                targetIndex: 0,
+                propertyPath: "wireframe",
+                value: true,
+            });
+            expect(material.alpha).toBe(0.25);
+            expect(material.wireframe).toBe(true);
+
+            const notifySpy = vi.fn();
+            const observer = overrides.onChangedObservable.add(notifySpy);
+
+            ClearOverrides(scene, true);
+
+            // Originals restored
+            expect(material.alpha).toBe(1.0);
+            expect(material.wireframe).toBe(false);
+            expect(GetOverrides(scene).length).toBe(0);
+
+            // Single notification regardless of override count
+            expect(notifySpy).toHaveBeenCalledTimes(1);
+
+            observer.remove();
         });
     });
 

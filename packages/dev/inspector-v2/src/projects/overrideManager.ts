@@ -116,22 +116,58 @@ export function AddOverrideManagerCreatedObserver(callback: (manager: OverrideMa
 // ── Override CRUD ──
 
 /**
- * Adds an override entry and immediately applies it if the target is loaded.
+ * Options for {@link AddOverride}.
+ */
+export type AddOverrideOptions = {
+    /**
+     * If the `originalValue` field is present, the override is recorded *without*
+     * re-applying it (the caller is presumed to have already mutated the entity)
+     * and the field's content is captured as the property's pre-override
+     * "original" so {@link RemoveOverride} can restore it later.
+     *
+     * Inspector-driven edits use this: by the time `onPropertyChanged` fires,
+     * the binding has already written the new value, but it still has the prior
+     * value in hand. Without this seeding path, an override created via
+     * Inspector could never be reverted (the manager would have no record of
+     * the pre-edit value).
+     *
+     * If the field is absent, the override is applied normally and the original
+     * is captured by reading the property's current value on first apply.
+     */
+    readonly originalValue?: unknown;
+};
+
+/**
+ * Adds an override entry and immediately applies it.
  * If an override with the same target coordinates already exists, it is replaced.
+ *
+ * When the caller has already mutated the target (e.g. an Inspector edit),
+ * pass `{ originalValue }` containing the property's prior value — this seeds
+ * the original-value map (so {@link RemoveOverride} can restore it) and skips
+ * the redundant apply step.
  * @param scene - The scene whose override registry to update.
  * @param entry - The override to add.
- * @param skipApply - If true, records the override without applying it immediately.
- *                    Use this when the value has already been set (e.g., by Inspector).
+ * @param options - Optional behavior modifiers; see {@link AddOverrideOptions}.
  */
-export function AddOverride(scene: Scene, entry: IOverrideEntry, skipApply: boolean = false): void {
+export function AddOverride(scene: Scene, entry: IOverrideEntry, options?: AddOverrideOptions): void {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
 
     RemoveMatchingOverride(internal, entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
     internal.overrides.push(entry);
-    if (!skipApply) {
+
+    if (options && "originalValue" in options) {
+        // Caller already applied the new value. Seed the captured original from
+        // their pre-edit snapshot — otherwise ApplyOverrideEntry would capture
+        // the post-edit value and RemoveOverride would have nothing to restore.
+        const origKey = MakeOriginalValueKey(entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
+        if (!internal.originalValues.has(origKey)) {
+            internal.originalValues.set(origKey, CloneValue(options.originalValue));
+        }
+    } else {
         ApplyOverrideEntry(manager, internal, entry);
     }
+
     manager.onChangedObservable.notifyObservers();
 }
 
@@ -189,9 +225,23 @@ export function ClearOverrides(scene: Scene, restoreOriginals: boolean = false):
     const internal = GetOverrideInternals(manager);
 
     if (restoreOriginals) {
-        for (const entry of [...internal.overrides]) {
-            RemoveOverride(scene, entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
+        // Snapshot the entries so we can restore each original without firing
+        // an onChangedObservable notification per entry; consumers only need
+        // one signal that the registry was emptied.
+        const entries = [...internal.overrides];
+        internal.overrides.length = 0;
+        for (const entry of entries) {
+            const origKey = MakeOriginalValueKey(entry.targetType, entry.targetName, entry.targetIndex, entry.propertyPath);
+            const original = internal.originalValues.get(origKey);
+            if (original !== undefined) {
+                const target = ResolveTarget(manager.scene, entry.targetType, entry.targetName, entry.targetIndex);
+                if (target) {
+                    SetNestedProperty(target, entry.propertyPath, original);
+                }
+            }
         }
+        internal.originalValues.clear();
+        manager.onChangedObservable.notifyObservers();
         return;
     }
 

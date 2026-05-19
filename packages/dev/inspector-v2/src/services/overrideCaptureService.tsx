@@ -5,6 +5,7 @@ import { type IPropertiesService, PropertiesServiceIdentity } from "./panes/prop
 import { AddOverride, RenameOverrideTarget, RenameOverrideValueReferences } from "../projects/overrideManager";
 import { type OverrideTargetType } from "../projects/overrideEntry";
 import { type Scene } from "core/scene";
+import { type IObserver } from "core/Misc/observable";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
@@ -19,106 +20,127 @@ import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager";
  * owns an object. When multiple objects share a name, an entity's position
  * among same-named siblings (`targetIndex`) is captured so the override
  * re-applies to the same object after reload.
+ *
+ * The service re-attaches to the current scene whenever it changes, so
+ * overrides are captured against the active scene even after loads/swaps.
  */
 export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneContext, IPropertiesService]> = {
     friendlyName: "Override Capture",
     consumes: [SceneContextIdentity, PropertiesServiceIdentity],
     factory: (sceneContext, propertiesService) => {
-        const scene = sceneContext.currentScene;
-        if (!scene) {
-            return undefined;
-        }
-
         // Track each entity's name + index at first contact so we can update
         // existing overrides when the user renames the entity in Inspector.
-        const previousIdentity = new WeakMap<object, { name: string; index: number }>();
+        // Re-created on each scene attach so identities don't leak across scenes.
+        let previousIdentity = new WeakMap<object, { name: string; index: number }>();
+        let changeObserver: IObserver | null = null;
 
-        // Subscribe to Inspector property changes
-        const observer = propertiesService.onPropertyChanged.add((changeInfo) => {
-            const { entity, propertyKey, newValue } = changeInfo;
+        function attachToScene(scene: Scene | null): void {
+            if (changeObserver) {
+                changeObserver.remove();
+                changeObserver = null;
+            }
+            previousIdentity = new WeakMap();
+            if (!scene) {
+                return;
+            }
 
-            // When "name" changes, update the matching override so it follows the rename
-            // instead of creating a new (orphaned) one. Also rewrite any overrides
-            // whose *value* referenced this entity by name so cross-references
-            // (e.g. `mesh.material = ref:redMat`) survive the rename too.
-            if (propertyKey === "name" && typeof newValue === "string") {
-                const targetType = ClassifyEntity(entity, scene);
-                if (targetType !== null && targetType !== "scene") {
-                    const previous = previousIdentity.get(entity as object);
-                    if (previous && previous.name !== newValue) {
-                        // The entity already has the new name at this point, so compute its new index among same-named siblings.
-                        const newIndex = ComputeTargetIndex(scene, targetType, entity, newValue);
-                        RenameOverrideTarget(scene, targetType, previous.name, previous.index, newValue, newIndex);
+            changeObserver = propertiesService.onPropertyChanged.add((changeInfo) => {
+                const { entity, propertyKey, oldValue, newValue } = changeInfo;
 
-                        // Mirror the rename into override values that reference
-                        // this entity by name. SmartAsset textures use the
-                        // `samTexture:<key>` form and stay decoupled from the
-                        // texture's runtime name, so they don't need rewriting.
-                        const valueScheme = targetType === "textures" ? "texture" : "ref";
-                        RenameOverrideValueReferences(scene, valueScheme, previous.name, newValue);
+                // When "name" changes, update the matching override so it follows the rename
+                // instead of creating a new (orphaned) one. Also rewrite any overrides
+                // whose *value* referenced this entity by name so cross-references
+                // (e.g. `mesh.material = ref:redMat`) survive the rename too.
+                if (propertyKey === "name" && typeof newValue === "string") {
+                    const targetType = ClassifyEntity(entity, scene);
+                    if (targetType !== null && targetType !== "scene") {
+                        const previous = previousIdentity.get(entity as object);
+                        if (previous && previous.name !== newValue) {
+                            // The entity already has the new name at this point, so compute its new index among same-named siblings.
+                            const newIndex = ComputeTargetIndex(scene, targetType, entity, newValue);
+                            RenameOverrideTarget(scene, targetType, previous.name, previous.index, newValue, newIndex);
+
+                            // Mirror the rename into override values that reference
+                            // this entity by name. SmartAsset textures use the
+                            // `samTexture:<key>` form and stay decoupled from the
+                            // texture's runtime name, so they don't need rewriting.
+                            const valueScheme = targetType === "textures" ? "texture" : "ref";
+                            RenameOverrideValueReferences(scene, valueScheme, previous.name, newValue);
+                        }
+                        previousIdentity.set(entity as object, { name: newValue, index: ComputeTargetIndex(scene, targetType, entity, newValue) });
                     }
-                    previousIdentity.set(entity as object, { name: newValue, index: ComputeTargetIndex(scene, targetType, entity, newValue) });
-                }
-                return;
-            }
-
-            if (propertyKey === "id") {
-                return;
-            }
-
-            let targetType = ClassifyEntity(entity, scene);
-            let targetName: string;
-            let targetIndex: number;
-            let propertyPath = String(propertyKey);
-            let targetEntity: object | Scene;
-
-            if (targetType !== null) {
-                if (targetType === "scene") {
-                    targetName = "";
-                    targetIndex = 0;
-                    targetEntity = scene;
-                } else {
-                    targetName = GetEntityName(entity);
-                    targetIndex = ComputeTargetIndex(scene, targetType, entity, targetName);
-                    targetEntity = entity as object;
-                }
-                // Seed identity on first contact so rename tracking works
-                if (!previousIdentity.has(targetEntity as object) && targetName) {
-                    previousIdentity.set(targetEntity as object, { name: targetName, index: targetIndex });
-                }
-            } else {
-                // Sub-object: check if this is a property of a known parent
-                const parentInfo = FindParentEntity(entity, scene);
-                if (!parentInfo) {
                     return;
                 }
-                targetType = parentInfo.targetType;
-                targetName = parentInfo.targetName;
-                targetIndex = parentInfo.targetIndex;
-                propertyPath = `${parentInfo.parentProperty}.${propertyPath}`;
-            }
 
-            const serializedValue = SerializeOverrideValueForCapture(newValue, scene);
-            if (serializedValue === undefined) {
-                return;
-            }
+                if (propertyKey === "id") {
+                    return;
+                }
 
-            AddOverride(
-                scene,
-                {
-                    targetType,
-                    targetName,
-                    targetIndex,
-                    propertyPath,
-                    value: serializedValue,
-                },
-                true
-            ); // skipApply — Inspector already set the value
-        });
+                let targetType = ClassifyEntity(entity, scene);
+                let targetName: string;
+                let targetIndex: number;
+                let propertyPath = String(propertyKey);
+                let targetEntity: object | Scene;
+
+                if (targetType !== null) {
+                    if (targetType === "scene") {
+                        targetName = "";
+                        targetIndex = 0;
+                        targetEntity = scene;
+                    } else {
+                        targetName = GetEntityName(entity);
+                        targetIndex = ComputeTargetIndex(scene, targetType, entity, targetName);
+                        targetEntity = entity as object;
+                    }
+                    // Seed identity on first contact so rename tracking works
+                    if (!previousIdentity.has(targetEntity as object) && targetName) {
+                        previousIdentity.set(targetEntity as object, { name: targetName, index: targetIndex });
+                    }
+                } else {
+                    // Sub-object: check if this is a property of a known parent
+                    const parentInfo = FindParentEntity(entity, scene);
+                    if (!parentInfo) {
+                        return;
+                    }
+                    targetType = parentInfo.targetType;
+                    targetName = parentInfo.targetName;
+                    targetIndex = parentInfo.targetIndex;
+                    propertyPath = `${parentInfo.parentProperty}.${propertyPath}`;
+                }
+
+                const serializedValue = SerializeOverrideValueForCapture(newValue, scene);
+                if (serializedValue === undefined) {
+                    return;
+                }
+
+                // The Inspector binding has already written `newValue` to the
+                // entity, so pass `oldValue` so the manager can record the
+                // true pre-edit value (without this, RemoveOverride would have
+                // no record of the original and could not restore it).
+                AddOverride(
+                    scene,
+                    {
+                        targetType,
+                        targetName,
+                        targetIndex,
+                        propertyPath,
+                        value: serializedValue,
+                    },
+                    { originalValue: oldValue }
+                );
+            });
+        }
+
+        attachToScene(sceneContext.currentScene);
+        const sceneSubObserver = sceneContext.currentSceneObservable.add((scene) => attachToScene(scene));
 
         return {
             dispose: () => {
-                observer.remove();
+                sceneSubObserver.remove();
+                if (changeObserver) {
+                    changeObserver.remove();
+                    changeObserver = null;
+                }
             },
         };
     },
@@ -188,7 +210,7 @@ function ComputeTargetIndex(scene: Scene, targetType: OverrideTargetType, entity
         return 0;
     }
     const sameName = collection.filter((obj) => (obj as { name?: string }).name === name);
-    const idx = sameName.indexOf(entity as never);
+    const idx = sameName.indexOf(entity as object);
     return idx >= 0 ? idx : 0;
 }
 
@@ -224,9 +246,12 @@ function GetCollection(scene: Scene, targetType: OverrideTargetType): readonly u
  * @param scene - Optional scene for resolving object references.
  * @returns The serialized value, or undefined if unsupported.
  */
-function SerializeOverrideValueForCapture(value: unknown, scene?: Scene): number | string | boolean | number[] | undefined {
+function SerializeOverrideValueForCapture(value: unknown, scene?: Scene): number | string | boolean | number[] | null | undefined {
+    // null is a legitimate override value (e.g. clearing a material slot) and
+    // must round-trip as null — substituting "" here would silently corrupt
+    // object-typed slots with an empty string on reload.
     if (value === null) {
-        return "";
+        return null;
     }
     if (typeof value === "number" || typeof value === "string" || typeof value === "boolean") {
         return value;
