@@ -9,6 +9,7 @@ export * from "../Execution/flowGraphSetPropertyBlock.pure";
 export * from "./flowGraphConstantBlock.pure";
 export * from "./flowGraphGetAssetBlock.pure";
 export * from "./flowGraphDataSwitchBlock.pure";
+export * from "./flowGraphIsKeyPressedBlock";
 export * from "./Math/pure";
 export * from "./Transformers/pure";
 export * from "./Utils/pure";
