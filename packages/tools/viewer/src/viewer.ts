@@ -1333,10 +1333,12 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
         // and an environment texture is not already loaded, then load the default environment.
         if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
-            // Pass `internalAbortSignal` so this PBR fallback aborts cleanly if a newer loadModel has started.
-            // We don't OR it with `abortSignal` here because resetEnvironment only takes one signal; the user's
-            // signal is checked by resetEnvironment via _throwIfDisposedOrAborted at its own entry.
-            await this.resetEnvironment({ lighting: true }, abortSignal ?? internalAbortSignal);
+            // Combine the caller's external `abortSignal` with our `internalAbortSignal` so the
+            // fallback environment load aborts on either: caller cancellation OR a newer loadModel
+            // superseding us. Without this OR, a stale fallback could mutate the scene before the
+            // post-await `internalAbortSignal.aborted` check runs.
+            const fallbackAbortSignal = abortSignal ? AbortSignal.any([abortSignal, internalAbortSignal]) : internalAbortSignal;
+            await this.resetEnvironment({ lighting: true }, fallbackAbortSignal);
             if (internalAbortSignal.aborted) {
                 throw new AbortError(internalAbortSignal.reason);
             }
@@ -1355,7 +1357,11 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             } else {
                 // make sure there is an env light before creating shadows
                 if (!this._reflectionTexture) {
-                    await this.loadEnvironment("auto", { lighting: true, skybox: false }, abortSignal);
+                    // Combine the caller's external `abortSignal` with `internalAbortSignal` so this
+                    // auto-environment load aborts if either the caller cancels or a newer shadow
+                    // update supersedes us.
+                    const envAbortSignal = abortSignal ? AbortSignal.any([abortSignal, internalAbortSignal]) : internalAbortSignal;
+                    await this.loadEnvironment("auto", { lighting: true, skybox: false }, envAbortSignal);
                 }
 
                 if (quality === "normal") {
