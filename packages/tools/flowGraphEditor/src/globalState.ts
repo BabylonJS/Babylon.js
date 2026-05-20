@@ -76,6 +76,15 @@ export class GlobalState {
     /** Lock object for property grid */
     lockObject = new LockObject();
 
+    /** Current MCP editor-session URL. */
+    mcpSessionUrl: string | null = null;
+    /** Whether the editor is connected to an MCP session. */
+    mcpSessionConnected: boolean = false;
+    /** Active MCP session event stream. */
+    mcpEventSource: EventSource | null = null;
+    /** Observable triggered when MCP session connection state changes. */
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     // ── Time Scale ─────────────────────────────────────────────────────
     /** Observable triggered when the time scale changes. */
     onTimeScaleChanged = new Observable<number>();

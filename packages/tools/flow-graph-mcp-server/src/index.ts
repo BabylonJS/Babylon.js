@@ -24,17 +24,61 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod/v4";
 import {
+    CreateErrorResponse,
     CreateInlineJsonSchema,
     CreateJsonExportResponse,
     CreateJsonFileSchema,
     CreateJsonImportResponse,
     CreateOutputFileSchema,
+    CreateTextResponse,
+    McpEditorSessionController,
     ResolveDefinedInput,
-} from "../../mcp-server-core/src/index.js";
+} from "@tools/mcp-server-core";
 
 import { FlowGraphBlockRegistry, GetBlockCatalogSummary, GetBlockTypeDetails } from "./blockRegistry.js";
 import { FlowGraphManager } from "./flowGraphManager.js";
 const manager = new FlowGraphManager();
+const sessionController = new McpEditorSessionController<FlowGraphManager>(
+    {
+        serverName: "Flow Graph MCP Session Server",
+        documentKind: "flow-graph",
+        managerUnavailableMessage: "Flow graph manager is not available",
+        getDocument: (manager, session) => manager.exportJSON(session.name) ?? undefined,
+        setDocument: (manager, session, document) => {
+            const result = manager.importJSON(session.name, document);
+            return result && result !== "OK" ? result : undefined;
+        },
+    },
+    {
+        defaultPort: 3001,
+        statusTitle: "Flow Graph MCP Session Server",
+    }
+);
+
+/**
+ * Notify SSE subscribers if a session exists for the given flow graph.
+ * @param graphName - The graph name to check for active sessions.
+ */
+function _notifyIfSession(graphName: string): void {
+    const sessionId = sessionController.getSessionIdForName(graphName);
+    if (sessionId) {
+        sessionController.notifySessionUpdate(sessionId);
+    }
+}
+
+/**
+ * Import flow graph JSON and notify a matching live session on success.
+ * @param graphName - The graph name to import into.
+ * @param jsonText - Serialized Flow Graph JSON.
+ * @returns "OK" on success, or an error string.
+ */
+function _importGraphJson(graphName: string, jsonText: string): string {
+    const result = manager.importJSON(graphName, jsonText);
+    if (result === "OK") {
+        _notifyIfSession(graphName);
+    }
+    return result;
+}
 
 // ─── MCP Server ───────────────────────────────────────────────────────────
 const server = new McpServer(
@@ -347,11 +391,14 @@ server.registerTool(
     },
     async ({ name }) => {
         manager.createGraph(name);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(name);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return {
             content: [
                 {
                     type: "text",
-                    text: `Created flow graph "${name}". Now add blocks with add_block, connect them with connect_signal/connect_data, then export with export_graph_json.`,
+                    text: `Created flow graph "${name}". Now add blocks with add_block, connect them with connect_signal/connect_data, then export with export_graph_json.\n\nMCP Session URL: ${sessionUrl}`,
                 },
             ],
         };
@@ -368,6 +415,9 @@ server.registerTool(
     },
     async ({ name }) => {
         const ok = manager.deleteGraph(name);
+        if (ok) {
+            sessionController.closeSessionForName(name);
+        }
         return {
             content: [{ type: "text", text: ok ? `Deleted "${name}".` : `Graph "${name}" not found.` }],
         };
@@ -377,6 +427,9 @@ server.registerTool(
 server.registerTool("clear_all", { description: "Remove all flow graphs from memory, resetting the server to a clean state." }, async () => {
     const names = manager.listGraphs();
     manager.clearAll();
+    for (const name of names) {
+        sessionController.closeSessionForName(name);
+    }
     return {
         content: [{ type: "text", text: names.length > 0 ? `Cleared ${names.length} flow graph(s): ${names.join(", ")}` : "Nothing to clear — memory was already empty." }],
     };
@@ -392,6 +445,65 @@ server.registerTool("list_graphs", { description: "List all flow graphs currentl
             },
         ],
     };
+});
+
+server.registerTool(
+    "get_session_url",
+    {
+        description: "Get or create a live-session URL for a flow graph. The URL can be pasted into the Flow Graph Editor MCP session panel.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the flow graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const graphs = manager.listGraphs();
+        if (!graphs.includes(graphName)) {
+            return CreateErrorResponse(`Graph "${graphName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(graphName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "start_session",
+    {
+        description: "Start a live editor session for a flow graph and return its URL.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the flow graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const graphs = manager.listGraphs();
+        if (!graphs.includes(graphName)) {
+            return CreateErrorResponse(`Graph "${graphName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(graphName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`Started Flow Graph editor session for "${graphName}".\n\nMCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "close_session",
+    {
+        description: "Close the live editor session for a flow graph without stopping the MCP server.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the flow graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const closed = sessionController.closeSessionForName(graphName);
+        return CreateTextResponse(closed ? `Closed MCP session for "${graphName}".` : `No active MCP session found for "${graphName}".`);
+    }
+);
+
+server.registerTool("stop_session_server", { description: "Stop the local Flow Graph MCP HTTP/SSE session server and close all active sessions." }, async () => {
+    await sessionController.stopAsync();
+    return CreateTextResponse("Flow Graph MCP session server stopped.");
 });
 
 // ── Block operations ────────────────────────────────────────────────────
@@ -429,6 +541,7 @@ server.registerTool(
         if (typeof result === "string") {
             return { content: [{ type: "text", text: `Error: ${result}` }], isError: true };
         }
+        _notifyIfSession(graphName);
 
         let msg = `Added block [${result.id}] "${result.name}" (${blockType}). Use id ${result.id} in connect_signal/connect_data.`;
 
@@ -464,6 +577,9 @@ server.registerTool(
     },
     async ({ graphName, blockId }) => {
         const result = manager.removeBlock(graphName, blockId);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Removed block ${blockId}.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -498,6 +614,9 @@ server.registerTool(
     },
     async ({ graphName, blockId, config }) => {
         const result = manager.setBlockConfig(graphName, blockId, config as Record<string, unknown>);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Updated block ${blockId} config.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -535,6 +654,9 @@ server.registerTool(
         const resolvedSignalOutputName = signalOutputName ?? outputNameAlias ?? signalOut ?? outName ?? "out";
         const resolvedSignalInputName = signalInputName ?? inputName ?? signalIn ?? inName ?? "in";
         const result = manager.connectSignal(graphName, sourceBlockId, resolvedSignalOutputName, targetBlockId, resolvedSignalInputName);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         // Gap 32: Detect if the manager auto-remapped "out" → "done" for event blocks
         let note = "";
         if (result === "OK" && resolvedSignalOutputName === "out") {
@@ -571,6 +693,9 @@ server.registerTool(
     },
     async ({ graphName, blockId, signalOutputName }) => {
         const result = manager.disconnectSignal(graphName, blockId, signalOutputName);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Disconnected signal [${blockId}].${signalOutputName}` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -597,6 +722,9 @@ server.registerTool(
     },
     async ({ graphName, sourceBlockId, outputName, targetBlockId, inputName }) => {
         const result = manager.connectData(graphName, sourceBlockId, outputName, targetBlockId, inputName);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [
                 {
@@ -621,6 +749,9 @@ server.registerTool(
     },
     async ({ graphName, blockId, inputName }) => {
         const result = manager.disconnectData(graphName, blockId, inputName);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Disconnected data [${blockId}].${inputName}` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -648,6 +779,9 @@ server.registerTool(
     },
     async ({ graphName, variableName, value }) => {
         const result = manager.setVariable(graphName, variableName, value);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [
                 {
@@ -852,7 +986,7 @@ server.registerTool(
             json,
             jsonFile,
             fileDescription: "Flow Graph JSON file",
-            importJson: (jsonText) => manager.importJSON(graphName, jsonText),
+            importJson: (jsonText) => _importGraphJson(graphName, jsonText),
             describeImported: () => manager.describeGraph(graphName),
         });
     }
@@ -880,6 +1014,7 @@ server.registerTool(
     },
     async ({ graphName, blocks }) => {
         const results: string[] = [];
+        let didMutate = false;
         for (const blockDef of blocks) {
             // Gap 18 — resolve type alias for blockType
             const resolvedBlockType = blockDef.blockType ?? blockDef.type;
@@ -891,8 +1026,12 @@ server.registerTool(
             if (typeof result === "string") {
                 results.push(`Error adding ${resolvedBlockType}: ${result}`);
             } else {
+                didMutate = true;
                 results.push(`[${result.id}] ${result.name} (${resolvedBlockType})`);
             }
+        }
+        if (didMutate) {
+            _notifyIfSession(graphName);
         }
         return { content: [{ type: "text", text: `Added blocks:\n${results.join("\n")}` }] };
     }
@@ -936,12 +1075,19 @@ server.registerTool(
             return { content: [{ type: "text", text: (e as Error).message }], isError: true };
         }
         const results: string[] = [];
+        let didMutate = false;
         for (const conn of connections) {
             // Gap 18 / Gap 50 — resolve output and input name aliases
             const resolvedOutputName = conn.signalOutputName ?? conn.signalOut ?? conn.outputName ?? "out";
             const resolvedInputName = conn.signalInputName ?? conn.signalIn ?? conn.inName ?? conn.inputName ?? "in";
             const result = manager.connectSignal(resolvedGraphName, conn.sourceBlockId, resolvedOutputName, conn.targetBlockId, resolvedInputName);
+            if (result === "OK") {
+                didMutate = true;
+            }
             results.push(result === "OK" ? `[${conn.sourceBlockId}].${resolvedOutputName} → [${conn.targetBlockId}].${resolvedInputName}` : `Error: ${result}`);
+        }
+        if (didMutate) {
+            _notifyIfSession(resolvedGraphName);
         }
         return { content: [{ type: "text", text: `Signal connections:\n${results.join("\n")}` }] };
     }
@@ -967,9 +1113,16 @@ server.registerTool(
     },
     async ({ graphName, connections }) => {
         const results: string[] = [];
+        let didMutate = false;
         for (const conn of connections) {
             const result = manager.connectData(graphName, conn.sourceBlockId, conn.outputName, conn.targetBlockId, conn.inputName);
+            if (result === "OK") {
+                didMutate = true;
+            }
             results.push(result === "OK" ? `[${conn.sourceBlockId}].${conn.outputName} → [${conn.targetBlockId}].${conn.inputName}` : `Error: ${result}`);
+        }
+        if (didMutate) {
+            _notifyIfSession(graphName);
         }
         return { content: [{ type: "text", text: `Data connections:\n${results.join("\n")}` }] };
     }
@@ -991,3 +1144,10 @@ try {
     console.error("Fatal error:", err);
     process.exit(1);
 }
+
+const _shutdown = () => {
+    void sessionController.stopAsync();
+    process.exit(0);
+};
+process.on("SIGINT", _shutdown);
+process.on("SIGTERM", _shutdown);

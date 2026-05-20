@@ -27,6 +27,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { Constants } from "core/Engines/constants";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ShowToast } from "../toast/toastComponent";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -287,6 +288,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="title">FLOW GRAPH EDITOR</div>
                 </div>
                 <div>
+                    <McpSessionComponent globalState={this.props.globalState} />
                     <LineContainerComponent title="GENERAL">
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
