@@ -1417,7 +1417,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
     /** @internal */
     protected override async _afterLoadModel(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         source: string | File | ArrayBufferView | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         options: ViewerLoadModelOptions | undefined,
         abortSignal: AbortSignal | undefined,
         internalAbortSignal: AbortSignal

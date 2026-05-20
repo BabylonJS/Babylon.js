@@ -13,7 +13,7 @@
  *   el.viewerDetails.viewer.nodeRenderGraph = null; // revert to default
  */
 
-import { type AbstractMesh, type IDisposable, type Nullable } from "core/index";
+import { Constants, NodeRenderGraphGenerateMipmapsBlock, Texture, type AbstractMesh, type IDisposable, type Nullable } from "core/index";
 import type { FrameGraphTextureHandle } from "core/FrameGraph/frameGraphTypes";
 import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
@@ -35,6 +35,7 @@ export class NRGViewer extends Viewer {
     private _nrg: Nullable<NodeRenderGraph> = null;
     private _wiringDisposables: IDisposable[] = [];
     private _nrgAbortController: Nullable<AbortController> = null;
+    private _refractionTexture: Nullable<Texture> = null;
 
     /**
      * The active NodeRenderGraph snippet ID, or null to use default rendering.
@@ -56,7 +57,7 @@ export class NRGViewer extends Viewer {
 
     private async _loadNodeRenderGraphAsync(snippetId: Nullable<string>): Promise<void> {
         // Abort any in-flight NRG load.
-        this._nrgAbortController?.abort();
+        this._nrgAbortController?.abort(new AbortError("NRG load superseded"));
         const abortController = new AbortController();
         this._nrgAbortController = abortController;
 
@@ -73,20 +74,11 @@ export class NRGViewer extends Viewer {
             // before ParseFromSnippetAsync so that GetClass() can resolve every block type in
             // the snippet. Without it, unrecognised block classes are silently skipped during
             // deserialization, breaking the connection chain to the Output block.
-            const [{ NodeRenderGraph }] = await Promise.all([
-                import("core/FrameGraph/Node/nodeRenderGraph"),
-                import("core/FrameGraph/Node/Blocks/allBlocks"),
-            ]);
+            const [{ NodeRenderGraph }] = await Promise.all([import("core/FrameGraph/Node/nodeRenderGraph"), import("core/FrameGraph/Node/Blocks/allBlocks")]);
 
             abortController.signal.throwIfAborted();
 
-            const nrg = await NodeRenderGraph.ParseFromSnippetAsync(
-                snippetId,
-                this._scene,
-                { autoFillExternalInputs: true },
-                undefined,
-                /* skipBuild */ true
-            );
+            const nrg = await NodeRenderGraph.ParseFromSnippetAsync(snippetId, this._scene, { autoFillExternalInputs: true }, undefined, /* skipBuild */ true);
 
             abortController.signal.throwIfAborted();
 
@@ -115,7 +107,7 @@ export class NRGViewer extends Viewer {
      * To wire NRG outputs back into materials, subscribe to scene.onAfterRenderObservable
      * (or another suitable observable) and read from nrg.frameGraph inside the callback.
      */
-    private _wireNRG(nrg: NodeRenderGraph): void {
+    protected _wireNRG(nrg: NodeRenderGraph): void {
         const disposables: IDisposable[] = [];
 
         // ── ObjectList input blocks ────────────────────────────────────────────
@@ -126,8 +118,7 @@ export class NRGViewer extends Viewer {
         const isTransmission = (mesh: AbstractMesh) => {
             const mat = mesh.material;
             return (
-                (mat instanceof OpenPBRMaterial && (mat.transmissionWeight > 0 || mat.subsurfaceWeight > 0)) ||
-                (mat instanceof PBRMaterial && mat.subSurface.isRefractionEnabled)
+                (mat instanceof OpenPBRMaterial && (mat.transmissionWeight > 0 || mat.subsurfaceWeight > 0)) || (mat instanceof PBRMaterial && mat.subSurface.isRefractionEnabled)
             );
         };
 
@@ -153,37 +144,45 @@ export class NRGViewer extends Viewer {
                 // before buildAsync(). We mutate its .meshes property in place rather than
                 // replacing block.value, which would clear the downstream output connection.
                 const objectList = block.value as FrameGraphObjectList;
-                disposables.push(this._bindObjectList((meshes) => { objectList.meshes = meshes; }, filter));
+                disposables.push(
+                    this._bindObjectList((meshes) => {
+                        objectList.meshes = meshes;
+                    }, filter)
+                );
             }
         }
 
         // ── Material updates from NRG outputs ─────────────────────────────────
         //
-        // To read a texture produced by the NRG and apply it to materials, subscribe
-        // to an observable that fires after the graph executes. For example:
-        //
-          // outputs[0].value on a texture output block is a FrameGraphTextureHandle (a number).
-          const handle = nrg.getBlockByName("Refraction Texture")?.outputs[0]?.value as FrameGraphTextureHandle | undefined;
-          const observer = this._scene.onAfterRenderObservable.add(() => {
-              if (handle === undefined) {
-                  return;
-              }
-              // getTextureFromHandle returns Nullable<InternalTexture> — the raw GPU texture.
-              // refractionTexture / backgroundRefractionTexture both expect Nullable<BaseTexture>,
-              // so a RenderTargetTexture wrapper is needed before assigning to a material.
-              const internalTexture: Nullable<InternalTexture> = nrg.frameGraph.textureManager.getTextureFromHandle(handle);
-              for (const mesh of this._scene.meshes) {
-                  if (isTransmission(mesh)) {
-                      if (mesh.material instanceof PBRMaterial) {
-                          // refractionTexture lives on the subSurface component, not the material directly.
-                          mesh.material.subSurface.refractionTexture = internalTexture as never;
-                      } else if (mesh.material instanceof OpenPBRMaterial) {
-                          mesh.material.backgroundRefractionTexture = internalTexture as never;
-                      }
-                  }
-              }
-          });
-          disposables.push({ dispose: () => this._scene.onAfterRenderObservable.remove(observer) });
+        const refractionMipMapsBlock = nrg.getBlockByName<NodeRenderGraphGenerateMipmapsBlock>("Generate Refraction mipmaps");
+        const internalTexture = refractionMipMapsBlock ? nrg.frameGraph.textureManager.getTextureFromHandle(refractionMipMapsBlock.task.outputTexture) : null;
+        if (internalTexture) {
+            internalTexture.incrementReferences();
+            internalTexture.useMipMaps = true;
+            const texture = new Texture("", this._scene, { internalTexture: internalTexture, noMipmap: true });
+
+            texture.name = "Refraction texture wrapper";
+            texture.anisotropicFilteringLevel = 1;
+            texture.updateSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+            texture.lodGenerationScale = 1;
+            texture.lodGenerationOffset = -4;
+            texture.gammaSpace = false;
+            texture.coordinatesMode = Constants.TEXTURE_PROJECTION_MODE;
+
+            this._refractionTexture?.dispose();
+            this._refractionTexture = texture;
+
+            for (const mesh of this._scene.meshes) {
+                if (isTransmission(mesh)) {
+                    if (mesh.material instanceof PBRMaterial) {
+                        // refractionTexture lives on the subSurface component, not the material directly.
+                        mesh.material.subSurface.refractionTexture = this._refractionTexture;
+                    } else if (mesh.material instanceof OpenPBRMaterial) {
+                        mesh.material.backgroundRefractionTexture = this._refractionTexture;
+                    }
+                }
+            }
+        }
 
         this._wiringDisposables = disposables;
     }
