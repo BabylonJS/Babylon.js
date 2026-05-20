@@ -1,6 +1,11 @@
 import * as net from "node:net";
 
-import { McpEditorSessionController, McpEditorSessionServer } from "../../src/index";
+import {
+    FindCompatibleMcpEditorSessionServerAsync,
+    IsCompatibleMcpEditorSessionHealth,
+    McpEditorSessionController,
+    McpEditorSessionServer,
+} from "../../src/index";
 
 async function GetFreePortAsync(): Promise<number> {
     return await new Promise((resolve, reject) => {
@@ -182,6 +187,57 @@ describe("editor session server", () => {
             expect(controller.closeSessionForName("main")).toBe(true);
         } finally {
             await controller.stopAsync();
+        }
+    });
+
+    it("checks discovered health payload compatibility", () => {
+        const health = {
+            protocol: "babylon-mcp-editor-session",
+            protocolVersion: "1.0",
+            serverName: "Discovery Test Server",
+            port: 3001,
+            host: "127.0.0.1",
+            publicHostname: "localhost",
+            documentKind: "test-document",
+            running: true,
+            activeSessionCount: 0,
+            capabilities: ["sse", "document-get", "document-post", "session-close"],
+        };
+
+        expect(IsCompatibleMcpEditorSessionHealth(health, { documentKind: "test-document" })).toBe(true);
+        expect(IsCompatibleMcpEditorSessionHealth(health, { documentKind: "other-document" })).toBe(false);
+        expect(IsCompatibleMcpEditorSessionHealth({ ...health, protocol: "other-protocol" }, { documentKind: "test-document" })).toBe(false);
+        expect(IsCompatibleMcpEditorSessionHealth({ ...health, protocolVersion: "2.0" }, { documentKind: "test-document" })).toBe(false);
+    });
+
+    it("discovers compatible running session servers by health", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Discovery Test Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { defaultPort: port }
+        );
+
+        try {
+            await server.startAsync();
+
+            const discovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "test-document" });
+            const incompatibleDiscovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "other-document" });
+
+            expect(discovery).toMatchObject({
+                port,
+                health: {
+                    serverName: "Discovery Test Server",
+                    documentKind: "test-document",
+                },
+            });
+            expect(incompatibleDiscovery).toBeUndefined();
+        } finally {
+            await server.stopAsync();
         }
     });
 });

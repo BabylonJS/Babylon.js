@@ -132,6 +132,42 @@ export interface IMcpEditorSessionHealth {
 }
 
 /**
+ * Options for checking whether a discovered session server is compatible.
+ */
+export interface IMcpEditorSessionCompatibilityOptions {
+    /** Expected protocol version. Defaults to the current protocol version. */
+    protocolVersion?: string;
+    /** Expected document kind. When omitted, any document kind is accepted. */
+    documentKind?: string;
+    /** Expected server name. When omitted, any server name is accepted. */
+    serverName?: string;
+}
+
+/**
+ * Options for discovering an existing compatible MCP editor session server.
+ */
+export interface IMcpEditorSessionDiscoveryOptions extends IMcpEditorSessionCompatibilityOptions {
+    /** First port to probe. Defaults to 3001. */
+    startPort?: number;
+    /** Number of sequential ports to probe. Defaults to 10. */
+    portRange?: number;
+    /** Hostname to probe. Defaults to localhost. */
+    publicHostname?: string;
+    /** Request timeout in milliseconds. Defaults to 500. */
+    timeoutMs?: number;
+}
+
+/**
+ * Result of finding an existing compatible session server.
+ */
+export interface IMcpEditorSessionDiscoveryResult {
+    /** Port where the compatible server was found. */
+    port: number;
+    /** Health payload returned by the compatible server. */
+    health: IMcpEditorSessionHealth;
+}
+
+/**
  * Create a session URL for a known port and session id.
  * @param sessionId - Session identifier.
  * @param port - HTTP server port.
@@ -140,6 +176,117 @@ export interface IMcpEditorSessionHealth {
  */
 export function GetMcpEditorSessionUrl(sessionId: string, port: number, publicHostname: string = DefaultPublicHostname): string {
     return `http://${publicHostname}:${port}/session/${sessionId}`;
+}
+
+/**
+ * Check whether an unknown /health payload is compatible with this protocol.
+ * @param health - Candidate health payload.
+ * @param options - Optional compatibility constraints.
+ * @returns True when the payload is compatible.
+ */
+export function IsCompatibleMcpEditorSessionHealth(health: unknown, options: IMcpEditorSessionCompatibilityOptions = {}): health is IMcpEditorSessionHealth {
+    if (!IsRecord(health)) {
+        return false;
+    }
+
+    if (health.protocol !== DefaultProtocolName || health.protocolVersion !== (options.protocolVersion ?? DefaultProtocolVersion)) {
+        return false;
+    }
+
+    if (health.running !== true || typeof health.port !== "number" || typeof health.host !== "string" || typeof health.publicHostname !== "string") {
+        return false;
+    }
+
+    if (typeof health.serverName !== "string" || typeof health.documentKind !== "string" || typeof health.activeSessionCount !== "number") {
+        return false;
+    }
+
+    if (!Array.isArray(health.capabilities) || !health.capabilities.every((capability) => typeof capability === "string")) {
+        return false;
+    }
+
+    if (options.documentKind && health.documentKind !== options.documentKind) {
+        return false;
+    }
+
+    if (options.serverName && health.serverName !== options.serverName) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Probe a port for an MCP editor session server /health payload.
+ * @param port - Port to probe.
+ * @param publicHostname - Hostname to probe. Defaults to localhost.
+ * @param timeoutMs - Request timeout in milliseconds. Defaults to 500.
+ * @returns The parsed health payload, or undefined if no valid health payload is returned.
+ */
+export async function ProbeMcpEditorSessionHealthAsync(
+    port: number,
+    publicHostname: string = DefaultPublicHostname,
+    timeoutMs: number = 500
+): Promise<IMcpEditorSessionHealth | undefined> {
+    return await new Promise<IMcpEditorSessionHealth | undefined>((resolve) => {
+        let settled = false;
+        const finish = (health: IMcpEditorSessionHealth | undefined) => {
+            if (!settled) {
+                settled = true;
+                resolve(health);
+            }
+        };
+
+        const request = http.get({ hostname: publicHostname, port, path: "/health", timeout: timeoutMs }, (response) => {
+            const chunks: Buffer[] = [];
+            response.on("data", (chunk: Buffer) => chunks.push(chunk));
+            response.on("end", () => {
+                if (response.statusCode !== 200) {
+                    finish(undefined);
+                    return;
+                }
+
+                try {
+                    const payload = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
+                    finish(IsCompatibleMcpEditorSessionHealth(payload) ? payload : undefined);
+                } catch {
+                    finish(undefined);
+                }
+            });
+        });
+
+        request.on("timeout", () => {
+            request.destroy();
+            finish(undefined);
+        });
+        request.on("error", () => finish(undefined));
+    });
+}
+
+/**
+ * Find a compatible MCP editor session server in a local port range.
+ * @param options - Discovery and compatibility options.
+ * @returns The compatible server discovery result, or undefined if none is found.
+ */
+export async function FindCompatibleMcpEditorSessionServerAsync(options: IMcpEditorSessionDiscoveryOptions = {}): Promise<IMcpEditorSessionDiscoveryResult | undefined> {
+    const startPort = options.startPort ?? DefaultPort;
+    const portRange = options.portRange ?? DefaultPortRange;
+    const publicHostname = options.publicHostname ?? DefaultPublicHostname;
+    const timeoutMs = options.timeoutMs ?? 500;
+
+    for (let portCandidate = startPort; portCandidate < startPort + portRange; portCandidate++) {
+        // eslint-disable-next-line no-await-in-loop
+        const health = await ProbeMcpEditorSessionHealthAsync(portCandidate, publicHostname, timeoutMs);
+        if (IsCompatibleMcpEditorSessionHealth(health, options)) {
+            return { port: portCandidate, health };
+        }
+    }
+
+    return undefined;
+}
+
+function IsRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
 }
 
 /**
