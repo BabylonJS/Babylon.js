@@ -185,6 +185,24 @@ export interface IMcpEditorSessionDiscoveryResult {
 }
 
 /**
+ * Diagnostics payload returned by the shared session server.
+ */
+export interface IMcpEditorSessionDiagnostics {
+    /** Current server health payload. */
+    health: IMcpEditorSessionHealth;
+    /** Machine-readable active session list. */
+    sessions: Record<string, unknown>[];
+    /** Total number of open SSE client connections. */
+    sseClientCount: number;
+    /** Server start timestamp in milliseconds since epoch, or 0 when stopped. */
+    startedAt: number;
+    /** Server uptime in milliseconds, or 0 when stopped. */
+    uptimeMs: number;
+    /** SSE keepalive interval in milliseconds. */
+    keepAliveIntervalMs: number;
+}
+
+/**
  * Create a session URL for a known port and session id.
  * @param sessionId - Session identifier.
  * @param port - HTTP server port.
@@ -359,6 +377,7 @@ export class McpEditorSessionServer {
     private readonly _sessions = new Map<string, IMcpEditorSession>();
     private readonly _sessionByName = new Map<string, string>();
     private readonly _sseClients = new Map<string, Set<http.ServerResponse>>();
+    private _startedAt = 0;
 
     /**
      * Creates a new reusable session server instance.
@@ -376,7 +395,7 @@ export class McpEditorSessionServer {
         this._corsOrigin = options.corsOrigin;
         this._allowedOrigins = options.allowedOrigins ? new Set(options.allowedOrigins) : null;
         this._legacyDocumentRoutes = new Set((options.legacyDocumentRoutes ?? []).map((route) => route.replace(/^\//, "")));
-        this._capabilities = ["sse", "document-get", "document-post", "session-close", DefaultConflictPolicy, ...(options.capabilities ?? [])];
+        this._capabilities = ["sse", "document-get", "document-post", "session-close", "session-list", "diagnostics", DefaultConflictPolicy, ...(options.capabilities ?? [])];
         this._statusTitle = options.statusTitle ?? adapter.serverName;
         this._workspaceId = options.workspaceId ?? CreateDefaultWorkspaceId();
         this._ownerId = options.ownerId ?? CreateDefaultOwnerId();
@@ -402,6 +421,7 @@ export class McpEditorSessionServer {
 
         const endPort = port + this._portRange - 1;
         this._port = await this._tryPortRangeAsync(port, endPort);
+        this._startedAt = Date.now();
         this._keepAliveInterval = setInterval(() => {
             for (const clients of this._sseClients.values()) {
                 for (const response of clients) {
@@ -429,6 +449,7 @@ export class McpEditorSessionServer {
 
         if (!this._server) {
             this._port = 0;
+            this._startedAt = 0;
             return;
         }
 
@@ -436,6 +457,7 @@ export class McpEditorSessionServer {
             this._server!.close((error) => {
                 this._server = null;
                 this._port = 0;
+                this._startedAt = 0;
                 if (error) {
                     reject(new Error(error.message));
                     return;
@@ -572,6 +594,21 @@ export class McpEditorSessionServer {
         };
     }
 
+    /**
+     * Get current machine-readable diagnostics.
+     * @returns The server diagnostics payload.
+     */
+    public getDiagnostics(): IMcpEditorSessionDiagnostics {
+        return {
+            health: this.getHealth(),
+            sessions: this._getSessionInfoList(),
+            sseClientCount: this._getSseClientCount(),
+            startedAt: this._startedAt,
+            uptimeMs: this._startedAt ? Date.now() - this._startedAt : 0,
+            keepAliveIntervalMs: this._keepAliveIntervalMs,
+        };
+    }
+
     private _getSessionKey(kind: string, name: string): string {
         return `${kind}:${name}`;
     }
@@ -664,11 +701,12 @@ export class McpEditorSessionServer {
         }
 
         if (pathname === "/sessions" && request.method === "GET") {
-            this._writeJson(
-                response,
-                200,
-                [...this._sessions.values()].map((session) => this._createSessionInfo(session))
-            );
+            this._writeJson(response, 200, this._getSessionInfoList());
+            return;
+        }
+
+        if (pathname === "/diagnostics" && request.method === "GET") {
+            this._writeJson(response, 200, this.getDiagnostics());
             return;
         }
 
@@ -821,6 +859,7 @@ export class McpEditorSessionServer {
     }
 
     private _createSessionInfo(session: IMcpEditorSession): Record<string, unknown> {
+        const subscriberCount = this._sseClients.get(session.id)?.size ?? 0;
         const info: Record<string, unknown> = {
             sessionId: session.id,
             kind: session.kind,
@@ -829,6 +868,7 @@ export class McpEditorSessionServer {
             createdAt: session.createdAt,
             updatedAt: session.updatedAt,
             conflictPolicy: DefaultConflictPolicy,
+            subscriberCount,
             eventsUrl: `/session/${session.id}/events`,
             documentUrl: `/session/${session.id}/document`,
         };
@@ -838,6 +878,18 @@ export class McpEditorSessionServer {
         }
 
         return info;
+    }
+
+    private _getSessionInfoList(): Record<string, unknown>[] {
+        return [...this._sessions.values()].map((session) => this._createSessionInfo(session));
+    }
+
+    private _getSseClientCount(): number {
+        let count = 0;
+        for (const clients of this._sseClients.values()) {
+            count += clients.size;
+        }
+        return count;
     }
 
     private async _readBodyAsync(request: http.IncomingMessage): Promise<string> {
@@ -980,6 +1032,14 @@ export class McpEditorSessionController<Manager> {
      */
     public getHealth(): IMcpEditorSessionHealth {
         return this._getSessionServer().getHealth();
+    }
+
+    /**
+     * Get current machine-readable diagnostics.
+     * @returns The server diagnostics payload.
+     */
+    public getDiagnostics(): IMcpEditorSessionDiagnostics {
+        return this._getSessionServer().getDiagnostics();
     }
 
     private _getSessionServer(): McpEditorSessionServer {

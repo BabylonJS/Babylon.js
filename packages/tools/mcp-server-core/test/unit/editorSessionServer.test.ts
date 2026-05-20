@@ -67,6 +67,8 @@ describe("editor session server", () => {
             const listeningPort = await server.startAsync();
             const health = await (await fetch(`http://localhost:${listeningPort}/health`)).json();
             const sessionInfo = await (await fetch(`http://localhost:${listeningPort}/session/${firstSession.id}`)).json();
+            const sessions = await (await fetch(`http://localhost:${listeningPort}/sessions`)).json();
+            const diagnostics = await (await fetch(`http://localhost:${listeningPort}/diagnostics`)).json();
 
             expect(secondSession.id).toBe(firstSession.id);
             expect(health).toMatchObject({
@@ -77,14 +79,25 @@ describe("editor session server", () => {
                 activeSessionCount: 1,
                 conflictPolicy: "last-writer-wins",
             });
+            expect(health.capabilities).toEqual(expect.arrayContaining(["session-list", "diagnostics"]));
             expect(typeof health.workspaceId).toBe("string");
             expect(typeof health.ownerId).toBe("string");
             expect(sessionInfo).toMatchObject({
                 sessionId: firstSession.id,
                 conflictPolicy: "last-writer-wins",
+                subscriberCount: 0,
                 documentUrl: `/session/${firstSession.id}/document`,
                 legacyUrl: `/session/${firstSession.id}/legacy`,
             });
+            expect(sessions).toEqual([expect.objectContaining({ sessionId: firstSession.id, subscriberCount: 0 })]);
+            expect(diagnostics).toMatchObject({
+                health: { activeSessionCount: 1 },
+                sessions: [expect.objectContaining({ sessionId: firstSession.id, subscriberCount: 0 })],
+                sseClientCount: 0,
+                keepAliveIntervalMs: 15000,
+            });
+            expect(diagnostics.startedAt).toBeGreaterThan(0);
+            expect(diagnostics.uptimeMs).toBeGreaterThanOrEqual(0);
         } finally {
             await server.stopAsync();
         }
