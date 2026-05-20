@@ -31,7 +31,7 @@ function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPre
 // disallows eval/Function. Only fall back to the Function constructor for non-numeric inputs that may
 // be expressions. Empty/whitespace input returns NaN so validateValue rejects it rather than committing
 // 0 (which is what Number("") would otherwise return).
-// If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
+// Non-finite results (NaN, +/-Infinity) are rejected from both paths so callers don't have to handle them.
 function EvaluateExpression(rawValue: string): number {
     rawValue = rawValue.trim();
     if (rawValue.length === 0) {
@@ -39,12 +39,13 @@ function EvaluateExpression(rawValue: string): number {
     }
 
     const value = Number(rawValue);
-    if (!isNaN(value)) {
+    if (Number.isFinite(value)) {
         return value;
     }
 
     try {
-        return Number(Function(`"use strict";return (${rawValue})`)());
+        const result = Number(Function(`"use strict";return (${rawValue})`)());
+        return Number.isFinite(result) ? result : NaN;
     } catch {
         return NaN;
     }
