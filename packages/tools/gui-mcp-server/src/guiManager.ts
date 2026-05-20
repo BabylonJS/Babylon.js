@@ -12,7 +12,7 @@
  * 3. **Stateful & idempotent** – controls can be added, removed, moved, etc.
  */
 
-import { ValidateGuiAttachmentPayload } from "../../mcp-server-core/src/index.js";
+import { ValidateGuiAttachmentPayload } from "@tools/mcp-server-core";
 
 import { ControlRegistry, BaseControlProperties, type IControlTypeInfo } from "./catalog.js";
 

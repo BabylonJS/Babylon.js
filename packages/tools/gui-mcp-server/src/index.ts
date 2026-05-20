@@ -34,10 +34,11 @@ import {
     CreateSnippetIdSchema,
     CreateTextResponse,
     CreateTypedSnippetImportResponse,
+    McpEditorSessionController,
     ParseJsonText,
     RunSnippetResponse,
     ResolveDefinedInput,
-} from "../../mcp-server-core/src/index.js";
+} from "@tools/mcp-server-core";
 
 import { ControlRegistry, BaseControlProperties, GetControlCatalogSummary, GetControlTypeDetails } from "./catalog.js";
 import { GuiManager } from "./guiManager.js";
@@ -45,6 +46,47 @@ import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippe
 
 // ─── Singleton manager ────────────────────────────────────────────────────
 const manager = new GuiManager();
+const sessionController = new McpEditorSessionController<GuiManager>(
+    {
+        serverName: "GUI MCP Session Server",
+        documentKind: "gui",
+        managerUnavailableMessage: "GUI manager is not available",
+        getDocument: (manager, session) => manager.exportJSON(session.name) ?? undefined,
+        setDocument: (manager, session, document) => {
+            const result = manager.importJSON(session.name, document);
+            return result && result !== "OK" ? result : undefined;
+        },
+    },
+    {
+        defaultPort: 3001,
+        statusTitle: "GUI MCP Session Server",
+    }
+);
+
+/**
+ * Notify SSE subscribers if a session exists for the given GUI.
+ * @param guiName - The GUI name to check for active sessions.
+ */
+function _notifyIfSession(guiName: string): void {
+    const sessionId = sessionController.getSessionIdForName(guiName);
+    if (sessionId) {
+        sessionController.notifySessionUpdate(sessionId);
+    }
+}
+
+/**
+ * Import GUI JSON and notify a matching live session on success.
+ * @param guiName - The GUI name to import into.
+ * @param jsonText - Serialized GUI JSON.
+ * @returns "OK" on success, or an error string.
+ */
+function _importGuiJson(guiName: string, jsonText: string): string {
+    const result = manager.importJSON(guiName, jsonText);
+    if (result === "OK") {
+        _notifyIfSession(guiName);
+    }
+    return result;
+}
 
 // ─── MCP Server ───────────────────────────────────────────────────────────
 const server = new McpServer(
@@ -326,11 +368,14 @@ server.registerTool(
             return { content: [{ type: "text", text: (e as Error).message }], isError: true };
         }
         manager.createTexture(resolvedName, { width, height, isFullscreen, idealWidth, idealHeight });
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(resolvedName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return {
             content: [
                 {
                     type: "text",
-                    text: `Created GUI "${resolvedName}" (${width}×${height}, fullscreen: ${isFullscreen}). The root container is named "root". Add controls to it with add_control.`,
+                    text: `Created GUI "${resolvedName}" (${width}×${height}, fullscreen: ${isFullscreen}). The root container is named "root". Add controls to it with add_control.\n\nMCP Session URL: ${sessionUrl}`,
                 },
             ],
         };
@@ -342,6 +387,9 @@ server.registerTool(
     { description: "Delete a GUI texture from memory.", inputSchema: { name: z.string().describe("Name of the GUI to delete") } },
     async ({ name }) => {
         const ok = manager.deleteTexture(name);
+        if (ok) {
+            sessionController.closeSessionForName(name);
+        }
         return { content: [{ type: "text", text: ok ? `Deleted "${name}".` : `GUI "${name}" not found.` }] };
     }
 );
@@ -349,6 +397,9 @@ server.registerTool(
 server.registerTool("clear_all", { description: "Remove all GUI textures from memory, resetting the server to a clean state." }, async () => {
     const names = manager.listTextures();
     manager.clearAll();
+    for (const name of names) {
+        sessionController.closeSessionForName(name);
+    }
     return {
         content: [{ type: "text", text: names.length > 0 ? `Cleared ${names.length} GUI(s): ${names.join(", ")}` : "Nothing to clear — memory was already empty." }],
     };
@@ -364,6 +415,65 @@ server.registerTool("list_guis", { description: "List all GUI textures currently
             },
         ],
     };
+});
+
+server.registerTool(
+    "get_session_url",
+    {
+        description: "Get or create a live-session URL for a GUI. The URL can be pasted into the GUI Editor MCP session panel.",
+        inputSchema: {
+            guiName: z.string().describe("Name of the GUI"),
+        },
+    },
+    async ({ guiName }) => {
+        const guis = manager.listTextures();
+        if (!guis.includes(guiName)) {
+            return CreateErrorResponse(`GUI "${guiName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(guiName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "start_session",
+    {
+        description: "Start a live editor session for a GUI and return its URL.",
+        inputSchema: {
+            guiName: z.string().describe("Name of the GUI"),
+        },
+    },
+    async ({ guiName }) => {
+        const guis = manager.listTextures();
+        if (!guis.includes(guiName)) {
+            return CreateErrorResponse(`GUI "${guiName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(guiName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`Started GUI editor session for "${guiName}".\n\nMCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "close_session",
+    {
+        description: "Close the live editor session for a GUI without stopping the MCP server.",
+        inputSchema: {
+            guiName: z.string().describe("Name of the GUI"),
+        },
+    },
+    async ({ guiName }) => {
+        const closed = sessionController.closeSessionForName(guiName);
+        return CreateTextResponse(closed ? `Closed MCP session for "${guiName}".` : `No active MCP session found for "${guiName}".`);
+    }
+);
+
+server.registerTool("stop_session_server", { description: "Stop the local GUI MCP HTTP/SSE session server and close all active sessions." }, async () => {
+    await sessionController.stopAsync();
+    return CreateTextResponse("GUI MCP session server stopped.");
 });
 
 // ── Control operations ────────────────────────────────────────────────
@@ -475,6 +585,7 @@ server.registerTool(
         if (typeof result === "string") {
             return { content: [{ type: "text", text: `Error: ${result}` }], isError: true };
         }
+        _notifyIfSession(guiName);
         const cellInfo = gridRow !== undefined || gridColumn !== undefined ? ` in cell [${gridRow ?? 0}, ${gridColumn ?? 0}]` : "";
         const lines = [`Added ${controlType} "${result.name}" to "${parentName}"${cellInfo}. Use "${result.name}" to reference this control.`];
         if (result.warnings) {
@@ -502,6 +613,9 @@ server.registerTool(
     },
     async ({ guiName, controlName }) => {
         const result = manager.removeControl(guiName, controlName);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Removed "${controlName}" and all its children.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -530,6 +644,9 @@ server.registerTool(
     },
     async ({ guiName, controlName, properties }) => {
         const result = manager.setControlProperties(guiName, controlName, properties as Record<string, unknown>);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Updated "${controlName}".` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -551,6 +668,9 @@ server.registerTool(
     },
     async ({ guiName, controlName, newParentName, gridRow, gridColumn }) => {
         const result = manager.reparentControl(guiName, controlName, newParentName, gridRow, gridColumn);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         const cellInfo = gridRow !== undefined || gridColumn !== undefined ? ` in cell [${gridRow ?? 0}, ${gridColumn ?? 0}]` : "";
         return {
             content: [
@@ -579,6 +699,9 @@ server.registerTool(
     },
     async ({ guiName, gridName, value, isPixel }) => {
         const result = manager.addGridRow(guiName, gridName, value, isPixel);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         const unitStr = isPixel ? `${value}px` : `${value} (fraction)`;
         return {
             content: [{ type: "text", text: result === "OK" ? `Added row (${unitStr}) to Grid "${gridName}".` : `Error: ${result}` }],
@@ -600,6 +723,9 @@ server.registerTool(
     },
     async ({ guiName, gridName, value, isPixel }) => {
         const result = manager.addGridColumn(guiName, gridName, value, isPixel);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         const unitStr = isPixel ? `${value}px` : `${value} (fraction)`;
         return {
             content: [{ type: "text", text: result === "OK" ? `Added column (${unitStr}) to Grid "${gridName}".` : `Error: ${result}` }],
@@ -622,6 +748,9 @@ server.registerTool(
     },
     async ({ guiName, gridName, index, value, isPixel }) => {
         const result = manager.setGridRow(guiName, gridName, index, value, isPixel);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Updated row ${index} on Grid "${gridName}".` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -643,6 +772,9 @@ server.registerTool(
     },
     async ({ guiName, gridName, index, value, isPixel }) => {
         const result = manager.setGridColumn(guiName, gridName, index, value, isPixel);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Updated column ${index} on Grid "${gridName}".` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -662,6 +794,9 @@ server.registerTool(
     },
     async ({ guiName, gridName, index }) => {
         const result = manager.removeGridRow(guiName, gridName, index);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Removed row ${index} from Grid "${gridName}".` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -681,6 +816,9 @@ server.registerTool(
     },
     async ({ guiName, gridName, index }) => {
         const result = manager.removeGridColumn(guiName, gridName, index);
+        if (result === "OK") {
+            _notifyIfSession(guiName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Removed column ${index} from Grid "${gridName}".` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -848,7 +986,7 @@ server.registerTool(
             json,
             jsonFile,
             fileDescription: "GUI JSON file",
-            importJson: (jsonText) => manager.importJSON(guiName, jsonText),
+            importJson: (jsonText) => _importGuiJson(guiName, jsonText),
             describeImported: () => manager.describeTexture(guiName),
         });
     }
@@ -875,7 +1013,7 @@ server.registerTool(
                     snippetId,
                     snippetResult,
                     expectedType: "gui",
-                    importJson: (jsonText) => manager.importJSON(guiName, jsonText),
+                    importJson: (jsonText) => _importGuiJson(guiName, jsonText),
                     describeImported: () => manager.describeTexture(guiName),
                     successMessage: `Imported snippet "${snippetId}" as "${guiName}" successfully.`,
                 }),
@@ -925,6 +1063,7 @@ server.registerTool(
     },
     async ({ guiName, controls }) => {
         const results: string[] = [];
+        let didMutate = false;
         for (const def of controls) {
             // Gap 17 — resolve name alias
             const resolvedName = def.controlName ?? def.name;
@@ -961,12 +1100,16 @@ server.registerTool(
             if (typeof result === "string") {
                 results.push(`Error adding ${def.controlType}: ${result}`);
             } else {
+                didMutate = true;
                 let line = `"${result.name}" (${def.controlType}) → "${def.parentName}"`;
                 if (result.warnings) {
                     line += `\n  ⚠ ${result.warnings.join("\n  ⚠ ")}`;
                 }
                 results.push(line);
             }
+        }
+        if (didMutate) {
+            _notifyIfSession(guiName);
         }
         return { content: [{ type: "text", text: `Added controls:\n${results.join("\n")}` }] };
     }
@@ -999,17 +1142,26 @@ server.registerTool(
     },
     async ({ guiName, gridName, rows, columns }) => {
         const results: string[] = [];
+        let didMutate = false;
         for (const row of rows) {
             const r = manager.addGridRow(guiName, gridName, row.value, row.isPixel);
             if (r !== "OK") {
                 results.push(`Row error: ${r}`);
+            } else {
+                didMutate = true;
             }
         }
         for (const col of columns) {
             const c = manager.addGridColumn(guiName, gridName, col.value, col.isPixel);
             if (c !== "OK") {
                 results.push(`Column error: ${c}`);
+            } else {
+                didMutate = true;
             }
+        }
+
+        if (didMutate) {
+            _notifyIfSession(guiName);
         }
 
         if (results.length > 0) {
@@ -1080,3 +1232,10 @@ try {
     console.error("Fatal error:", err);
     process.exit(1);
 }
+
+const _shutdown = () => {
+    void sessionController.stopAsync();
+    process.exit(0);
+};
+process.on("SIGINT", _shutdown);
+process.on("SIGTERM", _shutdown);
