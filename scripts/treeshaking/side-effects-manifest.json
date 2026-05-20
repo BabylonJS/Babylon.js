@@ -8916,7 +8916,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 93,
+          "line": 74,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -9716,7 +9716,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 35,
+          "line": 32,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -10286,7 +10286,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 194,
+          "line": 171,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -12536,7 +12536,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 91,
+          "line": 72,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -13726,7 +13726,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 248,
+          "line": 225,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
