@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { type FunctionComponent, useState, useEffect, useCallback } from "react";
 import { type GlobalState } from "../../globalState";
 import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
@@ -7,6 +6,12 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import {
+    CloseMcpEditorSessionEventSource,
+    NormalizeMcpEditorSessionUrl,
+    OpenMcpEditorSessionEventSource,
+    PostMcpEditorSessionDocumentAsync,
+} from "shared-ui-components/mcp/mcpEditorSessionConnection";
 
 interface IMcpSessionComponentProps {
     globalState: GlobalState;
@@ -14,9 +19,11 @@ interface IMcpSessionComponentProps {
 
 /**
  * Panel that connects to a live MCP session for bidirectional material sync.
+ * @param props - Component props.
  * @returns The React element.
  */
-export const McpSessionComponent: React.FC<IMcpSessionComponentProps> = ({ globalState }) => {
+export const McpSessionComponent: FunctionComponent<IMcpSessionComponentProps> = (props) => {
+    const { globalState } = props;
     const [url, setUrl] = useState<string>(globalState.mcpSessionUrl ?? "");
     const [connected, setConnected] = useState<boolean>(globalState.mcpSessionConnected);
 
@@ -58,59 +65,36 @@ export const McpSessionComponent: React.FC<IMcpSessionComponentProps> = ({ globa
 
     const handleConnect = useCallback(
         async (pushOnConnect: boolean = false) => {
-            const sessionUrl = url.replace(/\/$/, ""); // trim trailing slash
+            const sessionUrl = NormalizeMcpEditorSessionUrl(url);
             if (!sessionUrl) {
                 return;
             }
 
             try {
-                // Optionally push current NME material to the MCP session so the agent starts with what the user has
                 if (pushOnConnect && globalState.nodeMaterial) {
                     const json = SerializationTools.Serialize(globalState.nodeMaterial, globalState);
-                    await fetch(`${sessionUrl}/material`, {
-                        method: "POST",
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        headers: { "Content-Type": "application/json" },
-                        body: json,
-                    });
+                    await PostMcpEditorSessionDocumentAsync(sessionUrl, json, "material");
                 }
 
-                // Close any pre-existing EventSource before opening a new one
-                if (globalState.mcpEventSource) {
-                    globalState.mcpEventSource.close();
-                    globalState.mcpEventSource = null;
-                }
+                CloseMcpEditorSessionEventSource(globalState.mcpEventSource);
+                globalState.mcpEventSource = null;
 
-                // Open SSE connection — stored on globalState so it survives
-                // component unmount/remount cycles.
-                const es = new EventSource(`${sessionUrl}/events`);
-                globalState.mcpEventSource = es;
-
-                es.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        loadMaterialFromJson(data);
-                    } catch {
-                        // Ignore parse errors from keepalive comments
-                    }
-                };
-
-                // Listen for explicit session-closed event from the MCP server
-                es.addEventListener("session-closed", (event) => {
-                    const info = JSON.parse((event as MessageEvent).data);
-                    globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`MCP Session ended: ${info.reason}`, false));
-                    globalState.mcpSessionConnected = false;
-                    globalState.mcpEventSource = null;
-                    globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
-                    es.close();
+                const eventSource = OpenMcpEditorSessionEventSource({
+                    sessionUrl,
+                    onDocument: loadMaterialFromJson,
+                    onSessionClosed: (reason) => {
+                        globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`MCP Session ended: ${reason}`, false));
+                        globalState.mcpSessionConnected = false;
+                        globalState.mcpEventSource = null;
+                        globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
+                    },
+                    onConnectionError: () => {
+                        globalState.mcpSessionConnected = false;
+                        globalState.mcpEventSource = null;
+                        globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
+                    },
                 });
-
-                es.onerror = () => {
-                    globalState.mcpSessionConnected = false;
-                    globalState.mcpEventSource = null;
-                    globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
-                    es.close();
-                };
+                globalState.mcpEventSource = eventSource;
 
                 // Update state — the observable listener sets local `connected`
                 globalState.mcpSessionUrl = sessionUrl;
@@ -124,10 +108,8 @@ export const McpSessionComponent: React.FC<IMcpSessionComponentProps> = ({ globa
     );
 
     const handleDisconnect = useCallback(() => {
-        if (globalState.mcpEventSource) {
-            globalState.mcpEventSource.close();
-            globalState.mcpEventSource = null;
-        }
+        CloseMcpEditorSessionEventSource(globalState.mcpEventSource);
+        globalState.mcpEventSource = null;
         globalState.mcpSessionConnected = false;
         globalState.mcpSessionUrl = null;
         globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
@@ -139,12 +121,7 @@ export const McpSessionComponent: React.FC<IMcpSessionComponentProps> = ({ globa
         }
         const json = SerializationTools.Serialize(globalState.nodeMaterial, globalState);
         try {
-            const res = await fetch(`${globalState.mcpSessionUrl}/material`, {
-                method: "POST",
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                headers: { "Content-Type": "application/json" },
-                body: json,
-            });
+            const res = await PostMcpEditorSessionDocumentAsync(globalState.mcpSessionUrl, json, "material");
             if (!res.ok) {
                 globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`MCP Session: Push failed (${res.status})`, true));
             }
