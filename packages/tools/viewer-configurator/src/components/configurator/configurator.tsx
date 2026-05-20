@@ -1310,6 +1310,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationAutoPlayConfig.reset,
         selectedMaterialVariantConfig.reset,
         useOpenPBRConfig.reset,
+        viewer,
     ]);
 
     // SSAO is not supported when shadow quality is set to high (IBL).

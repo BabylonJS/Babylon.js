@@ -26,6 +26,8 @@ import {
     type SSAO2RenderingPipeline,
 } from "core/index";
 
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
+
 import { type MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
@@ -116,8 +118,7 @@ async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal):
     });
 }
 
-const environmentMode = ["none", "auto", "url"] as const;
-type EnvironmentMode = (typeof environmentMode)[number];
+type EnvironmentMode = "none" | "auto" | "url";
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
@@ -938,6 +939,10 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     protected _updateSSAOPipeline() {
+        if (this._scene.frameGraph) {
+            return; // SSAO2RenderingPipeline is bypassed when a frame graph is active
+        }
+
         observePromise(
             (async () => {
                 this._ssaoAbortController?.abort(new AbortError("SSAO is being changed before previous SSAO finished initializing."));
@@ -968,6 +973,98 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                 });
             })()
         );
+    }
+
+    /**
+     * Keeps a filtered mesh list current and calls a setter whenever it changes.
+     *
+     * The setter is called immediately and again whenever:
+     *  - a mesh is added to or removed from the scene, or
+     *  - a mesh's material changes (which can shift it between filter buckets).
+     *
+     * Intended to be called from a derived class after a NodeRenderGraph has been built,
+     * to keep an ObjectList input block's mesh array in sync without replacing the block's
+     * value (which would clear its downstream output connection).
+     *
+     * Typical usage:
+     * ```ts
+     * const objectList = block.value as FrameGraphObjectList;
+     * disposables.push(this._bindObjectList(
+     *     (meshes) => { objectList.meshes = meshes; },
+     *     (mesh) => !mesh.material?.needAlphaBlending()
+     * ));
+     * ```
+     *
+     * @param setMeshes Callback invoked with the filtered mesh array on every change.
+     * @param filter Predicate that selects which scene meshes belong in this list.
+     * @returns A disposable that tears down all scene and mesh observers.
+     */
+    protected _bindObjectList(setMeshes: (meshes: AbstractMesh[]) => void, filter: (mesh: AbstractMesh) => boolean): IDisposable {
+        const rebuild = () => {
+            setMeshes(this._scene.meshes.filter(filter));
+        };
+
+        // Populate immediately.
+        rebuild();
+
+        // Track per-mesh material-change observers so we don't double-subscribe.
+        const meshMaterialObservers = new Map<AbstractMesh, Observer<AbstractMesh>>();
+
+        const watchMesh = (mesh: AbstractMesh) => {
+            if (!meshMaterialObservers.has(mesh)) {
+                const observer = mesh.onMaterialChangedObservable.add(() => rebuild());
+                if (observer) {
+                    meshMaterialObservers.set(mesh, observer);
+                }
+            }
+        };
+
+        const unwatchMesh = (mesh: AbstractMesh) => {
+            const observer = meshMaterialObservers.get(mesh);
+            if (observer) {
+                mesh.onMaterialChangedObservable.remove(observer);
+                meshMaterialObservers.delete(mesh);
+            }
+        };
+
+        for (const mesh of this._scene.meshes) {
+            watchMesh(mesh);
+        }
+
+        const newMeshObserver = this._scene.onNewMeshAddedObservable.add((mesh) => {
+            watchMesh(mesh);
+            rebuild();
+        });
+
+        const removedMeshObserver = this._scene.onMeshRemovedObservable.add((mesh) => {
+            unwatchMesh(mesh);
+            rebuild();
+        });
+
+        return {
+            dispose: () => {
+                this._scene.onNewMeshAddedObservable.remove(newMeshObserver);
+                this._scene.onMeshRemovedObservable.remove(removedMeshObserver);
+                for (const [mesh, observer] of meshMaterialObservers) {
+                    mesh.onMaterialChangedObservable.remove(observer);
+                }
+                meshMaterialObservers.clear();
+            },
+        };
+    }
+
+    /**
+     * Applies the specified FrameGraph to the scene, or clears the active frame graph when null.
+     * Call this from a derived class after constructing and building a FrameGraph.
+     * When a frame graph is active, SSAO is suppressed (it is incompatible with the frame graph
+     * render path). When cleared, SSAO is re-evaluated.
+     * @param frameGraph The FrameGraph to activate, or null to revert to default rendering.
+     */
+    protected _setActiveFrameGraph(frameGraph: Nullable<FrameGraph>): void {
+        this._scene.frameGraph = frameGraph;
+        if (!frameGraph) {
+            this._updateSSAOPipeline();
+        }
     }
 
     /**
@@ -1145,7 +1242,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                     transparencyAsCoverage: true,
                     useOpenPBR: (options as ViewerLoadModelOptions | undefined)?.useOpenPBR ?? this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
                     extensionOptions: {
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {
                             // Capture the material variants controller when it is loaded.
                             onLoaded: onMaterialVariantsLoaded,
@@ -1321,9 +1417,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
     /** @internal */
     protected override async _afterLoadModel(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         source: string | File | ArrayBufferView | undefined,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         options: ViewerLoadModelOptions | undefined,
         abortSignal: AbortSignal | undefined,
         internalAbortSignal: AbortSignal
@@ -1421,7 +1515,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     private async _updateEnvShadow(abortSignal?: AbortSignal) {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const [{ ShaderMaterial }, { ShaderLanguage }, { CreateDisc }, { IblShadowsRenderPipeline }] = await Promise.all([
             import("core/Materials/shaderMaterial"),
             import("core/Materials/shaderLanguage"),
@@ -1595,7 +1688,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }, { IblCdfGenerator }] = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
             import("core/Materials/Textures/renderTargetTexture"),

@@ -1,9 +1,14 @@
 <!doctype html>
+<!-- TEMPORARY TEST APP — NOT FOR COMMIT
+     Uses <nrg-viewer> (derived from <babylon-viewer>) to test the protected
+     frame graph API: _setActiveFrameGraph, _setupNodeRenderGraphWiring.
+     The base viewer behaviour is unchanged; NRG is opt-in from the derived class.
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Viewer Local Development</title>
+        <title>Viewer — NRG Derived-Class Test</title>
 
         <style>
             html,
@@ -21,6 +26,56 @@
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
+                max-height: calc(100vh - 60px);
+                overflow-y: auto;
+                padding-right: 4px;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 8px;
+                border-radius: 8px;
+            }
+
+            .section-label {
+                font-size: 11px;
+                font-weight: bold;
+                text-transform: uppercase;
+                color: #aaa;
+                margin-top: 6px;
+                letter-spacing: 1px;
+            }
+
+            .section-divider {
+                border: none;
+                border-top: 1px solid #555;
+                margin: 4px 0;
+            }
+
+            .nrg-section {
+                background: rgba(255, 165, 0, 0.15);
+                border: 1px solid rgba(255, 165, 0, 0.4);
+                border-radius: 4px;
+                padding: 6px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .nrg-section label {
+                font-size: 11px;
+                color: #ffa500;
+                font-weight: bold;
+            }
+
+            #nrgSnippetInput {
+                width: 100%;
+                box-sizing: border-box;
+                font-family: monospace;
+                font-size: 12px;
+            }
+
+            #nrgStatus {
+                font-size: 11px;
+                color: #aaa;
+                min-height: 14px;
             }
 
             .lineContainer {
@@ -34,40 +89,13 @@
                 stroke-dasharray: 16;
             }
 
-            babylon-viewer {
-                /* --ui-foreground-color: red; */
-                /* --ui-background-hue: 200;
-                --ui-background-saturation: 70%; */
-                /* background-color: aqua; */
+            nrg-viewer {
                 background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
-            babylon-viewer-annotation[hotspot="thruster"]::part(annotation) {
+            nrg-viewer-annotation[hotspot="thruster"]::part(annotation) {
                 background-color: orange;
             }
-
-            /* babylon-viewer-annotation:state(back-facing) {
-                display: none;
-             } */
-            /* babylon-viewer-annotation:state(invalid) {
-                display: unset;
-                opacity: 1;
-             } */
-
-            /* babylon-viewer::part(tool-bar) {
-                border-radius: 0;
-                left: 0;
-                right: 0;
-                bottom: unset;
-                top: 0;
-                width: unset;
-                max-width: unset;
-                transform: unset;
-            } */
-
-            /* babylon-viewer::part(progress-bar) {
-                border: none;
-            } */
 
             /* This keeps child nodes hidden while custom elements load */
             :not(:defined) > * {
@@ -79,7 +107,7 @@
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
         <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div id="viewerContainer" style="width: 100vw; height: 100vh">
-            <babylon-viewer
+            <nrg-viewer
                 source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
                 animation-speed="1.5"
                 selected-animation="1"
@@ -114,9 +142,6 @@
                     }
                 }'
             >
-                <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
-                    <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
-                </div> -->
                 <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
                     <line class="line"></line>
                 </svg>
@@ -129,37 +154,29 @@
                 </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="thruster"> </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="poi"></babylon-viewer-annotation>
-            </babylon-viewer>
+            </nrg-viewer>
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
+
         <div class="button-container">
+            <!-- ── Base viewer controls ─────────────────────────────────────── -->
+            <div class="section-label">Model</div>
             <button onclick="onOpenFile()">Open File</button>
             <button onclick="onToggleDOM()">Toggle DOM</button>
             <button id="engine-button" onclick="onToggleEngine()">Toggle Engine</button>
-            <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+            <button onClick="resetModel()">Reset Model</button>
+
+            <hr class="section-divider" />
+            <div class="section-label">Camera / Hot Spots</div>
+            <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot Line</button>
+
+            <hr class="section-divider" />
+            <div class="section-label">Rendering</div>
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
-            <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
-            <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
             <button onClick="onSuspendRendering()">Suspend Rendering</button>
             <button onClick="onResumeRendering()">Resume Rendering</button>
             <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
-            <button onClick="resetModel()">Reset Model</button>
-            <div>
-                <span>Environment Intensity</span>
-                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
-            </div>
-            <div>
-                <span>Rotate Environment</span>
-                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" value="0" oninput="onEnvironmentRotation()" />
-            </div>
-            <div>
-                <span>Environment Blur</span>
-                <input type="range" id="environmentBlurInput" min="0" max="1" step="0.01" oninput="onEnvironmentBlur()" />
-            </div>
-            <div>
-                <span>Environment Visibility</span>
-                <input type="checkbox" id="environmentVisibilityInput" oninput="onEnvironmentVisibility()" />
-            </div>
+
             <div>
                 <span>SSAO</span>
                 <select id="ssaoSelect" oninput="onSSAO()">
@@ -183,60 +200,77 @@
                     <option value="openpbr">OpenPBR</option>
                 </select>
             </div>
+
+            <hr class="section-divider" />
+            <div class="section-label">Environment</div>
+            <div>
+                <span>Intensity</span>
+                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
+            </div>
+            <div>
+                <span>Rotation</span>
+                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" value="0" oninput="onEnvironmentRotation()" />
+            </div>
+            <div>
+                <span>Blur</span>
+                <input type="range" id="environmentBlurInput" min="0" max="1" step="0.01" oninput="onEnvironmentBlur()" />
+            </div>
+            <div>
+                <span>Visible</span>
+                <input type="checkbox" id="environmentVisibilityInput" oninput="onEnvironmentVisibility()" />
+            </div>
+
+            <hr class="section-divider" />
+            <div class="section-label">Page Layout</div>
+            <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
+            <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+
+            <!-- ── NRG controls (derived class feature) ────────────────────── -->
+            <hr class="section-divider" />
+            <div class="section-label" style="color: #ffa500">🔬 NRG Derived Class</div>
+            <div class="nrg-section">
+                <label>NodeRenderGraph Snippet ID</label>
+                <input id="nrgSnippetInput" type="text" placeholder="#SNIPPET_ID" />
+                <div style="display: flex; gap: 4px">
+                    <button onclick="onLoadNRG()" style="flex: 1">Load NRG</button>
+                    <button onclick="onClearNRG()" style="flex: 1">Clear NRG</button>
+                </div>
+                <div id="nrgStatus">No NRG active</div>
+            </div>
         </div>
+
+        <!-- Load the NRG derived-class module (registers <nrg-viewer>). -->
+        <script type="module" src="/packages/tools/viewer/test/apps/web/nrgViewer.ts"></script>
+        <!-- Also register the annotation element (same as before). -->
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
+
         <script type="module">
-            const viewerElement = document.querySelector("babylon-viewer");
+            const viewerElement = document.querySelector("nrg-viewer");
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
-
-            setInterval(() => {
-                // viewerElement.cameraAutoOrbit = !viewerElement.cameraAutoOrbit;
-                // viewerElement.viewerDetails.viewer.cameraAutoOrbit = !viewerElement.viewerDetails.viewer.cameraAutoOrbit;
-                // const color = viewerElement.viewerDetails.scene.clearColor.clone();
-                // color.r = Math.random();
-                // viewerElement.viewerDetails.scene.clearColor = color;
-                // console.log(viewerElement.clearColor);
-                // viewerElement.selectedAnimation = 1;
-            }, 3000);
+            const nrgStatus = document.querySelector("#nrgStatus");
 
             let currentSource = viewerElement.source;
             let viewerDetails = viewerElement.viewerDetails;
+
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
                 viewerDetails.viewer.showDebugLogs = true;
 
                 document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
 
-                console.log(`Viewer ready.`, viewerDetails);
+                console.log("Viewer ready.", viewerDetails);
             });
+
             viewerElement.addEventListener("modelchange", (event) => {
-                console.log(`Model changed.`, viewerDetails);
+                console.log("Model changed.", viewerDetails);
             });
+
             let isViewerConnected = true;
             let hotspotVisible = false;
 
             (async () => {
-                // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
-                // Alternatively, we could just await import("/packages/tools/viewer/src/index.ts") here instead.
-                await customElements.whenDefined("babylon-viewer");
-
-                // setInterval(() => {
-                //     console.log(viewerElement.skyboxBlur);
-                //     viewerElement.skyboxBlur = (Number(viewerElement.skyboxBlur) + 0.01) % 1;
-                //     console.log(viewerElement.skyboxBlur);
-                // }, 16);
-
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
-                // viewerElement.source = "https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/flightHelmet.glb"
-                //viewerElement.environment = "";
-                //viewerElement.skyboxBlur = 0;
-                //viewerElement.contrast = 4;
-                // error case
-                //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb";
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
+                await customElements.whenDefined("nrg-viewer");
             })();
 
             function getLoadModelOptions() {
@@ -247,7 +281,7 @@
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     event.preventDefault();
-                    await customElements.whenDefined("babylon-viewer");
+                    await customElements.whenDefined("nrg-viewer");
                     const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
                     if (extension === ".hdr" || extension === ".env") {
                         // blob: URLs have no extension, so pass it explicitly
@@ -260,7 +294,7 @@
                 }
             };
 
-            // update hotspot svg
+            // update hotspot svg line
             function drawHotSpotLine(svgLine, name, rect) {
                 if (viewerElement.queryHotSpot(name, hotspotResult) && rect) {
                     svgLine.setAttribute("x1", hotspotResult.screenPosition[0]);
@@ -276,17 +310,10 @@
             };
 
             globalThis.onOpenFile = async () => {
-                // This doesn't work on mobile browsers :/
-                // const [fileHandle] = await window.showOpenFilePicker();
-                // const file = await fileHandle.getFile();
-
                 const input = document.createElement("input");
                 input.type = "file";
-
-                // See https://stackoverflow.com/questions/47664777/javascript-file-input-onchange-not-working-ios-safari-only
                 Object.assign(input.style, {
                     position: "fixed",
-                    //display: 'none',
                     top: "-100000px",
                     left: "-100000px",
                 });
@@ -296,17 +323,10 @@
                     const getFileFromInput = () => {
                         input.removeEventListener("change", getFileFromInput);
                         input.removeEventListener("cancel", getFileFromInput);
-
-                        if (input.files && input.files.length > 0) {
-                            resolve(input.files[0]);
-                        } else {
-                            resolve(null);
-                        }
+                        resolve(input.files && input.files.length > 0 ? input.files[0] : null);
                     };
-
                     input.addEventListener("change", getFileFromInput, { once: true });
                     input.addEventListener("cancel", getFileFromInput, { once: true });
-
                     input.click();
                 });
 
@@ -340,16 +360,11 @@
             let inspectorToken = null;
             globalThis.onToggleInspector = async () => {
                 const { ShowInspector } = await import("inspector/inspector");
-                console.log("toggle inspector");
                 if (inspectorToken) {
                     inspectorToken.dispose();
                     inspectorToken = null;
                 } else {
-                    console.log(viewerDetails != null);
-                    console.log(viewerDetails?.scene != null);
-                    inspectorToken = ShowInspector(viewerDetails.scene, {
-                        // containerElement: document.body,
-                    });
+                    inspectorToken = ShowInspector(viewerDetails.scene);
                 }
             };
 
@@ -381,42 +396,68 @@
             };
 
             globalThis.resetModel = () => {
-                console.log("reset model");
                 viewerElement.viewerDetails.viewer.resetModel();
             };
 
             globalThis.onEnvironmentIntensity = () => {
                 const value = document.querySelector("#environmentIntensityInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { intensity: value };
+                viewerDetails.viewer.environmentConfig = { intensity: value };
             };
             globalThis.onEnvironmentRotation = () => {
-                const degreValue = document.querySelector("#environmentRotationInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { rotation: parseFloat(degreValue) };
+                const value = document.querySelector("#environmentRotationInput").value;
+                viewerDetails.viewer.environmentConfig = { rotation: parseFloat(value) };
             };
             globalThis.onEnvironmentBlur = () => {
                 const value = document.querySelector("#environmentBlurInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { blur: value };
+                viewerDetails.viewer.environmentConfig = { blur: value };
             };
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
-                const viewer = viewerElement.viewerDetails.viewer;
-                checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+                checked ? viewerDetails.viewer.loadEnvironment("auto", { skybox: true }) : viewerDetails.viewer.resetEnvironment({ skybox: true });
             };
             globalThis.onSSAO = () => {
                 const value = document.querySelector("#ssaoSelect").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.postProcessing = { ssao: value };
+                viewerDetails.viewer.postProcessing = { ssao: value };
             };
             globalThis.onShadowQuality = () => {
                 const value = document.querySelector("#shadowQualityInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.updateShadows({ quality: value });
+                viewerDetails.viewer.updateShadows({ quality: value });
             };
             globalThis.onMaterial = () => {
                 viewerDetails?.viewer.loadModel(currentSource, getLoadModelOptions());
+            };
+
+            // ── NRG controls ────────────────────────────────────────────────
+            globalThis.onLoadNRG = async () => {
+                const snippetId = document.querySelector("#nrgSnippetInput").value.trim();
+                if (!snippetId) {
+                    nrgStatus.textContent = "⚠️ Enter a snippet ID first (e.g. #CCDXLX)";
+                    return;
+                }
+                nrgStatus.textContent = `⏳ Loading ${snippetId}…`;
+                try {
+                    await customElements.whenDefined("nrg-viewer");
+                    const viewer = viewerElement.viewerDetails?.viewer;
+                    if (!viewer) {
+                        nrgStatus.textContent = "⚠️ Viewer not ready yet.";
+                        return;
+                    }
+                    viewer.nodeRenderGraph = snippetId;
+                    // Status feedback — the load is async inside the viewer, so we just acknowledge dispatch.
+                    nrgStatus.textContent = `✅ NRG set to ${snippetId} (loading async…)`;
+                } catch (e) {
+                    nrgStatus.textContent = `❌ Error: ${e.message}`;
+                    console.error(e);
+                }
+            };
+
+            globalThis.onClearNRG = () => {
+                const viewer = viewerElement.viewerDetails?.viewer;
+                if (viewer) {
+                    viewer.nodeRenderGraph = null;
+                    nrgStatus.textContent = "No NRG active (reverted to default rendering)";
+                    document.querySelector("#nrgSnippetInput").value = "";
+                }
             };
         </script>
     </body>
