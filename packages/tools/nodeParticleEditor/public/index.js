@@ -154,11 +154,13 @@ checkBabylonVersionAsync().then(() => {
             });
         };
 
-        let applySerializedParticleSet = function (serializationObject) {
+        let applySerializedParticleSetAsync = async function (serializationObject) {
             nodeParticleSet.parseSerializedObject(serializationObject);
-            nodeParticleSet.buildAsync(scene).catch((err) => {
+            try {
+                await nodeParticleSet.buildAsync(scene);
+            } catch (err) {
                 console.error(err);
-            });
+            }
         };
 
         let checkHash = function () {
@@ -237,8 +239,8 @@ checkBabylonVersionAsync().then(() => {
             nodeParticleSet = new BABYLON.NodeParticleSystemSet("System set");
             if (location.hash) {
                 loadSnippetFromHashAsync()
-                    .then((serializationObject) => {
-                        applySerializedParticleSet(serializationObject);
+                    .then(async (serializationObject) => {
+                        await applySerializedParticleSetAsync(serializationObject);
                         showEditor();
                     })
                     .catch((err) => {

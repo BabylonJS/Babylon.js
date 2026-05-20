@@ -150,11 +150,13 @@ checkBabylonVersionAsync().then(() => {
             });
         };
 
-        let applySerializedGraph = function (serializationObject) {
+        let applySerializedGraphAsync = async function (serializationObject) {
             nodeRenderGraph.parseSerializedObject(serializationObject);
-            nodeRenderGraph.buildAsync().catch((err) => {
+            try {
+                await nodeRenderGraph.buildAsync();
+            } catch (err) {
                 console.error(err);
-            });
+            }
         };
 
         let checkHash = function () {
@@ -250,7 +252,7 @@ checkBabylonVersionAsync().then(() => {
                 nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
                 if (location.hash) {
                     try {
-                        applySerializedGraph(await loadSnippetFromHashAsync());
+                        await applySerializedGraphAsync(await loadSnippetFromHashAsync());
                     } catch (err) {
                         console.error(err);
                         nodeRenderGraph.setToDefault();

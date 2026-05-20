@@ -179,8 +179,17 @@ test("NRGE is loaded correctly", async ({ page }) => {
     await expect(page.locator(".nrge-right-panel")).toBeVisible();
 });
 
-test("NRGE loads the graph from the URL snippet", async ({ page }) => {
-    await page.goto(`${nrgeUrl}#4R3SG6#10`, {
+test("NRGE loads the graph from the URL snippet", async ({ page, browser }) => {
+    const serialization = await createSnippetSerialization(browser, nrgeUrl, "nodeRenderGraph", 0, "Snippet Render Graph Output");
+    await page.route("https://snippet.babylonjs.com/NRGELOAD/1", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: createSnippetServerResponse("nodeRenderGraph", serialization),
+        });
+    });
+
+    await page.goto(`${nrgeUrl}#NRGELOAD#1`, {
         waitUntil: "load",
     });
     await page.setViewportSize({
@@ -189,8 +198,7 @@ test("NRGE loads the graph from the URL snippet", async ({ page }) => {
     });
 
     const graph = page.locator("#graph-canvas-container");
-    await expect(graph.getByText("IBL Shadows")).toBeVisible();
-    await expect.poll(async () => await getGraphNodeCount(page)).toBeGreaterThan(7);
+    await expect(graph.getByText("Snippet Render Graph Output")).toBeVisible();
 });
 
 test("NPE is loaded correctly", async ({ page }) => {
