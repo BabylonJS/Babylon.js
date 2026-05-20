@@ -2286,8 +2286,49 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        Logger.Warn("Updating render target sample count is not currently supported");
-        return rtWrapper.samples;
+        if (rtWrapper.samples === samples) {
+            return samples;
+        }
+
+        const texture = rtWrapper.texture;
+        if (!texture?._hardwareTexture) {
+            return rtWrapper.samples;
+        }
+
+        const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+        const nativeTexture = texture._hardwareTexture.underlyingResource;
+
+        // bgfx couples MSAA to the texture creation flags, so changing samples after the fact requires
+        // recreating the underlying bgfx texture handle with the new MSAA flag. initializeTexture on the
+        // Native side calls Graphics::Texture::Create2D, which disposes the existing bgfx handle and
+        // allocates a fresh one. The Graphics::Texture / InternalTexture wrapper identity is preserved --
+        // only the internal bgfx handle rotates. After the texture is reissued we also recreate the
+        // framebuffer so its attachment list refers to the new handle.
+        const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
+        this._engine.initializeTexture(
+            nativeTexture,
+            texture.baseWidth,
+            texture.baseHeight,
+            texture.generateMipMaps,
+            nativeTextureFormat,
+            /*renderTarget*/ true,
+            texture._useSRGBBuffer,
+            samples
+        );
+
+        this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
+        nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+            nativeTexture,
+            texture.baseWidth,
+            texture.baseHeight,
+            rtWrapper._generateStencilBuffer,
+            rtWrapper._generateDepthBuffer,
+            samples
+        );
+
+        rtWrapper._samples = samples;
+        texture.samples = samples;
+        return samples;
     }
 
     public override updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
