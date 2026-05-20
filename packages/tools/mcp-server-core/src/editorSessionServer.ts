@@ -75,6 +75,10 @@ export interface IMcpEditorSessionServerOptions {
     capabilities?: string[];
     /** Optional status-page title. */
     statusTitle?: string;
+    /** Stable local workspace identity reported from /health. Defaults to a hash of the current working directory. */
+    workspaceId?: string;
+    /** Per-server owner identity reported from /health. Defaults to a random process-local value. */
+    ownerId?: string;
 }
 
 /**
@@ -129,6 +133,10 @@ export interface IMcpEditorSessionHealth {
     activeSessionCount: number;
     /** Supported capability names. */
     capabilities: string[];
+    /** Stable local workspace identity. */
+    workspaceId?: string;
+    /** Per-server owner identity. */
+    ownerId?: string;
 }
 
 /**
@@ -141,6 +149,10 @@ export interface IMcpEditorSessionCompatibilityOptions {
     documentKind?: string;
     /** Expected server name. When omitted, any server name is accepted. */
     serverName?: string;
+    /** Expected local workspace identity. When omitted, any workspace identity is accepted. */
+    workspaceId?: string;
+    /** Expected server owner identity. When omitted, any owner identity is accepted. */
+    ownerId?: string;
 }
 
 /**
@@ -205,11 +217,27 @@ export function IsCompatibleMcpEditorSessionHealth(health: unknown, options: IMc
         return false;
     }
 
+    if (health.workspaceId !== undefined && typeof health.workspaceId !== "string") {
+        return false;
+    }
+
+    if (health.ownerId !== undefined && typeof health.ownerId !== "string") {
+        return false;
+    }
+
     if (options.documentKind && health.documentKind !== options.documentKind) {
         return false;
     }
 
     if (options.serverName && health.serverName !== options.serverName) {
+        return false;
+    }
+
+    if (options.workspaceId && health.workspaceId !== options.workspaceId) {
+        return false;
+    }
+
+    if (options.ownerId && health.ownerId !== options.ownerId) {
         return false;
     }
 
@@ -289,6 +317,14 @@ function IsRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
 }
 
+function CreateDefaultWorkspaceId(): string {
+    return crypto.createHash("sha256").update(process.cwd()).digest("hex");
+}
+
+function CreateDefaultOwnerId(): string {
+    return `${process.pid}-${crypto.randomBytes(8).toString("hex")}`;
+}
+
 /**
  * Generic local HTTP/SSE session server for MCP graph editors.
  */
@@ -304,6 +340,8 @@ export class McpEditorSessionServer {
     private readonly _legacyDocumentRoutes: Set<string>;
     private readonly _capabilities: string[];
     private readonly _statusTitle: string;
+    private readonly _workspaceId: string;
+    private readonly _ownerId: string;
 
     private _server: http.Server | null = null;
     private _port = 0;
@@ -329,6 +367,8 @@ export class McpEditorSessionServer {
         this._legacyDocumentRoutes = new Set((options.legacyDocumentRoutes ?? []).map((route) => route.replace(/^\//, "")));
         this._capabilities = ["sse", "document-get", "document-post", "session-close", ...(options.capabilities ?? [])];
         this._statusTitle = options.statusTitle ?? adapter.serverName;
+        this._workspaceId = options.workspaceId ?? CreateDefaultWorkspaceId();
+        this._ownerId = options.ownerId ?? CreateDefaultOwnerId();
     }
 
     /**
@@ -515,6 +555,8 @@ export class McpEditorSessionServer {
             running: this.isRunning(),
             activeSessionCount: this._sessions.size,
             capabilities: [...this._capabilities],
+            workspaceId: this._workspaceId,
+            ownerId: this._ownerId,
         };
     }
 

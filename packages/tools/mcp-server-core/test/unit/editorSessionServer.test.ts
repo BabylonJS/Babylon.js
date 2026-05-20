@@ -54,6 +54,8 @@ describe("editor session server", () => {
                 running: true,
                 activeSessionCount: 1,
             });
+            expect(typeof health.workspaceId).toBe("string");
+            expect(typeof health.ownerId).toBe("string");
             expect(sessionInfo).toMatchObject({
                 sessionId: firstSession.id,
                 documentUrl: `/session/${firstSession.id}/document`,
@@ -202,10 +204,15 @@ describe("editor session server", () => {
             running: true,
             activeSessionCount: 0,
             capabilities: ["sse", "document-get", "document-post", "session-close"],
+            workspaceId: "workspace-a",
+            ownerId: "owner-a",
         };
 
         expect(IsCompatibleMcpEditorSessionHealth(health, { documentKind: "test-document" })).toBe(true);
+        expect(IsCompatibleMcpEditorSessionHealth(health, { workspaceId: "workspace-a", ownerId: "owner-a" })).toBe(true);
         expect(IsCompatibleMcpEditorSessionHealth(health, { documentKind: "other-document" })).toBe(false);
+        expect(IsCompatibleMcpEditorSessionHealth(health, { workspaceId: "workspace-b" })).toBe(false);
+        expect(IsCompatibleMcpEditorSessionHealth(health, { ownerId: "owner-b" })).toBe(false);
         expect(IsCompatibleMcpEditorSessionHealth({ ...health, protocol: "other-protocol" }, { documentKind: "test-document" })).toBe(false);
         expect(IsCompatibleMcpEditorSessionHealth({ ...health, protocolVersion: "2.0" }, { documentKind: "test-document" })).toBe(false);
     });
@@ -219,23 +226,32 @@ describe("editor session server", () => {
                 getDocument: () => JSON.stringify({ value: 1 }),
                 setDocument: () => undefined,
             },
-            { defaultPort: port }
+            { defaultPort: port, workspaceId: "workspace-a", ownerId: "owner-a" }
         );
 
         try {
             await server.startAsync();
 
-            const discovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "test-document" });
+            const discovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "test-document", workspaceId: "workspace-a" });
             const incompatibleDiscovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "other-document" });
+            const wrongWorkspaceDiscovery = await FindCompatibleMcpEditorSessionServerAsync({
+                startPort: port,
+                portRange: 1,
+                documentKind: "test-document",
+                workspaceId: "workspace-b",
+            });
 
             expect(discovery).toMatchObject({
                 port,
                 health: {
                     serverName: "Discovery Test Server",
                     documentKind: "test-document",
+                    workspaceId: "workspace-a",
+                    ownerId: "owner-a",
                 },
             });
             expect(incompatibleDiscovery).toBeUndefined();
+            expect(wrongWorkspaceDiscovery).toBeUndefined();
         } finally {
             await server.stopAsync();
         }
