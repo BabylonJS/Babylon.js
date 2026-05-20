@@ -13,6 +13,7 @@ export {
     ReloadSmartAssetAsync,
     FindSmartAssetKeyForObject,
     SerializeSmartAssetManagerMap,
+    LoadAllSmartAssetsAsync,
     LoadSmartAssetMapAsync,
     GetSmartAssetTextureExtensions,
 } from "./smartAssetManager";
