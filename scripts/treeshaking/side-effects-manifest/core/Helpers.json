@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "Helpers/sceneHelpers.ts": ["bare-import", "top-level-call"],
+        "Helpers/sceneHelpers.types.ts": ["declare-module"]
+    }
+}

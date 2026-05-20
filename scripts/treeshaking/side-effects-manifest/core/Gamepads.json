@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "Gamepads/gamepadSceneComponent.ts": ["top-level-call"],
+        "Gamepads/gamepadSceneComponent.types.ts": ["declare-module"]
+    }
+}

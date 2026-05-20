@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "files": {
+        "Actions/action.ts": ["top-level-call"],
+        "Actions/condition.ts": ["top-level-call"],
+        "Actions/directActions.ts": ["top-level-call"],
+        "Actions/directAudioActions.ts": ["top-level-call"],
+        "Actions/interpolateValueAction.ts": ["top-level-call"]
+    }
+}
