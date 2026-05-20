@@ -14,6 +14,10 @@
         "test:debug": "set DEBUG=true && npm run test",
         "update": "vitest run -u",
         "build": "node ./build.mjs",
+        "test:es6-packages": "tsc -p ./tsconfig.es6-smoke.json && node ./scripts/buildEs6SmokeTests.mjs && vitest run --config ./vitest.es6.config.mts",
+        "test:es6vis": "playwright test --config ../../../playwright.es6vis.config.ts",
+        "test:es6vis:update": "playwright test --config ../../../playwright.es6vis.config.ts --update-snapshots",
+        "serve:es6vis": "vite --config es6Vis/vite.config.ts",
         "analyse": "node ./build.mjs --analyze > stats.txt",
         "generate-file-size-report": "node ./scripts/generateFileSizes.js",
         "test:playwright": "playwright test --config ../../../playwright.config.ts"
@@ -29,8 +33,9 @@
         "@tools/test-tools": "^1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
+        "browserstack-local": "^1.5.5",
         "sass": "^1.62.1",
-        "browserstack-local": "^1.5.5"
+        "webpack": "^5.106.2"
     },
     "sideEffects": false
 }

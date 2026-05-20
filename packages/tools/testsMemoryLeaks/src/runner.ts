@@ -136,7 +136,7 @@ export async function RunScenario(
     const memlabOptions: RunOptions = {
         scenario,
         chromiumBinary: options.chromiumBinary,
-        skipWarmup: options.skipWarmup,
+        skipWarmup: options.skipWarmup ?? true,
         workDir: options.workDir,
     };
 

@@ -2,8 +2,8 @@ import { type IDisposable, type Nullable } from "core/index";
 import { type PropertyValues, LitElement, css, html } from "lit";
 
 import { customElement, property } from "lit/decorators.js";
-import { ViewerElement } from "./viewerElement";
-import { ViewerHotSpotResult } from "./viewer";
+import { ViewerElementBase } from "./viewerElementBase";
+import { ViewerHotSpotResult } from "./viewerBase";
 
 /**
  * Displays child elements at the screen space location of a hotspot in a babylon-viewer.
@@ -94,7 +94,7 @@ export class HTML3DAnnotationElement extends LitElement {
                 }
             }
 
-            if (!(this.parentElement instanceof ViewerElement)) {
+            if (!(this.parentElement instanceof ViewerElementBase)) {
                 // eslint-disable-next-line no-console
                 console.warn("The babylon-viewer-annotation element must be a child of a babylon-viewer element.");
                 return;

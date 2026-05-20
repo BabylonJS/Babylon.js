@@ -40,6 +40,7 @@ precision highp float;
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
@@ -93,15 +94,15 @@ void main(void) {
     albedoOpacityOutParams albedoOpacityOut;
 
 #ifdef ALBEDO
-    vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
+    vec4 albedoTexture = TEXRD(albedoSampler, vAlbedoUV + uvOffset);
 #endif
 
 #ifdef BASE_WEIGHT
-    vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
+    vec4 baseWeightTexture = TEXRD(baseWeightSampler, vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef OPACITY
-    vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
+    vec4 opacityMap = TEXRD(opacitySampler, vOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
@@ -146,7 +147,7 @@ void main(void) {
     ambientOcclusionOutParams aoOut;
 
 #ifdef AMBIENT
-    vec3 ambientOcclusionColorMap = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb;
+    vec3 ambientOcclusionColorMap = TEXRD(ambientSampler, vAmbientUV + uvOffset).rgb;
 #endif
 
     aoOut = ambientOcclusionBlock(
@@ -168,7 +169,7 @@ void main(void) {
     reflectivityOutParams reflectivityOut;
 
 #if defined(REFLECTIVITY)
-    vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+    vec4 surfaceMetallicOrReflectivityColorMap = TEXRD(reflectivitySampler, vReflectivityUV + uvOffset);
     vec4 baseReflectivity = surfaceMetallicOrReflectivityColorMap;
     #ifndef METALLICWORKFLOW
         #ifdef REFLECTIVITY_GAMMA
@@ -179,13 +180,13 @@ void main(void) {
 #endif
 
 #if defined(MICROSURFACEMAP)
-    vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+    vec4 microSurfaceTexel = TEXRD(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
 #endif
 
 #ifdef METALLICWORKFLOW
     vec4 metallicReflectanceFactors = vMetallicReflectanceFactors;
     #ifdef REFLECTANCE
-        vec4 reflectanceFactorsMap = texture2D(reflectanceSampler, vReflectanceUV + uvOffset);
+        vec4 reflectanceFactorsMap = TEXRD(reflectanceSampler, vReflectanceUV + uvOffset);
         #ifdef REFLECTANCE_GAMMA
             reflectanceFactorsMap = toLinearSpace(reflectanceFactorsMap);
         #endif
@@ -193,7 +194,7 @@ void main(void) {
         metallicReflectanceFactors.rgb *= reflectanceFactorsMap.rgb;
     #endif
     #ifdef METALLIC_REFLECTANCE
-        vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
+        vec4 metallicReflectanceFactorsMap = TEXRD(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
         #ifdef METALLIC_REFLECTANCE_GAMMA
             metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
         #endif
@@ -206,7 +207,7 @@ void main(void) {
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    float baseDiffuseRoughnessTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
+    float baseDiffuseRoughnessTexture = TEXRD(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
 
     reflectivityOut = reflectivityBlock(
@@ -271,7 +272,7 @@ void main(void) {
         anisotropicOutParams anisotropicOut;
 
         #ifdef ANISOTROPIC_TEXTURE
-            vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
+            vec3 anisotropyMapData = TEXRD(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
         #endif
 
         anisotropicOut = anisotropicBlock(
@@ -347,10 +348,10 @@ void main(void) {
         sheenOutParams sheenOut;
 
         #ifdef SHEEN_TEXTURE
-            vec4 sheenMapData = texture2D(sheenSampler, vSheenUV + uvOffset);
+            vec4 sheenMapData = TEXRD(sheenSampler, vSheenUV + uvOffset);
         #endif
         #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            vec4 sheenMapRoughnessData = texture2D(sheenRoughnessSampler, vSheenRoughnessUV + uvOffset) * vSheenInfos.w;
+            vec4 sheenMapRoughnessData = TEXRD(sheenRoughnessSampler, vSheenRoughnessUV + uvOffset) * vSheenInfos.w;
         #endif
 
         sheenOut = sheenBlock(
@@ -408,7 +409,7 @@ void main(void) {
     // _____________ Shared Iridescence and Clear Coat data _________________
     #ifdef CLEARCOAT
         #ifdef CLEARCOAT_TEXTURE
-            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
+            vec2 clearCoatMapData = TEXRD(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
         #endif
     #endif
 
@@ -417,10 +418,10 @@ void main(void) {
         iridescenceOutParams iridescenceOut;
 
         #ifdef IRIDESCENCE_TEXTURE
-            vec2 iridescenceMapData = texture2D(iridescenceSampler, vIridescenceUV + uvOffset).rg * vIridescenceInfos.y;
+            vec2 iridescenceMapData = TEXRD(iridescenceSampler, vIridescenceUV + uvOffset).rg * vIridescenceInfos.y;
         #endif
         #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-            vec2 iridescenceThicknessMapData = texture2D(iridescenceThicknessSampler, vIridescenceThicknessUV + uvOffset).rg * vIridescenceInfos.w;
+            vec2 iridescenceThicknessMapData = TEXRD(iridescenceThicknessSampler, vIridescenceThicknessUV + uvOffset).rg * vIridescenceInfos.w;
         #endif
 
         iridescenceOut = iridescenceBlock(
@@ -451,15 +452,15 @@ void main(void) {
 
     #ifdef CLEARCOAT
         #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            vec4 clearCoatMapRoughnessData = texture2D(clearCoatRoughnessSampler, vClearCoatRoughnessUV + uvOffset) * vClearCoatInfos.w;
+            vec4 clearCoatMapRoughnessData = TEXRD(clearCoatRoughnessSampler, vClearCoatRoughnessUV + uvOffset) * vClearCoatInfos.w;
         #endif
 
         #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
-            vec4 clearCoatTintMapData = texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset);
+            vec4 clearCoatTintMapData = TEXRD(clearCoatTintSampler, vClearCoatTintUV + uvOffset);
         #endif
 
         #ifdef CLEARCOAT_BUMP
-            vec4 clearCoatBumpMapData = texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset);
+            vec4 clearCoatBumpMapData = TEXRD(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset);
         #endif
 
         clearcoatOut = clearcoatBlock(
@@ -528,19 +529,19 @@ void main(void) {
 
     #ifdef SUBSURFACE
         #ifdef SS_THICKNESSANDMASK_TEXTURE
-            vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
+            vec4 thicknessMap = TEXRD(thicknessSampler, vThicknessUV + uvOffset);
         #endif
 
         #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-            vec4 refractionIntensityMap = texture2D(refractionIntensitySampler, vRefractionIntensityUV + uvOffset);
+            vec4 refractionIntensityMap = TEXRD(refractionIntensitySampler, vRefractionIntensityUV + uvOffset);
         #endif
 
         #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-            vec4 translucencyIntensityMap = texture2D(translucencyIntensitySampler, vTranslucencyIntensityUV + uvOffset);
+            vec4 translucencyIntensityMap = TEXRD(translucencyIntensitySampler, vTranslucencyIntensityUV + uvOffset);
         #endif
 
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-            vec4 translucencyColorMap = texture2D(translucencyColorSampler, vTranslucencyColorUV + uvOffset);
+            vec4 translucencyColorMap = TEXRD(translucencyColorSampler, vTranslucencyColorUV + uvOffset);
             #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA
                 translucencyColorMap = toLinearSpace(translucencyColorMap);
             #endif

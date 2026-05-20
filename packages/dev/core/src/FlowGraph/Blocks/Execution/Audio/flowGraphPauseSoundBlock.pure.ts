@@ -1,0 +1,71 @@
+/** This file must only contain pure code and pure imports */
+
+import { type FlowGraphContext } from "../../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
+import { RichTypeAny } from "../../../flowGraphRichTypes.pure";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type AbstractSound } from "../../../../AudioV2/abstractAudio/abstractSound";
+import { SoundState } from "../../../../AudioV2/soundState";
+import { RegisterClass } from "../../../../Misc/typeStore";
+
+/**
+ * @experimental
+ * A block that pauses an Audio V2 sound. If the sound is already paused, resumes it.
+ */
+export class FlowGraphPauseSoundBlock extends FlowGraphExecutionBlockWithOutSignal {
+    /**
+     * Input connection: The sound to pause or resume.
+     */
+    public readonly sound: FlowGraphDataConnection<AbstractSound>;
+
+    /**
+     * Constructs a new FlowGraphPauseSoundBlock.
+     * @param config - optional configuration for the block
+     */
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        this.sound = this.registerDataInput("sound", RichTypeAny);
+    }
+
+    /**
+     * @internal
+     */
+    public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+        const soundValue = this.sound.getValue(context);
+        if (!soundValue) {
+            this._reportError(context, "No sound provided");
+            this.out._activateSignal(context);
+            return;
+        }
+        if (soundValue.state === SoundState.Paused) {
+            soundValue.resume();
+        } else if (soundValue.state === SoundState.Starting || soundValue.state === SoundState.Started) {
+            soundValue.pause();
+        }
+        this.out._activateSignal(context);
+    }
+
+    /**
+     * @returns class name of the block.
+     */
+    public override getClassName(): string {
+        return FlowGraphBlockNames.AudioPauseSound;
+    }
+}
+
+let _Registered = false;
+/**
+ * Register side effects for flowGraphPauseSoundBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphPauseSoundBlock(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    RegisterClass(FlowGraphBlockNames.AudioPauseSound, FlowGraphPauseSoundBlock);
+}

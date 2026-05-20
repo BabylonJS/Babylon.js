@@ -1,0 +1,192 @@
+/** This file must only contain pure code and pure imports */
+
+import { serialize, expandToProperty } from "../Misc/decorators";
+import { MaterialDefines } from "./materialDefines";
+import { MaterialPluginBase } from "./materialPluginBase.pure";
+import { Constants } from "../Engines/constants";
+import { MaterialFlags } from "./materialFlags";
+import { type Scene } from "core/scene.pure";
+import { type Engine } from "core/Engines/engine.pure";
+import { type SubMesh } from "core/Meshes/subMesh.pure";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial.pure";
+import { type StandardMaterial } from "./standardMaterial.pure";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
+import { RegisterClass } from "core/Misc/typeStore";
+
+/**
+ * @internal
+ */
+export class DecalMapDefines extends MaterialDefines {
+    DECAL = false;
+    DECALDIRECTUV = 0;
+    DECAL_SMOOTHALPHA = false;
+    GAMMADECAL = false;
+}
+
+/**
+ * Plugin that implements the decal map component of a material
+ * @since 5.49.1
+ */
+export class DecalMapConfiguration extends MaterialPluginBase {
+    private _isEnabled = false;
+    /**
+     * Enables or disables the decal map on this material
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public accessor isEnabled = false;
+
+    private _smoothAlpha = false;
+
+    /**
+     * Enables or disables the smooth alpha mode on this material. Default: false.
+     * When enabled, the alpha value used to blend the decal map will be the squared value and will produce a smoother result.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public accessor smoothAlpha = false;
+
+    private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
+
+    /** @internal */
+    public _markAllSubMeshesAsTexturesDirty(): void {
+        this._enable(this._isEnabled);
+        this._internalMarkAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(): boolean {
+        return true;
+    }
+
+    /**
+     * Creates a new DecalMapConfiguration
+     * @param material The material to attach the decal map plugin to
+     * @param addToPluginList If the plugin should be added to the material plugin list
+     */
+    constructor(material: PBRBaseMaterial | StandardMaterial, addToPluginList = true) {
+        super(material, "DecalMap", 150, new DecalMapDefines(), addToPluginList);
+
+        this.registerForExtraEvents = true; // because we override the hardBindForSubMesh method
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+    }
+
+    /**
+     * Checks if the sub mesh is ready to be used
+     * @param defines the list of defines
+     * @param scene the current scene
+     * @param engine the current engine
+     * @param subMesh the sub mesh to check
+     * @returns true if the sub mesh is ready
+     */
+    public override isReadyForSubMesh(defines: DecalMapDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {
+        const decalMap = subMesh.getMesh().decalMap;
+
+        if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
+            return true;
+        }
+
+        return decalMap.isReady();
+    }
+
+    /**
+     * Prepares the defines before attributes are set
+     * @param defines the list of defines
+     * @param scene the current scene
+     * @param mesh the current mesh
+     */
+    public override prepareDefinesBeforeAttributes(defines: DecalMapDefines, scene: Scene, mesh: AbstractMesh): void {
+        const decalMap = mesh.decalMap;
+
+        if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
+            const isDirty = defines.DECAL;
+            if (isDirty) {
+                defines.markAsTexturesDirty();
+            }
+            defines.DECAL = false;
+        } else {
+            const isDirty = !defines.DECAL || defines.GAMMADECAL !== decalMap.texture.gammaSpace;
+            if (isDirty) {
+                defines.markAsTexturesDirty();
+            }
+            defines.DECAL = true;
+            defines.GAMMADECAL = decalMap.texture.gammaSpace;
+            defines.DECAL_SMOOTHALPHA = this._smoothAlpha;
+            PrepareDefinesForMergedUV(decalMap.texture, defines, "DECAL");
+        }
+    }
+
+    /**
+     * Binds the material data for a sub mesh
+     * @param uniformBuffer the uniform buffer to update
+     * @param scene the current scene
+     * @param _engine the current engine
+     * @param subMesh the sub mesh to bind
+     */
+    public override hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, _engine: Engine, subMesh: SubMesh): void {
+        /**
+         * Note that we override hardBindForSubMesh and not bindForSubMesh because the material can be shared by multiple meshes,
+         * in which case mustRebind could return false even though the decal map is different for each mesh: that's because the decal map
+         * is not part of the material but hosted by the decalMap of the mesh instead.
+         */
+        const decalMap = subMesh.getMesh().decalMap;
+
+        if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
+            return;
+        }
+
+        const isFrozen = this._material.isFrozen;
+        const texture = decalMap.texture;
+
+        if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
+            uniformBuffer.updateFloat4("vDecalInfos", texture.coordinatesIndex, 0, 0, 0);
+            BindTextureMatrix(texture, uniformBuffer, "decal");
+        }
+
+        uniformBuffer.setTexture("decalSampler", texture);
+    }
+
+    /**
+     * Gets the class name of this plugin
+     * @returns the class name
+     */
+    public override getClassName(): string {
+        return "DecalMapConfiguration";
+    }
+
+    /**
+     * Gets the samplers used by the plugin
+     * @param samplers the list of samplers to update
+     */
+    public override getSamplers(samplers: string[]): void {
+        samplers.push("decalSampler");
+    }
+
+    public override getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+        return {
+            ubo: [
+                { name: "vDecalInfos", size: 4, type: "vec4" },
+                { name: "decalMatrix", size: 16, type: "mat4" },
+            ],
+        };
+    }
+}
+
+let _Registered = false;
+/**
+ * Register side effects for materialDecalMapConfiguration.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterMaterialDecalMapConfiguration(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    RegisterClass("BABYLON.DecalMapConfiguration", DecalMapConfiguration);
+}

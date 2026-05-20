@@ -2,6 +2,7 @@ import { type Engine } from "core/Engines";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 import { Vector3 } from "core/Maths/math.vector";
+import "core/Meshes/instancedMesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { FreeCamera } from "core/Cameras/freeCamera";

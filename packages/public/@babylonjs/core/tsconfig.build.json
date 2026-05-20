@@ -7,15 +7,10 @@
         "target": "ES2020",
         "importHelpers": true,
         "paths": {
-            "core/*": [
-                "../../../dev/core/src/*"
-            ],
-            "@lts/core/*": [
-                "../../../lts/core/src/*"
-            ]
+            "core/*": ["../../../dev/core/src/*"],
+            "@lts/core/*": ["../../../lts/core/src/*"]
         }
     },
-    "include": [
-        "../../../dev/core/src/**/*"
-    ]
+    "include": ["../../../dev/core/src/**/*"],
+    "exclude": ["**/node_modules", "**/dist", "../../../dev/core/src/**/*.test.ts"]
 }

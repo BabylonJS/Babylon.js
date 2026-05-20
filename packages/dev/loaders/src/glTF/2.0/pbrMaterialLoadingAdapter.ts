@@ -5,6 +5,7 @@ import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type GLTFLoader } from "./glTFLoader";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**
@@ -12,7 +13,7 @@ import { Vector3 } from "core/Maths/math.vector";
  */
 export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: PBRMaterial;
-
+    private _specWorkflow: boolean = false;
     /**
      * Creates a new instance of the PBRMaterialLoadingAdapter.
      * @param material - The PBR material to adapt.
@@ -28,6 +29,12 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public get material(): PBRMaterial {
         return this._material;
     }
+
+    /**
+     * No-op: PBRMaterial has no deferred finalization.
+     * @param _loader Unused.
+     */
+    public async finalizeAsync(_loader: GLTFLoader): Promise<void> {}
 
     /**
      * Whether the material should be treated as unlit
@@ -267,6 +274,16 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Enable the specular/glossiness workflow and disable metallic/roughness.
+     */
+    public configureSpecularGlossiness(): void {
+        this._specWorkflow = true;
+        this._material.metallic = null;
+        this._material.roughness = null;
+        this._material.useMicroSurfaceFromReflectivityMapAlpha = true;
+    }
+
+    /**
      * Sets the specular weight (mapped to PBR metallicF0Factor).
      * @param value The specular weight value
      */
@@ -310,7 +327,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The specular color as a Color3
      */
     public set specularColor(value: Color3) {
-        this._material.metallicReflectanceColor = value;
+        if (this._specWorkflow) {
+            this._material.reflectivityColor = value;
+        } else {
+            this._material.metallicReflectanceColor = value;
+        }
     }
 
     /**
@@ -318,7 +339,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns The specular color as a Color3
      */
     public get specularColor(): Color3 {
-        return this._material.metallicReflectanceColor;
+        if (this._specWorkflow) {
+            return this._material.reflectivityColor;
+        } else {
+            return this._material.metallicReflectanceColor;
+        }
     }
 
     /**
@@ -326,7 +351,14 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The specular color texture or null
      */
     public set specularColorTexture(value: Nullable<BaseTexture>) {
-        this._material.reflectanceTexture = value;
+        if (this._specWorkflow) {
+            this._material.reflectivityTexture = value;
+            if (this._material.reflectivityTexture) {
+                this._material.reflectivityTexture.hasAlpha = true;
+            }
+        } else {
+            this._material.reflectanceTexture = value;
+        }
     }
 
     /**
@@ -334,7 +366,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns The specular color texture or null
      */
     public get specularColorTexture(): Nullable<BaseTexture> {
-        return this._material.reflectanceTexture;
+        if (this._specWorkflow) {
+            return this._material.reflectivityTexture;
+        } else {
+            return this._material.reflectanceTexture;
+        }
     }
 
     /**
@@ -388,6 +424,22 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public get specularIor(): number {
         return this._material.indexOfRefraction;
+    }
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    public get glossiness(): number {
+        return this._material.microSurface ?? 1;
+    }
+
+    /**
+     * Sets/gets the glossiness (inverted roughness)
+     * ONLY used for specular/glossiness workflow; has no effect when metallic/roughness workflow is active
+     */
+    public set glossiness(value: number) {
+        this._material.microSurface = value;
     }
 
     // ========================================
@@ -826,6 +878,9 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    /**
+     * Configures volume properties for PBR material. Nothing to do for PBRMaterial.
+     */
     public configureVolume(): void {}
 
     /**
@@ -837,7 +892,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Gets whether the material is thin-walled (i.e. non-volumetric) or not.
      */
     public get geometryThinWalled(): boolean {
-        return true;
+        return this._material.subSurface.maximumThickness === 0;
     }
 
     /**

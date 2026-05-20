@@ -16,7 +16,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import postcss from "rollup-plugin-postcss";
 import url from "@rollup/plugin-url";
-import { copyFileSync, existsSync } from "fs";
+import { copyFileSync, existsSync, readFileSync } from "fs";
 import { resolve, join, dirname, relative as pathRelative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { transform as esbuildTransform } from "esbuild";
@@ -25,6 +25,13 @@ import { transform as esbuildTransform } from "esbuild";
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
 // with "..") regardless of where in the monorepo the file being compiled lives.
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const fontAwesomeSvgCoreVersion = (() => {
+    try {
+        return JSON.parse(readFileSync(resolve(REPO_ROOT, "node_modules/@fortawesome/fontawesome-svg-core/package.json"), "utf8")).version;
+    } catch {
+        return "7.0.0";
+    }
+})();
 
 /** Returns `absPath` rewritten as a forward-slash repo-relative path. */
 function relativeFromRepoRoot(absPath) {
@@ -233,6 +240,33 @@ function resolveSubPathNamespace(source, pkg) {
     return null;
 }
 
+function resolveSubPathExternalId(source, pkg, externalId, externalPackageType) {
+    if (externalPackageType !== "es6") {
+        return null;
+    }
+
+    const normalized = source.replaceAll("\\", "/");
+
+    if (pkg === "core") {
+        if (normalized.includes("/Debug/")) {
+            return `${externalId}/Debug/index.js`;
+        }
+        return null;
+    }
+
+    if (pkg === "loaders") {
+        if (normalized.includes("/glTF/1.0")) {
+            return `${externalId}/glTF/1.0/index.js`;
+        } else if (normalized.includes("/glTF/2.0/Extensions")) {
+            return `${externalId}/glTF/2.0/Extensions/index.js`;
+        } else if (normalized.includes("/glTF/2.0")) {
+            return `${externalId}/glTF/2.0/index.js`;
+        }
+    }
+
+    return null;
+}
+
 /**
  * Rollup plugin that intercepts imports from Babylon.js dev packages and marks
  * them as external, rewriting to their UMD module IDs.
@@ -241,9 +275,11 @@ function resolveSubPathNamespace(source, pkg) {
  * bundled (this is the package being built).
  *
  * When a sub-path import resolves to a different browser global (e.g.
- * `loaders/glTF/2.0/…` → `BABYLON.GLTF2`), the plugin emits a synthetic
- * external ID (e.g. `babylonjs-loaders::BABYLON.GLTF2`) and registers the
+ * `loaders/glTF/2.0/…` → `BABYLON.GLTF2`), the plugin registers the
  * corresponding global so the UMD output receives the correct namespace.
+ * ES6-mode builds use resolvable package subpaths when possible; classic UMD
+ * builds fall back to synthetic external IDs such as
+ * `babylonjs-loaders::BABYLON.GLTF2`.
  *
  * @param {string[]} excludePackages Dev package names to bundle rather than externalize.
  * @param {object} [opts]
@@ -286,6 +322,11 @@ export function babylonUMDExternalsPlugin(excludePackages = [], opts = {}) {
                 // Check if this sub-path needs a different browser global.
                 const subNs = resolveSubPathNamespace(source, pkg);
                 if (subNs) {
+                    const subPathExternalId = resolveSubPathExternalId(source, pkg, externalId, externalPackageType);
+                    if (subPathExternalId) {
+                        extraGlobals[subPathExternalId] = subNs;
+                        return { id: subPathExternalId, external: true };
+                    }
                     // Use a synthetic external ID that encodes the target global.
                     // The `::` separator is not valid in package names, so it won't
                     // collide with real UMD IDs.
@@ -363,6 +404,7 @@ function rewriteDynamicExternalImportsPlugin(production = false) {
         name: "rewrite-dynamic-external-imports",
         renderChunk(code) {
             let result = code;
+            result = result.replace(/require\((['"])@fortawesome\/fontawesome-svg-core\/package\.json\1\)/g, `({ version: ${JSON.stringify(fontAwesomeSvgCoreVersion)} })`);
             // Replace process.env.NODE_ENV so React (and other libs) don't
             // reference the Node.js `process` global in browsers.
             // Use "development" in dev builds so React DevTools doesn't complain
@@ -497,6 +539,22 @@ function copyMinToMaxPlugin(outputDir, primaryName, chunkNames) {
 
 function camelize(str) {
     return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+function shouldSuppressRollupWarning(warning) {
+    if (warning.code === "CIRCULAR_DEPENDENCY") {
+        return true;
+    }
+
+    const message = warning.message ?? "";
+
+    if (warning.code === "MODULE_LEVEL_DIRECTIVE" || message.includes("Module level directives cause errors when bundled")) {
+        const id = (warning.id ?? warning.loc?.file ?? "").split("\\").join("/");
+        const isThirdPartyModule = id.includes("/node_modules/") || message.includes("node_modules/");
+        return isThirdPartyModule && (message.includes('"use client"') || message.includes('"use server"'));
+    }
+
+    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -725,9 +783,8 @@ export function commonUMDRollupConfiguration(options) {
         },
         plugins,
         treeshake: false,
-        // Suppress noisy circular-dependency warnings from the large Babylon packages.
         onwarn(warning, warn) {
-            if (warning.code === "CIRCULAR_DEPENDENCY") return;
+            if (shouldSuppressRollupWarning(warning)) return;
             warn(warning);
         },
     });
@@ -773,7 +830,7 @@ export function commonUMDRollupConfiguration(options) {
                           }),
                       ]
                     : []),
-                ...(minToMax && production && i === 0 ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
+                ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
             ];
             return {
                 input: inputFile,
@@ -793,7 +850,7 @@ export function commonUMDRollupConfiguration(options) {
                 plugins: perEntryPlugins,
                 treeshake: false,
                 onwarn(warning, warn) {
-                    if (warning.code === "CIRCULAR_DEPENDENCY") return;
+                    if (shouldSuppressRollupWarning(warning)) return;
                     warn(warning);
                 },
             };

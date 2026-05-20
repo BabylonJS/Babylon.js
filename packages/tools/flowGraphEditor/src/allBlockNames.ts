@@ -15,6 +15,8 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphPointerOutEventBlock",
         "FlowGraphReceiveCustomEventBlock",
         "FlowGraphSendCustomEventBlock",
+        "FlowGraphKeyDownEventBlock",
+        "FlowGraphKeyUpEventBlock",
     ],
     Control_Flow: [
         "FlowGraphBranchBlock",
@@ -45,6 +47,7 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
     Audio__Actions: ["FlowGraphPlaySoundBlock", "FlowGraphStopSoundBlock", "FlowGraphPauseSoundBlock", "FlowGraphSetSoundVolumeBlock"],
     Audio__Events: ["FlowGraphSoundEndedEventBlock"],
     Audio__Data: ["FlowGraphGetSoundVolumeBlock", "FlowGraphIsSoundPlayingBlock"],
+    Keyboard__Data: ["FlowGraphIsKeyPressedBlock"],
     Math__Constants: ["FlowGraphEBlock", "FlowGraphPIBlock", "FlowGraphInfBlock", "FlowGraphNaNBlock", "FlowGraphRandomBlock"],
     Math__Arithmetic: [
         "FlowGraphAddBlock",
