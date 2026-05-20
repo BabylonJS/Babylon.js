@@ -68,15 +68,17 @@ CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 \
 
 ### Environment Variables
 
-| Variable            | Description                                                                    | Default                         |
-| ------------------- | ------------------------------------------------------------------------------ | ------------------------------- |
-| `BSTACK_TEST_TYPE`  | Test suite to run: `webgl2`, `webgpu`, `performance`, `interaction`            | `webgl2`                        |
-| `CDN_BASE_URL`      | Base URL where Babylon.js snapshot is served                                   | —                               |
-| `CIWORKERS`         | Number of parallel Playwright workers / BrowserStack sessions                  | `5` (BrowserStack), `4` (local) |
-| `BSTACK_BROWSER`    | Override BrowserStack browser (e.g. `playwright-firefox`, `playwright-webkit`) | `chrome`                        |
-| `BSTACK_OS`         | Override BrowserStack OS                                                       | `OS X`                          |
-| `BSTACK_OS_VERSION` | Override BrowserStack OS version                                               | `Sonoma`                        |
-| `BSTACK_BUILD_NAME` | Override build name on BrowserStack dashboard                                  | Auto-generated from test type   |
+| Variable                        | Description                                                                         | Default                         |
+| ------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
+| `BSTACK_TEST_TYPE`              | Test suite to run: `webgl2`, `webgpu`, `performance`, `interaction`, `es6vis`       | `webgl2`                        |
+| `CDN_BASE_URL`                  | Base URL where Babylon.js snapshot is served                                        | —                               |
+| `CIWORKERS`                     | Number of parallel Playwright workers / BrowserStack sessions                       | `5` (BrowserStack), `4` (local) |
+| `BSTACK_BROWSER`                | Override BrowserStack browser (e.g. `playwright-firefox`, `playwright-webkit`)      | `chrome`                        |
+| `BSTACK_OS`                     | Override BrowserStack OS                                                            | `OS X`                          |
+| `BSTACK_OS_VERSION`             | Override BrowserStack OS version                                                    | `Sonoma`                        |
+| `BSTACK_BUILD_NAME`             | Override build name on BrowserStack dashboard                                       | Auto-generated from test type   |
+| `BROWSERSTACK_LOCAL`            | Enable BrowserStack Local tunnel startup for local dev server suites                | —                               |
+| `BROWSERSTACK_LOCAL_IDENTIFIER` | Unique BrowserStack Local tunnel identifier for local-tunnel suites such as ES6 vis | —                               |
 
 | `EXCLUDE_REGEX_ARRAY` | Comma-separated regex patterns to exclude tests | — |
 | `TIMEOUT` | Per-test timeout in milliseconds | Playwright default |

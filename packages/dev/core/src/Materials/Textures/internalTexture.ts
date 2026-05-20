@@ -567,6 +567,13 @@ export class InternalTexture extends TextureSampler {
         this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.is2DArray, this.isCube, this.is3D, this.width, this.height, this.depth);
 
         target._hardwareTexture = this._hardwareTexture;
+        // Refresh the target's uniqueId so that caches keyed by uniqueId (e.g. the
+        // WebGPU global bind-group cache) see the hardware texture as a new resource
+        // and rebuild GPU bind groups referencing it. Without this, callers that swap
+        // a raw GPU texture for a prefiltered one (e.g. HDR/PMREM prefiltering) would
+        // continue to receive stale GPUBindGroups that hold views over the now-destroyed
+        // source GPU texture, causing "Destroyed texture used in a submit" errors.
+        target._setUniqueId(InternalTexture._Counter++);
         if (swapAll) {
             target._isRGBD = this._isRGBD;
         }

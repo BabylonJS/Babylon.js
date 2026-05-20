@@ -1,4 +1,7 @@
+/* eslint-disable no-console */
 /* global BABYLON */
+import { ParseDataSnippetResponse } from "@tools/snippet-loader/parseDataSnippetResponse";
+
 var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
@@ -123,42 +126,55 @@ checkBabylonVersionAsync().then(() => {
             location.hash = splits.join("#");
         };
 
-        let checkHash = function () {
-            if (location.hash) {
-                if (previousHash != location.hash) {
-                    cleanHash();
+        let loadSnippetFromHashAsync = function () {
+            cleanHash();
+            previousHash = location.hash;
 
-                    previousHash = location.hash;
+            return new Promise((resolve, reject) => {
+                let hash = location.hash.substr(1);
+                currentSnippetToken = hash.split("#")[0];
 
-                    try {
-                        let xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
-                            if (xmlHttp.readyState == 4) {
-                                if (xmlHttp.status == 200) {
-                                    let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                                    let serializationObject = JSON.parse(snippet.nodeParticle);
-
-                                    if (editorDisplayed) {
-                                        customLoadObservable.notifyObservers(serializationObject);
-                                    } else {
-                                        nodeParticleSet.loadFromSerialization(serializationObject);
-                                        try {
-                                            nodeParticleSet.buildAsync(scene);
-                                        } catch (err) {
-                                            // Swallow the error here
-                                        }
-                                        showEditor();
-                                    }
-                                }
+                let xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4) {
+                        if (xmlHttp.status == 200) {
+                            try {
+                                let snippet = ParseDataSnippetResponse(JSON.parse(xmlHttp.responseText), hash, "nodeParticle");
+                                resolve(snippet.data);
+                            } catch (err) {
+                                reject(err);
                             }
-                        };
+                        } else {
+                            reject(new Error(`Unable to load node particle set snippet ${hash}`));
+                        }
+                    }
+                };
+                xmlHttp.onerror = function () {
+                    reject(new Error(`Unable to load node particle set snippet ${hash}`));
+                };
+                xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                xmlHttp.send();
+            });
+        };
 
-                        let hash = location.hash.substr(1);
-                        currentSnippetToken = hash.split("#")[0];
-                        xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
-                        xmlHttp.send();
-                    } catch (e) {}
-                }
+        let applySerializedParticleSetAsync = async function (serializationObject) {
+            nodeParticleSet.parseSerializedObject(serializationObject);
+            try {
+                await nodeParticleSet.buildAsync(scene);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        let checkHash = function () {
+            if (location.hash && previousHash != location.hash) {
+                loadSnippetFromHashAsync()
+                    .then((serializationObject) => {
+                        customLoadObservable.notifyObservers(serializationObject);
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
             }
 
             setTimeout(checkHash, 200);
@@ -224,10 +240,25 @@ checkBabylonVersionAsync().then(() => {
             scene = new BABYLON.Scene(engine);
 
             nodeParticleSet = new BABYLON.NodeParticleSystemSet("System set");
-            nodeParticleSet.setToDefault();
-            nodeParticleSet.buildAsync(scene).then(() => {
-                showEditor();
-            });
+            if (location.hash) {
+                loadSnippetFromHashAsync()
+                    .then(async (serializationObject) => {
+                        await applySerializedParticleSetAsync(serializationObject);
+                        showEditor();
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        nodeParticleSet.setToDefault();
+                        nodeParticleSet.buildAsync(scene).then(() => {
+                            showEditor();
+                        });
+                    });
+            } else {
+                nodeParticleSet.setToDefault();
+                nodeParticleSet.buildAsync(scene).then(() => {
+                    showEditor();
+                });
+            }
         } else {
             alert("Babylon.js is not supported.");
         }
