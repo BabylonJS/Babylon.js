@@ -13,7 +13,10 @@ import json from "@rollup/plugin-json";
 import { builtinModules } from "node:module";
 import { transform } from "esbuild";
 
-/** Strip shebang lines from source so the banner is the only one. */
+/**
+ * Strip shebang lines from source so the banner is the only one.
+ * @returns A Rollup plugin that removes source shebangs.
+ */
 function stripShebang() {
     return {
         name: "strip-shebang",
@@ -26,7 +29,10 @@ function stripShebang() {
     };
 }
 
-/** Minify bundled chunks using esbuild (handles modern JS incl. private fields). */
+/**
+ * Minify bundled chunks using esbuild (handles modern JS incl. private fields).
+ * @returns A Rollup plugin that minifies chunks with esbuild.
+ */
 function esbuildMinify() {
     return {
         name: "esbuild-minify",
@@ -41,6 +47,41 @@ function esbuildMinify() {
     };
 }
 
+/**
+ * Resolve zod-to-json-schema's v3 compatibility import to the installed zod package.
+ * @returns A Rollup plugin that aliases zod/v3 imports.
+ */
+function zodV3CompatAlias() {
+    return {
+        name: "zod-v3-compat-alias",
+        async resolveId(source, importer, options) {
+            if (source !== "zod/v3") {
+                return null;
+            }
+            return await this.resolve("zod", importer, { ...options, skipSelf: true });
+        },
+    };
+}
+
+function isKnownDependencyCircularWarning(warning) {
+    if (warning.code !== "CIRCULAR_DEPENDENCY") {
+        return false;
+    }
+
+    const ids = warning.ids ?? [warning.message ?? ""];
+    return ids.some((id) => id.includes("/node_modules/zod") || id.includes("/node_modules/zod-to-json-schema"));
+}
+
+function isKnownGltfDevCoreRootDirWarning(warning) {
+    return (
+        warning.code === "PLUGIN_WARNING" &&
+        warning.plugin === "typescript" &&
+        warning.message?.includes("TS6059") &&
+        warning.message.includes("/packages/dev/core/src/") &&
+        warning.message.includes("/packages/tools/gltf-mcp-server/src")
+    );
+}
+
 /** Node built-in modules that must stay external (e.g. "fs", "node:fs"). */
 const nodeBuiltins = [...builtinModules, ...builtinModules.map((m) => `node:${m}`)];
 
@@ -53,12 +94,18 @@ const nodeBuiltins = [...builtinModules, ...builtinModules.map((m) => `node:${m}
 const alwaysExternal = [...nodeBuiltins, /^monaco-editor/];
 
 /**
- * @param {string} input  Entry point relative to the server package root.
- * @returns {import("rollup").RollupOptions}
+ * @param input Entry point relative to the server package root.
+ * @returns The Rollup options for an MCP server package.
  */
 export function createConfig(input = "./src/index.ts") {
     return {
         input,
+        onwarn(warning, defaultHandler) {
+            if (isKnownDependencyCircularWarning(warning) || isKnownGltfDevCoreRootDirWarning(warning)) {
+                return;
+            }
+            defaultHandler(warning);
+        },
         output: {
             file: "dist/index.js",
             format: "es",
@@ -75,6 +122,7 @@ export function createConfig(input = "./src/index.ts") {
                 declaration: false,
                 declarationMap: false,
             }),
+            zodV3CompatAlias(),
             nodeResolve({ preferBuiltins: true }),
             commonjs(),
             json(),
