@@ -2014,8 +2014,7 @@ export class ThinNativeEngine extends ThinEngine {
      * color attachment has its framebuffer rebuilt with the new handle.
      *
      * Throws if the target was not produced by {@link wrapNativeTexture}, if the new handle's dimensions don't match,
-     * or if the wrapped texture is part of a multi render-target or an MSAA render-target wrapper (neither is
-     * supported in this version; dispose and re-wrap).
+     * or if the wrapped texture is part of a multi render-target (not supported in this version; dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new native texture handle to wrap
      */
@@ -2041,9 +2040,6 @@ export class ThinNativeEngine extends ThinEngine {
             }
             if (rtWrapper.isMulti) {
                 throw new Error("updateWrappedNativeTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
-            }
-            if (rtWrapper.samples > 1) {
-                throw new Error("updateWrappedNativeTexture: wrapped texture is bound to an MSAA render-target; not supported. Dispose and re-wrap.");
             }
         }
 

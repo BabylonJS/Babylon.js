@@ -864,10 +864,11 @@ export class Engine extends ThinEngine {
      * handle is undefined behaviour. Sampling mode and mip-map flag are properties of the logical wrapped texture and
      * are re-applied to the new resource. Any render-target wrapper holding this texture as its color attachment has
      * its framebuffer rebuilt with the new handle (including a fresh depth/stencil renderbuffer, since the old one
-     * came from the dead context).
+     * came from the dead context). If the wrapper is multisampled, the MSAA framebuffer + color renderbuffer + MSAA
+     * depth/stencil buffer are rebuilt too.
      *
      * Throws if the target was not produced by {@link wrapWebGLTexture}, or if the wrapped texture is part of a multi
-     * render-target or an MSAA render-target wrapper (neither is supported in this version; dispose and re-wrap).
+     * render-target wrapper (not supported in this version; dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new WebGL handle to wrap
      */
@@ -885,9 +886,6 @@ export class Engine extends ThinEngine {
             }
             if (rtWrapper.isMulti) {
                 throw new Error("updateWrappedWebGLTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
-            }
-            if (rtWrapper.samples > 1) {
-                throw new Error("updateWrappedWebGLTexture: wrapped texture is bound to an MSAA render-target; not supported. Dispose and re-wrap.");
             }
         }
 
@@ -919,11 +917,13 @@ export class Engine extends ThinEngine {
                 continue;
             }
             const webGLRtWrapper = rtWrapper as WebGLRenderTargetWrapper;
+            const savedSamples = rtWrapper.samples;
+            const isMSAA = savedSamples > 1;
 
             if (webGLRtWrapper._framebuffer) {
                 gl.deleteFramebuffer(webGLRtWrapper._framebuffer);
             }
-            if (webGLRtWrapper._depthStencilBuffer) {
+            if (!isMSAA && webGLRtWrapper._depthStencilBuffer) {
                 gl.deleteRenderbuffer(webGLRtWrapper._depthStencilBuffer);
                 webGLRtWrapper._depthStencilBuffer = null;
             }
@@ -931,15 +931,25 @@ export class Engine extends ThinEngine {
             const previousFramebuffer = this._currentFramebuffer;
             const framebuffer = gl.createFramebuffer();
             this._bindUnboundFramebuffer(framebuffer);
-            webGLRtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
-                rtWrapper._generateStencilBuffer,
-                rtWrapper._generateDepthBuffer,
-                internalTexture.baseWidth,
-                internalTexture.baseHeight
-            );
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            if (!isMSAA) {
+                webGLRtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
+                    rtWrapper._generateStencilBuffer,
+                    rtWrapper._generateDepthBuffer,
+                    internalTexture.baseWidth,
+                    internalTexture.baseHeight
+                );
+            }
             this._bindUnboundFramebuffer(previousFramebuffer);
             webGLRtWrapper._framebuffer = framebuffer;
+
+            if (isMSAA) {
+                // Defer MSAA framebuffer + color renderbuffer + multisampled depth/stencil rebuild to the existing
+                // helper. The helper early-returns when samples matches the cached value, so zero the cache first
+                // to force the work; updateRenderTargetTextureSampleCount restores _samples to savedSamples.
+                rtWrapper._samples = 1;
+                this.updateRenderTargetTextureSampleCount(webGLRtWrapper, savedSamples);
+            }
         }
     }
 
