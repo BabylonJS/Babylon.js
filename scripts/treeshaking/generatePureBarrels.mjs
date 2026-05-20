@@ -12,17 +12,18 @@
  *   - Subdirectory `pure.ts` barrels (recursively generated)
  *
  * Usage:
- *   node scripts/treeshaking/generatePureBarrels.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/generatePureBarrels.mjs [--dry-run] [--verbose] [--no-format]
  *
  * Options:
  *   --dry-run   Print what would be written without touching disk
  *   --verbose   Print detailed per-file decisions
+ *   --no-format Skip formatting generated files after writing them
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "fs";
 import { resolve, dirname, relative, join, basename } from "path";
 import { fileURLToPath } from "url";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../..");
@@ -32,6 +33,7 @@ const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
+const NO_FORMAT = process.argv.includes("--no-format");
 const IS_ADO = !!process.env.TF_BUILD;
 
 function adoError(msg) {
@@ -592,19 +594,24 @@ console.log(`  Empty barrels (not written): ${emptyBarrels}`);
 if (!DRY_RUN && !CHECK && writtenFiles.length > 0) {
     // Deduplicate (a file may be appended to multiple times)
     const uniqueFiles = [...new Set(writtenFiles)];
-    console.log(`\nFormatting ${uniqueFiles.length} files with Prettier...`);
-    try {
-        const BATCH = 100;
-        for (let i = 0; i < uniqueFiles.length; i += BATCH) {
-            const batch = uniqueFiles.slice(i, i + BATCH);
-            execSync(`npx prettier --write ${batch.map((f) => `"${f}"`).join(" ")}`, {
-                cwd: REPO_ROOT,
-                stdio: "ignore",
-            });
+    if (NO_FORMAT) {
+        console.log(`\nSkipping Prettier formatting for ${uniqueFiles.length} files (--no-format).`);
+    } else {
+        console.log(`\nFormatting ${uniqueFiles.length} files with Prettier...`);
+        try {
+            const prettierBin = resolve(REPO_ROOT, "node_modules/prettier/bin/prettier.cjs");
+            const BATCH = 100;
+            for (let i = 0; i < uniqueFiles.length; i += BATCH) {
+                const batch = uniqueFiles.slice(i, i + BATCH);
+                execFileSync(process.execPath, [prettierBin, "--write", ...batch], {
+                    cwd: REPO_ROOT,
+                    stdio: "ignore",
+                });
+            }
+            console.log(`Formatted ${uniqueFiles.length} files.`);
+        } catch (err) {
+            console.error(`Warning: Prettier formatting failed: ${err.message}`);
         }
-        console.log(`Formatted ${uniqueFiles.length} files.`);
-    } catch (err) {
-        console.error(`Warning: Prettier formatting failed: ${err.message}`);
     }
 }
 

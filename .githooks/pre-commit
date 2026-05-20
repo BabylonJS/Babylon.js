@@ -1,13 +1,11 @@
 #!/usr/bin/env sh
 set -e
 
-npm run precommit
-
 # Auto-fix tree-shaking artifacts if any core source files are staged
 if git diff --cached --name-only | grep -q '^packages/dev/core/src/'; then
   npm run update:manifest
   node scripts/treeshaking/syncSideEffects.mjs
-  npm run generate:pure-barrels
+  npm run generate:pure-barrels -- --no-format
   npm run generate:side-effect-stubs
   git add scripts/treeshaking/side-effects-manifest.json
   git add packages/public/@babylonjs/core/package.json
@@ -16,3 +14,5 @@ if git diff --cached --name-only | grep -q '^packages/dev/core/src/'; then
     git add "$file"
   done
 fi
+
+npm run precommit
