@@ -42,6 +42,13 @@ export class WebGPUSnapshotRendering {
         this._log("enabled", `activate=${activate}, mode=${this._mode}`);
 
         this._allBundleLists.length = 0;
+        if (this._record) {
+            // A recording pass is in flight: _mode is temporarily SNAPSHOTRENDERING_STANDARD and is normally
+            // restored to _modeSaved at the next endFrame(). Restore it now so that flipping _record off
+            // doesn't leave _mode stuck on STANDARD — otherwise the next "enabled = true" would save STANDARD
+            // as the user-requested mode and the engine would permanently fall back to STANDARD (forum #63365).
+            this._mode = this._modeSaved;
+        }
         this._record = this._enabled = activate;
         this._play = false;
         if (activate) {
@@ -113,9 +120,6 @@ export class WebGPUSnapshotRendering {
 
     public reset(): void {
         this._log("reset", "called");
-        if (this._record) {
-            this._mode = this._modeSaved;
-        }
         this.enabled = false;
         this.enabled = true;
     }

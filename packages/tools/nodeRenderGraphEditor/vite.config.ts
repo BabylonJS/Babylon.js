@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import path from "path";
+// @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
 
 export default defineConfig((_env) => {
@@ -8,6 +9,7 @@ export default defineConfig((_env) => {
         aliases: {
             "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             gui: path.resolve("../../dev/gui/dist"),
+            "@tools/snippet-loader": path.resolve("../../tools/snippetLoader/src"),
         },
         cdnExternals: {
             "@dev/core": "BABYLON",

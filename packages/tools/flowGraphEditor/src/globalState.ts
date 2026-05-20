@@ -57,8 +57,8 @@ export class GlobalState {
     onImportFrameObservable = new Observable<any>();
     /** Observable triggered when popup is closed */
     onPopupClosedObservable = new Observable<void>();
-    /** Callback to get a graph node from a flow graph block */
-    onGetNodeFromBlock: (block: FlowGraphBlock) => GraphNode;
+    /** Callback to get a graph node from a flow graph block. Set by GraphEditor after mount. */
+    onGetNodeFromBlock: Nullable<(block: FlowGraphBlock) => GraphNode> = null;
     // eslint-disable-next-line jsdoc/require-returns
     /** Callback that returns true if the given graph node is within the visible viewport.
      *  Used by the debug highlighter to skip offscreen nodes and save DOM work. */

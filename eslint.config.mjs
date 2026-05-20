@@ -236,7 +236,7 @@ export default tseslint.config(
             "import/named": "off",
             // import/no-cycle is disabled for performance — it traverses the full
             // dependency graph and is the single most expensive rule in the config.
-            // Run it explicitly via `npm run lint:cycles` when needed.
+            // Circular dependencies are checked separately via `npm run lint:cycles`.
             "import/no-cycle": "off",
             "import/no-internal-modules": [
                 "error",
@@ -709,6 +709,26 @@ export default tseslint.config(
         files: ["packages/dev/**/*.{ts,tsx}"],
         rules: {
             "babylonjs/no-directory-barrel-imports": "error",
+        },
+    },
+
+    // ===========================================
+    // Pure files: require /*#__PURE__*/ on top-level calls
+    // ===========================================
+    {
+        files: ["packages/dev/core/src/**/*.pure.ts"],
+        rules: {
+            "babylonjs/require-pure-annotation": "error",
+        },
+    },
+
+    // ===========================================
+    // Pure files: no side-effect (bare) imports
+    // ===========================================
+    {
+        files: ["packages/dev/core/src/**/*.pure.ts", "packages/dev/core/src/**/pure.ts"],
+        rules: {
+            "babylonjs/no-side-effect-imports-in-pure": "error",
         },
     },
 

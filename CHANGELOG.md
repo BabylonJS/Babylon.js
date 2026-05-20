@@ -1,5 +1,240 @@
 # Changelog
 
+## 9.8.0
+
+### Core
+
+- Tree-shaking - the pure barrel - by [RaananW](https://github.com/RaananW) ([#18441](https://github.com/BabylonJS/Babylon.js/pull/18441))
+- Add distance-only spatial mode to Audio Engine V2 - by [VicenteCartas](https://github.com/VicenteCartas) ([#18462](https://github.com/BabylonJS/Babylon.js/pull/18462))
+- Camera input mapping system with backward-compatible legacy flag support - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18379](https://github.com/BabylonJS/Babylon.js/pull/18379))
+
+## 9.7.0
+
+### Core
+
+- OpenPBR - Support importing glTF surface tinting - by [MiiBond](https://github.com/MiiBond) ([#18430](https://github.com/BabylonJS/Babylon.js/pull/18430))
+- feat: Add texture repetition breaking for Standard, PBR, and OpenPBR materials - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18448](https://github.com/BabylonJS/Babylon.js/pull/18448))
+- feat(physics): add maxStepHeight to PhysicsCharacterController - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18449](https://github.com/BabylonJS/Babylon.js/pull/18449))
+- Add Smart Assets module for managing scene asset references - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18434](https://github.com/BabylonJS/Babylon.js/pull/18434))
+- Fix AnimatorAvatar.retargetAnimationGroup clobbering active animations - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18450](https://github.com/BabylonJS/Babylon.js/pull/18450))
+- fix(GaussianSplatting): preserve plugin defines with ShadowGenerator and invoke prepareDefines events - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18447](https://github.com/BabylonJS/Babylon.js/pull/18447))
+- feat(flowGraph): Add keyboard event blocks (KeyDown, KeyUp, IsKeyPressed) - by [RaananW](https://github.com/RaananW) ([#18445](https://github.com/BabylonJS/Babylon.js/pull/18445))
+- Fix snapshot rendering permanently falling back to STANDARD mode when disable interrupts an in-progress recording - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18444](https://github.com/BabylonJS/Babylon.js/pull/18444))
+- Fix CPU particle support in WebGPU FAST snapshot rendering - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18431](https://github.com/BabylonJS/Babylon.js/pull/18431))
+
+### Inspector
+
+- OpenPBR - Support importing glTF surface tinting - by [MiiBond](https://github.com/MiiBond) ([#18430](https://github.com/BabylonJS/Babylon.js/pull/18430))
+- feat: Add texture repetition breaking for Standard, PBR, and OpenPBR materials - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18448](https://github.com/BabylonJS/Babylon.js/pull/18448))
+- Add Smart Assets module for managing scene asset references - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18434](https://github.com/BabylonJS/Babylon.js/pull/18434))
+
+### Loaders
+
+- OpenPBR - Support importing glTF surface tinting - by [MiiBond](https://github.com/MiiBond) ([#18430](https://github.com/BabylonJS/Babylon.js/pull/18430))
+- fix(splat): SPLATFileLoader constructor to merge with defaults instead of entirely replacing them - by [raymondyfei](https://github.com/raymondyfei) ([#18438](https://github.com/BabylonJS/Babylon.js/pull/18438))
+
+### Lottie Player
+
+- Fix Lottie worker in Vite dev host - by [RaananW](https://github.com/RaananW) ([#18446](https://github.com/BabylonJS/Babylon.js/pull/18446))
+
+### Materials
+
+- Fix PBRCustomMaterial shader source cleanup on dispose - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18453](https://github.com/BabylonJS/Babylon.js/pull/18453))
+
+### Playground
+
+- Add Smart Assets module for managing scene asset references - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18434](https://github.com/BabylonJS/Babylon.js/pull/18434))
+
+### Viewer
+
+- Add OpenPBR support to Viewer - by [MiiBond](https://github.com/MiiBond) ([#18432](https://github.com/BabylonJS/Babylon.js/pull/18432))
+
+## 9.6.2
+
+## 9.6.1
+
+### Core
+
+- Clean up observers when parsing Node Materials - [_Bug Fix_] by [abogartz](https://github.com/abogartz) ([#18435](https://github.com/BabylonJS/Babylon.js/pull/18435))
+
+### Lottie Player
+
+- Lottie: fix issue parsing font lists - by [VicenteCartas](https://github.com/VicenteCartas) ([#18436](https://github.com/BabylonJS/Babylon.js/pull/18436))
+
+## 9.6.0
+
+### Core
+
+- Fix Flow Graph Editor serialization and snippet loading - by [RaananW](https://github.com/RaananW) ([#18426](https://github.com/BabylonJS/Babylon.js/pull/18426))
+
+## 9.5.2
+
+### Core
+
+- Fix NodeMaterial SSS with clustered lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18413](https://github.com/BabylonJS/Babylon.js/pull/18413))
+- Add Bevel node to Node Geometry Editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#18420](https://github.com/BabylonJS/Babylon.js/pull/18420))
+
+### Materials
+
+- Fix NodeMaterial SSS with clustered lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18413](https://github.com/BabylonJS/Babylon.js/pull/18413))
+
+### Node Geometry Editor
+
+- Add Bevel node to Node Geometry Editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#18420](https://github.com/BabylonJS/Babylon.js/pull/18420))
+
+## 9.5.1
+
+### Core
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- Fix clustered child light resync after parent enabled changes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18412](https://github.com/BabylonJS/Babylon.js/pull/18412))
+- Update checks of *Source and *Element to be `typeof` checks in effect components - by [kv-bh](https://github.com/kv-bh) ([#18405](https://github.com/BabylonJS/Babylon.js/pull/18405))
+- Add quality settings for OpenPBRMaterial - by [MiiBond](https://github.com/MiiBond) ([#18406](https://github.com/BabylonJS/Babylon.js/pull/18406))
+- Add CPU particle system support to FAST snapshot rendering - by [VicenteCartas](https://github.com/VicenteCartas) ([#18407](https://github.com/BabylonJS/Babylon.js/pull/18407))
+- Fix WebGPU CSM shader view uniform fallback - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18409](https://github.com/BabylonJS/Babylon.js/pull/18409))
+- fix: editor launches from inspector-v2 (NRGE URL + GUI editor destructure) - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18410](https://github.com/BabylonJS/Babylon.js/pull/18410))
+- OpenPBR Thin Film energy compensation - by [MiiBond](https://github.com/MiiBond) ([#18401](https://github.com/BabylonJS/Babylon.js/pull/18401))
+
+### GUI
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Inspector
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- Add quality settings for OpenPBRMaterial - by [MiiBond](https://github.com/MiiBond) ([#18406](https://github.com/BabylonJS/Babylon.js/pull/18406))
+- fix: editor launches from inspector-v2 (NRGE URL + GUI editor destructure) - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18410](https://github.com/BabylonJS/Babylon.js/pull/18410))
+
+### Loaders
+
+- Fix UMD Rollup namespace exports - by [RaananW](https://github.com/RaananW) ([#18414](https://github.com/BabylonJS/Babylon.js/pull/18414))
+
+### Lottie Player
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- Lottie: add Babylon 8 text layer placement compatibility mode - by [VicenteCartas](https://github.com/VicenteCartas) ([#18400](https://github.com/BabylonJS/Babylon.js/pull/18400))
+- Lottie player: support solid layers, fix loop reset and layer-level decorators, modernize readme - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18402](https://github.com/BabylonJS/Babylon.js/pull/18402))
+
+### Node Editor
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Node Geometry Editor
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Node Particle Editor
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Node Render Graph Editor
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Playground
+
+- Improve tools Playwright coverage - by [RaananW](https://github.com/RaananW) ([#18419](https://github.com/BabylonJS/Babylon.js/pull/18419))
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Sandbox
+
+- Improve tools Playwright coverage - by [RaananW](https://github.com/RaananW) ([#18419](https://github.com/BabylonJS/Babylon.js/pull/18419))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Serializers
+
+- glTF: fix GetCachedImageAsync for NullEngine / server-side textures - by [arek-3d](https://github.com/arek-3d) ([#18357](https://github.com/BabylonJS/Babylon.js/pull/18357))
+
+### Smart Filters
+
+- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+### Viewer
+
+- build: migrate babylonServer from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18398](https://github.com/BabylonJS/Babylon.js/pull/18398))
+
+## 9.5.0
+
+### Addons
+
+- Fix AtmospherePBRMaterialPlugin breaking PBRMaterial compile for non-irradiance-map envs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18385](https://github.com/BabylonJS/Babylon.js/pull/18385))
+
+### Core
+
+- Reduce hot path allocations in core - by [RaananW](https://github.com/RaananW) ([#18397](https://github.com/BabylonJS/Babylon.js/pull/18397))
+- ray: per-instance bounding-info culling for thin-instance picking - by [kzhsw](https://github.com/kzhsw) ([#18376](https://github.com/BabylonJS/Babylon.js/pull/18376))
+- Add scene options to set default layer masks - by [tholub99](https://github.com/tholub99) ([#18382](https://github.com/BabylonJS/Babylon.js/pull/18382))
+- Fix ClusteredLightContainer.maxRange ignored for some lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18395](https://github.com/BabylonJS/Babylon.js/pull/18395))
+- fix(scene): include procedural textures in Scene.isReady() - by [VicenteCartas](https://github.com/VicenteCartas) ([#18391](https://github.com/BabylonJS/Babylon.js/pull/18391))
+- Inspector: switch picking to GPU picking - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18390](https://github.com/BabylonJS/Babylon.js/pull/18390))
+- Fix Flow Graph Editor: console log templates, mesh pick events, drag-and-drop, event block UI - by [RaananW](https://github.com/RaananW) ([#18387](https://github.com/BabylonJS/Babylon.js/pull/18387))
+- fix(depthRenderer): key Scene._depthRenderer by camera.uniqueId instead of camera.id - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18384](https://github.com/BabylonJS/Babylon.js/pull/18384))
+- OpenPBRMaterial energy compensation - by [MiiBond](https://github.com/MiiBond) ([#18377](https://github.com/BabylonJS/Babylon.js/pull/18377))
+- OpenPBR Thin-walled fixes - by [MiiBond](https://github.com/MiiBond) ([#18353](https://github.com/BabylonJS/Babylon.js/pull/18353))
+- fix(core): serialize freezeWorldMatrix for Mesh and TransformNode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18373](https://github.com/BabylonJS/Babylon.js/pull/18373))
+- Fix WebGPU support for non-4x4 ASTC compressed textures - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18369](https://github.com/BabylonJS/Babylon.js/pull/18369))
+- GaussianSplatting: use view-backed retained part sources for compound rebuilds - by [kzhsw](https://github.com/kzhsw) ([#18361](https://github.com/BabylonJS/Babylon.js/pull/18361))
+- perf(OpenPBRMaterial): skip inactive SSS uniforms and remove per-frame allocations in bindForSubMesh - by [Popov72](https://github.com/Popov72) ([#18364](https://github.com/BabylonJS/Babylon.js/pull/18364))
+
+### GUI
+
+- Fix InputText not calling preventDefault for printable characters - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#18399](https://github.com/BabylonJS/Babylon.js/pull/18399))
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Inspector
+
+- Inspector: switch picking to GPU picking - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18390](https://github.com/BabylonJS/Babylon.js/pull/18390))
+- OpenPBR Thin-walled fixes - by [MiiBond](https://github.com/MiiBond) ([#18353](https://github.com/BabylonJS/Babylon.js/pull/18353))
+
+### Loaders
+
+- OpenPBR Thin-walled fixes - by [MiiBond](https://github.com/MiiBond) ([#18353](https://github.com/BabylonJS/Babylon.js/pull/18353))
+
+### Lottie Player
+
+- Lottie: auto-downscale oversized sprites to fit the atlas instead of clipping - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18375](https://github.com/BabylonJS/Babylon.js/pull/18375))
+- Lottie player: gradient stroke support, animated property fixes, and improved diagnostics - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18367](https://github.com/BabylonJS/Babylon.js/pull/18367))
+
+### Materials
+
+- Materials Library: add native WGSL shaders for all materials - by [Popov72](https://github.com/Popov72) ([#18393](https://github.com/BabylonJS/Babylon.js/pull/18393))
+
+### Node Editor
+
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Node Geometry Editor
+
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Node Particle Editor
+
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Node Render Graph Editor
+
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Playground
+
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Sandbox
+
+- build: migrate tool editors from webpack to Vite dev server - by [RaananW](https://github.com/RaananW) ([#18372](https://github.com/BabylonJS/Babylon.js/pull/18372))
+
+### Serializers
+
+- OpenPBRMaterial energy compensation - by [MiiBond](https://github.com/MiiBond) ([#18377](https://github.com/BabylonJS/Babylon.js/pull/18377))
+- OpenPBR Thin-walled fixes - by [MiiBond](https://github.com/MiiBond) ([#18353](https://github.com/BabylonJS/Babylon.js/pull/18353))
+
 ## 9.4.1
 
 ## 9.4.0

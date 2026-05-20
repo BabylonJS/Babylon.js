@@ -16,6 +16,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     private _maxDistance: number = _SpatialAudioDefaults.maxDistance;
     private _minDistance: number = _SpatialAudioDefaults.minDistance;
     private _orientation: Vector3;
+    private _panningEnabled: boolean = _SpatialAudioDefaults.panningEnabled;
     private _panningModel: PanningModelType = _SpatialAudioDefaults.panningModel;
     private _position: Vector3;
     private _rolloffFactor: number = _SpatialAudioDefaults.rolloffFactor;
@@ -30,6 +31,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         const subNode = _GetSpatialAudioSubNode(subGraph);
         if (subNode) {
             this._orientation = subNode.orientation.clone();
+            this._panningEnabled = subNode.panningEnabled;
             this._position = subNode.position.clone();
             this._rotation = subNode.rotation.clone();
             this._rotationQuaternion = subNode.rotationQuaternion.clone();
@@ -132,6 +134,16 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public get panningEnabled(): boolean {
+        return this._panningEnabled;
+    }
+
+    public set panningEnabled(value: boolean) {
+        this._panningEnabled = value;
+        _SetSpatialAudioProperty(this._subGraph, "panningEnabled", value);
+    }
+
+    /** @internal */
     public get panningModel(): PanningModelType {
         return this._panningModel;
     }
@@ -230,6 +242,8 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         const position = subNode.position;
         if (!position.equalsWithEpsilon(this._position)) {
             subNode.position.copyFrom(this._position);
+            subNode._updatePosition();
+        } else if (!subNode.panningEnabled) {
             subNode._updatePosition();
         }
     }

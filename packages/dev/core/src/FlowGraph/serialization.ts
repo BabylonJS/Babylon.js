@@ -6,23 +6,8 @@ import { type Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
-import { type TransformNode } from "core/Meshes/transformNode";
+import { type Node } from "core/node";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
-
-function IsMeshClassName(className: string) {
-    return (
-        className === "Mesh" ||
-        className === "AbstractMesh" ||
-        className === "TransformNode" ||
-        className === "GroundMesh" ||
-        className === "InstancedMesh" ||
-        className === "InstanceMesh" ||
-        className === "LinesMesh" ||
-        className === "GoldbergMesh" ||
-        className === "GreasedLineMesh" ||
-        className === "TrailMesh"
-    );
-}
 
 function IsVectorClassName(className: string) {
     return (
@@ -41,6 +26,22 @@ function IsMatrixClassName(className: string) {
 
 function IsAnimationGroupClassName(className: string) {
     return className === "AnimationGroup";
+}
+
+function GetSceneNodeFromSerializedReference(serializedReference: any, scene: Scene): Node | undefined {
+    if (!serializedReference || (!serializedReference.id && !serializedReference.name)) {
+        return undefined;
+    }
+
+    const nodes = scene.getNodes().filter((node) => (serializedReference.id ? node.id === serializedReference.id : node.name === serializedReference.name));
+    if (nodes.length === 0) {
+        return undefined;
+    }
+
+    const className = serializedReference.type ?? serializedReference.className;
+    const classMatches = className ? nodes.filter((node) => node.getClassName() === className) : [];
+    const candidates = classMatches.length > 0 ? classMatches : nodes;
+    return (serializedReference.uniqueId ? candidates.find((node) => node.uniqueId === serializedReference.uniqueId) : undefined) ?? candidates[0];
 }
 
 function ParseVector(className: string, value: Array<number>, flipHandedness = false) {
@@ -135,12 +136,9 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.type ?? intermediateValue?.className;
-    if (IsMeshClassName(className)) {
-        let nodes: TransformNode[] = scene.meshes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
-        if (nodes.length === 0) {
-            nodes = scene.transformNodes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
-        }
-        finalValue = intermediateValue.uniqueId ? nodes.find((m) => m.uniqueId === intermediateValue.uniqueId) : nodes[0];
+    const sceneNode = GetSceneNodeFromSerializedReference(intermediateValue, scene);
+    if (sceneNode) {
+        finalValue = sceneNode;
     } else if (IsVectorClassName(className)) {
         finalValue = ParseVector(className, intermediateValue.value);
     } else if (IsAnimationGroupClassName(className)) {

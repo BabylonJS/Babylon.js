@@ -5,4 +5,5 @@
 // IMPORTANT: Do NOT also `import * as gui; export { gui }` here.
 // When both patterns coexist, terser collapses all individual exports into the
 // namespace object in the minified bundle, leaving BABYLON.GUI.X undefined at runtime.
+import "gui/legacy/legacy";
 export * from "gui/legacy/legacy";

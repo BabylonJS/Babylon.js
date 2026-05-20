@@ -21,6 +21,20 @@ test("Playground is loaded (Desktop)", async ({ page }) => {
     await expect(page.locator("#wait-ring")).toBeHidden({ timeout: 30000 });
 });
 
+test("Playground exposes key desktop toolbar actions", async ({ page }) => {
+    await page.goto(url, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+
+    await expect(page.locator("#wait-ring")).toBeHidden({ timeout: 30000 });
+    await expect(page.getByTitle("Examples")).toBeVisible();
+    await expect(page.getByTitle("Run\nAlt+Enter")).toBeVisible();
+});
+
 test("Playground is loaded (Mobile)", async ({ page }) => {
     await page.goto(url, {
         waitUntil: "load",

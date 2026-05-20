@@ -72,6 +72,36 @@ BrowserStack credentials shared by pipelines that run browser tests.
 
 Linked by: ci-monorepo, ci-browser-testing.
 
+### BrowserStack connection
+
+All pipelines connect to BrowserStack directly over CDP using Playwright's
+`connectOptions.wsEndpoint` (configured in `playwright.browserstack.config.ts`).
+The browser, OS, and credentials are passed as capabilities in the WebSocket URL.
+
+**CI invocation (in YAML pipelines):**
+
+```yaml
+- script: npx playwright test --config ./playwright.browserstack.config.ts
+  env:
+      BSTACK_TEST_TYPE: "webgl2" # or webgpu, performance, interaction
+      CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+      BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+      BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+```
+
+**Key environment variables for CI:**
+
+| Variable                          | Description                                                                                              |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `BSTACK_TEST_TYPE`                | Selects test suite and dashboard build name (`webgl2`, `webgpu`, `performance`, `interaction`, `es6vis`) |
+| `BSTACK_BROWSER`                  | Override browser for cross-browser runs (e.g. `playwright-firefox`, `playwright-webkit`)                 |
+| `BSTACK_OS` / `BSTACK_OS_VERSION` | Override OS/version (e.g. `OS X` / `Sonoma`)                                                             |
+| `BSTACK_SESSIONS_REQUIRED`        | Preferred number of parallel sessions to reserve (default: 1)                                            |
+| `BSTACK_MAX_SESSIONS`             | Max sessions on the BrowserStack plan; caps REQUIRED (default: 5)                                        |
+| `BROWSERSTACK_LOCAL`              | Enables BrowserStack Local tunnel startup for suites that need a local dev server                        |
+| `BROWSERSTACK_LOCAL_IDENTIFIER`   | Unique BrowserStack Local tunnel identifier for local-tunnel suites such as ES6 vis                      |
+| `CIWORKERS`                       | Number of parallel BrowserStack sessions (default: set by browserstack-wait.sh)                          |
+
 ## Variable Group: `BabylonJS-Deployment`
 
 Deployment server credentials shared by pipelines that upload snapshots or
@@ -79,7 +109,7 @@ deploy tools.
 
 | Variable            | Description                           |
 | ------------------- | ------------------------------------- |
-| `BASIC_AUTH`        | Deployment server authorization token |
+| `DEPLOY_TOKEN`      | Deployment server authorization token |
 | `DEPLOYMENT_SERVER` | Deployment server base URL            |
 
 Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools.

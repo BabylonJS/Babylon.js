@@ -1,8 +1,8 @@
 /**
  * Rollup configuration helper for Babylon.js UMD packages.
  *
- * Mirrors the behavior of commonUMDWebpackConfiguration from @dev/build-tools,
- * producing the same file names, UMD globals, and minification/copy behaviour.
+ * Produces the standard Babylon.js UMD file names, globals, and
+ * minification/copy behaviour.
  *
  * Usage in a rollup.config.umd.mjs:
  *   import { commonUMDRollupConfiguration } from "../rollupUMDHelper.mjs";
@@ -16,14 +16,53 @@ import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import postcss from "rollup-plugin-postcss";
 import url from "@rollup/plugin-url";
-import { copyFileSync, existsSync } from "fs";
-import { resolve, join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { copyFileSync, existsSync, readFileSync } from "fs";
+import { resolve, join, dirname, relative as pathRelative } from "path";
+import { fileURLToPath, pathToFileURL } from "url";
+import { transform as esbuildTransform } from "esbuild";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
 // with "..") regardless of where in the monorepo the file being compiled lives.
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const fontAwesomeSvgCoreVersion = (() => {
+    try {
+        return JSON.parse(readFileSync(resolve(REPO_ROOT, "node_modules/@fortawesome/fontawesome-svg-core/package.json"), "utf8")).version;
+    } catch {
+        return "7.0.0";
+    }
+})();
+
+/** Returns `absPath` rewritten as a forward-slash repo-relative path. */
+function relativeFromRepoRoot(absPath) {
+    return pathRelative(REPO_ROOT, absPath).split("\\").join("/");
+}
+
+/**
+ * Rollup plugin that rewrites `import * as styles from "*.module.scss"` to
+ * `import styles from "*.module.scss"` so that bracket-notation access like
+ * `styles["graph-canvas"]` resolves against the CSS module's class-map default
+ * export instead of an empty namespace object.
+ *
+ * Mirrors the equivalent transform in `viteToolsHelper.mjs` so source code that
+ * uses namespace imports for CSS modules keeps working across build systems.
+ */
+function cssModuleNamespaceInteropPlugin() {
+    const IMPORT_NS_RE = /\bimport\s+\*\s+as\s+(\w+)\s+from\s+(["'][^"']+\.module\.(?:scss|css|less|sass)["'])/g;
+    return {
+        name: "css-module-namespace-interop",
+        transform(code, id) {
+            if (!/\.[tj]sx?$/.test(id)) {
+                return null;
+            }
+            if (!code.includes(".module.")) {
+                return null;
+            }
+            const newCode = code.replace(IMPORT_NS_RE, (_match, name, path) => `import ${name} from ${path}`);
+            return newCode !== code ? { code: newCode, map: null } : null;
+        },
+    };
+}
 
 // ---------------------------------------------------------------------------
 // Package name mappings
@@ -58,6 +97,29 @@ const devNameToUMDId = {
     "smart-filters": "babylonjs-smart-filters",
 };
 
+/** Maps dev package names (from source imports) to their public @babylonjs package IDs. */
+const devNameToES6Id = {
+    core: "@babylonjs/core",
+    gui: "@babylonjs/gui",
+    loaders: "@babylonjs/loaders",
+    serializers: "@babylonjs/serializers",
+    materials: "@babylonjs/materials",
+    "post-processes": "@babylonjs/post-processes",
+    "procedural-textures": "@babylonjs/procedural-textures",
+    "inspector-legacy": "@babylonjs/inspector-legacy",
+    inspector: "@babylonjs/inspector",
+    "node-editor": "@babylonjs/node-editor",
+    "node-geometry-editor": "@babylonjs/node-geometry-editor",
+    "node-render-graph-editor": "@babylonjs/node-render-graph-editor",
+    "node-particle-editor": "@babylonjs/node-particle-editor",
+    "gui-editor": "@babylonjs/gui-editor",
+    accessibility: "@babylonjs/accessibility",
+    ktx2decoder: "@babylonjs/ktx2decoder",
+    "shared-ui-components": "@babylonjs/shared-ui-components",
+    addons: "@babylonjs/addons",
+    "smart-filters": "@babylonjs/smart-filters",
+};
+
 /**
  * Maps UMD module IDs to the global variable name used in browser builds.
  * Exported so individual rollup configs can extend or override it.
@@ -83,6 +145,29 @@ export const umdGlobals = {
     "babylonjs-addons": "ADDONS",
     "babylonjs-smart-filters": "BABYLON.SmartFilters",
     "babylonjs-gltf2interface": "BABYLON.GLTF2",
+};
+
+/** Browser globals for public @babylonjs package IDs used by es6Mode builds. */
+const es6Globals = {
+    "@babylonjs/core": "BABYLON",
+    "@babylonjs/gui": "BABYLON.GUI",
+    "@babylonjs/loaders": "BABYLON",
+    "@babylonjs/serializers": "BABYLON",
+    "@babylonjs/materials": "BABYLON",
+    "@babylonjs/post-processes": "BABYLON",
+    "@babylonjs/procedural-textures": "BABYLON",
+    "@babylonjs/inspector-legacy": "INSPECTOR",
+    "@babylonjs/inspector": "INSPECTOR",
+    "@babylonjs/node-editor": "BABYLON.NodeEditor",
+    "@babylonjs/node-geometry-editor": "BABYLON.NodeGeometryEditor",
+    "@babylonjs/node-render-graph-editor": "BABYLON.NodeRenderGraphEditor",
+    "@babylonjs/node-particle-editor": "BABYLON.NodeParticleEditor",
+    "@babylonjs/gui-editor": "BABYLON.GuiEditor",
+    "@babylonjs/accessibility": "BABYLON.Accessibility",
+    "@babylonjs/ktx2decoder": "KTX2DECODER",
+    "@babylonjs/shared-ui-components": "BABYLON.SharedUIComponents",
+    "@babylonjs/addons": "ADDONS",
+    "@babylonjs/smart-filters": "BABYLON.SmartFilters",
 };
 
 /** Base output filename metadata, mirroring umdPackageMapping from packageMapping.ts. */
@@ -117,8 +202,8 @@ const umdPackageMeta = {
  *
  * Some Babylon dev packages expose different browser globals depending on
  * the sub-path imported.  For example `loaders/glTF/2.0/someModule` maps
- * to `BABYLON.GLTF2` rather than `BABYLON`.  Webpack's externals handled
- * this via a function-valued namespace; rollup needs explicit logic here.
+ * to `BABYLON.GLTF2` rather than `BABYLON`. Rollup needs explicit logic here
+ * because globals are resolved per external module id.
  *
  * @param {string} source  Full import specifier (e.g. "loaders/glTF/2.0/glTFLoaderExtensionRegistry").
  * @param {string} pkg     Leading package segment (e.g. "loaders").
@@ -155,6 +240,33 @@ function resolveSubPathNamespace(source, pkg) {
     return null;
 }
 
+function resolveSubPathExternalId(source, pkg, externalId, externalPackageType) {
+    if (externalPackageType !== "es6") {
+        return null;
+    }
+
+    const normalized = source.replaceAll("\\", "/");
+
+    if (pkg === "core") {
+        if (normalized.includes("/Debug/")) {
+            return `${externalId}/Debug/index.js`;
+        }
+        return null;
+    }
+
+    if (pkg === "loaders") {
+        if (normalized.includes("/glTF/1.0")) {
+            return `${externalId}/glTF/1.0/index.js`;
+        } else if (normalized.includes("/glTF/2.0/Extensions")) {
+            return `${externalId}/glTF/2.0/Extensions/index.js`;
+        } else if (normalized.includes("/glTF/2.0")) {
+            return `${externalId}/glTF/2.0/index.js`;
+        }
+    }
+
+    return null;
+}
+
 /**
  * Rollup plugin that intercepts imports from Babylon.js dev packages and marks
  * them as external, rewriting to their UMD module IDs.
@@ -163,21 +275,37 @@ function resolveSubPathNamespace(source, pkg) {
  * bundled (this is the package being built).
  *
  * When a sub-path import resolves to a different browser global (e.g.
- * `loaders/glTF/2.0/…` → `BABYLON.GLTF2`), the plugin emits a synthetic
- * external ID (e.g. `babylonjs-loaders::BABYLON.GLTF2`) and registers the
+ * `loaders/glTF/2.0/…` → `BABYLON.GLTF2`), the plugin registers the
  * corresponding global so the UMD output receives the correct namespace.
+ * ES6-mode builds use resolvable package subpaths when possible; classic UMD
+ * builds fall back to synthetic external IDs such as
+ * `babylonjs-loaders::BABYLON.GLTF2`.
  *
  * @param {string[]} excludePackages Dev package names to bundle rather than externalize.
+ * @param {object} [opts]
+ * @param {boolean} [opts.bundleGltf2Interface]
+ *   When true, do NOT externalize `babylonjs-gltf2interface` — let the alias
+ *   plugin redirect it to the JS stub at packages/public/glTF2Interface/
+ *   babylonjs-gltf2interface.stub.ts so its const-enum values are bundled as
+ *   real runtime values.  Required for fast-rebuild paths (esbuild) that
+ *   cannot inline TS const enums.  In production builds this stays false so
+ *   the UMD output continues to reference `BABYLON.GLTF2`.
  */
-export function babylonUMDExternalsPlugin(excludePackages = []) {
+export function babylonUMDExternalsPlugin(excludePackages = [], opts = {}) {
+    const { bundleGltf2Interface = false, externalPackageType = "umd" } = opts;
+    const devNameToExternalId = externalPackageType === "es6" ? devNameToES6Id : devNameToUMDId;
     /** Extra globals discovered via sub-path namespace resolution. */
     const extraGlobals = {};
 
     return {
         name: "babylon-umd-externals",
         resolveId(source) {
-            // gltf2interface is always external
+            // gltf2interface — externalize by default (production), or fall
+            // through to the alias plugin (dev) so the stub is bundled.
             if (source.includes("babylonjs-gltf2interface")) {
+                if (bundleGltf2Interface) {
+                    return null;
+                }
                 return { id: "babylonjs-gltf2interface", external: true };
             }
             // Extract the leading package name segment (e.g. "core" from "core/Legacy/legacy")
@@ -189,19 +317,24 @@ export function babylonUMDExternalsPlugin(excludePackages = []) {
             if (privatePackages.includes(pkg)) {
                 return null;
             }
-            const umdId = devNameToUMDId[pkg];
-            if (umdId) {
+            const externalId = devNameToExternalId[pkg];
+            if (externalId) {
                 // Check if this sub-path needs a different browser global.
                 const subNs = resolveSubPathNamespace(source, pkg);
                 if (subNs) {
+                    const subPathExternalId = resolveSubPathExternalId(source, pkg, externalId, externalPackageType);
+                    if (subPathExternalId) {
+                        extraGlobals[subPathExternalId] = subNs;
+                        return { id: subPathExternalId, external: true };
+                    }
                     // Use a synthetic external ID that encodes the target global.
                     // The `::` separator is not valid in package names, so it won't
                     // collide with real UMD IDs.
-                    const syntheticId = `${umdId}::${subNs}`;
+                    const syntheticId = `${externalId}::${subNs}`;
                     extraGlobals[syntheticId] = subNs;
                     return { id: syntheticId, external: true };
                 }
-                return { id: umdId, external: true };
+                return { id: externalId, external: true };
             }
             return null;
         },
@@ -209,6 +342,50 @@ export function babylonUMDExternalsPlugin(excludePackages = []) {
         /** Expose discovered extra globals so the output config can include them. */
         get globals() {
             return extraGlobals;
+        },
+    };
+}
+
+/**
+ * Rollup plugin that stubs optional peer dependencies (e.g. draco3dgltf) that
+ * are not installed in the dev workspace.  Without this, rollup externalizes
+ * the import and the UMD wrapper tries to read `global.draco3dgltf` — the
+ * factory receives `undefined`, and property access on it throws at runtime.
+ *
+ * The plugin erases import statements at transform time so the module is never
+ * seen by rollup's external resolution.  The consuming code already uses
+ * `declare let` for the global and guards with `typeof X !== "undefined"`,
+ * falling back to loading the decoder from a CDN URL.
+ */
+function stubOptionalPeerDepsPlugin() {
+    const optionals = ["draco3dgltf"];
+    const q = optionals.map((p) => p.replace(".", "\\.")).join("|");
+    // Erase ALL import forms — type-only, named, star, default, side-effect.
+    // Unlike the devHost Vite plugin, we do NOT create `const X = undefined`
+    // stubs because rollup would rename them (e.g. `DracoDecoderModule$1`),
+    // breaking worker functions that are stringified via `.toString()` and
+    // expect the original global name.  The consuming code already uses
+    // `declare let` for the global and guards with `typeof X !== "undefined"`.
+    const importRe = new RegExp(
+        `import\\s+(?:` +
+            `type\\s+\\{[^}]*\\}|` + // import type { … }
+            `\\{[^}]*\\}|` + // import { … }
+            `(?:type\\s+)?\\*\\s+as\\s+\\w+|` + // import * as ns / import type * as ns
+            `(?:type\\s+)?\\w+|` + // import Default / import type Default
+            `` + // (empty — side-effect)
+            `)\\s*from\\s+['"](?:${q})['"];?|` +
+            `import\\s+['"](?:${q})['"];?`, // import "pkg"
+        "g"
+    );
+
+    return {
+        name: "stub-optional-peer-deps",
+        transform(code, id) {
+            if (!/\.[tj]sx?$/.test(id)) return null;
+            if (!optionals.some((p) => code.includes(`"${p}"`) || code.includes(`'${p}'`))) return null;
+
+            const newCode = code.replace(importRe, "");
+            return newCode !== code ? { code: newCode, map: null } : null;
         },
     };
 }
@@ -222,14 +399,18 @@ export function babylonUMDExternalsPlugin(excludePackages = []) {
  * modules — it leaves `import("babylonjs")` etc. in the UMD output, which is
  * ES2020 syntax that fails the `es-check es6` gate.
  */
-function rewriteDynamicExternalImportsPlugin() {
+function rewriteDynamicExternalImportsPlugin(production = false) {
     return {
         name: "rewrite-dynamic-external-imports",
         renderChunk(code) {
             let result = code;
-            // Replace process.env.NODE_ENV so React (and other libs) bundle in production
-            // mode and don't reference the Node.js `process` global in browsers.
-            result = result.replaceAll("process.env.NODE_ENV", '"production"');
+            result = result.replace(/require\((['"])@fortawesome\/fontawesome-svg-core\/package\.json\1\)/g, `({ version: ${JSON.stringify(fontAwesomeSvgCoreVersion)} })`);
+            // Replace process.env.NODE_ENV so React (and other libs) don't
+            // reference the Node.js `process` global in browsers.
+            // Use "development" in dev builds so React DevTools doesn't complain
+            // about dead code elimination; use "production" in prod builds.
+            const nodeEnv = production ? '"production"' : '"development"';
+            result = result.replaceAll("process.env.NODE_ENV", nodeEnv);
             for (const [umdId, globalVar] of Object.entries(umdGlobals)) {
                 // Match import("umdId") or import('umdId') — dynamic import of an external.
                 const re = new RegExp(`import\\((['"])${umdId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\1\\)`, "g");
@@ -270,6 +451,8 @@ function transpileExternalTsPlugin() {
                     esModuleInterop: true,
                     allowSyntheticDefaultImports: true,
                     experimentalDecorators: true,
+                    sourceMap: true,
+                    inlineSources: true,
                 },
             });
             return { code: result.outputText, map: result.sourceMapText || null };
@@ -278,8 +461,45 @@ function transpileExternalTsPlugin() {
 }
 
 /**
+ * Rollup plugin that uses esbuild for fast TypeScript transpilation.
+ * Strips types without checking them.  ~10-100x faster than
+ * @rollup/plugin-typescript.
+ *
+ * @param {object} [opts]
+ * @param {boolean} [opts.sourceMap]  Whether to produce sourcemaps (default true).
+ */
+function esbuildTranspilePlugin(opts = {}) {
+    const { sourceMap = true } = opts;
+    return {
+        name: "esbuild-transpile",
+        async transform(code, id) {
+            if (!id.endsWith(".ts") && !id.endsWith(".tsx")) return null;
+            const loader = id.endsWith(".tsx") ? "tsx" : "ts";
+            const result = await esbuildTransform(code, {
+                loader,
+                sourcefile: id,
+                sourcemap: sourceMap,
+                target: "es2020",
+                jsx: "automatic",
+                format: "esm",
+                tsconfigRaw: {
+                    compilerOptions: {
+                        experimentalDecorators: true,
+                        useDefineForClassFields: false,
+                    },
+                },
+            });
+            return {
+                code: result.code,
+                map: result.map || null,
+            };
+        },
+    };
+}
+
+/**
  * Rollup plugin that copies a built output file to a secondary filename after
- * the bundle is written.  Mirrors webpack's CopyMinToMaxWebpackPlugin.
+ * the bundle is written.
  *
  * @param {string} outputDir  Absolute path to the output directory.
  * @param {(chunkName: string) => string} primaryName  Returns the primary output filename.
@@ -321,14 +541,28 @@ function camelize(str) {
     return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
+function shouldSuppressRollupWarning(warning) {
+    if (warning.code === "CIRCULAR_DEPENDENCY") {
+        return true;
+    }
+
+    const message = warning.message ?? "";
+
+    if (warning.code === "MODULE_LEVEL_DIRECTIVE" || message.includes("Module level directives cause errors when bundled")) {
+        const id = (warning.id ?? warning.loc?.file ?? "").split("\\").join("/");
+        const isThirdPartyModule = id.includes("/node_modules/") || message.includes("node_modules/");
+        return isThirdPartyModule && (message.includes('"use client"') || message.includes('"use server"'));
+    }
+
+    return false;
+}
+
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
 
 /**
  * Creates a Rollup configuration for a Babylon.js UMD package.
- * Accepts the same option shape as commonUMDWebpackConfiguration from
- * @dev/build-tools so existing configs can be ported with minimal changes.
  *
  * @param {object} options
  * @param {string} options.devPackageName      Dev package name (e.g. "core", "gui").
@@ -339,7 +573,7 @@ function camelize(str) {
  * @param {string} [options.namespace]
  *   UMD global name for this bundle (e.g. "BABYLON.GUI").
  *   Defaults to the value in umdGlobals.
- * @param {string} [options.outputPath]        Output directory; defaults to process.cwd().
+ * @param {string} [options.outputPath]        Output directory; defaults to "./dist".
  * @param {Record<string,string>} [options.alias]  Additional alias entries.
  * @param {string[]} [options.optionalExternalFunctionSkip]
  *   Extra dev package names to bundle (not externalize).
@@ -347,11 +581,15 @@ function camelize(str) {
  *   Dev builds produce .max.js; prod builds produce .js (no suffix).
  * @param {boolean} [options.minToMax]
  *   After a production build, copy the output to a second filename
- *   (mirrors CopyMinToMaxWebpackPlugin behaviour).
+ *   Copies the minified production output to the matching max/dev filename.
  * @param {Record<string,string>} [options.entryPoints]
  *   Named entry points for multi-file packages.
  * @param {string|((chunk:{name:string})=>string)} [options.overrideFilename]
  *   Override the output filename (string) or per-chunk (function).
+ * @param {boolean} [options.devMode]
+ *   When true, uses esbuild for TypeScript transpilation instead of tsc.
+ *   ~10x faster builds at the cost of no type checking (types are already
+ *   verified by the separate `tsc -b` step).  Defaults to false.
  */
 export function commonUMDRollupConfiguration(options) {
     const {
@@ -359,13 +597,15 @@ export function commonUMDRollupConfiguration(options) {
         devPackageAliasPath,
         mode = "development",
         namespace,
-        outputPath = process.cwd(),
+        outputPath = resolve("./dist"),
         alias: aliasMap = {},
         optionalExternalFunctionSkip = [],
         maxMode = false,
         minToMax = false,
         entryPoints,
         overrideFilename,
+        devMode = false,
+        es6Mode = false,
     } = options;
 
     const production = mode === "production";
@@ -379,17 +619,24 @@ export function commonUMDRollupConfiguration(options) {
     // Path to source for the package being built
     const defaultAliasSrc = devPackageAliasPath ?? `../../../dev/${camelize(devPackageName)}/src`;
 
+    // In devMode (esbuild transpilation) const enums from babylonjs-gltf2interface
+    // are NOT inlined, so we must bundle a JS stub that provides the runtime values.
+    // In production (tsc) the const-enum values are inlined and the package stays
+    // externalized to BABYLON.GLTF2 (see babylonUMDExternalsPlugin).
+    const bundleGltf2Interface = devMode && !production;
+    const gltf2InterfaceStub = resolve(REPO_ROOT, "packages/public/glTF2Interface/babylonjs-gltf2interface.stub.ts");
+
     const aliasEntries = [
         { find: devPackageName, replacement: resolve(defaultAliasSrc) },
         ...Object.entries(aliasMap).map(([find, replacement]) => ({
             find,
             replacement: resolve(replacement),
         })),
+        ...(bundleGltf2Interface ? [{ find: "babylonjs-gltf2interface", replacement: gltf2InterfaceStub }] : []),
     ];
 
     /**
      * Returns the primary output filename for a given entry chunk name.
-     * Mirrors the filename computation in commonUMDWebpackConfiguration.
      */
     const primaryFilename = (chunkName) => {
         if (typeof overrideFilename === "function") {
@@ -409,39 +656,58 @@ export function commonUMDRollupConfiguration(options) {
 
     const chunkNames = entryPoints ? Object.keys(entryPoints) : [devPackageName];
 
-    const externalsPlugin = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip]);
+    const externalPackageType = es6Mode ? "es6" : "umd";
+    const externalsPlugin = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface, externalPackageType });
 
     /**
      * Globals resolver used as Rollup's `output.globals` option.
      * Checks extra sub-path globals first, then falls back to the static map.
      */
-    const resolveGlobal = (id) => externalsPlugin.globals[id] ?? umdGlobals[id] ?? id;
+    const resolveGlobal = (id) => externalsPlugin.globals[id] ?? umdGlobals[id] ?? es6Globals[id] ?? id;
+
+    // In devMode, use esbuild for fast type-stripping transpilation instead of tsc.
+    const useEsbuild = devMode && !production;
+    const transpilePlugins = useEsbuild
+        ? [esbuildTranspilePlugin({ sourceMap: true })]
+        : [
+              typescript({
+                  tsconfig: "tsconfig.build.json",
+                  declaration: false,
+                  declarationMap: false,
+                  sourceMap: true,
+                  // Embed source contents in the generated sourcemap so DevTools/playground
+                  // can display the original .ts files even when the relative source paths
+                  // (which start with `../../../../../../../`) cannot be fetched over HTTP.
+                  inlineSources: true,
+                  // filterRoot set to the repo root so **/*.ts patterns match files from
+                  // any package (including aliased cross-package tool sources).
+                  filterRoot: REPO_ROOT,
+                  include: ["**/*.ts", "**/*.tsx"],
+              }),
+              // Fallback: transpile .ts files that are outside the tsconfig rootDir
+              // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
+              transpileExternalTsPlugin(),
+          ];
 
     const plugins = [
+        stubOptionalPeerDepsPlugin(),
         externalsPlugin,
         aliasPlugin({ entries: aliasEntries }),
+        // Rewrite `import * as styles from "*.module.scss"` to a default import
+        // before TS/postcss see it (see plugin doc above).
+        cssModuleNamespaceInteropPlugin(),
         // Inline SVG/PNG/image assets imported from dist/ files as data URIs.
         url({ include: ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.gif"], limit: Infinity }),
         // Handle SCSS/CSS imports from compiled dist/ files (tool packages).
-        // Extracts styles to a companion .css file alongside the UMD bundle.
-        postcss({ extract: true, minimize: production, use: ["sass"] }),
-        typescript({
-            tsconfig: "tsconfig.build.json",
-            declaration: false,
-            declarationMap: false,
-            sourceMap: true,
-            inlineSources: false,
-            // filterRoot set to the repo root so **/*.ts patterns match files from
-            // any package (including aliased cross-package tool sources).
-            filterRoot: REPO_ROOT,
-            include: ["**/*.ts", "**/*.tsx"],
-        }),
-        // Fallback: transpile .ts files that are outside the tsconfig rootDir
-        // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
-        transpileExternalTsPlugin(),
+        // Inject styles into <head> at runtime to match the previous bundler
+        // style-loader behavior - the editor UMDs do not have a companion
+        // <link> element loading a separate .css file. autoModules treats
+        // *.module.scss / *.module.css as CSS Modules with named exports.
+        postcss({ inject: true, extract: false, minimize: production, use: ["sass"], autoModules: true }),
+        ...transpilePlugins,
         nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
         commonjs(),
-        rewriteDynamicExternalImportsPlugin(),
+        rewriteDynamicExternalImportsPlugin(production),
         ...(production
             ? [
                   terser({
@@ -458,6 +724,45 @@ export function commonUMDRollupConfiguration(options) {
      * UMD format does not support code-splitting (multiple inputs), so we emit
      * one config per entry and return an array when entryPoints is provided.
      */
+    // Rewrite sourcemap source paths so debuggers can resolve them back to disk
+    // for breakpoint binding. Sources outside the repo (rare, e.g. some tslib
+    // re-exports) fall through to an absolute file:// URL.
+    //
+    // NOTE: When Rollup merges chained source maps from pre-compiled
+    // `packages/dev/*/dist/*.js.map` (which use `sources: ['../../src/foo.ts']`),
+    // the merged sources can end up as `…/dev/<pkg>/src/foo.ts` — i.e. lacking
+    // the `packages/` prefix — depending on how each plugin reports its sources.
+    // We pattern-match on `dev/<pkg>/src|dist/...` and `tools/<pkg>/src|dist/...`
+    // segments and rebuild a repo-relative path so the final sourcemap stays
+    // correct on both local builds and CI.
+    const PACKAGE_PATH_RE = /(?:^|[\\/])(dev|tools)[\\/]([^\\/]+)[\\/](src|dist)[\\/](.+)$/;
+    const tryRebaseToRepo = (anyPath) => {
+        const normalized = anyPath.split("\\").join("/");
+        const m = normalized.match(PACKAGE_PATH_RE);
+        if (!m) {
+            return null;
+        }
+        return `packages/${m[1]}/${m[2]}/${m[3]}/${m[4]}`;
+    };
+    const sourcemapPathTransform = (relativePath, sourcemapPath) => {
+        const abs = resolve(dirname(sourcemapPath), relativePath);
+        const repoRel = relativeFromRepoRoot(abs);
+        if (!repoRel.startsWith("..")) {
+            return pathToFileURL(resolve(REPO_ROOT, repoRel)).href;
+        }
+        // Fallback: try to recover a repo-relative path from the package layout
+        // baked into the sources (e.g. `…/dev/core/src/X.ts` → `packages/dev/core/src/X.ts`).
+        // This handles aliased/cross-package source paths like `core: ../../../dev/core/src`,
+        // which would otherwise resolve to a non-existent absolute path outside the repo.
+        const recovered = tryRebaseToRepo(abs) ?? tryRebaseToRepo(relativePath);
+        if (recovered) {
+            return pathToFileURL(resolve(REPO_ROOT, recovered)).href;
+        }
+        // Use pathToFileURL so Windows paths (drive letter + backslashes)
+        // become a valid `file:///C:/...` URL that debuggers can resolve.
+        return pathToFileURL(abs).href;
+    };
+
     const makeSingleConfig = (inputFile, chunkName) => ({
         input: inputFile,
         output: {
@@ -467,6 +772,7 @@ export function commonUMDRollupConfiguration(options) {
             globals: resolveGlobal,
             exports: "named",
             sourcemap: true,
+            sourcemapPathTransform,
             // extend:true makes Rollup emit `global.BABYLON = global.BABYLON || {}`
             // instead of `global.BABYLON = {}`, so each bundle merges into the shared
             // namespace rather than overwriting the previous bundle's exports.
@@ -476,9 +782,9 @@ export function commonUMDRollupConfiguration(options) {
             freeze: false,
         },
         plugins,
-        // Suppress noisy circular-dependency warnings from the large Babylon packages.
+        treeshake: false,
         onwarn(warning, warn) {
-            if (warning.code === "CIRCULAR_DEPENDENCY") return;
+            if (shouldSuppressRollupWarning(warning)) return;
             warn(warning);
         },
     });
@@ -488,26 +794,34 @@ export function commonUMDRollupConfiguration(options) {
         // The copyMinToMaxPlugin is only attached to the first config to avoid
         // copying the same files multiple times.
         return Object.entries(entryPoints).map(([chunkName, inputFile], i) => {
-            const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip]);
-            const perEntryResolveGlobal = (id) => perEntryExternals.globals[id] ?? umdGlobals[id] ?? id;
+            const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface, externalPackageType });
+            const perEntryResolveGlobal = (id) => perEntryExternals.globals[id] ?? umdGlobals[id] ?? es6Globals[id] ?? id;
+            // In devMode, esbuild is stateless so the shared transpilePlugins can be reused.
+            // In non-devMode, each entry needs its own tsc plugin instance.
+            const perEntryTranspilePlugins = useEsbuild
+                ? transpilePlugins
+                : [
+                      typescript({
+                          tsconfig: "tsconfig.build.json",
+                          declaration: false,
+                          declarationMap: false,
+                          sourceMap: true,
+                          inlineSources: true,
+                          filterRoot: REPO_ROOT,
+                          include: ["**/*.ts", "**/*.tsx"],
+                      }),
+                      transpileExternalTsPlugin(),
+                  ];
             const perEntryPlugins = [
                 perEntryExternals,
                 aliasPlugin({ entries: aliasEntries }),
+                cssModuleNamespaceInteropPlugin(),
                 url({ include: ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.gif"], limit: Infinity }),
-                postcss({ extract: true, minimize: production, use: ["sass"] }),
-                typescript({
-                    tsconfig: "tsconfig.build.json",
-                    declaration: false,
-                    declarationMap: false,
-                    sourceMap: true,
-                    inlineSources: false,
-                    filterRoot: REPO_ROOT,
-                    include: ["**/*.ts", "**/*.tsx"],
-                }),
-                transpileExternalTsPlugin(),
+                postcss({ inject: true, extract: false, minimize: production, use: ["sass"], autoModules: true }),
+                ...perEntryTranspilePlugins,
                 nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
                 commonjs(),
-                rewriteDynamicExternalImportsPlugin(),
+                rewriteDynamicExternalImportsPlugin(production),
                 ...(production
                     ? [
                           terser({
@@ -516,7 +830,7 @@ export function commonUMDRollupConfiguration(options) {
                           }),
                       ]
                     : []),
-                ...(minToMax && production && i === 0 ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
+                ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
             ];
             return {
                 input: inputFile,
@@ -527,14 +841,16 @@ export function commonUMDRollupConfiguration(options) {
                     globals: perEntryResolveGlobal,
                     exports: "named",
                     sourcemap: true,
+                    sourcemapPathTransform,
                     extend: true,
                     // Inline any dynamic imports so UMD format (which forbids code-splitting) is happy.
                     inlineDynamicImports: true,
                     freeze: false,
                 },
                 plugins: perEntryPlugins,
+                treeshake: false,
                 onwarn(warning, warn) {
-                    if (warning.code === "CIRCULAR_DEPENDENCY") return;
+                    if (shouldSuppressRollupWarning(warning)) return;
                     warn(warning);
                 },
             };

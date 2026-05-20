@@ -11,6 +11,7 @@ This directory contains instruction files that define coding practices, review r
 
 ## Architecture & Patterns
 
+- **[tree-shaking.instructions.md](tree-shaking.instructions.md)** — Three-file split pattern (`.pure.ts` / `.ts` / `.types.ts`), file creation workflow, modification rules, and tooling commands.
 - **[side-effect-imports.instructions.md](side-effect-imports.instructions.md)** — Critical prototype augmentation import rules for `Scene`, `Engine`, `ThinEngine`, and `AbstractEngine`.
 - **[entities.instructions.md](entities.instructions.md)** — Rules for new scene entities (Inspector, serializer, and loader support).
 - **[gltf-extensions.instructions.md](gltf-extensions.instructions.md)** — glTF 2.0 extension registration in the dynamic imports file.

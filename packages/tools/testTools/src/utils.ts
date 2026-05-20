@@ -8,6 +8,7 @@ interface Page {
     evaluate: (...args: any[]) => Promise<any>;
     goto: (...args: any[]) => Promise<any>;
     waitForSelector: (...args: any[]) => Promise<any>;
+    waitForLoadState?: (state?: "load" | "domcontentloaded" | "networkidle", options?: { timeout?: number }) => Promise<void>;
     on: (...args: any[]) => any;
 }
 
@@ -63,14 +64,75 @@ export const evaluateCreateScene = async () => {
     return !!window.scene;
 };
 
+/**
+ * Changed from `(renderCount?: number) => Promise<number>` to
+ * `({ renderCount, warmupFrames?, measureGpuTime? }) => Promise<{ wallTime, gpuTimePerFrame }>`.
+ * Callers must pass an object argument instead of a plain number.
+ * @returns An object containing the wall time and GPU time per frame.
+ */
 // eslint-disable-next-line no-restricted-syntax
-export const evaluateRenderScene = async (renderCount = 1) => {
+export const evaluateRenderScene = async ({
+    renderCount,
+    warmupFrames,
+    measureGpuTime,
+}: {
+    renderCount: number;
+    warmupFrames?: number;
+    measureGpuTime?: boolean;
+}): Promise<{ wallTime: number; gpuTimePerFrame: number }> => {
     if (window.scene && window.engine) {
+        await window.scene.whenReadyAsync();
+        if (warmupFrames) {
+            for (let i = 0; i < warmupFrames; i++) {
+                window.scene.render();
+            }
+        }
         const now = performance.now();
         for (let i = 0; i < renderCount; i++) {
             window.scene.render();
         }
-        return performance.now() - now;
+        const wallTime = performance.now() - now;
+
+        // GPU timing phase (WebGPU only) — measures GPU execution time using
+        // device.queue.onSubmittedWorkDone(), which works on all platforms
+        // (including macOS Metal where timestamp queries return 0).
+        // Renders a batch of frames with beginFrame/endFrame (required to
+        // submit command buffers) and measures time from submission to GPU
+        // completion via onSubmittedWorkDone().
+        let gpuTimePerFrame = -1;
+        // TODO: Replace private _device access with a public accessor if one
+        // becomes available. Currently the engine does not expose a stable
+        // public property for the GPUDevice. The surrounding try/catch
+        // ensures this degrades gracefully if the field is renamed.
+        const device = (window.engine as any)._device as GPUDevice | undefined;
+        if (measureGpuTime && device?.queue) {
+            try {
+                // Reset the engine's timestamp index which accumulated during the
+                // tight render loop (scene.render() without beginFrame/endFrame).
+                window.engine.beginFrame();
+                window.engine.endFrame();
+
+                const gpuFrames = 20;
+                let totalGpuMs = 0;
+                let measured = 0;
+                for (let i = 0; i < gpuFrames; i++) {
+                    window.engine.beginFrame();
+                    window.scene.render();
+                    window.engine.endFrame(); // submits command buffers to GPU queue
+                    const submitTime = performance.now();
+                    await device.queue.onSubmittedWorkDone();
+                    totalGpuMs += performance.now() - submitTime;
+                    measured++;
+                }
+                if (measured > 0) {
+                    gpuTimePerFrame = totalGpuMs / measured;
+                }
+            } catch {
+                // GPU timing not available — leave as -1
+            }
+        }
+
+        return { wallTime, gpuTimePerFrame };
     } else {
         throw new Error("no scene found");
     }
@@ -417,6 +479,8 @@ export interface PerformanceResult {
     trimmed: number[];
     /** Coefficient of variation of trimmed measurements */
     cov: number;
+    /** Average GPU time per frame in ms. -1 if not available. */
+    gpuTimePerFrame?: number;
     /** If true, the scene could not be created (e.g. missing API in this CDN version) */
     skipped?: string;
 }
@@ -437,9 +501,16 @@ export interface PerformanceComparisonResult {
 export interface PerformanceTestOptions {
     /** Number of measurement passes (default: 10) */
     numberOfPasses?: number;
-    /** Frames rendered per pass (default: 2500) */
+    /** Frames rendered per pass (default: 400). Overridden by targetPassTimeMs when > 0. */
     framesToRender?: number;
-    /** Number of warmup passes before measurement (default: 2) */
+    /** Warmup frames rendered before timing begins on each pass (default: 120) */
+    warmupFrames?: number;
+    /** Target wall-clock time in ms for the timed portion of each pass (default: 0 = disabled).
+     *  When > 0, after the first warmup pass `framesToRender` is recalculated so each
+     *  pass takes approximately this long. Set to 0 to use fixed `framesToRender`. */
+    targetPassTimeMs?: number;
+    /** Maximum warmup passes before measurement (default: 6). Warmup ends early
+     *  when two consecutive measurements are within 5% of each other. */
     warmupPasses?: number;
     /** Max acceptable ratio of dev/stable time (default: 1.05 = 5%) */
     acceptedThreshold?: number;
@@ -483,14 +554,16 @@ export interface PerformanceTestOptions {
 }
 
 const defaultPerfOptions: Required<PerformanceTestOptions> = {
-    numberOfPasses: 10,
-    framesToRender: 2500,
-    warmupPasses: 2,
+    numberOfPasses: 5,
+    framesToRender: 400,
+    warmupFrames: 120,
+    targetPassTimeMs: 0,
+    warmupPasses: 6,
     // The stable build (CDN) is production-optimized while the dev build is not,
     // creating an inherent ~5-10% baseline gap. Threshold must exceed this gap.
     acceptedThreshold: 0.15,
     maxCov: 0.1,
-    trimCount: 2,
+    trimCount: 1,
     pValueThreshold: 0.05,
     confirmationPasses: 6,
     cdnVersion: "",
@@ -518,47 +591,153 @@ function resolvePageUrl(type: PerformanceTestType, baseUrl: string, opts: Requir
     }
 }
 
+/** Result of a single measurement pass. */
+interface MeasurementPassResult {
+    wallTime: number;
+    /** Average GPU time per frame in ms. -1 if not available. */
+    gpuTimePerFrame: number;
+}
+
 /**
- * Run a single measurement pass: navigate to the URL, init engine, create scene,
- * render frames, dispose, and return the render time.
+ * Run a single measurement pass on an already-loaded page (no navigation).
+ * Creates the engine and scene, renders warmup + measured frames, then
+ * disposes both. Returns the render time or a skip reason.
  * @param page - Playwright page instance.
- * @param url - The page URL to navigate to.
- * @param baseUrl - Base URL of the test server (passed to engine init).
+ * @param baseUrl - Base URL of the test server.
  * @param createSceneFunction - Function evaluated in the page to create the scene.
  * @param opts - Performance test options.
- * @param evaluateArg - Optional serializable argument for the scene function.
- * @returns The render time in ms, or `{ skipped: string }` if the API is incompatible.
+ * @param evaluateArg - A single serializable argument passed to `page.evaluate(createSceneFunction, evaluateArg)`.
+ *   Playwright requires exactly one argument. Callers must bundle whatever the scene function needs into this object.
+ * @returns The measurement result, or an object with a skip reason if the scene couldn't be created.
  */
-async function runSinglePass(
+async function runMeasurementOnLoadedPage(
     page: Page,
-    url: string,
     baseUrl: string,
     createSceneFunction: (...args: any[]) => Promise<void>,
     opts: Required<PerformanceTestOptions>,
     evaluateArg?: any
-): Promise<number | { skipped: string }> {
-    await page.goto(url, { timeout: 0 });
-    await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
-    await page.evaluate(evaluateInitEngine, { engineName: opts.engineName, baseUrl });
+): Promise<MeasurementPassResult | { skipped: string }> {
     try {
+        await page.evaluate(evaluateInitEngine, { engineName: opts.engineName, baseUrl });
         if (evaluateArg !== undefined) {
             await page.evaluate(createSceneFunction, evaluateArg);
         } else {
             await page.evaluate(createSceneFunction);
         }
+        // Wait for all network requests (textures, models, scripts) to finish
+        // before measuring. Timeout after 30s to avoid hanging on long-polling.
+        if (page.waitForLoadState) {
+            try {
+                await page.waitForLoadState("networkidle", { timeout: 30000 });
+            } catch {
+                /* timeout — continue measurement */
+            }
+        }
+        const result = await page.evaluate(evaluateRenderScene, {
+            renderCount: opts.framesToRender,
+            warmupFrames: opts.warmupFrames,
+            measureGpuTime: opts.engineName === "webgpu",
+        });
+        await page.evaluate(evaluateDisposeScene);
+        await page.evaluate(evaluateDisposeEngine);
+        return result;
     } catch (e: any) {
         const msg = e?.message || String(e);
-        if (msg.includes("is not a constructor") || msg.includes("is not defined") || msg.includes("is not a function") || msg.includes("Cannot read properties of undefined")) {
+        // Best-effort cleanup
+        try {
             await page.evaluate(evaluateDisposeScene);
+        } catch {
+            /* ignore */
+        }
+        try {
             await page.evaluate(evaluateDisposeEngine);
+        } catch {
+            /* ignore */
+        }
+        // Transient infrastructure errors (BrowserStack socket idle, tunnel drop)
+        // should propagate so callers can retry or fail the test rather than
+        // silently marking the scene as "skipped".
+        if (isTransientBrowserStackError(msg)) {
+            throw e;
+        }
+        // Known API-incompatibility patterns indicate the scene function uses
+        // APIs not present in the CDN version being tested. These are expected
+        // when testing older baselines and should be skipped, not failed.
+        if (msg.includes("is not a constructor") || msg.includes("is not defined") || msg.includes("is not a function") || msg.includes("Cannot read properties of undefined")) {
             return { skipped: `Incompatible API: ${msg}` };
         }
+        // Unknown errors are real failures — propagate so the test fails visibly.
         throw e;
     }
-    const time = await page.evaluate(evaluateRenderScene, opts.framesToRender);
-    await page.evaluate(evaluateDisposeScene);
-    await page.evaluate(evaluateDisposeEngine);
-    return time;
+}
+
+/**
+ * Check whether an error message indicates a transient BrowserStack
+ * infrastructure problem (socket idle, tunnel disconnect, etc.)
+ * that may resolve on retry.
+ * @param message - The error message to check.
+ * @returns True if the error appears to be a transient infrastructure issue.
+ */
+function isTransientBrowserStackError(message: string): boolean {
+    const patterns = ["socket idle", "tunnel", "browserstack", "econnreset", "econnrefused", "epipe", "session expired"];
+    const lower = message.toLowerCase();
+    return patterns.some((p) => lower.includes(p));
+}
+
+/**
+ * Navigate to a URL and wait for the canvas to be ready.
+ * Retries once on transient BrowserStack infrastructure errors.
+ */
+/**
+ * Check whether warmup has settled: the last two values are within 5% of each other.
+ * @param values - Array of warmup measurement values.
+ * @returns True if the last two values are within 5% of each other.
+ */
+function isWarmupSettled(values: number[]): boolean {
+    if (values.length < 2) {
+        return false;
+    }
+    const a = values[values.length - 2];
+    const b = values[values.length - 1];
+    const max = Math.max(a, b);
+    if (max === 0) {
+        return false;
+    }
+    return Math.abs(a - b) / max < 0.05;
+}
+
+/**
+ * Calibrate `framesToRender` based on observed render time so each pass
+ * takes approximately `targetPassTimeMs`. Clamps to [100, 10000] frames.
+ * @param measuredTimeMs - Observed render time from a warmup pass.
+ * @param currentFrames - The number of frames that produced `measuredTimeMs`.
+ * @param targetMs - Target wall-clock time per pass.
+ * @returns The calibrated frame count.
+ */
+function calibrateFrameCount(measuredTimeMs: number, currentFrames: number, targetMs: number): number {
+    if (measuredTimeMs <= 0) {
+        return currentFrames;
+    }
+    const msPerFrame = measuredTimeMs / currentFrames;
+    const ideal = Math.round(targetMs / msPerFrame);
+    // Clamp to [100, 10000] — too few frames yields noisy timing,
+    // too many risks timeouts on slow scenes.
+    return Math.max(100, Math.min(10000, ideal));
+}
+
+async function navigateToPage(page: Page, url: string): Promise<void> {
+    try {
+        await page.goto(url, { timeout: 0 });
+        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+    } catch (e: any) {
+        if (isTransientBrowserStackError(e?.message || "")) {
+            // Retry once on transient BrowserStack errors
+            await page.goto(url, { timeout: 0 });
+            await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+        } else {
+            throw e;
+        }
+    }
 }
 
 /**
@@ -571,6 +750,7 @@ async function runSinglePass(
  * @param opts - Performance test options.
  * @param evaluateArg - A single serializable argument passed to `page.evaluate(createSceneFunction, evaluateArg)`.
  *   Playwright requires exactly one argument. Callers must bundle whatever the scene function needs into this object.
+ * @param deadline - Absolute timestamp (ms) after which collection should stop early.
  * @returns The performance result containing timing measurements.
  */
 // eslint-disable-next-line no-restricted-syntax
@@ -580,7 +760,8 @@ export const collectPerformanceSamples = async (
     type: PerformanceTestType,
     createSceneFunction: (...args: any[]) => Promise<void>,
     opts: Required<PerformanceTestOptions>,
-    evaluateArg?: any
+    evaluateArg?: any,
+    deadline = Infinity
 ): Promise<PerformanceResult> => {
     const url = resolvePageUrl(type, baseUrl, opts);
 
@@ -589,46 +770,42 @@ export const collectPerformanceSamples = async (
     });
     await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
 
+    // Adaptive warmup
+    const warmupValues: number[] = [];
+    for (let w = 0; w < opts.warmupPasses; w++) {
+        if (Date.now() > deadline) {
+            break;
+        }
+        const wResult = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
+        if ("skipped" in wResult) {
+            return { mean: 0, raw: [], trimmed: [], cov: 0, skipped: wResult.skipped };
+        }
+        warmupValues.push(wResult.wallTime);
+        if (isWarmupSettled(warmupValues)) {
+            break;
+        }
+    }
+
+    // Measured passes
+    const minSamples = opts.trimCount * 2 + 1;
     const raw: number[] = [];
-    const totalPasses = opts.warmupPasses + opts.numberOfPasses;
-
-    for (let i = 0; i < totalPasses; i++) {
-        await page.evaluate(evaluateInitEngine, { engineName: opts.engineName, baseUrl });
-        try {
-            if (evaluateArg !== undefined) {
-                await page.evaluate(createSceneFunction, evaluateArg);
-            } else {
-                await page.evaluate(createSceneFunction);
-            }
-        } catch (e: any) {
-            const msg = e?.message || String(e);
-            // Detect errors caused by APIs missing in this CDN version
-            if (
-                msg.includes("is not a constructor") ||
-                msg.includes("is not defined") ||
-                msg.includes("is not a function") ||
-                msg.includes("Cannot read properties of undefined")
-            ) {
-                await page.evaluate(evaluateDisposeScene);
-                await page.evaluate(evaluateDisposeEngine);
-                return {
-                    mean: 0,
-                    raw: [],
-                    trimmed: [],
-                    cov: 0,
-                    skipped: `Incompatible API: ${msg}`,
-                };
-            }
-            throw e;
+    const gpuTimes: number[] = [];
+    for (let i = 0; i < opts.numberOfPasses; i++) {
+        if (Date.now() > deadline && raw.length >= minSamples) {
+            break;
         }
-        const time = await page.evaluate(evaluateRenderScene, opts.framesToRender);
-        await page.evaluate(evaluateDisposeScene);
-        await page.evaluate(evaluateDisposeEngine);
-
-        // Discard warmup passes
-        if (i >= opts.warmupPasses) {
-            raw.push(time);
+        const result = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
+        if ("skipped" in result) {
+            return { mean: 0, raw: [], trimmed: [], cov: 0, skipped: result.skipped };
         }
+        raw.push(result.wallTime);
+        if (result.gpuTimePerFrame >= 0) {
+            gpuTimes.push(result.gpuTimePerFrame);
+        }
+    }
+
+    if (raw.length < minSamples) {
+        return { mean: 0, raw: [], trimmed: [], cov: 0, skipped: `Not enough samples (${raw.length}) within time budget` };
     }
 
     const trimmed = performanceStats.trimmed(raw, opts.trimCount);
@@ -638,6 +815,7 @@ export const collectPerformanceSamples = async (
         raw,
         trimmed,
         cov: performanceStats.coefficientOfVariation(trimmed),
+        gpuTimePerFrame: gpuTimes.length > 0 ? performanceStats.mean(gpuTimes) : undefined,
     };
 };
 
@@ -655,76 +833,26 @@ interface InterleavedSamplesResult {
 }
 
 /**
- * Collect interleaved render-time measurements for two builds.
- * Alternates between stable and dev on each pass so that environmental drift
- * (thermal throttling, noisy neighbors, GC pressure) affects both equally.
- * Even-numbered passes run stable first; odd-numbered passes run dev first
- * to cancel any ordering bias within a pair.
- * @param page - Playwright page instance.
- * @param baseUrl - Base URL of the test server.
- * @param createSceneFunction - Function evaluated in the page to create the scene.
+ * Build an {@link InterleavedSamplesResult} from raw paired arrays.
+ * Trims outlier pairs and computes statistics.
+ * @param stableRaw - Raw render times from the stable (baseline) build.
+ * @param devRaw - Raw render times from the dev (candidate) build.
  * @param opts - Performance test options.
- * @param evaluateArg - Optional serializable argument for the scene function.
- * @returns Interleaved results with paired differences, or `{ skipped }` if an API is incompatible.
+ * @param stableGpuTimes - GPU time per frame measurements for the stable build.
+ * @param devGpuTimes - GPU time per frame measurements for the dev build.
+ * @returns The interleaved samples result with trimmed statistics.
  */
-// eslint-disable-next-line no-restricted-syntax
-const collectInterleavedSamples = async (
-    page: Page,
-    baseUrl: string,
-    createSceneFunction: (...args: any[]) => Promise<void>,
+function buildInterleavedResult(
+    stableRaw: number[],
+    devRaw: number[],
     opts: Required<PerformanceTestOptions>,
-    evaluateArg?: any
-): Promise<InterleavedSamplesResult | { skipped: string }> => {
-    const stableUrl = resolvePageUrl("stable", baseUrl, opts);
-    const devUrl = opts.cdnVersionB ? resolvePageUrl("stable", baseUrl, { ...opts, cdnVersion: opts.cdnVersionB }) : resolvePageUrl("dev", baseUrl, opts);
-
-    const rounds: { stable: number; dev: number; diff: number }[] = [];
-    const totalPasses = opts.warmupPasses + opts.numberOfPasses;
-
-    for (let i = 0; i < totalPasses; i++) {
-        const isWarmup = i < opts.warmupPasses;
-        // Alternate which build runs first to cancel ordering bias
-        const stableFirst = i % 2 === 0;
-
-        let stableTime: number;
-        let devTime: number;
-
-        if (stableFirst) {
-            const s = await runSinglePass(page, stableUrl, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof s !== "number") {
-                return s;
-            }
-            const d = await runSinglePass(page, devUrl, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof d !== "number") {
-                return d;
-            }
-            stableTime = s;
-            devTime = d;
-        } else {
-            const d = await runSinglePass(page, devUrl, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof d !== "number") {
-                return d;
-            }
-            const s = await runSinglePass(page, stableUrl, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof s !== "number") {
-                return s;
-            }
-            stableTime = s;
-            devTime = d;
-        }
-
-        if (!isWarmup) {
-            rounds.push({ stable: stableTime, dev: devTime, diff: devTime - stableTime });
-        }
-    }
-
-    // Trim at the pair level: sort rounds by diff magnitude and drop outliers
-    // from both ends. This keeps stable, dev, and diff arrays aligned.
+    stableGpuTimes?: number[],
+    devGpuTimes?: number[]
+): InterleavedSamplesResult {
+    const rounds = stableRaw.map((s, i) => ({ stable: s, dev: devRaw[i], diff: devRaw[i] - s }));
     const sortedRounds = [...rounds].sort((a, b) => a.diff - b.diff);
     const trimmedRounds = sortedRounds.slice(opts.trimCount, sortedRounds.length - opts.trimCount);
 
-    const stableRaw = rounds.map((r) => r.stable);
-    const devRaw = rounds.map((r) => r.dev);
     const stableTrimmed = trimmedRounds.map((r) => r.stable);
     const devTrimmed = trimmedRounds.map((r) => r.dev);
     const pairedDifferences = trimmedRounds.map((r) => r.diff);
@@ -735,15 +863,258 @@ const collectInterleavedSamples = async (
             raw: stableRaw,
             trimmed: stableTrimmed,
             cov: performanceStats.coefficientOfVariation(stableTrimmed),
+            gpuTimePerFrame: stableGpuTimes && stableGpuTimes.length > 0 ? performanceStats.mean(stableGpuTimes) : undefined,
         },
         dev: {
             mean: performanceStats.mean(devTrimmed),
             raw: devRaw,
             trimmed: devTrimmed,
             cov: performanceStats.coefficientOfVariation(devTrimmed),
+            gpuTimePerFrame: devGpuTimes && devGpuTimes.length > 0 ? performanceStats.mean(devGpuTimes) : undefined,
         },
         pairedDifferences,
     };
+}
+
+/**
+ * Collect truly-interleaved paired measurements using two browser pages.
+ *
+ * Opens a second page via `page.context().newPage()`, navigates each page
+ * once (stable and dev), then alternates measurements between them.
+ * Each measured pair captures nearly identical machine/GPU state because
+ * the measurements run back-to-back on the same host. This eliminates the
+ * ordering bias that sequential collection (all-A-then-all-B) introduces.
+ *
+ * Falls back to {@link collectSequentialSamples} when a second page cannot
+ * be created (e.g. Puppeteer, or restricted browser contexts).
+ * @param page - Playwright page instance.
+ * @param baseUrl - Base URL of the test server.
+ * @param createSceneFunction - Function evaluated in the page to create the scene.
+ * @param opts - Performance test options.
+ * @param evaluateArg - Optional serializable argument for the scene function.
+ * @param deadline - Absolute timestamp (ms) after which collection should stop early.
+ * @returns The interleaved samples result, or a skip reason.
+ */
+// eslint-disable-next-line no-restricted-syntax
+const collectInterleavedSamples = async (
+    page: Page,
+    baseUrl: string,
+    createSceneFunction: (...args: any[]) => Promise<void>,
+    opts: Required<PerformanceTestOptions>,
+    evaluateArg?: any,
+    deadline = Infinity
+): Promise<InterleavedSamplesResult | { skipped: string }> => {
+    const stableUrl = resolvePageUrl("stable", baseUrl, opts);
+    const devUrl = opts.cdnVersionB ? resolvePageUrl("stable", baseUrl, { ...opts, cdnVersion: opts.cdnVersionB }) : resolvePageUrl("dev", baseUrl, opts);
+
+    // Try to create a second page for true interleaving.
+    // Playwright exposes page.context().browser() to reach the Browser instance.
+    // BrowserStack requires browser.newContext() rather than context.newPage().
+    let devPage: Page | null = null;
+    let devContext: any = null;
+    const anyPage = page as any;
+    if (typeof anyPage.context === "function") {
+        try {
+            const ctx = anyPage.context();
+            const browser = typeof ctx.browser === "function" ? ctx.browser() : null;
+            if (browser && typeof browser.newContext === "function") {
+                devContext = await browser.newContext();
+                devPage = await devContext.newPage();
+            } else {
+                devPage = await ctx.newPage();
+            }
+        } catch (_e: any) {
+            // Fall back to sequential collection
+        }
+    }
+
+    if (devPage) {
+        // ── True interleaving via two pages ──────────────────────────
+        const stablePage = page;
+
+        try {
+            await navigateToPage(stablePage, stableUrl);
+            await navigateToPage(devPage, devUrl);
+
+            // ── Adaptive warmup: run until settled or max reached ──
+            const stableWarmup: number[] = [];
+            const devWarmup: number[] = [];
+            for (let w = 0; w < opts.warmupPasses; w++) {
+                const sW = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in sW) {
+                    return sW;
+                }
+                const dW = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in dW) {
+                    return dW;
+                }
+                stableWarmup.push(sW.wallTime);
+                devWarmup.push(dW.wallTime);
+                // Calibrate frame count after first warmup pass using the slower build
+                if (w === 0 && opts.targetPassTimeMs > 0) {
+                    const slowest = Math.max(sW.wallTime, dW.wallTime);
+                    opts.framesToRender = calibrateFrameCount(slowest, opts.framesToRender, opts.targetPassTimeMs);
+                    opts.targetPassTimeMs = 0;
+                }
+                // Stop warming up once both builds have settled
+                if (isWarmupSettled(stableWarmup) && isWarmupSettled(devWarmup)) {
+                    break;
+                }
+            }
+
+            // ── Measured passes ──
+            const stableRaw: number[] = [];
+            const devRaw: number[] = [];
+            const stableGpuTimes: number[] = [];
+            const devGpuTimes: number[] = [];
+
+            for (let i = 0; i < opts.numberOfPasses; i++) {
+                const sResult = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in sResult) {
+                    return sResult;
+                }
+
+                const dResult = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in dResult) {
+                    return dResult;
+                }
+
+                stableRaw.push(sResult.wallTime);
+                devRaw.push(dResult.wallTime);
+                if (sResult.gpuTimePerFrame >= 0) {
+                    stableGpuTimes.push(sResult.gpuTimePerFrame);
+                }
+                if (dResult.gpuTimePerFrame >= 0) {
+                    devGpuTimes.push(dResult.gpuTimePerFrame);
+                }
+
+                // Check time budget — bail out early if we're running long.
+                // We need at least trimCount*2+1 measured samples for meaningful stats.
+                const minSamples = opts.trimCount * 2 + 1;
+                if (Date.now() > deadline && stableRaw.length >= minSamples) {
+                    break;
+                }
+            }
+
+            if (stableRaw.length < opts.trimCount * 2 + 1) {
+                return { skipped: `Not enough samples (${stableRaw.length}) within time budget` };
+            }
+
+            return buildInterleavedResult(stableRaw, devRaw, opts, stableGpuTimes, devGpuTimes);
+        } finally {
+            await (devPage as any).close?.();
+            await devContext?.close?.();
+        }
+    }
+
+    // ── Fallback: sequential collection (single page) ────────────
+    return await collectSequentialSamples(page, baseUrl, stableUrl, devUrl, createSceneFunction, opts, evaluateArg, deadline);
+};
+
+/**
+ * Fallback for {@link collectInterleavedSamples} when a second page cannot
+ * be created. Runs all stable passes first, then all dev passes, with the
+ * order randomized to avoid systematic ordering bias.
+ * @param page - Playwright page instance.
+ * @param baseUrl - Base URL of the test server.
+ * @param stableUrl - URL for the stable (baseline) build.
+ * @param devUrl - URL for the dev (candidate) build.
+ * @param createSceneFunction - Function evaluated in the page to create the scene.
+ * @param opts - Performance test options.
+ * @param evaluateArg - Optional serializable argument for the scene function.
+ * @param deadline - Absolute timestamp (ms) after which collection should stop early.
+ * @returns The interleaved samples result, or a skip reason.
+ */
+// eslint-disable-next-line no-restricted-syntax
+const collectSequentialSamples = async (
+    page: Page,
+    baseUrl: string,
+    stableUrl: string,
+    devUrl: string,
+    createSceneFunction: (...args: any[]) => Promise<void>,
+    opts: Required<PerformanceTestOptions>,
+    evaluateArg?: any,
+    deadline = Infinity
+): Promise<InterleavedSamplesResult | { skipped: string }> => {
+    // eslint-disable-next-line no-restricted-syntax
+    const collectSamples = async (url: string, _label: string): Promise<{ raw: number[]; gpuTimes: number[] } | { skipped: string }> => {
+        await navigateToPage(page, url);
+        // Adaptive warmup
+        const warmupValues: number[] = [];
+        for (let w = 0; w < opts.warmupPasses; w++) {
+            if (Date.now() > deadline) {
+                break;
+            }
+            const wResult = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
+            if ("skipped" in wResult) {
+                return wResult;
+            }
+            warmupValues.push(wResult.wallTime);
+            if (isWarmupSettled(warmupValues)) {
+                break;
+            }
+        }
+        // Measured passes
+        const minSamples = opts.trimCount * 2 + 1;
+        const raw: number[] = [];
+        const gpuTimes: number[] = [];
+        for (let i = 0; i < opts.numberOfPasses; i++) {
+            if (Date.now() > deadline && raw.length >= minSamples) {
+                break;
+            }
+            const result = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
+            if ("skipped" in result) {
+                return result;
+            }
+            raw.push(result.wallTime);
+            if (result.gpuTimePerFrame >= 0) {
+                gpuTimes.push(result.gpuTimePerFrame);
+            }
+        }
+        return { raw, gpuTimes };
+    };
+
+    // Randomize batch order to prevent systematic ordering bias
+    const stableFirst = Math.random() < 0.5;
+    const firstLabel = stableFirst ? "stable" : "dev";
+    const secondLabel = stableFirst ? "dev" : "stable";
+    const firstUrl = stableFirst ? stableUrl : devUrl;
+    const secondUrl = stableFirst ? devUrl : stableUrl;
+
+    // Calibrate frame count from a single probe pass on the first build,
+    // then lock it so both builds use the same count.
+    if (opts.targetPassTimeMs > 0) {
+        await navigateToPage(page, firstUrl);
+        const probe = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
+        if (!("skipped" in probe)) {
+            opts.framesToRender = calibrateFrameCount(probe.wallTime, opts.framesToRender, opts.targetPassTimeMs);
+        }
+        opts.targetPassTimeMs = 0;
+    }
+
+    const minSamples = opts.trimCount * 2 + 1;
+
+    const firstResult = await collectSamples(firstUrl, firstLabel);
+    if ("skipped" in firstResult) {
+        return firstResult;
+    }
+    if (firstResult.raw.length < minSamples) {
+        return { skipped: `Not enough ${firstLabel} samples (${firstResult.raw.length}) within time budget` };
+    }
+    const secondResult = await collectSamples(secondUrl, secondLabel);
+    if ("skipped" in secondResult) {
+        return secondResult;
+    }
+    if (secondResult.raw.length < minSamples) {
+        return { skipped: `Not enough ${secondLabel} samples (${secondResult.raw.length}) within time budget` };
+    }
+
+    const stableRaw = stableFirst ? firstResult.raw : secondResult.raw;
+    const devRaw = stableFirst ? secondResult.raw : firstResult.raw;
+    const stableGpuTimes = stableFirst ? firstResult.gpuTimes : secondResult.gpuTimes;
+    const devGpuTimes = stableFirst ? secondResult.gpuTimes : firstResult.gpuTimes;
+
+    return buildInterleavedResult(stableRaw, devRaw, opts, stableGpuTimes, devGpuTimes);
 };
 
 /**
@@ -769,6 +1140,9 @@ export const comparePerformance = async (
     evaluateArg?: any
 ): Promise<PerformanceComparisonResult> => {
     const opts = { ...defaultPerfOptions, ...options };
+    const compareStartTime = Date.now();
+    // Hard time budget: all collection (initial + confirmation) must finish within 240s.
+    const deadline = compareStartTime + 240_000;
 
     // Ensure enough passes for meaningful statistics after trimming
     if (opts.numberOfPasses < opts.trimCount * 2 + 3) {
@@ -786,7 +1160,7 @@ export const comparePerformance = async (
 
     if (opts.interleaved) {
         // Interleaved: stable/dev alternate each pass to cancel environmental drift
-        const initial = await collectInterleavedSamples(page, baseUrl, createSceneFunction, opts, evaluateArg);
+        const initial = await collectInterleavedSamples(page, baseUrl, createSceneFunction, opts, evaluateArg, deadline);
 
         if ("skipped" in initial) {
             const empty: PerformanceResult = { mean: 0, raw: [], trimmed: [], cov: 0 };
@@ -797,8 +1171,20 @@ export const comparePerformance = async (
         dev = initial.dev;
         pairedDifferences = initial.pairedDifferences;
     } else {
-        // Sequential: all stable passes first, then all dev passes (faster, ~2x)
-        stable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, opts, evaluateArg);
+        // Sequential: all stable passes first, then all dev passes (faster, ~2x).
+        // Calibrate frame count upfront using a quick probe on the stable build
+        // so both builds render the same number of frames.
+        if (opts.targetPassTimeMs > 0) {
+            const probeUrl = resolvePageUrl("stable", baseUrl, opts);
+            await navigateToPage(page, probeUrl);
+            const probeResult = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
+            if (!("skipped" in probeResult)) {
+                opts.framesToRender = calibrateFrameCount(probeResult.wallTime, opts.framesToRender, opts.targetPassTimeMs);
+            }
+            opts.targetPassTimeMs = 0; // Prevent re-calibration inside collection functions
+        }
+
+        stable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, opts, evaluateArg, deadline);
 
         if (stable.skipped) {
             const empty: PerformanceResult = { mean: 0, raw: [], trimmed: [], cov: 0 };
@@ -807,9 +1193,9 @@ export const comparePerformance = async (
 
         if (opts.cdnVersionB) {
             const cdnBOpts = { ...opts, cdnVersion: opts.cdnVersionB };
-            dev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg);
+            dev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg, deadline);
         } else {
-            dev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, opts, evaluateArg);
+            dev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, opts, evaluateArg, deadline);
         }
 
         if (dev.skipped) {
@@ -824,11 +1210,17 @@ export const comparePerformance = async (
         const ratioExceeded = ratio > 1 + opts.acceptedThreshold;
         const statisticallySignificant = pValue < opts.pValueThreshold;
 
-        const noisyStable = stableRes.cov > opts.maxCov;
-        const noisyDev = devRes.cov > opts.maxCov;
+        // Use CoV of the mean estimate (SEM / mean = CoV / √n) rather than raw sample CoV.
+        // With enough samples, even noisy individual runs produce a reliable mean estimate.
+        const stableN = stableRes.trimmed.length;
+        const devN = devRes.trimmed.length;
+        const stableMeanCov = stableN > 1 ? stableRes.cov / Math.sqrt(stableN) : stableRes.cov;
+        const devMeanCov = devN > 1 ? devRes.cov / Math.sqrt(devN) : devRes.cov;
+        const noisyStable = stableMeanCov > opts.maxCov;
+        const noisyDev = devMeanCov > opts.maxCov;
         const noisy = noisyStable || noisyDev;
 
-        // If measurements are noisy, we cannot make a confident determination —
+        // If the mean estimate is too uncertain, we cannot make a confident determination —
         // pass with a warning rather than reporting a false positive.
         // Otherwise, both ratio AND statistical significance must indicate regression to fail.
         const passed = noisy || !(ratioExceeded && statisticallySignificant);
@@ -841,8 +1233,17 @@ export const comparePerformance = async (
             `${candidateLabel}: ${devRes.mean.toFixed(1)}ms, ` +
             `${candidateLabel} is ${diffLabel}, p-value: ${pValue.toFixed(4)}`;
 
+        // Append GPU time breakdown when available
+        const sGpu = stableRes.gpuTimePerFrame;
+        const dGpu = devRes.gpuTimePerFrame;
+        if (sGpu != null && sGpu >= 0 && dGpu != null && dGpu >= 0) {
+            summary += `, gpu/frame: ${baselineLabel} ${sGpu.toFixed(2)}ms / ${candidateLabel} ${dGpu.toFixed(2)}ms`;
+        } else if (dGpu != null && dGpu >= 0) {
+            summary += `, gpu/frame: ${dGpu.toFixed(2)}ms`;
+        }
+
         if (noisy) {
-            summary += ` [INCONCLUSIVE: Noisy measurements - ${noisyStable ? "stable" : ""}${noisyStable && noisyDev ? " & " : ""}${noisyDev ? "dev" : ""} CoV > ${(opts.maxCov * 100).toFixed(0)}%]`;
+            summary += ` [INCONCLUSIVE: Mean estimate too uncertain - ${noisyStable ? "stable" : ""}${noisyStable && noisyDev ? " & " : ""}${noisyDev ? "dev" : ""} SEM/mean > ${(opts.maxCov * 100).toFixed(0)}%]`;
         }
 
         return { stable: stableRes, dev: devRes, ratio, pValue, passed, summary };
@@ -850,8 +1251,15 @@ export const comparePerformance = async (
 
     const result = buildResult(stable, dev, pairedDifferences);
 
-    // If it looks like a regression and measurements are reliable, run confirmation passes
-    if (!result.passed && opts.confirmationPasses > 0) {
+    // Detect if result is inconclusive (noisy measurements)
+    const isInconclusive = (r: PerformanceComparisonResult) => r.summary.includes("[INCONCLUSIVE");
+
+    // Track the current best result — may be updated by confirmation and retry passes
+    let finalResult = result;
+
+    // If it looks like a regression and measurements are reliable, run confirmation passes.
+    // Skip confirmation if we're past the deadline.
+    if (!finalResult.passed && opts.confirmationPasses > 0 && Date.now() < deadline) {
         const effectiveConfirmationPasses = Math.max(opts.confirmationPasses, opts.trimCount * 2 + 3);
         console.log(
             `[PERF] Initial result indicates regression (ratio: ${result.ratio.toFixed(4)}, p: ${result.pValue.toFixed(4)}). Running ${effectiveConfirmationPasses} confirmation passes...`
@@ -864,7 +1272,7 @@ export const comparePerformance = async (
         let confirmDiffs: number[] | null = null;
 
         if (opts.interleaved) {
-            const confirmResult = await collectInterleavedSamples(page, baseUrl, createSceneFunction, confirmOpts, evaluateArg);
+            const confirmResult = await collectInterleavedSamples(page, baseUrl, createSceneFunction, confirmOpts, evaluateArg, deadline);
             if ("skipped" in confirmResult) {
                 return result;
             }
@@ -872,12 +1280,12 @@ export const comparePerformance = async (
             confirmDev = confirmResult.dev;
             confirmDiffs = confirmResult.pairedDifferences;
         } else {
-            confirmStable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, confirmOpts, evaluateArg);
+            confirmStable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, confirmOpts, evaluateArg, deadline);
             if (opts.cdnVersionB) {
                 const cdnBOpts = { ...confirmOpts, cdnVersion: opts.cdnVersionB };
-                confirmDev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg);
+                confirmDev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg, deadline);
             } else {
-                confirmDev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, confirmOpts, evaluateArg);
+                confirmDev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, confirmOpts, evaluateArg, deadline);
             }
         }
 
@@ -901,10 +1309,75 @@ export const comparePerformance = async (
 
         const confirmed = buildResult(mergedStable, mergedDev, allDiffs);
         confirmed.summary = `[CONFIRMED] ${confirmed.summary}`;
-        return confirmed;
+        finalResult = confirmed;
     }
 
-    return result;
+    // If the result (initial or post-confirmation) is inconclusive and we have time,
+    // retry to get cleaner measurements. The warmup/compilation from earlier runs
+    // primes the GPU, so the retry is more likely to produce stable results.
+    if (isInconclusive(finalResult) && Date.now() < deadline) {
+        console.log(`[PERF] Inconclusive result (noisy). Retrying with additional passes...`);
+        const retryOpts = { ...opts, warmupPasses: 1, confirmationPasses: 0 };
+
+        let retryStable: PerformanceResult;
+        let retryDev: PerformanceResult;
+        let retryDiffs: number[] | null = null;
+
+        if (opts.interleaved) {
+            const retryResult = await collectInterleavedSamples(page, baseUrl, createSceneFunction, retryOpts, evaluateArg, deadline);
+            if ("skipped" in retryResult) {
+                return finalResult;
+            }
+            retryStable = retryResult.stable;
+            retryDev = retryResult.dev;
+            retryDiffs = retryResult.pairedDifferences;
+        } else {
+            retryStable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, retryOpts, evaluateArg, deadline);
+            if (opts.cdnVersionB) {
+                const cdnBOpts = { ...retryOpts, cdnVersion: opts.cdnVersionB };
+                retryDev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg, deadline);
+            } else {
+                retryDev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, retryOpts, evaluateArg, deadline);
+            }
+        }
+
+        // Merge from raw arrays and re-trim to avoid deflating CoV
+        // (each individual result was already trimmed, so concatenating
+        // trimmed arrays would double-trim and make the SEM check too
+        // permissive).
+        const prevStable = finalResult.stable;
+        const prevDev = finalResult.dev;
+        const allStableRetry = [...prevStable.raw, ...retryStable.raw];
+        const allDevRetry = [...prevDev.raw, ...retryDev.raw];
+        const trimmedStableRetry = performanceStats.trimmed(allStableRetry, opts.trimCount);
+        const trimmedDevRetry = performanceStats.trimmed(allDevRetry, opts.trimCount);
+        // Pair diffs only if both the previous result and retry produced them
+        const prevDiffs = finalResult === result ? pairedDifferences : null;
+        const allRetryDiffs = prevDiffs && retryDiffs ? [...prevDiffs, ...retryDiffs] : null;
+
+        const mergedRetryStable: PerformanceResult = {
+            mean: performanceStats.mean(trimmedStableRetry),
+            raw: allStableRetry,
+            trimmed: trimmedStableRetry,
+            cov: performanceStats.coefficientOfVariation(trimmedStableRetry),
+        };
+        const mergedRetryDev: PerformanceResult = {
+            mean: performanceStats.mean(trimmedDevRetry),
+            raw: allDevRetry,
+            trimmed: trimmedDevRetry,
+            cov: performanceStats.coefficientOfVariation(trimmedDevRetry),
+        };
+
+        const retried = buildResult(mergedRetryStable, mergedRetryDev, allRetryDiffs);
+        if (isInconclusive(retried)) {
+            retried.summary = `[RETRY INCONCLUSIVE] ${retried.summary}`;
+        } else {
+            retried.summary = `[RETRY RESOLVED] ${retried.summary}`;
+        }
+        return retried;
+    }
+
+    return finalResult;
 };
 
 /**
@@ -946,7 +1419,8 @@ export const checkPerformanceOfScene = async (
         } else {
             await page.evaluate(createSceneFunction);
         }
-        time.push(await page.evaluate(evaluateRenderScene, framesToRender));
+        const result = await page.evaluate(evaluateRenderScene, { renderCount: framesToRender });
+        time.push(result.wallTime);
         await page.evaluate(evaluateDisposeScene);
         await page.evaluate(evaluateDisposeEngine);
     }

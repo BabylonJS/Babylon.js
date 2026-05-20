@@ -65,15 +65,15 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Creates loader for gaussian splatting files
      * @param loadingOptions options for loading and parsing splat and PLY files.
      */
-    constructor(loadingOptions: Partial<Readonly<SPLATLoadingOptions>> = SPLATFileLoader._DefaultLoadingOptions) {
-        this._loadingOptions = loadingOptions;
+    constructor(loadingOptions: Partial<Readonly<SPLATLoadingOptions>> = {}) {
+        this._loadingOptions = { ...SPLATFileLoader._DefaultLoadingOptions, ...loadingOptions };
     }
 
     private static readonly _DefaultLoadingOptions = {
         keepInRam: false,
         flipY: false,
         needsRotationScaleTextures: false,
-        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
+        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.2/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
@@ -323,8 +323,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         };
 
-        // Check for gzip magic bytes to detect SPZ format
-        if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
+        // Check for gzip (before SPZ V4) and NGSP (SPZ V4+) magic bytes to detect SPZ format
+        const isGZipped = u8[0] === 0x1f && u8[1] === 0x8b;
+        const isNGSP = u8[0] === 0x4e && u8[1] === 0x47 && u8[2] === 0x53 && u8[3] === 0x50;
+        if (!isGZipped && !isNGSP) {
             return new Promise((resolve) => {
                 handlePLY(resolve);
             });
@@ -364,6 +366,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     });
                 });
             });
+        }
+
+        // NGSP (SPZ V4+) requires WASM — the native fallback only handles legacy gzip formats
+        if (isNGSP) {
+            return Promise.reject(
+                new Error(
+                    "SPZ V4+ files (NGSP format) are not supported by the native fallback loader. " +
+                        "Please provide a valid 'spzLibraryUrl' in the loading options to use the WASM-based SPZ library, " +
+                        "or ensure WebAssembly is available in your environment."
+                )
+            );
         }
 
         // Manual path: decompress gzip, then parse with the built-in SPZ parser

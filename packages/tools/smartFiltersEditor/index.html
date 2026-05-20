@@ -31,16 +31,6 @@
 
     <body>
         <div id="container"></div>
-        <!--
-          Vite entry point: Vite processes src/app.ts directly as native ESM.
-          All dependencies (smart-filters, core, etc.) are resolved via
-          vite.config.ts aliases — no CDN server or loader script needed.
-
-          For production CDN deployments, use the webpack build:
-            npm run build:deployment -w @tools/smart-filters-editor
-          and the public/index.html / public/babylon.smartFilterEditor.loader.js
-          remain the production entry points.
-        -->
         <script type="module" src="/src/app.ts"></script>
     </body>
 </html>

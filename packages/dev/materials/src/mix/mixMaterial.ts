@@ -360,6 +360,7 @@ export class MixMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: this.maxSimultaneousLights,
+                shaderLanguage: this._shaderLanguage,
             });
 
             subMesh.setEffect(

@@ -8,15 +8,15 @@ float fuzz_roughness = 0.0;
 
 // Sample Fuzz Layer properties from textures
 #ifdef FUZZ_WEIGHT
-    vec4 fuzzWeightFromTexture = texture2D(fuzzWeightSampler, vFuzzWeightUV + uvOffset);
+    vec4 fuzzWeightFromTexture = TEXRD(fuzzWeightSampler, vFuzzWeightUV + uvOffset);
 #endif
 
 #ifdef FUZZ_COLOR
-    vec4 fuzzColorFromTexture = texture2D(fuzzColorSampler, vFuzzColorUV + uvOffset);
+    vec4 fuzzColorFromTexture = TEXRD(fuzzColorSampler, vFuzzColorUV + uvOffset);
 #endif
 
 #ifdef FUZZ_ROUGHNESS
-    vec4 fuzzRoughnessFromTexture = texture2D(fuzzRoughnessSampler, vFuzzRoughnessUV + uvOffset);
+    vec4 fuzzRoughnessFromTexture = TEXRD(fuzzRoughnessSampler, vFuzzRoughnessUV + uvOffset);
 #endif
 
 // Initalize fuzz layer properties from uniforms

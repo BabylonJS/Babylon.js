@@ -1,5 +1,6 @@
 
 ### Core
 
-- fix(audio): prevent iOS Safari FPS throttle from silent HTML audio - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18366](https://github.com/BabylonJS/Babylon.js/pull/18366))
-- fix: make toBase64/fromBase64 declarations non-optional for TypeScript 6.0 compat - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18365](https://github.com/BabylonJS/Babylon.js/pull/18365))
+- Tree-shaking - the pure barrel - by [RaananW](https://github.com/RaananW) ([#18441](https://github.com/BabylonJS/Babylon.js/pull/18441))
+- Add distance-only spatial mode to Audio Engine V2 - by [VicenteCartas](https://github.com/VicenteCartas) ([#18462](https://github.com/BabylonJS/Babylon.js/pull/18462))
+- Camera input mapping system with backward-compatible legacy flag support - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18379](https://github.com/BabylonJS/Babylon.js/pull/18379))

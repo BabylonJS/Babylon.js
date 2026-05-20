@@ -1,9 +1,7 @@
 import {
     type ISnippetServerResponse,
-    type SnippetContentType,
     type SnippetResult,
     type IPlaygroundSnippetResult,
-    type IDataSnippetResult,
     type IUnknownSnippetResult,
     type IPlaygroundPayload,
     type IV2Manifest,
@@ -17,6 +15,7 @@ import {
     RuntimeScriptPaths,
 } from "./types";
 import { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
+import { DecodeBase64ToString, DetectContentType, ParseDataPayload } from "./parseDataSnippetResponse";
 
 // -----------------------------------------------------------------------
 // Lazy-loaded TypeScript compiler (Monaco's browser-safe bundle)
@@ -32,7 +31,7 @@ let CachedTsPromise: Promise<typeof import("typescript")> | null = null;
 // Isolated dynamic import so the untyped module specifier is contained
 // in a single place and the @ts-expect-error applies cleanly.
 async function _LoadMonacoTs(): Promise<unknown> {
-    return await import(/* webpackChunkName: "typescript" */ "monaco-editor/esm/vs/language/typescript/lib/typescriptServices");
+    return await import("monaco-editor/esm/vs/language/typescript/lib/typescriptServices");
 }
 
 async function GetTypeScript(): Promise<typeof import("typescript")> {
@@ -41,39 +40,6 @@ async function GetTypeScript(): Promise<typeof import("typescript")> {
         CachedTsPromise = (_LoadMonacoTs() as Promise<{ typescript: typeof import("typescript") }>).then((m) => m.typescript);
     }
     return await CachedTsPromise;
-}
-
-// -----------------------------------------------------------------------
-// Base-64 / Unicode helpers
-// -----------------------------------------------------------------------
-
-/**
- * Reproduced from legacy Babylon 5.x StringUtils so that older playground
- * snippets (which may have been encoded with the old encoder) still decode
- * correctly even if `DecodeBase64ToBinary` from core behaves differently.
- *
- * @param base64Data - The Base64-encoded string to decode.
- * @returns The decoded binary data as an ArrayBuffer.
- */
-function DecodeBase64ToBinaryLegacy(base64Data: string): ArrayBuffer {
-    const decoded = atob(base64Data);
-    const buf = new Uint8Array(decoded.length);
-    for (let i = 0; i < decoded.length; i++) {
-        buf[i] = decoded.charCodeAt(i);
-    }
-    return buf.buffer;
-}
-
-/**
- * Decodes a Base64-encoded UTF-8 string back to a JS string.
- * Falls back to the legacy decoder when the core helper is unavailable.
- *
- * @param base64Data - The Base64-encoded UTF-8 string.
- * @returns The decoded JavaScript string.
- */
-function DecodeBase64ToString(base64Data: string): string {
-    const bytes = new Uint8Array(DecodeBase64ToBinaryLegacy(base64Data));
-    return new TextDecoder("utf-8").decode(bytes);
 }
 
 // -----------------------------------------------------------------------
@@ -172,30 +138,6 @@ async function TranspileFiles(files: Record<string, string>, transpile: Transpil
 }
 
 // -----------------------------------------------------------------------
-// JSON-payload key → content type mapping
-// -----------------------------------------------------------------------
-
-/**
- * Maps known keys that appear inside a parsed `jsonPayload` object to
- * their corresponding {@link SnippetContentType}.
- *
- * Order matters: we check the most specific keys first.
- */
-const PayloadKeyToType: ReadonlyArray<[key: string, type: SnippetContentType]> = [
-    ["nodeMaterial", "nodeMaterial"],
-    ["nodeGeometry", "nodeGeometry"],
-    ["nodeRenderGraph", "nodeRenderGraph"],
-    ["nodeParticle", "nodeParticle"],
-    ["gui", "gui"],
-    ["encodedGui", "gui"],
-    ["animations", "animation"],
-    ["animation", "animation"],
-    ["particleSystem", "particleSystem"],
-    ["spriteManager", "spriteManager"],
-    ["shaderMaterial", "shaderMaterial"],
-];
-
-// -----------------------------------------------------------------------
 // Playground helpers
 // -----------------------------------------------------------------------
 
@@ -284,38 +226,6 @@ function AppendLegacyExports(code: string, language: "TS" | "JS"): string {
 }
 
 // -----------------------------------------------------------------------
-// Type detection
-// -----------------------------------------------------------------------
-
-/**
- * Detects the content type of a parsed jsonPayload object by checking
- * for the presence of known keys.
- *
- * @param parsedPayload - The parsed JSON payload from the snippet server.
- * @returns The detected {@link SnippetContentType}.
- */
-function DetectContentType(parsedPayload: Record<string, unknown>): SnippetContentType {
-    // Check if it looks like a V2 playground manifest
-    if (parsedPayload.files && typeof parsedPayload.files === "object" && parsedPayload.v !== undefined) {
-        return "playground";
-    }
-
-    // Check if it has a `code` key (playground inner payload)
-    if (typeof parsedPayload.code === "string") {
-        return "playground";
-    }
-
-    // Check known data-snippet keys
-    for (const [key, type] of PayloadKeyToType) {
-        if (key in parsedPayload) {
-            return type;
-        }
-    }
-
-    return "unknown";
-}
-
-// -----------------------------------------------------------------------
 // Playground payload parsing
 // -----------------------------------------------------------------------
 
@@ -394,54 +304,6 @@ function ParsePlaygroundPayload(parsedPayload: Record<string, unknown>, snippetI
         code: codeWithExports,
         files: { [fileName]: codeWithExports },
     };
-}
-
-// -----------------------------------------------------------------------
-// Data-snippet parsing (NME, GUI, etc.)
-// -----------------------------------------------------------------------
-
-function ParseDataPayload(
-    parsedPayload: Record<string, unknown>,
-    contentType: Exclude<SnippetContentType, "playground" | "unknown">,
-    snippetId: string,
-    metadata: SnippetResult["metadata"]
-): IDataSnippetResult {
-    let data: unknown;
-
-    switch (contentType) {
-        case "gui": {
-            // GUI can be stored in `gui` (plain) or `encodedGui` (Base64 UTF-8).
-            if (typeof parsedPayload.encodedGui === "string") {
-                data = JSON.parse(DecodeBase64ToString(parsedPayload.encodedGui));
-            } else {
-                data = typeof parsedPayload.gui === "string" ? JSON.parse(parsedPayload.gui) : parsedPayload.gui;
-            }
-            break;
-        }
-        case "animation": {
-            // `animations` (plural) contains `{ animations: [...] }`;
-            // `animation` (singular) is a single object.
-            if (typeof parsedPayload.animations === "string") {
-                data = JSON.parse(parsedPayload.animations);
-            } else if (parsedPayload.animations !== undefined) {
-                data = parsedPayload.animations;
-            } else if (typeof parsedPayload.animation === "string") {
-                data = JSON.parse(parsedPayload.animation);
-            } else {
-                data = parsedPayload.animation;
-            }
-            break;
-        }
-        default: {
-            // All other types: the value at the key is a stringified JSON or an object.
-            const key = contentType as string;
-            const raw = parsedPayload[key];
-            data = typeof raw === "string" ? JSON.parse(raw) : raw;
-            break;
-        }
-    }
-
-    return { snippetId, type: contentType, metadata, data, load: (parser?: (d: unknown) => any) => (parser ? parser(data) : data) };
 }
 
 // -----------------------------------------------------------------------
@@ -674,7 +536,7 @@ async function LoadModuleEsm(jsFiles: Record<string, string>, entryName: string,
     }
 
     const entryUrl = finalUrls[entryName] ?? Object.values(finalUrls)[0];
-    const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ entryUrl);
+    const mod = await import(/* @vite-ignore */ entryUrl);
 
     for (const u of Object.values(finalUrls)) {
         URL.revokeObjectURL(u);

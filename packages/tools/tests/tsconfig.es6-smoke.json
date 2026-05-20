@@ -1,0 +1,9 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "module": "esnext",
+        "moduleResolution": "bundler"
+    },
+    "include": ["./src/es6Smoke/**/*.ts"]
+}

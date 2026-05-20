@@ -38,6 +38,7 @@ precision highp float;
 #include<fogFragmentDeclaration>
 
 // Helper Functions
+#include<textureRepetitionFunctions>
 #include<helperFunctions>
 #include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
@@ -290,7 +291,7 @@ void main(void) {
                     // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
-                    vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
+                    vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, SSS_SAMPLE_COUNT, noise.xy);
                     float numLights = float(LIGHTCOUNT);
                     #ifdef REFLECTION
                         numLights += 1.0;
@@ -336,7 +337,7 @@ void main(void) {
         #endif
         #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
             // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
-            float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
+            float unweighted_translucency = max(mix(subsurface_weight, 1.0f, transmission_weight), 0.0001);
             transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
             transmission_roughness = mix(1.0, transmission_roughness, transmission_weight / unweighted_translucency);
@@ -364,7 +365,7 @@ void main(void) {
     // _________________________ Emissive Lighting _______________________________
     vec3 material_surface_emission = vEmissionColor;
     #ifdef EMISSION_COLOR
-        vec3 emissionColorTex = texture2D(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
+        vec3 emissionColorTex = TEXRD(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
         #ifdef EMISSION_COLOR_GAMMA
             material_surface_emission *= toLinearSpace(emissionColorTex.rgb);
         #else
