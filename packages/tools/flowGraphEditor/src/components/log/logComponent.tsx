@@ -54,6 +54,7 @@ const useStyles = makeStyles({
  * Console-style log panel rendered at the bottom of the central column.
  * Subscribes to `globalState.onLogRequiredObservable` for new entries and supports
  * click-to-navigate for entries with an attached block.
+ * @param props The component props.
  * @returns The rendered log panel.
  */
 export const LogComponent: FunctionComponent<ILogComponentProps> = (props) => {
