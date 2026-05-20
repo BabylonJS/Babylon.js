@@ -256,5 +256,72 @@ describe("Externally-wrapped texture context-loss restore", () => {
             expect(cache[3]).toBeNull();
             expect(cache[1]).toBe(other);
         });
+
+        it("throws when the wrapper has a depth/stencil texture", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            const rtw = attachAsRenderTarget(engine, wrapped);
+            // Stand in for an RTW that called createDepthStencilTexture(); we only need _depthStencilTexture non-null
+            // for the pre-validation guard, not a real depth texture.
+            rtw._depthStencilTexture = new InternalTexture(engine, InternalTextureSource.DepthStencil, true);
+            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow(/depth\/stencil texture/);
+        });
+
+        it("does not mutate the wrapped texture when the depth/stencil-texture precondition trips", () => {
+            const engine = makeEngine();
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            const originalHardware = wrapped._hardwareTexture;
+            const rtw = attachAsRenderTarget(engine, wrapped);
+            rtw._depthStencilTexture = new InternalTexture(engine, InternalTextureSource.DepthStencil, true);
+
+            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow();
+            expect(wrapped._hardwareTexture).toBe(originalHardware);
+        });
+
+        it("passes the RTW size (not internalTexture.baseWidth/baseHeight) to _setupFramebufferDepthAttachments", () => {
+            // WebGL wrapped textures are opaque -- baseWidth/baseHeight default to 0 when the caller doesn't pass them.
+            // The RTW itself carries the real render-target size; the depth/stencil renderbuffer must be sized off the
+            // RTW, not off the texture metadata, or we'd recreate a 0x0 renderbuffer that doesn't match the wrapper.
+            const gl: any = {
+                FRAMEBUFFER: 0,
+                COLOR_ATTACHMENT0: 0,
+                TEXTURE_2D: 0,
+                createFramebuffer: () => ({}),
+                deleteFramebuffer: () => {},
+                deleteRenderbuffer: () => {},
+                framebufferTexture2D: () => {},
+                bindFramebuffer: () => {},
+            };
+            const engine = makeEngine();
+            (engine as any)._gl = gl;
+
+            // 0x0 wrapped texture; the wrapper itself is 128x256.
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+            expect(wrapped.baseWidth).toBe(0);
+            expect(wrapped.baseHeight).toBe(0);
+
+            const rtw = new RenderTargetWrapper(false, false, { width: 128, height: 256 }, engine);
+            rtw.setTextures(wrapped);
+            rtw._generateDepthBuffer = true;
+            rtw._generateStencilBuffer = false;
+            engine._renderTargetWrapperCache.push(rtw);
+
+            const calls: Array<{ generateStencil: boolean; generateDepth: boolean; width: number; height: number }> = [];
+            const original = (engine as any)._setupFramebufferDepthAttachments;
+            (engine as any)._setupFramebufferDepthAttachments = function (generateStencil: boolean, generateDepth: boolean, width: number, height: number) {
+                calls.push({ generateStencil, generateDepth, width, height });
+                return {};
+            };
+
+            try {
+                engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture);
+            } finally {
+                (engine as any)._setupFramebufferDepthAttachments = original;
+            }
+
+            expect(calls.length).toBe(1);
+            expect(calls[0].width).toBe(128);
+            expect(calls[0].height).toBe(256);
+        });
     });
 });

@@ -867,8 +867,9 @@ export class Engine extends ThinEngine {
      * came from the dead context). If the wrapper is multisampled, the MSAA framebuffer + color renderbuffer + MSAA
      * depth/stencil buffer are rebuilt too.
      *
-     * Throws if the target was not produced by {@link wrapWebGLTexture}, or if the wrapped texture is part of a multi
-     * render-target wrapper (not supported in this version; dispose and re-wrap).
+     * Throws if the target was not produced by {@link wrapWebGLTexture}, if the wrapped texture is part of a multi
+     * render-target wrapper, or if the wrapper has a depth/stencil texture (these are not supported in this version;
+     * dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new WebGL handle to wrap
      */
@@ -886,6 +887,14 @@ export class Engine extends ThinEngine {
             }
             if (rtWrapper.isMulti) {
                 throw new Error("updateWrappedWebGLTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
+            }
+            if (rtWrapper._depthStencilTexture) {
+                // The depth/stencil texture's GL handle was also lost on context restore. Rebuilding it from the
+                // wrapper's stored depth settings + re-attaching is feasible but non-trivial; v1 rejects and asks
+                // the caller to dispose + re-wrap (which also recreates the depth/stencil texture via the public API).
+                throw new Error(
+                    "updateWrappedWebGLTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap."
+                );
             }
         }
 
@@ -936,8 +945,8 @@ export class Engine extends ThinEngine {
                 webGLRtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
                     rtWrapper._generateStencilBuffer,
                     rtWrapper._generateDepthBuffer,
-                    internalTexture.baseWidth,
-                    internalTexture.baseHeight
+                    rtWrapper.width,
+                    rtWrapper.height
                 );
             }
             this._bindUnboundFramebuffer(previousFramebuffer);

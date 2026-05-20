@@ -2610,7 +2610,23 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 `updateWrappedWebGPUTexture: new GPUTexture dimensions (${texture.width}x${texture.height}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
             );
         }
-        internalTexture._hardwareTexture = new WebGPUHardwareTexture(this, texture);
+
+        // Reuse the existing WebGPUHardwareTexture rather than replacing it. The wrapper carries `textureUsages`,
+        // `format`, and the `view` / `viewForWriting` set up the first time the texture was bound; the views point
+        // at the old (now-destroyed) GPUTexture, so we swap the underlying resource and re-issue views via setUsage,
+        // which uses the InternalTexture's flags + dimensions to pick the right view dimension and recreate the views.
+        const hardwareTexture = internalTexture._hardwareTexture as WebGPUHardwareTexture;
+        hardwareTexture.set(texture);
+        hardwareTexture.setUsage(
+            InternalTextureSource.External,
+            internalTexture.generateMipMaps,
+            internalTexture.is2DArray,
+            internalTexture.isCube,
+            internalTexture.is3D,
+            texture.width,
+            texture.height,
+            internalTexture.depth
+        );
         internalTexture.isReady = true;
 
         // WebGPUMaterialContext and WebGPUCacheBindGroups key on InternalTexture.uniqueId; bump it so caches detect

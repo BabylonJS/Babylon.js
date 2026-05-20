@@ -2014,7 +2014,8 @@ export class ThinNativeEngine extends ThinEngine {
      * color attachment has its framebuffer rebuilt with the new handle.
      *
      * Throws if the target was not produced by {@link wrapNativeTexture}, if the new handle's dimensions don't match,
-     * or if the wrapped texture is part of a multi render-target (not supported in this version; dispose and re-wrap).
+     * if the wrapped texture is part of a multi render-target, or if the wrapper has a depth/stencil texture (these
+     * are not supported in this version; dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new native texture handle to wrap
      */
@@ -2041,6 +2042,14 @@ export class ThinNativeEngine extends ThinEngine {
             if (rtWrapper.isMulti) {
                 throw new Error("updateWrappedNativeTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
             }
+            if (rtWrapper._depthStencilTexture) {
+                // After a DisableRendering / EnableRendering cycle the bgfx framebuffer + the depth/stencil texture's
+                // bgfx handle are both stale. Rebuilding the depth/stencil texture from the wrapper's stored settings
+                // is feasible but non-trivial; v1 rejects and asks the caller to dispose + re-wrap.
+                throw new Error(
+                    "updateWrappedNativeTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap."
+                );
+            }
         }
 
         internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this._engine);
@@ -2058,8 +2067,8 @@ export class ThinNativeEngine extends ThinEngine {
             this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
             nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
                 texture,
-                internalTexture.baseWidth,
-                internalTexture.baseHeight,
+                rtWrapper.width,
+                rtWrapper.height,
                 rtWrapper._generateStencilBuffer,
                 rtWrapper._generateDepthBuffer,
                 rtWrapper.samples ?? 1
