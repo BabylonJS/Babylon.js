@@ -276,6 +276,16 @@ function analyzeFile(filePath) {
             continue;
         }
 
+        // The TC39 decorator metadata shim mutates the global Symbol constructor.
+        // It is intentionally allowed, but it must still be tracked as a module-level side effect.
+        if (prevDepth === 0 && prevBracketDepth === 0 && /^if\s*\(.*\bSymbol\.metadata\b/.test(trimmed)) {
+            sideEffects.push({
+                type: "symbol-metadata-polyfill",
+                line: lineNum,
+                text: trimmed.substring(0, 120),
+            });
+        }
+
         // Class static blocks execute when the containing class is evaluated.
         // For top-level classes, that happens at module import time, so they are side effects.
         if (prevDepth === 1 && prevBracketDepth === 0 && /^static\s*\{/.test(trimmed)) {
