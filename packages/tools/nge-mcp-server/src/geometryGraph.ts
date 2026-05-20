@@ -14,7 +14,7 @@
  *    export.  Multiple geometry graphs can coexist (keyed by name).
  */
 
-import { ValidateNodeGeometryAttachmentPayload } from "../../mcp-server-core/src/index.js";
+import { ValidateNodeGeometryAttachmentPayload } from "@tools/mcp-server-core";
 
 import { BlockRegistry, type IBlockTypeInfo } from "./blockRegistry.js";
 

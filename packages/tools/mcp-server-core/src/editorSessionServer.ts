@@ -78,6 +78,34 @@ export interface IMcpEditorSessionServerOptions {
 }
 
 /**
+ * Adapter implemented by an MCP server to bind the shared session controller to
+ * that server's graph/document manager.
+ */
+export interface IMcpEditorSessionControllerAdapter<Manager> {
+    /** Human-readable server name used in status and health output. */
+    serverName: string;
+    /** Stable document kind handled by this MCP server. */
+    documentKind: string;
+    /** Error returned if an editor posts a document before a manager is attached. */
+    managerUnavailableMessage?: string;
+    /**
+     * Export the current JSON document for a session.
+     * @param manager - MCP server graph/document manager.
+     * @param session - Session whose document should be read.
+     * @returns The JSON document, or undefined if unavailable.
+     */
+    getDocument(manager: Manager, session: IMcpEditorSession): string | undefined | Promise<string | undefined>;
+    /**
+     * Import a JSON document pushed by an editor.
+     * @param manager - MCP server graph/document manager.
+     * @param session - Session whose document should be updated.
+     * @param document - Raw JSON document posted by the editor.
+     * @returns Undefined/void on success, or an error message on failure.
+     */
+    setDocument(manager: Manager, session: IMcpEditorSession, document: string): string | void | Promise<string | void>;
+}
+
+/**
  * Health payload returned by the shared session server.
  */
 export interface IMcpEditorSessionHealth {
@@ -597,5 +625,146 @@ export class McpEditorSessionServer {
         response.statusCode = statusCode;
         response.setHeader("Content-Type", "text/plain; charset=utf-8");
         response.end(text);
+    }
+}
+
+/**
+ * Small reusable controller that binds a graph/document manager to the shared
+ * HTTP/SSE editor session server.
+ */
+export class McpEditorSessionController<Manager> {
+    private readonly _adapter: IMcpEditorSessionControllerAdapter<Manager>;
+    private readonly _options: IMcpEditorSessionServerOptions;
+    private _manager: Manager | null = null;
+    private _sessionServer: McpEditorSessionServer | null = null;
+
+    /**
+     * Creates a controller for one MCP server's document kind.
+     * @param adapter - Manager/document adapter callbacks.
+     * @param options - Shared session server options.
+     */
+    public constructor(adapter: IMcpEditorSessionControllerAdapter<Manager>, options: IMcpEditorSessionServerOptions = {}) {
+        this._adapter = adapter;
+        this._options = options;
+    }
+
+    /**
+     * Whether the session server is currently running.
+     * @returns True if running, false otherwise.
+     */
+    public isRunning(): boolean {
+        return this._sessionServer?.isRunning() ?? false;
+    }
+
+    /**
+     * Start the session server if not already running.
+     * @param manager - The MCP server graph/document manager.
+     * @param port - Optional first port to try.
+     * @returns The port the server is listening on.
+     */
+    public async startAsync(manager: Manager, port?: number): Promise<number> {
+        this._manager = manager;
+        return await this._getSessionServer().startAsync(port);
+    }
+
+    /**
+     * Stop the session server.
+     */
+    public async stopAsync(): Promise<void> {
+        if (!this._sessionServer) {
+            return;
+        }
+        await this._sessionServer.stopAsync();
+    }
+
+    /**
+     * Create a new session for a document.
+     * @param name - MCP-server-local document name.
+     * @returns The new or existing session ID.
+     */
+    public createSession(name: string): string {
+        return this._getSessionServer().createSession(name).id;
+    }
+
+    /**
+     * Get the session ID for a given document, if one exists.
+     * @param name - MCP-server-local document name.
+     * @returns The session ID, or undefined if no session exists for this document.
+     */
+    public getSessionIdForName(name: string): string | undefined {
+        return this._sessionServer?.getSessionIdForName(name);
+    }
+
+    /**
+     * Get the full session URL.
+     * @param sessionId - The session ID.
+     * @param port - Optional port override.
+     * @returns The full URL to access this session.
+     */
+    public getSessionUrl(sessionId: string, port?: number): string {
+        return this._getSessionServer().getSessionUrl(sessionId, port);
+    }
+
+    /**
+     * Push the latest document JSON to all SSE subscribers of a session.
+     * @param sessionId - The session ID to notify.
+     */
+    public notifySessionUpdate(sessionId: string): void {
+        this._sessionServer?.notifySessionUpdate(sessionId);
+    }
+
+    /**
+     * Close a single session.
+     * @param sessionId - The session ID to close.
+     * @returns True if the session existed and was closed, false otherwise.
+     */
+    public closeSession(sessionId: string): boolean {
+        return this._sessionServer?.closeSession(sessionId) ?? false;
+    }
+
+    /**
+     * Close a session by document name.
+     * @param name - MCP-server-local document name.
+     * @returns True if a session was closed, false if none existed.
+     */
+    public closeSessionForName(name: string): boolean {
+        return this._sessionServer?.closeSessionForName(name) ?? false;
+    }
+
+    /**
+     * Returns the port the session server is running on.
+     * @returns The port number, or 0 if the server is not running.
+     */
+    public getPort(): number {
+        return this._sessionServer?.getPort() ?? 0;
+    }
+
+    /**
+     * Get current health information without making an HTTP request.
+     * @returns The server health payload.
+     */
+    public getHealth(): IMcpEditorSessionHealth {
+        return this._getSessionServer().getHealth();
+    }
+
+    private _getSessionServer(): McpEditorSessionServer {
+        if (!this._sessionServer) {
+            this._sessionServer = new McpEditorSessionServer(
+                {
+                    serverName: this._adapter.serverName,
+                    documentKind: this._adapter.documentKind,
+                    getDocument: (session): string | undefined | Promise<string | undefined> => (this._manager ? this._adapter.getDocument(this._manager, session) : undefined),
+                    setDocument: (session, document): string | void | Promise<string | void> => {
+                        if (!this._manager) {
+                            return this._adapter.managerUnavailableMessage ?? "Document manager is not available";
+                        }
+                        return this._adapter.setDocument(this._manager, session, document);
+                    },
+                },
+                this._options
+            );
+        }
+
+        return this._sessionServer;
     }
 }

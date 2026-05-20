@@ -1,6 +1,6 @@
 import * as net from "node:net";
 
-import { McpEditorSessionServer } from "../../src/index";
+import { McpEditorSessionController, McpEditorSessionServer } from "../../src/index";
 
 async function GetFreePortAsync(): Promise<number> {
     return await new Promise((resolve, reject) => {
@@ -136,6 +136,52 @@ describe("editor session server", () => {
             expect(session.revision).toBe(1);
         } finally {
             await server.stopAsync();
+        }
+    });
+
+    it("binds a document manager through the reusable controller", async () => {
+        const port = await GetFreePortAsync();
+        const manager = {
+            document: JSON.stringify({ value: 1 }),
+            exportJSON: () => manager.document,
+            importJSON: (document: string) => {
+                manager.document = document;
+                return "OK";
+            },
+        };
+        const controller = new McpEditorSessionController<typeof manager>({
+            serverName: "Controller Test Server",
+            documentKind: "controller-document",
+            getDocument: (manager) => manager.exportJSON(),
+            setDocument: (manager, _session, document) => {
+                const result = manager.importJSON(document);
+                return result === "OK" ? undefined : result;
+            },
+        });
+
+        try {
+            const listeningPort = await controller.startAsync(manager, port);
+            const sessionId = controller.createSession("main");
+            const sessionUrl = controller.getSessionUrl(sessionId, listeningPort);
+
+            expect(controller.getSessionIdForName("main")).toBe(sessionId);
+            expect(controller.getHealth()).toMatchObject({
+                serverName: "Controller Test Server",
+                documentKind: "controller-document",
+                running: true,
+            });
+
+            const postResponse = await fetch(`${sessionUrl}/document`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ value: 2 }),
+            });
+
+            expect(postResponse.ok).toBe(true);
+            expect(JSON.parse(manager.document)).toEqual({ value: 2 });
+            expect(controller.closeSessionForName("main")).toBe(true);
+        } finally {
+            await controller.stopAsync();
         }
     });
 });

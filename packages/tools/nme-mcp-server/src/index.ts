@@ -37,23 +37,40 @@ import {
     CreateSnippetIdSchema,
     CreateTextResponse,
     CreateTypedSnippetImportResponse,
+    McpEditorSessionController,
     ParseJsonText,
     RunSnippetResponse,
 } from "@tools/mcp-server-core";
 import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippet-loader";
-import { startSessionServer, createSession, notifyMaterialUpdate, getSessionUrl, getSessionForMaterial, closeSessionForMaterial, stopSessionServer } from "./sessionServer.js";
 
 // ─── Singleton graph manager ──────────────────────────────────────────────
 const manager = new MaterialGraphManager();
+const sessionController = new McpEditorSessionController<MaterialGraphManager>(
+    {
+        serverName: "NME MCP Session Server",
+        documentKind: "node-material",
+        managerUnavailableMessage: "Material manager is not available",
+        getDocument: (manager, session) => manager.exportJSON(session.name),
+        setDocument: (manager, session, document) => {
+            const result = manager.importJSON(session.name, document);
+            return result && result !== "OK" ? result : undefined;
+        },
+    },
+    {
+        defaultPort: 3001,
+        legacyDocumentRoutes: ["material"],
+        statusTitle: "NME MCP Session Server",
+    }
+);
 
 /**
  * Notify SSE subscribers if a session exists for the given material.
  * @param materialName - The material name to check for active sessions.
  */
 function _notifyIfSession(materialName: string): void {
-    const sid = getSessionForMaterial(materialName);
+    const sid = sessionController.getSessionIdForName(materialName);
     if (sid) {
-        notifyMaterialUpdate(sid);
+        sessionController.notifySessionUpdate(sid);
     }
 }
 
@@ -327,9 +344,9 @@ server.registerTool(
         manager.createMaterial(name, mode, comment);
 
         // Auto-create a live session for this material
-        const port = await startSessionServer(manager);
-        const sessionId = createSession(name);
-        const sessionUrl = getSessionUrl(sessionId, port);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(name);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
 
         return {
             content: [
@@ -356,9 +373,9 @@ server.registerTool(
         if (!materials.includes(materialName)) {
             return { content: [{ type: "text", text: `Material "${materialName}" not found.` }], isError: true };
         }
-        const port = await startSessionServer(manager);
-        const sessionId = createSession(materialName);
-        const sessionUrl = getSessionUrl(sessionId, port);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(materialName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return {
             content: [
                 {
@@ -384,9 +401,9 @@ server.registerTool(
         if (!materials.includes(materialName)) {
             return { content: [{ type: "text", text: `Material "${materialName}" not found.` }], isError: true };
         }
-        const port = await startSessionServer(manager);
-        const sessionId = createSession(materialName);
-        const sessionUrl = getSessionUrl(sessionId, port);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(materialName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return {
             content: [
                 {
@@ -407,7 +424,7 @@ server.registerTool(
         },
     },
     async ({ materialName }) => {
-        const closed = closeSessionForMaterial(materialName);
+        const closed = sessionController.closeSessionForName(materialName);
         if (!closed) {
             return { content: [{ type: "text", text: `No active session for "${materialName}".` }] };
         }
@@ -421,7 +438,7 @@ server.registerTool(
         description: "Stop the live MCP editor session server started by this MCP process. This closes all active sessions, disconnects editors, and releases the port.",
     },
     async () => {
-        await stopSessionServer();
+        await sessionController.stopAsync();
         return CreateTextResponse("MCP session server stopped. Any connected editors have been disconnected.");
     }
 );
@@ -435,7 +452,7 @@ server.registerTool(
         },
     },
     async ({ name }) => {
-        closeSessionForMaterial(name);
+        sessionController.closeSessionForName(name);
         const ok = manager.deleteMaterial(name);
         return {
             content: [{ type: "text", text: ok ? `Deleted "${name}".` : `Material "${name}" not found.` }],
@@ -446,7 +463,7 @@ server.registerTool(
 server.registerTool("clear_all", { description: "Remove all material graphs from memory, resetting the server to a clean state. Also closes all active sessions." }, async () => {
     const names = manager.listMaterials();
     for (const n of names) {
-        closeSessionForMaterial(n);
+        sessionController.closeSessionForName(n);
     }
     manager.clearAll();
     return {
@@ -997,7 +1014,7 @@ try {
 
 // Graceful shutdown — stop the session server so the port is released immediately
 const _shutdown = () => {
-    void stopSessionServer();
+    void sessionController.stopAsync();
     process.exit(0);
 };
 process.on("SIGINT", _shutdown);

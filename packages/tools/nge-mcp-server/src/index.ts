@@ -32,9 +32,10 @@ import {
     CreateSnippetIdSchema,
     CreateTextResponse,
     CreateTypedSnippetImportResponse,
+    McpEditorSessionController,
     ParseJsonText,
     RunSnippetResponse,
-} from "../../mcp-server-core/src/index.js";
+} from "@tools/mcp-server-core";
 
 import { BlockRegistry, GetBlockCatalogSummary, GetBlockTypeDetails } from "./blockRegistry.js";
 import { GeometryGraphManager } from "./geometryGraph.js";
@@ -42,6 +43,47 @@ import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippe
 
 // ─── Singleton graph manager ──────────────────────────────────────────────
 const manager = new GeometryGraphManager();
+const sessionController = new McpEditorSessionController<GeometryGraphManager>(
+    {
+        serverName: "NGE MCP Session Server",
+        documentKind: "node-geometry",
+        managerUnavailableMessage: "Geometry graph manager is not available",
+        getDocument: (manager, session) => manager.exportJSON(session.name),
+        setDocument: (manager, session, document) => {
+            const result = manager.importJSON(session.name, document);
+            return result && result !== "OK" ? result : undefined;
+        },
+    },
+    {
+        defaultPort: 3001,
+        statusTitle: "NGE MCP Session Server",
+    }
+);
+
+/**
+ * Notify SSE subscribers if a session exists for the given geometry.
+ * @param geometryName - The geometry name to check for active sessions.
+ */
+function _notifyIfSession(geometryName: string): void {
+    const sessionId = sessionController.getSessionIdForName(geometryName);
+    if (sessionId) {
+        sessionController.notifySessionUpdate(sessionId);
+    }
+}
+
+/**
+ * Import geometry JSON and notify a matching live session on success.
+ * @param geometryName - The geometry name to import into.
+ * @param jsonText - Serialized NGE JSON.
+ * @returns "OK" on success, or an error string.
+ */
+function _importGeometryJson(geometryName: string, jsonText: string): string {
+    const result = manager.importJSON(geometryName, jsonText);
+    if (result === "OK") {
+        _notifyIfSession(geometryName);
+    }
+    return result;
+}
 
 // ─── MCP Server ───────────────────────────────────────────────────────────
 const server = new McpServer(
@@ -359,14 +401,85 @@ server.registerTool(
     },
     async ({ name, comment }) => {
         manager.createGeometry(name, comment);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(name);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return {
             content: [
                 {
                     type: "text",
-                    text: `Created geometry "${name}". Now add blocks with add_block, connect them with connect_blocks, then export with export_geometry_json.`,
+                    text: `Created geometry "${name}". Now add blocks with add_block, connect them with connect_blocks, then export with export_geometry_json.\n\nMCP Session URL: ${sessionUrl}`,
                 },
             ],
         };
+    }
+);
+
+server.registerTool(
+    "get_session_url",
+    {
+        description: "Get or create a live-session URL for a geometry. The URL can be pasted into the Node Geometry Editor MCP session panel.",
+        inputSchema: {
+            geometryName: z.string().describe("Name of the geometry"),
+        },
+    },
+    async ({ geometryName }) => {
+        const geometries = manager.listGeometries();
+        if (!geometries.includes(geometryName)) {
+            return CreateErrorResponse(`Geometry "${geometryName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(geometryName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "start_session",
+    {
+        description: "Start a live session for an existing geometry. If a session already exists for this geometry, returns the existing URL.",
+        inputSchema: {
+            geometryName: z.string().describe("Name of the geometry"),
+        },
+    },
+    async ({ geometryName }) => {
+        const geometries = manager.listGeometries();
+        if (!geometries.includes(geometryName)) {
+            return CreateErrorResponse(`Geometry "${geometryName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(geometryName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "close_session",
+    {
+        description: "Close a live session for a geometry. Disconnects all SSE subscribers in the editor and removes the session. The geometry itself is NOT deleted.",
+        inputSchema: {
+            geometryName: z.string().describe("Name of the geometry whose session to close"),
+        },
+    },
+    async ({ geometryName }) => {
+        const closed = sessionController.closeSessionForName(geometryName);
+        if (!closed) {
+            return CreateTextResponse(`No active session for "${geometryName}".`);
+        }
+        return CreateTextResponse(`Session for "${geometryName}" closed. The editor will disconnect.`);
+    }
+);
+
+server.registerTool(
+    "stop_session_server",
+    {
+        description: "Stop the live MCP editor session server started by this MCP process. This closes all active sessions, disconnects editors, and releases the port.",
+    },
+    async () => {
+        await sessionController.stopAsync();
+        return CreateTextResponse("MCP session server stopped. Any connected editors have been disconnected.");
     }
 );
 
@@ -379,6 +492,7 @@ server.registerTool(
         },
     },
     async ({ name }) => {
+        sessionController.closeSessionForName(name);
         const ok = manager.deleteGeometry(name);
         return {
             content: [{ type: "text", text: ok ? `Deleted "${name}".` : `Geometry "${name}" not found.` }],
@@ -388,6 +502,9 @@ server.registerTool(
 
 server.registerTool("clear_all", { description: "Remove all geometry graphs from memory, resetting the server to a clean state." }, async () => {
     const names = manager.listGeometries();
+    for (const name of names) {
+        sessionController.closeSessionForName(name);
+    }
     manager.clearAll();
     return {
         content: [{ type: "text", text: names.length > 0 ? `Cleared ${names.length} geometry(s): ${names.join(", ")}` : "Nothing to clear — memory was already empty." }],
@@ -440,6 +557,7 @@ server.registerTool(
         if (typeof result === "string") {
             return { content: [{ type: "text", text: `Error: ${result}` }], isError: true };
         }
+        _notifyIfSession(geometryName);
         const lines = [`Added block [${result.block.id}] "${result.block.name}" (${blockType}). Use this id (${result.block.id}) to connect it.`];
         if (result.warnings) {
             lines.push("", "Warnings:", ...result.warnings);
@@ -475,18 +593,23 @@ server.registerTool(
     },
     async ({ geometryName, blocks }) => {
         const results: string[] = [];
+        let hasSuccess = false;
         for (const blockDef of blocks) {
             const bName = blockDef.blockName ?? blockDef.name;
             const result = manager.addBlock(geometryName, blockDef.blockType, bName, blockDef.properties as Record<string, unknown>);
             if (typeof result === "string") {
                 results.push(`Error adding ${blockDef.blockType}: ${result}`);
             } else {
+                hasSuccess = true;
                 let line = `[${result.block.id}] ${result.block.name} (${blockDef.blockType})`;
                 if (result.warnings) {
                     line += `\n  ⚠ ${result.warnings.join("\n  ⚠ ")}`;
                 }
                 results.push(line);
             }
+        }
+        if (hasSuccess) {
+            _notifyIfSession(geometryName);
         }
         return { content: [{ type: "text", text: `Added blocks:\n${results.join("\n")}` }] };
     }
@@ -503,6 +626,9 @@ server.registerTool(
     },
     async ({ geometryName, blockId }) => {
         const result = manager.removeBlock(geometryName, blockId);
+        if (result === "OK") {
+            _notifyIfSession(geometryName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Removed block ${blockId}.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -522,6 +648,9 @@ server.registerTool(
     },
     async ({ geometryName, blockId, properties }) => {
         const result = manager.setBlockProperties(geometryName, blockId, properties as Record<string, unknown>);
+        if (result === "OK") {
+            _notifyIfSession(geometryName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Updated block ${blockId}.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -545,6 +674,9 @@ server.registerTool(
     },
     async ({ geometryName, sourceBlockId, outputName, targetBlockId, inputName }) => {
         const result = manager.connectBlocks(geometryName, sourceBlockId, outputName, targetBlockId, inputName);
+        if (result === "OK") {
+            _notifyIfSession(geometryName);
+        }
         return {
             content: [
                 {
@@ -577,13 +709,18 @@ server.registerTool(
     },
     async ({ geometryName, connections }) => {
         const results: string[] = [];
+        let hasSuccess = false;
         for (const conn of connections) {
             const result = manager.connectBlocks(geometryName, conn.sourceBlockId, conn.outputName, conn.targetBlockId, conn.inputName);
             if (result === "OK") {
+                hasSuccess = true;
                 results.push(`[${conn.sourceBlockId}].${conn.outputName} → [${conn.targetBlockId}].${conn.inputName}`);
             } else {
                 results.push(`Error: ${result}`);
             }
+        }
+        if (hasSuccess) {
+            _notifyIfSession(geometryName);
         }
         return { content: [{ type: "text", text: `Connections:\n${results.join("\n")}` }] };
     }
@@ -601,6 +738,9 @@ server.registerTool(
     },
     async ({ geometryName, blockId, inputName }) => {
         const result = manager.disconnectInput(geometryName, blockId, inputName);
+        if (result === "OK") {
+            _notifyIfSession(geometryName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Disconnected [${blockId}].${inputName}` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -782,7 +922,7 @@ server.registerTool(
             json,
             jsonFile,
             fileDescription: "NGE JSON file",
-            importJson: (jsonText) => manager.importJSON(geometryName, jsonText),
+            importJson: (jsonText) => _importGeometryJson(geometryName, jsonText),
             describeImported: () => manager.describeGeometry(geometryName),
         });
     }
@@ -809,7 +949,7 @@ server.registerTool(
                     snippetId,
                     snippetResult,
                     expectedType: "nodeGeometry",
-                    importJson: (jsonText) => manager.importJSON(geometryName, jsonText),
+                    importJson: (jsonText) => _importGeometryJson(geometryName, jsonText),
                     describeImported: () => manager.describeGeometry(geometryName),
                     successMessage: `Imported snippet "${snippetId}" as "${geometryName}" successfully.`,
                 }),
@@ -902,3 +1042,10 @@ try {
     console.error("Fatal error:", err);
     process.exit(1);
 }
+
+const _shutdown = () => {
+    void sessionController.stopAsync();
+    process.exit(0);
+};
+process.on("SIGINT", _shutdown);
+process.on("SIGTERM", _shutdown);

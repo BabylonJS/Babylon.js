@@ -29,6 +29,7 @@ import {
     CreateOutputFileSchema,
     CreateSnippetIdSchema,
     CreateTypedSnippetImportResponse,
+    McpEditorSessionController,
     ParseJsonText,
     RunSnippetResponse,
     WriteTextFileEnsuringDirectory,
@@ -37,27 +38,34 @@ import {
 import { BlockRegistry, GetBlockCatalogSummary, GetBlockTypeDetails } from "./blockRegistry.js";
 import { ParticleGraphManager } from "./particleGraph.js";
 import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippet-loader";
-import {
-    startSessionServer,
-    createSession,
-    notifyParticleSystemUpdate,
-    getSessionUrl,
-    getSessionForParticleSystem,
-    closeSessionForParticleSystem,
-    stopSessionServer,
-} from "./sessionServer.js";
 
 // ─── Singleton graph manager ──────────────────────────────────────────────
 const manager = new ParticleGraphManager();
+const sessionController = new McpEditorSessionController<ParticleGraphManager>(
+    {
+        serverName: "NPE MCP Session Server",
+        documentKind: "node-particle",
+        managerUnavailableMessage: "Particle graph manager is not available",
+        getDocument: (manager, session) => manager.exportJSON(session.name),
+        setDocument: (manager, session, document) => {
+            const result = manager.importJSON(session.name, document);
+            return result && result !== "OK" ? result : undefined;
+        },
+    },
+    {
+        defaultPort: 3001,
+        statusTitle: "NPE MCP Session Server",
+    }
+);
 
 /**
  * Notify SSE subscribers if a session exists for the given particle system set.
  * @param particleSystemName - The particle system set name to check for active sessions.
  */
 function _notifyIfSession(particleSystemName: string): void {
-    const sessionId = getSessionForParticleSystem(particleSystemName);
+    const sessionId = sessionController.getSessionIdForName(particleSystemName);
     if (sessionId) {
-        notifyParticleSystemUpdate(sessionId);
+        sessionController.notifySessionUpdate(sessionId);
     }
 }
 
@@ -510,9 +518,9 @@ server.registerTool(
     },
     async ({ name, comment }) => {
         manager.createParticleSet(name, comment);
-        const port = await startSessionServer(manager);
-        const sessionId = createSession(name);
-        const sessionUrl = getSessionUrl(sessionId, port);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(name);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return {
             content: [
                 {
@@ -537,9 +545,9 @@ server.registerTool(
         if (!particleSystems.includes(particleSystemName)) {
             return { content: [{ type: "text", text: `Particle system set "${particleSystemName}" not found.` }], isError: true };
         }
-        const port = await startSessionServer(manager);
-        const sessionId = createSession(particleSystemName);
-        const sessionUrl = getSessionUrl(sessionId, port);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(particleSystemName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return { content: [{ type: "text", text: `MCP Session URL: ${sessionUrl}` }] };
     }
 );
@@ -557,9 +565,9 @@ server.registerTool(
         if (!particleSystems.includes(particleSystemName)) {
             return { content: [{ type: "text", text: `Particle system set "${particleSystemName}" not found.` }], isError: true };
         }
-        const port = await startSessionServer(manager);
-        const sessionId = createSession(particleSystemName);
-        const sessionUrl = getSessionUrl(sessionId, port);
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(particleSystemName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
         return { content: [{ type: "text", text: `MCP Session URL: ${sessionUrl}` }] };
     }
 );
@@ -574,7 +582,7 @@ server.registerTool(
         },
     },
     async ({ particleSystemName }) => {
-        const closed = closeSessionForParticleSystem(particleSystemName);
+        const closed = sessionController.closeSessionForName(particleSystemName);
         if (!closed) {
             return { content: [{ type: "text", text: `No active session for "${particleSystemName}".` }] };
         }
@@ -588,7 +596,7 @@ server.registerTool(
         description: "Stop the live MCP editor session server started by this MCP process. This closes all active sessions, disconnects editors, and releases the port.",
     },
     async () => {
-        await stopSessionServer();
+        await sessionController.stopAsync();
         return { content: [{ type: "text", text: "MCP session server stopped. Any connected editors have been disconnected." }] };
     }
 );
@@ -602,7 +610,7 @@ server.registerTool(
         },
     },
     async ({ name }) => {
-        closeSessionForParticleSystem(name);
+        sessionController.closeSessionForName(name);
         const ok = manager.deleteParticleSet(name);
         return {
             content: [{ type: "text", text: ok ? `Deleted "${name}".` : `Particle system set "${name}" not found.` }],
@@ -613,7 +621,7 @@ server.registerTool(
 server.registerTool("clear_all", { description: "Remove all particle system sets from memory, resetting the server to a clean state." }, async () => {
     const names = manager.listParticleSets();
     for (const name of names) {
-        closeSessionForParticleSystem(name);
+        sessionController.closeSessionForName(name);
     }
     manager.clearAll();
     return {
@@ -1166,7 +1174,7 @@ try {
 }
 
 const _shutdown = () => {
-    void stopSessionServer();
+    void sessionController.stopAsync();
     process.exit(0);
 };
 process.on("SIGINT", _shutdown);
