@@ -1,17 +1,15 @@
+/* eslint-disable no-console */
 /* global BABYLON */
+import { ParseDataSnippetResponse } from "@tools/snippet-loader/parseDataSnippetResponse";
+
 var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
 let previousHash = "";
-let nodeRenderGraph;
+let nodeParticleSet;
+let scene;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
-
-if (window.location.search.indexOf("webgpu") !== -1) {
-    localStorage.setItem("Engine", 1);
-}
-
-let useWebGPU = localStorage.getItem("Engine") === "1";
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
@@ -43,8 +41,17 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 const Versions = {
-    dist: ["https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), "https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"],
-    local: [`//${window.location.hostname}:${cdnPort}/babylon.js`, `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`],
+    dist: [
+        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
+        "https://preview.babylonjs.com/babylon.js",
+        "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
+        "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
+    ],
+    local: [
+        `//${window.location.hostname}:${cdnPort}/babylon.js`,
+        `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`,
+        `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`,
+    ],
 };
 
 let loadInSequence = async function (versions, index, resolve) {
@@ -105,7 +112,7 @@ let checkBabylonVersionAsync = function () {
 };
 
 checkBabylonVersionAsync().then(() => {
-    loadScriptAsync("babylon.nodeRenderGraphEditor.js").then(() => {
+    loadScriptAsync("babylon.nodeParticleEditor.js").then(() => {
         let customLoadObservable = new BABYLON.Observable();
         let editorDisplayed = false;
 
@@ -132,28 +139,28 @@ checkBabylonVersionAsync().then(() => {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
                             try {
-                                let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                                resolve(JSON.parse(snippet.nodeRenderGraph));
+                                let snippet = ParseDataSnippetResponse(JSON.parse(xmlHttp.responseText), hash, "nodeParticle");
+                                resolve(snippet.data);
                             } catch (err) {
                                 reject(err);
                             }
                         } else {
-                            reject(new Error(`Unable to load node render graph snippet ${hash}`));
+                            reject(new Error(`Unable to load node particle set snippet ${hash}`));
                         }
                     }
                 };
                 xmlHttp.onerror = function () {
-                    reject(new Error(`Unable to load node render graph snippet ${hash}`));
+                    reject(new Error(`Unable to load node particle set snippet ${hash}`));
                 };
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
             });
         };
 
-        let applySerializedGraphAsync = async function (serializationObject) {
-            nodeRenderGraph.parseSerializedObject(serializationObject);
+        let applySerializedParticleSetAsync = async function (serializationObject) {
+            nodeParticleSet.parseSerializedObject(serializationObject);
             try {
-                await nodeRenderGraph.buildAsync();
+                await nodeParticleSet.buildAsync(scene);
             } catch (err) {
                 console.error(err);
             }
@@ -177,12 +184,12 @@ checkBabylonVersionAsync().then(() => {
             editorDisplayed = true;
             let hostElement = document.getElementById("host-element");
 
-            BABYLON.NodeRenderGraphEditor.Show({
-                nodeRenderGraph: nodeRenderGraph,
+            BABYLON.NodeParticleEditor.Show({
+                nodeParticleSet: nodeParticleSet,
                 hostElement: hostElement,
                 customLoadObservable: customLoadObservable,
                 customSave: {
-                    label: "Save as unique URL",
+                    label: "Save as unique URL (*)",
                     action: (data) => {
                         return new Promise((resolve, reject) => {
                             let xmlHttp = new XMLHttpRequest();
@@ -199,7 +206,11 @@ checkBabylonVersionAsync().then(() => {
                                         location.href = newUrl;
                                         resolve();
                                     } else {
-                                        reject(`Unable to save your node render graph. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB).`);
+                                        reject(
+                                            `Unable to save your node particle set. It may be too large (${(dataToSend.payload.length / 1024).toFixed(
+                                                2
+                                            )} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`
+                                        );
                                     }
                                 }
                             };
@@ -209,7 +220,7 @@ checkBabylonVersionAsync().then(() => {
 
                             let dataToSend = {
                                 payload: JSON.stringify({
-                                    nodeRenderGraph: data,
+                                    nodeParticle: data,
                                 }),
                                 name: "",
                                 description: "",
@@ -222,55 +233,36 @@ checkBabylonVersionAsync().then(() => {
                 },
             });
         };
+        // Let's start
+        if (BABYLON.Engine.isSupported()) {
+            let canvas = document.createElement("canvas");
+            let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
+            scene = new BABYLON.Scene(engine);
 
-        let startAsync = async function () {
-            if (BABYLON.Engine.isSupported()) {
-                let canvas = document.createElement("canvas");
-                canvas.width = 1;
-                canvas.height = 1;
-
-                let engine;
-
-                if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync)) {
-                    engine = new BABYLON.WebGPUEngine(canvas, {
-                        enableGPUDebugMarkers: true,
-                        enableAllFeatures: true,
-                        setMaximumLimits: true,
-                    });
-                    await engine.initAsync();
-                } else {
-                    localStorage.setItem("Engine", 0);
-                    useWebGPU = false;
-                    engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
-                }
-
-                let scene = new BABYLON.Scene(engine);
-                new BABYLON.Camera("camera", new BABYLON.Vector3(0, 0, 0), scene);
-                new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
-                new BABYLON.DirectionalLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
-
-                nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
-                if (location.hash) {
-                    try {
-                        await applySerializedGraphAsync(await loadSnippetFromHashAsync());
-                    } catch (err) {
+            nodeParticleSet = new BABYLON.NodeParticleSystemSet("System set");
+            if (location.hash) {
+                loadSnippetFromHashAsync()
+                    .then(async (serializationObject) => {
+                        await applySerializedParticleSetAsync(serializationObject);
+                        showEditor();
+                    })
+                    .catch((err) => {
                         console.error(err);
-                        nodeRenderGraph.setToDefault();
-                        await nodeRenderGraph.buildAsync();
-                    }
-                } else {
-                    nodeRenderGraph.setToDefault();
-                    await nodeRenderGraph.buildAsync();
-                }
-
-                showEditor();
+                        nodeParticleSet.setToDefault();
+                        nodeParticleSet.buildAsync(scene).then(() => {
+                            showEditor();
+                        });
+                    });
             } else {
-                alert("Babylon.js is not supported.");
+                nodeParticleSet.setToDefault();
+                nodeParticleSet.buildAsync(scene).then(() => {
+                    showEditor();
+                });
             }
+        } else {
+            alert("Babylon.js is not supported.");
+        }
 
-            checkHash();
-        };
-
-        startAsync();
+        checkHash();
     });
 });

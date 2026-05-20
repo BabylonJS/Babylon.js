@@ -35,7 +35,13 @@ async function createSnippetSerialization(browser: import("@playwright/test").Br
         await page.waitForSelector("#graph-canvas-container", { state: "attached" });
 
         return await page.evaluate(`(() => {
-            const serialization = ${globalName}.serialize();
+            const editorObject =
+                {
+                    nodeGeometry: globalThis.__viteNodeGeometryEditorArgs?.[0]?.nodeGeometry,
+                    nodeRenderGraph: globalThis.__viteNodeRenderGraphEditorArgs?.[0]?.nodeRenderGraph,
+                    nodeParticleSet: globalThis.__viteNodeParticleEditorArgs?.[0]?.nodeParticleSet,
+                }[${JSON.stringify(globalName)}] ?? globalThis[${JSON.stringify(globalName)}];
+            const serialization = editorObject.serialize();
             serialization.blocks[${blockIndex}].name = ${JSON.stringify(blockName)};
             return serialization;
         })()`);

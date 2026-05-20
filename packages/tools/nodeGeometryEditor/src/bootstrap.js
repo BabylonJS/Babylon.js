@@ -1,10 +1,12 @@
+/* eslint-disable no-console */
 /* global BABYLON */
+import { ParseDataSnippetResponse } from "@tools/snippet-loader/parseDataSnippetResponse";
+
 var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
 let previousHash = "";
-let nodeParticleSet;
-let scene;
+let nodeGeometry;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
@@ -109,7 +111,7 @@ let checkBabylonVersionAsync = function () {
 };
 
 checkBabylonVersionAsync().then(() => {
-    loadScriptAsync("babylon.nodeParticleEditor.js").then(() => {
+    loadScriptAsync("babylon.nodeGeometryEditor.js").then(() => {
         let customLoadObservable = new BABYLON.Observable();
         let editorDisplayed = false;
 
@@ -136,28 +138,28 @@ checkBabylonVersionAsync().then(() => {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
                             try {
-                                let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                                resolve(JSON.parse(snippet.nodeParticle));
+                                let snippet = ParseDataSnippetResponse(JSON.parse(xmlHttp.responseText), hash, "nodeGeometry");
+                                resolve(snippet.data);
                             } catch (err) {
                                 reject(err);
                             }
                         } else {
-                            reject(new Error(`Unable to load node particle set snippet ${hash}`));
+                            reject(new Error(`Unable to load node geometry snippet ${hash}`));
                         }
                     }
                 };
                 xmlHttp.onerror = function () {
-                    reject(new Error(`Unable to load node particle set snippet ${hash}`));
+                    reject(new Error(`Unable to load node geometry snippet ${hash}`));
                 };
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
             });
         };
 
-        let applySerializedParticleSetAsync = async function (serializationObject) {
-            nodeParticleSet.parseSerializedObject(serializationObject);
+        let applySerializedGeometry = function (serializationObject) {
+            nodeGeometry.parseSerializedObject(serializationObject);
             try {
-                await nodeParticleSet.buildAsync(scene);
+                nodeGeometry.build(true);
             } catch (err) {
                 console.error(err);
             }
@@ -181,8 +183,8 @@ checkBabylonVersionAsync().then(() => {
             editorDisplayed = true;
             let hostElement = document.getElementById("host-element");
 
-            BABYLON.NodeParticleEditor.Show({
-                nodeParticleSet: nodeParticleSet,
+            BABYLON.NodeGeometryEditor.Show({
+                nodeGeometry: nodeGeometry,
                 hostElement: hostElement,
                 customLoadObservable: customLoadObservable,
                 customSave: {
@@ -204,7 +206,7 @@ checkBabylonVersionAsync().then(() => {
                                         resolve();
                                     } else {
                                         reject(
-                                            `Unable to save your node particle set. It may be too large (${(dataToSend.payload.length / 1024).toFixed(
+                                            `Unable to save your node geometry. It may be too large (${(dataToSend.payload.length / 1024).toFixed(
                                                 2
                                             )} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`
                                         );
@@ -217,7 +219,7 @@ checkBabylonVersionAsync().then(() => {
 
                             let dataToSend = {
                                 payload: JSON.stringify({
-                                    nodeParticle: data,
+                                    nodeGeometry: data,
                                 }),
                                 name: "",
                                 description: "",
@@ -234,27 +236,26 @@ checkBabylonVersionAsync().then(() => {
         if (BABYLON.Engine.isSupported()) {
             let canvas = document.createElement("canvas");
             let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
-            scene = new BABYLON.Scene(engine);
+            let scene = new BABYLON.Scene(engine);
+            new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
 
-            nodeParticleSet = new BABYLON.NodeParticleSystemSet("System set");
+            nodeGeometry = new BABYLON.NodeGeometry("node");
             if (location.hash) {
                 loadSnippetFromHashAsync()
-                    .then(async (serializationObject) => {
-                        await applySerializedParticleSetAsync(serializationObject);
+                    .then((serializationObject) => {
+                        applySerializedGeometry(serializationObject);
                         showEditor();
                     })
                     .catch((err) => {
                         console.error(err);
-                        nodeParticleSet.setToDefault();
-                        nodeParticleSet.buildAsync(scene).then(() => {
-                            showEditor();
-                        });
+                        nodeGeometry.setToDefault();
+                        nodeGeometry.build();
+                        showEditor();
                     });
             } else {
-                nodeParticleSet.setToDefault();
-                nodeParticleSet.buildAsync(scene).then(() => {
-                    showEditor();
-                });
+                nodeGeometry.setToDefault();
+                nodeGeometry.build();
+                showEditor();
             }
         } else {
             alert("Babylon.js is not supported.");
