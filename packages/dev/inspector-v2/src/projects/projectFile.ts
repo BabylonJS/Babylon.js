@@ -1,4 +1,4 @@
-import { zipSync, unzipSync, strToU8, strFromU8 } from "fflate";
+import { zip, unzip, strToU8, strFromU8, type Unzipped } from "fflate";
 
 // Side-effect import: registers the `.babylon` SceneLoader plugin so the
 // companion `.babylon` file produced by SerializeProject can be loaded back.
@@ -377,8 +377,10 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
     };
     files["project.json"] = strToU8(JSON.stringify(projectWithBundledPaths, null, 2));
 
-    // Create the zip
-    const zipped = zipSync(files, { level: 6 });
+    // Create the zip (async — runs in a Web Worker to avoid blocking the UI thread)
+    const zipped = await new Promise<Uint8Array>((resolve, reject) => {
+        zip(files, { level: 6 }, (err, data) => (err ? reject(err) : resolve(data)));
+    });
     return new Blob([zipped as BlobPart], { type: "application/zip" });
 }
 
@@ -391,7 +393,9 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
  */
 export async function LoadProjectFileAsync(scene: Scene, zipFile: File): Promise<void> {
     const arrayBuffer = await zipFile.arrayBuffer();
-    const extracted = unzipSync(new Uint8Array(arrayBuffer));
+    const extracted = await new Promise<Unzipped>((resolve, reject) => {
+        unzip(new Uint8Array(arrayBuffer), (err, data) => (err ? reject(err) : resolve(data)));
+    });
 
     // Parse project.json
     const projectJsonBytes = extracted["project.json"];
