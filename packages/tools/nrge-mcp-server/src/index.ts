@@ -31,17 +31,20 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod/v4";
 import {
+    CreateErrorResponse,
     CreateInlineJsonSchema,
     CreateJsonFileSchema,
     CreateJsonImportSummaryResponse,
     CreateOutputFileSchema,
     CreateOverwriteSchema,
     CreateSnippetIdSchema,
+    CreateTextResponse,
     CreateTypedSnippetImportSummaryResponse,
+    McpEditorSessionController,
     ParseJsonText,
     RunSnippetResponse,
     WriteTextFileEnsuringDirectory,
-} from "../../mcp-server-core/src/index.js";
+} from "@tools/mcp-server-core";
 
 import { BlockRegistry, GetBlockCatalogSummary, GetBlockTypeDetails } from "./blockRegistry.js";
 import { RenderGraphManager } from "./renderGraph.js";
@@ -49,6 +52,50 @@ import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippe
 
 // ─── Singleton graph manager ─────────────────────────────────────────────
 const manager = new RenderGraphManager();
+const sessionController = new McpEditorSessionController<RenderGraphManager>(
+    {
+        serverName: "NRGE MCP Session Server",
+        documentKind: "node-render-graph",
+        managerUnavailableMessage: "Render graph manager is not available",
+        getDocument: (manager, session) => manager.exportJson(session.name),
+        setDocument: (manager, session, document) => {
+            try {
+                manager.importJson(session.name, document, true);
+                return undefined;
+            } catch (e) {
+                return (e as Error).message;
+            }
+        },
+    },
+    {
+        defaultPort: 3001,
+        statusTitle: "NRGE MCP Session Server",
+    }
+);
+
+/**
+ * Notify SSE subscribers if a session exists for the given render graph.
+ * @param graphName - The render graph name to check for active sessions.
+ */
+function _notifyIfSession(graphName: string): void {
+    const sessionId = sessionController.getSessionIdForName(graphName);
+    if (sessionId) {
+        sessionController.notifySessionUpdate(sessionId);
+    }
+}
+
+/**
+ * Import render graph JSON and notify a matching live session on success.
+ * @param graphName - The render graph name to import into.
+ * @param jsonText - Serialized NRGE JSON.
+ * @param overwrite - Whether to overwrite an existing graph with the same name.
+ * @returns The imported graph.
+ */
+function _importGraphJson(graphName: string, jsonText: string, overwrite: boolean = false) {
+    const graph = manager.importJson(graphName, jsonText, overwrite);
+    _notifyIfSession(graphName);
+    return graph;
+}
 
 // ─── MCP Server ──────────────────────────────────────────────────────────
 const server = new McpServer(
@@ -380,6 +427,9 @@ server.registerTool(
     async ({ name, comment }) => {
         try {
             manager.create(name, comment);
+            const port = await sessionController.startAsync(manager);
+            const sessionId = sessionController.createSession(name);
+            const sessionUrl = sessionController.getSessionUrl(sessionId, port);
             return {
                 content: [
                     {
@@ -394,6 +444,8 @@ server.registerTool(
                             "  4. Wire them together (connect_blocks)",
                             "  5. Validate (validate_graph) and export (export_graph_json)",
                             "",
+                            `MCP Session URL: ${sessionUrl}`,
+                            "",
                             "Tip: read nrg://concepts for a full overview and nrg://block-catalog for all block types.",
                         ].join("\n"),
                     },
@@ -402,6 +454,74 @@ server.registerTool(
         } catch (e) {
             return { content: [{ type: "text", text: `Error: ${(e as Error).message}` }], isError: true };
         }
+    }
+);
+
+server.registerTool(
+    "get_session_url",
+    {
+        description: "Get or create a live-session URL for a render graph. The URL can be pasted into the Node Render Graph Editor MCP session panel.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the render graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const renderGraphs = manager.list();
+        if (!renderGraphs.includes(graphName)) {
+            return CreateErrorResponse(`Render graph "${graphName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(graphName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "start_session",
+    {
+        description: "Start a live session for an existing render graph. If a session already exists for this render graph, returns the existing URL.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the render graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const renderGraphs = manager.list();
+        if (!renderGraphs.includes(graphName)) {
+            return CreateErrorResponse(`Render graph "${graphName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(graphName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "close_session",
+    {
+        description: "Close a live session for a render graph. Disconnects all SSE subscribers in the editor and removes the session. The render graph itself is NOT deleted.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the render graph whose session to close"),
+        },
+    },
+    async ({ graphName }) => {
+        const closed = sessionController.closeSessionForName(graphName);
+        if (!closed) {
+            return CreateTextResponse(`No active session for "${graphName}".`);
+        }
+        return CreateTextResponse(`Session for "${graphName}" closed. The editor will disconnect.`);
+    }
+);
+
+server.registerTool(
+    "stop_session_server",
+    {
+        description: "Stop the live MCP editor session server started by this MCP process. This closes all active sessions, disconnects editors, and releases the port.",
+    },
+    async () => {
+        await sessionController.stopAsync();
+        return CreateTextResponse("MCP session server stopped. Any connected editors have been disconnected.");
     }
 );
 
@@ -415,6 +535,7 @@ server.registerTool(
     },
     async ({ name }) => {
         try {
+            sessionController.closeSessionForName(name);
             manager.delete(name);
             return { content: [{ type: "text", text: `Deleted render graph "${name}".` }] };
         } catch (e) {
@@ -425,6 +546,9 @@ server.registerTool(
 
 server.registerTool("clear_all", { description: "Remove all render graphs from memory, resetting the server to a clean state." }, async () => {
     const names = manager.list();
+    for (const name of names) {
+        sessionController.closeSessionForName(name);
+    }
     manager.clearAll();
     return {
         content: [{ type: "text", text: names.length > 0 ? `Cleared ${names.length} render graph(s): ${names.join(", ")}` : "Nothing to clear — memory was already empty." }],
@@ -485,6 +609,7 @@ server.registerTool(
     async ({ graphName, blockType, blockName, additionalConstructionParameters }) => {
         try {
             const block = manager.addBlock(graphName, blockType, blockName, additionalConstructionParameters as unknown[] | undefined);
+            _notifyIfSession(graphName);
             return {
                 content: [
                     {
@@ -525,6 +650,7 @@ server.registerTool(
     async ({ graphName, blocks }) => {
         try {
             const results = manager.addBlocksBatch(graphName, blocks as Array<{ blockType: string; blockName?: string; additionalConstructionParameters?: unknown[] }>);
+            _notifyIfSession(graphName);
             const lines = results.map(
                 (b) =>
                     `  id=${b.id}  "${b.name}"  (${b.customType.replace("BABYLON.", "")})  inputs=[${b.inputs.map((i) => i.name).join(", ")}]  outputs=[${b.outputs.map((o) => o.name).join(", ")}]`
@@ -555,6 +681,7 @@ server.registerTool(
     async ({ graphName, blockId }) => {
         try {
             manager.removeBlock(graphName, blockId);
+            _notifyIfSession(graphName);
             return { content: [{ type: "text", text: `Removed block id=${blockId} and all its connections.` }] };
         } catch (e) {
             return { content: [{ type: "text", text: `Error: ${(e as Error).message}` }], isError: true };
@@ -591,6 +718,7 @@ server.registerTool(
     async ({ graphName, sourceBlockId, sourcePortName, targetBlockId, targetPortName }) => {
         try {
             manager.connect(graphName, sourceBlockId, sourcePortName, targetBlockId, targetPortName);
+            _notifyIfSession(graphName);
             return {
                 content: [
                     {
@@ -626,6 +754,7 @@ server.registerTool(
     async ({ graphName, connections }) => {
         try {
             manager.connectBatch(graphName, connections);
+            _notifyIfSession(graphName);
             const lines = connections.map((c) => `  block[${c.sourceBlockId}].${c.sourcePortName} → block[${c.targetBlockId}].${c.targetPortName}`);
             return {
                 content: [{ type: "text", text: `Created ${connections.length} connections:\n${lines.join("\n")}` }],
@@ -649,6 +778,7 @@ server.registerTool(
     async ({ graphName, blockId, inputPortName }) => {
         try {
             manager.disconnectInput(graphName, blockId, inputPortName);
+            _notifyIfSession(graphName);
             return { content: [{ type: "text", text: `Disconnected input "${inputPortName}" on block id=${blockId}.` }] };
         } catch (e) {
             return { content: [{ type: "text", text: `Error: ${(e as Error).message}` }], isError: true };
@@ -687,6 +817,7 @@ server.registerTool(
     async ({ graphName, blockId, properties }) => {
         try {
             manager.setBlockProperties(graphName, blockId, properties);
+            _notifyIfSession(graphName);
             const keys = Object.keys(properties);
             return { content: [{ type: "text", text: `Updated block id=${blockId}: ${keys.join(", ")}` }] };
         } catch (e) {
@@ -830,7 +961,7 @@ server.registerTool(
             json,
             jsonFile,
             fileDescription: "NRGE JSON file",
-            importJson: (jsonText: string) => manager.importJson(graphName, jsonText, overwrite ?? false),
+            importJson: (jsonText: string) => _importGraphJson(graphName, jsonText, overwrite ?? false),
             createSuccessText: (graph: { blocks: unknown[]; outputNodeId?: number | null }) =>
                 [
                     `Imported render graph "${graphName}" with ${graph.blocks.length} blocks.`,
@@ -864,7 +995,7 @@ server.registerTool(
                     snippetId,
                     snippetResult,
                     expectedType: "nodeRenderGraph",
-                    importJson: (jsonText: string) => manager.importJson(graphName, jsonText, overwrite ?? false),
+                    importJson: (jsonText: string) => _importGraphJson(graphName, jsonText, overwrite ?? false),
                     createSuccessText: (graph: { blocks: unknown[]; outputNodeId?: number | null }) =>
                         [
                             `Imported snippet "${snippetId}" as render graph "${graphName}" with ${graph.blocks.length} blocks.`,
@@ -953,3 +1084,10 @@ server.registerTool(
 const transport = new StdioServerTransport();
 await server.connect(transport);
 console.error("babylonjs-node-render-graph MCP server running on stdio");
+
+const _shutdown = () => {
+    void sessionController.stopAsync();
+    process.exit(0);
+};
+process.on("SIGINT", _shutdown);
+process.on("SIGTERM", _shutdown);
