@@ -24,11 +24,12 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "
 import { resolve, dirname, relative, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../..");
 const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest/core");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
@@ -58,8 +59,7 @@ const expectedContents = new Map();
 const expectedBarrelPaths = new Set();
 
 // ── Load side-effects manifest ──────────────────────────────────────────────
-const manifestData = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
-// manifest is an array of { file, sideEffects }
+const manifestData = readSideEffectsManifest(MANIFEST_PATH);
 // file paths are relative to SRC_ROOT (e.g. "Actions/action.ts")
 const sideEffectFiles = new Set(manifestData.manifest.map((e) => toPosixPath(e.file)));
 
