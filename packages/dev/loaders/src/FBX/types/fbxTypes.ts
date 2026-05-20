@@ -5,7 +5,7 @@
  */
 
 /** Individual property value within an FBX node */
-export type FBXPropertyValue = boolean | number | bigint | string | Float32Array | Float64Array | Int32Array | BigInt64Array | Uint8Array;
+export type FBXPropertyValue = boolean | number | string | Float32Array | Float64Array | Int32Array | Uint8Array;
 
 export type FBXPropertyType =
     | "boolean" // 'C'
@@ -64,10 +64,10 @@ export function getPropertyValue<T extends FBXPropertyValue>(node: FBXNode, inde
 }
 
 /** Get the numeric ID from a node (first property is typically the int64 UID) */
-export function getNodeId(node: FBXNode): bigint | undefined {
+export function getNodeId(node: FBXNode): number | undefined {
     const prop = node.properties[0];
     if (prop && (prop.type === "int64" || prop.type === "int32")) {
-        return BigInt(prop.value as number | bigint);
+        return Number(prop.value);
     }
     return undefined;
 }

@@ -10,7 +10,7 @@ export type FBXClusterMode = "Normalize" | "Additive" | "TotalOne" | "Unknown";
 export interface FBXSkinDiagnostic {
     type: "cluster-mode-runtime-unsupported" | "missing-cluster-transform" | "missing-cluster-transform-link" | "missing-bind-pose-matrix" | "associate-model-present";
     message: string;
-    boneModelId?: bigint;
+    boneModelId?: number;
     boneName?: string;
     clusterMode?: FBXClusterMode;
 }
@@ -18,7 +18,7 @@ export interface FBXSkinDiagnostic {
 /** Represents a single bone (cluster) in the FBX skeleton */
 export interface FBXBoneData {
     /** The Model node ID for this bone */
-    modelId: bigint;
+    modelId: number;
     /** Bone name (from the Model node) */
     name: string;
     /** Index of this bone in the skeleton */
@@ -66,9 +66,9 @@ export interface FBXBoneData {
 /** Represents a skin deformer with its clusters */
 export interface FBXSkinData {
     /** Skin deformer ID */
-    id: bigint;
+    id: number;
     /** Geometry ID this skin is attached to */
-    geometryId: bigint;
+    geometryId: number;
     /** Mesh model world matrix from the FBX BindPose, when present */
     meshBindPoseMatrix: Float64Array | null;
     /** Bones in this skeleton */
@@ -100,7 +100,7 @@ export function extractSkins(objectMap: FBXObjectMap): FBXSkinData[] {
     return skins;
 }
 
-function extractSkin(skinId: bigint, _skinNode: FBXNode, objectMap: FBXObjectMap): FBXSkinData | null {
+function extractSkin(skinId: number, _skinNode: FBXNode, objectMap: FBXObjectMap): FBXSkinData | null {
     // Find the geometry this skin is attached to
     // Skin is a child of the geometry in FBX connection graph
     const skinParent = objectMap.parentOf.get(skinId);
@@ -125,7 +125,7 @@ function extractSkin(skinId: bigint, _skinNode: FBXNode, objectMap: FBXObjectMap
 
     // For each cluster, find the connected bone Model
     // Connection graph: BoneModel → Cluster (bone is child of cluster)
-    const boneModelMap = new Map<bigint, { clusterId: bigint; clusterNode: FBXNode }>();
+    const boneModelMap = new Map<number, { clusterId: number; clusterNode: FBXNode }>();
     for (const { id: clusterId, node: clusterNode } of clusterEntries) {
         const subType = getPropertyValue<string>(clusterNode, 2);
         if (subType !== "Cluster") {
@@ -168,13 +168,13 @@ function extractSkin(skinId: bigint, _skinNode: FBXNode, objectMap: FBXObjectMap
  * Build a flat ordered bone list with parent indices from the FBX Model hierarchy.
  */
 function buildBoneHierarchy(
-    boneModelMap: Map<bigint, { clusterId: bigint; clusterNode: FBXNode }>,
-    bindPoseMatrices: Map<bigint, Float64Array>,
+    boneModelMap: Map<number, { clusterId: number; clusterNode: FBXNode }>,
+    bindPoseMatrices: Map<number, Float64Array>,
     objectMap: FBXObjectMap,
     skinDiagnostics: FBXSkinDiagnostic[]
 ): FBXBoneData[] {
     const bones: FBXBoneData[] = [];
-    const visited = new Set<bigint>();
+    const visited = new Set<number>();
     const skeletonModelIds = collectSkeletonModelIds(boneModelMap, objectMap);
     const parentByModelId = buildSkeletonParentMap(skeletonModelIds, objectMap);
     const childrenByModelId = buildSkeletonChildrenMap(skeletonModelIds, parentByModelId);
@@ -182,7 +182,7 @@ function buildBoneHierarchy(
     const rootBoneIds = Array.from(skeletonModelIds).filter((modelId) => !parentByModelId.has(modelId));
 
     // BFS to build ordered list
-    const queue: { modelId: bigint; parentIndex: number }[] = rootBoneIds.map((id) => ({
+    const queue: { modelId: number; parentIndex: number }[] = rootBoneIds.map((id) => ({
         modelId: id,
         parentIndex: -1,
     }));
@@ -253,7 +253,7 @@ function buildBoneHierarchy(
     return bones;
 }
 
-function extractBindPoseMatrices(geometryId: bigint, objectMap: FBXObjectMap): Map<bigint, Float64Array> {
+function extractBindPoseMatrices(geometryId: number, objectMap: FBXObjectMap): Map<number, Float64Array> {
     const modelParent = objectMap.parentOf.get(geometryId);
     const modelParentNode = modelParent ? objectMap.objects.get(modelParent.id) : undefined;
     const modelId = modelParentNode?.name === "Model" ? modelParent!.id : undefined;
@@ -266,7 +266,7 @@ function extractBindPoseMatrices(geometryId: bigint, objectMap: FBXObjectMap): M
             continue;
         }
 
-        const matrices = new Map<bigint, Float64Array>();
+        const matrices = new Map<number, Float64Array>();
         for (const poseChild of poseNode.children) {
             if (poseChild.name !== "PoseNode") {
                 continue;
@@ -276,7 +276,7 @@ function extractBindPoseMatrices(geometryId: bigint, objectMap: FBXObjectMap): M
             const matrixChild = findChildByName(poseChild, "Matrix");
             const nodeId = nodeChild?.properties[0]?.value;
             const matrixValue = matrixChild?.properties[0]?.value;
-            if (typeof nodeId !== "bigint") {
+            if (typeof nodeId !== "number") {
                 continue;
             }
 
@@ -294,8 +294,8 @@ function extractBindPoseMatrices(geometryId: bigint, objectMap: FBXObjectMap): M
     return new Map();
 }
 
-function buildSkeletonChildrenMap(skeletonModelIds: Set<bigint>, parentByModelId: Map<bigint, bigint>): Map<bigint, bigint[]> {
-    const childrenByModelId = new Map<bigint, bigint[]>();
+function buildSkeletonChildrenMap(skeletonModelIds: Set<number>, parentByModelId: Map<number, number>): Map<number, number[]> {
+    const childrenByModelId = new Map<number, number[]>();
 
     for (const modelId of Array.from(skeletonModelIds)) {
         const parentId = parentByModelId.get(modelId);
@@ -312,8 +312,8 @@ function buildSkeletonChildrenMap(skeletonModelIds: Set<bigint>, parentByModelId
     return childrenByModelId;
 }
 
-function collectSkeletonModelIds(boneModelMap: Map<bigint, { clusterId: bigint; clusterNode: FBXNode }>, objectMap: FBXObjectMap): Set<bigint> {
-    const skeletonModelIds = new Set<bigint>(Array.from(boneModelMap.keys()));
+function collectSkeletonModelIds(boneModelMap: Map<number, { clusterId: number; clusterNode: FBXNode }>, objectMap: FBXObjectMap): Set<number> {
+    const skeletonModelIds = new Set<number>(Array.from(boneModelMap.keys()));
 
     for (const modelId of Array.from(boneModelMap.keys())) {
         let parentId = findModelParentId(modelId, objectMap);
@@ -331,8 +331,8 @@ function collectSkeletonModelIds(boneModelMap: Map<bigint, { clusterId: bigint; 
     return skeletonModelIds;
 }
 
-function buildSkeletonParentMap(skeletonModelIds: Set<bigint>, objectMap: FBXObjectMap): Map<bigint, bigint> {
-    const parentByModelId = new Map<bigint, bigint>();
+function buildSkeletonParentMap(skeletonModelIds: Set<number>, objectMap: FBXObjectMap): Map<number, number> {
+    const parentByModelId = new Map<number, number>();
 
     for (const modelId of Array.from(skeletonModelIds)) {
         let parentId = findModelParentId(modelId, objectMap);
@@ -348,7 +348,7 @@ function buildSkeletonParentMap(skeletonModelIds: Set<bigint>, objectMap: FBXObj
     return parentByModelId;
 }
 
-function findModelParentId(modelId: bigint, objectMap: FBXObjectMap): bigint | undefined {
+function findModelParentId(modelId: number, objectMap: FBXObjectMap): number | undefined {
     const parentConnection = objectMap.connections.find((conn) => conn.type === "OO" && conn.childId === modelId && objectMap.objects.get(conn.parentId)?.name === "Model");
     return parentConnection?.parentId;
 }
@@ -508,7 +508,7 @@ function extractClusterMatrices(clusterNode: FBXNode): {
 }
 
 function createBoneDiagnostics(
-    modelId: bigint,
+    modelId: number,
     boneName: string,
     isCluster: boolean,
     clusterMode: FBXClusterMode,
@@ -577,7 +577,7 @@ function createBoneDiagnostics(
  */
 function extractVertexWeights(
     bones: FBXBoneData[],
-    boneModelMap: Map<bigint, { clusterId: bigint; clusterNode: FBXNode }>,
+    boneModelMap: Map<number, { clusterId: number; clusterNode: FBXNode }>,
     objectMap: FBXObjectMap
 ): { boneIndices: number[][]; boneWeights: number[][] } {
     // We need to find the max vertex index to size our arrays
@@ -676,9 +676,6 @@ function extractVertexWeights(
 function toNumber(value: unknown): number | undefined {
     if (typeof value === "number") {
         return value;
-    }
-    if (typeof value === "bigint") {
-        return Number(value);
     }
     return undefined;
 }

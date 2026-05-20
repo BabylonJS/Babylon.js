@@ -1,13 +1,3 @@
 export { FBXFileLoader } from "./fbxFileLoader";
 export type { FBXFileLoaderOptions, FBXNormalMapCoordinateSystem } from "./fbxFileLoader";
 export { FBXFileLoaderMetadata } from "./fbxFileLoader.metadata";
-export { parseBinaryFBX } from "./parsers/fbxBinaryParser";
-export { parseAsciiFBX } from "./parsers/fbxAsciiParser";
-export { interpretFBX } from "./interpreter/fbxInterpreter";
-export type { FBXDocument, FBXNode, FBXProperty } from "./types/fbxTypes";
-export type { FBXSceneData, FBXModelData } from "./interpreter/fbxInterpreter";
-export type { FBXGeometryData } from "./interpreter/geometry";
-export type { FBXMaterialData, FBXTextureRef, FBXMaterialProperties } from "./interpreter/materials";
-export type { FBXSkinData, FBXBoneData } from "./interpreter/skeleton";
-export type { FBXRigData, FBXRigBoneData, FBXSkinBindingData } from "./interpreter/rig";
-export type { FBXAnimationStackData, FBXCurveNodeData, FBXCurveData, FBXKeyframe } from "./interpreter/animation";

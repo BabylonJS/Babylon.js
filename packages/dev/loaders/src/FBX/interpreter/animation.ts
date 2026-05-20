@@ -47,7 +47,7 @@ export interface FBXCurveNodeData {
     /** Property type: "T" (translation), "R" (rotation), "S" (scale) */
     type: string;
     /** Target model (bone) ID */
-    targetModelId: bigint;
+    targetModelId: number;
     /** Curves for each axis */
     curves: FBXCurveData[];
 }
@@ -56,9 +56,9 @@ export interface FBXUnsupportedCurveNodeData {
     /** Raw AnimationCurveNode property type/name */
     type: string;
     /** CurveNode object ID */
-    id: bigint;
+    id: number;
     /** Target object ID if the curve node is connected to an object/property */
-    targetId: bigint | null;
+    targetId: number | null;
     /** OP connection property name on the target, e.g. Visibility */
     propertyName?: string;
     /** Number of connected animation curves that were ignored */
@@ -73,9 +73,9 @@ export interface FBXAnimationDiagnostic {
     type: "multiple-animation-layers" | "unsupported-layer-blend-mode" | "partial-layer-weight" | "unsupported-curve-node";
     message: string;
     layerName?: string;
-    curveNodeId?: bigint;
+    curveNodeId?: number;
     curveNodeType?: string;
-    targetId?: bigint | null;
+    targetId?: number | null;
     propertyName?: string;
 }
 
@@ -135,7 +135,7 @@ export function extractAnimations(objectMap: FBXObjectMap): FBXAnimationStackDat
     return stacks;
 }
 
-function extractAnimStack(stackId: bigint, stackNode: FBXNode, objectMap: FBXObjectMap): FBXAnimationStackData | null {
+function extractAnimStack(stackId: number, stackNode: FBXNode, objectMap: FBXObjectMap): FBXAnimationStackData | null {
     const name = cleanFBXName(getPropertyValue<string>(stackNode, 1) ?? "Animation");
     const declaredTimeSpan = extractAnimationStackTimeSpan(stackNode);
 
@@ -175,8 +175,6 @@ function extractAnimStack(stackId: bigint, stackNode: FBXNode, objectMap: FBXObj
                     const v = p.properties[4]?.value;
                     if (typeof v === "number") {
                         blendMode = v;
-                    } else if (typeof v === "bigint") {
-                        blendMode = Number(v);
                     }
                 }
             }
@@ -338,7 +336,7 @@ function extractAnimationStackTimeSpan(stackNode: FBXNode): { start: number; sto
     return stop !== null ? { start, stop } : null;
 }
 
-function extractCurveNode(curveNodeId: bigint, curveNodeNode: FBXNode, objectMap: FBXObjectMap): FBXCurveNodeData | null {
+function extractCurveNode(curveNodeId: number, curveNodeNode: FBXNode, objectMap: FBXObjectMap): FBXCurveNodeData | null {
     const typeName = cleanFBXName(getPropertyValue<string>(curveNodeNode, 1) ?? "");
 
     // Handle T (translation), R (rotation), S (scale) targeting Models
@@ -382,7 +380,7 @@ function extractCurveNode(curveNodeId: bigint, curveNodeNode: FBXNode, objectMap
     return null;
 }
 
-function extractUnsupportedCurveNode(curveNodeId: bigint, curveNodeNode: FBXNode, objectMap: FBXObjectMap): FBXUnsupportedCurveNodeData | null {
+function extractUnsupportedCurveNode(curveNodeId: number, curveNodeNode: FBXNode, objectMap: FBXObjectMap): FBXUnsupportedCurveNodeData | null {
     const typeName = cleanFBXName(getPropertyValue<string>(curveNodeNode, 1) ?? "");
     const curves = extractCurves(curveNodeId, objectMap);
     const defaultValues = extractCurveNodeDefaultValues(curveNodeNode);
@@ -390,7 +388,7 @@ function extractUnsupportedCurveNode(curveNodeId: bigint, curveNodeNode: FBXNode
         return null;
     }
 
-    let targetId: bigint | null = null;
+    let targetId: number | null = null;
     let propertyName: string | undefined;
     for (const conn of objectMap.connections) {
         if (conn.childId === curveNodeId && conn.type === "OP") {
@@ -423,7 +421,7 @@ function scanCurveTimes(curves: FBXCurveData[], visit: (time: number) => void): 
  * Find the Model that an AnimationCurveNode targets.
  * The CurveNode connects to the Model via OP connection with a property name.
  */
-function findCurveNodeTarget(curveNodeId: bigint, objectMap: FBXObjectMap): bigint | null {
+function findCurveNodeTarget(curveNodeId: number, objectMap: FBXObjectMap): number | null {
     // Look for connections where this curveNode is a child (going up to parent)
     // The OP connection from curveNode → Model has the property name (e.g. "Lcl Translation")
     for (const conn of objectMap.connections) {
@@ -440,7 +438,7 @@ function findCurveNodeTarget(curveNodeId: bigint, objectMap: FBXObjectMap): bigi
 /**
  * Find the BlendShapeChannel that a DeformPercent AnimationCurveNode targets.
  */
-function findCurveNodeBlendShapeTarget(curveNodeId: bigint, objectMap: FBXObjectMap): bigint | null {
+function findCurveNodeBlendShapeTarget(curveNodeId: number, objectMap: FBXObjectMap): number | null {
     for (const conn of objectMap.connections) {
         if (conn.childId === curveNodeId && conn.type === "OP") {
             const parentNode = objectMap.objects.get(conn.parentId);
@@ -471,7 +469,7 @@ function findCurveNodeBlendShapeTarget(curveNodeId: bigint, objectMap: FBXObject
  * Extract AnimationCurves connected to a CurveNode.
  * Each curve connects via OP with channel "d|X", "d|Y", or "d|Z".
  */
-function extractCurves(curveNodeId: bigint, objectMap: FBXObjectMap): FBXCurveData[] {
+function extractCurves(curveNodeId: number, objectMap: FBXObjectMap): FBXCurveData[] {
     const curves: FBXCurveData[] = [];
 
     // Find AnimationCurve children of this CurveNode
@@ -718,8 +716,8 @@ export function sampleFBXCurveAtTime(curveData: FBXCurveData | undefined, time: 
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
 
-function toInt64Array(value: unknown): BigInt64Array | null {
-    if (value instanceof BigInt64Array) {
+function toInt64Array(value: unknown): Float64Array | null {
+    if (value instanceof Float64Array) {
         return value;
     }
     return null;
@@ -733,9 +731,6 @@ function toInt32Array(value: unknown): Int32Array | null {
 }
 
 function fbxTimeToSeconds(value: unknown): number | null {
-    if (typeof value === "bigint") {
-        return Number(value) / FBX_TIME_UNIT;
-    }
     if (typeof value === "number") {
         return value / FBX_TIME_UNIT;
     }
@@ -745,9 +740,6 @@ function fbxTimeToSeconds(value: unknown): number | null {
 function toNumber(value: unknown): number | null {
     if (typeof value === "number") {
         return value;
-    }
-    if (typeof value === "bigint") {
-        return Number(value);
     }
     return null;
 }

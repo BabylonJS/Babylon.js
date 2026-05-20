@@ -33,20 +33,20 @@ function createBlendShapeDocument(): FBXDocument {
                 name: "Objects",
                 properties: [],
                 children: [
-                    createObject("Geometry", 1n, "Geometry::Base", "Mesh"),
-                    createObject("Deformer", 2n, "Deformer::BlendShape", "BlendShape"),
+                    createObject("Geometry", 1, "Geometry::Base", "Mesh"),
+                    createObject("Deformer", 2, "Deformer::BlendShape", "BlendShape"),
                     {
-                        ...createObject("Deformer", 3n, "SubDeformer::Smile", "BlendShapeChannel"),
+                        ...createObject("Deformer", 3, "SubDeformer::Smile", "BlendShapeChannel"),
                         children: [{ name: "FullWeights", properties: [{ type: "float64[]", value: new Float64Array([100, 50]) }], children: [] }],
                     },
-                    createShape(4n, [1, 0, 0]),
-                    createShape(5n, [0.5, 0, 0]),
+                    createShape(4, [1, 0, 0]),
+                    createShape(5, [0.5, 0, 0]),
                 ],
             },
             {
                 name: "Connections",
                 properties: [],
-                children: [createConnection("OO", 2n, 1n), createConnection("OO", 3n, 2n), createConnection("OO", 4n, 3n), createConnection("OO", 5n, 3n)],
+                children: [createConnection("OO", 2, 1), createConnection("OO", 3, 2), createConnection("OO", 4, 3), createConnection("OO", 5, 3)],
             },
         ],
     };
@@ -60,25 +60,25 @@ function createSingleShapeFullWeightsDocument(): FBXDocument {
                 name: "Objects",
                 properties: [],
                 children: [
-                    createObject("Geometry", 1n, "Geometry::Base", "Mesh"),
-                    createObject("Deformer", 2n, "Deformer::BlendShape", "BlendShape"),
+                    createObject("Geometry", 1, "Geometry::Base", "Mesh"),
+                    createObject("Deformer", 2, "Deformer::BlendShape", "BlendShape"),
                     {
-                        ...createObject("Deformer", 3n, "SubDeformer::Blink", "BlendShapeChannel"),
+                        ...createObject("Deformer", 3, "SubDeformer::Blink", "BlendShapeChannel"),
                         children: [{ name: "FullWeights", properties: [{ type: "float64[]", value: new Float64Array([50, 100]) }], children: [] }],
                     },
-                    createShape(4n, [1, 0, 0]),
+                    createShape(4, [1, 0, 0]),
                 ],
             },
             {
                 name: "Connections",
                 properties: [],
-                children: [createConnection("OO", 2n, 1n), createConnection("OO", 3n, 2n), createConnection("OO", 4n, 3n)],
+                children: [createConnection("OO", 2, 1), createConnection("OO", 3, 2), createConnection("OO", 4, 3)],
             },
         ],
     };
 }
 
-function createShape(id: bigint, vertices: number[]): FBXNode {
+function createShape(id: number, vertices: number[]): FBXNode {
     return {
         ...createObject("Geometry", id, `Geometry::Shape${id.toString()}`, "Shape"),
         children: [
@@ -88,7 +88,7 @@ function createShape(id: bigint, vertices: number[]): FBXNode {
     };
 }
 
-function createObject(name: string, id: bigint, objectName: string, subType: string): FBXNode {
+function createObject(name: string, id: number, objectName: string, subType: string): FBXNode {
     return {
         name,
         properties: [
@@ -100,7 +100,7 @@ function createObject(name: string, id: bigint, objectName: string, subType: str
     };
 }
 
-function createConnection(type: string, child: bigint, parent: bigint): FBXNode {
+function createConnection(type: string, child: number, parent: number): FBXNode {
     const properties: FBXProperty[] = [
         { type: "string", value: type },
         { type: "int64", value: child },

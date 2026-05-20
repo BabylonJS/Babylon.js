@@ -114,9 +114,6 @@ function toNumber(value: FBXPropertyValue | undefined): number | undefined {
     if (typeof value === "number") {
         return value;
     }
-    if (typeof value === "bigint") {
-        return Number(value);
-    }
     return undefined;
 }
 

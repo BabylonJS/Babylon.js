@@ -21,7 +21,7 @@ import {
 
 /** Represents a model (transform node) in the FBX scene */
 export interface FBXModelData {
-    id: bigint;
+    id: number;
     name: string;
     subType: string;
     /** Geometry attached to this model (if it's a Mesh type) */
@@ -65,7 +65,7 @@ export interface FBXModelData {
 /** Camera data extracted from FBX */
 export interface FBXCameraData {
     /** Model ID this camera is attached to */
-    modelId: bigint;
+    modelId: number;
     /** Camera name */
     name: string;
     /** Field of view in degrees */
@@ -97,7 +97,7 @@ export interface FBXCameraData {
 /** Light data extracted from FBX */
 export interface FBXLightData {
     /** Model ID this light is attached to */
-    modelId: bigint;
+    modelId: number;
     /** Light name */
     name: string;
     /** Light type: 0=Point, 1=Directional, 2=Spot */
@@ -225,18 +225,18 @@ export function interpretFBX(doc: FBXDocument): FBXSceneData {
 // ── Model Hierarchy ────────────────────────────────────────────────────────────
 
 function buildModelHierarchy(objectMap: FBXObjectMap, geometries: FBXGeometryData[], materials: FBXMaterialData[], propertyTemplates: FBXPropertyTemplateMap): FBXModelData[] {
-    const geometryMap = new Map<bigint, FBXGeometryData>();
+    const geometryMap = new Map<number, FBXGeometryData>();
     for (const g of geometries) {
         geometryMap.set(g.id, g);
     }
 
-    const materialMap = new Map<bigint, FBXMaterialData>();
+    const materialMap = new Map<number, FBXMaterialData>();
     for (const m of materials) {
         materialMap.set(m.id, m);
     }
 
     // Find root models (those connected to ID 0, which is the scene root)
-    const rootChildren = objectMap.childrenOf.get(0n) ?? [];
+    const rootChildren = objectMap.childrenOf.get(0) ?? [];
     const rootModels: FBXModelData[] = [];
 
     for (const { id } of rootChildren) {
@@ -250,11 +250,11 @@ function buildModelHierarchy(objectMap: FBXObjectMap, geometries: FBXGeometryDat
 }
 
 function buildModel(
-    modelId: bigint,
+    modelId: number,
     modelNode: FBXNode,
     objectMap: FBXObjectMap,
-    geometryMap: Map<bigint, FBXGeometryData>,
-    materialMap: Map<bigint, FBXMaterialData>,
+    geometryMap: Map<number, FBXGeometryData>,
+    materialMap: Map<number, FBXMaterialData>,
     propertyTemplates: FBXPropertyTemplateMap
 ): FBXModelData {
     const name = cleanFBXName(getPropertyValue<string>(modelNode, 1) ?? "Model");
@@ -490,9 +490,6 @@ function extractCustomProperties(modelNode: FBXNode): Record<string, string | nu
         } else if (typeof val === "number") {
             custom[propName] = val;
             hasAny = true;
-        } else if (typeof val === "bigint") {
-            custom[propName] = Number(val);
-            hasAny = true;
         } else if (typeof val === "boolean") {
             custom[propName] = val;
             hasAny = true;
@@ -680,9 +677,6 @@ function toNumber(value: unknown): number | undefined {
     if (typeof value === "number") {
         return value;
     }
-    if (typeof value === "bigint") {
-        return Number(value);
-    }
     return undefined;
 }
 
@@ -692,9 +686,6 @@ function toBoolean(value: unknown): boolean | undefined {
     }
     if (typeof value === "number") {
         return value !== 0;
-    }
-    if (typeof value === "bigint") {
-        return value !== 0n;
     }
     return undefined;
 }

@@ -16,7 +16,7 @@ export interface FBXShapeData {
 export interface FBXBlendShapeDiagnostic {
     type: "full-weights-mismatch" | "missing-full-weights";
     message: string;
-    channelId: bigint;
+    channelId: number;
     channelName: string;
 }
 
@@ -25,7 +25,7 @@ export interface FBXBlendShapeChannelData {
     /** Channel name */
     name: string;
     /** Channel node ID */
-    id: bigint;
+    id: number;
     /** Default weight (0-100 in FBX) */
     deformPercent: number;
     /** Shape geometry (typically one per channel, but FBX supports in-between shapes) */
@@ -39,9 +39,9 @@ export interface FBXBlendShapeChannelData {
 /** A blend shape deformer attached to a geometry */
 export interface FBXBlendShapeData {
     /** Deformer ID */
-    id: bigint;
+    id: number;
     /** Geometry ID this blend shape is attached to */
-    geometryId: bigint;
+    geometryId: number;
     /** Channels (each is an animatable morph target) */
     channels: FBXBlendShapeChannelData[];
 }
@@ -64,7 +64,7 @@ export function extractBlendShapes(objectMap: FBXObjectMap): FBXBlendShapeData[]
     return blendShapes;
 }
 
-function extractBlendShape(deformerId: bigint, _deformerNode: FBXNode, objectMap: FBXObjectMap): FBXBlendShapeData | null {
+function extractBlendShape(deformerId: number, _deformerNode: FBXNode, objectMap: FBXObjectMap): FBXBlendShapeData | null {
     // Find the geometry this blend shape is attached to
     const parent = objectMap.parentOf.get(deformerId);
     if (!parent) {
@@ -103,8 +103,6 @@ function extractBlendShape(deformerId: bigint, _deformerNode: FBXNode, objectMap
                     const val = p.properties[4]?.value;
                     if (typeof val === "number") {
                         deformPercent = val;
-                    } else if (typeof val === "bigint") {
-                        deformPercent = Number(val);
                     }
                 }
             }
@@ -169,7 +167,7 @@ function extractFullWeights(channelNode: FBXNode): number[] | null {
 function normalizeFullWeights(
     fullWeights: number[] | null,
     shapes: FBXShapeData[],
-    channelId: bigint,
+    channelId: number,
     channelName: string,
     diagnostics: FBXBlendShapeDiagnostic[]
 ): number[] | null {

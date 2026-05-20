@@ -228,7 +228,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const nameFilter = this._buildNameFilter(meshesNames);
 
         // Create materials
-        const materialCache = new Map<bigint, StandardMaterial>();
+        const materialCache = new Map<number, StandardMaterial>();
         for (const matData of fbxScene.materials) {
             const material = this._createMaterial(matData, scene, rootUrl);
             materialCache.set(matData.id, material);
@@ -237,10 +237,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         // Create one Babylon skeleton per resolved deformation rig.
         const skeletons: Skeleton[] = [];
         const skeletonByRigId = new Map<string, Skeleton>();
-        const skeletonByGeometryId = new Map<bigint, Skeleton>();
-        const skinByGeometryId = new Map<bigint, FBXSkinData>();
-        const skinBindingByGeometryId = new Map<bigint, FBXSkinBindingData>();
-        const skinById = new Map<bigint, FBXSkinData>();
+        const skeletonByGeometryId = new Map<number, Skeleton>();
+        const skinByGeometryId = new Map<number, FBXSkinData>();
+        const skinBindingByGeometryId = new Map<number, FBXSkinBindingData>();
+        const skinById = new Map<number, FBXSkinData>();
 
         for (const skin of fbxScene.skins) {
             skinById.set(skin.id, skin);
@@ -264,7 +264,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
 
         // Collect model data for animation sampling.
-        const modelIdToData = new Map<bigint, FBXModelData>();
+        const modelIdToData = new Map<number, FBXModelData>();
         const collectModelData = (models: FBXModelData[]) => {
             for (const m of models) {
                 modelIdToData.set(m.id, m);
@@ -295,7 +295,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             FBXFileLoader._applyMatrixToTransform(assetRoot, axisConversion);
             transformNodes.push(assetRoot);
         }
-        const modelIdToNode = new Map<bigint, TransformNode>();
+        const modelIdToNode = new Map<number, TransformNode>();
         const fbxWorldIdentity = Matrix.Identity();
 
         for (const model of fbxScene.rootModels) {
@@ -522,15 +522,15 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         parent: Nullable<TransformNode>,
         assetRoot: TransformNode,
         parentFBXWorldMatrix: Matrix,
-        materialCache: Map<bigint, StandardMaterial>,
+        materialCache: Map<number, StandardMaterial>,
         nameFilter: ((name: string) => boolean) | null,
         meshes: Mesh[],
         transformNodes: TransformNode[],
-        skeletonByGeometryId: Map<bigint, Skeleton>,
-        skinByGeometryId: Map<bigint, FBXSkinData>,
-        skinBindingByGeometryId: Map<bigint, FBXSkinBindingData>,
-        modelIdToNode: Map<bigint, TransformNode>,
-        cullingConflictMaterialIds: Set<bigint>,
+        skeletonByGeometryId: Map<number, Skeleton>,
+        skinByGeometryId: Map<number, FBXSkinData>,
+        skinBindingByGeometryId: Map<number, FBXSkinBindingData>,
+        modelIdToNode: Map<number, TransformNode>,
+        cullingConflictMaterialIds: Set<number>,
         cullingMaterialCloneCache: Map<StandardMaterial, StandardMaterial>
     ): void {
         const localMatrix = FBXFileLoader._computeFBXModelLocalMatrix(model);
@@ -815,9 +815,9 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _applyMultiMaterial(
         mesh: Mesh,
         model: FBXModelData,
-        materialCache: Map<bigint, StandardMaterial>,
+        materialCache: Map<number, StandardMaterial>,
         scene: Scene,
-        cullingConflictMaterialIds: Set<bigint>,
+        cullingConflictMaterialIds: Set<number>,
         cullingMaterialCloneCache: Map<StandardMaterial, StandardMaterial>
     ): void {
         const matIndices = model.geometry!.materialIndices!;
@@ -886,10 +886,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
     }
 
-    private static _collectCullingConflictMaterialIds(models: FBXModelData[]): Set<bigint> {
+    private static _collectCullingConflictMaterialIds(models: FBXModelData[]): Set<number> {
         // Deliberately scan the full scene, not just name-filtered models. This
         // can over-clone for filtered imports, but avoids shared culling state.
-        const usage = new Map<bigint, { cullingOff: boolean; cullingOn: boolean }>();
+        const usage = new Map<number, { cullingOff: boolean; cullingOn: boolean }>();
         const collect = (model: FBXModelData): void => {
             for (const material of model.materials) {
                 const state = usage.get(material.id) ?? { cullingOff: false, cullingOn: false };
@@ -908,7 +908,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             collect(model);
         }
 
-        const conflicts = new Set<bigint>();
+        const conflicts = new Set<number>();
         for (const [materialId, state] of Array.from(usage)) {
             if (state.cullingOff && state.cullingOn) {
                 conflicts.add(materialId);
@@ -1445,7 +1445,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         for (const bs of blendShapes) {
             // Find the mesh that uses this geometry
             const mesh = meshes.find((m) => {
-                const geomId = (m.metadata as { fbxGeometryId?: bigint } | undefined)?.fbxGeometryId;
+                const geomId = (m.metadata as { fbxGeometryId?: number } | undefined)?.fbxGeometryId;
                 return geomId === bs.geometryId;
             });
             if (!mesh) {
@@ -1508,13 +1508,13 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     mesh.metadata = {};
                 }
                 if (!(mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelIds) {
-                    (mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelIds = new Map<bigint, number>();
+                    (mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelIds = new Map<number, number>();
                 }
-                ((mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelIds as Map<bigint, number>).set(channel.id, targetIndices[0]);
+                ((mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelIds as Map<number, number>).set(channel.id, targetIndices[0]);
                 if (!(mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelTargets) {
-                    (mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelTargets = new Map<bigint, { targetIndices: number[]; fullWeights: number[] | null }>();
+                    (mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelTargets = new Map<number, { targetIndices: number[]; fullWeights: number[] | null }>();
                 }
-                ((mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelTargets as Map<bigint, { targetIndices: number[]; fullWeights: number[] | null }>).set(channel.id, {
+                ((mesh.metadata as Record<string, unknown>).fbxBlendShapeChannelTargets as Map<number, { targetIndices: number[]; fullWeights: number[] | null }>).set(channel.id, {
                     targetIndices,
                     fullWeights: channel.fullWeights,
                 });
@@ -1527,7 +1527,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
     }
 
-    private _createCamera(camData: FBXCameraData, modelIdToNode: Map<bigint, TransformNode>, scene: Scene): FreeCamera | null {
+    private _createCamera(camData: FBXCameraData, modelIdToNode: Map<number, TransformNode>, scene: Scene): FreeCamera | null {
         const parentNode = modelIdToNode.get(camData.modelId);
         const position = parentNode ? parentNode.position.clone() : Vector3.Zero();
 
@@ -1567,7 +1567,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return camera;
     }
 
-    private _createLight(lightData: FBXLightData, modelIdToNode: Map<bigint, TransformNode>, scene: Scene): PointLight | DirectionalLight | SpotLight | null {
+    private _createLight(lightData: FBXLightData, modelIdToNode: Map<number, TransformNode>, scene: Scene): PointLight | DirectionalLight | SpotLight | null {
         const parentNode = modelIdToNode.get(lightData.modelId);
         const position = parentNode ? parentNode.position.clone() : Vector3.Zero();
         const color = new Color3(lightData.color[0], lightData.color[1], lightData.color[2]);
@@ -1909,8 +1909,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         rigs: FBXRigData[],
         skeletonByRigId: Map<string, Skeleton>,
         scene: Scene,
-        modelIdToNode: Map<bigint, TransformNode>,
-        modelIdToData: Map<bigint, FBXModelData>,
+        modelIdToNode: Map<number, TransformNode>,
+        modelIdToData: Map<number, FBXModelData>,
         meshes: Mesh[]
     ): AnimationGroup | null {
         if (animStack.curveNodes.length === 0) {
@@ -1922,7 +1922,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         // Build a map from model ID to resolved rig bones. A single FBX model ID
         // should only appear once per resolved rig, but keeping an array preserves
         // the previous animation fan-out behavior for any future duplicate rigs.
-        const modelIdToBones = new Map<bigint, Bone[]>();
+        const modelIdToBones = new Map<number, Bone[]>();
         for (const rig of rigs) {
             const skeleton = skeletonByRigId.get(rig.id);
             if (!skeleton) {
@@ -1945,8 +1945,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
 
         // Group curve nodes by target
-        const boneCurves = new Map<bigint, FBXCurveNodeData[]>();
-        const nonBoneCurves = new Map<bigint, FBXCurveNodeData[]>();
+        const boneCurves = new Map<number, FBXCurveNodeData[]>();
+        const nonBoneCurves = new Map<number, FBXCurveNodeData[]>();
         const blendShapeCurves: FBXCurveNodeData[] = [];
 
         for (const curveNode of animStack.curveNodes) {
@@ -1971,7 +1971,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         // Process bone targets: compute full FBX local matrix per frame, decompose to TRS.
         // For bind-rest rigs, only the bones recorded in _bindRestBones need their
         // authored Lcl curves remapped onto the bind-rest local space.
-        const inheritedRigModelIds = new Set<bigint>();
+        const inheritedRigModelIds = new Set<number>();
         for (const rig of rigs) {
             const inheritType2ModelIds = new Set(rig.bones.filter((bone) => bone.inheritType === 2).map((bone) => bone.modelId));
             if (inheritType2ModelIds.size === 0) {
@@ -2060,7 +2060,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     continue;
                 }
                 const metadata = mesh.metadata as Record<string, unknown> | undefined;
-                const channelTargets = metadata?.fbxBlendShapeChannelTargets as Map<bigint, { targetIndices: number[]; fullWeights: number[] | null }> | undefined;
+                const channelTargets = metadata?.fbxBlendShapeChannelTargets as Map<number, { targetIndices: number[]; fullWeights: number[] | null }> | undefined;
                 const targetInfo = channelTargets?.get(targetChannelId);
                 if (targetInfo && curveNode.curves.length > 0) {
                     const fps = 30;
@@ -2084,7 +2084,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     continue;
                 }
 
-                const channelMap = metadata?.fbxBlendShapeChannelIds as Map<bigint, number> | undefined;
+                const channelMap = metadata?.fbxBlendShapeChannelIds as Map<number, number> | undefined;
                 if (!channelMap) {
                     continue;
                 }
@@ -2118,14 +2118,14 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _buildInheritedRigBoneAnimations(
         rig: FBXRigData,
         skeleton: Skeleton,
-        boneCurves: Map<bigint, FBXCurveNodeData[]>,
-        modelIdToData: Map<bigint, FBXModelData>,
-        compensatedModelIds: Set<bigint>,
+        boneCurves: Map<number, FBXCurveNodeData[]>,
+        modelIdToData: Map<number, FBXModelData>,
+        compensatedModelIds: Set<number>,
         startTime: number,
         stopTime: number
     ): { bone: Bone; animations: Animation[] }[] {
         const fps = 30;
-        const sampledModelIds = new Set<bigint>();
+        const sampledModelIds = new Set<number>();
         for (let i = 0; i < rig.bones.length; i++) {
             if (!compensatedModelIds.has(rig.bones[i].modelId)) {
                 continue;

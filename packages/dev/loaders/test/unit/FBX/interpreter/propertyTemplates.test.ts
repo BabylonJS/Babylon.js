@@ -48,7 +48,7 @@ function createSyntheticMaterialNode(): FBXNode {
     return {
         name: "Material",
         properties: [
-            { type: "int64", value: 1n },
+            { type: "int64", value: 1 },
             { type: "string", value: "Material" },
             { type: "string", value: "" },
         ],

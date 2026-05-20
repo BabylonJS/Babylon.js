@@ -7,19 +7,19 @@ import { cleanFBXName, getPropertyValue } from "../types/fbxTypes";
 export type FBXRigBoneData = FBXBoneData;
 
 export interface FBXSkinBindingData {
-    skinId: bigint;
-    geometryId: bigint;
+    skinId: number;
+    geometryId: number;
     rigId: string;
     skinBoneIndexToRigBoneIndex: number[];
-    clusterModelIds: Set<bigint>;
+    clusterModelIds: Set<number>;
 }
 
 export interface FBXRigData {
     id: string;
-    rootModelIds: bigint[];
+    rootModelIds: number[];
     bones: FBXRigBoneData[];
-    modelIdToBoneIndex: Map<bigint, number>;
-    clusterModelIds: Set<bigint>;
+    modelIdToBoneIndex: Map<number, number>;
+    clusterModelIds: Set<number>;
     skinBindings: FBXSkinBindingData[];
     warnings: string[];
 }
@@ -29,7 +29,7 @@ export function resolveRigs(objectMap: FBXObjectMap, skins: FBXSkinData[]): FBXR
         return [];
     }
 
-    const groupByRoot = new Map<bigint, FBXSkinData[]>();
+    const groupByRoot = new Map<number, FBXSkinData[]>();
 
     for (const skin of skins) {
         const clusterModelIds = skin.bones.filter((bone) => bone.isCluster).map((bone) => bone.modelId);
@@ -47,15 +47,15 @@ export function resolveRigs(objectMap: FBXObjectMap, skins: FBXSkinData[]): FBXR
     }
 
     return Array.from(groupByRoot.entries())
-        .sort(([a], [b]) => compareBigInt(a, b))
+        .sort(([a], [b]) => compareNumber(a, b))
         .map(([rootModelId, groupSkins]) => buildRig(rootModelId, groupSkins, objectMap));
 }
 
-function buildRig(rootModelId: bigint, skins: FBXSkinData[], objectMap: FBXObjectMap): FBXRigData {
-    const clusterModelIds = new Set<bigint>();
-    const rigModelIds = new Set<bigint>();
-    const sourceBonesByModelId = new Map<bigint, FBXBoneData[]>();
-    const sourceOrderByModelId = new Map<bigint, number>();
+function buildRig(rootModelId: number, skins: FBXSkinData[], objectMap: FBXObjectMap): FBXRigData {
+    const clusterModelIds = new Set<number>();
+    const rigModelIds = new Set<number>();
+    const sourceBonesByModelId = new Map<number, FBXBoneData[]>();
+    const sourceOrderByModelId = new Map<number, number>();
 
     for (const skin of skins) {
         for (const bone of skin.bones) {
@@ -82,7 +82,7 @@ function buildRig(rootModelId: bigint, skins: FBXSkinData[], objectMap: FBXObjec
     }
 
     const warnings = collectTransformLinkWarnings(sourceBonesByModelId);
-    const preferredBoneByModelId = new Map<bigint, FBXBoneData>();
+    const preferredBoneByModelId = new Map<number, FBXBoneData>();
     for (const [modelId, sources] of Array.from(sourceBonesByModelId)) {
         preferredBoneByModelId.set(modelId, choosePreferredBoneSource(sources));
     }
@@ -90,7 +90,7 @@ function buildRig(rootModelId: bigint, skins: FBXSkinData[], objectMap: FBXObjec
     const parentByModelId = buildParentMap(rigModelIds, objectMap);
     const orderedModelIds = orderParentsBeforeChildren(rigModelIds, parentByModelId, sourceOrderByModelId);
     const bones: FBXRigBoneData[] = [];
-    const modelIdToBoneIndex = new Map<bigint, number>();
+    const modelIdToBoneIndex = new Map<number, number>();
 
     for (const modelId of orderedModelIds) {
         const sourceBone = preferredBoneByModelId.get(modelId) ?? createFallbackBone(modelId, objectMap);
@@ -124,7 +124,7 @@ function buildRig(rootModelId: bigint, skins: FBXSkinData[], objectMap: FBXObjec
     };
 }
 
-function buildSkinBinding(skin: FBXSkinData, rigId: string, modelIdToBoneIndex: Map<bigint, number>): FBXSkinBindingData {
+function buildSkinBinding(skin: FBXSkinData, rigId: string, modelIdToBoneIndex: Map<number, number>): FBXSkinBindingData {
     const skinBoneIndexToRigBoneIndex = skin.bones.map((bone) => {
         const rigBoneIndex = modelIdToBoneIndex.get(bone.modelId);
         if (rigBoneIndex === undefined && bone.isCluster) {
@@ -142,7 +142,7 @@ function buildSkinBinding(skin: FBXSkinData, rigId: string, modelIdToBoneIndex: 
     };
 }
 
-function findRigGroupingRoot(clusterModelIds: bigint[], objectMap: FBXObjectMap): bigint {
+function findRigGroupingRoot(clusterModelIds: number[], objectMap: FBXObjectMap): number {
     const lca = findLowestCommonAncestor(clusterModelIds, objectMap) ?? clusterModelIds[0];
     let root = lca;
     let parentId = findModelParentId(root, objectMap);
@@ -160,7 +160,7 @@ function findRigGroupingRoot(clusterModelIds: bigint[], objectMap: FBXObjectMap)
     return root;
 }
 
-function findLowestCommonAncestor(modelIds: bigint[], objectMap: FBXObjectMap): bigint | undefined {
+function findLowestCommonAncestor(modelIds: number[], objectMap: FBXObjectMap): number | undefined {
     if (modelIds.length === 0) {
         return undefined;
     }
@@ -178,9 +178,9 @@ function findLowestCommonAncestor(modelIds: bigint[], objectMap: FBXObjectMap): 
     return chains[0].find((modelId) => common.has(modelId));
 }
 
-function getModelAncestorChain(modelId: bigint, objectMap: FBXObjectMap): bigint[] {
-    const chain: bigint[] = [];
-    let currentId: bigint | undefined = modelId;
+function getModelAncestorChain(modelId: number, objectMap: FBXObjectMap): number[] {
+    const chain: number[] = [];
+    let currentId: number | undefined = modelId;
 
     while (currentId !== undefined) {
         const node = objectMap.objects.get(currentId);
@@ -195,8 +195,8 @@ function getModelAncestorChain(modelId: bigint, objectMap: FBXObjectMap): bigint
     return chain;
 }
 
-function buildParentMap(modelIds: Set<bigint>, objectMap: FBXObjectMap): Map<bigint, bigint> {
-    const parentByModelId = new Map<bigint, bigint>();
+function buildParentMap(modelIds: Set<number>, objectMap: FBXObjectMap): Map<number, number> {
+    const parentByModelId = new Map<number, number>();
 
     for (const modelId of Array.from(modelIds)) {
         const parentId = findModelParentId(modelId, objectMap);
@@ -208,8 +208,8 @@ function buildParentMap(modelIds: Set<bigint>, objectMap: FBXObjectMap): Map<big
     return parentByModelId;
 }
 
-function orderParentsBeforeChildren(modelIds: Set<bigint>, parentByModelId: Map<bigint, bigint>, sourceOrderByModelId: Map<bigint, number>): bigint[] {
-    const childrenByModelId = new Map<bigint, bigint[]>();
+function orderParentsBeforeChildren(modelIds: Set<number>, parentByModelId: Map<number, number>, sourceOrderByModelId: Map<number, number>): number[] {
+    const childrenByModelId = new Map<number, number[]>();
     for (const modelId of Array.from(modelIds)) {
         const parentId = parentByModelId.get(modelId);
         if (parentId === undefined) {
@@ -231,7 +231,7 @@ function orderParentsBeforeChildren(modelIds: Set<bigint>, parentByModelId: Map<
     const roots = Array.from(modelIds)
         .filter((modelId) => !parentByModelId.has(modelId))
         .sort((a, b) => compareSourceOrder(a, b, sourceOrderByModelId));
-    const ordered: bigint[] = [];
+    const ordered: number[] = [];
     const queue = [...roots];
 
     while (queue.length > 0) {
@@ -243,7 +243,7 @@ function orderParentsBeforeChildren(modelIds: Set<bigint>, parentByModelId: Map<
     return ordered;
 }
 
-function findModelParentId(modelId: bigint, objectMap: FBXObjectMap): bigint | undefined {
+function findModelParentId(modelId: number, objectMap: FBXObjectMap): number | undefined {
     const parentConnection = objectMap.connections.find((conn) => conn.type === "OO" && conn.childId === modelId && objectMap.objects.get(conn.parentId)?.name === "Model");
     return parentConnection?.parentId;
 }
@@ -257,7 +257,7 @@ function choosePreferredBoneSource(sources: FBXBoneData[]): FBXBoneData {
     );
 }
 
-function collectTransformLinkWarnings(sourceBonesByModelId: Map<bigint, FBXBoneData[]>): string[] {
+function collectTransformLinkWarnings(sourceBonesByModelId: Map<number, FBXBoneData[]>): string[] {
     const warnings: string[] = [];
 
     for (const [modelId, sources] of Array.from(sourceBonesByModelId)) {
@@ -287,7 +287,7 @@ function areMatricesEquivalent(a: Float64Array, b: Float64Array, epsilon: number
     return true;
 }
 
-function createFallbackBone(modelId: bigint, objectMap: FBXObjectMap): FBXBoneData | null {
+function createFallbackBone(modelId: number, objectMap: FBXObjectMap): FBXBoneData | null {
     const modelNode = objectMap.objects.get(modelId);
     if (!modelNode || modelNode.name !== "Model") {
         return null;
@@ -320,12 +320,12 @@ function createFallbackBone(modelId: bigint, objectMap: FBXObjectMap): FBXBoneDa
     };
 }
 
-function compareBigInt(a: bigint, b: bigint): number {
+function compareNumber(a: number, b: number): number {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
-function compareSourceOrder(a: bigint, b: bigint, sourceOrderByModelId: Map<bigint, number>): number {
+function compareSourceOrder(a: number, b: number, sourceOrderByModelId: Map<number, number>): number {
     const aOrder = sourceOrderByModelId.get(a) ?? Number.MAX_SAFE_INTEGER;
     const bOrder = sourceOrderByModelId.get(b) ?? Number.MAX_SAFE_INTEGER;
-    return aOrder - bOrder || compareBigInt(a, b);
+    return aOrder - bOrder || compareNumber(a, b);
 }

@@ -281,12 +281,10 @@ function parseNodeFromTokens(tokenizer: Tokenizer): FBXNode | null {
         if (peek.type === TokenType.Number) {
             const tok = tokenizer.next();
             const numVal = parseNumericValue(tok.value);
-            if (typeof numVal === "bigint") {
-                properties.push({ type: "int64", value: numVal });
-            } else if (Number.isInteger(numVal) && !tok.value.includes(".")) {
-                properties.push({ type: "int32", value: numVal as number });
+            if (Number.isInteger(numVal) && !tok.value.includes(".") && !tok.value.includes("e") && !tok.value.includes("E")) {
+                properties.push({ type: isInt32(numVal) ? "int32" : "int64", value: numVal });
             } else {
-                properties.push({ type: "float64", value: numVal as number });
+                properties.push({ type: "float64", value: numVal });
             }
         } else if (peek.type === TokenType.String) {
             const tok = tokenizer.next();
@@ -331,7 +329,7 @@ function parseNodeFromTokens(tokenizer: Tokenizer): FBXNode | null {
     return { name, properties, children };
 }
 
-function parseArrayValues(tokenizer: Tokenizer, _count: number): number[] {
+function parseArrayValues(tokenizer: Tokenizer, count: number): number[] {
     const values: number[] = [];
     while (true) {
         const peek = tokenizer.peek();
@@ -349,16 +347,16 @@ function parseArrayValues(tokenizer: Tokenizer, _count: number): number[] {
             break;
         }
     }
+    if (values.length !== count) {
+        throw new Error(`ASCII FBX array declared ${count} values but parsed ${values.length}`);
+    }
     return values;
 }
 
-function parseNumericValue(str: string): number | bigint {
-    // If the number is very large (FBX UIDs are int64), use bigint
-    if (!str.includes(".") && !str.includes("e") && !str.includes("E")) {
-        const n = Number(str);
-        if (n > Number.MAX_SAFE_INTEGER || n < Number.MIN_SAFE_INTEGER) {
-            return BigInt(str);
-        }
-    }
+function parseNumericValue(str: string): number {
     return Number(str);
+}
+
+function isInt32(value: number): boolean {
+    return value >= -2147483648 && value <= 2147483647;
 }

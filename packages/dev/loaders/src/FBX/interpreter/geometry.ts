@@ -20,7 +20,7 @@ export interface FBXGeometryDiagnostic {
 /** Parsed geometry data ready for Babylon consumption */
 export interface FBXGeometryData {
     /** Node ID from the FBX document */
-    id: bigint;
+    id: number;
     /** Geometry name */
     name: string;
     /** Flat array of vertex positions [x,y,z, x,y,z, ...] */
@@ -51,7 +51,7 @@ export interface FBXGeometryData {
  * Extract geometry data from an FBX Geometry node.
  * Handles polygon triangulation and layer element expansion.
  */
-export function extractGeometry(geometryNode: FBXNode, nodeId: bigint): FBXGeometryData {
+export function extractGeometry(geometryNode: FBXNode, nodeId: number): FBXGeometryData {
     const name = cleanFBXName(getPropertyValue<string>(geometryNode, 1) ?? "Geometry");
 
     // Extract raw vertices

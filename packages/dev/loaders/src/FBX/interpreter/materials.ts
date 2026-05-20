@@ -7,7 +7,7 @@ import { getPropertyTemplate, resolvePropertyValue, resolvePropertyValues, type 
 
 /** Parsed material data */
 export interface FBXMaterialData {
-    id: bigint;
+    id: number;
     name: string;
     type: "Lambert" | "Phong";
     properties: FBXMaterialProperties;
@@ -36,7 +36,7 @@ export interface FBXTextureRef {
     /** Relative file path from the FBX */
     relativeFileName: string;
     /** Texture node ID */
-    id: bigint;
+    id: number;
     /** Embedded texture data (from Video node Content), if available */
     embeddedData: Uint8Array | null;
     /** UV translation [u, v] */
@@ -54,7 +54,7 @@ export interface FBXTextureRef {
 /**
  * Extract material data from an FBX Material node.
  */
-export function extractMaterial(materialNode: FBXNode, materialId: bigint, objectMap: FBXObjectMap, templates?: FBXPropertyTemplateMap): FBXMaterialData {
+export function extractMaterial(materialNode: FBXNode, materialId: number, objectMap: FBXObjectMap, templates?: FBXPropertyTemplateMap): FBXMaterialData {
     const name = cleanFBXName(getPropertyValue<string>(materialNode, 1) ?? "Material");
     const template = getMaterialTemplate(materialNode, templates);
 
@@ -92,7 +92,7 @@ function extractMaterialProperties(materialNode: FBXNode, template?: FBXProperty
     return props;
 }
 
-function extractTextures(materialId: bigint, objectMap: FBXObjectMap, template?: FBXPropertyTemplate): FBXTextureRef[] {
+function extractTextures(materialId: number, objectMap: FBXObjectMap, template?: FBXPropertyTemplate): FBXTextureRef[] {
     const textures: FBXTextureRef[] = [];
     const textureChildren = getChildren(objectMap, materialId, "Texture");
 
@@ -198,9 +198,6 @@ function getTextureVector2(node: FBXNode, template: FBXPropertyTemplate | undefi
 function toNumber(value: unknown): number | undefined {
     if (typeof value === "number") {
         return value;
-    }
-    if (typeof value === "bigint") {
-        return Number(value);
     }
     return undefined;
 }

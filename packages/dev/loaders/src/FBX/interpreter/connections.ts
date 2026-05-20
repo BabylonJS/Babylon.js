@@ -6,14 +6,14 @@ export type ConnectionType = "OO" | "OP";
 
 export interface FBXConnection {
     type: ConnectionType;
-    childId: bigint;
-    parentId: bigint;
+    childId: number;
+    parentId: number;
     /** For OP connections, the property name on the parent (e.g. "DiffuseColor") */
     propertyName?: string;
 }
 
 export interface FBXObjectEntry {
-    id: bigint;
+    id: number;
     node: FBXNode;
     source: "Objects" | "legacySyntheticGeometry";
     legacyName?: string;
@@ -23,8 +23,8 @@ export interface FBXObjectEntry {
 export interface FBXConnectionEntry {
     source: "C" | "Connect";
     rawType?: string;
-    childId?: bigint;
-    parentId?: bigint;
+    childId?: number;
+    parentId?: number;
     propertyName?: string;
     accepted: boolean;
 }
@@ -42,20 +42,20 @@ export interface FBXConnectionDiagnostic {
     message: string;
     connectionIndex?: number;
     type?: string;
-    childId?: bigint;
-    parentId?: bigint;
+    childId?: number;
+    parentId?: number;
     propertyName?: string;
 }
 
 export interface FBXObjectMap {
     /** All objects by their unique ID */
-    objects: Map<bigint, FBXNode>;
+    objects: Map<number, FBXNode>;
     /** Object table entries, including synthetic compatibility objects */
     objectEntries: FBXObjectEntry[];
     /** Children of each object ID */
-    childrenOf: Map<bigint, { id: bigint; propertyName?: string }[]>;
+    childrenOf: Map<number, { id: number; propertyName?: string }[]>;
     /** Parent of each object ID */
-    parentOf: Map<bigint, { id: bigint; propertyName?: string }>;
+    parentOf: Map<number, { id: number; propertyName?: string }>;
     /** Raw connection list */
     connections: FBXConnection[];
     /** Raw connection-table entries and whether they were accepted into the graph */
@@ -69,18 +69,18 @@ export interface FBXObjectMap {
  * Maps object IDs to their FBXNode and resolves parent-child relationships.
  */
 export function resolveConnections(doc: FBXDocument): FBXObjectMap {
-    const objects = new Map<bigint, FBXNode>();
+    const objects = new Map<number, FBXNode>();
     const objectEntries: FBXObjectEntry[] = [];
-    const childrenOf = new Map<bigint, { id: bigint; propertyName?: string }[]>();
-    const parentOf = new Map<bigint, { id: bigint; propertyName?: string }>();
+    const childrenOf = new Map<number, { id: number; propertyName?: string }[]>();
+    const parentOf = new Map<number, { id: number; propertyName?: string }>();
     const connections: FBXConnection[] = [];
     const connectionEntries: FBXConnectionEntry[] = [];
     const diagnostics: FBXConnectionDiagnostic[] = [];
-    const legacyIds = new Map<string, bigint>();
-    const syntheticLegacyIds = new Map<string, Map<string, bigint>>();
-    let nextLegacyId = -1n;
+    const legacyIds = new Map<string, number>();
+    const syntheticLegacyIds = new Map<string, Map<string, number>>();
+    let nextLegacyId = -1;
 
-    const getLegacyId = (name: string): bigint => {
+    const getLegacyId = (name: string): number => {
         let id = legacyIds.get(name);
         if (id === undefined) {
             id = nextLegacyId--;
@@ -89,7 +89,7 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
         return id;
     };
 
-    const getSyntheticLegacyId = (role: string, name: string): bigint => {
+    const getSyntheticLegacyId = (role: string, name: string): number => {
         let idsByName = syntheticLegacyIds.get(role);
         if (!idsByName) {
             idsByName = new Map();
@@ -110,7 +110,7 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
         for (const obj of objectsNode.children) {
             const idProp = obj.properties[0];
             if (idProp) {
-                const id = toBigInt(idProp.value);
+                const id = toObjectNumber(idProp.value);
                 if (id !== undefined) {
                     objects.set(id, obj);
                     objectEntries.push({ id, node: obj, source: "Objects", synthetic: false });
@@ -216,7 +216,7 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
                     propertyName,
                 });
             }
-            if (parentId !== 0n && !objects.has(parentId)) {
+            if (parentId !== 0 && !objects.has(parentId)) {
                 diagnostics.push({
                     reason: "unresolved-object-reference",
                     message: "FBX connection parent ID is not present in the object table.",
@@ -237,9 +237,9 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
 }
 
 /** Get all child objects of a given parent ID, optionally filtered by node name */
-export function getChildren(map: FBXObjectMap, parentId: bigint, nodeName?: string): { id: bigint; node: FBXNode; propertyName?: string }[] {
+export function getChildren(map: FBXObjectMap, parentId: number, nodeName?: string): { id: number; node: FBXNode; propertyName?: string }[] {
     const children = map.childrenOf.get(parentId) ?? [];
-    const result: { id: bigint; node: FBXNode; propertyName?: string }[] = [];
+    const result: { id: number; node: FBXNode; propertyName?: string }[] = [];
 
     for (const child of children) {
         const node = map.objects.get(child.id);
@@ -251,18 +251,15 @@ export function getChildren(map: FBXObjectMap, parentId: bigint, nodeName?: stri
     return result;
 }
 
-function toBigInt(value: unknown): bigint | undefined {
-    if (typeof value === "bigint") {
-        return value;
-    }
+function toObjectNumber(value: unknown): number | undefined {
     if (typeof value === "number") {
-        return BigInt(Math.round(value));
+        return value;
     }
     return undefined;
 }
 
-function toObjectId(value: unknown, legacyIds: Map<string, bigint>): bigint | undefined {
-    const numericId = toBigInt(value);
+function toObjectId(value: unknown, legacyIds: Map<string, number>): number | undefined {
+    const numericId = toObjectNumber(value);
     if (numericId !== undefined) {
         return numericId;
     }
@@ -271,19 +268,19 @@ function toObjectId(value: unknown, legacyIds: Map<string, bigint>): bigint | un
     }
     const legacyName = cleanFBXName(value);
     if (legacyName === "Scene") {
-        return 0n;
+        return 0;
     }
     return legacyIds.get(legacyName);
 }
 
 function addConnection(
     connections: FBXConnection[],
-    childrenOf: Map<bigint, { id: bigint; propertyName?: string }[]>,
-    parentOf: Map<bigint, { id: bigint; propertyName?: string }>,
+    childrenOf: Map<number, { id: number; propertyName?: string }[]>,
+    parentOf: Map<number, { id: number; propertyName?: string }>,
     diagnostics: FBXConnectionDiagnostic[],
     type: ConnectionType,
-    childId: bigint,
-    parentId: bigint,
+    childId: number,
+    parentId: number,
     propertyName?: string,
     connectionIndex?: number
 ): void {
@@ -308,7 +305,7 @@ function addConnection(
     parentOf.set(childId, { id: parentId, propertyName });
 }
 
-function normalizeLegacyObject(node: FBXNode, id: bigint): FBXNode {
+function normalizeLegacyObject(node: FBXNode, id: number): FBXNode {
     const name = cleanFBXName(getPropertyValue<string>(node, 0) ?? node.name);
     const subType = getPropertyValue<string>(node, 1) ?? "";
     return {
@@ -321,7 +318,7 @@ function normalizeLegacyObject(node: FBXNode, id: bigint): FBXNode {
     };
 }
 
-function createLegacyGeometry(modelNode: FBXNode, geometryId: bigint): FBXNode {
+function createLegacyGeometry(modelNode: FBXNode, geometryId: number): FBXNode {
     const name = cleanFBXName(getPropertyValue<string>(modelNode, 0) ?? "Geometry");
     return {
         name: "Geometry",

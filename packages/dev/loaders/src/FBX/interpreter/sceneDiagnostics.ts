@@ -15,7 +15,7 @@ export type FBXSceneDiagnosticType =
 export interface FBXSceneDiagnostic {
     type: FBXSceneDiagnosticType;
     message: string;
-    objectId?: bigint;
+    objectId?: number;
     objectName?: string;
     nodeName?: string;
     subType?: string;
@@ -104,7 +104,7 @@ function isSupportedDeformer(subType: string): boolean {
     return subType === "Skin" || subType === "Cluster" || subType === "BlendShape" || subType === "BlendShapeChannel";
 }
 
-function createObjectDiagnostic(objectMap: FBXObjectMap, id: bigint, node: FBXNode, type: FBXSceneDiagnosticType, message: string): FBXSceneDiagnostic {
+function createObjectDiagnostic(objectMap: FBXObjectMap, id: number, node: FBXNode, type: FBXSceneDiagnosticType, message: string): FBXSceneDiagnostic {
     return {
         type,
         message,

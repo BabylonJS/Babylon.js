@@ -6,7 +6,7 @@ describe("FBX geometry fidelity", () => {
     it("ear-clips concave polygons while preserving per-polygon material indices", () => {
         const geometry = extractGeometry(
             createGeometryNode([0, 0, 0, 2, 0, 0, 1, 1, 0, 2, 2, 0, 0, 2, 0, 3, 0, 0, 4, 0, 0, 3, 1, 0], [0, 1, 2, 3, -5, 5, 6, -8], [createLayerElementMaterial([7, 3])]),
-            1n
+            1
         );
 
         expect(geometry.indices.length).toBe(12);
@@ -15,7 +15,7 @@ describe("FBX geometry fidelity", () => {
     });
 
     it("falls back for degenerate n-gons and records diagnostics", () => {
-        const geometry = extractGeometry(createGeometryNode([0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0], [0, 1, 2, -4]), 1n);
+        const geometry = extractGeometry(createGeometryNode([0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0], [0, 1, 2, -4]), 1);
 
         expect(geometry.indices.length).toBe(6);
         expect(geometry.diagnostics.some((diagnostic) => diagnostic.type === "degenerate-polygon")).toBe(true);
@@ -32,7 +32,7 @@ describe("FBX geometry fidelity", () => {
                     createLayerElement("LayerElementBinormal", "Binormals", "BinormalsIndex", [0, 1, 0, 0, 1, 0, 0, 1, 0]),
                 ]
             ),
-            1n
+            1
         );
 
         expect(Array.from(geometry.tangents ?? [])).toEqual([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]);
@@ -44,7 +44,7 @@ function createGeometryNode(vertices: number[], polygonVertexIndex: number[], ch
     return {
         name: "Geometry",
         properties: [
-            { type: "int64", value: 1n },
+            { type: "int64", value: 1 },
             { type: "string", value: "Geometry::Synthetic" },
             { type: "string", value: "Mesh" },
         ],

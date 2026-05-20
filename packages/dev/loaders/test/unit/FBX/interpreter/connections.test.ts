@@ -10,12 +10,12 @@ describe("resolveConnections", () => {
                 {
                     name: "Objects",
                     properties: [],
-                    children: [createObject("Model", 1n, "Root", "Null")],
+                    children: [createObject("Model", 1, "Root", "Null")],
                 },
                 {
                     name: "Connections",
                     properties: [],
-                    children: [createConnection("XX", 1n, 0n), createConnection("OO", "MissingLegacy", "Scene", "Connect")],
+                    children: [createConnection("XX", 1, 0), createConnection("OO", "MissingLegacy", "Scene", "Connect")],
                 },
             ],
         });
@@ -55,22 +55,22 @@ describe("resolveConnections", () => {
                 {
                     name: "Objects",
                     properties: [],
-                    children: [createObject("Model", 1n, "Child", "Null"), createObject("Model", 2n, "ParentA", "Null"), createObject("Model", 3n, "ParentB", "Null")],
+                    children: [createObject("Model", 1, "Child", "Null"), createObject("Model", 2, "ParentA", "Null"), createObject("Model", 3, "ParentB", "Null")],
                 },
                 {
                     name: "Connections",
                     properties: [],
-                    children: [createConnection("OO", 1n, 2n), createConnection("OO", 1n, 3n)],
+                    children: [createConnection("OO", 1, 2), createConnection("OO", 1, 3)],
                 },
             ],
         });
 
-        expect(map.parentOf.get(1n)?.id).toBe(3n);
+        expect(map.parentOf.get(1)?.id).toBe(3);
         expect(map.diagnostics.some((diagnostic) => diagnostic.reason === "duplicate-parent")).toBe(true);
     });
 });
 
-function createObject(name: string, id: bigint, objectName: string, subType: string): FBXNode {
+function createObject(name: string, id: number, objectName: string, subType: string): FBXNode {
     return {
         name,
         properties: [
@@ -93,13 +93,13 @@ function createLegacyObject(name: string, objectName: string, subType: string): 
     };
 }
 
-function createConnection(type: string, child: bigint | string, parent: bigint | string, nodeName = "C"): FBXNode {
+function createConnection(type: string, child: number | string, parent: number | string, nodeName = "C"): FBXNode {
     return {
         name: nodeName,
         properties: [
             { type: "string", value: type },
-            typeof child === "bigint" ? { type: "int64", value: child } : { type: "string", value: child },
-            typeof parent === "bigint" ? { type: "int64", value: parent } : { type: "string", value: parent },
+            typeof child === "number" ? { type: "int64", value: child } : { type: "string", value: child },
+            typeof parent === "number" ? { type: "int64", value: parent } : { type: "string", value: parent },
         ],
         children: [],
     };
