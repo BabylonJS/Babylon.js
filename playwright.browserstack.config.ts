@@ -9,7 +9,7 @@
  *       --config ./playwright.browserstack.config.ts
  *
  * Supported BSTACK_TEST_TYPE values:
- *   webgl2, webgpu, interaction, performance
+ *   webgl2, webgpu, interaction, performance, es6vis
  */
 
 import { defineConfig } from "@playwright/test";
@@ -28,6 +28,29 @@ const playwrightVersion: string = require("@playwright/test/package.json").versi
 
 const testType = process.env.BSTACK_TEST_TYPE || "webgl2";
 const isPerformanceRun = testType === "performance";
+const browserStackLocalIdentifier = process.env.BROWSERSTACK_LOCAL_IDENTIFIER;
+
+// ---------------------------------------------------------------------------
+// Per-test-type testMatch patterns
+// ---------------------------------------------------------------------------
+const testConfigs: Record<string, { testMatch: string | string[]; local?: boolean }> = {
+    webgl2: { testMatch: "**/*webgl2.test.ts" },
+    webgpu: { testMatch: "**/*webgpu.test.ts" },
+    interaction: { testMatch: "**/interaction.test.ts" },
+    performance: { testMatch: "**/test/performance/visualization.test.ts" },
+    es6vis: { testMatch: "**/es6vis.test.ts", local: true },
+};
+
+const activeConfig = testConfigs[testType];
+if (!activeConfig) {
+    throw new Error(`Unknown BSTACK_TEST_TYPE: "${testType}". Valid values: ${Object.keys(testConfigs).join(", ")}`);
+}
+
+const usesBrowserStackLocal = activeConfig.local === true;
+
+if (usesBrowserStackLocal) {
+    process.env.ES6VIS_PREBUNDLE = "true";
+}
 
 // ---------------------------------------------------------------------------
 // BrowserStack CDP capabilities
@@ -47,7 +70,8 @@ const caps = {
     "browserstack.debug": "false",
     "browserstack.idleTimeout": "300",
     "browserstack.playwrightVersion": playwrightVersion,
-    "browserstack.local": testType === "es6vis" ? "true" : "false",
+    "browserstack.local": usesBrowserStackLocal ? "true" : "false",
+    ...(usesBrowserStackLocal && browserStackLocalIdentifier ? { "browserstack.localIdentifier": browserStackLocalIdentifier } : {}),
 };
 
 // SECURITY NOTE: The wsEndpoint embeds BROWSERSTACK_ACCESS_KEY. Playwright may
@@ -56,26 +80,6 @@ const caps = {
 // Azure DevOps variable group, and do NOT publish playwright-report/ or
 // trace-*.zip as public CI artifacts.
 const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
-
-// ---------------------------------------------------------------------------
-// Per-test-type testMatch patterns
-// ---------------------------------------------------------------------------
-const testConfigs: Record<string, { testMatch: string | string[]; local?: boolean }> = {
-    webgl2: { testMatch: "**/*webgl2.test.ts" },
-    webgpu: { testMatch: "**/*webgpu.test.ts" },
-    interaction: { testMatch: "**/interaction.test.ts" },
-    performance: { testMatch: "**/test/performance/visualization.test.ts" },
-    es6vis: { testMatch: "**/es6vis.test.ts", local: true },
-};
-
-const activeConfig = testConfigs[testType];
-if (!activeConfig) {
-    throw new Error(`Unknown BSTACK_TEST_TYPE: "${testType}". Valid values: ${Object.keys(testConfigs).join(", ")}`);
-}
-
-if (activeConfig.local) {
-    process.env.ES6VIS_PREBUNDLE = "true";
-}
 
 // ---------------------------------------------------------------------------
 // Reporters
@@ -97,12 +101,12 @@ const es6visWebServer = activeConfig.local
       }
     : undefined;
 
-const testTimeout = testType === "es6vis" ? 60_000 : isPerformanceRun ? 300_000 : undefined;
+const testTimeout = usesBrowserStackLocal ? 60_000 : isPerformanceRun ? 300_000 : undefined;
 
 export default defineConfig({
     fullyParallel: true,
     forbidOnly: true,
-    retries: testType === "es6vis" ? 1 : 2,
+    retries: usesBrowserStackLocal ? 1 : 2,
     workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 2,
     timeout: testTimeout,
     reporter: baseReporters,

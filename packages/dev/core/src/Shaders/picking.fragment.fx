@@ -1,4 +1,8 @@
 ﻿
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+precision highp int;
+#endif
+
 #if defined(INSTANCES)
 flat varying float vMeshID;
 #else
