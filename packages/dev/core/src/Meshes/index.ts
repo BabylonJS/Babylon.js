@@ -38,6 +38,7 @@ export * from "./Node/index";
 export * from "./GaussianSplatting/gaussianSplattingMeshBase";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
 export * from "./GaussianSplatting/gaussianSplattingCompoundMesh";
+export * from "./GaussianSplatting/gaussianSplattingDebugger";
 
 // LineMesh
 export * from "../Shaders/color.fragment";
