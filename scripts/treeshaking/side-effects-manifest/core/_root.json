@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "index.ts": ["bare-import"],
+        "scene.ts": ["top-level-call"]
+    }
+}

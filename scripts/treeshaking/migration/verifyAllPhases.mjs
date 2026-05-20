@@ -21,11 +21,12 @@
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { resolve, dirname, relative, join } from "path";
 import { fileURLToPath } from "url";
+import { readSideEffectsManifest } from "../sideEffectsManifest.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../../..");
 const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = resolve(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
+const MANIFEST_PATH = resolve(REPO_ROOT, "scripts/treeshaking/side-effects-manifest/core");
 
 const VERBOSE = process.argv.includes("--verbose");
 
@@ -65,7 +66,7 @@ function getBarrelExports(barrelPath) {
 
 let manifest;
 try {
-    manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+    manifest = readSideEffectsManifest(MANIFEST_PATH);
 } catch {
     console.error("ERROR: Cannot read side-effects manifest. Run: npm run audit:side-effects");
     process.exit(2);

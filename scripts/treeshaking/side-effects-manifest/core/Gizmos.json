@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "Gizmos/planeRotationGizmo.ts": ["bare-import"]
+    }
+}

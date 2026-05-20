@@ -29,13 +29,14 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, relative, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 const PUBLIC_PKG_JSON = join(REPO_ROOT, "packages/public/@babylonjs/core/package.json");
-const MANIFEST_PATH = join(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = join(__dirname, "side-effects-manifest/core");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -136,7 +137,7 @@ function main() {
     const verbose = args.includes("--verbose");
 
     // Read manifest
-    const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
+    const manifest = readSideEffectsManifest(MANIFEST_PATH);
     const seFiles = manifest.manifest.map((r) => toPosixPath(r.file));
 
     // Count side-effectful files per top-level directory

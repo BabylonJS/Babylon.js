@@ -15,11 +15,12 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, basename, dirname } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
+import { readSideEffectsManifest } from "../sideEffectsManifest.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "../../..");
 const SRC = join(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
+const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest/core");
 
 const PURE_HEADER = "/** This file must only contain pure code and pure imports */\n\n";
 const BARE_RE = /^import\s+["']([^"']+)["']\s*;?\s*$/;
@@ -27,7 +28,7 @@ const BARE_RE = /^import\s+["']([^"']+)["']\s*;?\s*$/;
 const DRY_RUN = process.argv.includes("--dry-run");
 const VERBOSE = process.argv.includes("--verbose");
 
-const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
+const manifest = readSideEffectsManifest(MANIFEST_PATH);
 
 let created = 0;
 let skipped = 0;

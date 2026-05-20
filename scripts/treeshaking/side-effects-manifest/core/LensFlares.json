@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "LensFlares/lensFlareSystemSceneComponent.ts": ["top-level-call"],
+        "LensFlares/lensFlareSystemSceneComponent.types.ts": ["declare-module"]
+    }
+}
