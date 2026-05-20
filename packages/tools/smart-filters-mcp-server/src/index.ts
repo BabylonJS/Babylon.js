@@ -22,13 +22,63 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod/v4";
-import { CreateInlineJsonSchema, CreateJsonFileSchema, CreateJsonImportResponse, CreateOutputFileSchema, WriteTextFileEnsuringDirectory } from "../../mcp-server-core/src/index.js";
+import {
+    CreateErrorResponse,
+    CreateInlineJsonSchema,
+    CreateJsonFileSchema,
+    CreateJsonImportResponse,
+    CreateOutputFileSchema,
+    CreateTextResponse,
+    McpEditorSessionController,
+    WriteTextFileEnsuringDirectory,
+} from "@tools/mcp-server-core";
 
 import { BlockRegistry, GetBlockCatalogSummary, GetBlockTypeDetails } from "./blockRegistry.js";
 import { SmartFiltersGraphManager } from "./smartFiltersGraph.js";
 
 // ─── Singleton graph manager ──────────────────────────────────────────────
 const manager = new SmartFiltersGraphManager();
+const sessionController = new McpEditorSessionController<SmartFiltersGraphManager>(
+    {
+        serverName: "Smart Filters MCP Session Server",
+        documentKind: "smart-filter",
+        managerUnavailableMessage: "Smart Filters graph manager is not available",
+        getDocument: (manager, session) => manager.exportJSON(session.name),
+        setDocument: (manager, session, document) => {
+            const result = manager.importJSON(session.name, document);
+            return result && result !== "OK" ? result : undefined;
+        },
+    },
+    {
+        defaultPort: 3001,
+        statusTitle: "Smart Filters MCP Session Server",
+    }
+);
+
+/**
+ * Notify SSE subscribers if a session exists for the given Smart Filter graph.
+ * @param graphName - The graph name to check for active sessions.
+ */
+function _notifyIfSession(graphName: string): void {
+    const sessionId = sessionController.getSessionIdForName(graphName);
+    if (sessionId) {
+        sessionController.notifySessionUpdate(sessionId);
+    }
+}
+
+/**
+ * Import Smart Filter JSON and notify a matching live session on success.
+ * @param graphName - The graph name to import into.
+ * @param jsonText - Serialized Smart Filter JSON.
+ * @returns "OK" on success, or an error string.
+ */
+function _importFilterGraphJson(graphName: string, jsonText: string): string {
+    const result = manager.importJSON(graphName, jsonText);
+    if (result === "OK") {
+        _notifyIfSession(graphName);
+    }
+    return result;
+}
 
 // ─── MCP Server ───────────────────────────────────────────────────────────
 const server = new McpServer(
@@ -225,14 +275,12 @@ server.registerTool(
     },
     async ({ name, comments }) => {
         manager.createGraph(name, comments);
-        return {
-            content: [
-                {
-                    type: "text",
-                    text: `Created Smart Filter graph "${name}" with OutputBlock [1]. Add blocks with add_block, connect with connect_blocks, then export with export_filter_graph_json.`,
-                },
-            ],
-        };
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(name);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(
+            `Created Smart Filter graph "${name}" with OutputBlock [1]. Add blocks with add_block, connect with connect_blocks, then export with export_filter_graph_json.\n\nMCP Session URL: ${sessionUrl}`
+        );
     }
 );
 
@@ -264,6 +312,9 @@ server.registerTool(
     },
     async ({ name }) => {
         const ok = manager.deleteGraph(name);
+        if (ok) {
+            sessionController.closeSessionForName(name);
+        }
         return {
             content: [{ type: "text", text: ok ? `Deleted "${name}".` : `Filter graph "${name}" not found.` }],
         };
@@ -284,6 +335,7 @@ server.registerTool(
         if (typeof result === "string") {
             return { content: [{ type: "text", text: `Error: ${result}` }], isError: true };
         }
+        _notifyIfSession(targetName);
         return {
             content: [{ type: "text", text: `Cloned "${sourceName}" → "${targetName}" (${result.blocks.length} blocks, ${result.connections.length} connections).` }],
         };
@@ -298,6 +350,9 @@ server.registerTool(
     async () => {
         const names = manager.listGraphs();
         manager.clearAll();
+        for (const name of names) {
+            sessionController.closeSessionForName(name);
+        }
         return {
             content: [
                 {
@@ -308,6 +363,65 @@ server.registerTool(
         };
     }
 );
+
+server.registerTool(
+    "get_session_url",
+    {
+        description: "Get or create a live-session URL for a Smart Filter graph. The URL can be pasted into the Smart Filters Editor MCP session panel.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the Smart Filter graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const graphs = manager.listGraphs();
+        if (!graphs.includes(graphName)) {
+            return CreateErrorResponse(`Filter graph "${graphName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(graphName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`MCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "start_session",
+    {
+        description: "Start a live editor session for a Smart Filter graph and return its URL.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the Smart Filter graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const graphs = manager.listGraphs();
+        if (!graphs.includes(graphName)) {
+            return CreateErrorResponse(`Filter graph "${graphName}" not found.`);
+        }
+        const port = await sessionController.startAsync(manager);
+        const sessionId = sessionController.createSession(graphName);
+        const sessionUrl = sessionController.getSessionUrl(sessionId, port);
+        return CreateTextResponse(`Started Smart Filters editor session for "${graphName}".\n\nMCP Session URL: ${sessionUrl}`);
+    }
+);
+
+server.registerTool(
+    "close_session",
+    {
+        description: "Close the live editor session for a Smart Filter graph.",
+        inputSchema: {
+            graphName: z.string().describe("Name of the Smart Filter graph"),
+        },
+    },
+    async ({ graphName }) => {
+        const closed = sessionController.closeSessionForName(graphName);
+        return CreateTextResponse(closed ? `Closed Smart Filters editor session for "${graphName}".` : `No active Smart Filters editor session for "${graphName}".`);
+    }
+);
+
+server.registerTool("stop_session_server", { description: "Stop the local Smart Filters MCP HTTP/SSE session server and close all active sessions." }, async () => {
+    await sessionController.stopAsync();
+    return CreateTextResponse("Smart Filters MCP session server stopped.");
+});
 
 // ── Block operations ────────────────────────────────────────────────────
 
@@ -334,6 +448,7 @@ server.registerTool(
         if (typeof result === "string") {
             return { content: [{ type: "text", text: `Error: ${result}` }], isError: true };
         }
+        _notifyIfSession(graphName);
         const lines = [`Added block [${result.block.uniqueId}] "${result.block.name}" (${blockType}). Use uniqueId ${result.block.uniqueId} to connect it.`];
         if (result.warnings) {
             lines.push("", "Warnings:", ...result.warnings);
@@ -361,17 +476,22 @@ server.registerTool(
     },
     async ({ graphName, blocks }) => {
         const results: string[] = [];
+        let changed = false;
         for (const blockDef of blocks) {
             const result = manager.addBlock(graphName, blockDef.blockType, blockDef.name, blockDef.properties as Record<string, unknown>);
             if (typeof result === "string") {
                 results.push(`Error adding ${blockDef.blockType}: ${result}`);
             } else {
+                changed = true;
                 let line = `[${result.block.uniqueId}] ${result.block.name} (${blockDef.blockType})`;
                 if (result.warnings) {
                     line += `\n  ⚠ ${result.warnings.join("\n  ⚠ ")}`;
                 }
                 results.push(line);
             }
+        }
+        if (changed) {
+            _notifyIfSession(graphName);
         }
         return { content: [{ type: "text", text: `Added blocks:\n${results.join("\n")}` }] };
     }
@@ -388,6 +508,9 @@ server.registerTool(
     },
     async ({ graphName, blockId }) => {
         const result = manager.removeBlock(graphName, blockId);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Removed block ${blockId}.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -407,6 +530,9 @@ server.registerTool(
     },
     async ({ graphName, blockId, properties }) => {
         const result = manager.setBlockProperties(graphName, blockId, properties as Record<string, unknown>);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [{ type: "text", text: result === "OK" ? `Updated block ${blockId}.` : `Error: ${result}` }],
             isError: result !== "OK",
@@ -448,6 +574,9 @@ server.registerTool(
     },
     async ({ graphName, sourceBlockId, outputName, targetBlockId, inputName }) => {
         const result = manager.connectBlocks(graphName, sourceBlockId, outputName, targetBlockId, inputName);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [
                 {
@@ -480,13 +609,18 @@ server.registerTool(
     },
     async ({ graphName, connections }) => {
         const results: string[] = [];
+        let changed = false;
         for (const conn of connections) {
             const result = manager.connectBlocks(graphName, conn.sourceBlockId, conn.outputName, conn.targetBlockId, conn.inputName);
             if (result === "OK") {
+                changed = true;
                 results.push(`[${conn.sourceBlockId}].${conn.outputName} → [${conn.targetBlockId}].${conn.inputName}`);
             } else {
                 results.push(`Error: ${result}`);
             }
+        }
+        if (changed) {
+            _notifyIfSession(graphName);
         }
         return { content: [{ type: "text", text: `Connections:\n${results.join("\n")}` }] };
     }
@@ -504,6 +638,9 @@ server.registerTool(
     },
     async ({ graphName, blockId, inputName }) => {
         const result = manager.disconnectInput(graphName, blockId, inputName);
+        if (result === "OK") {
+            _notifyIfSession(graphName);
+        }
         return {
             content: [
                 {
@@ -751,7 +888,7 @@ server.registerTool(
             json,
             jsonFile,
             fileDescription: "Smart Filter JSON file",
-            importJson: (jsonText: string) => manager.importJSON(graphName, jsonText),
+            importJson: (jsonText: string) => _importFilterGraphJson(graphName, jsonText),
             describeImported: () => manager.describeGraph(graphName),
         });
     }
@@ -827,3 +964,11 @@ try {
     console.error("Fatal error:", err);
     process.exit(1);
 }
+
+const _shutdownAsync = async () => {
+    await sessionController.stopAsync();
+    process.exit(0);
+};
+
+process.on("SIGINT", _shutdownAsync);
+process.on("SIGTERM", _shutdownAsync);
