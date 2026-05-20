@@ -13,7 +13,6 @@ This directory contains the Babylon.js Model Context Protocol tooling packages u
 | `nge-mcp-server`           | Node Geometry graph authoring and export/import workflows.                                                 |
 | `nrge-mcp-server`          | Node Render Graph authoring and render-pipeline export/import workflows.                                   |
 | `npe-mcp-server`           | Node Particle graph authoring and export/import workflows.                                                 |
-| `gltf-mcp-server`          | glTF/glb asset authoring, inspection, validation, and export.                                              |
 | `smart-filters-mcp-server` | Smart Filters graph authoring and export/import workflows.                                                 |
 
 ## How The Packages Fit Together

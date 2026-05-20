@@ -72,16 +72,6 @@ function isKnownDependencyCircularWarning(warning) {
     return ids.some((id) => id.includes("/node_modules/zod") || id.includes("/node_modules/zod-to-json-schema"));
 }
 
-function isKnownGltfDevCoreRootDirWarning(warning) {
-    return (
-        warning.code === "PLUGIN_WARNING" &&
-        warning.plugin === "typescript" &&
-        warning.message?.includes("TS6059") &&
-        warning.message.includes("/packages/dev/core/src/") &&
-        warning.message.includes("/packages/tools/gltf-mcp-server/src")
-    );
-}
-
 /** Node built-in modules that must stay external (e.g. "fs", "node:fs"). */
 const nodeBuiltins = [...builtinModules, ...builtinModules.map((m) => `node:${m}`)];
 
@@ -101,7 +91,7 @@ export function createConfig(input = "./src/index.ts") {
     return {
         input,
         onwarn(warning, defaultHandler) {
-            if (isKnownDependencyCircularWarning(warning) || isKnownGltfDevCoreRootDirWarning(warning)) {
+            if (isKnownDependencyCircularWarning(warning)) {
                 return;
             }
             defaultHandler(warning);
