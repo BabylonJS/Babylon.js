@@ -44,14 +44,6 @@ Tree-shaking support is maintained through three related data sets:
 
 The manifest is the input for both pure barrel generation and the public package `sideEffects` field. If a source file gains or loses module-level side effects, regenerate the manifest first, then regenerate or check the consumers of that manifest.
 
-## Decorators And Purity
-
-TC39 decorators may appear in `.pure.ts` files only when their runtime effects are confined to the class or member being defined. Examples of class-local decorator work include writing metadata to that class through `Symbol.metadata`, returning accessor or method descriptors for the decorated member, and initializing per-instance backing fields through `init`.
-
-Decorators used from `.pure.ts` files must not perform global registration, mutate shared registries, patch prototypes, perform side-effect imports, write shader stores, install global polyfills, or rely on wrapper-only registration having already run. If a decorator needs one of those effects, move that work into the owning module's `Register*()` function and keep the decorator itself as a class-local metadata or descriptor operation.
-
-The only approved exception is the `Symbol.metadata` compatibility shim in `packages/dev/core/src/Misc/decorators.functions.ts`. TypeScript's TC39 decorator emit reads `Symbol.metadata` before decorator factories run, so this shim has to execute before decorated classes are evaluated on runtimes that do not yet provide `Symbol.metadata`.
-
 ## Package Wiring
 
 The supported scripts are wired into the repository in a few places:

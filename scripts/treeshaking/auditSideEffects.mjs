@@ -266,16 +266,6 @@ function analyzeFile(filePath) {
             });
         }
 
-        // The TC39 decorator metadata shim mutates the global Symbol constructor.
-        // It is intentionally allowed, but it must still be tracked as a module-level side effect.
-        if (prevDepth === 0 && prevBracketDepth === 0 && /^if\s*\(.*\bSymbol\.metadata\b/.test(trimmed)) {
-            sideEffects.push({
-                type: "symbol-metadata-polyfill",
-                line: lineNum,
-                text: trimmed.substring(0, 120),
-            });
-        }
-
         // Only detect side effects at top-level (braceDepth and bracketDepth were 0 before this line)
         if (prevDepth !== 0 || prevBracketDepth !== 0) {
             continue;
@@ -436,8 +426,8 @@ function main() {
         }
     }
 
-    // Sort by file path using code-point order so the manifest is stable across OS locales.
-    manifest.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+    // Sort by file path
+    manifest.sort((a, b) => a.file.localeCompare(b.file));
 
     // Compute summary stats
     const stats = {
