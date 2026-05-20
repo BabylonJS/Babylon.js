@@ -142,7 +142,8 @@ const SpeedPresets = [0.1, 0.25, 0.5, 1] as const;
  * @param props - The component props.
  * @returns The rendered controls toolbar.
  */
-export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({ globalState }) => {
+export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = (props) => {
+    const { globalState } = props;
     const classes = useStyles();
 
     const [graphState, setGraphState] = useState<FlowGraphState>(globalState.flowGraph.state);
@@ -448,6 +449,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
             <div className={classes.contextGroup}>
                 <Caption1 className={classes.label}>Ctx</Caption1>
                 <Dropdown
+                    aria-label="Execution context"
                     className={classes.contextDropdown}
                     size="small"
                     value={selectedContext?.name ?? ""}

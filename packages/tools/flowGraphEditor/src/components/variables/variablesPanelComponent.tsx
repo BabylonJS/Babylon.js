@@ -429,6 +429,8 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         }
 
         this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
         this._refreshVariables();
     }
 
@@ -449,6 +451,8 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         }
 
         this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
         this._refreshVariables();
     }
 

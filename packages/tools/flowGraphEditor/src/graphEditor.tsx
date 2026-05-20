@@ -812,7 +812,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
             const hasBreakpoint = this.props.globalState.hasBreakpoint(block.uniqueId);
             const isPaused = pausedBlockId === block.uniqueId;
-            node.setBreakpointState(hasBreakpoint, isPaused);
+            node.setBreakpointState(hasBreakpoint || isPaused, isPaused);
         }
     }
 

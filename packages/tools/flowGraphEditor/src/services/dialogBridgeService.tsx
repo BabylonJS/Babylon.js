@@ -1,7 +1,3 @@
-import { type IDisposable } from "core/index";
-
-import { Body1 } from "@fluentui/react-components";
-
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IDialogService, DialogServiceIdentity } from "shared-ui-components/modularTool/services/dialogService";
 

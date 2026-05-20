@@ -771,12 +771,16 @@ export class GlobalState {
     public continueExecution(): void {
         const ctx = this._flowGraph?.getContext(this.selectedContextIndex);
         ctx?.continueExecution();
+        this.onBreakpointsChanged.notifyObservers();
     }
 
     /** Step one block and pause again */
     public stepExecution(): void {
         const ctx = this._flowGraph?.getContext(this.selectedContextIndex);
         ctx?.stepExecution();
+        if (!ctx?.pendingActivation) {
+            this.onBreakpointsChanged.notifyObservers();
+        }
     }
 
     // ── Execution Context Management ───────────────────────────────────

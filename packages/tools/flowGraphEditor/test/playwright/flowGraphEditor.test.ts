@@ -1,6 +1,7 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
+import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
 // The FGE starts with an empty graph — no default blocks on the canvas.
 
@@ -28,6 +29,33 @@ async function GetGraphState(page: Page): Promise<number> {
     });
 }
 
+async function GetDebugSnapshot(page: Page): Promise<{ isDebugMode: boolean; pendingBlockClassName: string | null; breakpointBlockClassNames: string[] }> {
+    return await page.evaluate(() => {
+        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+        const graph = state?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
+        const context = graph?.getContext(state?.selectedContextIndex ?? 0);
+        if (!state || !graph) {
+            throw new Error("FlowGraphEditor state not found");
+        }
+
+        const breakpointBlockIds = Array.from(state._breakpointBlockIds ?? []) as string[];
+        const breakpointBlockClassNames = breakpointBlockIds
+            .map((id) =>
+                graph
+                    .getAllBlocks()
+                    .find((block: any) => block.uniqueId === id)
+                    ?.getClassName()
+            )
+            .filter(Boolean);
+
+        return {
+            isDebugMode: state.isDebugMode,
+            pendingBlockClassName: context?.pendingActivation?.block?.getClassName() ?? null,
+            breakpointBlockClassNames,
+        };
+    });
+}
+
 async function ClickGraphControl(page: Page, name: string): Promise<void> {
     await page.getByRole("button", { name, exact: true }).click();
 }
@@ -39,28 +67,128 @@ async function WaitForGraphState(page: Page, state: "Stopped" | "Running"): Prom
 
 async function GetVariableSnapshot(
     page: Page,
-    variableName: string
+    variableName: string,
+    contextIndex = 0
 ): Promise<{ value: unknown; type: string | undefined; sceneObjectName?: string; sceneObjectInContextScene?: boolean }> {
-    return await page.evaluate((name) => {
-        const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
-        const graph = editor?._CurrentState?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
-        const context = graph?.getContext(0);
-        if (!context) {
-            throw new Error("FlowGraph context not found");
-        }
-        const value = context.userVariables[name];
-        if (value && typeof value === "object" && "uniqueId" in value) {
-            const scene = context.getScene();
-            const sceneObjects = [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights, ...scene.materials, ...scene.animationGroups];
-            return {
-                value: value.uniqueId,
-                type: context.getVariableType(name),
-                sceneObjectName: value.name,
-                sceneObjectInContextScene: sceneObjects.includes(value),
+    return await page.evaluate(
+        ({ name, selectedContextIndex }) => {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            const graph = editor?._CurrentState?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
+            const context = graph?.getContext(selectedContextIndex);
+            if (!context) {
+                throw new Error("FlowGraph context not found");
+            }
+            const value = context.userVariables[name];
+            const normalizeValue = (currentValue: any): unknown => {
+                if (currentValue == null || typeof currentValue === "string" || typeof currentValue === "number" || typeof currentValue === "boolean") {
+                    return currentValue;
+                }
+                if (currentValue?.constructor?.name === "FlowGraphInteger" && "value" in currentValue) {
+                    return { value: currentValue.value };
+                }
+                if ("x" in currentValue && "y" in currentValue) {
+                    const normalizedVector: any = { x: currentValue.x, y: currentValue.y };
+                    if ("z" in currentValue) {
+                        normalizedVector.z = currentValue.z;
+                    }
+                    if ("w" in currentValue) {
+                        normalizedVector.w = currentValue.w;
+                    }
+                    return normalizedVector;
+                }
+                if ("r" in currentValue && "g" in currentValue && "b" in currentValue) {
+                    const normalizedColor: any = { r: currentValue.r, g: currentValue.g, b: currentValue.b };
+                    if ("a" in currentValue) {
+                        normalizedColor.a = currentValue.a;
+                    }
+                    return normalizedColor;
+                }
+                return currentValue;
             };
+            if (value && typeof value === "object" && "uniqueId" in value) {
+                const scene = context.getScene();
+                const sceneObjects = [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights, ...scene.materials, ...scene.animationGroups];
+                return {
+                    value: value.uniqueId,
+                    type: context.getVariableType(name),
+                    sceneObjectName: value.name,
+                    sceneObjectInContextScene: sceneObjects.includes(value),
+                };
+            }
+            return { value: normalizeValue(value), type: context.getVariableType(name) };
+        },
+        { name: variableName, selectedContextIndex: contextIndex }
+    );
+}
+
+async function GetContextSnapshot(page: Page): Promise<{ selectedContextIndex: number; contexts: { index: number; uniqueId: string; name: string }[] }> {
+    return await page.evaluate(() => {
+        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+        if (!state) {
+            throw new Error("FlowGraphEditor state not found");
         }
-        return { value, type: context.getVariableType(name) };
-    }, variableName);
+        return {
+            selectedContextIndex: state.selectedContextIndex,
+            contexts: state.getContextList(),
+        };
+    });
+}
+
+async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: number; graphs: { name: string; blockClassNames: string[]; totalConnections: number }[] }> {
+    return await page.evaluate(() => {
+        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+        const coordinator = state?.coordinator;
+        if (!state || !coordinator) {
+            throw new Error("FlowGraphEditor coordinator not found");
+        }
+
+        const countConnections = (serializedGraph: any) => {
+            let total = 0;
+            for (const block of serializedGraph.allBlocks ?? []) {
+                for (const port of block.signalOutputs ?? []) {
+                    total += port.connectedPointIds?.length ?? 0;
+                }
+                for (const port of block.dataOutputs ?? []) {
+                    total += port.connectedPointIds?.length ?? 0;
+                }
+            }
+            return total;
+        };
+
+        return {
+            activeGraphIndex: state.activeGraphIndex,
+            graphs: coordinator.flowGraphs.map((graph: any) => {
+                const serializedGraph: any = {};
+                graph.serialize(serializedGraph);
+                return {
+                    name: graph.name,
+                    blockClassNames: graph.getAllBlocks().map((block: any) => block.getClassName()),
+                    totalConnections: countConnections(serializedGraph),
+                };
+            }),
+        };
+    });
+}
+
+async function GetSceneContextSnapshot(
+    page: Page
+): Promise<{ sceneUid: string; source: string | null; snippetId: string; meshNames: string[]; transformNodeNames: string[]; cameraNames: string[]; lightNames: string[] } | null> {
+    return await page.evaluate(() => {
+        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+        const scene = state?.sceneContext?.scene;
+        if (!state || !scene) {
+            return null;
+        }
+        return {
+            sceneUid: scene.uid,
+            source: state.sceneSource,
+            snippetId: state.snippetId,
+            meshNames: scene.meshes.map((mesh: any) => mesh.name),
+            transformNodeNames: scene.transformNodes.map((node: any) => node.name),
+            cameraNames: scene.cameras.map((camera: any) => camera.name),
+            lightNames: scene.lights.map((light: any) => light.name),
+        };
+    });
 }
 
 async function GetDefaultSceneBoxInfo(page: Page): Promise<{ sceneUid: string; source: string | null; boxX: number }> {
@@ -74,6 +202,237 @@ async function GetDefaultSceneBoxInfo(page: Page): Promise<{ sceneUid: string; s
         return { sceneUid: scene.uid, source: state.sceneSource, boxX: box.position.x };
     });
 }
+
+async function GetScenePreviewSnapshot(
+    page: Page,
+    meshName: string
+): Promise<{ sceneUid: string; source: string | null; snippetId: string; meshX: number; meshNames: string[] } | null> {
+    return await page.evaluate((name) => {
+        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+        const scene = state?.sceneContext?.scene;
+        const mesh = scene?.getMeshByName(name);
+        if (!state || !scene || !mesh) {
+            return null;
+        }
+        return {
+            sceneUid: scene.uid,
+            source: state.sceneSource,
+            snippetId: state.snippetId,
+            meshX: mesh.position.x,
+            meshNames: scene.meshes.map((sceneMesh: any) => sceneMesh.name),
+        };
+    }, meshName);
+}
+
+async function GetSceneAssetSnapshot(page: Page, meshName: string): Promise<{ sceneUid: string; uniqueId: number; name: string } | null> {
+    return await page.evaluate((name) => {
+        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+        const scene = state?.sceneContext?.scene;
+        const mesh = scene?.getMeshByName(name);
+        if (!scene || !mesh) {
+            return null;
+        }
+        return { sceneUid: scene.uid, uniqueId: mesh.uniqueId, name: mesh.name };
+    }, meshName);
+}
+
+async function GetBlockSnapshot(
+    page: Page,
+    blockClassName: string,
+    index = 0
+): Promise<{
+    className: string;
+    config: any;
+    dataInputs: { name: string; typeName: string | undefined; defaultValue: any }[];
+    dataOutputs: { name: string; typeName: string | undefined; defaultValue: any }[];
+}> {
+    return await page.evaluate(
+        ({ className, blockIndex }) => {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            const graph = editor?._CurrentState?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
+            const blocks = graph?.getAllBlocks().filter((block: any) => block.getClassName() === className) ?? [];
+            const block = blocks[blockIndex];
+            if (!block) {
+                throw new Error(`${className} at index ${blockIndex} not found`);
+            }
+
+            const normalizeValue = (value: any): any => {
+                if (value == null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+                    return value;
+                }
+                if (Array.isArray(value)) {
+                    return value.map((item) => normalizeValue(item));
+                }
+                if (value?.constructor?.name === "FlowGraphInteger" && "value" in value) {
+                    return { typeName: "FlowGraphInteger", value: value.value };
+                }
+                if (typeof value.typeName === "string") {
+                    return { typeName: value.typeName };
+                }
+                const constructorName = value.constructor?.name?.replace(/^_/, "");
+                if (typeof value.asArray === "function" && constructorName === "Matrix") {
+                    return { typeName: "Matrix", values: value.asArray() };
+                }
+                if ("uniqueId" in value && "name" in value) {
+                    return { typeName: value.getClassName?.() ?? value.constructor?.name, uniqueId: value.uniqueId, name: value.name };
+                }
+                if ("x" in value && "y" in value) {
+                    const vectorValue: any = { typeName: constructorName, x: value.x, y: value.y };
+                    if ("z" in value) {
+                        vectorValue.z = value.z;
+                    }
+                    if ("w" in value) {
+                        vectorValue.w = value.w;
+                    }
+                    return vectorValue;
+                }
+
+                const normalizedObject: Record<string, any> = {};
+                for (const [key, nestedValue] of Object.entries(value)) {
+                    normalizedObject[key] = normalizeValue(nestedValue);
+                }
+                return normalizedObject;
+            };
+
+            const normalizeConnection = (connection: any) => ({
+                name: connection.name,
+                typeName: connection.richType?.typeName,
+                defaultValue: normalizeValue(connection._defaultValue),
+            });
+
+            return {
+                className: block.getClassName(),
+                config: normalizeValue(block.config),
+                dataInputs: block.dataInputs.map(normalizeConnection),
+                dataOutputs: block.dataOutputs.map(normalizeConnection),
+            };
+        },
+        { className: blockClassName, blockIndex: index }
+    );
+}
+
+function PropertiesPane(page: Page) {
+    return page.getByText("Properties", { exact: true }).first().locator("xpath=ancestor::*[.//button[.//text()='General']][1]");
+}
+
+function PropertyControl(page: Page, label: string, occurrence: "first" | "last" = "first") {
+    const controls = PropertiesPane(page)
+        .getByText(label, { exact: true })
+        .locator("xpath=ancestor::*[.//input or .//*[@role='combobox'] or .//*[@role='switch'] or .//button][1]");
+    return occurrence === "last" ? controls.last() : controls.first();
+}
+
+async function FillPropertyText(page: Page, label: string, value: string, occurrence: "first" | "last" = "first"): Promise<void> {
+    const input = PropertyControl(page, label, occurrence).locator("input").first();
+    await expect(input).toBeVisible();
+    await input.fill(value);
+    await input.press("Enter");
+}
+
+async function FillPropertyNumber(page: Page, label: string, value: string, occurrence: "first" | "last" = "first"): Promise<void> {
+    const input = PropertyControl(page, label, occurrence).locator("input").first();
+    await expect(input).toBeVisible();
+    await input.fill(value);
+    await input.press("Enter");
+}
+
+async function SelectPropertyOption(page: Page, label: string, optionName: string, occurrence: "first" | "last" = "first"): Promise<void> {
+    const combobox = PropertyControl(page, label, occurrence).getByRole("combobox").first();
+    await expect(combobox).toBeVisible();
+    await combobox.click();
+    await page.getByRole("option", { name: optionName, exact: true }).click();
+}
+
+async function SelectPropertyComboboxOption(page: Page, label: string, optionName: string, occurrence: "first" | "last" = "first"): Promise<void> {
+    const combobox = PropertyControl(page, label, occurrence).getByRole("combobox").first();
+    await expect(combobox).toBeVisible();
+    await combobox.click();
+    await combobox.fill(optionName);
+    await page.getByRole("option", { name: optionName, exact: true }).click();
+}
+
+async function ExpandProperty(page: Page, label: string, occurrence: "first" | "last" = "first"): Promise<void> {
+    const expandButton = PropertyControl(page, label, occurrence).getByRole("button", { name: "Expand/Collapse property" }).first();
+    await expect(expandButton).toBeVisible();
+    await expandButton.click();
+}
+
+function VariableCard(page: Page, variableName: string): Locator {
+    return page.locator("[class*='fui-Card']").filter({ hasText: variableName }).first();
+}
+
+async function AddVariableFromPanel(page: Page, variableName: string): Promise<Locator> {
+    await page.getByRole("button", { name: /Add (a new )?variable/i }).click();
+    const nameInput = page.locator("input:focus");
+    await expect(nameInput).toBeVisible();
+    await nameInput.fill(variableName);
+    await nameInput.press("Enter");
+
+    const variableCard = VariableCard(page, variableName);
+    await expect(variableCard).toBeVisible();
+    return variableCard;
+}
+
+async function SelectVariableType(page: Page, variableCard: Locator, typeName: string): Promise<void> {
+    await variableCard.getByRole("combobox").click();
+    await page.getByRole("option", { name: typeName, exact: true }).click();
+}
+
+async function FillVariableNumberInputs(variableCard: Locator, values: string[]): Promise<void> {
+    const inputs = variableCard.locator("input[type='number']");
+    await expect(inputs).toHaveCount(values.length);
+    for (let index = 0; index < values.length; index++) {
+        await inputs.nth(index).fill(values[index]);
+    }
+}
+
+async function SelectExecutionContext(page: Page, contextName: string): Promise<void> {
+    const dropdown = page.getByRole("combobox", { name: "Execution context" });
+    await expect(dropdown).toBeVisible();
+    await dropdown.click();
+    await page.getByRole("option", { name: contextName, exact: true }).click();
+}
+
+async function RenameSelectedExecutionContext(page: Page, contextName: string): Promise<void> {
+    await page.getByRole("button", { name: "Rename selected context" }).click();
+    const input = page.locator("input:focus");
+    await expect(input).toBeVisible();
+    await input.fill(contextName);
+    await input.press("Enter");
+}
+
+async function RenameGraphTab(page: Page, currentName: string, newName: string): Promise<void> {
+    await page.getByRole("tab", { name: new RegExp(currentName) }).dblclick();
+    const input = page.locator("input:focus");
+    await expect(input).toBeVisible();
+    await input.fill(newName);
+    await input.press("Enter");
+}
+
+const PreviewSceneSnippetCode = `
+var createScene = function(engine, canvas) {
+    var scene = new BABYLON.Scene(engine);
+    var camera = new BABYLON.ArcRotateCamera("snippetCamera", -Math.PI / 4, Math.PI / 3, 6, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+    new BABYLON.HemisphericLight("snippetLight", new BABYLON.Vector3(0, 1, 0), scene);
+    var box = BABYLON.CreateBox("snippetBox", { size: 1 }, scene);
+    box.position.x = 1;
+    return scene;
+};
+`;
+
+function GetPaletteDisplayName(blockClassName: string): string {
+    const withoutPrefix = blockClassName.startsWith("FlowGraph") ? blockClassName.slice("FlowGraph".length) : blockClassName;
+    return withoutPrefix.replace("Block", "");
+}
+
+const PaletteSmokeCategories = Object.entries(AllFlowGraphBlocks).map(([categoryName, blockClassNames]) => ({
+    categoryName,
+    blocks: blockClassNames.map((blockClassName) => ({
+        blockClassName,
+        displayName: GetPaletteDisplayName(blockClassName),
+    })),
+}));
 
 test.describe("Flow Graph Editor — Loading", () => {
     test("editor loads with all panels visible", async ({ page }) => {
@@ -238,6 +597,35 @@ test.describe("Flow Graph Editor — Node Operations", () => {
     });
 });
 
+test.describe("Flow Graph Editor — Palette Smoke", () => {
+    for (const { categoryName, blocks } of PaletteSmokeCategories) {
+        test(`all ${categoryName.replace(/_/g, " ")} blocks can be added, selected, serialized, and deleted`, async ({ page }) => {
+            test.setTimeout(Math.max(60_000, blocks.length * 10_000));
+
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto();
+            await fge.assertEditorReady();
+
+            for (const block of blocks) {
+                await test.step(`${block.blockClassName} (${block.displayName})`, async () => {
+                    await fge.addBlockFromPalette(block.displayName);
+                    await expect(fge.nodeOnCanvas(block.blockClassName), `${block.blockClassName} should be visible on the canvas`).toBeVisible();
+
+                    await fge.selectNode(block.blockClassName);
+
+                    const serializedGraph = JSON.parse(await fge.serializeGraph());
+                    const serializedClassNames = (serializedGraph.allBlocks ?? []).map((serializedBlock: any) => serializedBlock.className);
+                    expect(serializedClassNames, `${block.blockClassName} should be serialized`).toContain(block.blockClassName);
+
+                    await fge.deleteSelectedNodes();
+                    await expect(fge.nodeOnCanvas(block.blockClassName), `${block.blockClassName} should be removed from the canvas`).toHaveCount(0);
+                    expect(await fge.getNodeCount()).toBe(0);
+                });
+            }
+        });
+    }
+});
+
 test.describe("Flow Graph Editor — Node List Filter", () => {
     test("filtering the node list shows matching blocks", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
@@ -277,6 +665,696 @@ test.describe("Flow Graph Editor — Node List Filter", () => {
 
         await fge.clearNodeListFilter();
         await expect(fge.paletteItem("Branch")).toBeVisible();
+    });
+});
+
+test.describe("Flow Graph Editor — Shell and Panels", () => {
+    test("help and how-to-use toolbar buttons open their dialogs", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await page.getByRole("button", { name: "Help", exact: true }).click();
+        await expect(page.getByText("Flow Graph Editor — Help", { exact: true })).toBeVisible();
+        await expect(page.getByRole("button", { name: "Variables Panel" })).toBeVisible();
+        await page.getByRole("button", { name: "Variables Panel" }).click();
+        await expect(page.getByText("Managing Variables", { exact: true })).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(page.getByText("Flow Graph Editor — Help", { exact: true })).not.toBeVisible();
+
+        await page.getByRole("button", { name: "How to Use (embed code samples)", exact: true }).click();
+        await expect(page.getByText("How to Use This Flow Graph", { exact: true })).toBeVisible();
+        await expect(page.getByText("Method 1: From Snippet Server", { exact: true })).toBeVisible();
+        await expect(page.getByText("ParseCoordinatorAsync")).toBeVisible();
+        await expect(page.getByRole("button", { name: "Copy" })).toHaveCount(2);
+        await page.keyboard.press("Escape");
+        await expect(page.getByText("How to Use This Flow Graph", { exact: true })).not.toBeVisible();
+    });
+
+    test("shell panes remain usable while adding editing and deleting a variable", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        for (const paneTitle of ["Nodes", "Properties", "Scene Preview", "Variables"]) {
+            await expect(page.getByText(paneTitle, { exact: true }).first()).toBeVisible();
+        }
+
+        await page.setViewportSize({ width: 980, height: 720 });
+        await expect(fge.graphCanvas).toBeVisible();
+        await expect(page.getByText("Variables", { exact: true }).first()).toBeVisible();
+        await expect(page.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
+
+        await page.getByRole("button", { name: /Add (a new )?variable/i }).click();
+        const nameInput = page.locator("input:focus");
+        await expect(nameInput).toBeVisible();
+        await nameInput.fill("phaseThreeVariable");
+        await page.keyboard.press("Enter");
+
+        const variableCard = page.locator("[class*='fui-Card']").filter({ hasText: "phaseThreeVariable" }).first();
+        await expect(variableCard).toBeVisible();
+
+        await variableCard.getByRole("combobox").click();
+        await page.getByRole("option", { name: "String", exact: true }).click();
+
+        const valueInput = variableCard.locator("input").last();
+        await expect(valueInput).toBeVisible();
+        await valueInput.fill("edited through the shell");
+
+        await expect
+            .poll(async () => await GetVariableSnapshot(page, "phaseThreeVariable"))
+            .toMatchObject({
+                value: "edited through the shell",
+                type: "string",
+            });
+
+        await variableCard.getByRole("button").first().click();
+        await expect(variableCard).not.toBeVisible();
+    });
+
+    test("toast and dialog bridge messages render through the modular shell", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            if (!state) {
+                throw new Error("FlowGraphEditor state not found");
+            }
+
+            state.onToastNotification.notifyObservers({ message: "Phase 3 toast bridge", severity: "success" });
+            state.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Phase 3 dialog bridge");
+        });
+
+        await expect(page.getByText("Phase 3 toast bridge", { exact: true })).toBeVisible();
+        await expect(page.getByText("Phase 3 dialog bridge", { exact: true })).toBeVisible();
+        await page.getByRole("button", { name: "OK" }).click();
+        await expect(page.getByText("Phase 3 dialog bridge", { exact: true })).not.toBeVisible();
+    });
+});
+
+test.describe("Flow Graph Editor — Persistence and Scenes", () => {
+    test("saves a graph to the snippet server through the UI", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        let postedBody: any = null;
+        await page.route(/^https:\/\/snippet\.babylonjs\.com(?:\/.*)?$/, async (route) => {
+            if (route.request().method() !== "POST") {
+                await route.abort();
+                return;
+            }
+            postedBody = JSON.parse(route.request().postData() ?? "{}");
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({ id: "FGESAVE", version: "12" }),
+            });
+        });
+
+        await page.getByRole("button", { name: "Save to snippet server", exact: true }).click();
+
+        await expect(page.getByText("Graph saved - ID: FGESAVE#12 (copied to clipboard)", { exact: true }).last()).toBeVisible();
+        await expect.poll(async () => await page.evaluate(() => location.hash)).toBe("#FGESAVE#12");
+        await expect.poll(async () => postedBody).not.toBeNull();
+
+        const snippetPayload = JSON.parse(postedBody.payload);
+        const savedGraphPayload = JSON.parse(snippetPayload.flowGraph);
+        const savedGraph = savedGraphPayload._flowGraphs[savedGraphPayload.activeGraphIndex ?? 0];
+        expect(CountSerializedConnections(savedGraph)).toBe(1);
+        expect(savedGraph.allBlocks.map((block: any) => block.className)).toEqual(expect.arrayContaining(["FlowGraphSceneReadyEventBlock", "FlowGraphConsoleLogBlock"]));
+    });
+
+    test("loads a graph from the snippet server prompt", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        const serializedGraph = await fge.serializeGraph();
+        await fge.selectNode("FlowGraphSceneReadyEventBlock");
+        await fge.deleteSelectedNodes();
+        await expect.poll(async () => await fge.getNodeCount()).toBe(0);
+
+        const snippetId = "FGELOAD#3";
+        await page.route("https://snippet.babylonjs.com/FGELOAD/3", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({ jsonPayload: JSON.stringify({ flowGraph: serializedGraph }) }),
+            });
+        });
+
+        page.once("dialog", async (dialog) => {
+            expect(dialog.type()).toBe("prompt");
+            await dialog.accept(snippetId);
+        });
+        await page.getByRole("button", { name: "Load from snippet server", exact: true }).click();
+
+        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+        await expect(fge.nodeOnCanvas("FlowGraphSceneReadyEventBlock")).toBeVisible();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(`Flow graph loaded from snippet ${snippetId}`);
+        await expect.poll(async () => await page.evaluate(() => location.hash)).toBe(`#${snippetId}`);
+    });
+
+    test("loads and resets a mocked preview scene snippet", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        let snippetRequests = 0;
+        await page.route("https://snippet.babylonjs.com/FGEPREVIEW/2", async (route) => {
+            snippetRequests++;
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({ jsonPayload: JSON.stringify({ code: PreviewSceneSnippetCode }) }),
+            });
+        });
+
+        const previewSnippetInput = page.getByPlaceholder("Playground ID or URL...");
+        await previewSnippetInput.fill("FGEPREVIEW#2");
+        await previewSnippetInput.press("Enter");
+
+        await expect
+            .poll(async () => await GetScenePreviewSnapshot(page, "snippetBox"))
+            .toMatchObject({
+                source: "snippet",
+                snippetId: "FGEPREVIEW#2",
+                meshX: 1,
+            });
+        const originalScene = await GetScenePreviewSnapshot(page, "snippetBox");
+        expect(originalScene).not.toBeNull();
+        expect(originalScene!.meshNames).toContain("snippetBox");
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("SetProperty");
+
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graph = state?.flowGraph;
+            const context = graph?.getContext(0) ?? graph?.createContext();
+            const box = state?.sceneContext?.scene.getMeshByName("snippetBox");
+            const sceneReadyBlock = graph?.getAllBlocks().find((block: any) => block.getClassName() === "FlowGraphSceneReadyEventBlock");
+            const setPropertyBlock = graph?.getAllBlocks().find((block: any) => block.getClassName() === "FlowGraphSetPropertyBlock");
+            if (!context || !box || !sceneReadyBlock || !setPropertyBlock) {
+                throw new Error("Preview snippet reset test could not prepare graph");
+            }
+
+            sceneReadyBlock.getSignalOutput("out").connectTo(setPropertyBlock.getSignalInput("in"));
+            setPropertyBlock.getDataInput("object").setValue(box, context);
+            setPropertyBlock.getDataInput("propertyName").setValue("position.x", context);
+            setPropertyBlock.getDataInput("value").setValue(6, context);
+            state.onBuiltObservable.notifyObservers();
+        });
+
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await expect.poll(async () => (await GetScenePreviewSnapshot(page, "snippetBox"))?.meshX).toBe(6);
+
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+        await expect.poll(async () => (await GetScenePreviewSnapshot(page, "snippetBox"))?.sceneUid).not.toBe(originalScene!.sceneUid);
+        await expect
+            .poll(async () => await GetScenePreviewSnapshot(page, "snippetBox"))
+            .toMatchObject({
+                source: "snippet",
+                snippetId: "FGEPREVIEW#2",
+                meshX: 1,
+            });
+        expect(snippetRequests).toBeGreaterThanOrEqual(2);
+    });
+});
+
+test.describe("Flow Graph Editor — Property Editor Matrix", () => {
+    test("constant block type and value editors update serialized config and port type", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("Constant");
+        await fge.selectNode("FlowGraphConstantBlock");
+
+        await SelectPropertyOption(page, "Type", "String", "last");
+        await FillPropertyText(page, "Value", "phase five constant");
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphConstantBlock"))
+            .toMatchObject({
+                config: { value: "phase five constant", _valueTypeName: "string" },
+                dataOutputs: expect.arrayContaining([expect.objectContaining({ name: "output", typeName: "string" })]),
+            });
+
+        await SelectPropertyOption(page, "Type", "Vector3", "last");
+        await ExpandProperty(page, "Value");
+        await FillPropertyNumber(page, "X", "1", "last");
+        await FillPropertyNumber(page, "Y", "2", "last");
+        await FillPropertyNumber(page, "Z", "3", "last");
+
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphConstantBlock"))
+            .toMatchObject({
+                config: { value: { typeName: "Vector3", x: 1, y: 2, z: 3 }, _valueTypeName: "Vector3" },
+                dataOutputs: expect.arrayContaining([expect.objectContaining({ name: "output", typeName: "Vector3" })]),
+            });
+    });
+
+    test("variable picker follows variable rename and delete flows", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await page.getByRole("button", { name: /Add (a new )?variable/i }).click();
+        const nameInput = page.locator("input:focus");
+        await expect(nameInput).toBeVisible();
+        await nameInput.fill("phaseFiveVariable");
+        await nameInput.press("Enter");
+
+        const variableCard = page.locator("[class*='fui-Card']").filter({ hasText: "phaseFiveVariable" }).first();
+        await expect(variableCard).toBeVisible();
+
+        await fge.addBlockFromPalette("GetVariable");
+        await fge.addBlockFromPalette("SetVariable");
+
+        await fge.selectNode("FlowGraphGetVariableBlock");
+        await SelectPropertyComboboxOption(page, "Variable", "phaseFiveVariable");
+        await expect.poll(async () => await GetBlockSnapshot(page, "FlowGraphGetVariableBlock")).toMatchObject({ config: { variable: "phaseFiveVariable" } });
+
+        await fge.selectNode("FlowGraphSetVariableBlock");
+        await SelectPropertyComboboxOption(page, "Variable", "phaseFiveVariable");
+        await expect.poll(async () => await GetBlockSnapshot(page, "FlowGraphSetVariableBlock")).toMatchObject({ config: { variable: "phaseFiveVariable" } });
+
+        await variableCard.getByText("phaseFiveVariable", { exact: true }).first().dblclick();
+        const renameInput = page.locator("input:focus");
+        await expect(renameInput).toBeVisible();
+        await renameInput.fill("phaseFiveRenamed");
+        await renameInput.press("Enter");
+
+        await expect.poll(async () => await GetBlockSnapshot(page, "FlowGraphGetVariableBlock")).toMatchObject({ config: { variable: "phaseFiveRenamed" } });
+        await expect.poll(async () => await GetBlockSnapshot(page, "FlowGraphSetVariableBlock")).toMatchObject({ config: { variable: "phaseFiveRenamed" } });
+
+        const renamedVariableCard = page.locator("[class*='fui-Card']").filter({ hasText: "phaseFiveRenamed" }).first();
+        await expect(renamedVariableCard).toBeVisible();
+        await renamedVariableCard.getByRole("button").first().click();
+
+        await expect.poll(async () => await fge.getNodeCount()).toBe(0);
+        await expect(renamedVariableCard).not.toBeVisible();
+    });
+
+    test("get asset picker stores named scene selections and rebinds after reset", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+        await expect.poll(async () => (await GetDefaultSceneBoxInfo(page)).source).toBe("default");
+
+        await fge.addBlockFromPalette("GetAsset");
+        await fge.selectNode("FlowGraphGetAssetBlock");
+
+        await SelectPropertyOption(page, "Asset Type", "Mesh");
+        await SelectPropertyOption(page, "Asset", "box");
+
+        const firstBox = await GetSceneAssetSnapshot(page, "box");
+        expect(firstBox).not.toBeNull();
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphGetAssetBlock"))
+            .toMatchObject({
+                config: {
+                    type: "Mesh",
+                    index: { value: firstBox!.uniqueId },
+                    useIndexAsUniqueId: true,
+                    _assetName: "box",
+                },
+            });
+
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+        await fge.selectNode("FlowGraphGetAssetBlock");
+
+        const reboundBox = await GetSceneAssetSnapshot(page, "box");
+        expect(reboundBox).not.toBeNull();
+        expect(reboundBox!.sceneUid).not.toBe(firstBox!.sceneUid);
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphGetAssetBlock"))
+            .toMatchObject({
+                config: {
+                    index: { value: reboundBox!.uniqueId },
+                    useIndexAsUniqueId: true,
+                    _assetName: "box",
+                },
+            });
+    });
+
+    test("custom event editors update event id and dynamic payload ports without duplicates", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SendCustomEvent");
+        await fge.selectNode("FlowGraphSendCustomEventBlock");
+
+        await FillPropertyText(page, "Event ID", "phase-five-event");
+        await FillPropertyText(page, "Name", "payload", "last");
+        await SelectPropertyOption(page, "Type", "String", "last");
+        await page.getByRole("button", { name: "Add Entry" }).click();
+
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphSendCustomEventBlock"))
+            .toMatchObject({
+                config: { eventId: "phase-five-event", eventData: { payload: { type: { typeName: "string" } } } },
+                dataInputs: expect.arrayContaining([expect.objectContaining({ name: "payload", typeName: "string", defaultValue: "" })]),
+            });
+
+        await FillPropertyText(page, "Name", "payload", "last");
+        await page.getByRole("button", { name: "Add Entry" }).click();
+
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphSendCustomEventBlock"))
+            .toMatchObject({
+                config: { eventData: { payload: { type: { typeName: "string" } } } },
+            });
+        expect((await GetBlockSnapshot(page, "FlowGraphSendCustomEventBlock")).dataInputs.filter((input) => input.name === "payload")).toHaveLength(1);
+
+        await page.getByRole("button", { name: "Remove payload" }).click();
+        await expect.poll(async () => (await GetBlockSnapshot(page, "FlowGraphSendCustomEventBlock")).dataInputs.some((input) => input.name === "payload")).toBe(false);
+    });
+
+    test("get and set property path editors update config and connection defaults", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("GetProperty");
+        await fge.selectNode("FlowGraphGetPropertyBlock");
+        await FillPropertyText(page, "propertyName", "position.x");
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphGetPropertyBlock"))
+            .toMatchObject({
+                dataInputs: expect.arrayContaining([expect.objectContaining({ name: "propertyName", typeName: "string", defaultValue: "position.x" })]),
+            });
+
+        await fge.addBlockFromPalette("SetProperty");
+        await fge.selectNode("FlowGraphSetPropertyBlock");
+        await FillPropertyText(page, "propertyName", "position.y");
+        await expect
+            .poll(async () => await GetBlockSnapshot(page, "FlowGraphSetPropertyBlock"))
+            .toMatchObject({
+                dataInputs: expect.arrayContaining([expect.objectContaining({ name: "propertyName", typeName: "string", defaultValue: "position.y" })]),
+            });
+    });
+});
+
+test.describe("Flow Graph Editor — Port Connections", () => {
+    test("accepts compatible signal and data port connections", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.addBlockFromPalette("Constant");
+
+        await fge.selectNode("FlowGraphConstantBlock");
+        await SelectPropertyOption(page, "Type", "String", "last");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+        await fge.connectPorts("FlowGraphConstantBlock", "output", "FlowGraphConsoleLogBlock", "logType");
+
+        await expect.poll(async () => await fge.getLinkCount()).toBeGreaterThanOrEqual(2);
+
+        const topology = await fge.getGraphTopology();
+        const sceneReadyBlock = topology.blocks.find((block) => block.className === "FlowGraphSceneReadyEventBlock");
+        const constantBlock = topology.blocks.find((block) => block.className === "FlowGraphConstantBlock");
+
+        expect(topology.totalConnections).toBe(2);
+        expect(sceneReadyBlock?.signalOuts.find((port) => port.name === "out")?.connectedIds).toHaveLength(1);
+        expect(constantBlock?.dataOuts.find((port) => port.name === "output")?.connectedIds).toHaveLength(1);
+    });
+
+    test("rejects incompatible data port types without changing topology", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("Constant");
+        await fge.addBlockFromPalette("Branch");
+
+        await fge.selectNode("FlowGraphConstantBlock");
+        await SelectPropertyOption(page, "Type", "String", "last");
+
+        await fge.connectPorts("FlowGraphConstantBlock", "output", "FlowGraphBranchBlock", "condition");
+
+        await expect(page.getByText(/Type mismatch: cannot connect/i)).toBeVisible();
+        expect((await fge.getGraphTopology()).totalConnections).toBe(0);
+        expect(await fge.getLinkCount()).toBe(0);
+
+        await page.getByRole("button", { name: "OK" }).click();
+        await expect(page.getByText(/Type mismatch: cannot connect/i)).not.toBeVisible();
+    });
+
+    test("rejects signal to data port drops without changing topology", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("Branch");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphBranchBlock", "condition");
+
+        await expect(page.getByText("Incompatible connection types")).toBeVisible();
+        expect((await fge.getGraphTopology()).totalConnections).toBe(0);
+        expect(await fge.getLinkCount()).toBe(0);
+
+        await page.getByRole("button", { name: "OK" }).click();
+        await expect(page.getByText("Incompatible connection types")).not.toBeVisible();
+    });
+});
+
+test.describe("Flow Graph Editor — Variables Panel Types", () => {
+    test("edits boolean vector color integer and scene object values from the variables panel", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+        await expect.poll(async () => (await GetDefaultSceneBoxInfo(page)).source).toBe("default");
+
+        const booleanCard = await AddVariableFromPanel(page, "phaseSevenBool");
+        await SelectVariableType(page, booleanCard, "Boolean");
+        await booleanCard.getByRole("switch").click();
+        await expect.poll(async () => await GetVariableSnapshot(page, "phaseSevenBool")).toMatchObject({ value: true, type: "boolean" });
+
+        const integerCard = await AddVariableFromPanel(page, "phaseSevenInteger");
+        await SelectVariableType(page, integerCard, "Integer");
+        await FillVariableNumberInputs(integerCard, ["8.7"]);
+        await expect.poll(async () => await GetVariableSnapshot(page, "phaseSevenInteger")).toMatchObject({ value: { value: 9 }, type: "FlowGraphInteger" });
+
+        const vectorCard = await AddVariableFromPanel(page, "phaseSevenVector");
+        await SelectVariableType(page, vectorCard, "Vector3");
+        await FillVariableNumberInputs(vectorCard, ["1", "2", "3"]);
+        await expect.poll(async () => await GetVariableSnapshot(page, "phaseSevenVector")).toMatchObject({ value: { x: 1, y: 2, z: 3 }, type: "Vector3" });
+
+        const colorCard = await AddVariableFromPanel(page, "phaseSevenColor");
+        await SelectVariableType(page, colorCard, "Color4");
+        await FillVariableNumberInputs(colorCard, ["0.1", "0.2", "0.3", "0.4"]);
+        await expect.poll(async () => await GetVariableSnapshot(page, "phaseSevenColor")).toMatchObject({ value: { r: 0.1, g: 0.2, b: 0.3, a: 0.4 }, type: "Color4" });
+
+        const meshCard = await AddVariableFromPanel(page, "phaseSevenMesh");
+        await SelectVariableType(page, meshCard, "Mesh");
+        await meshCard.locator("select").selectOption({ label: "box" });
+        await expect.poll(async () => await GetVariableSnapshot(page, "phaseSevenMesh")).toMatchObject({ type: "Mesh", sceneObjectName: "box", sceneObjectInContextScene: true });
+    });
+});
+
+test.describe("Flow Graph Editor — Context Management", () => {
+    test("creates renames switches and removes contexts while preserving scoped variable values", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        if ((await GetContextSnapshot(page)).contexts.length === 0) {
+            await page.getByRole("button", { name: "Add execution context" }).click();
+        }
+        await expect.poll(async () => (await GetContextSnapshot(page)).contexts.length).toBeGreaterThanOrEqual(1);
+
+        await RenameSelectedExecutionContext(page, "Primary Context");
+        await expect.poll(async () => (await GetContextSnapshot(page)).contexts[0]?.name).toBe("Primary Context");
+
+        await page.getByRole("button", { name: "Add execution context" }).click();
+        await expect.poll(async () => (await GetContextSnapshot(page)).selectedContextIndex).toBe(1);
+        await RenameSelectedExecutionContext(page, "Secondary Context");
+        await expect.poll(async () => (await GetContextSnapshot(page)).contexts.map((context) => context.name)).toEqual(["Primary Context", "Secondary Context"]);
+
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graph = state?.flowGraph;
+            const primaryContext = graph?.getContext(0);
+            const secondaryContext = graph?.getContext(1);
+            if (!state || !primaryContext || !secondaryContext) {
+                throw new Error("FlowGraph contexts not found");
+            }
+
+            primaryContext.setVariable("sharedContextValue", "primary");
+            primaryContext.setVariableType("sharedContextValue", "string");
+            secondaryContext.setVariable("sharedContextValue", "secondary");
+            secondaryContext.setVariableType("sharedContextValue", "string");
+            state.onSelectedContextChanged.notifyObservers(state.selectedContextIndex);
+        });
+
+        const sharedVariableCard = VariableCard(page, "sharedContextValue");
+        await expect(sharedVariableCard).toBeVisible();
+        await expect(sharedVariableCard.locator("input").last()).toHaveValue("secondary");
+
+        await SelectExecutionContext(page, "Primary Context");
+        await expect.poll(async () => (await GetContextSnapshot(page)).selectedContextIndex).toBe(0);
+        await expect(sharedVariableCard.locator("input").last()).toHaveValue("primary");
+        await sharedVariableCard.locator("input").last().fill("primary edited");
+
+        await expect.poll(async () => await GetVariableSnapshot(page, "sharedContextValue", 0)).toMatchObject({ value: "primary edited", type: "string" });
+        await expect.poll(async () => await GetVariableSnapshot(page, "sharedContextValue", 1)).toMatchObject({ value: "secondary", type: "string" });
+
+        await SelectExecutionContext(page, "Secondary Context");
+        await expect.poll(async () => (await GetContextSnapshot(page)).selectedContextIndex).toBe(1);
+        await expect(sharedVariableCard.locator("input").last()).toHaveValue("secondary");
+
+        await page.getByRole("button", { name: "Remove selected context" }).click();
+        await expect.poll(async () => (await GetContextSnapshot(page)).contexts.map((context) => context.name)).toEqual(["Primary Context"]);
+        await expect.poll(async () => (await GetContextSnapshot(page)).selectedContextIndex).toBe(0);
+        await expect.poll(async () => await GetVariableSnapshot(page, "sharedContextValue", 0)).toMatchObject({ value: "primary edited", type: "string" });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Removed context 1.");
+    });
+});
+
+test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", () => {
+    test("renames switches and closes graph tabs while preserving graph-specific layout and connections", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        const originalGraphName = (await fge.getGraphNames())[0];
+        await RenameGraphTab(page, originalGraphName, "Logic Graph");
+        await expect.poll(async () => (await GetCoordinatorSnapshot(page)).graphs.map((graph) => graph.name)).toEqual(["Logic Graph"]);
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("Branch");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphBranchBlock", "in");
+        await fge.connectPorts("FlowGraphBranchBlock", "onTrue", "FlowGraphConsoleLogBlock", "in");
+        await fge.dragNode("FlowGraphBranchBlock", 0, 180);
+        const branchPosition = await fge.getNodeCanvasPosition("FlowGraphBranchBlock");
+
+        await fge.addGraphTab();
+        await RenameGraphTab(page, (await fge.getGraphNames())[1], "Scratch Graph");
+        await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
+        await fge.addBlockFromPalette("Constant");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+
+        await fge.selectGraphTab("Logic Graph");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(3);
+        await expect.poll(async () => await fge.getLinkCount()).toBeGreaterThanOrEqual(2);
+        await expect.poll(async () => await fge.getNodeCanvasPosition("FlowGraphBranchBlock")).toEqual(branchPosition);
+
+        await fge.selectGraphTab("Scratch Graph");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+        await expect(fge.nodeOnCanvas("FlowGraphConstantBlock")).toBeVisible();
+
+        await fge.closeGraphTab("Scratch Graph");
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                activeGraphIndex: 0,
+                graphs: [
+                    {
+                        name: "Logic Graph",
+                        totalConnections: 2,
+                        blockClassNames: expect.arrayContaining(["FlowGraphSceneReadyEventBlock", "FlowGraphBranchBlock", "FlowGraphConsoleLogBlock"]),
+                    },
+                ],
+            });
+        await expect.poll(async () => await fge.getNodeCanvasPosition("FlowGraphBranchBlock")).toEqual(branchPosition);
+    });
+
+    test("loads a dropped local glTF preview scene and keeps it selected on reset", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+        const defaultScene = await GetSceneContextSnapshot(page);
+        expect(defaultScene?.source).toBe("default");
+
+        await page.evaluate(() => {
+            const gltf = JSON.stringify({
+                asset: { version: "2.0", generator: "FGE Phase 10 test" },
+                scene: 0,
+                scenes: [{ nodes: [0] }],
+                nodes: [{ name: "phaseTenNode" }],
+            });
+            const file = new File([gltf], "phaseTenScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const target = document.querySelector("canvas") ?? document.body;
+            target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        });
+
+        await expect
+            .poll(async () => await GetSceneContextSnapshot(page))
+            .toMatchObject({
+                source: "file",
+                snippetId: "",
+                transformNodeNames: expect.arrayContaining(["phaseTenNode"]),
+            });
+        const fileScene = await GetSceneContextSnapshot(page);
+        expect(fileScene?.sceneUid).not.toBe(defaultScene?.sceneUid);
+
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+        await expect
+            .poll(async () => await GetSceneContextSnapshot(page))
+            .toMatchObject({
+                sceneUid: fileScene!.sceneUid,
+                source: "file",
+                transformNodeNames: expect.arrayContaining(["phaseTenNode"]),
+            });
+    });
+
+    test("loads flow graphs from glTF extension files and leaves the graph unchanged when the extension is absent", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+        const serializedGraph = JSON.parse(await fge.serializeGraph());
+
+        await fge.goto();
+        await fge.assertEditorReady();
+        await expect.poll(async () => await fge.getNodeCount()).toBe(0);
+
+        const graphGltf = {
+            asset: { version: "2.0", generator: "FGE Phase 11 test" },
+            extensionsUsed: ["BABYLON_flow_graph"],
+            extensions: { BABYLON_flow_graph: { flowGraph: serializedGraph } },
+        };
+        await page.locator("input[type='file'][accept='.glb,.gltf']").setInputFiles({
+            name: "phaseElevenGraph.gltf",
+            mimeType: "model/gltf+json",
+            buffer: Buffer.from(JSON.stringify(graphGltf)),
+        });
+
+        await expect.poll(async () => await fge.getNodeCount()).toBe(2);
+        await expect.poll(async () => await fge.getLinkCount()).toBeGreaterThanOrEqual(1);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Flow graph loaded from glTF file");
+        await expect(page.getByRole("button", { name: /Export glTF/i })).toHaveCount(0);
+
+        const topologyBeforeMissingExtension = await fge.getGraphTopology();
+        await page.locator("input[type='file'][accept='.glb,.gltf']").setInputFiles({
+            name: "phaseElevenNoGraph.gltf",
+            mimeType: "model/gltf+json",
+            buffer: Buffer.from(JSON.stringify({ asset: { version: "2.0" }, scenes: [{ nodes: [] }], scene: 0 })),
+        });
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("No BABYLON_flow_graph extension found in this file");
+        expect(await fge.getGraphTopology()).toEqual(topologyBeforeMissingExtension);
     });
 });
 
@@ -649,6 +1727,79 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
 
         await expect(log).toContainText("[Error]");
         await expect(log).toContainText("[Warn]");
+    });
+
+    test("debug mode can pause on a breakpoint and continue execution", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        await page.getByRole("button", { name: "Enable Debug Mode" }).click();
+        await expect.poll(async () => (await GetDebugSnapshot(page)).isDebugMode).toBe(true);
+
+        await fge.selectNode("FlowGraphConsoleLogBlock");
+        await page.keyboard.press("F9");
+
+        const consoleLogBreakpoint = fge.nodeOnCanvas("FlowGraphConsoleLogBlock").locator("[class*='breakpointBadge']");
+        await expect(consoleLogBreakpoint).toBeVisible();
+        await expect.poll(async () => (await GetDebugSnapshot(page)).breakpointBlockClassNames).toContain("FlowGraphConsoleLogBlock");
+
+        await ClickGraphControl(page, "Start");
+
+        await expect.poll(async () => (await GetDebugSnapshot(page)).pendingBlockClassName).toBe("FlowGraphConsoleLogBlock");
+        await expect(page.getByText("Breakpoint", { exact: true })).toBeVisible();
+        await expect(consoleLogBreakpoint).toHaveClass(/breakpointPaused/);
+        await expect(page.getByRole("button", { name: /Continue/ })).toBeEnabled();
+        await expect(page.getByRole("button", { name: /Step/ })).toBeEnabled();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Breakpoint hit: FlowGraphConsoleLogBlock");
+
+        await page.getByRole("button", { name: /Continue/ }).click();
+
+        await expect.poll(async () => (await GetDebugSnapshot(page)).pendingBlockClassName).toBe(null);
+        await expect(page.getByText("Running", { exact: true })).toBeVisible();
+        await expect(consoleLogBreakpoint).toHaveClass(/breakpointActive/);
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(1);
+        expect(topology.blocks.map((block) => block.className)).toEqual(expect.arrayContaining(["FlowGraphSceneReadyEventBlock", "FlowGraphConsoleLogBlock"]));
+    });
+
+    test("step advances from a breakpoint to the next execution block", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("Sequence");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphSequenceBlock", "in");
+        await fge.connectPorts("FlowGraphSequenceBlock", "out_0", "FlowGraphConsoleLogBlock", "in");
+
+        await page.getByRole("button", { name: "Enable Debug Mode" }).click();
+        await fge.selectNode("FlowGraphSequenceBlock");
+        await page.keyboard.press("F9");
+
+        const sequenceBreakpoint = fge.nodeOnCanvas("FlowGraphSequenceBlock").locator("[class*='breakpointBadge']");
+        await expect(sequenceBreakpoint).toBeVisible();
+
+        await ClickGraphControl(page, "Start");
+        await expect.poll(async () => (await GetDebugSnapshot(page)).pendingBlockClassName).toBe("FlowGraphSequenceBlock");
+        await expect(sequenceBreakpoint).toHaveClass(/breakpointPaused/);
+
+        await page.getByRole("button", { name: /Step/ }).click();
+
+        await expect.poll(async () => (await GetDebugSnapshot(page)).pendingBlockClassName).toBe("FlowGraphConsoleLogBlock");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Breakpoint hit: FlowGraphConsoleLogBlock");
+        await expect(fge.nodeOnCanvas("FlowGraphConsoleLogBlock").locator("[class*='breakpointBadge']")).toHaveClass(/breakpointPaused/);
+        await expect(sequenceBreakpoint).toHaveClass(/breakpointActive/);
+
+        await page.getByRole("button", { name: /Continue/ }).click();
+        await expect.poll(async () => (await GetDebugSnapshot(page)).pendingBlockClassName).toBe(null);
+        expect((await fge.getGraphTopology()).totalConnections).toBe(2);
     });
 
     test("SceneReady → Branch with both true/false paths wired to ConsoleLog", async ({ page }) => {

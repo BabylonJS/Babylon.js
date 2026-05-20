@@ -1,5 +1,3 @@
-import { type IDisposable } from "core/index";
-
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToastService, ToastServiceIdentity } from "shared-ui-components/modularTool/services/toastService";
 

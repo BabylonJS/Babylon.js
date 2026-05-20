@@ -1,4 +1,3 @@
-import { type IDisposable } from "core/index";
 import { useContext, useMemo } from "react";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";

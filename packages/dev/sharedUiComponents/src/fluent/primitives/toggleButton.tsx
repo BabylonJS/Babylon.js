@@ -29,7 +29,7 @@ type ToggleButtonProps = Omit<ButtonProps, "icon" | "onClick"> & {
  */
 export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     ToggleButton.displayName = "ToggleButton";
-    const { value, onChange, title, appearance = "subtle" } = props;
+    const { value, onChange, title, appearance = "subtle", ariaLabel } = props;
     const { size } = useContext(ToolContext);
     const classes = useStyles();
     const [checked, setChecked] = useState(value);
@@ -50,6 +50,7 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
             <FluentToggleButton
                 className={classes.button}
                 size={size}
+                aria-label={ariaLabel ?? title}
                 icon={checked ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
                 appearance={appearance}
                 checked={checked}

@@ -1,5 +1,5 @@
 import { Button as FluentButton, makeStyles, Spinner } from "@fluentui/react-components";
-import { type MouseEvent, forwardRef, useCallback, useContext, useState } from "react";
+import { createElement, type MouseEvent, forwardRef, useCallback, useContext, useState } from "react";
 import { type FluentIcon } from "@fluentui/react-icons";
 import { type BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
@@ -16,17 +16,22 @@ const useButtonStyles = makeStyles({
 });
 
 export type ButtonProps = BasePrimitiveProps & {
+    /** Callback invoked when the button is clicked. */
     onClick?: (e?: MouseEvent<HTMLButtonElement>) => unknown | Promise<unknown>;
+    /** Optional icon rendered inside the button. */
     icon?: FluentIcon;
+    /** Fluent button appearance. */
     appearance?: "subtle" | "transparent" | "primary" | "secondary";
+    /** Optional visible button label. */
     label?: string;
+    /** Optional accessible label when the visible label is absent or insufficient. */
+    ariaLabel?: string;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
     const { size } = useContext(ToolContext);
     const classes = useButtonStyles();
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { icon: Icon, label, onClick, disabled, className, title, ...buttonProps } = props;
+    const { icon, label, onClick, disabled, className, title, ariaLabel, ...buttonProps } = props;
 
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
@@ -54,7 +59,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
                 {...buttonProps}
                 className={className}
                 size={size}
-                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
+                aria-label={ariaLabel ?? (!label ? title : undefined)}
+                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : icon && createElement(icon, { className: iconClass })}
                 onClick={handleOnClick}
                 disabled={disabled || isOnClickBusy}
             >

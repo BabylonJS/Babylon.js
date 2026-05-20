@@ -1,9 +1,7 @@
-import { type IDisposable } from "core/index";
-
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
-import { BracesVariableRegular, TableSimpleRegular } from "@fluentui/react-icons";
+import { BracesVariableRegular } from "@fluentui/react-icons";
 
 import { VariablesPanelComponent } from "../components/variables/variablesPanelComponent";
 import { type IGlobalStateService, GlobalStateServiceIdentity } from "./globalStateService";

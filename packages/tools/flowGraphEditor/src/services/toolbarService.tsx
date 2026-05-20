@@ -1,4 +1,3 @@
-import { type IDisposable } from "core/index";
 import { useCallback } from "react";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -41,7 +40,7 @@ export const ToolbarServiceDefinition: ServiceDefinition<[], [IShellService, IGl
                 const onClick = useCallback(() => {
                     globalStateService.globalState.onHelpRequested.notifyObservers(undefined);
                 }, []);
-                return <Button title="Help" appearance="transparent" icon={QuestionCircleRegular} onClick={onClick} />;
+                return <Button title="Help" ariaLabel="Help" appearance="transparent" icon={QuestionCircleRegular} onClick={onClick} />;
             },
         });
 
@@ -54,7 +53,7 @@ export const ToolbarServiceDefinition: ServiceDefinition<[], [IShellService, IGl
                 const onClick = useCallback(() => {
                     globalStateService.globalState.onHowToUseRequested.notifyObservers();
                 }, []);
-                return <Button title="How to Use (embed code samples)" appearance="transparent" icon={CodeRegular} onClick={onClick} />;
+                return <Button title="How to Use (embed code samples)" ariaLabel="How to Use (embed code samples)" appearance="transparent" icon={CodeRegular} onClick={onClick} />;
             },
         });
 

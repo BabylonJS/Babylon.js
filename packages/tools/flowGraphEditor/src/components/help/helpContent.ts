@@ -456,18 +456,13 @@ export const HelpTopics: IHelpTopic[] = [
     },
     {
         id: "gltf-import-export",
-        title: "glTF Import / Export",
+        title: "glTF Import",
         sections: [
             {
                 heading: "Importing from glTF",
                 html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
-<p>Files exported by this editor contain a <strong>BABYLON_flow_graph</strong> custom extension, which is also detected and imported on drop.</p>
+<p>Files that contain a <strong>BABYLON_flow_graph</strong> custom extension are also detected and imported on drop.</p>
 <p>Alternatively, use the <strong>Load glTF</strong> button in the FILE section to load only the flow graph (no scene).</p>`,
-            },
-            {
-                heading: "Exporting to glTF",
-                html: `<p>Click <strong>Export glTF (.glb)</strong> in the FILE section. The flow graph is embedded in the file as a <strong>BABYLON_flow_graph</strong> custom extension.</p>
-<p>If a preview scene is loaded and the serializers package is available, the full scene + flow graph are exported together. Otherwise a minimal <code>.glb</code> containing only the flow graph data is created.</p>`,
             },
         ],
     },
