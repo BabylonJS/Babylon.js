@@ -128,7 +128,7 @@ export function nativeOverride<This, Args extends any[], Return>(
     const propertyKey = String(_context.name);
     let resolvedFunc: ((this: This, ...args: Args) => Return) | null = null;
 
-    return function (this: This, ...params: Args): Return {
+    const wrapper = function (this: This, ...params: Args): Return {
         if (resolvedFunc === null) {
             // Default to the original JS function.
             resolvedFunc = originalMethod;
@@ -137,10 +137,17 @@ export function nativeOverride<This, Args extends any[], Return>(
             if (typeof _native !== "undefined" && _native[propertyKey]) {
                 resolvedFunc = _native[propertyKey] as (this: This, ...args: Args) => Return;
             }
+
+            const target = (this && (_context.static ? this : Object.getPrototypeOf(this))) as any;
+            if (target?.[propertyKey] === wrapper) {
+                target[propertyKey] = resolvedFunc;
+            }
         }
 
         return resolvedFunc.apply(this, params);
     };
+
+    return wrapper;
 }
 
 /**
@@ -153,22 +160,34 @@ export function nativeOverride<This, Args extends any[], Return>(
 nativeOverride.filter = function <T extends (...params: any) => boolean>(predicate: T) {
     return (originalMethod: (...args: any[]) => any, _context: ClassMethodDecoratorContext): ((...args: any[]) => any) => {
         const propertyKey = String(_context.name);
-        let nativeFunc: ((...args: any[]) => any) | undefined;
+        let resolvedFunc: ((this: any, ...args: any[]) => any) | undefined;
         let resolved = false;
 
-        return function (this: any, ...params: any[]): unknown {
+        const wrapper = function (this: any, ...params: any[]): unknown {
             if (!resolved) {
                 resolved = true;
                 if (typeof _native !== "undefined" && _native[propertyKey]) {
-                    nativeFunc = _native[propertyKey] as (...args: any[]) => any;
+                    const nativeFunc = _native[propertyKey] as (...args: any[]) => any;
+                    resolvedFunc = function (this: any, ...args: any[]): unknown {
+                        if (predicate(...(args as Parameters<T>))) {
+                            return nativeFunc(...args);
+                        }
+                        return originalMethod.apply(this, args);
+                    };
+                } else {
+                    resolvedFunc = originalMethod;
+                }
+
+                const target = this && (_context.static ? this : Object.getPrototypeOf(this));
+                if (target?.[propertyKey] === wrapper) {
+                    target[propertyKey] = resolvedFunc;
                 }
             }
 
-            if (nativeFunc && predicate(...(params as Parameters<T>))) {
-                return nativeFunc(...params);
-            }
-            return originalMethod.apply(this, params);
+            return resolvedFunc!.apply(this, params);
         };
+
+        return wrapper;
     };
 };
 
