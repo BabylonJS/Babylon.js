@@ -266,9 +266,6 @@ async function GetBlockSnapshot(
                 if (value?.constructor?.name === "FlowGraphInteger" && "value" in value) {
                     return { typeName: "FlowGraphInteger", value: value.value };
                 }
-                if (typeof value.typeName === "string") {
-                    return { typeName: value.typeName };
-                }
                 const constructorName = value.constructor?.name?.replace(/^_/, "");
                 if (typeof value.asArray === "function" && constructorName === "Matrix") {
                     return { typeName: "Matrix", values: value.asArray() };
@@ -277,7 +274,10 @@ async function GetBlockSnapshot(
                     return { typeName: value.getClassName?.() ?? value.constructor?.name, uniqueId: value.uniqueId, name: value.name };
                 }
                 if ("x" in value && "y" in value) {
-                    const vectorValue: any = { typeName: constructorName, x: value.x, y: value.y };
+                    const explicitTypeName = typeof value.typeName === "string" && /^[A-Z]/.test(value.typeName) ? value.typeName : undefined;
+                    const inferredTypeName =
+                        explicitTypeName ?? ("w" in value ? (constructorName === "Quaternion" ? "Quaternion" : "Vector4") : "z" in value ? "Vector3" : "Vector2");
+                    const vectorValue: any = { typeName: inferredTypeName, x: value.x, y: value.y };
                     if ("z" in value) {
                         vectorValue.z = value.z;
                     }
@@ -285,6 +285,9 @@ async function GetBlockSnapshot(
                         vectorValue.w = value.w;
                     }
                     return vectorValue;
+                }
+                if (typeof value.typeName === "string") {
+                    return { typeName: value.typeName };
                 }
 
                 const normalizedObject: Record<string, any> = {};
