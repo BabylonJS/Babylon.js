@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "files": {
+        "Physics/joinedPhysicsEngineComponent.ts": ["top-level-call"],
+        "Physics/joinedPhysicsEngineComponent.types.ts": ["declare-module"],
+        "Physics/physicsEngineComponent.ts": ["bare-import"],
+        "Physics/v1/Plugins/cannonJSPlugin.ts": ["top-level-call"],
+        "Physics/v1/physicsEngineComponent.ts": ["top-level-call"],
+        "Physics/v1/physicsEngineComponent.types.ts": ["declare-module"],
+        "Physics/v1/physicsImpostor.ts": ["top-level-call"],
+        "Physics/v2/physicsEngineComponent.ts": ["top-level-call"],
+        "Physics/v2/physicsEngineComponent.types.ts": ["declare-module"]
+    }
+}

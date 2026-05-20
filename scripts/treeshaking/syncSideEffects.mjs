@@ -29,17 +29,64 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, relative, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
 const PUBLIC_PKG_JSON = join(REPO_ROOT, "packages/public/@babylonjs/core/package.json");
-const MANIFEST_PATH = join(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = join(__dirname, "side-effects-manifest/core");
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function toPosixPath(filePath) {
+    return filePath.split(/[/\\]+/).join("/");
+}
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function getTopDir(filePath) {
+    const normalizedPath = toPosixPath(filePath);
+    const slashIndex = normalizedPath.indexOf("/");
+    return slashIndex === -1 ? normalizedPath : normalizedPath.substring(0, slashIndex);
+}
+
+/**
+ * Generated shader .ts files are ignored by git and can survive locally after their .fx source is deleted.
+ * Exclude those stale artifacts so local generated output cannot drift package metadata.
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isStaleGeneratedShader(filePath) {
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
+    if (!relPath.startsWith("Shaders/") && !relPath.startsWith("ShadersWGSL/")) {
+        return false;
+    }
+
+    const sourcePath = filePath.replace(/\.ts$/, "");
+    return !statSyncNoThrow(`${sourcePath}.fx`)?.isFile() && !statSyncNoThrow(`${sourcePath}.wgsl`)?.isFile();
+}
+
+/**
+ * @param {string} filePath
+ * @returns {import("fs").Stats | undefined}
+ */
+function statSyncNoThrow(filePath) {
+    try {
+        return statSync(filePath);
+    } catch {
+        return undefined;
+    }
+}
 
 /**
  * Recursively count all .ts files (excluding .d.ts, .test.ts, .spec.ts) per
@@ -54,8 +101,10 @@ function countTsFilesByTopDir() {
             if (entry.isDirectory()) {
                 walk(fullPath);
             } else if (entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && !entry.name.endsWith(".test.ts") && !entry.name.endsWith(".spec.ts")) {
-                const rel = relative(CORE_SRC, fullPath);
-                const topDir = rel.includes("/") ? rel.split("/")[0] : rel;
+                if (isStaleGeneratedShader(fullPath)) {
+                    continue;
+                }
+                const topDir = getTopDir(relative(CORE_SRC, fullPath));
                 counts[topDir] = (counts[topDir] || 0) + 1;
             }
         }
@@ -88,13 +137,13 @@ function main() {
     const verbose = args.includes("--verbose");
 
     // Read manifest
-    const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
-    const seFiles = manifest.manifest.map((r) => r.file);
+    const manifest = readSideEffectsManifest(MANIFEST_PATH);
+    const seFiles = manifest.manifest.map((r) => toPosixPath(r.file));
 
     // Count side-effectful files per top-level directory
     const seByTopDir = {};
     for (const file of seFiles) {
-        const topDir = file.includes("/") ? file.split("/")[0] : file;
+        const topDir = getTopDir(file);
         seByTopDir[topDir] = (seByTopDir[topDir] || 0) + 1;
     }
 
@@ -128,7 +177,7 @@ function main() {
 
     // 2. Individual file entries for everything else
     for (const file of seFiles.sort()) {
-        const topDir = file.includes("/") ? file.split("/")[0] : file;
+        const topDir = getTopDir(file);
         if (globDirs.has(topDir)) {
             continue; // Already covered by glob
         }

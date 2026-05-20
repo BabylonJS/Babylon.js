@@ -12,32 +12,43 @@
  *   - Subdirectory `pure.ts` barrels (recursively generated)
  *
  * Usage:
- *   node scripts/treeshaking/generatePureBarrels.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/generatePureBarrels.mjs [--dry-run] [--verbose] [--format]
  *
  * Options:
  *   --dry-run   Print what would be written without touching disk
  *   --verbose   Print detailed per-file decisions
+ *   --format   Format generated files after writing them
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "fs";
 import { resolve, dirname, relative, join, basename } from "path";
 import { fileURLToPath } from "url";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../..");
 const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest/core");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
+const FORMAT = process.argv.includes("--format");
 const IS_ADO = !!process.env.TF_BUILD;
 
 function adoError(msg) {
     if (IS_ADO) {
         console.log(`##vso[task.logissue type=error]${msg}`);
     }
+}
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function toPosixPath(filePath) {
+    return filePath.split(/[/\\]+/).join("/");
 }
 
 const HEADER = `/** Pure barrel — re-exports only side-effect-free modules */\n`;
@@ -48,10 +59,9 @@ const expectedContents = new Map();
 const expectedBarrelPaths = new Set();
 
 // ── Load side-effects manifest ──────────────────────────────────────────────
-const manifestData = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
-// manifest is an array of { file, sideEffects }
+const manifestData = readSideEffectsManifest(MANIFEST_PATH);
 // file paths are relative to SRC_ROOT (e.g. "Actions/action.ts")
-const sideEffectFiles = new Set(manifestData.manifest.map((e) => e.file));
+const sideEffectFiles = new Set(manifestData.manifest.map((e) => toPosixPath(e.file)));
 
 // ── Scan for existing .pure.ts files ────────────────────────────────────────
 const pureFileSet = new Set();
@@ -61,7 +71,7 @@ function scanForPureFiles(dir) {
             scanForPureFiles(join(dir, entry.name));
         } else if (entry.name.endsWith(".pure.ts") && entry.name !== "pure.ts") {
             // e.g. "math.color.pure.ts" — store relative to SRC_ROOT without extension
-            const rel = relative(SRC_ROOT, join(dir, entry.name));
+            const rel = toPosixPath(relative(SRC_ROOT, join(dir, entry.name)));
             // Store without ".ts" extension so we can match against specifiers
             pureFileSet.add(rel.replace(/\.ts$/, ""));
         }
@@ -154,7 +164,7 @@ function processDirectory(dir) {
             const bareMatch = trimmed.match(/^import\s+["'](.+?)["']\s*;?\s*$/);
             if (bareMatch) {
                 const bareSpec = bareMatch[1];
-                const bareRelPath = relative(SRC_ROOT, resolve(dir, bareSpec));
+                const bareRelPath = toPosixPath(relative(SRC_ROOT, resolve(dir, bareSpec)));
                 const barePureRelPath = bareRelPath + ".pure";
                 if (pureFileSet.has(barePureRelPath)) {
                     rewrittenToPure++;
@@ -220,7 +230,7 @@ function processDirectory(dir) {
             }
         }
     }
-    const relDir = relative(SRC_ROOT, dir) || ".";
+    const relDir = toPosixPath(relative(SRC_ROOT, dir)) || ".";
     for (const pf of pureFileSet) {
         // pf is e.g. "Maths/math.color.pure" (relative to SRC_ROOT, without .ts)
         const pfDir = dirname(pf);
@@ -304,7 +314,7 @@ function isBarrelWithSideEffects(filePath, contextDir) {
     // Check if any target is in the side-effects manifest
     const barrelDir = dirname(filePath);
     for (const spec of specifiers) {
-        const targetRel = relative(SRC_ROOT, resolve(barrelDir, spec)) + ".ts";
+        const targetRel = toPosixPath(relative(SRC_ROOT, resolve(barrelDir, spec))) + ".ts";
         if (sideEffectFiles.has(targetRel)) {
             return true;
         }
@@ -340,7 +350,7 @@ function resolveExport(dir, specifier, originalLine) {
 
     // Case 2: File reference — check for .pure.ts or pure file
     const resolvedFile = resolve(dir, specifier + ".ts");
-    const relPath = relative(SRC_ROOT, resolve(dir, specifier));
+    const relPath = toPosixPath(relative(SRC_ROOT, resolve(dir, specifier)));
     const pureSpecifier = specifier + ".pure";
     const pureRelPath = relPath + ".pure"; // e.g. "Maths/math.color.pure"
 
@@ -417,7 +427,7 @@ function resolveExport(dir, specifier, originalLine) {
  * @returns {string|null} The resolved export line for pure.ts, or null to skip
  */
 function resolveNamedExport(dir, specifier, names, originalLine) {
-    const relPath = relative(SRC_ROOT, resolve(dir, specifier));
+    const relPath = toPosixPath(relative(SRC_ROOT, resolve(dir, specifier)));
     const pureSpecifier = specifier + ".pure";
     const pureRelPath = relPath + ".pure";
 
@@ -479,7 +489,7 @@ function postPassOrphans(dir) {
     // Skip if already processed (has index.ts) or is the SRC_ROOT itself
     if (processedDirs.has(dir)) return;
 
-    const relDir = relative(SRC_ROOT, dir) || ".";
+    const relDir = toPosixPath(relative(SRC_ROOT, dir)) || ".";
 
     // Collect .pure.ts files in this directory
     const localPureFiles = [];
@@ -584,19 +594,24 @@ console.log(`  Empty barrels (not written): ${emptyBarrels}`);
 if (!DRY_RUN && !CHECK && writtenFiles.length > 0) {
     // Deduplicate (a file may be appended to multiple times)
     const uniqueFiles = [...new Set(writtenFiles)];
-    console.log(`\nFormatting ${uniqueFiles.length} files with Prettier...`);
-    try {
-        const BATCH = 100;
-        for (let i = 0; i < uniqueFiles.length; i += BATCH) {
-            const batch = uniqueFiles.slice(i, i + BATCH);
-            execSync(`npx prettier --write ${batch.map((f) => `"${f}"`).join(" ")}`, {
-                cwd: REPO_ROOT,
-                stdio: "ignore",
-            });
+    if (FORMAT) {
+        console.log(`\nFormatting ${uniqueFiles.length} files with Prettier...`);
+        try {
+            const prettierBin = resolve(REPO_ROOT, "node_modules/prettier/bin/prettier.cjs");
+            const BATCH = 100;
+            for (let i = 0; i < uniqueFiles.length; i += BATCH) {
+                const batch = uniqueFiles.slice(i, i + BATCH);
+                execFileSync(process.execPath, [prettierBin, "--write", ...batch], {
+                    cwd: REPO_ROOT,
+                    stdio: "ignore",
+                });
+            }
+            console.log(`Formatted ${uniqueFiles.length} files.`);
+        } catch (err) {
+            console.error(`Warning: Prettier formatting failed: ${err.message}`);
         }
-        console.log(`Formatted ${uniqueFiles.length} files.`);
-    } catch (err) {
-        console.error(`Warning: Prettier formatting failed: ${err.message}`);
+    } else {
+        console.log(`\nSkipping Prettier formatting for ${uniqueFiles.length} files (pass --format to enable).`);
     }
 }
 

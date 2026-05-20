@@ -1,4 +1,5 @@
-import { type ISimplificationSettings, type SimplificationQueue, type SimplificationType } from "./meshSimplification";
+import { type SimplificationQueue } from "./meshSimplification";
+import { type ISimplificationSettings, type SimplificationType } from "./meshSimplification.common";
 declare module "../scene.pure" {
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention

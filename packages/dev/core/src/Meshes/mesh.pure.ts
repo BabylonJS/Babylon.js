@@ -6025,7 +6025,11 @@ if (!Object.getOwnPropertyDescriptor(Mesh.prototype, "thinInstanceEnablePicking"
     Object.defineProperty(Mesh.prototype, "thinInstanceEnablePicking", _MissingSideEffectProperty("Mesh", "thinInstanceEnablePicking"));
 }
 if (!Object.getOwnPropertyDescriptor(Mesh.prototype, "thinInstanceAllowAutomaticStaticBufferRecreation")) {
-    Object.defineProperty(Mesh.prototype, "thinInstanceAllowAutomaticStaticBufferRecreation", _MissingSideEffectProperty("Mesh", "thinInstanceAllowAutomaticStaticBufferRecreation"));
+    Object.defineProperty(
+        Mesh.prototype,
+        "thinInstanceAllowAutomaticStaticBufferRecreation",
+        _MissingSideEffectProperty("Mesh", "thinInstanceAllowAutomaticStaticBufferRecreation")
+    );
 }
 if (!Object.getOwnPropertyDescriptor(Mesh.prototype, "thinInstanceCount")) {
     Object.defineProperty(Mesh.prototype, "thinInstanceCount", _MissingSideEffectProperty("Mesh", "thinInstanceCount"));

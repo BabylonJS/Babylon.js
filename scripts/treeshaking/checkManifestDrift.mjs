@@ -15,16 +15,18 @@
  * This should run in CI after the TypeScript build step.
  */
 
-import { execSync } from "child_process";
-import { readFileSync, rmSync } from "fs";
+import { execFileSync } from "child_process";
+import { rmSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
-const COMMITTED_MANIFEST = resolve(__dirname, "side-effects-manifest.json");
-const TMP_MANIFEST = resolve(__dirname, ".tmp-manifest-check.json");
+const COMMITTED_MANIFEST = resolve(__dirname, "side-effects-manifest/core");
+const TMP_MANIFEST_ROOT = resolve(__dirname, ".tmp-manifest-check");
+const TMP_MANIFEST = resolve(TMP_MANIFEST_ROOT, "core");
 const IS_ADO = !!process.env.TF_BUILD;
 
 function adoError(msg) {
@@ -42,7 +44,7 @@ function main() {
 
     // Run the audit script and write output to a temp file
     try {
-        execSync(`node ${resolve(__dirname, "auditSideEffects.mjs")} --out ${TMP_MANIFEST}`, { cwd: REPO_ROOT, stdio: ["pipe", "pipe", "pipe"] });
+        execFileSync(process.execPath, [resolve(__dirname, "auditSideEffects.mjs"), "--out", TMP_MANIFEST], { cwd: REPO_ROOT, stdio: ["pipe", "pipe", "pipe"] });
     } catch (err) {
         console.error("Failed to run auditSideEffects.mjs:");
         console.error(err.stderr?.toString() ?? err.message);
@@ -50,9 +52,9 @@ function main() {
     }
 
     // Read both manifests
-    let committed, regenerated;
+    let committedManifest, regeneratedManifest;
     try {
-        committed = readFileSync(COMMITTED_MANIFEST, "utf-8");
+        committedManifest = readSideEffectsManifest(COMMITTED_MANIFEST);
     } catch {
         const msg = `Committed manifest not found at ${COMMITTED_MANIFEST}. Run: npm run update:manifest`;
         console.error(msg);
@@ -61,21 +63,18 @@ function main() {
     }
 
     try {
-        regenerated = readFileSync(TMP_MANIFEST, "utf-8");
+        regeneratedManifest = readSideEffectsManifest(TMP_MANIFEST);
     } catch {
         console.error("Failed to read regenerated manifest.");
         process.exit(2);
     }
 
     // Clean up temp file
-    rmSync(TMP_MANIFEST, { force: true });
+    rmSync(TMP_MANIFEST_ROOT, { recursive: true, force: true });
 
     // Parse and compare (normalize to avoid whitespace/key-order noise)
-    const committedObj = JSON.parse(committed);
-    const regeneratedObj = JSON.parse(regenerated);
-
-    const committedNorm = JSON.stringify(committedObj, null, 2);
-    const regeneratedNorm = JSON.stringify(regeneratedObj, null, 2);
+    const committedNorm = JSON.stringify({ version: committedManifest.version, files: committedManifest.files }, null, 2);
+    const regeneratedNorm = JSON.stringify({ version: regeneratedManifest.version, files: regeneratedManifest.files }, null, 2);
 
     if (committedNorm === regeneratedNorm) {
         console.log("✅ Manifest is up-to-date — no drift detected.\n");
@@ -86,8 +85,8 @@ function main() {
     console.error("❌ Manifest drift detected!\n");
     adoError("Side-effects manifest drift detected. Run: npm run update:manifest");
 
-    const cFiles = new Set(committedObj.manifest.map((e) => e.file));
-    const rFiles = new Set(regeneratedObj.manifest.map((e) => e.file));
+    const cFiles = new Set(committedManifest.manifest.map((e) => e.file));
+    const rFiles = new Set(regeneratedManifest.manifest.map((e) => e.file));
 
     const added = [...rFiles].filter((f) => !cFiles.has(f));
     const removed = [...cFiles].filter((f) => !rFiles.has(f));
@@ -122,7 +121,7 @@ function main() {
         "\nTo fix: regenerate the manifest and commit it:\n" +
             "  npm run update:manifest\n" +
             "  node scripts/treeshaking/syncSideEffects.mjs\n" +
-            "  git add scripts/treeshaking/side-effects-manifest.json packages/public/@babylonjs/core/package.json\n"
+            "  git add scripts/treeshaking/side-effects-manifest/core packages/public/@babylonjs/core/package.json\n"
     );
 
     process.exit(1);

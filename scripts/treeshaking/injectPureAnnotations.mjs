@@ -27,7 +27,7 @@
  * file is excluded.
  *
  * Usage:
- *   node scripts/treeshaking/injectPureAnnotations.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/injectPureAnnotations.mjs [--dry-run] [--verbose] [--format]
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -39,6 +39,7 @@ import { globSync } from "glob";
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const verbose = args.includes("--verbose");
+const format = args.includes("--format");
 const writtenFiles = [];
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -106,8 +107,8 @@ for (const filePath of pureFiles) {
 
 console.log(`\n${dryRun ? "[dry-run] " : ""}Injected ${totalAnnotations} /*#__PURE__*/ annotation(s) across ${totalFiles} file(s) (${pureFiles.length} .pure.js scanned).`);
 
-// Format all modified files with Prettier
-if (!dryRun && writtenFiles.length > 0) {
+// Optionally format all modified files with Prettier
+if (format && !dryRun && writtenFiles.length > 0) {
     console.log(`\nFormatting ${writtenFiles.length} files with Prettier...`);
     try {
         const BATCH = 100;

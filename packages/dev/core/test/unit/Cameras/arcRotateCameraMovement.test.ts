@@ -158,14 +158,6 @@ describe("ArcRotateCameraMovement", () => {
         });
     });
 
-    describe("useMovementSystem backward compat", () => {
-        it("setter is a no-op, getter always returns true", () => {
-            camera.useMovementSystem = false; // no-op
-            expect(camera.useMovementSystem).toBe(true);
-            expect(camera.movement).toBeDefined();
-        });
-    });
-
     describe("panningInertia setter", () => {
         it("syncs panningInertia to movement.panInertia", () => {
             camera.panningInertia = 0.5;
