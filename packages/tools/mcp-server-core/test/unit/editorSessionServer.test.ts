@@ -1,11 +1,7 @@
+import * as http from "node:http";
 import * as net from "node:net";
 
-import {
-    FindCompatibleMcpEditorSessionServerAsync,
-    IsCompatibleMcpEditorSessionHealth,
-    McpEditorSessionController,
-    McpEditorSessionServer,
-} from "../../src/index";
+import { FindCompatibleMcpEditorSessionServerAsync, IsCompatibleMcpEditorSessionHealth, McpEditorSessionController, McpEditorSessionServer } from "../../src/index";
 
 async function GetFreePortAsync(): Promise<number> {
     return await new Promise((resolve, reject) => {
@@ -19,6 +15,32 @@ async function GetFreePortAsync(): Promise<number> {
             }
             const port = address.port;
             server.close(() => resolve(port));
+        });
+    });
+}
+
+async function StartBlockingServerAsync(port: number): Promise<net.Server> {
+    return await new Promise((resolve, reject) => {
+        const server = net.createServer();
+        server.once("error", reject);
+        server.listen(port, "127.0.0.1", () => resolve(server));
+    });
+}
+
+async function StartIncompatibleHttpServerAsync(): Promise<{ server: http.Server; port: number }> {
+    return await new Promise((resolve, reject) => {
+        const server = http.createServer((_request, response) => {
+            response.setHeader("Content-Type", "application/json");
+            response.end(JSON.stringify({ protocol: "not-a-babylon-session-server" }));
+        });
+        server.once("error", reject);
+        server.listen(0, "127.0.0.1", () => {
+            const address = server.address();
+            if (!address || typeof address === "string") {
+                server.close(() => reject(new Error("Could not allocate an incompatible test server port.")));
+                return;
+            }
+            resolve({ server, port: address.port });
         });
     });
 }
@@ -123,6 +145,53 @@ describe("editor session server", () => {
         expect(server.isRunning()).toBe(false);
         expect(server.getPort()).toBe(0);
         expect(server.closeSession(session.id)).toBe(false);
+    });
+
+    it("reuses a running session server within the same process", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer({
+            serverName: "Test Session Server",
+            documentKind: "test-document",
+            getDocument: () => JSON.stringify({ value: 1 }),
+            setDocument: () => undefined,
+        });
+
+        try {
+            const firstPort = await server.startAsync(port);
+            const secondPort = await server.startAsync(port + 1);
+            const firstSession = server.createSession("main");
+            const secondSession = server.createSession("main");
+
+            expect(secondPort).toBe(firstPort);
+            expect(secondSession.id).toBe(firstSession.id);
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
+    it("falls back to the next available port when the preferred port is occupied", async () => {
+        const preferredPort = await GetFreePortAsync();
+        const blocker = await StartBlockingServerAsync(preferredPort);
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { defaultPort: preferredPort, portRange: 10 }
+        );
+
+        try {
+            const listeningPort = await server.startAsync();
+
+            expect(listeningPort).not.toBe(preferredPort);
+            expect(listeningPort).toBeGreaterThan(preferredPort);
+            expect(listeningPort).toBeLessThan(preferredPort + 10);
+        } finally {
+            await server.stopAsync();
+            blocker.close();
+        }
     });
 
     it("updates revisions for MCP-side notifications even without editor subscribers", async () => {
@@ -232,7 +301,12 @@ describe("editor session server", () => {
         try {
             await server.startAsync();
 
-            const discovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "test-document", workspaceId: "workspace-a" });
+            const discovery = await FindCompatibleMcpEditorSessionServerAsync({
+                startPort: port,
+                portRange: 1,
+                documentKind: "test-document",
+                workspaceId: "workspace-a",
+            });
             const incompatibleDiscovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "other-document" });
             const wrongWorkspaceDiscovery = await FindCompatibleMcpEditorSessionServerAsync({
                 startPort: port,
@@ -254,6 +328,18 @@ describe("editor session server", () => {
             expect(wrongWorkspaceDiscovery).toBeUndefined();
         } finally {
             await server.stopAsync();
+        }
+    });
+
+    it("ignores incompatible services during discovery", async () => {
+        const { server, port } = await StartIncompatibleHttpServerAsync();
+
+        try {
+            const discovery = await FindCompatibleMcpEditorSessionServerAsync({ startPort: port, portRange: 1, documentKind: "test-document" });
+
+            expect(discovery).toBeUndefined();
+        } finally {
+            server.close();
         }
     });
 });
