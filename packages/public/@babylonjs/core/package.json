@@ -658,6 +658,7 @@
         "Misc/PerformanceViewer/performanceViewerSceneExtension.js",
         "Misc/basis.js",
         "Misc/dds.js",
+        "Misc/decorators.functions.js",
         "Misc/dumpTools.js",
         "Misc/environmentTextureTools.js",
         "Misc/equirectangularCapture.js",

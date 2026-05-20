@@ -1,8 +1,12 @@
-// Polyfill Symbol.metadata for environments that don't support TC39 decorators natively.
-// TypeScript's decorator emit checks Symbol.metadata and uses void 0 if absent, which causes
-// context.metadata to be undefined in decorator callbacks, leading to runtime errors.
+// Provide the TC39 decorator metadata key for runtimes that support Symbol but do not yet expose Symbol.metadata.
+// TypeScript's decorator emit reads Symbol.metadata before decorator callbacks run; if it is absent,
+// context.metadata is undefined and decorators such as @serialize cannot store class metadata.
 if (typeof Symbol !== "undefined" && !Symbol.metadata) {
-    (Symbol as unknown as Record<string | symbol, symbol>).metadata = Symbol("Symbol.metadata");
+    Object.defineProperty(Symbol, "metadata", {
+        configurable: true,
+        writable: true,
+        value: Symbol("Symbol.metadata"),
+    });
 }
 
 /** @internal */

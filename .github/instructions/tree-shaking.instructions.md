@@ -110,6 +110,8 @@ Do not add `export {}` just to force module mode. If the augmentation needs an i
 
 6. **Do not create pure shader files.** Generated shader modules remain generated side-effect modules. If a pure implementation needs a shader, load the generated shader module from the owning registration/readiness path; do not split the shader file itself.
 
+7. **TC39 decorators in `.pure.ts` must be class-local.** Decorators are allowed in pure implementation files only when their runtime effects are confined to the class or member being defined. Allowed examples include writing metadata to that class via `Symbol.metadata`, returning accessor or method descriptors for that member, and initializing per-instance backing fields through `init`. Decorators in `.pure.ts` files must not register classes or parsers globally, mutate shared registries, patch prototypes, perform side-effect imports, write to shader stores, install global polyfills, or depend on wrapper-only registration having already run. If a decorator needs any of those effects, move that work into the module's `Register*()` function and keep the decorator as a class-local metadata or descriptor operation. The only approved exception is the `Symbol.metadata` compatibility shim in `Misc/decorators.functions.ts`, which must run before TypeScript's TC39 decorator emit evaluates decorated classes on runtimes that do not yet provide `Symbol.metadata`.
+
 ## Tooling
 
 After adding, renaming, or removing files, run these scripts to keep everything in sync:
