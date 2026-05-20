@@ -29,9 +29,14 @@ function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPre
 // Use Function constructor to safely evaluate the expression without allowing access to scope.
 // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
 function EvaluateExpression(rawValue: string): number {
-    const val = rawValue.trim();
+    rawValue = rawValue.trim();
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+        return value;
+    }
+
     try {
-        return Number(Function(`"use strict";return (${val})`)());
+        return Number(Function(`"use strict";return (${rawValue})`)());
     } catch {
         return NaN;
     }
