@@ -25,11 +25,19 @@ function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPre
     return step;
 }
 
-// Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
-// Use Function constructor to safely evaluate the expression without allowing access to scope.
+// Parse the raw input into a number, supporting plain numeric values and arbitrary math expressions
+// (e.g. "10*60" for 10 minutes in seconds).
+// First, try Number() so plain numeric input works even under a strict Content-Security-Policy that
+// disallows eval/Function. Only fall back to the Function constructor for non-numeric inputs that may
+// be expressions. Empty/whitespace input returns NaN so validateValue rejects it rather than committing
+// 0 (which is what Number("") would otherwise return).
 // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
 function EvaluateExpression(rawValue: string): number {
     rawValue = rawValue.trim();
+    if (rawValue.length === 0) {
+        return NaN;
+    }
+
     const value = Number(rawValue);
     if (!isNaN(value)) {
         return value;
