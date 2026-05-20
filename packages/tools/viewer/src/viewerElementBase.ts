@@ -634,14 +634,15 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
     /**
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
-    @property({
-        hasChanged: (newValue: ViewerElementBase["environment"], oldValue: ViewerElementBase["environment"]) => {
-            return newValue.lighting !== oldValue.lighting || newValue.skybox !== oldValue.skybox;
-        },
-    })
     public get environment(): { lighting: Nullable<string>; skybox: Nullable<string> } {
         return { lighting: this.environmentLighting, skybox: this.environmentSkybox };
     }
+    @property({
+        hasChanged: (newValue: string, oldValue: ViewerElementBase["environment"]) => {
+            const environmentUrl = newValue || null;
+            return environmentUrl !== oldValue.lighting || environmentUrl !== oldValue.skybox;
+        },
+    })
     public set environment(url: string) {
         this.environmentLighting = url || null;
         this.environmentSkybox = url || null;
