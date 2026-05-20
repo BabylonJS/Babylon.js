@@ -8,6 +8,7 @@ const DefaultPublicHostname = "localhost";
 const DefaultPort = 3001;
 const DefaultPortRange = 10;
 const DefaultKeepAliveIntervalMs = 15_000;
+const DefaultConflictPolicy = "last-writer-wins";
 
 /**
  * A live document session shared between an MCP server and an editor.
@@ -135,6 +136,8 @@ export interface IMcpEditorSessionHealth {
     activeSessionCount: number;
     /** Supported capability names. */
     capabilities: string[];
+    /** Conflict policy used when editor and MCP writes race. */
+    conflictPolicy?: typeof DefaultConflictPolicy;
     /** Stable local workspace identity. */
     workspaceId?: string;
     /** Per-server owner identity. */
@@ -216,6 +219,10 @@ export function IsCompatibleMcpEditorSessionHealth(health: unknown, options: IMc
     }
 
     if (!Array.isArray(health.capabilities) || !health.capabilities.every((capability) => typeof capability === "string")) {
+        return false;
+    }
+
+    if (health.conflictPolicy !== undefined && health.conflictPolicy !== DefaultConflictPolicy) {
         return false;
     }
 
@@ -369,7 +376,7 @@ export class McpEditorSessionServer {
         this._corsOrigin = options.corsOrigin;
         this._allowedOrigins = options.allowedOrigins ? new Set(options.allowedOrigins) : null;
         this._legacyDocumentRoutes = new Set((options.legacyDocumentRoutes ?? []).map((route) => route.replace(/^\//, "")));
-        this._capabilities = ["sse", "document-get", "document-post", "session-close", ...(options.capabilities ?? [])];
+        this._capabilities = ["sse", "document-get", "document-post", "session-close", DefaultConflictPolicy, ...(options.capabilities ?? [])];
         this._statusTitle = options.statusTitle ?? adapter.serverName;
         this._workspaceId = options.workspaceId ?? CreateDefaultWorkspaceId();
         this._ownerId = options.ownerId ?? CreateDefaultOwnerId();
@@ -559,6 +566,7 @@ export class McpEditorSessionServer {
             running: this.isRunning(),
             activeSessionCount: this._sessions.size,
             capabilities: [...this._capabilities],
+            conflictPolicy: DefaultConflictPolicy,
             workspaceId: this._workspaceId,
             ownerId: this._ownerId,
         };
@@ -605,6 +613,7 @@ export class McpEditorSessionServer {
         }
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        response.setHeader("Access-Control-Expose-Headers", "X-Mcp-Editor-Session-Revision");
     }
 
     private _getAllowedCorsOrigin(origin: string | undefined): string | undefined {
@@ -746,6 +755,7 @@ export class McpEditorSessionServer {
         response.statusCode = 200;
         response.setHeader("Content-Type", "application/json; charset=utf-8");
         response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Mcp-Editor-Session-Revision", session.revision.toString());
         response.end(document);
     }
 
@@ -764,8 +774,10 @@ export class McpEditorSessionServer {
             return;
         }
 
+        const previousRevision = session.revision;
         this._touchSession(session);
-        this._writeJson(response, 200, { ok: true, revision: session.revision });
+        response.setHeader("X-Mcp-Editor-Session-Revision", session.revision.toString());
+        this._writeJson(response, 200, { ok: true, previousRevision, revision: session.revision, conflictPolicy: DefaultConflictPolicy });
         await this._sendDocumentUpdateAsync(session.id, false);
     }
 
@@ -816,6 +828,7 @@ export class McpEditorSessionServer {
             revision: session.revision,
             createdAt: session.createdAt,
             updatedAt: session.updatedAt,
+            conflictPolicy: DefaultConflictPolicy,
             eventsUrl: `/session/${session.id}/events`,
             documentUrl: `/session/${session.id}/document`,
         };

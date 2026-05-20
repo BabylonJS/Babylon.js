@@ -75,11 +75,13 @@ describe("editor session server", () => {
                 documentKind: "test-document",
                 running: true,
                 activeSessionCount: 1,
+                conflictPolicy: "last-writer-wins",
             });
             expect(typeof health.workspaceId).toBe("string");
             expect(typeof health.ownerId).toBe("string");
             expect(sessionInfo).toMatchObject({
                 sessionId: firstSession.id,
+                conflictPolicy: "last-writer-wins",
                 documentUrl: `/session/${firstSession.id}/document`,
                 legacyUrl: `/session/${firstSession.id}/legacy`,
             });
@@ -109,7 +111,9 @@ describe("editor session server", () => {
             const documentUrl = `http://localhost:${listeningPort}/session/${session.id}/document`;
             const legacyUrl = `http://localhost:${listeningPort}/session/${session.id}/material`;
 
-            await expect((await fetch(documentUrl)).json()).resolves.toEqual({ value: 1 });
+            const initialDocumentResponse = await fetch(documentUrl);
+            await expect(initialDocumentResponse.json()).resolves.toEqual({ value: 1 });
+            expect(initialDocumentResponse.headers.get("x-mcp-editor-session-revision")).toBe("0");
             await expect((await fetch(legacyUrl)).json()).resolves.toEqual({ value: 1 });
 
             const postResponse = await fetch(documentUrl, {
@@ -120,8 +124,12 @@ describe("editor session server", () => {
             const postResult = await postResponse.json();
 
             expect(postResponse.ok).toBe(true);
-            expect(postResult).toMatchObject({ ok: true, revision: 1 });
-            await expect((await fetch(documentUrl)).json()).resolves.toEqual({ value: 2 });
+            expect(postResponse.headers.get("x-mcp-editor-session-revision")).toBe("1");
+            expect(postResult).toMatchObject({ ok: true, previousRevision: 0, revision: 1, conflictPolicy: "last-writer-wins" });
+
+            const updatedDocumentResponse = await fetch(documentUrl);
+            await expect(updatedDocumentResponse.json()).resolves.toEqual({ value: 2 });
+            expect(updatedDocumentResponse.headers.get("x-mcp-editor-session-revision")).toBe("1");
         } finally {
             await server.stopAsync();
         }
@@ -367,7 +375,8 @@ describe("editor session server", () => {
             documentKind: "test-document",
             running: true,
             activeSessionCount: 0,
-            capabilities: ["sse", "document-get", "document-post", "session-close"],
+            capabilities: ["sse", "document-get", "document-post", "session-close", "last-writer-wins"],
+            conflictPolicy: "last-writer-wins",
             workspaceId: "workspace-a",
             ownerId: "owner-a",
         };
@@ -377,6 +386,7 @@ describe("editor session server", () => {
         expect(IsCompatibleMcpEditorSessionHealth(health, { documentKind: "other-document" })).toBe(false);
         expect(IsCompatibleMcpEditorSessionHealth(health, { workspaceId: "workspace-b" })).toBe(false);
         expect(IsCompatibleMcpEditorSessionHealth(health, { ownerId: "owner-b" })).toBe(false);
+        expect(IsCompatibleMcpEditorSessionHealth({ ...health, conflictPolicy: "first-writer-wins" }, { documentKind: "test-document" })).toBe(false);
         expect(IsCompatibleMcpEditorSessionHealth({ ...health, protocol: "other-protocol" }, { documentKind: "test-document" })).toBe(false);
         expect(IsCompatibleMcpEditorSessionHealth({ ...health, protocolVersion: "2.0" }, { documentKind: "test-document" })).toBe(false);
     });
