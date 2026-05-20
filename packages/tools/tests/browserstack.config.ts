@@ -1,6 +1,7 @@
 import cp from "child_process";
 import BrowserStackLocal from "browserstack-local";
 const clientPlaywrightVersion = cp.execSync("npx playwright --version").toString().trim().split(" ")[1];
+export const browserStackLocalIdentifier = process.env.BROWSERSTACK_LOCAL_IDENTIFIER;
 
 // BrowserStack Specific Capabilities.
 // Set 'browserstack.local:true For Local testing
@@ -14,12 +15,14 @@ const caps = {
     "browserstack.username": process.env.BROWSERSTACK_USERNAME,
     "browserstack.accessKey": process.env.BROWSERSTACK_ACCESS_KEY,
     "browserstack.local": process.env.BROWSERSTACK_LOCAL || false,
+    ...(browserStackLocalIdentifier ? { "browserstack.localIdentifier": browserStackLocalIdentifier } : {}),
     "client.playwrightVersion": clientPlaywrightVersion,
 };
 
 // replace YOUR_ACCESS_KEY with your key. You can also set an environment variable - "BROWSERSTACK_ACCESS_KEY".
 export const BS_LOCAL_ARGS = {
     key: process.env.BROWSERSTACK_ACCESS_KEY,
+    ...(browserStackLocalIdentifier ? { localIdentifier: browserStackLocalIdentifier } : {}),
 };
 
 export const bsLocal = new BrowserStackLocal.Local();

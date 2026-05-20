@@ -28,6 +28,8 @@ const playwrightVersion: string = require("@playwright/test/package.json").versi
 
 const testType = process.env.BSTACK_TEST_TYPE || "webgl2";
 const isPerformanceRun = testType === "performance";
+const usesBrowserStackLocal = testType === "es6vis";
+const browserStackLocalIdentifier = process.env.BROWSERSTACK_LOCAL_IDENTIFIER;
 
 // ---------------------------------------------------------------------------
 // BrowserStack CDP capabilities
@@ -47,7 +49,8 @@ const caps = {
     "browserstack.debug": "false",
     "browserstack.idleTimeout": "300",
     "browserstack.playwrightVersion": playwrightVersion,
-    "browserstack.local": testType === "es6vis" ? "true" : "false",
+    "browserstack.local": usesBrowserStackLocal ? "true" : "false",
+    ...(usesBrowserStackLocal && browserStackLocalIdentifier ? { "browserstack.localIdentifier": browserStackLocalIdentifier } : {}),
 };
 
 // SECURITY NOTE: The wsEndpoint embeds BROWSERSTACK_ACCESS_KEY. Playwright may
