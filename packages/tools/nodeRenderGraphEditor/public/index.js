@@ -119,42 +119,53 @@ checkBabylonVersionAsync().then(() => {
             location.hash = splits.join("#");
         };
 
-        let checkHash = function () {
-            if (location.hash) {
-                if (previousHash != location.hash) {
-                    cleanHash();
+        let loadSnippetFromHashAsync = function () {
+            cleanHash();
+            previousHash = location.hash;
 
-                    previousHash = location.hash;
+            return new Promise((resolve, reject) => {
+                let hash = location.hash.substr(1);
+                currentSnippetToken = hash.split("#")[0];
 
-                    try {
-                        let xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = async function () {
-                            if (xmlHttp.readyState == 4) {
-                                if (xmlHttp.status == 200) {
-                                    let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                                    let serializationObject = JSON.parse(snippet.nodeRenderGraph);
-
-                                    if (editorDisplayed) {
-                                        customLoadObservable.notifyObservers(serializationObject);
-                                    } else {
-                                        nodeRenderGraph.parseSerializedObject(serializationObject);
-                                        try {
-                                            await nodeRenderGraph.buildAsync();
-                                        } catch (err) {
-                                            // Swallow the error here
-                                        }
-                                        showEditor();
-                                    }
-                                }
+                let xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4) {
+                        if (xmlHttp.status == 200) {
+                            try {
+                                let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
+                                resolve(JSON.parse(snippet.nodeRenderGraph));
+                            } catch (err) {
+                                reject(err);
                             }
-                        };
+                        } else {
+                            reject(new Error(`Unable to load node render graph snippet ${hash}`));
+                        }
+                    }
+                };
+                xmlHttp.onerror = function () {
+                    reject(new Error(`Unable to load node render graph snippet ${hash}`));
+                };
+                xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                xmlHttp.send();
+            });
+        };
 
-                        let hash = location.hash.substr(1);
-                        currentSnippetToken = hash.split("#")[0];
-                        xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
-                        xmlHttp.send();
-                    } catch (e) {}
-                }
+        let applySerializedGraph = function (serializationObject) {
+            nodeRenderGraph.parseSerializedObject(serializationObject);
+            nodeRenderGraph.buildAsync().catch((err) => {
+                console.error(err);
+            });
+        };
+
+        let checkHash = function () {
+            if (location.hash && previousHash != location.hash) {
+                loadSnippetFromHashAsync()
+                    .then((serializationObject) => {
+                        customLoadObservable.notifyObservers(serializationObject);
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
             }
 
             setTimeout(checkHash, 200);
@@ -237,8 +248,18 @@ checkBabylonVersionAsync().then(() => {
                 new BABYLON.DirectionalLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
 
                 nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
-                nodeRenderGraph.setToDefault();
-                await nodeRenderGraph.buildAsync();
+                if (location.hash) {
+                    try {
+                        applySerializedGraph(await loadSnippetFromHashAsync());
+                    } catch (err) {
+                        console.error(err);
+                        nodeRenderGraph.setToDefault();
+                        await nodeRenderGraph.buildAsync();
+                    }
+                } else {
+                    nodeRenderGraph.setToDefault();
+                    await nodeRenderGraph.buildAsync();
+                }
 
                 showEditor();
             } else {
