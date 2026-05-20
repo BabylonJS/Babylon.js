@@ -4,7 +4,7 @@
  * Unified Tree-Shaking Verification
  *
  * Runs all tree-shaking invariant checks in sequence:
- *   1. Manifest drift (side-effects-manifest.json matches source)
+ *   1. Manifest drift (side-effects-manifest/core/ matches source)
  *   2. Pure barrels (pure.ts files match what would be generated)
  *   3. Side-effect stubs (generated stub regions match what would be generated)
  *
@@ -16,7 +16,7 @@
  * Intended to run in CI after the TypeScript build step.
  */
 
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -27,15 +27,18 @@ const REPO_ROOT = resolve(__dirname, "../..");
 const checks = [
     {
         name: "Manifest drift",
-        cmd: `node ${resolve(__dirname, "checkManifestDrift.mjs")}`,
+        script: resolve(__dirname, "checkManifestDrift.mjs"),
+        args: [],
     },
     {
         name: "Pure barrels",
-        cmd: `node ${resolve(__dirname, "generatePureBarrels.mjs")} --check`,
+        script: resolve(__dirname, "generatePureBarrels.mjs"),
+        args: ["--check"],
     },
     {
         name: "Side-effect stubs",
-        cmd: `node ${resolve(__dirname, "generateSideEffectStubs.mjs")} --check`,
+        script: resolve(__dirname, "generateSideEffectStubs.mjs"),
+        args: ["--check"],
     },
 ];
 
@@ -43,10 +46,10 @@ let failures = 0;
 
 console.log("═══ Tree-Shaking Verification ═══\n");
 
-for (const { name, cmd } of checks) {
+for (const { name, script, args } of checks) {
     process.stdout.write(`  ${name}... `);
     try {
-        execSync(cmd, { cwd: REPO_ROOT, stdio: ["pipe", "pipe", "pipe"] });
+        execFileSync(process.execPath, [script, ...args], { cwd: REPO_ROOT, stdio: ["pipe", "pipe", "pipe"] });
         console.log("✅");
     } catch (err) {
         console.log("❌");
