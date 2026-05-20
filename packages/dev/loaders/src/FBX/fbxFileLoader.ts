@@ -118,6 +118,16 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return new FBXFileLoader(options[FBXFileLoaderMetadata.name]);
     }
 
+    /**
+     * Imports meshes from an FBX file and adds them to the scene.
+     * @param meshesNames - A string or array of mesh names to import, or null/undefined to import all meshes
+     * @param scene - The scene to add imported meshes to
+     * @param data - The FBX data to load
+     * @param rootUrl - Root URL used to resolve external resources
+     * @param _onProgress - Callback called while the file is loading
+     * @param _fileName - Name of the file being loaded
+     * @returns A promise containing the loaded meshes, particle systems, skeletons, animation groups, transform nodes, geometries, and lights
+     */
     public async importMeshAsync(
         meshesNames: string | readonly string[] | null | undefined,
         scene: Scene,
@@ -131,12 +141,30 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return this._buildScene(fbxScene, scene, rootUrl, meshesNames);
     }
 
+    /**
+     * Loads all FBX content into the scene.
+     * @param scene - The scene to load the FBX content into
+     * @param data - The FBX data to load
+     * @param rootUrl - Root URL used to resolve external resources
+     * @param _onProgress - Callback called while the file is loading
+     * @param _fileName - Name of the file being loaded
+     * @returns A promise that resolves when loading is complete
+     */
     public async loadAsync(scene: Scene, data: unknown, rootUrl: string, _onProgress?: (event: ISceneLoaderProgressEvent) => void, _fileName?: string): Promise<void> {
         const doc = this._parse(data);
         const fbxScene = interpretFBX(doc);
         this._buildScene(fbxScene, scene, rootUrl, null);
     }
 
+    /**
+     * Loads all FBX content into an asset container.
+     * @param scene - The scene used to create the asset container
+     * @param data - The FBX data to load
+     * @param rootUrl - Root URL used to resolve external resources
+     * @param _onProgress - Callback called while the file is loading
+     * @param _fileName - Name of the file being loaded
+     * @returns A promise containing the loaded asset container
+     */
     public async loadAssetContainerAsync(
         scene: Scene,
         data: unknown,
