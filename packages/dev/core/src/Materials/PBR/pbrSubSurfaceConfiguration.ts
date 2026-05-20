@@ -419,6 +419,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
     }
 
+    /**
+     * Checks whether the subsurface configuration is ready for the current submesh.
+     * @param defines defines the material defines to evaluate
+     * @param scene defines the scene to use for texture readiness checks
+     * @returns true if the configuration is ready
+     */
     public override isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
@@ -462,6 +468,11 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates the subsurface shader defines before attribute processing.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture define checks
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
@@ -599,6 +610,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the subsurface data for the current submesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene the material belongs to
+     * @param engine defines the engine the material belongs to
+     * @param subMesh defines the submesh being rendered
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
@@ -744,6 +762,11 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether the subsurface configuration references a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by the configuration
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._thicknessTexture === texture) {
             return true;
@@ -776,6 +799,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active subsurface textures to the provided array.
+     * @param activeTextures defines the active texture array to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._thicknessTexture) {
             activeTextures.push(this._thicknessTexture);
@@ -798,6 +825,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Adds the animatable subsurface textures to the provided array.
+     * @param animatables defines the animatable array to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._thicknessTexture && this._thicknessTexture.animations && this._thicknessTexture.animations.length > 0) {
             animatables.push(this._thicknessTexture);
@@ -820,6 +851,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Disposes the subsurface configuration resources.
+     * @param forceDisposeTextures defines whether to dispose associated textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             if (this._thicknessTexture) {
@@ -858,6 +893,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the subsurface sampler names to the provided array.
+     * @param samplers defines the sampler array to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push(
             "thicknessSampler",

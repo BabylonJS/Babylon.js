@@ -368,6 +368,13 @@ export class GridMaterial extends PushMaterial {
         return "GridMaterial";
     }
 
+    /**
+     * Parses a serialized grid material.
+     * @param source defines the serialized material source
+     * @param scene defines the scene to parse into
+     * @param rootUrl defines the root URL for referenced resources
+     * @returns the parsed grid material
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
         return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);
     }

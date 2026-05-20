@@ -102,6 +102,13 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    /**
+     * Checks whether the detail map configuration is ready for the current submesh.
+     * @param defines defines the material defines to evaluate
+     * @param scene defines the scene to use for texture readiness checks
+     * @param engine defines the engine to use for capability checks
+     * @returns true if the configuration is ready
+     */
     public override isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene, engine: AbstractEngine): boolean {
         if (!this._isEnabled) {
             return true;
@@ -119,6 +126,11 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates the detail map shader defines.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for engine capability checks
+     */
     public override prepareDefines(defines: MaterialDetailMapDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
@@ -138,6 +150,11 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the detail map data for the current submesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene the material belongs to
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
@@ -160,6 +177,11 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether the detail map configuration references a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by the configuration
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -168,18 +190,30 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active detail map textures to the provided array.
+     * @param activeTextures defines the active texture array to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
     }
 
+    /**
+     * Adds the animatable detail map textures to the provided array.
+     * @param animatables defines the animatable array to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
         }
     }
 
+    /**
+     * Disposes the detail map configuration resources.
+     * @param forceDisposeTextures defines whether to dispose associated textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -190,6 +224,10 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         return "DetailMapConfiguration";
     }
 
+    /**
+     * Adds the detail map sampler names to the provided array.
+     * @param samplers defines the sampler array to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("detailSampler");
     }

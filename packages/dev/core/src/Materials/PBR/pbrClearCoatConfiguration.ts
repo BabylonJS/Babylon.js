@@ -189,6 +189,13 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    /**
+     * Checks whether the clear coat configuration is ready for the current submesh.
+     * @param defines defines the material defines to evaluate
+     * @param scene defines the scene to use for texture readiness checks
+     * @param engine defines the engine to use for capability checks
+     * @returns true if the configuration is ready
+     */
     public override isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
@@ -227,6 +234,11 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates the clear coat shader defines before attribute processing.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture define checks
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
@@ -287,6 +299,13 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the clear coat data for the current submesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene the material belongs to
+     * @param engine defines the engine to use for capability checks
+     * @param subMesh defines the submesh being rendered
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
@@ -369,6 +388,11 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether the clear coat configuration references a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by the configuration
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -389,6 +413,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active clear coat textures to the provided array.
+     * @param activeTextures defines the active texture array to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
@@ -407,6 +435,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Adds the animatable clear coat textures to the provided array.
+     * @param animatables defines the animatable array to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
@@ -425,6 +457,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Disposes the clear coat configuration resources.
+     * @param forceDisposeTextures defines whether to dispose associated textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -451,6 +487,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the clear coat sampler names to the provided array.
+     * @param samplers defines the sampler array to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }

@@ -137,6 +137,12 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    /**
+     * Checks whether the sheen configuration is ready for the current submesh.
+     * @param defines defines the material defines to evaluate
+     * @param scene defines the scene to use for texture readiness checks
+     * @returns true if the configuration is ready
+     */
     public override isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
@@ -161,6 +167,11 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates the sheen shader defines before attribute processing.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture define checks
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.SHEEN = true;
@@ -199,6 +210,13 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the sheen data for the current submesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene the material belongs to
+     * @param engine defines the engine the material belongs to
+     * @param subMesh defines the submesh being rendered
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
@@ -245,6 +263,11 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether the sheen configuration references a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by the configuration
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -257,6 +280,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active sheen textures to the provided array.
+     * @param activeTextures defines the active texture array to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
@@ -267,6 +294,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Adds the animatable sheen textures to the provided array.
+     * @param animatables defines the animatable array to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
@@ -277,6 +308,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Disposes the sheen configuration resources.
+     * @param forceDisposeTextures defines whether to dispose associated textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -295,6 +330,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the sheen sampler names to the provided array.
+     * @param samplers defines the sampler array to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("sheenSampler", "sheenRoughnessSampler");
     }

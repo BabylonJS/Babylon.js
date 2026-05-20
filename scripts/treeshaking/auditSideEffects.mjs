@@ -436,8 +436,8 @@ function main() {
         }
     }
 
-    // Sort by file path
-    manifest.sort((a, b) => a.file.localeCompare(b.file));
+    // Sort by file path using code-point order so the manifest is stable across OS locales.
+    manifest.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
 
     // Compute summary stats
     const stats = {

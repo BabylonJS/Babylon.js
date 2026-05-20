@@ -120,6 +120,12 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
     }
 
+    /**
+     * Checks whether the anisotropy configuration is ready for the current submesh.
+     * @param defines defines the material defines to evaluate
+     * @param scene defines the scene to use for texture readiness checks
+     * @returns true if the configuration is ready
+     */
     public override isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
@@ -138,6 +144,12 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates the anisotropy shader defines before attribute processing.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture define checks
+     * @param mesh defines the mesh being rendered
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialAnisotropicDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.ANISOTROPIC = this._isEnabled;
@@ -167,6 +179,11 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the anisotropy data for the current submesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene the material belongs to
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
@@ -192,6 +209,11 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether the anisotropy configuration references a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by the configuration
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -200,18 +222,30 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active anisotropy textures to the provided array.
+     * @param activeTextures defines the active texture array to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
     }
 
+    /**
+     * Adds the animatable anisotropy textures to the provided array.
+     * @param animatables defines the animatable array to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
         }
     }
 
+    /**
+     * Disposes the anisotropy configuration resources.
+     * @param forceDisposeTextures defines whether to dispose associated textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             if (this._texture) {
@@ -231,6 +265,10 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the anisotropy sampler names to the provided array.
+     * @param samplers defines the sampler array to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("anisotropySampler");
     }

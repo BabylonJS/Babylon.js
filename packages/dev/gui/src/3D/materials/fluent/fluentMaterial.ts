@@ -305,6 +305,10 @@ export class FluentMaterial extends PushMaterial {
         return false;
     }
 
+    /**
+     * Disposes the material and its associated resources.
+     * @param forceDisposeEffect defines whether to dispose the effect
+     */
     public override dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
     }
@@ -323,7 +327,13 @@ export class FluentMaterial extends PushMaterial {
         return "FluentMaterial";
     }
 
-    // Statics
+    /**
+     * Parses a serialized fluent material.
+     * @param source defines the serialized material source
+     * @param scene defines the scene to parse into
+     * @param rootUrl defines the root URL for referenced resources
+     * @returns the parsed fluent material
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): FluentMaterial {
         return SerializationHelper.Parse(() => new FluentMaterial(source.name, scene), source, scene, rootUrl);
     }

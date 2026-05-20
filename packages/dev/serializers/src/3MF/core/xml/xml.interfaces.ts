@@ -1,19 +1,48 @@
 import { type IXmlSerializerFormatOptions } from "./xml.serializer.format";
 
-/** */
+/** Describes an XML qualified name with an optional namespace. */
 export interface IQualifiedName {
-    /** */
+    /** The namespace URI or prefix. */
     ns?: string;
-    /** */
+    /** The local XML name. */
     name: string;
 }
 
-/** */
+/** Provides a fluent interface for writing XML content. */
 export interface IXmlBuilder {
+    /**
+     * Writes the XML declaration.
+     * @param version defines the XML version
+     * @param encoding defines the optional XML encoding
+     * @param standalone defines the optional standalone flag
+     * @returns the XML builder
+     */
     dec(version: string, encoding?: string, standalone?: boolean): IXmlBuilder;
+    /**
+     * Writes an XML attribute.
+     * @param ns defines the attribute namespace
+     * @param n defines the attribute name
+     * @param v defines the attribute value
+     * @returns the XML builder
+     */
     att(ns: string | null, n: string, v: string): IXmlBuilder;
+    /**
+     * Writes an XML element.
+     * @param ns defines the element namespace
+     * @param n defines the element name
+     * @returns the XML builder
+     */
     ele(ns: string | null, n: string): IXmlBuilder;
+    /**
+     * Writes text content.
+     * @param txt defines the text to write
+     * @returns the XML builder
+     */
     text(txt: string): IXmlBuilder;
+    /**
+     * Ends the current XML element.
+     * @returns the XML builder
+     */
     end(): IXmlBuilder;
 }
 
@@ -29,10 +58,13 @@ export type XmlName = string | IQualifiedName;
 
 type FieldKind = "attr" | "elem" | "none";
 
-/**
- *
- */
+/** Formats values for XML serialization. */
 export interface IFormatter<T = any> {
+    /**
+     * Converts a value to its XML string representation.
+     * @param value defines the value to format
+     * @returns the XML string representation
+     */
     toString(value: T): string;
 }
 

@@ -187,6 +187,10 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         this._enable(true);
     }
 
+    /**
+     * Updates the BRDF shader defines.
+     * @param defines defines the material defines to update
+     */
     public override prepareDefines(defines: MaterialBRDFDefines): void {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
