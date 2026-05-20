@@ -2,8 +2,8 @@
 
 import { type Nullable } from "core/types";
 import { type Scene } from "core/scene.pure";
-import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
-import { type Matrix, type Vector2 } from "core/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
+import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase.pure";
@@ -12,8 +12,9 @@ import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 import { Mesh } from "core/Meshes/mesh.pure";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
-import { type BoundingInfo } from "../../Culling/boundingInfo";
+import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 
 const _GaussianSplattingBytesPerSplat = 32;
 const _GaussianSplattingBytesPerShTexel = 16;
@@ -90,6 +91,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     private _partProxies: GaussianSplattingPartProxyMesh[] = [];
 
+    /** Local-space bounds of part 0 when it is owned directly by this mesh (not via a proxy).
+     *  Null when all parts are proxied. Constant once set — part 0's splats are defined in
+     *  compound-local space and do not change regardless of the compound's world transform. */
+    private _part0LocalMin: Nullable<Vector3> = null;
+    private _part0LocalMax: Nullable<Vector3> = null;
+
     /**
      * World matrices for each part, indexed by part index.
      */
@@ -158,6 +165,104 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
+     * Recomputes the compound's local-space bounding info from:
+     *   - the stored local bounds of any directly-owned part (part 0 when it is not proxied), and
+     *   - the current world-space extents of all proxy meshes, inverse-transformed to
+     *     compound-local space.
+     *
+     * Transforming all 8 corners of each proxy's world AABB through the inverse compound world
+     * matrix produces a correct (conservative) compound-local AABB even when the compound has
+     * non-identity rotation or scale. Storing in compound-local space means Babylon's standard
+     * _updateBoundingInfo path correctly recomputes world bounds when the compound later moves.
+     */
+    private _updateBoundingInfoFromProxies(): void {
+        const compoundWorld = this.getWorldMatrix();
+        const invCompoundWorld = Matrix.Invert(compoundWorld);
+
+        const localMin = this._part0LocalMin ? this._part0LocalMin.clone() : new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const localMax = this._part0LocalMax ? this._part0LocalMax.clone() : new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+        const corner = new Vector3();
+        for (const proxy of this._partProxies) {
+            if (!proxy) {
+                continue;
+            }
+            const wb = proxy.getHierarchyBoundingVectors(false);
+            const wMin = wb.min;
+            const wMax = wb.max;
+            for (let b = 0; b < 8; b++) {
+                corner.set(b & 1 ? wMax.x : wMin.x, b & 2 ? wMax.y : wMin.y, b & 4 ? wMax.z : wMin.z);
+                Vector3.TransformCoordinatesToRef(corner, invCompoundWorld, corner);
+                localMin.minimizeInPlace(corner);
+                localMax.maximizeInPlace(corner);
+            }
+        }
+
+        if (localMin.x <= localMax.x) {
+            // Access _boundingInfo directly to avoid triggering getBoundingInfo(), which would
+            // call _updateBoundingInfo() and recurse back here when the dirty flag is set.
+            if (this._boundingInfo) {
+                this._boundingInfo.reConstruct(localMin, localMax, compoundWorld);
+            } else {
+                this._boundingInfo = new BoundingInfo(localMin, localMax, compoundWorld);
+            }
+            this._cachedBoundingMin = localMin.clone();
+            this._cachedBoundingMax = localMax.clone();
+        }
+    }
+
+    /**
+     * Recomputes the compound's world-space bounding info whenever the compound's world
+     * matrix changes (e.g. the compound is moved, rotated, or scaled).
+     *
+     * The standard base-class path recomputes from stored local bounds × new world matrix,
+     * which is correct for part 0 (owned directly) but wrong for proxied parts whose world
+     * positions are independent of the compound's transform. This override recomputes from
+     * proxy world extents so the result is always correct.
+     * @returns this mesh
+     */
+    public override _updateBoundingInfo(): AbstractMesh {
+        if (this.isCompound) {
+            this._updateBoundingInfoFromProxies();
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+            return this;
+        }
+        return super._updateBoundingInfo();
+    }
+
+    /**
+     * Extends the standard hierarchy bounds to include proxy meshes.
+     *
+     * The vertex shader positions each splat using partWorld[i] — the proxy's world
+     * matrix — not the compound's own world matrix. The proxy therefore stores the
+     * part's absolute world transform directly, without any compound-relative offset,
+     * and is not parented to the compound. The standard _children traversal therefore
+     * never reaches the proxies.
+     *
+     * Including proxy bounds here ensures the returned extent covers all parts at their
+     * actual world positions, including parts that have been moved after being added to
+     * the compound.
+     * @param includeDescendants when true, the bounding vectors are computed from this mesh and its descendants (default: true)
+     * @param predicate optional predicate to filter which meshes contribute to the result
+     * @returns the min and max world-space vectors of the hierarchy bounding box
+     */
+    public override getHierarchyBoundingVectors(
+        includeDescendants: boolean = true,
+        predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
+    ): { min: Vector3; max: Vector3 } {
+        const result = super.getHierarchyBoundingVectors(includeDescendants, predicate);
+        for (const proxy of this._partProxies) {
+            if (!proxy) {
+                continue;
+            }
+            const wb = proxy.getHierarchyBoundingVectors(false);
+            result.min.minimizeInPlace(wb.min);
+            result.max.maximizeInPlace(wb.max);
+        }
+        return result;
+    }
+
+    /**
      * Disposes proxy meshes and clears part data in addition to the base class GPU resources.
      * @param doNotRecurse Set to true to not recurse into each children
      */
@@ -170,6 +275,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partMatrices = [];
         this._partVisibility = [];
         this._partIndicesTexture = null;
+        this._part0LocalMin = null;
+        this._part0LocalMax = null;
         super.dispose(doNotRecurse);
     }
 
@@ -832,11 +939,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._updateTextures(covA, covB, colorArray, sh);
             }
 
-            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
-            this._cachedBoundingMin = minimum.clone();
-            this._cachedBoundingMax = maximum.clone();
             this._notifyWorkerNewData();
+
+            // When part 0 is owned directly by this mesh (not via a proxy), its splats are
+            // defined in compound-local space. Store its local bounds so _updateBoundingInfoFromProxies
+            // can include them when the compound moves. Guard avoids overwriting on subsequent addPart calls.
+            if (!this._partProxies[0] && splatCountA > 0 && !this._part0LocalMin) {
+                this._part0LocalMin = this.getBoundingInfo().minimum.clone();
+                this._part0LocalMax = this.getBoundingInfo().maximum.clone();
+            }
 
             // --- Create proxy meshes ---
             const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
@@ -870,6 +982,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._partProxies[newPartIndex] = proxyMesh;
                 proxyMeshes.push(proxyMesh);
             }
+
+            // Recompute the compound's bounding info from all proxy world extents now that
+            // proxy meshes have been created and their world matrices are known.
+            this._updateBoundingInfoFromProxies();
 
             // Restore the rebuild gate and post the now-complete partMatrices in one message, then trigger a single sort pass.
             // This ensures the worker sees a consistent partMatrices array that matches the partIndices for every splat.
@@ -991,6 +1107,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partVisibility = [];
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
+        this._part0LocalMin = null;
+        this._part0LocalMax = null;
         this._splatsData = null;
         this._shData = null;
         this._shDegree = 0;
