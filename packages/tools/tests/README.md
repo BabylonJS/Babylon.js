@@ -77,6 +77,7 @@ CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 \
 | `BSTACK_OS`                     | Override BrowserStack OS                                                            | `OS X`                          |
 | `BSTACK_OS_VERSION`             | Override BrowserStack OS version                                                    | `Sonoma`                        |
 | `BSTACK_BUILD_NAME`             | Override build name on BrowserStack dashboard                                       | Auto-generated from test type   |
+| `BROWSERSTACK_LOCAL`            | Enable BrowserStack Local tunnel startup for local dev server suites                | —                               |
 | `BROWSERSTACK_LOCAL_IDENTIFIER` | Unique BrowserStack Local tunnel identifier for local-tunnel suites such as ES6 vis | —                               |
 
 | `EXCLUDE_REGEX_ARRAY` | Comma-separated regex patterns to exclude tests | — |
