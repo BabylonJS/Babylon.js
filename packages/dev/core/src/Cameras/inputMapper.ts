@@ -357,7 +357,7 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
                 return false;
             }
         }
-        if (conditions.modifiers) {
+        if (conditions.modifiers != null) {
             const entryMods = e.modifiers ?? {};
             for (const key of Object.keys(conditions.modifiers) as (keyof InputModifiers)[]) {
                 if (conditions.modifiers[key] !== undefined && entryMods[key] === undefined) {
