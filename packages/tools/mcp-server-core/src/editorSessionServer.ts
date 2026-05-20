@@ -67,8 +67,10 @@ export interface IMcpEditorSessionServerOptions {
     protocolVersion?: string;
     /** SSE keepalive interval in milliseconds. */
     keepAliveIntervalMs?: number;
-    /** Access-Control-Allow-Origin value. Defaults to *. */
+    /** Access-Control-Allow-Origin value. When omitted, local origins are reflected. */
     corsOrigin?: string;
+    /** Exact origins allowed when corsOrigin is omitted. Defaults to local localhost/127.0.0.1 origins. */
+    allowedOrigins?: string[];
     /** Compatibility routes that should behave like /document, without leading slash. */
     legacyDocumentRoutes?: string[];
     /** Additional capability names reported from /health. */
@@ -336,7 +338,8 @@ export class McpEditorSessionServer {
     private readonly _publicHostname: string;
     private readonly _protocolVersion: string;
     private readonly _keepAliveIntervalMs: number;
-    private readonly _corsOrigin: string;
+    private readonly _corsOrigin: string | undefined;
+    private readonly _allowedOrigins: Set<string> | null;
     private readonly _legacyDocumentRoutes: Set<string>;
     private readonly _capabilities: string[];
     private readonly _statusTitle: string;
@@ -363,7 +366,8 @@ export class McpEditorSessionServer {
         this._publicHostname = options.publicHostname ?? DefaultPublicHostname;
         this._protocolVersion = options.protocolVersion ?? DefaultProtocolVersion;
         this._keepAliveIntervalMs = options.keepAliveIntervalMs ?? DefaultKeepAliveIntervalMs;
-        this._corsOrigin = options.corsOrigin ?? "*";
+        this._corsOrigin = options.corsOrigin;
+        this._allowedOrigins = options.allowedOrigins ? new Set(options.allowedOrigins) : null;
         this._legacyDocumentRoutes = new Set((options.legacyDocumentRoutes ?? []).map((route) => route.replace(/^\//, "")));
         this._capabilities = ["sse", "document-get", "document-post", "session-close", ...(options.capabilities ?? [])];
         this._statusTitle = options.statusTitle ?? adapter.serverName;
@@ -593,14 +597,43 @@ export class McpEditorSessionServer {
         });
     }
 
-    private _setCorsHeaders(response: http.ServerResponse): void {
-        response.setHeader("Access-Control-Allow-Origin", this._corsOrigin);
+    private _setCorsHeaders(request: http.IncomingMessage, response: http.ServerResponse): void {
+        const allowedOrigin = this._getAllowedCorsOrigin(request.headers.origin);
+        if (allowedOrigin) {
+            response.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+            response.setHeader("Vary", "Origin");
+        }
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 
+    private _getAllowedCorsOrigin(origin: string | undefined): string | undefined {
+        if (this._corsOrigin) {
+            return this._corsOrigin;
+        }
+
+        if (!origin) {
+            return undefined;
+        }
+
+        if (this._allowedOrigins) {
+            return this._allowedOrigins.has(origin) ? origin : undefined;
+        }
+
+        return this._isLocalOrigin(origin) ? origin : undefined;
+    }
+
+    private _isLocalOrigin(origin: string): boolean {
+        try {
+            const url = new URL(origin);
+            return (url.protocol === "http:" || url.protocol === "https:") && (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1");
+        } catch {
+            return false;
+        }
+    }
+
     private async _handleRequestAsync(request: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
-        this._setCorsHeaders(response);
+        this._setCorsHeaders(request, response);
 
         if (request.method === "OPTIONS") {
             response.writeHead(204);

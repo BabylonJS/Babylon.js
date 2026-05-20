@@ -127,6 +127,101 @@ describe("editor session server", () => {
         }
     });
 
+    it("reflects local CORS origins by default", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer({
+            serverName: "Test Session Server",
+            documentKind: "test-document",
+            getDocument: () => JSON.stringify({ value: 1 }),
+            setDocument: () => undefined,
+        });
+
+        try {
+            const listeningPort = await server.startAsync(port);
+            const response = await fetch(`http://localhost:${listeningPort}/health`, {
+                headers: { Origin: "http://localhost:5173" },
+            });
+
+            expect(response.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+            expect(response.headers.get("vary")).toBe("Origin");
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
+    it("does not allow non-local CORS origins by default", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer({
+            serverName: "Test Session Server",
+            documentKind: "test-document",
+            getDocument: () => JSON.stringify({ value: 1 }),
+            setDocument: () => undefined,
+        });
+
+        try {
+            const listeningPort = await server.startAsync(port);
+            const response = await fetch(`http://localhost:${listeningPort}/health`, {
+                headers: { Origin: "https://example.com" },
+            });
+
+            expect(response.headers.get("access-control-allow-origin")).toBeNull();
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
+    it("supports explicit CORS origin overrides", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { defaultPort: port, corsOrigin: "*" }
+        );
+
+        try {
+            const listeningPort = await server.startAsync();
+            const response = await fetch(`http://localhost:${listeningPort}/health`, {
+                headers: { Origin: "https://example.com" },
+            });
+
+            expect(response.headers.get("access-control-allow-origin")).toBe("*");
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
+    it("supports explicit CORS allow lists", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { defaultPort: port, allowedOrigins: ["https://allowed.example.com"] }
+        );
+
+        try {
+            const listeningPort = await server.startAsync();
+            const allowedResponse = await fetch(`http://localhost:${listeningPort}/health`, {
+                headers: { Origin: "https://allowed.example.com" },
+            });
+            const blockedResponse = await fetch(`http://localhost:${listeningPort}/health`, {
+                headers: { Origin: "http://localhost:5173" },
+            });
+
+            expect(allowedResponse.headers.get("access-control-allow-origin")).toBe("https://allowed.example.com");
+            expect(blockedResponse.headers.get("access-control-allow-origin")).toBeNull();
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
     it("stops cleanly and clears sessions", async () => {
         const port = await GetFreePortAsync();
         const server = new McpEditorSessionServer({
