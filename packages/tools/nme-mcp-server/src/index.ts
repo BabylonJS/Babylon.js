@@ -39,7 +39,7 @@ import {
     CreateTypedSnippetImportResponse,
     ParseJsonText,
     RunSnippetResponse,
-} from "../../mcp-server-core/src/index.js";
+} from "@tools/mcp-server-core";
 import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippet-loader";
 import { startSessionServer, createSession, notifyMaterialUpdate, getSessionUrl, getSessionForMaterial, closeSessionForMaterial, stopSessionServer } from "./sessionServer.js";
 
@@ -412,6 +412,17 @@ server.registerTool(
             return { content: [{ type: "text", text: `No active session for "${materialName}".` }] };
         }
         return { content: [{ type: "text", text: `Session for "${materialName}" closed. The editor will disconnect.` }] };
+    }
+);
+
+server.registerTool(
+    "stop_session_server",
+    {
+        description: "Stop the live MCP editor session server started by this MCP process. This closes all active sessions, disconnects editors, and releases the port.",
+    },
+    async () => {
+        await stopSessionServer();
+        return CreateTextResponse("MCP session server stopped. Any connected editors have been disconnected.");
     }
 );
 

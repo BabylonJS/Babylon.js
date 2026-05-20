@@ -14,7 +14,7 @@
  *    export.  Multiple graphs can coexist (keyed by material name).
  */
 
-import { ValidateNodeMaterialAttachmentPayload } from "../../mcp-server-core/src/index.js";
+import { ValidateNodeMaterialAttachmentPayload } from "@tools/mcp-server-core";
 
 import { BlockRegistry, BlockRegistryByClassName, type IBlockTypeInfo } from "./blockRegistry.js";
 

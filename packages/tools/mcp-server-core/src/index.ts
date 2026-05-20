@@ -6,3 +6,4 @@ export * from "./jsonToolResponses.js";
 export * from "./toolSchemas.js";
 export * from "./sceneToolSchemas.js";
 export * from "./sceneAttachmentValidation.js";
+export * from "./editorSessionServer.js";
