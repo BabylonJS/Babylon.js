@@ -4,7 +4,7 @@ import { Logger } from "core/Misc/logger";
 import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
 
-const OverrideManagerKey = Symbol.for("babylonjs:overrideManager");
+const OverrideManagerKey = Symbol("babylonjs:overrideManager");
 
 /**
  * Stateful handle for a scene's property override registry.
