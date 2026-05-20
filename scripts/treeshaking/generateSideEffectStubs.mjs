@@ -10,7 +10,7 @@
  * they get a helpful console.warn instead of "TypeError: x is not a function".
  *
  * Usage:
- *   node scripts/treeshaking/generateSideEffectStubs.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/generateSideEffectStubs.mjs [--dry-run] [--verbose] [--format]
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
@@ -23,12 +23,14 @@ const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
+const FORMAT = process.argv.includes("--format");
 
 /** @type {Map<string, string>} path → expected content (used in --check mode) */
 const expectedContents = new Map();
 
 const REGION_START = "// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`";
 const REGION_END = "// #endregion GENERATED_SIDE_EFFECT_STUBS";
+const PRETTIER_PRINT_WIDTH = 180;
 
 // ── Step 1: Find all .types.ts files ────────────────────────────────────────
 
@@ -187,6 +189,20 @@ function parseInterfaceMembers(body) {
 
 /** @type {Map<string, Map<string, ClassStubs>>} targetFile -> className -> stubs */
 const stubsByFile = new Map();
+
+// Keep generated stubs stable without relying on Prettier for long lines.
+function appendPropertyStub(lines, className, propName) {
+    const definePropertyLine = `    Object.defineProperty(${className}.prototype, "${propName}", _MissingSideEffectProperty("${className}", "${propName}"));`;
+    if (definePropertyLine.length <= PRETTIER_PRINT_WIDTH) {
+        lines.push(definePropertyLine);
+    } else {
+        lines.push(`    Object.defineProperty(`);
+        lines.push(`        ${className}.prototype,`);
+        lines.push(`        "${propName}",`);
+        lines.push(`        _MissingSideEffectProperty("${className}", "${propName}")`);
+        lines.push(`    );`);
+    }
+}
 
 let totalMethods = 0;
 let totalProperties = 0;
@@ -401,7 +417,7 @@ for (const [targetFile, classMap] of stubsByFile) {
         // Properties
         for (const [propName] of stubs.properties) {
             lines.push(`if (!Object.getOwnPropertyDescriptor(${className}.prototype, "${propName}")) {`);
-            lines.push(`    Object.defineProperty(${className}.prototype, "${propName}", _MissingSideEffectProperty("${className}", "${propName}"));`);
+            appendPropertyStub(lines, className, propName);
             lines.push(`}`);
             fileStubCount++;
         }
@@ -472,8 +488,8 @@ console.log(`  Inherited stubs pruned:  ${prunedCount}`);
 console.log(`  Target files modified:    ${filesModified}`);
 if (DRY_RUN) console.log(`  (dry run — no files written)`);
 
-// ── Post-format: run prettier on written files ──────────────────────────────
-if (writtenFiles.length > 0) {
+// ── Optional post-format: run prettier on written files ─────────────────────
+if (FORMAT && writtenFiles.length > 0) {
     try {
         execFileSync("npx", ["prettier", "--write", ...writtenFiles], { cwd: REPO_ROOT, stdio: "ignore" });
     } catch {
