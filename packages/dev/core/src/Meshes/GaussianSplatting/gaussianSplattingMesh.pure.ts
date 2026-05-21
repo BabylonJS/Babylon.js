@@ -6,7 +6,7 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
-import { GaussianSplattingMeshBase, AllocateShTextures } from "./gaussianSplattingMeshBase.pure";
+import { GaussianSplattingMeshBase, AllocateShBuffers } from "./gaussianSplattingMeshBase.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
@@ -628,7 +628,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         const shTextureCountRetain = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / 16);
-        const mergedShData = AllocateShTextures(shTextureCountRetain, totalCount * _GaussianSplattingBytesPerShTexel);
+        const mergedShData = AllocateShBuffers(shTextureCountRetain, totalCount * _GaussianSplattingBytesPerShTexel);
 
         let shByteOffset = 0;
         if (this._shData && existingVertexCount > 0) {
@@ -700,7 +700,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (hasSH && shDegreeNew > 0) {
             const bytesPerTexel = 16;
             const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / 16);
-            sh = AllocateShTextures(shTextureCount, textureLength * bytesPerTexel);
+            sh = AllocateShBuffers(shTextureCount, textureLength * bytesPerTexel);
         }
 
         // --- Incremental path: can we reuse the already-committed GPU region? ---

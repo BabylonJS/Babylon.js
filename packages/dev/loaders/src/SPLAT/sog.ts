@@ -1,6 +1,6 @@
 import { type Scene } from "core/scene";
 import { type IParsedSplat, Mode } from "./splatDefs";
-import { AllocateShTextures } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
+import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { Scalar } from "core/Maths/math.scalar";
 import { type AbstractEngine } from "core/Engines";
 
@@ -304,7 +304,7 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
-        const sh = AllocateShTextures(textureCount, height * width * 4 * 4);
+        const sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         if (data.version === 2) {
             if (!data.shN.codebook) {

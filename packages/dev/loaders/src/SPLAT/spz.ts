@@ -5,7 +5,7 @@ import { runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { AllocateShTextures } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
+import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from "@adobe/spz";
 
 const _SpzConversionBatchSize = 32768;
@@ -178,7 +178,7 @@ export function ParseSpz(data: ArrayBuffer, scene: Scene, _loadingOptions: SPLAT
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
-        const sh = AllocateShTextures(textureCount, height * width * 4 * 4);
+        const sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         for (let i = 0; i < splatCount; i++) {
             for (let shIndexWrite = 0; shIndexWrite < shComponentCount; shIndexWrite++) {
@@ -273,7 +273,7 @@ export function* ConvertSpzToSplat(cloud: GaussianCloud, scene: Scene, useCorout
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
-        sh = AllocateShTextures(textureCount, height * width * 4 * 4);
+        sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         // Precompute chunk start/end and hoist texture references out of the per-splat loop
         chunkStarts = new Int32Array(textureCount);

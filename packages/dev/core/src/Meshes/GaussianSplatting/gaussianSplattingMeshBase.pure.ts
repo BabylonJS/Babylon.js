@@ -1748,7 +1748,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const width = engine.getCaps().maxTextureSize;
                 const height = Math.ceil(splatCount / width);
                 // create array for the number of textures needed.
-                sh = AllocateShTextures(textureCount, height * width * 4 * 4);
+                sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
                 for (let i = 0; i < splatCount; i++) {
                     for (let shIndexWrite = 0; shIndexWrite < header.shCoefficientCount; shIndexWrite++) {
@@ -2936,7 +2936,7 @@ export class GaussianSplattingMeshBase extends Mesh {
  * @param bytesEach byte size of each texture buffer
  * @returns array of initialized Uint8Array buffers
  */
-export function AllocateShTextures(textureCount: number, bytesEach: number): Uint8Array[] {
+export function AllocateShBuffers(textureCount: number, bytesEach: number): Uint8Array[] {
     const result: Uint8Array[] = [];
     for (let i = 0; i < textureCount; i++) {
         const arr = new Uint8Array(bytesEach);
