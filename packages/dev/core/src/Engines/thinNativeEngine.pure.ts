@@ -2227,8 +2227,13 @@ export class ThinNativeEngine extends ThinEngine {
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
+        // D3D11 forbids MipLevels > 1 on multisampled textures, and bgfx's D3D11 backend reuses one desc for
+        // both the MSAA target and the non-MSAA resolve texture. Force hasMips = false when samples > 1; the
+        // logical generateMipMaps flag is preserved on the InternalTexture but the underlying resource has
+        // one mip level. See updateRenderTargetTextureSampleCount for the longer explanation.
+        const hasMips = samples > 1 ? false : generateMipMaps;
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
-        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer, samples);
+        this._engine.initializeTexture(nativeTexture, width, height, hasMips, nativeTextureFormat, true, useSRGBBuffer, samples);
         this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -2311,12 +2316,22 @@ export class ThinNativeEngine extends ThinEngine {
         // allocates a fresh one. The Graphics::Texture / InternalTexture wrapper identity is preserved --
         // only the internal bgfx handle rotates. After the texture is reissued we also recreate the
         // framebuffer so its attachment list refers to the new handle.
+        //
+        // D3D11 forbids MipLevels > 1 on multisampled textures (E_INVALIDARG on CreateTexture2D). bgfx's
+        // D3D11 backend uses one D3D11_TEXTURE2D_DESC for both the MSAA render texture (m_rt2d) and the
+        // non-MSAA sample target (m_texture2d), and doesn't reset desc.MipLevels between them -- so
+        // requesting samples > 1 with hasMips = true crashes at m_rt2d creation. WebGL2 sidesteps this by
+        // using a separate non-mipped multisample renderbuffer; bgfx D3D11 conflates the two-stage pattern.
+        // Force hasMips = false whenever samples > 1. The cost is losing the post-resolve auto-mipgen
+        // feature for MSAA RTs on Native (texture.generateMipMaps still reads true on the JS side, but the
+        // underlying bgfx resource has only one mip level).
+        const hasMips = samples > 1 ? false : texture.generateMipMaps;
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
         this._engine.initializeTexture(
             nativeTexture,
             texture.baseWidth,
             texture.baseHeight,
-            texture.generateMipMaps,
+            hasMips,
             nativeTextureFormat,
             /*renderTarget*/ true,
             texture._useSRGBBuffer,
