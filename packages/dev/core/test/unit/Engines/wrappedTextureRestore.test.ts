@@ -132,13 +132,80 @@ describe("Externally-wrapped texture context-loss restore", () => {
             expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow(/multi render-target/);
         });
 
-        it("rejects multisampled wrappers", () => {
+        it("delegates MSAA buffer rebuild to updateRenderTargetTextureSampleCount when samples > 1", () => {
+            // gl stub: rebuild block needs createFramebuffer + deleteFramebuffer + framebufferTexture2D + bindFramebuffer.
+            // _setupFramebufferDepthAttachments short-circuits to null when both depth + stencil flags are false (the
+            // default in attachAsRenderTarget), so no other gl methods are reached.
+            const gl: any = {
+                FRAMEBUFFER: 0,
+                COLOR_ATTACHMENT0: 0,
+                TEXTURE_2D: 0,
+                createFramebuffer: () => ({}),
+                deleteFramebuffer: () => {},
+                framebufferTexture2D: () => {},
+                bindFramebuffer: () => {},
+            };
             const engine = makeEngine();
+            (engine as any)._gl = gl;
+
             const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
             const rtw = attachAsRenderTarget(engine, wrapped);
             (rtw as any)._samples = 4;
 
-            expect(() => engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture)).toThrow(/multisampled/);
+            let helperCalls: Array<{ target: RenderTargetWrapper; cachedSamples: number; samples: number }> = [];
+            const original = (engine as any).updateRenderTargetTextureSampleCount;
+            (engine as any).updateRenderTargetTextureSampleCount = function (target: RenderTargetWrapper, samples: number) {
+                // Record the cached _samples value at the moment the helper is invoked; the rebuild must zero it so the
+                // helper bypasses its `rtw.samples === samples` early-return.
+                helperCalls.push({ target, cachedSamples: target.samples, samples });
+                (target as any)._samples = samples;
+                return samples;
+            };
+
+            try {
+                engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture);
+            } finally {
+                (engine as any).updateRenderTargetTextureSampleCount = original;
+            }
+
+            expect(helperCalls.length).toBe(1);
+            expect(helperCalls[0].target).toBe(rtw);
+            expect(helperCalls[0].cachedSamples).toBe(1);
+            expect(helperCalls[0].samples).toBe(4);
+            expect(rtw.samples).toBe(4);
+        });
+
+        it("does not call updateRenderTargetTextureSampleCount when samples <= 1", () => {
+            const gl: any = {
+                FRAMEBUFFER: 0,
+                COLOR_ATTACHMENT0: 0,
+                TEXTURE_2D: 0,
+                createFramebuffer: () => ({}),
+                deleteFramebuffer: () => {},
+                deleteRenderbuffer: () => {},
+                framebufferTexture2D: () => {},
+                bindFramebuffer: () => {},
+            };
+            const engine = makeEngine();
+            (engine as any)._gl = gl;
+
+            const wrapped = engine.wrapWebGLTexture({} as WebGLTexture, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, 64, 64);
+            attachAsRenderTarget(engine, wrapped);
+
+            let helperCalled = false;
+            const original = (engine as any).updateRenderTargetTextureSampleCount;
+            (engine as any).updateRenderTargetTextureSampleCount = function () {
+                helperCalled = true;
+                return 1;
+            };
+
+            try {
+                engine.updateWrappedWebGLTexture(wrapped, {} as WebGLTexture);
+            } finally {
+                (engine as any).updateRenderTargetTextureSampleCount = original;
+            }
+
+            expect(helperCalled).toBe(false);
         });
 
         it("does not mutate the wrapped texture when the multi-RT precondition trips", () => {
