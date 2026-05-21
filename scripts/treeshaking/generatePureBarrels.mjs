@@ -12,28 +12,29 @@
  *   - Subdirectory `pure.ts` barrels (recursively generated)
  *
  * Usage:
- *   node scripts/treeshaking/generatePureBarrels.mjs [--dry-run] [--verbose] [--no-format]
+ *   node scripts/treeshaking/generatePureBarrels.mjs [--dry-run] [--verbose] [--format]
  *
  * Options:
  *   --dry-run   Print what would be written without touching disk
  *   --verbose   Print detailed per-file decisions
- *   --no-format Skip formatting generated files after writing them
+ *   --format   Format generated files after writing them
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "fs";
 import { resolve, dirname, relative, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../..");
 const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
+const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest/core");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
-const NO_FORMAT = process.argv.includes("--no-format");
+const FORMAT = process.argv.includes("--format");
 const IS_ADO = !!process.env.TF_BUILD;
 
 function adoError(msg) {
@@ -58,8 +59,7 @@ const expectedContents = new Map();
 const expectedBarrelPaths = new Set();
 
 // ── Load side-effects manifest ──────────────────────────────────────────────
-const manifestData = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
-// manifest is an array of { file, sideEffects }
+const manifestData = readSideEffectsManifest(MANIFEST_PATH);
 // file paths are relative to SRC_ROOT (e.g. "Actions/action.ts")
 const sideEffectFiles = new Set(manifestData.manifest.map((e) => toPosixPath(e.file)));
 
@@ -594,9 +594,7 @@ console.log(`  Empty barrels (not written): ${emptyBarrels}`);
 if (!DRY_RUN && !CHECK && writtenFiles.length > 0) {
     // Deduplicate (a file may be appended to multiple times)
     const uniqueFiles = [...new Set(writtenFiles)];
-    if (NO_FORMAT) {
-        console.log(`\nSkipping Prettier formatting for ${uniqueFiles.length} files (--no-format).`);
-    } else {
+    if (FORMAT) {
         console.log(`\nFormatting ${uniqueFiles.length} files with Prettier...`);
         try {
             const prettierBin = resolve(REPO_ROOT, "node_modules/prettier/bin/prettier.cjs");
@@ -612,6 +610,8 @@ if (!DRY_RUN && !CHECK && writtenFiles.length > 0) {
         } catch (err) {
             console.error(`Warning: Prettier formatting failed: ${err.message}`);
         }
+    } else {
+        console.log(`\nSkipping Prettier formatting for ${uniqueFiles.length} files (pass --format to enable).`);
     }
 }
 

@@ -17,7 +17,7 @@
         "lint": "npm run lint:check",
         "lint:check": "eslint \"src/**/*.{ts,tsx}\"",
         "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
-        "precompile": "npm run compile:assets && node ../../../scripts/treeshaking/auditSideEffects.mjs --out ../../../scripts/treeshaking/side-effects-manifest.json && node ../../../scripts/treeshaking/syncSideEffects.mjs && node ../../../scripts/treeshaking/generatePureBarrels.mjs",
+        "precompile": "npm run compile:assets && node ../../../scripts/treeshaking/auditSideEffects.mjs --out ../../../scripts/treeshaking/side-effects-manifest/core && node ../../../scripts/treeshaking/syncSideEffects.mjs && node ../../../scripts/treeshaking/generatePureBarrels.mjs",
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json && node ../../../scripts/treeshaking/injectPureAnnotations.mjs",
         "compile:assets": "build-tools -c process-assets --isCore",

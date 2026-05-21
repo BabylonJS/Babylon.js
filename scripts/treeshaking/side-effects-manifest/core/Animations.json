@@ -1,0 +1,11 @@
+{
+    "version": 1,
+    "files": {
+        "Animations/animatable.ts": ["top-level-call"],
+        "Animations/animatable.types.ts": ["declare-module"],
+        "Animations/animation.ts": ["top-level-call"],
+        "Animations/animation.types.ts": ["declare-module"],
+        "Animations/animationGroup.ts": ["bare-import", "top-level-call"],
+        "Animations/animationGroup.types.ts": ["declare-module"]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "Probes/reflectionProbe.ts": ["top-level-call"],
+        "Probes/reflectionProbe.types.ts": ["declare-module"]
+    }
+}

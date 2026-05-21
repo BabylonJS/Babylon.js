@@ -1168,20 +1168,16 @@ function loadSideEffectsSet(): Set<string> {
     try {
         // Walk up from this compiled plugin file to the repo root
         // Plugin is at packages/tools/eslintBabylonPlugin/dist/index.js
-        // Manifest is at scripts/treeshaking/side-effects-manifest.json
+        // Manifest is at scripts/treeshaking/side-effects-manifest/core/*.json
+        // or, for older branches, scripts/treeshaking/side-effects-manifest.json
         let dir = __dirname;
         for (let i = 0; i < 10; i++) {
-            const candidate = path.join(dir, "scripts", "treeshaking", "side-effects-manifest.json");
-            if (fs.existsSync(candidate)) {
-                const raw = fs.readFileSync(candidate, "utf-8");
-                const manifest = JSON.parse(raw);
-                if (Array.isArray(manifest.manifest)) {
-                    for (const entry of manifest.manifest) {
-                        if (entry.file) {
-                            _sideEffectFilesCache.add(entry.file);
-                        }
-                    }
-                }
+            const candidate = [
+                path.join(dir, "scripts", "treeshaking", "side-effects-manifest", "core"),
+                path.join(dir, "scripts", "treeshaking", "side-effects-manifest.json"),
+            ].find((candidatePath) => fs.existsSync(candidatePath));
+            if (candidate) {
+                loadSideEffectsManifest(candidate, _sideEffectFilesCache);
                 break;
             }
             const parent = path.dirname(dir);
@@ -1194,6 +1190,41 @@ function loadSideEffectsSet(): Set<string> {
         // Manifest not available — fall back to naming conventions
     }
     return _sideEffectFilesCache;
+}
+
+function loadSideEffectsManifest(manifestPath: string, sideEffectFiles: Set<string>): void {
+    const stat = fs.statSync(manifestPath);
+    if (stat.isDirectory()) {
+        for (const entry of fs.readdirSync(manifestPath, { withFileTypes: true })) {
+            if (entry.isFile() && path.extname(entry.name) === ".json") {
+                loadSideEffectsManifest(path.join(manifestPath, entry.name), sideEffectFiles);
+            }
+        }
+        return;
+    }
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+    if (Array.isArray(manifest.manifest)) {
+        for (const entry of manifest.manifest) {
+            if (entry.file) {
+                sideEffectFiles.add(entry.file);
+            }
+        }
+        return;
+    }
+
+    if (manifest.files && !Array.isArray(manifest.files)) {
+        for (const file of Object.keys(manifest.files)) {
+            sideEffectFiles.add(file);
+        }
+        return;
+    }
+
+    if (Array.isArray(manifest.files)) {
+        for (const file of manifest.files) {
+            sideEffectFiles.add(file);
+        }
+    }
 }
 
 export = plugin;

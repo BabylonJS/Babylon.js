@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "files": {
+        "Culling/Helper/computeShaderBoundingHelper.ts": ["bare-import"],
+        "Culling/Helper/transformFeedbackBoundingHelper.ts": ["bare-import"],
+        "Culling/Octrees/octreeSceneComponent.ts": ["top-level-call"],
+        "Culling/Octrees/octreeSceneComponent.types.ts": ["declare-module"],
+        "Culling/ray.ts": ["top-level-call"]
+    }
+}
