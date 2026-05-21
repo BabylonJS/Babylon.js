@@ -2229,6 +2229,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
             }
 
+            // Handle SH textures in update path - create if they don't exist
             if (sh && !this._shTextures) {
                 this._shTextures = [];
                 for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {

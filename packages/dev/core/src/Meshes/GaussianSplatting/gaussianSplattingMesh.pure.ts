@@ -970,7 +970,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     }
                 }
 
-                // Refresh part-indices texture; stale on 2nd+ addPart without this.
+                // Update the part-indices texture (handles both create and update-in-place).
+                // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
+                // second+ addPart the partIndices would be stale without this call.
                 this._onUpdateTextures(textureSize);
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
             } else {
@@ -980,7 +982,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this.setEnabled(true);
             this._notifyWorkerNewData();
 
-            // Store part 0 local bounds once (unproxied only) for use by _updateBoundingInfoFromProxies.
+            // Bounding info is updated via _updateBoundingInfoFromProxies (called below, after proxy
+            // world matrices are known), which needs part 0's local-space AABB as an input:
+            //   • For unproxied part 0 (legacy layout where the compound mesh itself holds part 0's
+            //     geometry directly, so no _partProxies[0]), save the local-space AABB that was just
+            //     computed by the _makeSplat loop so _updateBoundingInfoFromProxies can include it.
+            //   • For proxied part 0, skip — its bounds are already on the proxy's getBoundingInfo()
+            //     and _updateBoundingInfoFromProxies picks it up there.
+            // Guard splatCountA > 0 avoids reading a stale bounding box on a fresh empty mesh.
+            // Guard !this._part0LocalMin ensures we only store once; subsequent addPart calls expand
+            // minimum/maximum to cover the whole merged dataset, not just part 0.
             if (!this._partProxies[0] && splatCountA > 0 && !this._part0LocalMin) {
                 this._part0LocalMin = this.getBoundingInfo().minimum.clone();
                 this._part0LocalMax = this.getBoundingInfo().maximum.clone();

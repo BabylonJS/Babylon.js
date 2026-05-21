@@ -304,6 +304,8 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
+
+        // sh is an array of uint8array that will be used to create sh textures
         const sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         if (data.version === 2) {

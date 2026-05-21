@@ -178,6 +178,8 @@ export function ParseSpz(data: ArrayBuffer, scene: Scene, _loadingOptions: SPLAT
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
+
+        // sh is an array of uint8array that will be used to create sh textures
         const sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         for (let i = 0; i < splatCount; i++) {
