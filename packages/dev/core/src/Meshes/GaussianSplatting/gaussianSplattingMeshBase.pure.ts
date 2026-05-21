@@ -615,7 +615,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._needsRotationScaleTextures = value;
         if (value && this._covariancesATexture) {
             if (this._splatsData) {
-                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false });
+                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false }, undefined, this._shDegree);
             } else {
                 Logger.Error(
                     "GaussianSplattingMeshBase: needsRotationScaleTextures was enabled after the mesh was already loaded, but the splat data is not kept in RAM. " +

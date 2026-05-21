@@ -187,9 +187,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (!proxy) {
                 continue;
             }
-            const wb = proxy.getHierarchyBoundingVectors(false);
-            const wMin = wb.min;
-            const wMax = wb.max;
+            // Proxy meshes have no geometry (subMeshes is undefined), so getHierarchyBoundingVectors
+            // returns MAX_VALUE/-MAX_VALUE sentinel bounds. Read the bounding box directly instead.
+            proxy.computeWorldMatrix(false);
+            const bb = proxy.getBoundingInfo().boundingBox;
+            const wMin = bb.minimumWorld;
+            const wMax = bb.maximumWorld;
             for (let b = 0; b < 8; b++) {
                 corner.set(b & 1 ? wMax.x : wMin.x, b & 2 ? wMax.y : wMin.y, b & 4 ? wMax.z : wMin.z);
                 Vector3.TransformCoordinatesToRef(corner, invCompoundWorld, corner);
@@ -255,9 +258,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (!proxy) {
                 continue;
             }
-            const wb = proxy.getHierarchyBoundingVectors(false);
-            result.min.minimizeInPlace(wb.min);
-            result.max.maximizeInPlace(wb.max);
+            // Proxy meshes have no geometry (subMeshes is undefined), so getHierarchyBoundingVectors
+            // returns MAX_VALUE/-MAX_VALUE sentinel bounds. Read the bounding box directly instead.
+            proxy.computeWorldMatrix(false);
+            const bb = proxy.getBoundingInfo().boundingBox;
+            result.min.minimizeInPlace(bb.minimumWorld);
+            result.max.maximizeInPlace(bb.maximumWorld);
         }
         return result;
     }
@@ -578,7 +584,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             _vertexCount: proxy._vertexCount,
             _splatsData: splatBytes.subarray(splatByteOffset, splatByteOffset + splatByteLength),
             _shData: this._shData?.map((texture) => texture.subarray(shByteOffset, shByteOffset + shByteLength)) ?? null,
-            _shDegree: this._shData?.length ?? 0,
+            _shDegree: this._shData ? this._shDegree : 0,
             isCompound: false,
             getWorldMatrix: () => proxy.getWorldMatrix(),
             getBoundingInfo: () => proxy.getBoundingInfo(),
@@ -621,8 +627,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
 
+        const shTextureCountRetain = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / 16);
         const mergedShData: Uint8Array[] = [];
-        for (let textureIndex = 0; textureIndex < shDegree; textureIndex++) {
+        for (let textureIndex = 0; textureIndex < shTextureCountRetain; textureIndex++) {
             mergedShData.push(new Uint8Array(totalCount * _GaussianSplattingBytesPerShTexel));
         }
 
@@ -695,8 +702,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         let sh: Uint8Array[] | undefined = undefined;
         if (hasSH && shDegreeNew > 0) {
             const bytesPerTexel = 16;
+            const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / 16);
             sh = [];
-            for (let i = 0; i < shDegreeNew; i++) {
+            for (let i = 0; i < shTextureCount; i++) {
                 sh.push(new Uint8Array(textureLength * bytesPerTexel));
             }
         }

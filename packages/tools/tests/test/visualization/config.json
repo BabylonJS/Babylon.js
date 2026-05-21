@@ -172,6 +172,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting Compound IBL Shadows Single Part",
+            "playgroundId": "#DAID4Q#4",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-single-part.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png",
