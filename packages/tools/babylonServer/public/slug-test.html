@@ -63,6 +63,12 @@
             <label>Size: <input type="range" id="sizeSlider" min="12" max="300" value="30"> <span class="val" id="sizeVal">30</span></label>
             <label>Rotate: <input type="range" id="rotSlider" min="-180" max="180" value="0"> <span class="val" id="rotVal">0deg</span></label>
             <label>Scale: <input type="range" id="scaleSlider" min="1" max="40000" value="100"> <span class="val" id="scaleVal">1.0</span></label>
+            <label title="Slug-only: outline stroke width in pixels (0 = solid fill).">
+                Outline: <input type="range" id="outlineSlider" min="0" max="40" step="0.5" value="0"> <span class="val" id="outlineVal">0.0</span>
+            </label>
+            <label title="Slug-only: render the outline as a screen-space dashed pattern instead of a solid stroke.">
+                <input type="checkbox" id="stippleToggle" style="vertical-align:middle"> Dashed
+            </label>
             <label class="section">
                 R:<input type="range" id="rSlider" min="0" max="100" value="0" style="width:80px">
                 G:<input type="range" id="gSlider" min="0" max="100" value="0" style="width:80px">
@@ -407,6 +413,9 @@
                     var currentText = "Hello Slug!";
                     var currentSize = 30;
                     var mouseX = 0, mouseY = 0, mouseRot = 0, mouseScale = 1.0;
+                    // Smooth zoom targets — wheel updates these and the render loop
+                    // lerps mouseScale/mouseX/mouseY toward them each frame.
+                    var targetScale = 1.0, targetX = 0, targetY = 0;
                     var msdfNeedRebuild = false;
                     var fontLoading = false;
 
@@ -437,6 +446,7 @@
                             slugFont = newFont;
                             slugRenderer = await BABYLON.SlugTextRenderer.CreateAsync(newFont, engine, scene);
                             slugRenderer.ignoreDepthBuffer = true;
+                            updateOutline();
 
                             currentFontUrl = url;
                             updateMsdfSourceUI();
@@ -491,6 +501,7 @@
                             slugFont = newFont;
                             slugRenderer = await BABYLON.SlugTextRenderer.CreateAsync(newFont, engine, scene);
                             slugRenderer.ignoreDepthBuffer = true;
+                            updateOutline();
                             slugReloadMs = performance.now() - slugReloadT0;
 
                             // The dynamic MSDF FontAsset and its texture will be rebuilt from
@@ -978,6 +989,9 @@
                             b: parseInt(bSlider.value) / 100,
                             a: 1.0
                         };
+                        // The RGB sliders set `color`. With outlineWidth = 0 this is the
+                        // solid fill; with outlineWidth > 0 it is the outline rim color
+                        // (the renderer hardcodes the carve fill to white).
                         slugRenderer.color = c;
                         if (msdfSingleRenderer) msdfSingleRenderer.color = c;
                     }
@@ -986,16 +1000,32 @@
                         document.getElementById("sizeVal").textContent = sizeSlider.value;
                         document.getElementById("rotVal").textContent = rotSlider.value + "deg";
                         document.getElementById("scaleVal").textContent = (parseFloat(scaleSlider.value) / 100).toFixed(2);
+                        document.getElementById("outlineVal").textContent = parseFloat(outlineSlider.value).toFixed(1);
+                    }
+
+                    var outlineSlider = document.getElementById("outlineSlider");
+                    var stippleToggle = document.getElementById("stippleToggle");
+                    function updateOutline() {
+                        slugRenderer.outlineWidth = parseFloat(outlineSlider.value) || 0;
+                        slugRenderer.stipple = !!stippleToggle.checked;
                     }
 
                     sizeSlider.addEventListener("input", function() { rebuildText(); updateLabels(); });
                     rotSlider.addEventListener("input", function() { mouseRot = parseFloat(rotSlider.value); updateWorldMatrix(); updateLabels(); });
-                    scaleSlider.addEventListener("input", function() { mouseScale = parseFloat(scaleSlider.value) / 100; updateWorldMatrix(); updateLabels(); });
+                    scaleSlider.addEventListener("input", function() {
+                        mouseScale = parseFloat(scaleSlider.value) / 100;
+                        targetScale = mouseScale;
+                        updateWorldMatrix();
+                        updateLabels();
+                    });
+                    outlineSlider.addEventListener("input", function() { updateOutline(); updateLabels(); });
+                    stippleToggle.addEventListener("change", updateOutline);
                     rSlider.addEventListener("input", updateColor);
                     gSlider.addEventListener("input", updateColor);
                     bSlider.addEventListener("input", updateColor);
 
                     updateMsdfSourceUI();
+                    updateColor();
                     rebuildText();
 
                     // ===== MOUSE =====
@@ -1013,8 +1043,10 @@
                     }, true);
                     canvas.addEventListener("pointermove", function(e) {
                         if (!dragging) return;
-                        mouseX += e.clientX - lastMX;
-                        mouseY -= e.clientY - lastMY;
+                        var dx = e.clientX - lastMX;
+                        var dy = -(e.clientY - lastMY);
+                        mouseX += dx; mouseY += dy;
+                        targetX = mouseX; targetY = mouseY;
                         lastMX = e.clientX; lastMY = e.clientY;
                         updateWorldMatrix();
                         e.stopPropagation();
@@ -1026,19 +1058,21 @@
                             mouseRot = Math.max(-180, Math.min(180, mouseRot));
                             rotSlider.value = Math.round(mouseRot);
                         } else {
-                            var oldScale = mouseScale;
-                            mouseScale *= e.deltaY > 0 ? 0.92 : 1.08;
-                            mouseScale = Math.max(0.01, Math.min(400.0, mouseScale));
-                            var ratio = mouseScale / oldScale;
-                            // Zoom toward mouse cursor: keep world point under cursor fixed
+                            // Compute the new target scale and target pan so the world
+                            // point under the cursor stays anchored — but only commit the
+                            // numbers as TARGETS. The render loop lerps mouseScale/X/Y
+                            // toward these targets for a smooth zoom feel.
+                            var newScale = targetScale * (e.deltaY > 0 ? 0.92 : 1.08);
+                            newScale = Math.max(0.01, Math.min(400.0, newScale));
+                            var ratio = newScale / targetScale;
                             var rect = canvas.getBoundingClientRect();
                             var cx = e.clientX - rect.left - rect.width / 2;
                             var cy = -(e.clientY - rect.top - rect.height / 2);
-                            mouseX = cx + (mouseX - cx) * ratio;
-                            mouseY = cy + (mouseY - cy) * ratio;
-                            scaleSlider.value = Math.min(40000, Math.round(mouseScale * 100));
+                            targetX = cx + (targetX - cx) * ratio;
+                            targetY = cy + (targetY - cy) * ratio;
+                            targetScale = newScale;
+                            scaleSlider.value = Math.min(40000, Math.round(targetScale * 100));
                         }
-                        updateWorldMatrix();
                         updateLabels();
                     }, { passive: false });
 
@@ -1178,7 +1212,25 @@
                         if (mode === "diff") engine.setAlphaMode(BABYLON.Constants.ALPHA_DISABLE);
                     });
 
-                    engine.runRenderLoop(function () { scene.render(); });
+                    engine.runRenderLoop(function () {
+                        // Exponential lerp toward zoom target. Frame-rate-independent
+                        // via 1 - exp(-k * dt). k controls smoothing speed (larger = snappier).
+                        var dt = engine.getDeltaTime() / 1000;
+                        var k = 18.0;
+                        var t = 1.0 - Math.exp(-k * dt);
+                        if (Math.abs(targetScale - mouseScale) > 1e-5
+                            || Math.abs(targetX - mouseX) > 1e-3
+                            || Math.abs(targetY - mouseY) > 1e-3) {
+                            mouseScale += (targetScale - mouseScale) * t;
+                            mouseX += (targetX - mouseX) * t;
+                            mouseY += (targetY - mouseY) * t;
+                            // Snap when close enough so the loop settles.
+                            if (Math.abs(targetScale - mouseScale) < 1e-5) mouseScale = targetScale;
+                            if (Math.abs(targetX - mouseX) < 1e-3) mouseX = targetX;
+                            if (Math.abs(targetY - mouseY) < 1e-3) mouseY = targetY;
+                        }
+                        scene.render();
+                    });
                     window.addEventListener("resize", function () { engine.resize(); updateOrtho(); });
 
                     // Load default preset (War and Peace — Full)

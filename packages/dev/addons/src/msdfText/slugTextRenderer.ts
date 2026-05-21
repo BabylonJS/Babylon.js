@@ -73,9 +73,34 @@ export class SlugTextRenderer implements IDisposable {
     private _worldMatrix = new ThinMatrix();
 
     /**
-     * Gets or sets the color of the text.
+     * Gets or sets the text color. When `outlineWidth` is zero, this is the solid fill
+     * color. When `outlineWidth > 0`, this is the rim color (the glyph interior is
+     * hollowed out — see `outlineWidth`).
      */
     public color: IColor4Like = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+
+    /**
+     * Outline stroke width in pixels. When zero (default), glyphs render as a solid fill
+     * in `color`. When greater than zero, the fragment shader switches to outline mode:
+     * for each fragment it re-evaluates Slug's analytic coverage at 4 cardinal offsets
+     * `outlineWidth` pixels away in em-space, and keeps the fragment only if at least
+     * one of those neighbours falls outside the glyph (i.e. the fragment is within
+     * `outlineWidth` pixels of a glyph boundary in some cardinal direction).
+     *
+     * Result: a uniform `outlineWidth`-wide rim of `color` traces the entire glyph
+     * silhouette, with a transparent interior. Strokes thinner than `2 * outlineWidth`
+     * never reach a hollow region and render as a solid `color` fill, which matches the
+     * intuitive behaviour of a vector-graphics stroke (an outline can't be thinner than
+     * half the local stroke width).
+     */
+    public outlineWidth = 0;
+
+    /**
+     * When true and `outlineWidth > 0`, the outline rim is rendered with a screen-space
+     * stipple (small square dots on a regular grid) instead of a solid stroke. Useful
+     * for "marching ants" / selection-style outlines. Ignored when `outlineWidth = 0`.
+     */
+    public stipple = false;
 
     /**
      * Gets or sets the world matrix applied to the text.
@@ -125,7 +150,7 @@ export class SlugTextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["slugPos", "slugTex", "slugMet", "slugBnd", "slugCol"],
-            ["slugMatrix", "slugViewport", "slugColor"],
+            ["slugMatrix", "slugViewport", "slugColor", "slugOutline"],
             ["curveData", "bandData"],
             "",
             undefined,
@@ -265,13 +290,11 @@ export class SlugTextRenderer implements IDisposable {
             engine.setDepthBuffer(false);
         }
 
-        // Uniforms
+        // Uniforms common to all passes
         effect.setMatrix("slugMatrix", this._mvpMatrix);
-
         const vpWidth = engine.getRenderWidth();
         const vpHeight = engine.getRenderHeight();
         effect.setFloat4("slugViewport", vpWidth, vpHeight, 0, 0);
-        effect.setFloat4("slugColor", this.color.r, this.color.g, this.color.b, this.color.a);
 
         // Textures
         effect.setTexture("curveData", this._curveTexture);
@@ -287,9 +310,15 @@ export class SlugTextRenderer implements IDisposable {
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
         }
 
-        // Draw with alpha blending
         engine.setAlphaMode(Constants.ALPHA_COMBINE);
+
+        // Single draw call. Fragment shader applies outline carving when slugOutline.x > 0.
+        const outlineWidth = Math.max(0, this.outlineWidth);
+        const stippleFlag = outlineWidth > 0 && this.stipple ? 1 : 0;
+        effect.setFloat4("slugColor", this.color.r, this.color.g, this.color.b, this.color.a);
+        effect.setFloat4("slugOutline", outlineWidth, stippleFlag, 0, 0);
         engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._indexCount);
+
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
         if (this.ignoreDepthBuffer) {

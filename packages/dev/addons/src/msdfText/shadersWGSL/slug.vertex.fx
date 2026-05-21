@@ -13,6 +13,9 @@ attribute slugCol: vec4f;   // vertex color RGBA
 // Uniforms
 uniform slugMatrix: mat4x4f;    // MVP matrix
 uniform slugViewport: vec4f;     // (viewportWidth, viewportHeight, 0, 0)
+// Outline width in pixels. Consumed by the fragment shader; declared here so the linker
+// keeps the uniform active. yzw reserved.
+uniform slugOutline: vec4f;
 
 // Varyings
 varying vColor: vec4f;
@@ -44,6 +47,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
     let s2 = s * s;
     let st = s * t_val;
     let uv = u * u + v * v;
+    // Base dilation: +1 pixel outward along normal in screen space (for AA edge).
     let d = normal * (s2 * (st + sqrt(uv)) / (uv - st * st));
 
     let dilatedPos = pos + d;

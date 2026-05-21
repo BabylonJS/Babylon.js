@@ -15,6 +15,9 @@ attribute vec4 slugCol;  // vertex color RGBA
 // Uniforms
 uniform mat4 slugMatrix;    // MVP matrix (column-major)
 uniform vec4 slugViewport;  // (viewportWidth, viewportHeight, 0, 0)
+// Outline width in pixels. Consumed by the fragment shader; declared here so the linker
+// keeps the uniform active. yzw reserved.
+uniform vec4 slugOutline;
 
 // Varyings
 varying vec4 vColor;
@@ -45,6 +48,7 @@ void main(void) {
     float s2 = s * s;
     float st = s * t;
     float uv = u * u + v * v;
+    // Base dilation: +1 pixel outward along normal in screen space (for AA edge).
     vec2 d = normal * (s2 * (st + sqrt(uv)) / (uv - st * st));
 
     vec2 dilatedPos = pos + d;
