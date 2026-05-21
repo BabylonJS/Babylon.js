@@ -1,0 +1,48 @@
+{
+    "name": "@babylonjs/mcp-servers",
+    "version": "9.8.0",
+    "description": "Bundled Model Context Protocol servers for Babylon.js authoring workflows",
+    "type": "module",
+    "bin": {
+        "mcp-servers": "dist/babylonjs-mcp-servers.js",
+        "babylonjs-mcp-servers": "dist/babylonjs-mcp-servers.js",
+        "babylonjs-flow-graph-mcp-server": "dist/flow-graph-mcp-server.js",
+        "babylonjs-gui-mcp-server": "dist/gui-mcp-server.js",
+        "babylonjs-nge-mcp-server": "dist/nge-mcp-server.js",
+        "babylonjs-nme-mcp-server": "dist/nme-mcp-server.js",
+        "babylonjs-npe-mcp-server": "dist/npe-mcp-server.js",
+        "babylonjs-nrge-mcp-server": "dist/nrge-mcp-server.js",
+        "babylonjs-smart-filters-mcp-server": "dist/smart-filters-mcp-server.js"
+    },
+    "files": [
+        "dist/**/*.*",
+        "readme.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run build:servers && npm run copy:servers",
+        "build:servers": "npm run build -w @tools/mcp-server-core && npm run build -w @tools/nme-mcp-server && npm run build -w @tools/npe-mcp-server && npm run build -w @tools/nge-mcp-server && npm run build -w @tools/nrge-mcp-server && npm run build -w @tools/gui-mcp-server && npm run build -w @tools/flow-graph-mcp-server && npm run build -w @tools/smart-filters-mcp-server",
+        "clean": "rimraf dist",
+        "copy:servers": "node scripts/copyMcpServers.mjs"
+    },
+    "engines": {
+        "node": "^20.19.0 || >=22.13.0 <23.0.0"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js",
+        "mcp",
+        "model-context-protocol"
+    ],
+    "license": "Apache-2.0",
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}
