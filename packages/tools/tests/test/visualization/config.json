@@ -2,13 +2,6 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
-            "title": "MSAA RTT samples=4 (magnified)",
-            "playgroundId": "#DY1H5P#0",
-            "referenceImage": "msaa-rtt-samples4-magnified.png",
-            "errorRatio": 5,
-            "excludeFromPerformance": true
-        },
-        {
             "title": "Merge Meshes with submeshes",
             "playgroundId": "#ZHPFRQ",
             "referenceImage": "mergemeshes-sub.png",

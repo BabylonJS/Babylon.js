@@ -864,12 +864,11 @@ export class Engine extends ThinEngine {
      * handle is undefined behaviour. Sampling mode and mip-map flag are properties of the logical wrapped texture and
      * are re-applied to the new resource. Any render-target wrapper holding this texture as its color attachment has
      * its framebuffer rebuilt with the new handle (including a fresh depth/stencil renderbuffer, since the old one
-     * came from the dead context). If the wrapper is multisampled, the MSAA framebuffer + color renderbuffer + MSAA
-     * depth/stencil buffer are rebuilt too.
+     * came from the dead context).
      *
      * Throws if the target was not produced by {@link wrapWebGLTexture}, if the wrapped texture is part of a multi
-     * render-target wrapper, or if the wrapper has a depth/stencil texture (these are not supported in this version;
-     * dispose and re-wrap).
+     * render-target wrapper, if the wrapper has a depth/stencil texture, or if the wrapper is multisampled (these are
+     * not supported in this version; dispose and re-wrap).
      * @param internalTexture defines the wrapped InternalTexture to repoint
      * @param texture defines the new WebGL handle to wrap
      */
@@ -893,6 +892,9 @@ export class Engine extends ThinEngine {
                 // wrapper's stored depth settings + re-attaching is feasible but non-trivial; v1 rejects and asks
                 // the caller to dispose + re-wrap (which also recreates the depth/stencil texture via the public API).
                 throw new Error("updateWrappedWebGLTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap.");
+            }
+            if (rtWrapper.samples > 1) {
+                throw new Error("updateWrappedWebGLTexture: wrapped texture's render-target wrapper is multisampled; not supported. Dispose and re-wrap.");
             }
         }
 
@@ -924,13 +926,11 @@ export class Engine extends ThinEngine {
                 continue;
             }
             const webGLRtWrapper = rtWrapper as WebGLRenderTargetWrapper;
-            const savedSamples = rtWrapper.samples;
-            const isMSAA = savedSamples > 1;
 
             if (webGLRtWrapper._framebuffer) {
                 gl.deleteFramebuffer(webGLRtWrapper._framebuffer);
             }
-            if (!isMSAA && webGLRtWrapper._depthStencilBuffer) {
+            if (webGLRtWrapper._depthStencilBuffer) {
                 gl.deleteRenderbuffer(webGLRtWrapper._depthStencilBuffer);
                 webGLRtWrapper._depthStencilBuffer = null;
             }
@@ -939,24 +939,14 @@ export class Engine extends ThinEngine {
             const framebuffer = gl.createFramebuffer();
             this._bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-            if (!isMSAA) {
-                webGLRtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
-                    rtWrapper._generateStencilBuffer,
-                    rtWrapper._generateDepthBuffer,
-                    rtWrapper.width,
-                    rtWrapper.height
-                );
-            }
+            webGLRtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                rtWrapper.width,
+                rtWrapper.height
+            );
             this._bindUnboundFramebuffer(previousFramebuffer);
             webGLRtWrapper._framebuffer = framebuffer;
-
-            if (isMSAA) {
-                // Defer MSAA framebuffer + color renderbuffer + multisampled depth/stencil rebuild to the existing
-                // helper. The helper early-returns when samples matches the cached value, so zero the cache first
-                // to force the work; updateRenderTargetTextureSampleCount restores _samples to savedSamples.
-                rtWrapper._samples = 1;
-                this.updateRenderTargetTextureSampleCount(webGLRtWrapper, savedSamples);
-            }
         }
     }
 
