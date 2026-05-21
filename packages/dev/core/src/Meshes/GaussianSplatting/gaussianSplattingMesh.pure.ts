@@ -836,6 +836,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // so _updateSubTextures does not upload stale zeros over those already-committed texels.
         // The base-class _updateData always re-processes from firstNewTexel for the same reason;
         // the compound path must do the same.
+        // Note: SH data for the same boundary-row existing splats is restored separately after
+        // _retainMergedPartData runs (see the "Restore boundary-row SH" block in the upload section
+        // below), because that restoration reads from the merged _shData which isn't available yet.
         if (incremental) {
             const firstNewTexel = firstNewLine * textureSize.x;
             if (firstNewTexel < splatCountA) {
@@ -935,10 +938,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 // When the SH degree increases (e.g. adding a degree-4 part to a compound that
                 // already has degree-3 parts), _shTextures has fewer entries than sh. Create and
                 // upload the missing GPU textures now from this._shData, which was fully merged by
-                // _retainMergedPartData above. Existing splats' rows are zero in the new bands
-                // (correct — they had no higher-order coefficients). _updateSubTextures below then
-                // re-uploads only the new rows for all bands, which is harmlessly redundant for
-                // the newly created textures.
+                // _retainMergedPartData above. Existing splats' rows in the new bands are 128
+                // (neutral ~0.0 in decompose()) because _retainMergedPartData pre-fills with 128
+                // and only copies data up to the source's own shData.length. _updateSubTextures
+                // below then re-uploads from firstNewLine onward for all bands, which is harmlessly
+                // redundant for the newly created textures (their full data was already uploaded here).
                 if (sh && this._shTextures && sh.length > this._shTextures.length && this._shData) {
                     while (this._shTextures.length < sh.length) {
                         const idx = this._shTextures.length;
@@ -957,6 +961,23 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                         this._shTextures.push(shTexture);
                         this._updateShTextureData(shTexture, this._shData[idx], textureSize.x, 0, textureSize.y);
+                    }
+                }
+
+                // Restore boundary-row SH for existing splats. _updateSubTextures uploads from
+                // firstNewLine onward, which covers the partial boundary row that already has
+                // committed GPU data. `sh` was freshly allocated with 128, so existing splats on
+                // that row would lose their real SH values without this copy from _shData.
+                if (sh && this._shData) {
+                    const firstNewTexel = firstNewLine * textureSize.x;
+                    if (firstNewTexel < splatCountA) {
+                        const byteStart = firstNewTexel * _GaussianSplattingBytesPerShTexel;
+                        const byteEnd = splatCountA * _GaussianSplattingBytesPerShTexel;
+                        for (let texIdx = 0; texIdx < sh.length; texIdx++) {
+                            if (texIdx < this._shData.length) {
+                                sh[texIdx].set(this._shData[texIdx].subarray(byteStart, byteEnd), byteStart);
+                            }
+                        }
                     }
                 }
 
