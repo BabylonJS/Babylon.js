@@ -180,6 +180,22 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts",
+            "playgroundId": "#DAID4Q#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts Mixed Visibility",
+            "playgroundId": "#DAID4Q#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts-mixed-visibility.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png",
