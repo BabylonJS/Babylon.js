@@ -30,6 +30,7 @@ void main(void) {
 
 #if IS_COMPOUND
     if (partVisibility[splat.partIndex] == 0.0) {
+        // Discard: push outside NDC cube [-1,1] — vertex shaders cannot use discard.
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
         return;
     }

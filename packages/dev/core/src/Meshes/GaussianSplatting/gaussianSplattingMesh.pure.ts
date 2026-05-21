@@ -91,7 +91,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     private _partProxies: GaussianSplattingPartProxyMesh[] = [];
 
-    /** Part 0 local-space AABB when owned directly (not proxied). Constant once set. */
+    /** Part 0 local-space AABB when owned directly (not proxied). Set on first addPart, cleared on dispose/reset. */
     private _part0LocalMin: Nullable<Vector3> = null;
     private _part0LocalMax: Nullable<Vector3> = null;
 
@@ -141,8 +141,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /**
      * Is this node ready to be used/rendered.
-     * Force-syncs proxy world matrices into `_partMatrices` first so pending transform changes
-     * are reflected before the sort completes — avoids stale order on first render.
+     * Force-syncs every part proxy's world matrix into `_partMatrices` BEFORE delegating to
+     * the base readiness check. This guarantees that any pending proxy transform changes
+     * (for example a user-set `proxy.position`) are reflected in the next sort post, so the
+     * base `isReady` will only return true once `sortAppliedId === sortRequestId` for that
+     * up-to-date state. Without this, the proxy's `onAfterWorldMatrixUpdateObservable` would
+     * fire during the first render and queue a fresh sort AFTER readiness was reported,
+     * leaving the rendered frame with stale splat order on `renderCount=1` runs.
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
      * @returns true when ready
      */
@@ -229,8 +234,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // invisible parts don't inflate the result (e.g. for voxelization scene bounds).
         const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-        // Legacy mode: part 0 uses the compound's own geometry (no proxy). Transform its
-        // local AABB to world space if visible.
+        // Unproxied part 0: the compound mesh owns this geometry directly (no proxy node).
+        // Transform its local AABB to world space if visible.
         if (this._part0LocalMin && (this._partVisibility[0] ?? 1.0) > 0) {
             const wm = this.getWorldMatrix();
             const lMin = this._part0LocalMin;
@@ -615,8 +620,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
 
-        const shTextureCountRetain = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / 16);
-        const mergedShData = AllocateShBuffers(shTextureCountRetain, totalCount * _GaussianSplattingBytesPerShTexel);
+        const shTextureCount = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / 16);
+        const mergedShData = AllocateShBuffers(shTextureCount, totalCount * _GaussianSplattingBytesPerShTexel);
 
         let shByteOffset = 0;
         if (this._shData && existingVertexCount > 0) {

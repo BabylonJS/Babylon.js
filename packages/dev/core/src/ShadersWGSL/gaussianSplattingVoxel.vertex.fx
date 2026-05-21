@@ -48,6 +48,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
 #if IS_COMPOUND
     if (uniforms.partVisibility[splat.partIndex] == 0.0) {
+        // Discard: push outside NDC cube [-1,1] — vertex shaders cannot use discard.
         vertexOutputs.position = vec4f(2.0, 2.0, 2.0, 1.0);
         return;
     }
