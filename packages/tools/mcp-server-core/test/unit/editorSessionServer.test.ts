@@ -45,6 +45,18 @@ async function StartIncompatibleHttpServerAsync(): Promise<{ server: http.Server
     });
 }
 
+async function WaitForConditionAsync(predicate: () => boolean, timeoutMs: number = 1_000): Promise<void> {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeoutMs) {
+        if (predicate()) {
+            return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+
+    throw new Error("Timed out waiting for condition.");
+}
+
 describe("editor session server", () => {
     it("creates reusable sessions and reports health", async () => {
         const port = await GetFreePortAsync();
@@ -80,6 +92,8 @@ describe("editor session server", () => {
                 conflictPolicy: "last-writer-wins",
             });
             expect(health.capabilities).toEqual(expect.arrayContaining(["session-list", "diagnostics"]));
+            expect(health.idleTimeoutMs).toBe(900000);
+            expect(health.lastActivityAt).toBeGreaterThanOrEqual(health.activeSessionCount > 0 ? firstSession.createdAt : 0);
             expect(typeof health.workspaceId).toBe("string");
             expect(typeof health.ownerId).toBe("string");
             expect(sessionInfo).toMatchObject({
@@ -95,7 +109,9 @@ describe("editor session server", () => {
                 sessions: [expect.objectContaining({ sessionId: firstSession.id, subscriberCount: 0 })],
                 sseClientCount: 0,
                 keepAliveIntervalMs: 15000,
+                idleTimeoutMs: 900000,
             });
+            expect(diagnostics.lastActivityAt).toBeGreaterThanOrEqual(health.lastActivityAt);
             expect(diagnostics.startedAt).toBeGreaterThan(0);
             expect(diagnostics.uptimeMs).toBeGreaterThanOrEqual(0);
         } finally {
@@ -261,6 +277,75 @@ describe("editor session server", () => {
         expect(server.isRunning()).toBe(false);
         expect(server.getPort()).toBe(0);
         expect(server.closeSession(session.id)).toBe(false);
+    });
+
+    it("stops itself after the configured idle timeout", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { idleTimeoutMs: 50 }
+        );
+
+        const session = server.createSession("main");
+        await server.startAsync(port);
+        expect(server.isRunning()).toBe(true);
+
+        await WaitForConditionAsync(() => !server.isRunning());
+
+        expect(server.getPort()).toBe(0);
+        expect(server.closeSession(session.id)).toBe(false);
+    });
+
+    it("resets the idle timeout when session activity occurs", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { idleTimeoutMs: 120 }
+        );
+
+        const session = server.createSession("main");
+        await server.startAsync(port);
+
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        server.notifySessionUpdate(session.id);
+        await new Promise((resolve) => setTimeout(resolve, 80));
+
+        expect(server.isRunning()).toBe(true);
+
+        await WaitForConditionAsync(() => !server.isRunning());
+    });
+
+    it("can disable idle timeout", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { idleTimeoutMs: 0 }
+        );
+
+        try {
+            await server.startAsync(port);
+            await new Promise((resolve) => setTimeout(resolve, 80));
+
+            expect(server.isRunning()).toBe(true);
+            expect(server.getHealth().idleTimeoutMs).toBe(0);
+        } finally {
+            await server.stopAsync();
+        }
     });
 
     it("reuses a running session server within the same process", async () => {

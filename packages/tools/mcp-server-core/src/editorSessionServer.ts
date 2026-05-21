@@ -8,6 +8,7 @@ const DefaultPublicHostname = "localhost";
 const DefaultPort = 3001;
 const DefaultPortRange = 10;
 const DefaultKeepAliveIntervalMs = 15_000;
+const DefaultIdleTimeoutMs = 15 * 60_000;
 const DefaultConflictPolicy = "last-writer-wins";
 
 /**
@@ -68,6 +69,8 @@ export interface IMcpEditorSessionServerOptions {
     protocolVersion?: string;
     /** SSE keepalive interval in milliseconds. */
     keepAliveIntervalMs?: number;
+    /** Idle timeout in milliseconds before the server stops itself. Set to 0 to disable. Defaults to 15 minutes. */
+    idleTimeoutMs?: number;
     /** Access-Control-Allow-Origin value. When omitted, local origins are reflected. */
     corsOrigin?: string;
     /** Exact origins allowed when corsOrigin is omitted. Defaults to local localhost/127.0.0.1 origins. */
@@ -138,6 +141,10 @@ export interface IMcpEditorSessionHealth {
     capabilities: string[];
     /** Conflict policy used when editor and MCP writes race. */
     conflictPolicy?: typeof DefaultConflictPolicy;
+    /** Idle timeout in milliseconds before the server stops itself. */
+    idleTimeoutMs?: number;
+    /** Last server activity timestamp in milliseconds since epoch. */
+    lastActivityAt?: number;
     /** Stable local workspace identity. */
     workspaceId?: string;
     /** Per-server owner identity. */
@@ -200,6 +207,10 @@ export interface IMcpEditorSessionDiagnostics {
     uptimeMs: number;
     /** SSE keepalive interval in milliseconds. */
     keepAliveIntervalMs: number;
+    /** Idle timeout in milliseconds before the server stops itself. */
+    idleTimeoutMs?: number;
+    /** Last server activity timestamp in milliseconds since epoch. */
+    lastActivityAt?: number;
 }
 
 /**
@@ -363,6 +374,7 @@ export class McpEditorSessionServer {
     private readonly _publicHostname: string;
     private readonly _protocolVersion: string;
     private readonly _keepAliveIntervalMs: number;
+    private readonly _idleTimeoutMs: number;
     private readonly _corsOrigin: string | undefined;
     private readonly _allowedOrigins: Set<string> | null;
     private readonly _legacyDocumentRoutes: Set<string>;
@@ -374,10 +386,12 @@ export class McpEditorSessionServer {
     private _server: http.Server | null = null;
     private _port = 0;
     private _keepAliveInterval: ReturnType<typeof setInterval> | null = null;
+    private _idleTimeout: ReturnType<typeof setTimeout> | null = null;
     private readonly _sessions = new Map<string, IMcpEditorSession>();
     private readonly _sessionByName = new Map<string, string>();
     private readonly _sseClients = new Map<string, Set<http.ServerResponse>>();
     private _startedAt = 0;
+    private _lastActivityAt = 0;
 
     /**
      * Creates a new reusable session server instance.
@@ -392,10 +406,21 @@ export class McpEditorSessionServer {
         this._publicHostname = options.publicHostname ?? DefaultPublicHostname;
         this._protocolVersion = options.protocolVersion ?? DefaultProtocolVersion;
         this._keepAliveIntervalMs = options.keepAliveIntervalMs ?? DefaultKeepAliveIntervalMs;
+        this._idleTimeoutMs = options.idleTimeoutMs ?? DefaultIdleTimeoutMs;
         this._corsOrigin = options.corsOrigin;
         this._allowedOrigins = options.allowedOrigins ? new Set(options.allowedOrigins) : null;
         this._legacyDocumentRoutes = new Set((options.legacyDocumentRoutes ?? []).map((route) => route.replace(/^\//, "")));
-        this._capabilities = ["sse", "document-get", "document-post", "session-close", "session-list", "diagnostics", DefaultConflictPolicy, ...(options.capabilities ?? [])];
+        this._capabilities = [
+            "sse",
+            "document-get",
+            "document-post",
+            "session-close",
+            "session-list",
+            "diagnostics",
+            "idle-timeout",
+            DefaultConflictPolicy,
+            ...(options.capabilities ?? []),
+        ];
         this._statusTitle = options.statusTitle ?? adapter.serverName;
         this._workspaceId = options.workspaceId ?? CreateDefaultWorkspaceId();
         this._ownerId = options.ownerId ?? CreateDefaultOwnerId();
@@ -422,6 +447,7 @@ export class McpEditorSessionServer {
         const endPort = port + this._portRange - 1;
         this._port = await this._tryPortRangeAsync(port, endPort);
         this._startedAt = Date.now();
+        this._recordActivity();
         this._keepAliveInterval = setInterval(() => {
             for (const clients of this._sseClients.values()) {
                 for (const response of clients) {
@@ -435,21 +461,33 @@ export class McpEditorSessionServer {
 
     /**
      * Stop the HTTP/SSE server and close all active sessions.
+     * @param reason - Optional reason sent to connected editor clients.
      * @returns Resolves when the server has stopped.
      */
-    public async stopAsync(): Promise<void> {
+    public async stopAsync(reason: string = "Session server stopped"): Promise<void> {
         if (this._keepAliveInterval) {
             clearInterval(this._keepAliveInterval);
             this._keepAliveInterval = null;
         }
 
+        if (this._idleTimeout) {
+            clearTimeout(this._idleTimeout);
+            this._idleTimeout = null;
+        }
+
         for (const sessionId of [...this._sessions.keys()]) {
-            this.closeSession(sessionId, "Session server stopped");
+            this.closeSession(sessionId, reason);
+        }
+
+        if (this._idleTimeout) {
+            clearTimeout(this._idleTimeout);
+            this._idleTimeout = null;
         }
 
         if (!this._server) {
             this._port = 0;
             this._startedAt = 0;
+            this._lastActivityAt = 0;
             return;
         }
 
@@ -458,6 +496,7 @@ export class McpEditorSessionServer {
                 this._server = null;
                 this._port = 0;
                 this._startedAt = 0;
+                this._lastActivityAt = 0;
                 if (error) {
                     reject(new Error(error.message));
                     return;
@@ -495,6 +534,7 @@ export class McpEditorSessionServer {
         this._sessions.set(session.id, session);
         this._sessionByName.set(sessionKey, session.id);
         this._sseClients.set(session.id, new Set());
+        this._recordActivity();
         return session;
     }
 
@@ -550,6 +590,7 @@ export class McpEditorSessionServer {
         this._sseClients.delete(sessionId);
         this._sessions.delete(sessionId);
         this._sessionByName.delete(this._getSessionKey(session.kind, session.name));
+        this._recordActivity();
         return true;
     }
 
@@ -589,6 +630,8 @@ export class McpEditorSessionServer {
             activeSessionCount: this._sessions.size,
             capabilities: [...this._capabilities],
             conflictPolicy: DefaultConflictPolicy,
+            idleTimeoutMs: this._idleTimeoutMs,
+            lastActivityAt: this._lastActivityAt,
             workspaceId: this._workspaceId,
             ownerId: this._ownerId,
         };
@@ -606,7 +649,49 @@ export class McpEditorSessionServer {
             startedAt: this._startedAt,
             uptimeMs: this._startedAt ? Date.now() - this._startedAt : 0,
             keepAliveIntervalMs: this._keepAliveIntervalMs,
+            idleTimeoutMs: this._idleTimeoutMs,
+            lastActivityAt: this._lastActivityAt,
         };
+    }
+
+    private _recordActivity(): void {
+        this._lastActivityAt = Date.now();
+        this._scheduleIdleTimeout();
+    }
+
+    private _scheduleIdleTimeout(): void {
+        if (this._idleTimeout) {
+            clearTimeout(this._idleTimeout);
+            this._idleTimeout = null;
+        }
+
+        if (this._idleTimeoutMs <= 0 || !this.isRunning()) {
+            return;
+        }
+
+        const elapsedMs = Date.now() - this._lastActivityAt;
+        const delayMs = Math.max(1, this._idleTimeoutMs - elapsedMs);
+        const timeout = setTimeout(() => {
+            void this._stopIfIdleAsync();
+        }, delayMs);
+        if (typeof timeout === "object" && "unref" in timeout) {
+            timeout.unref();
+        }
+        this._idleTimeout = timeout;
+    }
+
+    private async _stopIfIdleAsync(): Promise<void> {
+        if (!this.isRunning() || this._idleTimeoutMs <= 0) {
+            return;
+        }
+
+        const elapsedMs = Date.now() - this._lastActivityAt;
+        if (elapsedMs < this._idleTimeoutMs) {
+            this._scheduleIdleTimeout();
+            return;
+        }
+
+        await this.stopAsync("Session server stopped after idle timeout");
     }
 
     private _getSessionKey(kind: string, name: string): string {
@@ -680,6 +765,7 @@ export class McpEditorSessionServer {
 
     private async _handleRequestAsync(request: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
         this._setCorsHeaders(request, response);
+        this._recordActivity();
 
         if (request.method === "OPTIONS") {
             response.writeHead(204);
@@ -781,6 +867,7 @@ export class McpEditorSessionServer {
 
         response.on("close", () => {
             clients.delete(response);
+            this._recordActivity();
         });
     }
 
@@ -824,6 +911,8 @@ export class McpEditorSessionServer {
         if (!session) {
             return;
         }
+
+        this._recordActivity();
 
         if (touchSession) {
             this._touchSession(session);
