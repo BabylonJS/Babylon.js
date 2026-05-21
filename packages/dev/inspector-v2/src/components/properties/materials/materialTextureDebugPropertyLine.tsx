@@ -1,5 +1,5 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { type FunctionComponent, useCallback } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef } from "react";
 
 import { type Material } from "core/Materials/material";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -112,6 +112,23 @@ export const MaterialTextureDebugPropertyLine: FunctionComponent<MaterialTexture
     const reservedDataStore = useProperty(material, "reservedDataStore") as Partial<DebugTextureStore> | null | undefined;
     const debugTexture = useProperty(reservedDataStore, "debugTexture");
     const isDebugEnabled = !!texture && debugTexture === texture;
+
+    // Track the texture this slot last rendered with so we can detect when its value changes away
+    // from the texture currently being debugged. Without this, reassigning the slot's texture (or
+    // setting it to null) while debug is active would leave the scene stuck in debug view with no
+    // visible toggle to turn it off (the toggle for that slot is keyed off texture-instance
+    // equality and would just appear off).
+    const prevTextureRef = useRef(texture);
+    useEffect(() => {
+        const prevTexture = prevTextureRef.current;
+        prevTextureRef.current = texture;
+        if (prevTexture && prevTexture !== texture) {
+            const store = material.reservedDataStore as Partial<DebugTextureStore> | undefined;
+            if (store?.debugTexture === prevTexture) {
+                ToggleTextureDebug(material, prevTexture, false);
+            }
+        }
+    }, [texture]);
 
     const handleDebugToggle = useCallback(
         (checked: boolean) => {
