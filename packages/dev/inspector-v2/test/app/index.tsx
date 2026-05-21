@@ -9,6 +9,7 @@ import { type Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";
 import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { LoadSmartAssetAsync, RemoveSmartAssetAsync } from "core/SmartAssets/smartAssetManager";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
@@ -57,10 +58,14 @@ const scene = new Scene(engine);
 
 let camera: Nullable<ArcRotateCamera> = null;
 
+// Register the airplane glb as a Smart Asset so it round-trips through
+// `.babylonproj` as a URL reference (not as 4 MB of inlined PBR materials),
+// shows up in the Inspector's Smart Assets list, and can be reloaded /
+// swapped from the Inspector UI.
+const AirplaneKey = "acrobaticPlane";
+
 async function loadModelAsync() {
-    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
-    assetContainer.addAllToScene();
-    return assetContainer;
+    await LoadSmartAssetAsync(scene, AirplaneKey, "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb");
 }
 
 function createParticleSystem() {
@@ -230,7 +235,7 @@ async function createClusteredLight() {
 }
 
 (async () => {
-    let assetContainer = await loadModelAsync();
+    await loadModelAsync();
     createCamera();
 
     createParticleSystem();
@@ -263,6 +268,7 @@ async function createClusteredLight() {
     });
 
     let isDropping = false;
+    let droppedContainer: import("core/assetContainer").AssetContainer | null = null;
     canvas.addEventListener("drop", async (event) => {
         if (!isDropping) {
             const file = event.dataTransfer?.files[0];
@@ -270,9 +276,14 @@ async function createClusteredLight() {
                 event.preventDefault();
                 isDropping = true;
                 try {
-                    assetContainer.dispose();
-                    assetContainer = await LoadAssetContainerAsync(file, scene);
-                    assetContainer.addAllToScene();
+                    // Drop replaces whatever's currently loaded: remove the SAM-
+                    // tracked airplane if it's still around, then ad-hoc load
+                    // the dropped file via LoadAssetContainerAsync (not SAM —
+                    // drag-and-drop is for quick scratch testing).
+                    await RemoveSmartAssetAsync(scene, AirplaneKey).catch(() => {});
+                    droppedContainer?.dispose();
+                    droppedContainer = await LoadAssetContainerAsync(file, scene);
+                    droppedContainer.addAllToScene();
                     createCamera();
                 } finally {
                     isDropping = false;
