@@ -29,6 +29,10 @@ void main(void) {
     Splat splat = readSplat(splatIndex);
 
 #if IS_COMPOUND
+    if (partVisibility[splat.partIndex] == 0.0) {
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+        return;
+    }
     mat4 splatWorld = getPartWorld(splat.partIndex);
 #else
     mat4 splatWorld = world;

@@ -47,6 +47,10 @@ fn main(input: VertexInputs) -> FragmentInputs {
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
 
 #if IS_COMPOUND
+    if (uniforms.partVisibility[splat.partIndex] == 0.0) {
+        vertexOutputs.position = vec4f(2.0, 2.0, 2.0, 1.0);
+        return;
+    }
     let splatWorld: mat4x4f = getPartWorld(splat.partIndex);
 #else
     let splatWorld: mat4x4f = mesh.world;

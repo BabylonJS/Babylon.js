@@ -91,9 +91,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     private _partProxies: GaussianSplattingPartProxyMesh[] = [];
 
-    /** Local-space bounds of part 0 when it is owned directly by this mesh (not via a proxy).
-     *  Null when all parts are proxied. Constant once set — part 0's splats are defined in
-     *  compound-local space and do not change regardless of the compound's world transform. */
+    /** Part 0 local-space AABB when owned directly (not proxied). Constant once set. */
     private _part0LocalMin: Nullable<Vector3> = null;
     private _part0LocalMax: Nullable<Vector3> = null;
 
@@ -128,9 +126,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
         super(name, url, scene, keepInRam);
-        // Ensure _splatsData is retained once compound mode is entered — addPart/addParts need
-        // the source data for full-texture rebuilds. Set after super() so it is visible to
-        // _updateData when the async load completes.
+        // Retain _splatsData for compound rebuilds. Set after super() so _updateData sees it.
         this._alwaysRetainSplatsData = true;
         this._needsRotationScaleTextures = needsRotationScaleTextures;
     }
@@ -145,13 +141,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /**
      * Is this node ready to be used/rendered.
-     * Force-syncs every part proxy's world matrix into `_partMatrices` BEFORE delegating to
-     * the base readiness check. This guarantees that any pending proxy transform changes
-     * (for example a user-set `proxy.position`) are reflected in the next sort post, so the
-     * base `isReady` will only return true once `sortAppliedId === sortRequestId` for that
-     * up-to-date state. Without this, the proxy's `onAfterWorldMatrixUpdateObservable` would
-     * fire during the first render and queue a fresh sort AFTER readiness was reported,
-     * leaving the rendered frame with stale splat order on `renderCount=1` runs.
+     * Force-syncs proxy world matrices into `_partMatrices` first so pending transform changes
+     * are reflected before the sort completes — avoids stale order on first render.
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
      * @returns true when ready
      */
@@ -165,15 +156,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Recomputes the compound's local-space bounding info from:
-     *   - the stored local bounds of any directly-owned part (part 0 when it is not proxied), and
-     *   - the current world-space extents of all proxy meshes, inverse-transformed to
-     *     compound-local space.
-     *
-     * Transforming all 8 corners of each proxy's world AABB through the inverse compound world
-     * matrix produces a correct (conservative) compound-local AABB even when the compound has
-     * non-identity rotation or scale. Storing in compound-local space means Babylon's standard
-     * _updateBoundingInfo path correctly recomputes world bounds when the compound later moves.
+     * Recomputes compound local-space bounds from part 0's stored AABB (if unproxied) plus all
+     * proxy world AABBs inverse-transformed to compound-local space. All 8 corners of each proxy
+     * AABB are transformed so the result is correct under non-identity compound rotation/scale.
      */
     private _updateBoundingInfoFromProxies(): void {
         const compoundWorld = this.getWorldMatrix();
@@ -187,8 +172,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (!proxy) {
                 continue;
             }
-            // Proxy meshes have no geometry (subMeshes is undefined), so getHierarchyBoundingVectors
-            // returns MAX_VALUE/-MAX_VALUE sentinel bounds. Read the bounding box directly instead.
+            // Proxies have no geometry — getHierarchyBoundingVectors returns sentinels. Use boundingBox directly.
             proxy.computeWorldMatrix(false);
             const bb = proxy.getBoundingInfo().boundingBox;
             const wMin = bb.minimumWorld;
@@ -202,8 +186,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         if (localMin.x <= localMax.x) {
-            // Access _boundingInfo directly to avoid triggering getBoundingInfo(), which would
-            // call _updateBoundingInfo() and recurse back here when the dirty flag is set.
+            // Direct access avoids getBoundingInfo() → _updateBoundingInfo() recursion.
             if (this._boundingInfo) {
                 this._boundingInfo.reConstruct(localMin, localMax, compoundWorld);
             } else {
@@ -215,13 +198,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Recomputes the compound's world-space bounding info whenever the compound's world
-     * matrix changes (e.g. the compound is moved, rotated, or scaled).
-     *
-     * The standard base-class path recomputes from stored local bounds × new world matrix,
-     * which is correct for part 0 (owned directly) but wrong for proxied parts whose world
-     * positions are independent of the compound's transform. This override recomputes from
-     * proxy world extents so the result is always correct.
+     * Override for compound meshes: recomputes bounds from proxy world extents instead of
+     * local bounds × world matrix, which is wrong for proxied parts with independent transforms.
      * @returns this mesh
      */
     public override _updateBoundingInfo(): AbstractMesh {
@@ -234,38 +212,48 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Extends the standard hierarchy bounds to include proxy meshes.
-     *
-     * The vertex shader positions each splat using partWorld[i] — the proxy's world
-     * matrix — not the compound's own world matrix. The proxy therefore stores the
-     * part's absolute world transform directly, without any compound-relative offset,
-     * and is not parented to the compound. The standard _children traversal therefore
-     * never reaches the proxies.
-     *
-     * Including proxy bounds here ensures the returned extent covers all parts at their
-     * actual world positions, including parts that have been moved after being added to
-     * the compound.
-     * @param includeDescendants when true, the bounding vectors are computed from this mesh and its descendants (default: true)
-     * @param predicate optional predicate to filter which meshes contribute to the result
-     * @returns the min and max world-space vectors of the hierarchy bounding box
+     * Extends the base hierarchy bounds to include proxy meshes. Proxies are not parented to
+     * the compound, so the base _children traversal never reaches them.
+     * @param includeDescendants when true, includes descendants (default: true)
+     * @param predicate optional filter predicate
+     * @returns world-space min/max of the hierarchy bounding box
      */
     public override getHierarchyBoundingVectors(
         includeDescendants: boolean = true,
         predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
     ): { min: Vector3; max: Vector3 } {
-        const result = super.getHierarchyBoundingVectors(includeDescendants, predicate);
-        for (const proxy of this._partProxies) {
-            if (!proxy) {
+        if (!this.isCompound) {
+            return super.getHierarchyBoundingVectors(includeDescendants, predicate);
+        }
+        // For compound meshes, compute visible-only world bounds from scratch so that
+        // invisible parts don't inflate the result (e.g. for voxelization scene bounds).
+        const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        // Legacy mode: part 0 uses the compound's own geometry (no proxy). Transform its
+        // local AABB to world space if visible.
+        if (this._part0LocalMin && (this._partVisibility[0] ?? 1.0) > 0) {
+            const wm = this.getWorldMatrix();
+            const lMin = this._part0LocalMin;
+            const lMax = this._part0LocalMax!;
+            const corner = new Vector3();
+            for (let b = 0; b < 8; b++) {
+                corner.set(b & 1 ? lMax.x : lMin.x, b & 2 ? lMax.y : lMin.y, b & 4 ? lMax.z : lMin.z);
+                Vector3.TransformCoordinatesToRef(corner, wm, corner);
+                min.minimizeInPlace(corner);
+                max.maximizeInPlace(corner);
+            }
+        }
+        for (let i = 0; i < this._partProxies.length; i++) {
+            const proxy = this._partProxies[i];
+            if (!proxy || (this._partVisibility[i] ?? 1.0) === 0) {
                 continue;
             }
-            // Proxy meshes have no geometry (subMeshes is undefined), so getHierarchyBoundingVectors
-            // returns MAX_VALUE/-MAX_VALUE sentinel bounds. Read the bounding box directly instead.
             proxy.computeWorldMatrix(false);
             const bb = proxy.getBoundingInfo().boundingBox;
-            result.min.minimizeInPlace(bb.minimumWorld);
-            result.max.maximizeInPlace(bb.maximumWorld);
+            min.minimizeInPlace(bb.minimumWorld);
+            max.maximizeInPlace(bb.maximumWorld);
         }
-        return result;
+        return { min, max };
     }
 
     /**
@@ -836,9 +824,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // so _updateSubTextures does not upload stale zeros over those already-committed texels.
         // The base-class _updateData always re-processes from firstNewTexel for the same reason;
         // the compound path must do the same.
-        // Note: SH data for the same boundary-row existing splats is restored separately after
-        // _retainMergedPartData runs (see the "Restore boundary-row SH" block in the upload section
-        // below), because that restoration reads from the merged _shData which isn't available yet.
+        // Boundary-row SH is restored after _retainMergedPartData (see below), where _shData is ready.
         if (incremental) {
             const firstNewTexel = firstNewLine * textureSize.x;
             if (firstNewTexel < splatCountA) {
@@ -935,14 +921,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         try {
             // --- Upload to GPU ---
             if (incremental) {
-                // When the SH degree increases (e.g. adding a degree-4 part to a compound that
-                // already has degree-3 parts), _shTextures has fewer entries than sh. Create and
-                // upload the missing GPU textures now from this._shData, which was fully merged by
-                // _retainMergedPartData above. Existing splats' rows in the new bands are 128
-                // (neutral ~0.0 in decompose()) because _retainMergedPartData pre-fills with 128
-                // and only copies data up to the source's own shData.length. _updateSubTextures
-                // below then re-uploads from firstNewLine onward for all bands, which is harmlessly
-                // redundant for the newly created textures (their full data was already uploaded here).
+                // SH degree increased: create missing GPU textures from _shData (merged above).
+                // New bands are pre-filled with 128 (neutral); _updateSubTextures re-uploads them
+                // from firstNewLine, which is redundant but harmless.
                 if (sh && this._shTextures && sh.length > this._shTextures.length && this._shData) {
                     while (this._shTextures.length < sh.length) {
                         const idx = this._shTextures.length;
@@ -964,10 +945,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     }
                 }
 
-                // Restore boundary-row SH for existing splats. _updateSubTextures uploads from
-                // firstNewLine onward, which covers the partial boundary row that already has
-                // committed GPU data. `sh` was freshly allocated with 128, so existing splats on
-                // that row would lose their real SH values without this copy from _shData.
+                // Restore boundary-row SH: sh is freshly filled with 128, and _updateSubTextures
+                // starts at firstNewLine — existing splats on that row need their values from _shData.
                 if (sh && this._shData) {
                     const firstNewTexel = firstNewLine * textureSize.x;
                     if (firstNewTexel < splatCountA) {
@@ -981,9 +960,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     }
                 }
 
-                // Update the part-indices texture (handles both create and update-in-place).
-                // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
-                // second+ addPart the partIndices would be stale without this call.
+                // Refresh part-indices texture; stale on 2nd+ addPart without this.
                 this._onUpdateTextures(textureSize);
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
             } else {
@@ -993,9 +970,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this.setEnabled(true);
             this._notifyWorkerNewData();
 
-            // When part 0 is owned directly by this mesh (not via a proxy), its splats are
-            // defined in compound-local space. Store its local bounds so _updateBoundingInfoFromProxies
-            // can include them when the compound moves. Guard avoids overwriting on subsequent addPart calls.
+            // Store part 0 local bounds once (unproxied only) for use by _updateBoundingInfoFromProxies.
             if (!this._partProxies[0] && splatCountA > 0 && !this._part0LocalMin) {
                 this._part0LocalMin = this.getBoundingInfo().minimum.clone();
                 this._part0LocalMax = this.getBoundingInfo().maximum.clone();
@@ -1034,8 +1009,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 proxyMeshes.push(proxyMesh);
             }
 
-            // Recompute the compound's bounding info from all proxy world extents now that
-            // proxy meshes have been created and their world matrices are known.
+            // Update compound bounds now that all proxy world matrices are known.
             this._updateBoundingInfoFromProxies();
 
             // Restore the rebuild gate and post the now-complete partMatrices in one message, then trigger a single sort pass.
