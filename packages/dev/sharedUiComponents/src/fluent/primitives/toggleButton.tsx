@@ -1,4 +1,4 @@
-import { ToggleButton as FluentToggleButton, makeStyles } from "@fluentui/react-components";
+import { ToggleButton as FluentToggleButton, makeStyles, type TooltipProps } from "@fluentui/react-components";
 import { type ButtonProps } from "./button";
 import { useCallback, useContext, useEffect, useState, type FunctionComponent } from "react";
 import { type FluentIcon } from "@fluentui/react-icons";
@@ -18,6 +18,7 @@ type ToggleButtonProps = Omit<ButtonProps, "icon" | "onClick"> & {
     checkedIcon: FluentIcon;
     uncheckedIcon?: FluentIcon;
     onChange: (checked: boolean) => void;
+    titlePositioning?: TooltipProps["positioning"];
 };
 
 /**
@@ -46,7 +47,7 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     }, [props.value]);
 
     return (
-        <Tooltip content={title ?? ""}>
+        <Tooltip content={title ?? ""} positioning={props.titlePositioning}>
             <FluentToggleButton
                 className={classes.button}
                 size={size}
