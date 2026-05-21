@@ -1,5 +1,5 @@
 import { Button as FluentButton, makeStyles, Spinner } from "@fluentui/react-components";
-import { createElement, type MouseEvent, forwardRef, useCallback, useContext, useState } from "react";
+import { type MouseEvent, forwardRef, useCallback, useContext, useState } from "react";
 import { type FluentIcon } from "@fluentui/react-icons";
 import { type BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
@@ -31,7 +31,8 @@ export type ButtonProps = BasePrimitiveProps & {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
     const { size } = useContext(ToolContext);
     const classes = useButtonStyles();
-    const { icon, label, onClick, disabled, className, title, ariaLabel, ...buttonProps } = props;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { icon: Icon, label, onClick, disabled, className, title, ariaLabel, ...buttonProps } = props;
 
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
@@ -60,7 +61,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
                 className={className}
                 size={size}
                 aria-label={ariaLabel ?? (!label ? title : undefined)}
-                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : icon && createElement(icon, { className: iconClass })}
+                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
                 onClick={handleOnClick}
                 disabled={disabled || isOnClickBusy}
             >
