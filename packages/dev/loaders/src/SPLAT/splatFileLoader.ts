@@ -225,13 +225,19 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             scene._blockEntityCollection = false;
         };
 
-        const sogParser = this._loadingOptions.useSogTextures ? ParseSogMetaAsTextures : ParseSogMeta;
+        const engine = scene.getEngine();
+        let useSogTextures = this._loadingOptions.useSogTextures;
+        if (useSogTextures && !engine.isWebGPU && engine.version < 2) {
+            Logger.Warn("SPLATFileLoader: useSogTextures requires WebGL2 or WebGPU. Falling back to CPU path.");
+            useSogTextures = false;
+        }
+        const sogParser = useSogTextures ? ParseSogMetaAsTextures : ParseSogMeta;
 
         // check if data is json string
         if (typeof data === "string") {
             const dataSOG = JSON.parse(data) as SOGRootData;
             if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
-                return new Promise((resolve) => {
+                return new Promise((resolve, reject) => {
                     sogParser(dataSOG, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
@@ -239,8 +245,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                             resolve(babylonMeshesArray);
                         })
                         // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG data.", { cause: e }));
                         });
                 });
             }
@@ -249,7 +255,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const u8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
         // ZIP signature check for SOG
         if (u8[0] === 0x50 && u8[1] === 0x4b) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._unzipWithFFlateAsync(u8).then((files) => {
                     sogParser(files, rootUrl, scene)
@@ -258,8 +264,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         }) // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG zip data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG zip data.", { cause: e }));
                         });
                 });
             });

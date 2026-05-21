@@ -27,6 +27,31 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
+/** Internal mirror of ISogTexturePack (defined in loaders) — avoids a circular import. */
+interface ISogPackInternal {
+    version: 1 | 2;
+    splatCount: number;
+    shDegree: number;
+    meansTextureL: BaseTexture;
+    meansTextureU: BaseTexture;
+    scalesTexture: BaseTexture;
+    quatsTexture: BaseTexture;
+    sh0Texture: BaseTexture;
+    shCentroidsTexture?: BaseTexture;
+    shLabelsTexture?: BaseTexture;
+    codebookTexture?: BaseTexture;
+    meansMin: [number, number, number];
+    meansMax: [number, number, number];
+    scalesMin?: [number, number, number];
+    scalesMax?: [number, number, number];
+    sh0Min?: [number, number, number, number];
+    sh0Max?: [number, number, number, number];
+    shnMin?: number;
+    shnMax?: number;
+    shCoeffCount: number;
+    positions: Float32Array;
+}
+
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
 interface IDelayedTextureUpdate {
@@ -395,7 +420,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     protected _useRGBACovariants = false;
     protected _useSog = false;
-    protected _sogParams: any = null;
+    protected _sogParams: Nullable<ISogPackInternal> = null;
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
@@ -646,7 +671,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * SOG dequantization parameters paired with the raw textures.
      * Set by the splat loader when `useSogTextures: true`. Null otherwise.
      */
-    public get sogParams(): any {
+    public get sogParams(): Nullable<ISogPackInternal> {
         return this._sogParams;
     }
 
@@ -655,11 +680,13 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param pack SOG texture pack produced by ParseSogMetaAsTextures.
      * @internal
      */
-    public setSogTextureData(pack: any): void {
+    public setSogTextureData(pack: ISogPackInternal): void {
         this._useSog = true;
+        this._sogParams?.codebookTexture?.dispose();
         this._sogParams = pack;
         this._vertexCount = pack.splatCount;
         this._shDegree = pack.shDegree ?? 0;
+        this._maxShDegree = this._shDegree;
 
         // Stride-4 (xyz + 1) — required by the depth-sort worker and the centers texture path.
         this._splatPositions = pack.positions;
@@ -1956,6 +1983,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._rotationsATexture?.dispose();
         this._rotationsBTexture?.dispose();
         this._rotationScaleTexture?.dispose();
+        this._sogParams?.codebookTexture?.dispose();
         this._rotationsATexture = null;
         this._rotationsBTexture = null;
         this._rotationScaleTexture = null;

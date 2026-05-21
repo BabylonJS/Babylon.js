@@ -51,7 +51,6 @@ export interface ISogTexturePack {
 
     /** SH layout info. */
     shCoeffCount: number;
-    shCentroidsWidth: number;
 
     /** CPU-side decoded positions for the depth-sort worker. */
     positions: Float32Array;

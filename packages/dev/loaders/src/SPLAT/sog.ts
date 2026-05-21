@@ -564,7 +564,6 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
         shnMin: typeof data.shN?.mins === "number" ? data.shN.mins : undefined,
         shnMax: typeof data.shN?.maxs === "number" ? data.shN.maxs : undefined,
         shCoeffCount,
-        shCentroidsWidth,
         positions: DecodeSogPositions(data, images[0].bits, images[1].bits, splatCount),
     };
 

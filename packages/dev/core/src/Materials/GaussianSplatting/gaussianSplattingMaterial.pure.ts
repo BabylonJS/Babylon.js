@@ -233,7 +233,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "sogShnMin",
         "sogShnMax",
         "sogShCoeffCount",
-        "sogShCentroidsWidth",
     ];
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
@@ -525,7 +524,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
         effect.setFloat("sogShnMin", p.shnMin ?? 0);
         effect.setFloat("sogShnMax", p.shnMax ?? 0);
         effect.setFloat("sogShCoeffCount", p.shCoeffCount ?? 0);
-        effect.setFloat("sogShCentroidsWidth", p.shCentroidsWidth ?? 0);
     }
     /**
      * Binds the submesh to this material by preparing the effect and shader to draw

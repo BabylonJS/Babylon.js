@@ -46,7 +46,6 @@ uniform float sogShnMax;
 uniform sampler2D sogShNCentroidsTexture;
 uniform sampler2D sogShNLabelsTexture;
 uniform float sogShCoeffCount;
-uniform float sogShCentroidsWidth;
 #endif
 #endif
 

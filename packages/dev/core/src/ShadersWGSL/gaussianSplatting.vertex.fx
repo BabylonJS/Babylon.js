@@ -50,7 +50,6 @@ uniform sogShnMax: f32;
 var sogShNCentroidsTexture: texture_2d<f32>;
 var sogShNLabelsTexture: texture_2d<f32>;
 uniform sogShCoeffCount: f32;
-uniform sogShCentroidsWidth: f32;
 #endif
 #endif
 
