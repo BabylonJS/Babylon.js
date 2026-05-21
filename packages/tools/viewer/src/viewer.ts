@@ -997,10 +997,10 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
      * Typical usage:
      * ```ts
      * const objectList = block.value as FrameGraphObjectList;
-     * disposables.push(this._bindObjectList(
-     *     (meshes) => { objectList.meshes = meshes; },
-     *     (mesh) => !mesh.material?.needAlphaBlending()
-     * ));
+     * this._bindObjectList(
+     *   (meshes) => { objectList.meshes = meshes; },
+     *   (mesh) => !mesh.material?.needAlphaBlending()
+     * );
      * ```
      *
      * @param setMeshes Callback invoked with the filtered mesh array on every change.
@@ -1414,15 +1414,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._activeModelBacking = null;
         this.selectedAnimation = -1;
 
-        // Clear all hotspots when the model changes. Surface hotspots store a meshIndex
-        // that is only valid for the outgoing model and would cause out-of-bounds DataView
-        // errors if queried against different geometry. World hotspots are also cleared
-        // because they are almost always model-specific points of interest (e.g. a POI
-        // defined on the outgoing UFO has no meaning on an arbitrary incoming model).
-        // Camera hotspots (key "camera-<name>") are already removed by the
-        // onCameraRemovedObservable handler when the old assetContainer is disposed above.
-        // Callers that need genuinely scene-level persistent hotspots can restore them via
-        // the hotSpots property after the load completes.
+        // Clear all hotspots when the model changes.
         if (Object.keys(this.hotSpots).length > 0) {
             this.hotSpots = {};
         }
@@ -2456,14 +2448,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         // 6. The SSAO pipeline is not yet in a ready state.
         // 7. At least one model should render (playing animations).
         // 8. A model (or other asset) load is in flight.
-        //
-        // Condition 8 prevents a subtle snapshot timing bug: when the camera stops moving
-        // while a model is still loading, scene.isReady() returns true (the model is not yet
-        // in the scene, so there are no pending effects to check). The "render ready frame"
-        // logic would then fire onRenderingSuspended() before addAllToScene() has been called,
-        // and the resulting snapshot would capture only the background. Keeping _shouldRender
-        // true for the duration of any in-flight load ensures that effects are compiled
-        // (via rendered frames) before the snapshot helper is allowed to record a new snapshot.
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
