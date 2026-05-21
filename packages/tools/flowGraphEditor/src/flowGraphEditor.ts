@@ -111,14 +111,14 @@ export class FlowGraphEditor {
 
         this._CurrentDisposer = tool;
 
-        // Close the popup window when the page is refreshed or scene is disposed.
-        if (options.hostScene && popupWindow) {
+        // Whenever the editor is hosted in a popup window, wire teardown so the modular
+        // tool (React root + observers) is disposed when the user closes the popup or
+        // the parent page is refreshed — even if no hostScene was supplied.
+        if (popupWindow) {
             const capturedPopup: Window = popupWindow;
-            options.hostScene.onDisposeObservable.addOnce(() => {
-                if (!capturedPopup.closed) {
-                    capturedPopup.close();
-                }
-            });
+            const capturedTool = tool;
+
+            // Close the popup if the parent page is being unloaded.
             const onBeforeUnload = () => {
                 if (!capturedPopup.closed) {
                     capturedPopup.close();
@@ -126,13 +126,29 @@ export class FlowGraphEditor {
             };
             window.addEventListener("beforeunload", onBeforeUnload);
 
+            // When the popup itself unloads (user closed it, navigated away, etc.),
+            // dispose the modular tool and clear the static references so we don't
+            // leak observers / React root.
             const onPopupUnload = () => {
                 window.removeEventListener("beforeunload", onBeforeUnload);
                 if (FlowGraphEditor._PopupWindow === capturedPopup) {
                     FlowGraphEditor._PopupWindow = null;
                 }
+                if (FlowGraphEditor._CurrentDisposer === capturedTool) {
+                    void capturedTool.dispose();
+                    FlowGraphEditor._CurrentDisposer = undefined;
+                }
             };
             capturedPopup.addEventListener("unload", onPopupUnload, { once: true });
+
+            // Close the popup window when the host scene is disposed (if one was provided).
+            if (options.hostScene) {
+                options.hostScene.onDisposeObservable.addOnce(() => {
+                    if (!capturedPopup.closed) {
+                        capturedPopup.close();
+                    }
+                });
+            }
         }
     }
 }

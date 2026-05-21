@@ -104,7 +104,7 @@ export class SwitchBlockPropertyComponent extends React.Component<IPropertyCompo
                     <SwitchCasesContent
                         cases={cases}
                         newCaseValue={this.state.newCaseValue}
-                        onNewCaseValueChange={(v) => this.setState({ newCaseValue: v | 0 })}
+                        onNewCaseValueChange={(v) => this.setState({ newCaseValue: Math.trunc(v) })}
                         onAddCase={() => this._addCase()}
                         onRemoveCase={(caseVal) => this._removeCase(caseVal)}
                     />

@@ -21,8 +21,6 @@ export class FlowGraphEditorPage {
     readonly editorRoot: Locator;
     readonly graphCanvas: Locator;
     readonly graphCanvasContainer: Locator;
-    readonly nodeList: Locator;
-    readonly rightPanel: Locator;
     readonly diagramContainer: Locator;
     readonly svgContainer: Locator;
 
@@ -32,8 +30,6 @@ export class FlowGraphEditorPage {
         this.editorRoot = page.locator("#flow-graph-editor-graph-root");
         this.graphCanvas = page.locator("#graph-canvas");
         this.graphCanvasContainer = page.locator("#graph-canvas-container");
-        this.nodeList = page.locator("body");
-        this.rightPanel = page.locator("body");
         this.diagramContainer = page.locator(".diagram-container");
         this.svgContainer = page.locator("#graph-svg-container");
     }
@@ -359,22 +355,6 @@ export class FlowGraphEditorPage {
     async deleteSelectedNodes(): Promise<void> {
         await this.page.keyboard.press("Delete");
         await this.page.waitForTimeout(300);
-    }
-
-    /**
-     * Expand a category in the node list palette.
-     */
-    async expandCategory(categoryLabel: string): Promise<void> {
-        const category = this.nodeList.locator(".pane-title", { hasText: categoryLabel });
-        // Check if the category content is collapsed
-        const isExpanded = await category.evaluate((el) => {
-            const container = el.closest(".pane");
-            return container?.querySelector(".pane-content")?.classList.contains("hidden") === false;
-        });
-        if (!isExpanded) {
-            await category.click();
-            await this.page.waitForTimeout(200);
-        }
     }
 
     /**

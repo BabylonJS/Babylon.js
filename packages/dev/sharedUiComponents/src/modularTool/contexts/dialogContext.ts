@@ -10,7 +10,9 @@ export const DialogContext = createContext<DialogContext>({ showDialog: (options
 
 /**
  * Returns the showDialog function provided by the surrounding modular tool framework.
- * Throws if used outside of a DialogContext provider.
+ * If called outside of a DialogContext provider, falls back to the default context
+ * value, whose showDialog implementation invokes the browser's blocking `alert` with
+ * the dialog title.
  * @returns A function that displays a dialog when called.
  */
 export function useDialog(): DialogContext {
