@@ -17,7 +17,6 @@ type MaterialTextureDebugPropertyLineProps = PropertyLineProps<Nullable<BaseText
 type DebugTextureStore = {
     debugTexture: Nullable<BaseTexture>;
     debugMaterial: Nullable<Material>;
-    level: number;
 };
 
 const useStyles = makeStyles({
@@ -33,8 +32,16 @@ const useStyles = makeStyles({
 
 /**
  * Toggles debug mode for a texture on a material.
- * When enabled, creates a debug material with the texture as emissive and swaps it on all meshes using the original material.
- * Enabling debug for one texture on a material disables it for any other texture on that material (mutually exclusive).
+ * When enabled, creates a debug `StandardMaterial` with the texture wired as `emissiveTexture` and swaps it onto every
+ * mesh that currently uses the original material. Enabling debug for one texture on a material disables it for any
+ * other texture on that material (mutually exclusive).
+ *
+ * Notes:
+ * - The texture is rendered using its current `level`. Textures whose level is not 1 will appear modulated; this is
+ *   intentional so that no global state on the source texture is mutated (a level mutation would affect every other
+ *   material that references the same texture instance).
+ * - Only meshes referencing the original material at toggle time receive the debug material. Meshes added or
+ *   reassigned to the original material afterwards are not affected until the next toggle cycle.
  * @param material - The material to debug
  * @param texture - The texture to debug
  * @param enable - Whether to enable or disable debug mode
@@ -45,10 +52,10 @@ function ToggleTextureDebug(material: Material, texture: Nullable<BaseTexture>, 
     }
 
     const scene = material.getScene();
-    const store = (material.reservedDataStore ?? (material.reservedDataStore = {})) as Partial<DebugTextureStore>;
+    material.reservedDataStore ??= {};
+    const store = material.reservedDataStore as Partial<DebugTextureStore>;
     store.debugTexture ??= null;
     store.debugMaterial ??= null;
-    store.level ??= texture.level;
 
     const isCurrentlyDebugging = store.debugTexture === texture;
 
@@ -65,33 +72,18 @@ function ToggleTextureDebug(material: Material, texture: Nullable<BaseTexture>, 
         debugMaterial.forceDepthWrite = true;
         debugMaterial.reservedDataStore = { hidden: true };
 
-        let checkMaterial: Material = material;
-        let needToDisposeCheckMaterial = false;
-        if (store.debugTexture && store.debugMaterial) {
-            checkMaterial = store.debugMaterial;
-            needToDisposeCheckMaterial = true;
-        }
-
         for (const mesh of scene.meshes) {
-            if (mesh.material === checkMaterial) {
+            if (mesh.material === material) {
                 mesh.material = debugMaterial;
             }
         }
 
         store.debugMaterial = debugMaterial;
-        store.level = texture.level;
-        texture.level = 1.0;
         // Assign debugTexture LAST so observers see a fully-populated store.
         store.debugTexture = texture;
-
-        if (needToDisposeCheckMaterial) {
-            checkMaterial.dispose();
-        }
     } else if (!enable && isCurrentlyDebugging) {
         const debugMaterial: Nullable<Material> = store.debugMaterial;
         if (debugMaterial) {
-            texture.level = store.level;
-
             for (const mesh of scene.meshes) {
                 if (mesh.material === debugMaterial) {
                     mesh.material = material;
