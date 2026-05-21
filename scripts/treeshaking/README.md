@@ -117,11 +117,15 @@ Common commands:
 
 ```sh
 npm run generate:pure-barrels
+npm run generate:pure-barrels -- --format
 npm run check:pure-barrels
 node scripts/treeshaking/generatePureBarrels.mjs --dry-run --verbose
 ```
 
-Normal mode writes generated `pure.ts` barrels and formats them. `--check` mode compares on-disk generated barrels with expected content and also reports stale generated barrels that are no longer expected.
+Normal mode writes generated `pure.ts` barrels. Formatting is skipped by default;
+pass `--format` to format written files with Prettier. `--check` mode compares
+on-disk generated barrels with expected content and also reports stale generated
+barrels that are no longer expected.
 
 ### `generateSideEffectStubs.mjs`
 
@@ -139,11 +143,15 @@ Common commands:
 
 ```sh
 npm run generate:side-effect-stubs
+npm run generate:side-effect-stubs -- --format
 node scripts/treeshaking/generateSideEffectStubs.mjs --check
 node scripts/treeshaking/generateSideEffectStubs.mjs --dry-run --verbose
 ```
 
-Normal mode writes generated regions and removes stale generated regions. `--check` mode validates existing regions without writing and reports stale generated regions that should be removed.
+Normal mode writes generated regions and removes stale generated regions.
+Formatting is skipped by default; pass `--format` to format written files with
+Prettier. `--check` mode validates existing regions without writing and reports
+stale generated regions that should be removed.
 
 ### `verifyTreeShaking.mjs`
 
@@ -186,10 +194,14 @@ Common commands:
 
 ```sh
 npm run inject:pure-annotations
+npm run inject:pure-annotations -- --format
 node scripts/treeshaking/injectPureAnnotations.mjs --dry-run --verbose
 ```
 
-The script intentionally does not annotate decorator helper calls such as `__decorate(...)`, because those calls mutate prototypes and must not be removed as pure work.
+Formatting is skipped by default; pass `--format` to format written files with
+Prettier. The script intentionally does not annotate decorator helper calls such
+as `__decorate(...)`, because those calls mutate prototypes and must not be
+removed as pure work.
 
 ### `splitRegisterClass.mjs`
 
@@ -202,10 +214,13 @@ Common commands:
 
 ```sh
 npm run split:register-class
+npm run split:register-class -- --format
 node scripts/treeshaking/splitRegisterClass.mjs --dry-run --file Maths/math.color.ts --verbose
 ```
 
-This is a source-modifying maintenance script. Use `--dry-run` first, review the diff carefully, and run the generated checks afterward.
+This is a source-modifying maintenance script. Formatting is skipped by default;
+pass `--format` to format written files with Prettier. Use `--dry-run` first,
+review the diff carefully, and run the generated checks afterward.
 
 ### `catalogStaticHelpers.mjs`
 

@@ -1,4 +1,19 @@
 import { Engine, ThinEngine } from "core/Engines";
+import { beforeEach, describe, expect, it } from "vitest";
+
+describe("Engine", () => {
+    describe("constructor", () => {
+        it("sets adaptToDeviceRatio from engine options", () => {
+            const engine = new Engine(null, undefined, { adaptToDeviceRatio: true });
+
+            try {
+                expect(engine.adaptToDeviceRatio).toBe(true);
+            } finally {
+                engine.dispose();
+            }
+        });
+    });
+});
 
 describe("ThinEngine", () => {
     describe("getTexImageParametersForCreateTexture", () => {
