@@ -2327,16 +2327,7 @@ export class ThinNativeEngine extends ThinEngine {
         // underlying bgfx resource has only one mip level).
         const hasMips = samples > 1 ? false : texture.generateMipMaps;
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
-        this._engine.initializeTexture(
-            nativeTexture,
-            texture.baseWidth,
-            texture.baseHeight,
-            hasMips,
-            nativeTextureFormat,
-            /*renderTarget*/ true,
-            texture._useSRGBBuffer,
-            samples
-        );
+        this._engine.initializeTexture(nativeTexture, texture.baseWidth, texture.baseHeight, hasMips, nativeTextureFormat, /*renderTarget*/ true, texture._useSRGBBuffer, samples);
 
         this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
         nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
