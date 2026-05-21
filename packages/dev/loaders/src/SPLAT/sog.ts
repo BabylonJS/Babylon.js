@@ -495,13 +495,11 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
     let shCentroids: RawTexture | undefined;
     let shLabels: RawTexture | undefined;
     let shCoeffCount = 0;
-    let shCentroidsWidth = 0;
     let shDegree = 0;
 
     if (data.shN && images.length >= 7) {
         const centroidsImage = images[5];
         const labelsImage = images[6];
-        shCentroidsWidth = centroidsImage.width;
         const centroidsHeight = centroidsImage.bits.length / 4 / centroidsImage.width;
         shCentroids = CreateSogTexture(scene, centroidsImage.bits, centroidsImage.width, centroidsHeight);
         const labelsHeight = labelsImage.bits.length / 4 / labelsImage.width;
