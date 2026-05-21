@@ -660,7 +660,15 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._applyCameraAutoOrbitSpeed();
         this._applyCameraAutoOrbitDelay();
 
-        this._scene.onAfterRenderCameraObservable.add(() => {
+        // Use onAfterRenderObservable (end of scene.render()) rather than
+        // onAfterRenderCameraObservable (end of per-camera loop) so that
+        // onAfterRenderObservable fires in all rendering modes — including when a
+        // NodeRenderGraph frame graph is active, which bypasses the per-camera loop
+        // entirely and therefore never fires onAfterRenderCameraObservable.
+        // Annotations (babylon-viewer-annotation) listen to the "viewerrender" event
+        // dispatched from this observable; if it stops firing they freeze in place
+        // and cannot be hidden when the model changes.
+        this._scene.onAfterRenderObservable.add(() => {
             this.onAfterRenderObservable.notifyObservers();
         });
 
@@ -1405,6 +1413,19 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._activeModel?.dispose();
         this._activeModelBacking = null;
         this.selectedAnimation = -1;
+
+        // Clear all hotspots when the model changes. Surface hotspots store a meshIndex
+        // that is only valid for the outgoing model and would cause out-of-bounds DataView
+        // errors if queried against different geometry. World hotspots are also cleared
+        // because they are almost always model-specific points of interest (e.g. a POI
+        // defined on the outgoing UFO has no meaning on an arbitrary incoming model).
+        // Camera hotspots (key "camera-<name>") are already removed by the
+        // onCameraRemovedObservable handler when the old assetContainer is disposed above.
+        // Callers that need genuinely scene-level persistent hotspots can restore them via
+        // the hotSpots property after the load completes.
+        if (Object.keys(this.hotSpots).length > 0) {
+            this.hotSpots = {};
+        }
 
         if (source) {
             const model = await this._loadModel(source, options, internalAbortSignal);
@@ -2434,6 +2455,15 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         // 5. The environment shadows are not yet in a ready state.
         // 6. The SSAO pipeline is not yet in a ready state.
         // 7. At least one model should render (playing animations).
+        // 8. A model (or other asset) load is in flight.
+        //
+        // Condition 8 prevents a subtle snapshot timing bug: when the camera stops moving
+        // while a model is still loading, scene.isReady() returns true (the model is not yet
+        // in the scene, so there are no pending effects to check). The "render ready frame"
+        // logic would then fire onRenderingSuspended() before addAllToScene() has been called,
+        // and the resulting snapshot would capture only the background. Keeping _shouldRender
+        // true for the duration of any in-flight load ensures that effects are compiled
+        // (via rendered frames) before the snapshot helper is allowed to record a new snapshot.
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
@@ -2441,7 +2471,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             this._shadowState.normal?.shouldRender ||
             this._shadowState.high?.shouldRender ||
             this._ssaoPipeline?.isReady() === false ||
-            this._loadedModelsBacking.some((model) => model._shouldRender())
+            this._loadedModelsBacking.some((model) => model._shouldRender()) ||
+            this._loadOperations.size > 0
         );
     }
 
