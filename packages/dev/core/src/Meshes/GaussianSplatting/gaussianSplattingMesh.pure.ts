@@ -126,7 +126,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
         super(name, url, scene, keepInRam);
-        // Retain _splatsData for compound rebuilds. Set after super() so _updateData sees it.
+        // Ensure _splatsData is retained once compound mode is entered — addPart/addParts need
+        // the source data for full-texture rebuilds. Set after super() so it is visible to
+        // _updateData when the async load completes.
         this._alwaysRetainSplatsData = true;
         this._needsRotationScaleTextures = needsRotationScaleTextures;
     }
@@ -620,7 +622,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
 
-        const shTextureCount = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / 16);
+        // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
+        // bytes with one byte per scalar, so it carries that many scalars. Degree d has
+        // ((d+1)^2 - 1) higher-order bands × 3 RGB = total scalars per splat; divide by texel capacity.
+        const shTextureCount = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
         const mergedShData = AllocateShBuffers(shTextureCount, totalCount * _GaussianSplattingBytesPerShTexel);
 
         let shByteOffset = 0;
@@ -691,9 +696,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const shDegreeNew = hasSH ? Math.max(this._shDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
         if (hasSH && shDegreeNew > 0) {
-            const bytesPerTexel = 16;
-            const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / 16);
-            sh = AllocateShBuffers(shTextureCount, textureLength * bytesPerTexel);
+            // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
+            // bytes with one byte per scalar, so it carries that many scalars. Degree d has
+            // ((d+1)^2 - 1) higher-order bands × 3 RGB = total scalars per splat; divide by texel capacity.
+            const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
+            sh = AllocateShBuffers(shTextureCount, textureLength * _GaussianSplattingBytesPerShTexel);
         }
 
         // --- Incremental path: can we reuse the already-committed GPU region? ---
@@ -775,10 +782,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                                 this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                             }
                             if (sh && this._shData) {
-                                const bytesPerTexel = 16;
                                 for (let texIdx = 0; texIdx < sh.length; texIdx++) {
                                     if (texIdx < this._shData.length) {
-                                        sh[texIdx].set(this._shData[texIdx].subarray(0, part0Count * bytesPerTexel), 0);
+                                        sh[texIdx].set(this._shData[texIdx].subarray(0, part0Count * _GaussianSplattingBytesPerShTexel), 0);
                                     }
                                 }
                             }
@@ -813,10 +819,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                             this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                         }
                         if (sh && this._shData) {
-                            const bytesPerTexel = 16;
                             for (let texIdx = 0; texIdx < sh.length; texIdx++) {
                                 if (texIdx < this._shData.length) {
-                                    sh[texIdx].set(this._shData[texIdx].subarray(0, splatCountA * bytesPerTexel), 0);
+                                    sh[texIdx].set(this._shData[texIdx].subarray(0, splatCountA * _GaussianSplattingBytesPerShTexel), 0);
                                 }
                             }
                         }
