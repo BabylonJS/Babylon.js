@@ -2312,6 +2312,16 @@ export class ThinNativeEngine extends ThinEngine {
             return rtWrapper.samples;
         }
 
+        // Wrapped (External-source) textures carry an opaque external handle with unknown format/type.
+        // Recreating the underlying bgfx texture here would destroy the wrapped handle, breaking the
+        // consumer's ownership contract, and getNativeTextureFormat would throw on format=-1 anyway.
+        // Reject the request explicitly with a targeted error rather than failing deeper in the stack.
+        if (texture.source === InternalTextureSource.External) {
+            throw new Error(
+                "updateRenderTargetTextureSampleCount: changing MSAA samples is not supported on wrapped (External-source) textures. Dispose and re-wrap with the desired samples."
+            );
+        }
+
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const nativeTexture = texture._hardwareTexture.underlyingResource;
 

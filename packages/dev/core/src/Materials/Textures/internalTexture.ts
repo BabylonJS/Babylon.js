@@ -73,10 +73,13 @@ export const enum InternalTextureSource {
      */
     Depth,
     /**
-     * Texture is externally owned: the underlying graphics resource (WebGL handle,
-     * GPUTexture, native handle, etc.) is supplied and lifetime-managed by the host
-     * application via wrapWebGLTexture / wrapNativeTexture / wrapWebGPUTexture.
-     * Babylon owns only the wrapping InternalTexture, not the resource.
+     * Texture wraps an externally created graphics resource (WebGL handle, GPUTexture,
+     * native handle, etc.) supplied via wrap{WebGL,Native,WebGPU}Texture. On dispose,
+     * the wrapped resource is released along with the InternalTexture just like any
+     * other source. Consumers can repoint the wrapper at a fresh external handle
+     * (e.g., after context-loss / device-loss restore) via
+     * updateWrapped{WebGL,Native,WebGPU}Texture without losing references held by
+     * materials, render-target wrappers, particle systems, etc.
      */
     External,
 }
