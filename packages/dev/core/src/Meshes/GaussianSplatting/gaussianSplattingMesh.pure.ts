@@ -219,8 +219,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Extends the base hierarchy bounds to include proxy meshes. Proxies are not parented to
-     * the compound, so the base _children traversal never reaches them.
+     * Replaces the base hierarchy bounds computation for compound meshes: computes world bounds
+     * from scratch by iterating part 0's local AABB and all proxy meshes, rather than delegating
+     * to the base _children traversal which never reaches proxies (they are not parented to the
+     * compound). Visibility per-part is respected; invisible parts are excluded.
      * @param includeDescendants when true, includes descendants (default: true)
      * @param predicate optional filter predicate
      * @returns world-space min/max of the hierarchy bounding box
@@ -624,7 +626,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
         // bytes with one byte per scalar, so it carries that many scalars. Degree d has
-        // ((d+1)^2 - 1) higher-order bands × 3 RGB = total scalars per splat; divide by texel capacity.
+        // ((d+1)^2 - 1) higher-order coefficients × 3 RGB = total scalars per splat; divide by texel capacity.
         const shTextureCount = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
         const mergedShData = AllocateShBuffers(shTextureCount, totalCount * _GaussianSplattingBytesPerShTexel);
 
@@ -698,7 +700,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (hasSH && shDegreeNew > 0) {
             // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
             // bytes with one byte per scalar, so it carries that many scalars. Degree d has
-            // ((d+1)^2 - 1) higher-order bands × 3 RGB = total scalars per splat; divide by texel capacity.
+            // ((d+1)^2 - 1) higher-order coefficients × 3 RGB = total scalars per splat; divide by texel capacity.
             const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
             sh = AllocateShBuffers(shTextureCount, textureLength * _GaussianSplattingBytesPerShTexel);
         }
@@ -984,14 +986,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
             // Bounding info is updated via _updateBoundingInfoFromProxies (called below, after proxy
             // world matrices are known), which needs part 0's local-space AABB as an input:
-            //   • For unproxied part 0 (legacy layout where the compound mesh itself holds part 0's
-            //     geometry directly, so no _partProxies[0]), save the local-space AABB that was just
-            //     computed by the _makeSplat loop so _updateBoundingInfoFromProxies can include it.
+            //   • For unproxied part 0 (legacy layout A: compound loaded its own splat data before
+            //     any addPart call, so no _partProxies[0]), capture the local-space AABB from the
+            //     compound mesh's existing _boundingInfo — set when the mesh loaded its own data via
+            //     URL/updateData — so _updateBoundingInfoFromProxies can include part 0's geometry.
             //   • For proxied part 0, skip — its bounds are already on the proxy's getBoundingInfo()
             //     and _updateBoundingInfoFromProxies picks it up there.
             // Guard splatCountA > 0 avoids reading a stale bounding box on a fresh empty mesh.
-            // Guard !this._part0LocalMin ensures we only store once; subsequent addPart calls expand
-            // minimum/maximum to cover the whole merged dataset, not just part 0.
+            // Guard !this._part0LocalMin ensures we only store once; subsequent addPart calls must
+            // not overwrite it, because by then _boundingInfo reflects the full merged dataset.
             if (!this._partProxies[0] && splatCountA > 0 && !this._part0LocalMin) {
                 this._part0LocalMin = this.getBoundingInfo().minimum.clone();
                 this._part0LocalMax = this.getBoundingInfo().maximum.clone();
