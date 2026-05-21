@@ -1,5 +1,3 @@
-import { zip, unzip, strToU8, strFromU8, type Unzipped } from "fflate";
-
 // Side-effect import: registers the `.babylon` SceneLoader plugin so the
 // companion `.babylon` file produced by SerializeProject can be loaded back.
 // Without this, LoadAssetContainerAsync logs "Unable to find a plugin to
@@ -375,6 +373,7 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
         ...bundle.project,
         assets: projectAssets,
     };
+    const { zip, strToU8 } = await import("fflate");
     files["project.json"] = strToU8(JSON.stringify(projectWithBundledPaths, null, 2));
 
     // Create the zip (async — runs in a Web Worker to avoid blocking the UI thread)
@@ -393,7 +392,8 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
  */
 export async function LoadProjectFileAsync(scene: Scene, zipFile: File): Promise<void> {
     const arrayBuffer = await zipFile.arrayBuffer();
-    const extracted = await new Promise<Unzipped>((resolve, reject) => {
+    const { unzip, strFromU8 } = await import("fflate");
+    const extracted = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
         unzip(new Uint8Array(arrayBuffer), (err, data) => (err ? reject(err) : resolve(data)));
     });
 
