@@ -122,6 +122,7 @@ export const BaseControlProperties: Record<string, IPropertyInfo> = {
 
 /**
  * Full catalog of GUI control types.
+ * Control is the base class, and LinearGradient/RadialGradient are paint helpers rather than controls.
  */
 export const ControlRegistry: Record<string, IControlTypeInfo> = {
     // ─── Containers ───────────────────────────────────────────────────
@@ -423,6 +424,27 @@ export const ControlRegistry: Record<string, IControlTypeInfo> = {
         },
     },
 
+    Scrollbar: {
+        className: "Scrollbar",
+        category: "Input",
+        description: "A scrollbar control for selecting a numeric value, commonly used for custom scrolling interfaces.",
+        isContainer: false,
+        properties: {
+            minimum: { description: "Minimum value", type: "number", defaultValue: 0 },
+            maximum: { description: "Maximum value", type: "number", defaultValue: 100 },
+            value: { description: "Current value", type: "number", defaultValue: 50 },
+            step: { description: "Value step", type: "number", defaultValue: 0 },
+            isVertical: { description: "Render vertically", type: "boolean", defaultValue: false },
+            thumbWidth: { description: "Thumb width (e.g. '20px')", type: "string" },
+            background: { description: "Track background color", type: "string", defaultValue: "black" },
+            borderColor: { description: "Track border color", type: "string", defaultValue: "white" },
+            thumbColor: { description: "Thumb color", type: "string" },
+            invertScrollDirection: { description: "Invert scroll direction", type: "boolean", defaultValue: false },
+        },
+    },
+
+    // ImageScrollBar is exported by GUI, but is not registered for GUI serialization, so it is not an MCP-creatable catalog entry.
+
     // ─── Image ────────────────────────────────────────────────────────
     Image: {
         className: "Image",
@@ -467,6 +489,18 @@ export const ControlRegistry: Record<string, IControlTypeInfo> = {
             x2: { description: "End X coordinate", type: "number" },
             y2: { description: "End Y coordinate", type: "number" },
             lineWidth: { description: "Line thickness", type: "number", defaultValue: 1 },
+            dash: { description: "Dash pattern as JSON array e.g. [5, 10]", type: "object" },
+        },
+    },
+
+    MultiLine: {
+        className: "MultiLine",
+        category: "Shape",
+        description: "Draws a polyline made of multiple connected points.",
+        isContainer: false,
+        properties: {
+            lineWidth: { description: "Line thickness", type: "number", defaultValue: 1 },
+            color: { description: "Line color", type: "string", defaultValue: "white" },
             dash: { description: "Dash pattern as JSON array e.g. [5, 10]", type: "object" },
         },
     },

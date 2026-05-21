@@ -43,6 +43,7 @@ export interface IBlockTypeInfo {
 /**
  * Full catalog of block types. This is the canonical reference an AI agent uses
  * to know which blocks exist and what ports they have.
+ * NodeParticleBlock is the non-creatable base class; the catalog exposes its concrete subclasses only.
  */
 export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     // ═══════════════════════════════════════════════════════════════════════

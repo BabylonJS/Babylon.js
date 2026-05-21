@@ -87,6 +87,8 @@ export interface IBlockTypeInfo {
 
 // ─── Catalog ──────────────────────────────────────────────────────────────────
 
+// Base blocks such as NodeRenderGraphBaseObjectRendererBlock, NodeRenderGraphBasePostProcessBlock,
+// NodeRenderGraphBaseWithPropertiesPostProcessBlock, and NodeRenderGraphBaseShadowGeneratorBlock are not creatable catalog entries.
 export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     // ═══════════════════════════════════════════════════════════════════════
     //  Input / Output

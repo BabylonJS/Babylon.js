@@ -214,6 +214,56 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         config: { stopPropagation: "boolean", targetMesh: "AbstractMesh reference" },
     },
 
+    KeyDownEvent: {
+        className: "FlowGraphKeyDownEventBlock",
+        category: "Event",
+        description: "Triggers when a keyboard key is pressed down. Can optionally ignore auto-repeat events.",
+        signalInputs: [{ name: "in" }],
+        signalOutputs: [
+            { name: "out", description: "Fires once at graph startup (initialization)" },
+            { name: "done", description: "Fires each time the matching key-down event occurs. USE THIS for keyboard logic." },
+            { name: "error" },
+        ],
+        dataInputs: [{ name: "key", type: "string", description: "KeyboardEvent.code value to match, such as KeyA or Space. Leave empty for any key.", isOptional: true }],
+        dataOutputs: [
+            { name: "keyCode", type: "string", description: "KeyboardEvent.code for the pressed key" },
+            { name: "keyValue", type: "string", description: "KeyboardEvent.key for the pressed key" },
+            { name: "shiftKey", type: "boolean", description: "Whether Shift was held" },
+            { name: "ctrlKey", type: "boolean", description: "Whether Ctrl was held" },
+            { name: "altKey", type: "boolean", description: "Whether Alt/Option was held" },
+            { name: "metaKey", type: "boolean", description: "Whether Meta/Cmd/Windows key was held" },
+            { name: "commandOrCtrl", type: "boolean", description: "Whether the platform command modifier was held" },
+            { name: "isRepeat", type: "boolean", description: "True when this key-down event is an auto-repeat event" },
+        ],
+        config: {
+            stopPropagation: "boolean — whether to stop event propagation",
+            ignoreRepeat: "boolean — when true, ignores auto-repeat key-down events",
+        },
+    },
+
+    KeyUpEvent: {
+        className: "FlowGraphKeyUpEventBlock",
+        category: "Event",
+        description: "Triggers when a keyboard key is released.",
+        signalInputs: [{ name: "in" }],
+        signalOutputs: [
+            { name: "out", description: "Fires once at graph startup (initialization)" },
+            { name: "done", description: "Fires each time the matching key-up event occurs. USE THIS for keyboard logic." },
+            { name: "error" },
+        ],
+        dataInputs: [{ name: "key", type: "string", description: "KeyboardEvent.code value to match, such as KeyA or Space. Leave empty for any key.", isOptional: true }],
+        dataOutputs: [
+            { name: "keyCode", type: "string", description: "KeyboardEvent.code for the released key" },
+            { name: "keyValue", type: "string", description: "KeyboardEvent.key for the released key" },
+            { name: "shiftKey", type: "boolean", description: "Whether Shift was held" },
+            { name: "ctrlKey", type: "boolean", description: "Whether Ctrl was held" },
+            { name: "altKey", type: "boolean", description: "Whether Alt/Option was held" },
+            { name: "metaKey", type: "boolean", description: "Whether Meta/Cmd/Windows key was held" },
+            { name: "commandOrCtrl", type: "boolean", description: "Whether the platform command modifier was held" },
+        ],
+        config: { stopPropagation: "boolean — whether to stop event propagation" },
+    },
+
     PhysicsCollisionEvent: {
         className: "FlowGraphPhysicsCollisionEventBlock",
         category: "Event",
@@ -744,6 +794,23 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "userVariables", type: "any", description: "All user variables as a dictionary" },
             { name: "executionId", type: "number", description: "Current execution ID" },
         ],
+    },
+
+    IsKeyPressed: {
+        className: "FlowGraphIsKeyPressedBlock",
+        category: "Utility",
+        description: "Outputs whether a keyboard key is currently held down, optionally requiring modifier keys.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "key", type: "string", description: "KeyboardEvent.code value to check, such as KeyA, Space, ShiftLeft, or ControlLeft" },
+            { name: "withShift", type: "boolean", description: "Require Shift to also be held", isOptional: true },
+            { name: "withCtrl", type: "boolean", description: "Require Ctrl to also be held", isOptional: true },
+            { name: "withAlt", type: "boolean", description: "Require Alt/Option to also be held", isOptional: true },
+            { name: "withMeta", type: "boolean", description: "Require Meta/Cmd/Windows key to also be held", isOptional: true },
+            { name: "withCommandOrCtrl", type: "boolean", description: "Require Cmd on macOS or Ctrl on Windows/Linux", isOptional: true },
+        ],
+        dataOutputs: [{ name: "isPressed", type: "boolean", description: "True when the requested key and modifiers are currently held" }],
     },
 
     ArrayIndex: {

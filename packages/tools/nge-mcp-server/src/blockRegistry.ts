@@ -377,6 +377,23 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         defaultSerializedProperties: { evaluateContext: false, cap: 3 },
     },
 
+    BevelBlock: {
+        className: "BevelBlock",
+        category: "Geometry",
+        description: "Bevels geometry edges by a configurable amount, segment count, and angle threshold.",
+        inputs: [
+            { name: "geometry", type: "Geometry" },
+            { name: "amount", type: "Float", isOptional: true },
+            { name: "segments", type: "Int", isOptional: true },
+            { name: "angle", type: "Float", isOptional: true },
+        ],
+        outputs: [{ name: "output", type: "Geometry" }],
+        properties: {
+            evaluateContext: "boolean — whether to re-evaluate inputs per context (default: false)",
+        },
+        defaultSerializedProperties: { evaluateContext: false },
+    },
+
     SubdivideBlock: {
         className: "SubdivideBlock",
         category: "Geometry",
@@ -589,6 +606,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     // ═══════════════════════════════════════════════════════════════════════
     //  Instancing
     // ═══════════════════════════════════════════════════════════════════════
+    // InstantiateBaseBlock is abstract; expose only the concrete instancing blocks.
     InstantiateBlock: {
         className: "InstantiateBlock",
         category: "Instance",
