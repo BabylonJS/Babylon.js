@@ -2062,7 +2062,8 @@ export class ThinNativeEngine extends ThinEngine {
                 continue;
             }
             const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
-            this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
+            // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
+            // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
             nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
                 texture,
                 rtWrapper.width,
@@ -2349,7 +2350,8 @@ export class ThinNativeEngine extends ThinEngine {
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
         this._engine.initializeTexture(nativeTexture, texture.baseWidth, texture.baseHeight, hasMips, nativeTextureFormat, /*renderTarget*/ true, texture._useSRGBBuffer, samples);
 
-        this._releaseFramebufferObjects(nativeRTWrapper._framebuffer);
+        // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
+        // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
         nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
             nativeTexture,
             texture.baseWidth,
