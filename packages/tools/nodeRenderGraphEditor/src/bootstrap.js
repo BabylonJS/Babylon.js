@@ -1,11 +1,20 @@
+/* eslint-disable no-console */
 /* global BABYLON */
+import { ParseDataSnippetResponse } from "@tools/snippet-loader/parseDataSnippetResponse";
+
 var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
 let previousHash = "";
-let nodeGeometry;
+let nodeRenderGraph;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
+
+if (window.location.search.indexOf("webgpu") !== -1) {
+    localStorage.setItem("Engine", 1);
+}
+
+let useWebGPU = localStorage.getItem("Engine") === "1";
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
@@ -37,17 +46,8 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 const Versions = {
-    dist: [
-        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
-        "https://preview.babylonjs.com/babylon.js",
-        "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
-        "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
-    ],
-    local: [
-        `//${window.location.hostname}:${cdnPort}/babylon.js`,
-        `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`,
-        `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`,
-    ],
+    dist: ["https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), "https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"],
+    local: [`//${window.location.hostname}:${cdnPort}/babylon.js`, `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`],
 };
 
 let loadInSequence = async function (versions, index, resolve) {
@@ -108,7 +108,7 @@ let checkBabylonVersionAsync = function () {
 };
 
 checkBabylonVersionAsync().then(() => {
-    loadScriptAsync("babylon.nodeGeometryEditor.js").then(() => {
+    loadScriptAsync("babylon.nodeRenderGraphEditor.js").then(() => {
         let customLoadObservable = new BABYLON.Observable();
         let editorDisplayed = false;
 
@@ -122,42 +122,55 @@ checkBabylonVersionAsync().then(() => {
             location.hash = splits.join("#");
         };
 
-        let checkHash = function () {
-            if (location.hash) {
-                if (previousHash != location.hash) {
-                    cleanHash();
+        let loadSnippetFromHashAsync = function () {
+            cleanHash();
+            previousHash = location.hash;
 
-                    previousHash = location.hash;
+            return new Promise((resolve, reject) => {
+                let hash = location.hash.substr(1);
+                currentSnippetToken = hash.split("#")[0];
 
-                    try {
-                        let xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
-                            if (xmlHttp.readyState == 4) {
-                                if (xmlHttp.status == 200) {
-                                    let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                                    let serializationObject = JSON.parse(snippet.nodeGeometry);
-
-                                    if (editorDisplayed) {
-                                        customLoadObservable.notifyObservers(serializationObject);
-                                    } else {
-                                        nodeGeometry.loadFromSerialization(serializationObject);
-                                        try {
-                                            nodeGeometry.build(true);
-                                        } catch (err) {
-                                            // Swallow the error here
-                                        }
-                                        showEditor();
-                                    }
-                                }
+                let xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4) {
+                        if (xmlHttp.status == 200) {
+                            try {
+                                let snippet = ParseDataSnippetResponse(JSON.parse(xmlHttp.responseText), hash, "nodeRenderGraph");
+                                resolve(snippet.data);
+                            } catch (err) {
+                                reject(err);
                             }
-                        };
+                        } else {
+                            reject(new Error(`Unable to load node render graph snippet ${hash}`));
+                        }
+                    }
+                };
+                xmlHttp.onerror = function () {
+                    reject(new Error(`Unable to load node render graph snippet ${hash}`));
+                };
+                xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                xmlHttp.send();
+            });
+        };
 
-                        let hash = location.hash.substr(1);
-                        currentSnippetToken = hash.split("#")[0];
-                        xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
-                        xmlHttp.send();
-                    } catch (e) {}
-                }
+        let applySerializedGraphAsync = async function (serializationObject) {
+            nodeRenderGraph.parseSerializedObject(serializationObject);
+            try {
+                await nodeRenderGraph.buildAsync();
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        let checkHash = function () {
+            if (location.hash && previousHash != location.hash) {
+                loadSnippetFromHashAsync()
+                    .then((serializationObject) => {
+                        customLoadObservable.notifyObservers(serializationObject);
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
             }
 
             setTimeout(checkHash, 200);
@@ -167,12 +180,12 @@ checkBabylonVersionAsync().then(() => {
             editorDisplayed = true;
             let hostElement = document.getElementById("host-element");
 
-            BABYLON.NodeGeometryEditor.Show({
-                nodeGeometry: nodeGeometry,
+            BABYLON.NodeRenderGraphEditor.Show({
+                nodeRenderGraph: nodeRenderGraph,
                 hostElement: hostElement,
                 customLoadObservable: customLoadObservable,
                 customSave: {
-                    label: "Save as unique URL (*)",
+                    label: "Save as unique URL",
                     action: (data) => {
                         return new Promise((resolve, reject) => {
                             let xmlHttp = new XMLHttpRequest();
@@ -189,11 +202,7 @@ checkBabylonVersionAsync().then(() => {
                                         location.href = newUrl;
                                         resolve();
                                     } else {
-                                        reject(
-                                            `Unable to save your node geometry. It may be too large (${(dataToSend.payload.length / 1024).toFixed(
-                                                2
-                                            )} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`
-                                        );
+                                        reject(`Unable to save your node render graph. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB).`);
                                     }
                                 }
                             };
@@ -203,7 +212,7 @@ checkBabylonVersionAsync().then(() => {
 
                             let dataToSend = {
                                 payload: JSON.stringify({
-                                    nodeGeometry: data,
+                                    nodeRenderGraph: data,
                                 }),
                                 name: "",
                                 description: "",
@@ -216,22 +225,55 @@ checkBabylonVersionAsync().then(() => {
                 },
             });
         };
-        // Let's start
-        if (BABYLON.Engine.isSupported()) {
-            let canvas = document.createElement("canvas");
-            let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
-            let scene = new BABYLON.Scene(engine);
-            new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
 
-            nodeGeometry = new BABYLON.NodeGeometry("node");
-            nodeGeometry.setToDefault();
-            nodeGeometry.build();
+        let startAsync = async function () {
+            if (BABYLON.Engine.isSupported()) {
+                let canvas = document.createElement("canvas");
+                canvas.width = 1;
+                canvas.height = 1;
 
-            showEditor();
-        } else {
-            alert("Babylon.js is not supported.");
-        }
+                let engine;
 
-        checkHash();
+                if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync)) {
+                    engine = new BABYLON.WebGPUEngine(canvas, {
+                        enableGPUDebugMarkers: true,
+                        enableAllFeatures: true,
+                        setMaximumLimits: true,
+                    });
+                    await engine.initAsync();
+                } else {
+                    localStorage.setItem("Engine", 0);
+                    useWebGPU = false;
+                    engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
+                }
+
+                let scene = new BABYLON.Scene(engine);
+                new BABYLON.Camera("camera", new BABYLON.Vector3(0, 0, 0), scene);
+                new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
+                new BABYLON.DirectionalLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
+
+                nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
+                if (location.hash) {
+                    try {
+                        await applySerializedGraphAsync(await loadSnippetFromHashAsync());
+                    } catch (err) {
+                        console.error(err);
+                        nodeRenderGraph.setToDefault();
+                        await nodeRenderGraph.buildAsync();
+                    }
+                } else {
+                    nodeRenderGraph.setToDefault();
+                    await nodeRenderGraph.buildAsync();
+                }
+
+                showEditor();
+            } else {
+                alert("Babylon.js is not supported.");
+            }
+
+            checkHash();
+        };
+
+        startAsync();
     });
 });

@@ -22,6 +22,42 @@ async function getGraphNodeCount(page: import("@playwright/test").Page) {
     });
 }
 
+async function createSnippetSerialization(browser: import("@playwright/test").Browser, editorUrl: string, globalName: string, blockIndex: number, blockName: string) {
+    const page = await browser.newPage();
+    try {
+        await page.goto(editorUrl, {
+            waitUntil: "load",
+        });
+        await page.setViewportSize({
+            width: 1920,
+            height: 1080,
+        });
+        await page.waitForSelector("#graph-canvas-container", { state: "attached" });
+
+        return await page.evaluate(`(() => {
+            const editorObject =
+                {
+                    nodeGeometry: globalThis.__viteNodeGeometryEditorArgs?.[0]?.nodeGeometry,
+                    nodeRenderGraph: globalThis.__viteNodeRenderGraphEditorArgs?.[0]?.nodeRenderGraph,
+                    nodeParticleSet: globalThis.__viteNodeParticleEditorArgs?.[0]?.nodeParticleSet,
+                }[${JSON.stringify(globalName)}] ?? globalThis[${JSON.stringify(globalName)}];
+            const serialization = editorObject.serialize();
+            serialization.blocks[${blockIndex}].name = ${JSON.stringify(blockName)};
+            return serialization;
+        })()`);
+    } finally {
+        await page.close();
+    }
+}
+
+function createSnippetServerResponse(payloadKey: string, serializationObject: unknown) {
+    return JSON.stringify({
+        jsonPayload: JSON.stringify({
+            [payloadKey]: JSON.stringify(serializationObject),
+        }),
+    });
+}
+
 async function dragPaletteItemToGraph(page: import("@playwright/test").Page, nodeListSelector: string, displayText: string, targetPosition = { x: 420, y: 140 }) {
     const filterInput = page.locator(`${nodeListSelector} input[type='text']`).first();
     await filterInput.fill(displayText);
@@ -99,6 +135,28 @@ test("NGE is loaded correctly", async ({ page }) => {
     await expect(page.locator(".nge-right-panel")).toBeVisible();
 });
 
+test("NGE loads the graph from the URL snippet", async ({ page, browser }) => {
+    const serialization = await createSnippetSerialization(browser, ngeUrl, "nodeGeometry", 1, "Snippet Box");
+    await page.route("https://snippet.babylonjs.com/NGELOAD/1", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: createSnippetServerResponse("nodeGeometry", serialization),
+        });
+    });
+
+    await page.goto(`${ngeUrl}#NGELOAD#1`, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+
+    const graph = page.locator("#graph-canvas-container");
+    await expect(graph.getByText("Snippet Box")).toBeVisible();
+});
+
 test("GUIEditor is loaded", async ({ page }) => {
     await page.goto(guiUrl, {
         waitUntil: "load",
@@ -127,6 +185,28 @@ test("NRGE is loaded correctly", async ({ page }) => {
     await expect(page.locator(".nrge-right-panel")).toBeVisible();
 });
 
+test("NRGE loads the graph from the URL snippet", async ({ page, browser }) => {
+    const serialization = await createSnippetSerialization(browser, nrgeUrl, "nodeRenderGraph", 0, "Snippet Render Graph Output");
+    await page.route("https://snippet.babylonjs.com/NRGELOAD/1", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: createSnippetServerResponse("nodeRenderGraph", serialization),
+        });
+    });
+
+    await page.goto(`${nrgeUrl}#NRGELOAD#1`, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+
+    const graph = page.locator("#graph-canvas-container");
+    await expect(graph.getByText("Snippet Render Graph Output")).toBeVisible();
+});
+
 test("NPE is loaded correctly", async ({ page }) => {
     await page.goto(npeUrl, {
         waitUntil: "load",
@@ -140,6 +220,28 @@ test("NPE is loaded correctly", async ({ page }) => {
     await expect(page.locator("#npeNodeList")).toBeVisible();
     await expect(page.locator(".npe-right-panel")).toBeVisible();
     await expect(page.locator(".wait-screen")).toHaveClass(/hidden/);
+});
+
+test("NPE loads the graph from the URL snippet", async ({ page, browser }) => {
+    const serialization = await createSnippetSerialization(browser, npeUrl, "nodeParticleSet", 0, "Snippet Particle System");
+    await page.route("https://snippet.babylonjs.com/NPELOAD/1", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: createSnippetServerResponse("nodeParticle", serialization),
+        });
+    });
+
+    await page.goto(`${npeUrl}#NPELOAD#1`, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+
+    const graph = page.locator("#graph-canvas-container");
+    await expect(graph.getByText("Snippet Particle System")).toBeVisible();
 });
 
 test("FGE is loaded correctly", async ({ page }) => {

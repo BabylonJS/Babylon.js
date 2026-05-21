@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "files": {
+        "Buffers/buffer.align.ts": ["top-level-call"],
+        "Buffers/buffer.align.types.ts": ["declare-module"],
+        "Buffers/buffer.ts": ["top-level-call"],
+        "Buffers/buffer.types.ts": ["declare-module"],
+        "Buffers/index.ts": ["bare-import"]
+    }
+}

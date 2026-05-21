@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "files": {
+        "Layers/effectLayerSceneComponent.ts": ["top-level-call"],
+        "Layers/glowLayer.ts": ["top-level-call"],
+        "Layers/glowLayer.types.ts": ["declare-module"],
+        "Layers/highlightLayer.ts": ["top-level-call"],
+        "Layers/highlightLayer.types.ts": ["declare-module"],
+        "Layers/selectionOutlineLayer.ts": ["top-level-call"],
+        "Layers/selectionOutlineLayer.types.ts": ["declare-module"]
+    }
+}

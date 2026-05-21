@@ -21,6 +21,7 @@ export * from "./KHR_materials_fuzz";
 export * from "./KHR_materials_specular";
 export * from "./KHR_materials_ior";
 export * from "./KHR_materials_variants";
+export * from "./transmissionHelper";
 export * from "./KHR_materials_transmission";
 export * from "./KHR_materials_diffuse_transmission";
 export * from "./KHR_materials_volume";
