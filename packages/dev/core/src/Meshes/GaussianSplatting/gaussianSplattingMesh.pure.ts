@@ -6,7 +6,7 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
-import { GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase.pure";
+import { GaussianSplattingMeshBase, AllocateShTextures } from "./gaussianSplattingMeshBase.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
@@ -628,10 +628,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         const shTextureCountRetain = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / 16);
-        const mergedShData: Uint8Array[] = [];
-        for (let textureIndex = 0; textureIndex < shTextureCountRetain; textureIndex++) {
-            mergedShData.push(new Uint8Array(totalCount * _GaussianSplattingBytesPerShTexel));
-        }
+        const mergedShData = AllocateShTextures(shTextureCountRetain, totalCount * _GaussianSplattingBytesPerShTexel);
 
         let shByteOffset = 0;
         if (this._shData && existingVertexCount > 0) {
@@ -703,10 +700,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (hasSH && shDegreeNew > 0) {
             const bytesPerTexel = 16;
             const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / 16);
-            sh = [];
-            for (let i = 0; i < shTextureCount; i++) {
-                sh.push(new Uint8Array(textureLength * bytesPerTexel));
-            }
+            sh = AllocateShTextures(shTextureCount, textureLength * bytesPerTexel);
         }
 
         // --- Incremental path: can we reuse the already-committed GPU region? ---
@@ -938,6 +932,34 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         try {
             // --- Upload to GPU ---
             if (incremental) {
+                // When the SH degree increases (e.g. adding a degree-4 part to a compound that
+                // already has degree-3 parts), _shTextures has fewer entries than sh. Create and
+                // upload the missing GPU textures now from this._shData, which was fully merged by
+                // _retainMergedPartData above. Existing splats' rows are zero in the new bands
+                // (correct — they had no higher-order coefficients). _updateSubTextures below then
+                // re-uploads only the new rows for all bands, which is harmlessly redundant for
+                // the newly created textures.
+                if (sh && this._shTextures && sh.length > this._shTextures.length && this._shData) {
+                    while (this._shTextures.length < sh.length) {
+                        const idx = this._shTextures.length;
+                        const shTexture = new RawTexture(
+                            null,
+                            textureSize.x,
+                            textureSize.y,
+                            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+                            this._scene,
+                            false,
+                            false,
+                            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+                        );
+                        shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        this._shTextures.push(shTexture);
+                        this._updateShTextureData(shTexture, this._shData[idx], textureSize.x, 0, textureSize.y);
+                    }
+                }
+
                 // Update the part-indices texture (handles both create and update-in-place).
                 // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
                 // second+ addPart the partIndices would be stale without this call.

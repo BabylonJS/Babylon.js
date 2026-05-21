@@ -1,5 +1,6 @@
 import { type Scene } from "core/scene";
 import { type IParsedSplat, Mode } from "./splatDefs";
+import { AllocateShTextures } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { Scalar } from "core/Maths/math.scalar";
 import { type AbstractEngine } from "core/Engines";
 
@@ -300,17 +301,10 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
         const textureCount = Math.ceil(shComponentCount / 16); // 4 components can be stored per texture, 4 sh per component
         //let shIndexRead = byteOffset;
 
-        // sh is an array of uint8array that will be used to create sh textures
-        const sh: Uint8Array[] = [];
-
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
-        // create array for the number of textures needed.
-        for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-            const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
-            sh.push(texture);
-        }
+        const sh = AllocateShTextures(textureCount, height * width * 4 * 4);
 
         if (data.version === 2) {
             if (!data.shN.codebook) {
