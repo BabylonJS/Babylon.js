@@ -892,9 +892,7 @@ export class Engine extends ThinEngine {
                 // The depth/stencil texture's GL handle was also lost on context restore. Rebuilding it from the
                 // wrapper's stored depth settings + re-attaching is feasible but non-trivial; v1 rejects and asks
                 // the caller to dispose + re-wrap (which also recreates the depth/stencil texture via the public API).
-                throw new Error(
-                    "updateWrappedWebGLTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap."
-                );
+                throw new Error("updateWrappedWebGLTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap.");
             }
         }
 

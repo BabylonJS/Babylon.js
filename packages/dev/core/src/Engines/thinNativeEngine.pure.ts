@@ -2046,9 +2046,7 @@ export class ThinNativeEngine extends ThinEngine {
                 // After a DisableRendering / EnableRendering cycle the bgfx framebuffer + the depth/stencil texture's
                 // bgfx handle are both stale. Rebuilding the depth/stencil texture from the wrapper's stored settings
                 // is feasible but non-trivial; v1 rejects and asks the caller to dispose + re-wrap.
-                throw new Error(
-                    "updateWrappedNativeTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap."
-                );
+                throw new Error("updateWrappedNativeTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap.");
             }
         }
 
