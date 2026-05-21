@@ -484,7 +484,7 @@ test.describe("Flow Graph Editor — Loading", () => {
 
         // Check that key categories exist in the palette
         for (const category of ["Events", "Control Flow", "Math", "Data Access", "Utility"]) {
-            await expect(fge.nodeList.getByText(category, { exact: false }).first()).toBeVisible();
+            await expect(page.getByText(category, { exact: false }).first()).toBeVisible();
         }
     });
 });
@@ -1646,7 +1646,7 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
         expect((await fge.getGraphTopology()).totalConnections).toBe(2);
 
         const downloadPromise = page.waitForEvent("download");
-        await fge.rightPanel.getByRole("button", { name: "Save", exact: true }).click();
+        await page.getByRole("button", { name: "Save", exact: true }).click();
         const download = await downloadPromise;
         const downloadPath = await download.path();
         if (!downloadPath) {
