@@ -45,6 +45,7 @@ export interface IBlockTypeInfo {
 /**
  * Full catalog of block types. This is the canonical reference an AI agent uses
  * to know which blocks exist and what ports they have.
+ * BaseMathBlock and ReflectionTextureBaseBlock are non-creatable base classes; the catalog exposes their concrete subclasses only.
  */
 export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     // ─── Input ────────────────────────────────────────────────────────────
