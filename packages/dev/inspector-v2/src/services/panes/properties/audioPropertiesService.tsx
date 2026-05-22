@@ -1,14 +1,38 @@
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Sound } from "core/Audio/sound";
-import { SoundCommandProperties, SoundGeneralProperties } from "../../../components/properties/audio/soundProperties";
+import { AbstractAudioBus } from "core/AudioV2/abstractAudio/abstractAudioBus";
+import { AbstractSound } from "core/AudioV2/abstractAudio/abstractSound";
+import { AbstractSoundSource } from "core/AudioV2/abstractAudio/abstractSoundSource";
+import { AudioBus } from "core/AudioV2/abstractAudio/audioBus";
+import { AudioEngineV2 } from "core/AudioV2/abstractAudio/audioEngineV2";
+import { StaticSound } from "core/AudioV2/abstractAudio/staticSound";
+import { StreamingSound } from "core/AudioV2/abstractAudio/streamingSound";
 
-export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+import { SoundCommandProperties, SoundGeneralProperties } from "../../../components/properties/audio/soundProperties";
+import { AudioV2SpatialAttachmentProperties } from "../../../components/properties/audio/audioV2SpatialProperties";
+import {
+    AudioV2AudioBusGeneralProperties,
+    AudioV2BusGeneralProperties,
+    AudioV2EngineCommandsProperties,
+    AudioV2EngineGeneralProperties,
+    AudioV2EngineListenerProperties,
+    AudioV2SoundCommandsProperties,
+    AudioV2SoundGeneralProperties,
+    AudioV2SoundPlaybackProperties,
+    AudioV2SoundSourceGeneralProperties,
+    AudioV2StaticSoundPlaybackProperties,
+    AudioV2StreamingSoundPreloadProperties,
+} from "../../../components/properties/audio/audioV2Properties";
+
+export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Audio Properties",
-    consumes: [PropertiesServiceIdentity],
-    factory: (propertiesService) => {
-        const soundContentRegistration = propertiesService.addSectionContent({
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, selectionService) => {
+        // --- v1 Sound ---
+        const soundV1ContentRegistration = propertiesService.addSectionContent({
             key: "Sound General Properties",
             predicate: (entity: unknown) => entity instanceof Sound,
             content: [
@@ -23,9 +47,129 @@ export const AudioPropertiesServiceDefinition: ServiceDefinition<[], [IPropertie
             ],
         });
 
+        // --- v2 AudioEngineV2 ---
+        const engineV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Engine Properties",
+            predicate: (entity: unknown): entity is AudioEngineV2 => entity instanceof AudioEngineV2,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <AudioV2EngineGeneralProperties engine={context} />,
+                },
+                {
+                    section: "Listener",
+                    component: ({ context }) => <AudioV2EngineListenerProperties engine={context} selectionService={selectionService} />,
+                },
+                {
+                    section: "Commands",
+                    component: ({ context }) => <AudioV2EngineCommandsProperties engine={context} />,
+                },
+            ],
+        });
+
+        // --- v2 Buses (any AbstractAudioBus — covers Main + Audio) ---
+        const busV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Bus Properties",
+            predicate: (entity: unknown): entity is AbstractAudioBus => entity instanceof AbstractAudioBus,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <AudioV2BusGeneralProperties bus={context} />,
+                },
+            ],
+        });
+
+        // --- v2 AudioBus (non-main bus; adds an Output Bus link) ---
+        const audioBusV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 AudioBus Properties",
+            predicate: (entity: unknown): entity is AudioBus => entity instanceof AudioBus,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <AudioV2AudioBusGeneralProperties bus={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
+        // --- v2 Sounds (Static + Streaming) ---
+        const soundV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Sound Properties",
+            predicate: (entity: unknown): entity is AbstractSound => entity instanceof AbstractSound,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <AudioV2SoundGeneralProperties sound={context} selectionService={selectionService} />,
+                },
+                {
+                    section: "Playback",
+                    component: ({ context }) => <AudioV2SoundPlaybackProperties sound={context} />,
+                },
+                {
+                    section: "Commands",
+                    component: ({ context }) => <AudioV2SoundCommandsProperties sound={context} />,
+                },
+            ],
+        });
+
+        // --- v2 StaticSound (extra playback properties) ---
+        const staticSoundV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Static Sound Properties",
+            predicate: (entity: unknown): entity is StaticSound => entity instanceof StaticSound,
+            content: [
+                {
+                    section: "Playback",
+                    component: ({ context }) => <AudioV2StaticSoundPlaybackProperties sound={context} />,
+                },
+            ],
+        });
+
+        // --- v2 StreamingSound (preload status) ---
+        const streamingSoundV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Streaming Sound Properties",
+            predicate: (entity: unknown): entity is StreamingSound => entity instanceof StreamingSound,
+            content: [
+                {
+                    section: "Streaming",
+                    component: ({ context }) => <AudioV2StreamingSoundPreloadProperties sound={context} />,
+                },
+            ],
+        });
+
+        // --- v2 Sound Sources (microphone, audio-node) — non-Sound only ---
+        const soundSourceV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Sound Source Properties",
+            predicate: (entity: unknown): entity is AbstractSoundSource => entity instanceof AbstractSoundSource && !(entity instanceof AbstractSound),
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <AudioV2SoundSourceGeneralProperties source={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
+        // --- v2 Spatial attachment (any AbstractSoundSource currently spatial) ---
+        const spatialV2ContentRegistration = propertiesService.addSectionContent({
+            key: "Audio V2 Spatial Properties",
+            predicate: (entity: unknown): entity is AbstractSoundSource => entity instanceof AbstractSoundSource && entity._isSpatial,
+            content: [
+                {
+                    section: "Spatial",
+                    component: ({ context }) => <AudioV2SpatialAttachmentProperties source={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
-                soundContentRegistration.dispose();
+                soundV1ContentRegistration.dispose();
+                engineV2ContentRegistration.dispose();
+                busV2ContentRegistration.dispose();
+                audioBusV2ContentRegistration.dispose();
+                soundV2ContentRegistration.dispose();
+                staticSoundV2ContentRegistration.dispose();
+                streamingSoundV2ContentRegistration.dispose();
+                soundSourceV2ContentRegistration.dispose();
+                spatialV2ContentRegistration.dispose();
             },
         };
     },

@@ -5,7 +5,7 @@ import { type AbstractSound } from "../abstractAudio/abstractSound";
 import { SoundState } from "../soundState";
 import { type AbstractSoundSource, type ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import { type AudioBus, type IAudioBusOptions } from "../abstractAudio/audioBus";
-import { type AudioEngineV2State, type IAudioEngineV2Options, AudioEngineV2 } from "../abstractAudio/audioEngineV2";
+import { type AudioEngineV2State, type IAudioEngineV2Options, AudioEngineV2, OnAudioEngineV2CreatedObservable } from "../abstractAudio/audioEngineV2";
 import { type IMainAudioBusOptions, type MainAudioBus } from "../abstractAudio/mainAudioBus";
 import { type IStaticSoundOptions, type StaticSound } from "../abstractAudio/staticSound";
 import { type IStaticSoundBufferOptions, type StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
@@ -55,6 +55,7 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
 export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOptions> = {}): Promise<AudioEngineV2> {
     const engine = new _WebAudioEngine(options);
     await engine._initAsync(options);
+    OnAudioEngineV2CreatedObservable.notifyObservers(engine);
     return engine;
 }
 
