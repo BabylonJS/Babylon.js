@@ -7,7 +7,7 @@ import { SpriteNode } from "../../src/nodes/spriteNode";
 import { ControlNode } from "../../src/nodes/controlNode";
 import { Node } from "../../src/nodes/node";
 import { type RawElement, type RawLottieAnimation, type RawShapeLayer, type RawTextJustify, type RawTextLayer, type RawTransform } from "../../src/parsing/rawTypes";
-import { type AnimationConfiguration } from "../../src/animationConfiguration";
+import { type AnimationConfiguration, type AnimationConfigurationOptions, UpdateConfiguration } from "../../src/animationConfiguration";
 
 // Minimal valid transform with a configurable anchor point.
 function makeTransform(anchorPoint: number[] = [0, 0]): RawTransform {
@@ -80,9 +80,8 @@ function makeMockRenderingManager(): RenderingManager {
     return mock as unknown as RenderingManager;
 }
 
-function makeConfiguration(configuration: Partial<AnimationConfiguration> = {}): AnimationConfiguration {
-    // Cast through unknown so these focused parser tests only need to provide fields the parser reads directly.
-    return configuration as unknown as AnimationConfiguration;
+function makeConfiguration(configuration: AnimationConfigurationOptions = {}): AnimationConfiguration {
+    return UpdateConfiguration(configuration, 4096, 1);
 }
 
 // Recursively finds the first descendant node whose id starts with the given prefix.
@@ -166,7 +165,7 @@ describe("Parser scene graph structure", () => {
             ],
         };
 
-        const parser = new Parser(makeMockPacker(), animation, makeConfiguration({ textLayerCompatibilityMode: "babylon8" }), makeMockRenderingManager());
+        const parser = new Parser(makeMockPacker(), animation, makeConfiguration({ compatibility: { textLayerPlacement: "babylon8" } }), makeMockRenderingManager());
         const roots = parser.animationInfo.nodes;
 
         expect(roots).toHaveLength(1);
@@ -671,16 +670,32 @@ describe("Parser solid layer (ty:1)", () => {
     // Recording rendering manager so tests can assert the on-screen sprite dimensions handed to the
     // sprite renderer. Solid layers stretch a 1x1 atlas cell to full sw*sh, so the on-screen size
     // is the meaningful surface — distinct from `widthPx` reported by the packer.
-    function makeRecordingRenderingManager(): { rm: RenderingManager; sprites: { width: number; height: number }[] } {
-        const sprites: { width: number; height: number }[] = [];
+    function makeRecordingRenderingManager(): {
+        rm: RenderingManager;
+        sprites: { width: number; height: number; xOffset: number; yOffset: number; xSize: number; ySize: number }[];
+    } {
+        const sprites: { width: number; height: number; xOffset: number; yOffset: number; xSize: number; ySize: number }[] = [];
         const mock = {
-            addSprite: (sprite: { width: number; height: number }) => {
+            addSprite: (sprite: { width: number; height: number; _xOffset: number; _yOffset: number; _xSize: number; _ySize: number }) => {
                 // Snapshot at call time — the parser may continue mutating the sprite afterwards.
-                sprites.push({ width: sprite.width, height: sprite.height });
+                sprites.push({ width: sprite.width, height: sprite.height, xOffset: sprite._xOffset, yOffset: sprite._yOffset, xSize: sprite._xSize, ySize: sprite._ySize });
             },
             ready: () => {},
         };
         return { rm: mock as unknown as RenderingManager, sprites };
+    }
+
+    function captureDebugMessages(parser: Parser): string[] {
+        const messages: string[] = [];
+        const spy = vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
+            messages.push(args.map((a) => String(a)).join(" "));
+        });
+        try {
+            parser.debug();
+        } finally {
+            spy.mockRestore();
+        }
+        return messages;
     }
 
     it("rasterizes a ty:1 solid layer using a 1x1 atlas cell stretched to full sw*sh on screen", () => {
@@ -746,6 +761,74 @@ describe("Parser solid layer (ty:1)", () => {
         expect(sprites).toHaveLength(1);
         expect(sprites[0].width).toBe(960);
         expect(sprites[0].height).toBe(540);
+        expect(sprites[0].xOffset).toBeCloseTo(8 / 4096, 6);
+        expect(sprites[0].yOffset).toBeCloseTo(8 / 4096, 6);
+        expect(sprites[0].xSize).toBe(0);
+        expect(sprites[0].ySize).toBe(0);
+    });
+
+    it("treats ty:1 solid layers as unsupported in Babylon 8 solid layer compatibility mode", () => {
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 960,
+            h: 540,
+            layers: [
+                {
+                    ty: 1,
+                    ind: 1,
+                    nm: "Grey",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    sw: 960,
+                    sh: 540,
+                    sc: "#f0f0f0",
+                } as any,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        const { rm, sprites } = makeRecordingRenderingManager();
+        const parser = new Parser(packer, animation, makeConfiguration({ compatibility: { solidLayerRendering: "babylon8" } }), rm);
+
+        expect(calls).toHaveLength(0);
+        expect(sprites).toHaveLength(0);
+        expect(parser.animationInfo.nodes).toHaveLength(0);
+        expect(captureDebugMessages(parser)).toContain("UnsupportedLayerType - Layer Name: Grey - Layer Index: 1 - Layer Type: 1");
+    });
+
+    it("keeps solid layer rendering independent from text placement compatibility", () => {
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 100,
+            h: 100,
+            layers: [
+                {
+                    ty: 1,
+                    ind: 1,
+                    nm: "Override",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    sw: 100,
+                    sh: 100,
+                    sc: "#000000",
+                } as any,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        new Parser(packer, animation, makeConfiguration({ compatibility: { textLayerPlacement: "babylon8", solidLayerRendering: "spec" } }), makeMockRenderingManager());
+
+        expect(calls).toHaveLength(1);
     });
 
     it("handles short #RGB hex form for solid layer color", () => {

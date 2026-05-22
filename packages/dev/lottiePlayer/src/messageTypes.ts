@@ -1,5 +1,5 @@
 import { type Nullable } from "core/types";
-import { type AnimationConfiguration } from "./animationConfiguration";
+import { type AnimationConfigurationOptions } from "./animationConfiguration";
 import { type RawLottieAnimation } from "./parsing/rawTypes";
 
 /**
@@ -110,7 +110,7 @@ export type StartAnimationMessagePayload = {
     /** Optional variables to replace in the animation file. */
     variables: Nullable<Map<string, string>>;
     /** Optional configuration object to customize the animation playback. */
-    configuration: Nullable<Partial<AnimationConfiguration>>;
+    configuration: Nullable<AnimationConfigurationOptions>;
     /** The parsed lottie animation if it is available */
     animationData?: RawLottieAnimation;
     /** The devicePixelRatio from the main thread (workers can't access window.devicePixelRatio) */

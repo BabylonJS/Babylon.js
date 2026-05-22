@@ -1,9 +1,40 @@
 const MAX_SPRITE_ATLAS_SIZE = 8192;
 
 /**
- * Controls whether Lottie text layout uses the current spec-correct placement metrics or Babylon.js 8.x-compatible metrics.
+ * Controls whether a Lottie feature uses the current spec-oriented behavior or Babylon.js 8.x-compatible behavior.
  */
-export type LottieTextCompatibilityMode = "spec" | "babylon8";
+export type LottieCompatibilityMode = "spec" | "babylon8";
+
+/**
+ * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
+ */
+export type LottieCompatibilityOptions = {
+    /**
+     * Controls text layer positioning compatibility.
+     * "spec" uses the corrected Lottie text placement introduced in Babylon.js 9.x.
+     * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
+     * In "babylon8" mode, layers parented to a text layer also follow Babylon.js 8.x semantics and inherit the text
+     * sprite's alignment/baseline offsets rather than the text layer's anchor point.
+     * Default is "spec".
+     */
+    textLayerPlacement?: LottieCompatibilityMode;
+    /**
+     * Controls solid layer rendering compatibility.
+     * "spec" renders Lottie solid layers (`ty: 1`). "babylon8" treats solid layers as unsupported, matching Babylon.js 8.x.
+     * Default is "spec".
+     */
+    solidLayerRendering?: LottieCompatibilityMode;
+};
+
+/**
+ * Fully resolved compatibility options used internally by the Lottie animation player.
+ */
+export type ResolvedLottieCompatibilityOptions = {
+    /** Resolved text layer positioning compatibility. */
+    textLayerPlacement: LottieCompatibilityMode;
+    /** Resolved solid layer rendering compatibility. */
+    solidLayerRendering: LottieCompatibilityMode;
+};
 
 /**
  * Configuration options for the Lottie animation player.
@@ -74,14 +105,17 @@ export type AnimationConfiguration = {
      */
     debug?: boolean;
     /**
-     * Controls text layer positioning compatibility.
-     * "spec" uses the corrected Lottie text placement introduced in Babylon.js 9.x.
-     * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
-     * In "babylon8" mode, layers parented to a text layer also follow Babylon.js 8.x semantics and inherit the text
-     * sprite's alignment/baseline offsets rather than the text layer's anchor point.
-     * Default is "spec".
+     * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
      */
-    textLayerCompatibilityMode: LottieTextCompatibilityMode;
+    compatibility: ResolvedLottieCompatibilityOptions;
+};
+
+/**
+ * Configuration options accepted by the Lottie animation player.
+ */
+export type AnimationConfigurationOptions = Omit<Partial<AnimationConfiguration>, "compatibility"> & {
+    /** Compatibility options for known behavior differences between Babylon.js Lottie player versions. */
+    compatibility?: LottieCompatibilityOptions;
 };
 
 /**
@@ -98,8 +132,18 @@ export const DefaultConfiguration = {
     devicePixelRatio: 0, // 0 = auto-detect based on atlas size
     easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
     supportDeviceLost: true, // Whether to support device lost events for WebGL contexts,
-    textLayerCompatibilityMode: "spec", // Text layer positioning compatibility mode
+    compatibility: {
+        textLayerPlacement: "spec",
+        solidLayerRendering: "spec",
+    },
 } as const satisfies AnimationConfiguration;
+
+function NormalizeCompatibilityOptions(options?: LottieCompatibilityOptions): ResolvedLottieCompatibilityOptions {
+    return {
+        textLayerPlacement: options?.textLayerPlacement ?? DefaultConfiguration.compatibility.textLayerPlacement,
+        solidLayerRendering: options?.solidLayerRendering ?? DefaultConfiguration.compatibility.solidLayerRendering,
+    };
+}
 
 /**
  * Creates the final animation configuration by merging the provided partial configuration with the default configuration.
@@ -109,10 +153,12 @@ export const DefaultConfiguration = {
  * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios where window is not available).
  * @returns The final animation configuration.
  */
-export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, maxTextureSize: number, mainThreadDevicePixelRatio?: number): AnimationConfiguration {
+export function UpdateConfiguration(newConfig: AnimationConfigurationOptions, maxTextureSize: number, mainThreadDevicePixelRatio?: number): AnimationConfiguration {
+    const compatibility = NormalizeCompatibilityOptions(newConfig.compatibility);
     const config = {
         ...DefaultConfiguration,
         ...newConfig,
+        compatibility,
     };
 
     // If atlas dimensions are 0 (auto-detect), calculate optimal values based on GPU capabilities

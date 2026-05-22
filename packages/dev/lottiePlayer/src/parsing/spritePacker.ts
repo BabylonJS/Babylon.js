@@ -249,7 +249,7 @@ export class SpritePacker {
             textData,
             this._rawFonts,
             this._variables,
-            this._configuration.textLayerCompatibilityMode
+            this._configuration.compatibility.textLayerPlacement
         );
         if (boundingBox === undefined) {
             return undefined;
@@ -617,7 +617,7 @@ export class SpritePacker {
 
         ApplyLottieTextContext(page.context, resolvedText);
 
-        const layout = MeasureLottieText(resolvedText, (text) => page.context.measureText(text), this._configuration.textLayerCompatibilityMode);
+        const layout = MeasureLottieText(resolvedText, (text) => page.context.measureText(text), this._configuration.compatibility.textLayerPlacement);
 
         // Clip to cell bounds to prevent text overdraw into adjacent cells
         page.context.beginPath();

@@ -42,6 +42,7 @@ You can use `AnimationConfiguration` to change certain parameters of the parser/
 - `supportDeviceLost`: enable WebGL context-lost recovery.
 - `stopAtFrame`: stop playback at a specific frame number (useful for visual testing).
 - `debug`: when `true`, the parser logs unsupported Lottie features to the console after parsing — useful for diagnosing why a given animation does not render as expected.
+- `compatibility`: opt into known version compatibility differences. `textLayerPlacement` and `solidLayerRendering` each accept `"spec"` or `"babylon8"`, and default to `"spec"`.
 
 ## Security
 
