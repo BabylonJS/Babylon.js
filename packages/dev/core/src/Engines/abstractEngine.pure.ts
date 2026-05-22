@@ -644,6 +644,13 @@ export abstract class AbstractEngine {
         const currentState = this._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
 
         for (const renderTargetWrapper of currentState) {
+            // Wrapped textures (source === External) are host-owned; their format is opaque to Babylon, so we can't
+            // rebuild them. The host re-supplies a fresh handle via updateWrappedWebGLTexture /
+            // updateWrappedNativeTexture / updateWrappedWebGPUTexture from its onContextRestoredObservable handler.
+            // Scan all attachments for the multi-RT case (rtWrapper.texture only returns _textures[0]).
+            if (renderTargetWrapper.textures?.some((t) => t.source === InternalTextureSource.External)) {
+                continue;
+            }
             renderTargetWrapper._rebuild();
         }
     }
@@ -1934,14 +1941,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.9.0";
+        return "babylonjs@9.9.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.9.0";
+        return "9.9.1";
     }
 
     /**

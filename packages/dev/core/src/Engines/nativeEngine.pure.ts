@@ -40,6 +40,13 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
+    public override updateWrappedWebGLTexture(): void {
+        throw new Error("updateWrappedWebGLTexture is not supported, use updateWrappedNativeTexture instead.");
+    }
+
+    /**
+     * @internal
+     */
     public override _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, _faceIndex: number = 0, _lod: number = 0) {
         throw new Error("_uploadArrayBufferViewToTexture not implemented.");
     }
