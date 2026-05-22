@@ -1,19 +1,78 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import {
-    GeneralPropertyTabComponent,
-    ConstructorVariablesPropertyTabComponent,
-    DataConnectionsPropertyTabComponent,
-    GenericPropertyTabComponent,
-} from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { ComboBoxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/comboBoxPropertyLine";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+import { DismissRegular } from "@fluentui/react-icons";
+
+import { RenderGeneralSection, RenderConstructorVariablesSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 import { type FlowGraphSetVariableBlock, type IFlowGraphSetVariableBlockConfiguration } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { RemoveDataInput } from "./blockMutationHelper";
 import { type GlobalState } from "../../globalState";
-import { AutoCompleteInputComponent } from "../../sharedComponents/autoCompleteInputComponent";
 import { GatherVariableNames } from "../../variableUtils";
+
+const useStyles = makeStyles({
+    row: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        padding: `0 ${tokens.spacingHorizontalXS}`,
+        width: "100%",
+    },
+    name: { flex: 1 },
+    empty: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
+
+const VariableRow: React.FunctionComponent<{ name: string; onRemove: () => void }> = ({ name, onRemove }) => {
+    const classes = useStyles();
+    return (
+        <LineContainer uniqueId={`variable-${name}`}>
+            <div className={classes.row}>
+                <Body1 className={classes.name}>{name}</Body1>
+                <Button title="Remove variable" appearance="subtle" icon={DismissRegular} onClick={onRemove} />
+            </div>
+        </LineContainer>
+    );
+};
+
+const VariablesSectionContent: React.FunctionComponent<{
+    variables: string[];
+    pickableVars: string[];
+    onAddVariable: (name: string) => void;
+    onRemoveVariable: (name: string) => void;
+}> = ({ variables, pickableVars, onAddVariable, onRemoveVariable }) => {
+    const classes = useStyles();
+    const [draftName, setDraftName] = React.useState("");
+    return (
+        <>
+            {variables.map((name) => (
+                <VariableRow key={name} name={name} onRemove={() => onRemoveVariable(name)} />
+            ))}
+            {variables.length === 0 && <Body1 className={classes.empty}>No variables defined.</Body1>}
+            <ComboBoxPropertyLine
+                label="Add variable"
+                value={draftName}
+                options={pickableVars.map((n) => ({ label: n, value: n }))}
+                onChange={(value) => {
+                    if (value) {
+                        onAddVariable(value);
+                        setDraftName("");
+                    } else {
+                        setDraftName(value);
+                    }
+                }}
+            />
+        </>
+    );
+};
 
 /**
  * Property panel for FlowGraphSetVariableBlock.
@@ -101,58 +160,32 @@ export class SetVariablePropertyComponent extends React.Component<IPropertyCompo
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
         const isMulti = this._isMultiMode();
         const config = this._getConfig();
         const pickableVars = isMulti ? this._getPickableVariableNames() : [];
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphSetVariableProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
 
                 {/* Single-variable mode: handled by the standard constructor config UI */}
-                {!isMulti && <ConstructorVariablesPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />}
+                {!isMulti && RenderConstructorVariablesSection(this.props)}
 
                 {/* Multi-variable mode: dynamic list */}
                 {isMulti && (
-                    <LineContainerComponent title="VARIABLES">
-                        {(config.variables || []).map((varName: string) => (
-                            <div key={varName} style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
-                                <span style={{ flex: 1, color: "#ccc", fontSize: "12px", paddingLeft: "8px" }}>{varName}</span>
-                                <button
-                                    onClick={() => this._removeVariable(varName)}
-                                    style={{
-                                        background: "none",
-                                        border: "none",
-                                        color: "#f55",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                        padding: "2px 6px",
-                                    }}
-                                    title="Remove variable"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ))}
-                        {(config.variables || []).length === 0 && <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>No variables defined.</div>}
-                        <AutoCompleteInputComponent
-                            label="Add variable"
-                            value=""
-                            suggestions={pickableVars}
-                            lockObject={stateManager.lockObject}
-                            onChange={(v) => {
-                                if (v) {
-                                    this._addExistingVariable(v);
-                                }
-                            }}
+                    <AccordionSection title="Variables" collapseByDefault={false}>
+                        <VariablesSectionContent
+                            variables={config.variables ?? []}
+                            pickableVars={pickableVars}
+                            onAddVariable={(name) => this._addExistingVariable(name)}
+                            onRemoveVariable={(name) => this._removeVariable(name)}
                         />
-                    </LineContainerComponent>
+                    </AccordionSection>
                 )}
 
-                <DataConnectionsPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <GenericPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-            </>
+                {RenderDataConnectionsSection(this.props)}
+                {RenderGenericPropStoreSections(this.props)}
+            </Accordion>
         );
     }
 }

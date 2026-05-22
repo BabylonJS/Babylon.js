@@ -85,7 +85,7 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>▶</td><td><b>Start</b></td><td>Starts executing the flow graph. Enabled when the graph is stopped or paused.</td></tr>
 <tr><td>⏸</td><td><b>Pause</b></td><td>Pauses execution. The graph can be resumed with Start.</td></tr>
 <tr><td>⏹</td><td><b>Stop</b></td><td>Stops execution and resets execution state.</td></tr>
-<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and reloads the scene from its snippet (if one was loaded).</td></tr>
+<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and recreates the default scene or reloads the loaded snippet.</td></tr>
 </table>
 <p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
             },
@@ -456,18 +456,13 @@ export const HelpTopics: IHelpTopic[] = [
     },
     {
         id: "gltf-import-export",
-        title: "glTF Import / Export",
+        title: "glTF Import",
         sections: [
             {
                 heading: "Importing from glTF",
                 html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
-<p>Files exported by this editor contain a <strong>BABYLON_flow_graph</strong> custom extension, which is also detected and imported on drop.</p>
+<p>Files that contain a <strong>BABYLON_flow_graph</strong> custom extension are also detected and imported on drop.</p>
 <p>Alternatively, use the <strong>Load glTF</strong> button in the FILE section to load only the flow graph (no scene).</p>`,
-            },
-            {
-                heading: "Exporting to glTF",
-                html: `<p>Click <strong>Export glTF (.glb)</strong> in the FILE section. The flow graph is embedded in the file as a <strong>BABYLON_flow_graph</strong> custom extension.</p>
-<p>If a preview scene is loaded and the serializers package is available, the full scene + flow graph are exported together. Otherwise a minimal <code>.glb</code> containing only the flow graph data is created.</p>`,
             },
         ],
     },
