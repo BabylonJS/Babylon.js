@@ -9,7 +9,7 @@
  *       --config ./playwright.browserstack.config.ts
  *
  * Supported BSTACK_TEST_TYPE values:
- *   webgl2, webgpu, interaction, performance
+ *   webgl2, webgpu, interaction, performance, es6vis
  */
 
 import { defineConfig } from "@playwright/test";
@@ -28,6 +28,29 @@ const playwrightVersion: string = require("@playwright/test/package.json").versi
 
 const testType = process.env.BSTACK_TEST_TYPE || "webgl2";
 const isPerformanceRun = testType === "performance";
+const browserStackLocalIdentifier = process.env.BROWSERSTACK_LOCAL_IDENTIFIER;
+
+// ---------------------------------------------------------------------------
+// Per-test-type testMatch patterns
+// ---------------------------------------------------------------------------
+const testConfigs: Record<string, { testMatch: string | string[]; local?: boolean }> = {
+    webgl2: { testMatch: "**/*webgl2.test.ts" },
+    webgpu: { testMatch: "**/*webgpu.test.ts" },
+    interaction: { testMatch: "**/interaction.test.ts" },
+    performance: { testMatch: "**/test/performance/visualization.test.ts" },
+    es6vis: { testMatch: "**/es6vis.test.ts", local: true },
+};
+
+const activeConfig = testConfigs[testType];
+if (!activeConfig) {
+    throw new Error(`Unknown BSTACK_TEST_TYPE: "${testType}". Valid values: ${Object.keys(testConfigs).join(", ")}`);
+}
+
+const usesBrowserStackLocal = activeConfig.local === true;
+
+if (usesBrowserStackLocal) {
+    process.env.ES6VIS_PREBUNDLE = "true";
+}
 
 // ---------------------------------------------------------------------------
 // BrowserStack CDP capabilities
@@ -47,6 +70,8 @@ const caps = {
     "browserstack.debug": "false",
     "browserstack.idleTimeout": "300",
     "browserstack.playwrightVersion": playwrightVersion,
+    "browserstack.local": usesBrowserStackLocal ? "true" : "false",
+    ...(usesBrowserStackLocal && browserStackLocalIdentifier ? { "browserstack.localIdentifier": browserStackLocalIdentifier } : {}),
 };
 
 // SECURITY NOTE: The wsEndpoint embeds BROWSERSTACK_ACCESS_KEY. Playwright may
@@ -57,21 +82,6 @@ const caps = {
 const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
 
 // ---------------------------------------------------------------------------
-// Per-test-type testMatch patterns
-// ---------------------------------------------------------------------------
-const testConfigs: Record<string, { testMatch: string | string[] }> = {
-    webgl2: { testMatch: "**/*webgl2.test.ts" },
-    webgpu: { testMatch: "**/*webgpu.test.ts" },
-    interaction: { testMatch: "**/interaction.test.ts" },
-    performance: { testMatch: "**/test/performance/visualization.test.ts" },
-};
-
-const activeConfig = testConfigs[testType];
-if (!activeConfig) {
-    throw new Error(`Unknown BSTACK_TEST_TYPE: "${testType}". Valid values: ${Object.keys(testConfigs).join(", ")}`);
-}
-
-// ---------------------------------------------------------------------------
 // Reporters
 // ---------------------------------------------------------------------------
 const baseReporters: any[] = [["line"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]];
@@ -79,18 +89,36 @@ if (isPerformanceRun) {
     baseReporters.push(["./packages/tools/tests/performanceSummaryReporter.ts"]);
 }
 
+// ES6 vis tests need a local Vite server tunnelled to BrowserStack
+const es6visWebServer = activeConfig.local
+    ? {
+          command: "npx vite --config packages/tools/tests/es6Vis/vite.config.ts --force",
+          url: "http://localhost:1340",
+          reuseExistingServer: false,
+          timeout: 60_000,
+          stdout: "pipe" as const,
+          stderr: "pipe" as const,
+      }
+    : undefined;
+
+const testTimeout = usesBrowserStackLocal ? 60_000 : isPerformanceRun ? 300_000 : undefined;
+
 export default defineConfig({
     fullyParallel: true,
     forbidOnly: true,
-    retries: 2,
+    retries: usesBrowserStackLocal ? 1 : 2,
     workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 2,
-    timeout: isPerformanceRun ? 300_000 : undefined,
+    timeout: testTimeout,
     reporter: baseReporters,
     testMatch: activeConfig.testMatch,
     use: {
         connectOptions: { wsEndpoint },
         trace: "on-first-retry",
         ignoreHTTPSErrors: true,
+        ...(activeConfig.local ? { baseURL: "http://localhost:1340" } : {}),
     },
+    ...(es6visWebServer ? { webServer: es6visWebServer } : {}),
+    globalSetup: activeConfig.local ? require.resolve("./packages/tools/tests/globalSetup.ts") : undefined,
+    globalTeardown: activeConfig.local ? require.resolve("./packages/tools/tests/globalTeardown.ts") : undefined,
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",
 });

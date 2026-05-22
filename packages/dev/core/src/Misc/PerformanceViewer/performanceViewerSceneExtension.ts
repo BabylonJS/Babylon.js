@@ -1,10 +1,4 @@
-import { Scene } from "../../scene";
-import { PerformanceViewerCollector } from "./performanceViewerCollector";
+export * from "./performanceViewerSceneExtension.pure";
 
-Scene.prototype.getPerfCollector = function (this: Scene): PerformanceViewerCollector {
-    if (!this._perfCollector) {
-        this._perfCollector = new PerformanceViewerCollector(this);
-    }
-
-    return this._perfCollector;
-};
+import { RegisterPerformanceViewerSceneExtension } from "./performanceViewerSceneExtension.pure";
+RegisterPerformanceViewerSceneExtension();

@@ -19,6 +19,7 @@ export * from "./engine.readTexture";
 export * from "./engine.computeShader";
 
 // must import first since nothing references the exports
-import "./engine.textureSelector";
 // eslint-disable-next-line no-duplicate-imports
 export * from "./engine.textureSelector";
+
+import "./engine.textureSelector";

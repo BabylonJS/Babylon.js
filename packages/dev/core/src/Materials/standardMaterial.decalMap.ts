@@ -1,27 +1,9 @@
-import { type Nullable } from "core/types";
-import { DecalMapConfiguration } from "./material.decalMapConfiguration";
-import { StandardMaterial } from "./standardMaterial";
+export * from "./standardMaterial.decalMap.types";
+/**
+ * Re-exports pure implementation and applies runtime side effects.
+ * Import standardMaterial.decalMap.pure for tree-shakeable, side-effect-free usage.
+ */
+export * from "./standardMaterial.decalMap.pure";
 
-declare module "./standardMaterial" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface StandardMaterial {
-        /** @internal */
-        _decalMap: Nullable<DecalMapConfiguration>;
-
-        /**
-         * Defines the decal map parameters for the material.
-         */
-        decalMap: Nullable<DecalMapConfiguration>;
-    }
-}
-
-Object.defineProperty(StandardMaterial.prototype, "decalMap", {
-    get: function (this: StandardMaterial) {
-        if (!this._decalMap) {
-            this._decalMap = new DecalMapConfiguration(this);
-        }
-        return this._decalMap;
-    },
-    enumerable: true,
-    configurable: true,
-});
+import { RegisterStandardMaterialDecalMap } from "./standardMaterial.decalMap.pure";
+RegisterStandardMaterialDecalMap();

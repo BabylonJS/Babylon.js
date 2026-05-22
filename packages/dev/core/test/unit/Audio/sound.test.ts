@@ -2,18 +2,27 @@
  * @vitest-environment jsdom
  */
 
-import { type ISoundOptions, AudioEngine, Sound } from "core/Audio";
+import { type ISoundOptions } from "core/Audio/Interfaces/ISoundOptions";
+import { AudioEngine } from "core/Audio/audioEngine";
+import "core/Audio/audioSceneComponent";
+import { Sound } from "core/Audio/sound";
 import { type Nullable } from "core/types";
 
-import { AbstractEngine, NullEngine } from "core/Engines";
+import { AbstractEngine } from "core/Engines/abstractEngine";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Vector3 } from "core/Maths/math.vector";
+import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
 
 import { AudioTestHelper } from "./helpers/audioTestHelper";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
+import { CreateSoundAsync as CreateSoundV2Async } from "../../../src/AudioV2/abstractAudio/audioEngineV2";
 import { SoundState } from "../../../src/AudioV2/soundState";
 import { StaticSound } from "../../../src/AudioV2/abstractAudio/staticSound";
 import { StreamingSound } from "../../../src/AudioV2/abstractAudio/streamingSound";
+import { SpatialAudioAttachmentType } from "../../../src/AudioV2/spatialAudioAttachmentType";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Required for timers (eg. setTimeout) to work.
 // Store real timers before vi.useFakeTimers() replaces them
@@ -482,6 +491,165 @@ describe("Sound", () => {
         sound.play();
 
         expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
+    });
+
+    it("does not connect to panner node when spatial panning is disabled in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                spatialEnabled: true,
+                spatialMaxDistance: 11,
+                spatialMinDistance: 1,
+                spatialPanningEnabled: false,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        sound.spatial.position = new Vector3(6, 0, 0);
+        sound.spatial.update();
+        sound.play();
+
+        const spatialSubNode = (sound as any)._subGraph.getSubNode("Spatial");
+        expect(sound.spatial.panningEnabled).toBe(false);
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.5);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(false);
+
+        (audioEngine as AudioEngine)._v2.listener.position.copyFromFloats(2, 0, 0);
+        (audioEngine as AudioEngine)._v2.listener.update();
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.7);
+    });
+
+    it("matches WebAudio inverse and exponential distance attenuation when spatial panning is disabled in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                spatialEnabled: true,
+                spatialMaxDistance: 10,
+                spatialMinDistance: 1,
+                spatialPanningEnabled: false,
+                spatialRolloffFactor: 1,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        sound.spatial.position = new Vector3(20, 0, 0);
+        sound.spatial.distanceModel = "inverse";
+        sound.spatial.update();
+
+        const spatialSubNode = (sound as any)._subGraph.getSubNode("Spatial");
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.05);
+
+        sound.spatial.distanceModel = "exponential";
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.05);
+
+        sound.spatial.minDistance = 0;
+        sound.spatial.distanceModel = "inverse";
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBe(0);
+
+        sound.spatial.position = new Vector3(0, 0, 0);
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBe(0);
+
+        sound.spatial.distanceModel = "exponential";
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBe(0);
+
+        sound.spatial.position = new Vector3(20, 0, 0);
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBe(0);
+    });
+
+    it("refreshes distance attenuation for rotation-only attached sources when spatial panning is disabled in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                spatialEnabled: true,
+                spatialMaxDistance: 11,
+                spatialMinDistance: 1,
+                spatialPanningEnabled: false,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        const sourceNode = new TransformNode("source", scene);
+        sound.spatial.attach(sourceNode, false, SpatialAudioAttachmentType.Rotation);
+        sound.spatial.update();
+
+        const spatialSubNode = (sound as any)._subGraph.getSubNode("Spatial");
+        expect(spatialSubNode._attenuation.targetValue).toBe(1);
+
+        (audioEngine as AudioEngine)._v2.listener.position.copyFromFloats(2, 0, 0);
+        (audioEngine as AudioEngine)._v2.listener.update();
+        sound.spatial.update();
+
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.9);
+    });
+
+    it("updates connections and attenuation when spatial panning is toggled in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                spatialEnabled: true,
+                spatialMaxDistance: 11,
+                spatialMinDistance: 1,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        sound.spatial.position = new Vector3(6, 0, 0);
+        sound.spatial.update();
+        sound.play();
+
+        const spatialSubNode = (sound as any)._subGraph.getSubNode("Spatial");
+        expect(sound.spatial.panningEnabled).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
+
+        sound.spatial.panningEnabled = false;
+
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.5);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(false);
+
+        sound.spatial.panningEnabled = true;
+
+        expect(spatialSubNode._attenuation.targetValue).toBe(1);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
+    });
+
+    it("does not apply cone attenuation when spatial panning is disabled in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                spatialConeInnerAngle: 0,
+                spatialConeOuterAngle: 0,
+                spatialConeOuterVolume: 0,
+                spatialEnabled: true,
+                spatialMaxDistance: 11,
+                spatialMinDistance: 1,
+                spatialPanningEnabled: false,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        sound.spatial.position = new Vector3(6, 0, 0);
+        sound.spatial.rotation = new Vector3(0, Math.PI, 0);
+        sound.spatial.update();
+
+        const spatialSubNode = (sound as any)._subGraph.getSubNode("Spatial");
+        expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.5);
     });
 
     it("connects to panner node when spatialized via property", async () => {

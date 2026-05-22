@@ -1,0 +1,52 @@
+/** This file must only contain pure code and pure imports */
+
+import { type FlowGraphContext } from "../../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
+import { RichTypeAny } from "../../../flowGraphRichTypes.pure";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type AnimationGroup } from "core/Animations/animationGroup.pure";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "../../../../Misc/typeStore";
+/**
+ * @experimental
+ * Block that pauses a running animation
+ */
+export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
+    /**
+     * Input connection: The animation to pause.
+     */
+    public readonly animationToPause: FlowGraphDataConnection<AnimationGroup>;
+
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        this.animationToPause = this.registerDataInput("animationToPause", RichTypeAny);
+    }
+
+    public _execute(context: FlowGraphContext): void {
+        const animationToPauseValue = this.animationToPause.getValue(context);
+        animationToPauseValue.pause();
+        this.out._activateSignal(context);
+    }
+
+    /**
+     * @returns class name of the block.
+     */
+    public override getClassName(): string {
+        return FlowGraphBlockNames.PauseAnimation;
+    }
+}
+
+let _Registered = false;
+/**
+ * Register side effects for flowGraphPauseAnimationBlock.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterFlowGraphPauseAnimationBlock(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    RegisterClass(FlowGraphBlockNames.PauseAnimation, FlowGraphPauseAnimationBlock);
+}

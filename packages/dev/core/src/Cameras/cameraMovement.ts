@@ -1,5 +1,7 @@
-import { type Scene } from "../scene";
-import { Vector3 } from "../Maths/math.vector";
+/** This file must only contain pure code and pure imports */
+
+import { type Scene } from "../scene.pure";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
 const DefaultReferenceFrameRate = 60;

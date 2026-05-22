@@ -1,3 +1,5 @@
+/** This file must only contain pure code and pure imports */
+
 /**
  * Physical input source that generated an interaction.
  */
@@ -296,24 +298,77 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
     }
 
     /**
-     * Changes the interaction for the first inputMap entry matching the given source and conditions.
-     * This is the simplest way to remap a single input without rebuilding the entire inputMap.
+     * Sets the interaction for the input combination described by `conditions`. If an
+     * existing entry maps that exact combination, its `interaction` is updated in place;
+     * otherwise a new entry is inserted via {@link addEntry}.
      *
-     * Note: only the first matching entry is updated. To update every matching entry use
-     * {@link setInteractions}; to address an individual entry beyond the first, look it up via
-     * {@link getEntries} and assign `entry.interaction` directly.
+     * To force an update on every matching entry use {@link setInteractions}; to address
+     * an individual entry beyond the first, look it up via {@link getEntries} and assign
+     * `entry.interaction` directly.
      * @param source - The physical input source to match
-     * @param conditions - Conditions to match (button, modifiers, key, etc.)
-     * @param interaction - The new interaction to assign to the matched entry
-     * @returns true if a matching entry was found and updated, false otherwise
+     * @param conditions - Conditions describing the input combination (button, modifiers, key, etc.)
+     * @param interaction - The interaction to assign / insert
+     * @returns true (the mapping is always made effective)
      */
     public setInteraction(source: InputSource, conditions: InputConditions | undefined, interaction: InteractionName<THandlers>): boolean {
+        // resolveInteraction returns the first entry that fires for `conditions` (so its
+        // conditions are no stricter than the request). If that entry also covers every
+        // condition present in the request, it's an exact match — mutate. Otherwise it's
+        // broader (or nothing matches): add a more-specific entry so we don't clobber the
+        // broader one.
         const entry = this.resolveInteraction(source, conditions);
-        if (entry) {
+        if (entry && this._entryCoversAllConditionsOf(entry, conditions)) {
             entry.interaction = interaction;
             return true;
         }
-        return false;
+        this.addEntry({ source, ...(conditions ?? {}), interaction } as InputMapEntry<InteractionName<THandlers>>);
+        return true;
+    }
+
+    /**
+     * Returns true when `entry` constrains every field that `conditions` specifies — i.e.
+     * `entry` covers all of the request's conditions. Used by {@link setInteraction} as one
+     * half of the "exactly as specific" check: combined with {@link resolveInteraction}'s
+     * guarantee that the returned entry is no *stricter* than the request, a true result
+     * here means `entry` and `conditions` constrain the same fields, and mutating
+     * `entry.interaction` is safe.
+     *
+     * On its own this predicate does not exclude entries that are stricter than `conditions`
+     * (those would also trivially cover every field present in `conditions`); callers must
+     * rely on the upstream resolve step to rule them out.
+     *
+     * `InputConditions` is a flat type covering all source-specific fields (`button`, `key`,
+     * `touchCount`, `modifiers`); for any given source the irrelevant fields are `undefined`
+     * on both `entry` and `conditions`, so checking them all is harmless.
+     * @param entry - The matched inputMap entry to test
+     * @param conditions - The conditions the caller supplied to `setInteraction`
+     * @returns true if `entry` covers every condition present in `conditions`
+     */
+    private _entryCoversAllConditionsOf(entry: InputMapEntry<InteractionName<THandlers>>, conditions?: InputConditions): boolean {
+        if (!conditions) {
+            return true;
+        }
+        // `as any` here because `entry` is a discriminated union and TypeScript can't narrow it
+        // from a string-keyed loop. The runtime check is harmless: irrelevant-for-this-source
+        // fields are undefined on both entry and conditions and skip the early return.
+        const e = entry as any;
+        for (const key of Object.keys(conditions) as (keyof InputConditions)[]) {
+            const condValue = conditions[key];
+            if (condValue === undefined) {
+                continue;
+            }
+            if (key === "modifiers") {
+                const entryMods = (e.modifiers ?? {}) as InputModifiers;
+                for (const modKey of Object.keys(condValue) as (keyof InputModifiers)[]) {
+                    if ((condValue as InputModifiers)[modKey] !== undefined && entryMods[modKey] === undefined) {
+                        return false;
+                    }
+                }
+            } else if (e[key] === undefined) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

@@ -6,6 +6,7 @@ import { type Camera } from "../../Cameras/camera";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type PostProcessRenderEffect } from "./postProcessRenderEffect";
 import { type IInspectable } from "../../Misc/iInspectable";
+import { RegisterPostProcessRenderPipelineManagerSceneComponent } from "./postProcessRenderPipelineManagerSceneComponent.pure";
 
 import { type PrePassRenderer } from "../../Rendering/prePassRenderer";
 
@@ -65,6 +66,7 @@ export class PostProcessRenderPipeline {
         private _engine: AbstractEngine,
         name: string
     ) {
+        RegisterPostProcessRenderPipelineManagerSceneComponent();
         this._name = name;
 
         this._renderEffects = {};

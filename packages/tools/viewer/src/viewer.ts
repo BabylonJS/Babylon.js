@@ -11,7 +11,6 @@ import {
     type CubeTexture,
     type Engine,
     type HDRCubeTexture,
-    type HotSpotQuery,
     type IblCdfGenerator,
     type IblShadowsRenderPipeline,
     type IDisposable,
@@ -19,6 +18,7 @@ import {
     type ISceneLoaderProgressEvent,
     type LoadAssetContainerOptions,
     type Nullable,
+    type Observable,
     type Observer,
     type PickingInfo,
     type ShaderMaterial,
@@ -38,7 +38,7 @@ import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -52,13 +52,33 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
 import { Lazy } from "core/Misc/lazy";
 import { Logger } from "core/Misc/logger";
-import { Observable } from "core/Misc/observable";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+
+import {
+    type EnvironmentOptions,
+    type HotSpot,
+    type IViewer,
+    type ResolvedLoadEnvironmentOptions,
+    type ViewerLoadModelOptions,
+    type PostProcessing,
+    type ShadowParams,
+    type ShadowQuality,
+    type SSAOOptions,
+    type ToneMapping,
+    type ViewerBaseOptions,
+    type ViewerBoundingInfo,
+    type ViewerHotSpotQuery,
+    ViewerHotSpotResult,
+    ViewerBase,
+    DefaultViewerBaseOptions,
+    throwIfAborted,
+    observePromise,
+} from "./viewerBase";
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
@@ -96,89 +116,12 @@ async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal):
     });
 }
 
-export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
-
-const shadowQualityOptions = ["none", "normal", "high"] as const;
-export type ShadowQuality = (typeof shadowQualityOptions)[number];
-
-const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
-export type ToneMapping = (typeof toneMappingOptions)[number];
-
-const ssaoOptions = ["enabled", "disabled", "auto"] as const;
-export type SSAOOptions = (typeof ssaoOptions)[number];
-
 const environmentMode = ["none", "auto", "url"] as const;
 type EnvironmentMode = (typeof environmentMode)[number];
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
-export type LoadModelOptions = LoadAssetContainerOptions;
-
-export type CameraOrbit = [alpha: number, beta: number, radius: number];
-export type CameraTarget = [x: number, y: number, z: number];
-
-export type CameraAutoOrbit = {
-    /**
-     * Whether the camera should automatically orbit around the model when idle.
-     */
-    enabled: boolean;
-
-    /**
-     * The speed at which the camera orbits around the model when idle.
-     */
-    speed: number;
-
-    /**
-     * The delay in milliseconds before the camera starts orbiting around the model when idle.
-     */
-    delay: number;
-};
-
-export type EnvironmentParams = {
-    /**
-     * The intensity of the environment lighting.
-     */
-    intensity: number;
-
-    /**
-     * The blur applied to the environment lighting.
-     */
-    blur: number;
-
-    /**
-     * The rotation of the environment lighting in radians.
-     */
-    rotation: number;
-};
-
-export type ShadowParams = {
-    /**
-     * The quality of shadow being used
-     */
-    quality: ShadowQuality;
-};
-
-export type PostProcessing = {
-    /**
-     * The tone mapping to use for rendering the scene.
-     */
-    toneMapping: ToneMapping;
-
-    /**
-     * The contrast applied to the scene.
-     */
-    contrast: number;
-
-    /**
-     * The exposure applied to the scene.
-     */
-    exposure: number;
-
-    /**
-     * Whether to enable screen space ambient occlusion (SSAO).
-     */
-    ssao: SSAOOptions;
-};
+export type LoadModelOptions = ViewerLoadModelOptions & LoadAssetContainerOptions;
 
 type ShadowState = {
     normal?: {
@@ -205,48 +148,9 @@ type ShadowState = {
     };
 };
 
-/**
- * Checks if the given value is a valid tone mapping option.
- * @param value The value to check.
- * @returns True if the value is a valid tone mapping option, otherwise false.
- */
-export function IsToneMapping(value: string): value is ToneMapping {
-    return toneMappingOptions.includes(value as ToneMapping);
-}
-
-/**
- * Checks if the given value is a valid shadow quality option.
- * @param value The value to check.
- * @returns True if the value is a valid shadow quality option, otherwise false.
- */
-export function IsShadowQuality(value: string): value is ShadowQuality {
-    return shadowQualityOptions.includes(value as ShadowQuality);
-}
-
-/**
- * Checks if the given value is a valid SSAO option.
- * @param value The value to check.
- * @returns True if the value is a valid SSAO option, otherwise false.
- */
-export function IsSSAOOptions(value: string): value is SSAOOptions {
-    return ssaoOptions.includes(value as SSAOOptions);
-}
-
-/**
- * Checks if the given mesh is a Gaussian Splatting mesh by inspecting its class name.
- * This avoids importing the GaussianSplattingMesh class directly.
- * @param mesh The mesh to check.
- * @returns True if the mesh is a Gaussian Splatting mesh (including compound splat part proxies), otherwise false.
- */
 function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
     const className = mesh.getClassName();
     return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
-}
-
-function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
-    for (const signal of abortSignals) {
-        signal?.throwIfAborted();
-    }
 }
 
 async function createCubeTexture(url: string, scene: Scene, extension?: string) {
@@ -358,21 +262,6 @@ function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBo
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
 }
 
-// This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
-// If there is any error (other than AbortError) in the async function, it will be logged.
-function observePromise(promise: Promise<unknown>): void {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    (async () => {
-        try {
-            await promise;
-        } catch (error) {
-            if (!(error instanceof AbortError)) {
-                Logger.Error(error);
-            }
-        }
-    })();
-}
-
 /**
  * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
  *
@@ -468,258 +357,18 @@ export type ViewerDetails = {
 /**
  * The options for the Viewer.
  */
-export type ViewerOptions = Partial<{
-    /**
-     * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-     */
-    onInitialized: (details: Readonly<ViewerDetails>) => void;
-
-    /**
-     * The default clear color of the scene.
-     */
-    clearColor: [r: number, g: number, b: number, a?: number];
-
-    /**
-     * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
-     * This can reduce resource CPU/GPU pressure when the scene is static.
-     * Enabled by default.
-     */
-    autoSuspendRendering: boolean;
-
-    /**
-     * The default source model to load into the viewer.
-     */
-    source: string;
-
-    /**
-     * The default environment to load into the viewer for lighting (IBL).
-     */
-    environmentLighting: string;
-
-    /**
-     * The default environment to load into the viewer for the skybox.
-     */
-    environmentSkybox: string;
-
-    /**
-     * The default environment configuration.
-     */
-    environmentConfig: Partial<EnvironmentParams>;
-
-    /**
-     * The default camera orbit.
-     * @remarks The default camera orbit is restored when a new model is loaded.
-     */
-    cameraOrbit: Partial<CameraOrbit>;
-
-    /**
-     * The default camera target.
-     * @remarks The default camera target is restored when a new model is loaded.
-     */
-    cameraTarget: Partial<CameraTarget>;
-
-    /**
-     * Automatically rotates a 3D model or scene without requiring user interaction.
-     * @remarks The default camera auto orbit is restored when a new model is loaded.
-     */
-    cameraAutoOrbit: Partial<CameraAutoOrbit>;
-
-    /**
-     * Whether to play the default animation immediately after loading.
-     * @remarks The default animation auto play is restored when a new model is loaded.
-     */
-    animationAutoPlay: boolean;
-
-    /**
-     * The default speed of the animation.
-     * @remarks The default animation speed is restored when a new model is loaded.
-     */
-    animationSpeed: number;
-
-    /**
-     * The default selected animation.
-     * @remarks The default selected animation is restored when a new model is loaded.
-     */
-    selectedAnimation: number;
-
-    /**
-     * The default post processing configuration.
-     */
-    postProcessing: Partial<PostProcessing>;
-
-    /**
-     * Shadow configuration.
-     */
-    shadowConfig: Partial<ShadowParams>;
-
-    /**
-     * The default selected material variant.
-     * @remarks The default material variant is restored when a new model is loaded.
-     */
-    selectedMaterialVariant: string;
-
-    /**
-     * The default hotspots.
-     */
-    hotSpots: Record<string, HotSpot>;
-
-    /**
-     * Boolean indicating if the scene must use right-handed coordinates system.
-     */
-    useRightHandedSystem: boolean;
-
-    /**
-     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
-     * @experimental
-     */
-    useOpenPBR: boolean;
-}>;
+export type ViewerOptions = ViewerBaseOptions &
+    Partial<{
+        /**
+         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+         */
+        onInitialized: (details: Readonly<ViewerDetails>) => void;
+    }>;
 
 /**
  * The default options for the Viewer.
  */
-export const DefaultViewerOptions = {
-    clearColor: [0, 0, 0, 0],
-    autoSuspendRendering: true,
-    environmentConfig: {
-        intensity: 1,
-        blur: 0.3,
-        rotation: 0,
-    },
-    environmentLighting: "auto",
-    environmentSkybox: "none",
-    cameraAutoOrbit: {
-        enabled: false,
-        delay: 2000,
-        speed: 0.05,
-    },
-    animationAutoPlay: false,
-    animationSpeed: 1,
-    shadowConfig: {
-        quality: "none",
-    },
-    postProcessing: {
-        toneMapping: "neutral",
-        contrast: 1,
-        exposure: 1,
-        ssao: "auto",
-    },
-    useRightHandedSystem: false,
-    useOpenPBR: false,
-} as const satisfies ViewerOptions;
-
-export type EnvironmentOptions = Partial<
-    Readonly<{
-        /**
-         * Whether to use the environment for lighting (e.g. IBL).
-         */
-        lighting: boolean;
-
-        /**
-         * Whether to use the environment for the skybox.
-         */
-        skybox: boolean;
-    }>
->;
-
-export type LoadEnvironmentOptions = EnvironmentOptions &
-    Partial<
-        Readonly<{
-            /**
-             * Specifies the extension of the environment texture to load.
-             * This must be specified when the extension cannot be determined from the url.
-             */
-            extension: string;
-        }>
-    >;
-
-const defaultLoadEnvironmentOptions = {
-    lighting: true,
-    skybox: true,
-} as const satisfies EnvironmentOptions;
-
-export type ViewerHotSpotQuery =
-    | ({
-          /**
-           * The type of the hot spot.
-           */
-          type: "surface";
-
-          /**
-           * The index of the mesh within the loaded model.
-           */
-          meshIndex: number;
-      } & HotSpotQuery)
-    | {
-          /**
-           * The type of the hot spot.
-           */
-          type: "world";
-
-          /**
-           * The fixed world space position of the hot spot.
-           */
-          position: [x: number, y: number, z: number];
-
-          /**
-           * The fixed world space normal of the hot spot.
-           */
-          normal: [x: number, y: number, z: number];
-      };
-
-export type HotSpot = ViewerHotSpotQuery & {
-    /**
-     * An optional camera pose to associate with the hotspot.
-     */
-    cameraOrbit?: CameraOrbit;
-};
-
-/**
- * Provides the result of a hot spot query.
- */
-export class ViewerHotSpotResult {
-    /**
-     * 2D canvas position in pixels
-     */
-    public readonly screenPosition: [x: number, y: number] = [NaN, NaN];
-
-    /**
-     * 3D world coordinates
-     */
-    public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
-
-    /**
-     * visibility range is [-1..1]. A value of 0 means camera eye is on the plane.
-     */
-    public visibility: number = NaN;
-}
-
-export type ViewerBoundingInfo = {
-    /**
-     * The minimum and maximum extents of the model.
-     */
-    extents: Readonly<{
-        /**
-         * The minimum extent of the model.
-         */
-        readonly min: readonly [x: number, y: number, z: number];
-
-        /**
-         * The maximum extent of the model.
-         */
-        readonly max: readonly [x: number, y: number, z: number];
-    }>;
-
-    /**
-     * The size of the model.
-     */
-    readonly size: readonly [x: number, y: number, z: number];
-
-    /**
-     * The center of the model.
-     */
-    readonly center: readonly [x: number, y: number, z: number];
-};
+export const DefaultViewerOptions = DefaultViewerBaseOptions;
 
 export type ViewerCameraConfig = {
     /**
@@ -807,7 +456,7 @@ type ModelInternal = Model & {
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
  */
-export class Viewer implements IDisposable {
+export class Viewer extends ViewerBase implements IDisposable, IViewer {
     static {
         registerBuiltInLoaders();
     }
@@ -816,88 +465,24 @@ export class Viewer implements IDisposable {
      * When enabled, the Viewer will emit additional diagnostic logs to the console.
      */
     public showDebugLogs = false;
+    /**
+     * Gets or sets the clear color (background color) of the viewer.
+     */
+    /** @internal */
+    protected override _applyClearColor(): void {
+        this._scene.clearColor.r = this._clearColor.r;
+        this._scene.clearColor.g = this._clearColor.g;
+        this._scene.clearColor.b = this._clearColor.b;
+        this._scene.clearColor.a = this._clearColor.a;
+        this._markSceneMutated();
+    }
 
     /**
-     * Fired when the environment has changed.
+     * True if a model is currently loaded.
      */
-    public readonly onEnvironmentChanged = new Observable<void>();
-
-    /**
-     * Fired when the environment configuration has changed.
-     */
-    public readonly onEnvironmentConfigurationChanged = new Observable<void>();
-
-    /**
-     * Fired when an error occurs while loading the environment.
-     */
-    public readonly onEnvironmentError = new Observable<unknown>();
-
-    /**
-     * Fired when the shadows configuration changes.
-     */
-    public readonly onShadowsConfigurationChanged = new Observable<void>();
-
-    /**
-     * Fired when the post processing state changes.
-     */
-    public readonly onPostProcessingChanged = new Observable<void>();
-
-    /**
-     * Fired when a model is loaded into the viewer (or unloaded from the viewer).
-     * @remarks
-     * The event argument is the source that was loaded, or null if no model is loaded.
-     */
-    public readonly onModelChanged = new Observable<Nullable<string | File | ArrayBufferView>>();
-
-    /**
-     * Fired when an error occurs while loading a model.
-     */
-    public readonly onModelError = new Observable<unknown>();
-
-    /**
-     * Fired when progress changes on loading activity.
-     */
-    public readonly onLoadingProgressChanged = new Observable<void>();
-
-    /**
-     * Fired when the camera auto orbit state changes.
-     */
-    public readonly onCameraAutoOrbitChanged = new Observable<void>();
-
-    /**
-     * Fired when the selected animation changes.
-     */
-    public readonly onSelectedAnimationChanged = new Observable<void>();
-
-    /**
-     * Fired when the animation speed changes.
-     */
-    public readonly onAnimationSpeedChanged = new Observable<void>();
-
-    /**
-     * Fired when the selected animation is playing or paused.
-     */
-    public readonly onIsAnimationPlayingChanged = new Observable<void>();
-
-    /**
-     * Fired when the current point on the selected animation timeline changes.
-     */
-    public readonly onAnimationProgressChanged = new Observable<void>();
-
-    /**
-     * Fired when the selected material variant changes.
-     */
-    public readonly onSelectedMaterialVariantChanged = new Observable<void>();
-
-    /**
-     * Fired when the hot spots object changes to a complete new object instance.
-     */
-    public readonly onHotSpotsChanged = new Observable<void>();
-
-    /**
-     * Fired when the cameras as hot spots property changes.
-     */
-    public readonly onCamerasAsHotSpotsChanged = new Observable<void>();
+    public get isModelLoaded(): boolean {
+        return this._activeModelBacking !== null;
+    }
 
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
@@ -920,11 +505,8 @@ export class Viewer implements IDisposable {
     private _environmentSkyboxMode: EnvironmentMode = "none";
     private _environmentLightingMode: EnvironmentMode = "none";
     private _skybox: Nullable<Mesh> = null;
-    private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
-    private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
-    private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
     private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
@@ -936,45 +518,36 @@ export class Viewer implements IDisposable {
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
-    private _isDisposed = false;
-
-    private readonly _loadModelLock = new AsyncLock();
-    private _loadModelAbortController: Nullable<AbortController> = null;
-
-    private readonly _loadEnvironmentLightingLock = new AsyncLock();
-    private _loadEnvironmentLightingAbortController: Nullable<AbortController> = null;
-
-    private readonly _loadEnvironmentSkyboxLock = new AsyncLock();
-    private _loadEnvironmentSkyboxAbortController: Nullable<AbortController> = null;
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
-    private readonly _updateShadowsLock = new AsyncLock();
-    private _shadowsAbortController: Nullable<AbortController> = null;
-
     private readonly _updateSSAOLock = new AsyncLock();
     private _ssaoAbortController: Nullable<AbortController> = null;
-
-    private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
 
     private _camerasAsHotSpots = false;
-    private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
-    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
     private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _options?: Readonly<ViewerOptions>
+        protected readonly _options?: Readonly<ViewerOptions>
     ) {
+        super();
         if (this._options?.shadowConfig?.quality === "high" && this._options?.postProcessing?.ssao === "enabled") {
             throw new Error("High quality shadows are not compatible with SSAO. Please choose either high quality shadows or SSAO.");
         }
 
+        this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+        this._environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
+        this._environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
+        this._environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
+        if (this._options?.hotSpots) {
+            this.hotSpots = this._options.hotSpots;
+        }
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
@@ -1032,6 +605,11 @@ export class Viewer implements IDisposable {
 
             scene.onClearColorChangedObservable.add(() => {
                 this._markSceneMutated();
+                this._clearColor.a = scene.clearColor.a;
+                this._clearColor.r = scene.clearColor.r;
+                this._clearColor.g = scene.clearColor.g;
+                this._clearColor.b = scene.clearColor.b;
+                this.onClearColorChanged.notifyObservers();
             });
 
             scene.onPointerObservable.add(async (pointerInfo) => {
@@ -1075,6 +653,16 @@ export class Viewer implements IDisposable {
         }
         this._camera.attachControl();
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+        // Sync engine state to base field defaults. The subsequent `_reset(false, "camera")` will then
+        // apply user-provided option overrides via the cameraAutoOrbit setter (with change-detection).
+        this._applyCameraAutoOrbitEnabled();
+        this._applyCameraAutoOrbitSpeed();
+        this._applyCameraAutoOrbitDelay();
+
+        this._scene.onAfterRenderCameraObservable.add(() => {
+            this.onAfterRenderObservable.notifyObservers();
+        });
+
         this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
@@ -1104,135 +692,84 @@ export class Viewer implements IDisposable {
     /**
      * The camera auto orbit configuration.
      */
-    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
-        return {
-            enabled: this._camera.behaviors.includes(this._autoRotationBehavior),
-            speed: this._autoRotationBehavior.idleRotationSpeed,
-            delay: this._autoRotationBehavior.idleRotationWaitTime,
-        };
+    /** @internal */
+    protected override _applyCameraAutoOrbitEnabled(): void {
+        if (this._autoOrbitEnabled) {
+            this._camera.addBehavior(this._autoRotationBehavior);
+        } else {
+            this._camera.removeBehavior(this._autoRotationBehavior);
+        }
     }
 
-    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
-        if (value.enabled !== undefined && value.enabled !== this.cameraAutoOrbit.enabled) {
-            if (value.enabled) {
-                this._camera.addBehavior(this._autoRotationBehavior);
-            } else {
-                this._camera.removeBehavior(this._autoRotationBehavior);
-            }
-        }
+    /** @internal */
+    protected override _applyCameraAutoOrbitSpeed(): void {
+        this._autoRotationBehavior.idleRotationSpeed = this._autoOrbitSpeed;
+    }
 
-        if (value.delay !== undefined) {
-            this._autoRotationBehavior.idleRotationWaitTime = value.delay;
-        }
-
-        if (value.speed !== undefined) {
-            this._autoRotationBehavior.idleRotationSpeed = value.speed;
-        }
-
-        this.onCameraAutoOrbitChanged.notifyObservers();
+    /** @internal */
+    protected override _applyCameraAutoOrbitDelay(): void {
+        this._autoRotationBehavior.idleRotationWaitTime = this._autoOrbitDelay;
     }
 
     /**
      * Get the current environment configuration.
      */
-    public get environmentConfig(): Readonly<EnvironmentParams> {
-        return {
-            intensity: this._reflectionsIntensity,
-            blur: this._skyboxBlur,
-            rotation: this._reflectionsRotation,
-        };
+    /** @internal */
+    protected override _applyEnvironmentBlur(): void {
+        if (this._skybox) {
+            const material = this._skybox.material;
+            if (material instanceof BackgroundMaterial) {
+                this._snapshotHelper?.disableSnapshotRendering();
+                material.reflectionBlur = this._environmentBlur;
+                this._snapshotHelper?.enableSnapshotRendering();
+                this._markSceneMutated();
+            }
+        }
     }
 
-    public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
-        if (value.blur !== undefined) {
-            this._changeSkyboxBlur(value.blur);
+    /** @internal */
+    protected override _applyEnvironmentRotation(): void {
+        this._snapshotHelper?.disableSnapshotRendering();
+        if (this._skyboxTexture) {
+            this._skyboxTexture.rotationY = this._environmentRotation;
         }
-        if (value.intensity !== undefined) {
-            this._changeEnvironmentIntensity(value.intensity);
-            this._changeShadowLightIntensity();
+        if (this._reflectionTexture) {
+            this._reflectionTexture.rotationY = this._environmentRotation;
         }
-        if (value.rotation !== undefined) {
-            this._changeEnvironmentRotation(value.rotation);
-            this._rotateShadowLightWithEnvironment();
+        this._snapshotHelper?.enableSnapshotRendering();
+        this._markSceneMutated();
+
+        // Side effect: shadow light follows environment rotation in normal/high modes.
+        this._rotateShadowLightWithEnvironment();
+    }
+
+    /** @internal */
+    protected override _applyEnvironmentIntensity(): void {
+        this._snapshotHelper?.disableSnapshotRendering();
+        if (this._skyboxTexture) {
+            this._skyboxTexture.level = this._environmentIntensity;
         }
-        this.onEnvironmentConfigurationChanged.notifyObservers();
+        if (this._reflectionTexture) {
+            this._reflectionTexture.level = this._environmentIntensity;
+        }
+        this._snapshotHelper?.enableSnapshotRendering();
+        this._markSceneMutated();
+
+        // Side effect: high-quality (IBL) shadows reset their accumulation when intensity changes.
+        this._changeShadowLightIntensity();
     }
 
     /**
-     * Get the current shadow configuration.
-     */
-    public get shadowConfig(): Readonly<ShadowParams> {
-        return {
-            quality: this._shadowQuality,
-        };
-    }
-
-    /**
-     * Update the shadow configuration.
+     * Updates the shadow configuration.
      * @param value The new shadow configuration.
+     * @param abortSignal Optional signal that can be used to abort the update externally.
+     * @returns A promise that resolves when the shadow update completes.
      */
-    public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
-        if (value.quality && this._shadowQuality !== value.quality) {
-            if (value.quality === "high" && this._ssaoOption === "enabled") {
-                throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
-            }
-
-            this._shadowQuality = value.quality;
-
-            await this._updateShadows();
-            this.onShadowsConfigurationChanged.notifyObservers();
+    public override async updateShadows(value: Partial<Readonly<ShadowParams>>, abortSignal?: AbortSignal): Promise<void> {
+        if (value.quality === "high" && this._ssaoOption === "enabled") {
+            throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
         }
-    }
-
-    private _changeSkyboxBlur(value: number) {
-        if (value !== this._skyboxBlur) {
-            this._skyboxBlur = value;
-            if (this._skybox) {
-                const material = this._skybox.material;
-                if (material instanceof BackgroundMaterial) {
-                    this._snapshotHelper?.disableSnapshotRendering();
-                    material.reflectionBlur = this._skyboxBlur;
-                    this._snapshotHelper?.enableSnapshotRendering();
-                    this._markSceneMutated();
-                }
-            }
-        }
-    }
-
-    /**
-     * Change the environment rotation.
-     * @param value the rotation in radians
-     */
-    private _changeEnvironmentRotation(value: number) {
-        if (value !== this._reflectionsRotation) {
-            this._reflectionsRotation = value;
-
-            this._snapshotHelper?.disableSnapshotRendering();
-            if (this._skyboxTexture) {
-                this._skyboxTexture.rotationY = this._reflectionsRotation;
-            }
-            if (this._reflectionTexture) {
-                this._reflectionTexture.rotationY = this._reflectionsRotation;
-            }
-            this._snapshotHelper?.enableSnapshotRendering();
-            this._markSceneMutated();
-        }
-    }
-
-    private _changeEnvironmentIntensity(value: number) {
-        if (value !== this._reflectionsIntensity) {
-            this._reflectionsIntensity = value;
-
-            this._snapshotHelper?.disableSnapshotRendering();
-            if (this._skyboxTexture) {
-                this._skyboxTexture.level = this._reflectionsIntensity;
-            }
-            if (this._reflectionTexture) {
-                this._reflectionTexture.level = this._reflectionsIntensity;
-            }
-            this._snapshotHelper?.enableSnapshotRendering();
-            this._markSceneMutated();
-        }
+        return await super.updateShadows(value, abortSignal);
     }
 
     private _updateAutoClear() {
@@ -1315,29 +852,6 @@ export class Viewer implements IDisposable {
         this._markSceneMutated();
     }
 
-    /**
-     * Gets information about loading activity.
-     * @remarks
-     * false indicates no loading activity.
-     * true indicates loading activity with no progress information.
-     * A number between 0 and 1 indicates loading activity with progress information.
-     */
-    public get loadingProgress(): boolean | number {
-        if (this._loadOperations.size > 0) {
-            let totalProgress = 0;
-            for (const operation of this._loadOperations) {
-                if (operation.progress == null) {
-                    return true;
-                }
-                totalProgress += operation.progress;
-            }
-
-            return totalProgress / this._loadOperations.size;
-        }
-
-        return false;
-    }
-
     protected get _loadedModels(): readonly Model[] {
         return this._loadedModelsBacking;
     }
@@ -1351,7 +865,7 @@ export class Viewer implements IDisposable {
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
             this._updateLight();
-            observePromise(this._updateShadows());
+            observePromise(this._updateShadows(this._shadowQuality));
             this._updateSSAOPipeline();
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
@@ -1569,18 +1083,6 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The set of defined hotspots.
-     */
-    public get hotSpots() {
-        return this._hotSpots;
-    }
-
-    public set hotSpots(value: Record<string, HotSpot>) {
-        this._hotSpots = value;
-        this.onHotSpotsChanged.notifyObservers();
-    }
-
-    /**
      * True if scene cameras should be used as hotspots.
      */
     public get camerasAsHotSpots() {
@@ -1593,51 +1095,6 @@ export class Viewer implements IDisposable {
             this._toggleCamerasAsHotSpots();
             this.onCamerasAsHotSpotsChanged.notifyObservers();
         }
-    }
-
-    protected _beginLoadOperation(): IDisposable & { progress: Nullable<number> } {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const viewer = this;
-        let progress: Nullable<number> = null;
-
-        const loadOperation = {
-            get progress() {
-                return progress;
-            },
-            set progress(value: Nullable<number>) {
-                progress = value;
-                viewer.onLoadingProgressChanged.notifyObservers();
-            },
-            dispose: () => {
-                viewer._loadOperations.delete(loadOperation);
-                viewer.onLoadingProgressChanged.notifyObservers();
-            },
-        };
-
-        this._loadOperations.add(loadOperation);
-        this.onLoadingProgressChanged.notifyObservers();
-
-        return loadOperation;
-    }
-
-    /**
-     * Loads a 3D model from the specified URL.
-     * @remarks
-     * If a model is already loaded, it will be unloaded before loading the new model.
-     * @param source A url or File or ArrayBufferView that points to the model to load.
-     * @param options The options to use when loading the model.
-     * @param abortSignal An optional signal that can be used to abort the loading process.
-     */
-    public async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateModel(source, options, abortSignal);
-    }
-
-    /**
-     * Unloads the current 3D model if one is loaded.
-     * @param abortSignal An optional signal that can be used to abort the reset.
-     */
-    public async resetModel(abortSignal?: AbortSignal): Promise<void> {
-        await this._updateModel(undefined, undefined, abortSignal);
     }
 
     protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
@@ -1686,7 +1143,7 @@ export class Viewer implements IDisposable {
                     // Enable transparency as coverage by default to be 3D Commerce compliant by default.
                     // https://doc.babylonjs.com/setup/support/3D_commerce_certif
                     transparencyAsCoverage: true,
-                    useOpenPBR: this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
+                    useOpenPBR: (options as ViewerLoadModelOptions | undefined)?.useOpenPBR ?? this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
                     extensionOptions: {
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {
@@ -1780,7 +1237,7 @@ export class Viewer implements IDisposable {
 
                     selectedAnimation = index;
                     activeAnimation = assetContainer.animationGroups[selectedAnimation];
-                    observePromise(viewer._updateShadows());
+                    observePromise(viewer._updateShadows(viewer._shadowQuality));
 
                     if (activeAnimation) {
                         activeAnimation.goToFrame(0);
@@ -1831,63 +1288,92 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
+    /**
+     * Loads a 3D model from the specified source.
+     * @param source The source of the model to load.
+     * @param options Options for loading the model. See {@link LoadModelOptions}.
+     * @param abortSignal Optional signal that can be used to abort the load externally.
+     * @returns A promise that resolves when the model has finished loading.
+     */
+    public override async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
+        return await super.loadModel(source, options, abortSignal);
+    }
 
-        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
-        const abortController = (this._loadModelAbortController = new AbortController());
+    /** @internal */
+    protected override async _loadModelImpl(
+        source: string | File | ArrayBufferView | undefined,
+        options: ViewerLoadModelOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        internalAbortSignal: AbortSignal
+    ): Promise<void> {
+        this._activeModel?.dispose();
+        this._activeModelBacking = null;
+        this.selectedAnimation = -1;
 
-        await this._loadModelLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, abortController.signal);
-            this._activeModel?.dispose();
-            this._activeModelBacking = null;
-            this.selectedAnimation = -1;
+        if (source) {
+            const model = await this._loadModel(source, options, internalAbortSignal);
+            // Re-check abort after the long-running load — a newer loadModel may have superseded us.
+            throwIfAborted(abortSignal, internalAbortSignal);
+            model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
+            this._reset(false, "camera", "animation", "material-variant");
+        }
+    }
 
-            if (source) {
-                const model = await this._loadModel(source, options, abortController.signal);
-                model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-                this._reset(false, "camera", "animation", "material-variant");
-            }
-        });
-
+    /** @internal */
+    protected override async _afterLoadModel(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        source: string | File | ArrayBufferView | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        options: ViewerLoadModelOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        internalAbortSignal: AbortSignal
+    ): Promise<void> {
         const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
         const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
         // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
         // and an environment texture is not already loaded, then load the default environment.
         if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
-            await this.resetEnvironment({ lighting: true }, abortSignal);
+            // Combine the caller's external `abortSignal` with our `internalAbortSignal` so the
+            // fallback environment load aborts on either: caller cancellation OR a newer loadModel
+            // superseding us. Without this OR, a stale fallback could mutate the scene before the
+            // post-await `internalAbortSignal.aborted` check runs.
+            const fallbackAbortSignal = abortSignal ? AbortSignal.any([abortSignal, internalAbortSignal]) : internalAbortSignal;
+            await this.resetEnvironment({ lighting: true }, fallbackAbortSignal);
+            if (internalAbortSignal.aborted) {
+                throw new AbortError(internalAbortSignal.reason);
+            }
         }
 
         this._startSceneOptimizer(true);
     }
 
-    protected async _updateShadows() {
-        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
-        const abortController = (this._shadowsAbortController = new AbortController());
+    /** @internal */
+    protected override async _updateShadowsImpl(quality: ShadowQuality, abortSignal: AbortSignal | undefined, internalAbortSignal: AbortSignal): Promise<void> {
+        this._snapshotHelper?.disableSnapshotRendering();
 
-        await this._updateShadowsLock.lockAsync(async () => {
-            this._snapshotHelper?.disableSnapshotRendering();
-
-            try {
-                if (this._shadowQuality === "none") {
-                    this._disposeShadows();
-                } else {
-                    // make sure there is an env light before creating shadows
-                    if (!this._reflectionTexture) {
-                        await this.loadEnvironment("auto", { lighting: true, skybox: false });
-                    }
-
-                    if (this._shadowQuality === "normal") {
-                        await this._updateShadowMap(abortController.signal);
-                    } else if (this._shadowQuality === "high") {
-                        await this._updateEnvShadow(abortController.signal);
-                    }
+        try {
+            if (quality === "none") {
+                this._disposeShadows();
+            } else {
+                // make sure there is an env light before creating shadows
+                if (!this._reflectionTexture) {
+                    // Combine the caller's external `abortSignal` with `internalAbortSignal` so this
+                    // auto-environment load aborts if either the caller cancels or a newer shadow
+                    // update supersedes us.
+                    const envAbortSignal = abortSignal ? AbortSignal.any([abortSignal, internalAbortSignal]) : internalAbortSignal;
+                    await this.loadEnvironment("auto", { lighting: true, skybox: false }, envAbortSignal);
                 }
-            } finally {
-                this._snapshotHelper?.enableSnapshotRendering();
-                this._markSceneMutated();
+
+                if (quality === "normal") {
+                    await this._updateShadowMap(internalAbortSignal);
+                } else if (quality === "high") {
+                    await this._updateEnvShadow(internalAbortSignal);
+                }
             }
-        });
+        } finally {
+            this._snapshotHelper?.enableSnapshotRendering();
+            this._markSceneMutated();
+        }
     }
 
     private _changeShadowLightIntensity() {
@@ -1900,7 +1386,7 @@ export class Viewer implements IDisposable {
     private _rotateShadowLightWithEnvironment(): void {
         if (this._shadowQuality === "normal" && this._shadowState.normal) {
             if (this._shadowState.normal.light) {
-                this._shadowState.normal.refreshLightPositionDirection(this._reflectionsRotation);
+                this._shadowState.normal.refreshLightPositionDirection(this._environmentRotation);
             }
         } else if (this._shadowQuality === "high" && this._shadowState.high) {
             this._shadowState.high.pipeline?.resetAccumulation();
@@ -1947,12 +1433,7 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(
-            abortSignal,
-            this._loadModelAbortController?.signal,
-            this._loadEnvironmentLightingAbortController?.signal,
-            this._loadEnvironmentSkyboxAbortController?.signal
-        );
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortSignal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
 
         let high = this._shadowState.high;
 
@@ -2125,12 +1606,7 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(
-            abortSignal,
-            this._loadModelAbortController?.signal,
-            this._loadEnvironmentLightingAbortController?.signal,
-            this._loadEnvironmentSkyboxAbortController?.signal
-        );
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortSignal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
 
         let normal = this._shadowState.normal;
 
@@ -2149,12 +1625,7 @@ export class Viewer implements IDisposable {
 
         const iblCdfGenerator = normal?.iblDirection.iblCdfGenerator ? normal?.iblDirection.iblCdfGenerator : new IblCdfGenerator(this._engine);
         const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
-        this._throwIfDisposedOrAborted(
-            abortSignal,
-            this._loadModelAbortController?.signal,
-            this._loadEnvironmentLightingAbortController?.signal,
-            this._loadEnvironmentSkyboxAbortController?.signal
-        );
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortSignal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
 
         this._snapshotHelper?.disableSnapshotRendering();
 
@@ -2237,7 +1708,7 @@ export class Viewer implements IDisposable {
 
         normal.iblDirection.direction = iblDirection;
         normal.iblDirection.positionFactor = positionFactor;
-        normal.refreshLightPositionDirection(this._reflectionsRotation);
+        normal.refreshLightPositionDirection(this._environmentRotation);
         normal.light.shadowFrustumSize = radius * 4;
 
         for (const model of this._loadedModelsBacking) {
@@ -2315,23 +1786,11 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Loads an environment texture from the specified url and sets up a corresponding skybox.
-     * @remarks
-     * If an environment is already loaded, it will be unloaded before loading the new environment.
-     * @param url The url of the environment texture to load.
-     * @param options The options to use when loading the environment.
-     * @param abortSignal An optional signal that can be used to abort the loading process.
-     */
-    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(url, options, abortSignal);
-    }
-
-    /**
      * Resets the environment to its default state.
      * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
-    public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public override async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         const promises: Promise<void>[] = [];
         // When there are PBR materials, the default environment should be used for lighting.
         if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
@@ -2361,181 +1820,142 @@ export class Viewer implements IDisposable {
         this._updateAutoClear();
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options: LoadEnvironmentOptions = defaultLoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
+    /** @internal */
+    protected override async _loadEnvironmentImpl(
+        url: Nullable<string | undefined>,
+        options: ResolvedLoadEnvironmentOptions,
+        abortSignal: AbortSignal | undefined,
+        compositeAbortSignal: AbortSignal
+    ): Promise<void> {
+        const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
 
-        if (!options.lighting && !options.skybox) {
-            return;
-        }
+        const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
+            await new Promise<void>((resolve, reject) => {
+                const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
+                    errorObserver.remove();
+                    resolve();
+                });
 
-        url = url?.trim();
-
-        const locks: AsyncLock[] = [];
-        const internalAbortControllers: AbortController[] = [];
-
-        if (options.lighting) {
-            this._loadEnvironmentLightingAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
-            const lightingAbortController = (this._loadEnvironmentLightingAbortController = new AbortController());
-            locks.push(this._loadEnvironmentLightingLock);
-            internalAbortControllers.push(lightingAbortController);
-        }
-        if (options.skybox) {
-            this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
-            const skyboxAbortController = (this._loadEnvironmentSkyboxAbortController = new AbortController());
-            locks.push(this._loadEnvironmentSkyboxLock);
-            internalAbortControllers.push(skyboxAbortController);
-        }
-
-        // Create a composite abort signal that only aborts when ALL internal abort controllers
-        // have been aborted. This ensures that e.g. a skybox-only update doesn't cancel an
-        // in-progress lighting update (or vice versa) when both were requested together.
-        const compositeAbortController = new AbortController();
-        const checkAllAborted = () => {
-            if (internalAbortControllers.every((c) => c.signal.aborted)) {
-                compositeAbortController.abort(new AbortError(internalAbortControllers.map((controller) => controller.signal.reason).join(" | ")));
-            }
+                const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                    if (texture === cubeTexture) {
+                        successObserver.remove();
+                        errorObserver.remove();
+                        reject(new Error("Failed to load environment texture."));
+                    }
+                });
+            });
         };
-        for (const controller of internalAbortControllers) {
-            controller.signal.addEventListener("abort", checkAllAborted);
-        }
+
+        const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
+
+        this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
+        this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
+
+        let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
+        let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
+
+        this._snapshotHelper?.disableSnapshotRendering();
 
         try {
-            await AsyncLock.LockAsync(async () => {
-                throwIfAborted(abortSignal, compositeAbortController.signal);
-
-                const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
-
-                const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
-                    await new Promise<void>((resolve, reject) => {
-                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
-                            errorObserver.remove();
-                            resolve();
-                        });
-
-                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                            if (texture === cubeTexture) {
-                                successObserver.remove();
-                                errorObserver.remove();
-                                reject(new Error("Failed to load environment texture."));
-                            }
-                        });
-                    });
-                };
-
-                const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
-
-                this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
-                this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
-
-                let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
-                let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
-
-                this._snapshotHelper?.disableSnapshotRendering();
-
-                try {
-                    // If both modes are auto, use the default environment.
-                    if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
-                        lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
-                    } else {
-                        // If the lighting mode is not auto and we are updating the lighting, use the provided url.
-                        if (this._environmentLightingMode !== "auto" && options.lighting) {
-                            lightingUrl = url;
-                        }
-
-                        // If the skybox mode is not auto and we are updating the skybox, use the provided url.
-                        if (this._environmentSkyboxMode !== "auto" && options.skybox) {
-                            skyboxUrl = url;
-                        }
-
-                        // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
-                        if (this._environmentLightingMode === "auto") {
-                            lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
-                        }
-
-                        // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
-                        if (this._environmentSkyboxMode === "auto") {
-                            skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
-                        }
-                    }
-
-                    const newTexturePromises: Promise<void>[] = [];
-
-                    // If the lighting url is not the same as the current lighting url, load the new lighting texture.
-                    if (lightingUrl !== this._reflectionTexture?.url) {
-                        if (lightingUrl) {
-                            // Load the new reflection texture before disposing the old one.
-                            const oldReflectionTexture = this._reflectionTexture;
-                            if (lightingUrl === this._skyboxTexture?.url) {
-                                // If the lighting url is the same as the skybox url, clone the skybox texture.
-                                const environmentTexture = this._skyboxTexture.clone();
-                                environmentTexture.coordinatesMode = Texture.CUBIC_MODE;
-                                this._setEnvironmentLighting(environmentTexture);
-                            } else {
-                                // Otherwise, create a new cube texture from the lighting url.
-                                let lightingOptions = options;
-                                if (this._environmentLightingMode === "auto") {
-                                    lightingOptions = { ...lightingOptions, extension: ".env" };
-                                }
-                                const lightingTexture = await createCubeTexture(lightingUrl, this._scene, lightingOptions.extension);
-                                newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
-                                this._setEnvironmentLighting(lightingTexture);
-                            }
-                            oldReflectionTexture?.dispose();
-                        } else {
-                            // No new lighting url — dispose the old texture and clear.
-                            this._reflectionTexture?.dispose();
-                            this._reflectionTexture = null;
-                            this._scene.environmentTexture = null;
-                        }
-                    }
-
-                    // If the skybox url is not the same as the current skybox url, load the new skybox texture.
-                    if (skyboxUrl !== this._skyboxTexture?.url) {
-                        if (skyboxUrl) {
-                            // Load the new skybox texture before disposing the old one.
-                            const oldSkybox = this._skybox;
-                            const oldSkyboxTexture = this._skyboxTexture;
-                            if (skyboxUrl === this._reflectionTexture?.url) {
-                                // If the skybox url is the same as the lighting url, clone the lighting texture.
-                                this._setEnvironmentSkybox(this._reflectionTexture.clone());
-                            } else {
-                                // Otherwise, create a new cube texture from the skybox url.
-                                let skyboxOptions = options;
-                                if (this._environmentSkyboxMode === "auto") {
-                                    skyboxOptions = { ...skyboxOptions, extension: ".env" };
-                                }
-                                const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, skyboxOptions.extension);
-                                newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
-                                this._setEnvironmentSkybox(skyboxTexture);
-                            }
-                            oldSkybox?.dispose(undefined, true);
-                            oldSkyboxTexture?.dispose();
-                        } else {
-                            // No new skybox url — dispose and clear.
-                            this._skybox?.dispose(undefined, true);
-                            this._skyboxTexture = null;
-                            this._skybox = null;
-                            this._updateAutoClear();
-                        }
-                    }
-
-                    await Promise.all(newTexturePromises);
-
-                    this._updateLight();
-                    observePromise(this._updateShadows());
-                    this.onEnvironmentChanged.notifyObservers();
-                } catch (e) {
-                    this.onEnvironmentError.notifyObservers(e);
-                    throw e;
-                } finally {
-                    this._snapshotHelper?.enableSnapshotRendering();
-                    this._markSceneMutated();
+            // If both modes are auto, use the default environment.
+            if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
+                lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
+            } else {
+                // If the lighting mode is not auto and we are updating the lighting, use the provided url.
+                if (this._environmentLightingMode !== "auto" && options.lighting) {
+                    lightingUrl = url;
                 }
-            }, locks);
-        } finally {
-            for (const controller of internalAbortControllers) {
-                controller.signal.removeEventListener("abort", checkAllAborted);
+
+                // If the skybox mode is not auto and we are updating the skybox, use the provided url.
+                if (this._environmentSkyboxMode !== "auto" && options.skybox) {
+                    skyboxUrl = url;
+                }
+
+                // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
+                if (this._environmentLightingMode === "auto") {
+                    lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
+                }
+
+                // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
+                if (this._environmentSkyboxMode === "auto") {
+                    skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
+                }
             }
+
+            const newTexturePromises: Promise<void>[] = [];
+
+            // If the lighting url is not the same as the current lighting url, load the new lighting texture.
+            if (lightingUrl !== this._reflectionTexture?.url) {
+                if (lightingUrl) {
+                    // Load the new reflection texture before disposing the old one.
+                    const oldReflectionTexture = this._reflectionTexture;
+                    if (lightingUrl === this._skyboxTexture?.url) {
+                        // If the lighting url is the same as the skybox url, clone the skybox texture.
+                        const environmentTexture = this._skyboxTexture.clone();
+                        environmentTexture.coordinatesMode = Texture.CUBIC_MODE;
+                        this._setEnvironmentLighting(environmentTexture);
+                    } else {
+                        // Otherwise, create a new cube texture from the lighting url.
+                        let lightingOptions: ResolvedLoadEnvironmentOptions = options;
+                        if (this._environmentLightingMode === "auto") {
+                            lightingOptions = { ...lightingOptions, extension: ".env" };
+                        }
+                        const lightingTexture = await createCubeTexture(lightingUrl, this._scene, lightingOptions.extension);
+                        newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
+                        this._setEnvironmentLighting(lightingTexture);
+                    }
+                    oldReflectionTexture?.dispose();
+                } else {
+                    // No new lighting url — dispose the old texture and clear.
+                    this._reflectionTexture?.dispose();
+                    this._reflectionTexture = null;
+                    this._scene.environmentTexture = null;
+                }
+            }
+
+            // If the skybox url is not the same as the current skybox url, load the new skybox texture.
+            if (skyboxUrl !== this._skyboxTexture?.url) {
+                if (skyboxUrl) {
+                    // Load the new skybox texture before disposing the old one.
+                    const oldSkybox = this._skybox;
+                    const oldSkyboxTexture = this._skyboxTexture;
+                    if (skyboxUrl === this._reflectionTexture?.url) {
+                        // If the skybox url is the same as the lighting url, clone the lighting texture.
+                        this._setEnvironmentSkybox(this._reflectionTexture.clone());
+                    } else {
+                        // Otherwise, create a new cube texture from the skybox url.
+                        let skyboxOptions: ResolvedLoadEnvironmentOptions = options;
+                        if (this._environmentSkyboxMode === "auto") {
+                            skyboxOptions = { ...skyboxOptions, extension: ".env" };
+                        }
+                        const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, skyboxOptions.extension);
+                        newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
+                        this._setEnvironmentSkybox(skyboxTexture);
+                    }
+                    oldSkybox?.dispose(undefined, true);
+                    oldSkyboxTexture?.dispose();
+                } else {
+                    // No new skybox url — dispose and clear.
+                    this._skybox?.dispose(undefined, true);
+                    this._skyboxTexture = null;
+                    this._skybox = null;
+                    this._updateAutoClear();
+                }
+            }
+
+            await Promise.all(newTexturePromises);
+
+            throwIfAborted(abortSignal, compositeAbortSignal);
+
+            this._updateLight();
+            observePromise(this._updateShadows(this._shadowQuality));
+            this.onEnvironmentChanged.notifyObservers();
+        } catch (e) {
+            this.onEnvironmentError.notifyObservers(e);
+            throw e;
+        } finally {
+            this._snapshotHelper?.enableSnapshotRendering();
+            this._markSceneMutated();
         }
     }
 
@@ -2675,108 +2095,84 @@ export class Viewer implements IDisposable {
         );
     }
 
-    /**
-     * Resets the viewer to its initial state based on the options passed in to the constructor.
-     * @param flags The flags that specify which parts of the viewer to reset. If no flags are provided, all parts will be reset.
-     * - "source": Reset the loaded model.
-     * - "environment": Reset environment related state.
-     * - "animation": Reset animation related state.
-     * - "camera": Reset camera related state.
-     * - "post-processing": Reset post-processing related state.
-     * - "material-variant": Reset material variant related state.
-     */
-    public reset(...flags: ResetFlag[]) {
-        this._reset(true, ...flags);
+    /** @internal */
+    protected override _resetEnvironment(): void {
+        const cc = this._options?.clearColor ?? DefaultViewerOptions.clearColor;
+        this.clearColor = { r: cc[0], g: cc[1], b: cc[2], a: cc[3] ?? 1 };
+        this.environmentConfig = {
+            intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
+            blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
+            rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
+        };
+
+        if (this._options?.environmentLighting === this._options?.environmentSkybox) {
+            observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }));
+        } else {
+            observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }));
+            observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }));
+        }
     }
 
-    private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
-        if (flags.length === 0 || flags.includes("source")) {
-            observePromise(this._updateModel(this._options?.source));
+    /** @internal */
+    protected override _resetAnimation(): void {
+        this.animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
+        this.selectedAnimation = this._options?.selectedAnimation ?? 0;
+        if (this._options?.animationAutoPlay) {
+            this.playAnimation();
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.pauseAnimation();
         }
+    }
 
-        if (flags.length === 0 || flags.includes("environment")) {
-            this._scene.clearColor = new Color4(...(this._options?.clearColor ?? DefaultViewerOptions.clearColor));
-            this.environmentConfig = {
-                intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
-                blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
-                rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
-            };
+    /** @internal */
+    protected override _resetCamera(interpolate: boolean): void {
+        // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
+        const alpha = Number(this._options?.cameraOrbit?.[0]);
+        const beta = Number(this._options?.cameraOrbit?.[1]);
+        const radius = Number(this._options?.cameraOrbit?.[2]);
+        const targetX = Number(this._options?.cameraTarget?.[0]);
+        const targetY = Number(this._options?.cameraTarget?.[1]);
+        const targetZ = Number(this._options?.cameraTarget?.[2]);
+        this._reframeCameraFromBounds(
+            interpolate,
+            this._loadedModels,
+            isNaN(alpha) ? undefined : alpha,
+            isNaN(beta) ? undefined : beta,
+            isNaN(radius) ? undefined : radius,
+            isNaN(targetX) ? undefined : targetX,
+            isNaN(targetY) ? undefined : targetY,
+            isNaN(targetZ) ? undefined : targetZ
+        );
+        this.cameraAutoOrbit = {
+            enabled: this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+            speed: this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+            delay: this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
+        };
+    }
 
-            if (this._options?.environmentLighting === this._options?.environmentSkybox) {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }));
-            } else {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }));
-                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }));
-            }
-        }
-
-        if (flags.length === 0 || flags.includes("shadow")) {
-            this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
-            observePromise(this.updateShadows({ quality: this._shadowQuality }));
-        }
-
-        if (flags.length === 0 || flags.includes("animation")) {
-            this.animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
-            this.selectedAnimation = this._options?.selectedAnimation ?? 0;
-            if (this._options?.animationAutoPlay) {
-                this.playAnimation();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.pauseAnimation();
-            }
-        }
-
-        if (flags.length === 0 || flags.includes("camera")) {
-            // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
-            const alpha = Number(this._options?.cameraOrbit?.[0]);
-            const beta = Number(this._options?.cameraOrbit?.[1]);
-            const radius = Number(this._options?.cameraOrbit?.[2]);
-            const targetX = Number(this._options?.cameraTarget?.[0]);
-            const targetY = Number(this._options?.cameraTarget?.[1]);
-            const targetZ = Number(this._options?.cameraTarget?.[2]);
-            this._reframeCameraFromBounds(
-                interpolate,
-                this._loadedModels,
-                isNaN(alpha) ? undefined : alpha,
-                isNaN(beta) ? undefined : beta,
-                isNaN(radius) ? undefined : radius,
-                isNaN(targetX) ? undefined : targetX,
-                isNaN(targetY) ? undefined : targetY,
-                isNaN(targetZ) ? undefined : targetZ
-            );
-            this.cameraAutoOrbit = {
-                enabled: this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
-                speed: this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
-                delay: this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
-            };
-        }
-
-        if (flags.length === 0 || flags.includes("post-processing")) {
-            this.postProcessing = {
-                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
-                contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
-                exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
-                ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
-            };
-        }
-
-        if (flags.length === 0 || flags.includes("material-variant")) {
-            this.selectedMaterialVariant = this._options?.selectedMaterialVariant ?? null;
-        }
+    /** @internal */
+    protected override _resetPostProcessing(): void {
+        this.postProcessing = {
+            toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
+            contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
+            exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+            ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
+        };
     }
 
     /**
      * Disposes of the resources held by the Viewer.
      */
-    public dispose(): void {
+    public override dispose(): void {
+        if (this._isDisposed) {
+            return;
+        }
+
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadEnvironmentLightingAbortController?.abort(new AbortError("The viewer is being disposed."));
-        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("The viewer is being disposed."));
-        this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("The viewer is being disposed."));
-        this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._ssaoAbortController?.abort(new AbortError("The viewer is being disposed."));
 
         this._renderLoopController?.dispose();
@@ -2785,27 +2181,12 @@ export class Viewer implements IDisposable {
         this._disposeShadows();
         this._scene.dispose();
 
-        this.onEnvironmentChanged.clear();
-        this.onEnvironmentError.clear();
-        this.onEnvironmentConfigurationChanged.clear();
-        this.onPostProcessingChanged.clear();
-        this.onModelChanged.clear();
-        this.onModelError.clear();
-        this.onCameraAutoOrbitChanged.clear();
-        this.onSelectedAnimationChanged.clear();
-        this.onAnimationSpeedChanged.clear();
-        this.onIsAnimationPlayingChanged.clear();
-        this.onAnimationProgressChanged.clear();
-        this.onSelectedMaterialVariantChanged.clear();
-        this.onHotSpotsChanged.clear();
-        this.onCamerasAsHotSpotsChanged.clear();
-        this.onLoadingProgressChanged.clear();
-
         this._imageProcessingConfigurationObserver.remove();
         this._beforeRenderObserver?.remove();
         this._snapshotHelper?.dispose();
 
-        this._isDisposed = true;
+        // Base disposes observables and sets _isDisposed = true
+        super.dispose();
     }
 
     /**
@@ -3271,17 +2652,5 @@ export class Viewer implements IDisposable {
         if (this.showDebugLogs) {
             Logger.Log(message);
         }
-    }
-
-    /**
-     * Check for disposed or aborted state (basically everything that can interrupt an async operation).
-     * @param abortSignals A set of optional AbortSignals to also check.
-     */
-    private _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
-        if (this._isDisposed) {
-            throw new Error("Viewer is disposed.");
-        }
-
-        throwIfAborted(...abortSignals);
     }
 }

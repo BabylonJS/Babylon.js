@@ -1,17 +1,18 @@
+/** This file must only contain pure code and pure imports */
+
 import { CameraMovement } from "./cameraMovement";
 import { Epsilon } from "../Maths/math.constants";
 import { type GeospatialLimits } from "./Limits/geospatialLimits";
-import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
-import { type MeshPredicate } from "../Culling/ray.core";
+import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector.pure";
+import { type MeshPredicate, Pick, PickWithRay, Ray } from "../Culling/ray.core";
 import { Plane } from "../Maths/math.plane";
-import { Ray } from "../Culling/ray";
-import { type Scene } from "../scene";
+import { type Scene } from "../scene.pure";
 import { Vector3Distance } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
 import { type PickingInfo } from "../Collisions/pickingInfo";
 import { type Nullable } from "../types";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
-import { type GeospatialCamera } from "./geospatialCamera";
+import { type GeospatialCamera } from "./geospatialCamera.pure";
 import { type InputMapEntry, InputMapper } from "./inputMapper";
 
 // ── Geospatial handler types ────────────────────────────────────────
@@ -313,7 +314,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         if (zoomDelta !== 0) {
             this.zoomAccumulatedPixels += zoomDelta;
 
-            const pickResult = this._scene.pick(this._scene.pointerX, this._scene.pointerY, this.pickPredicate);
+            const pickResult = Pick(this._scene, this._scene.pointerX, this._scene.pointerY, this.pickPredicate);
 
             if (toCursor && pickResult.hit && pickResult.pickedPoint && pickResult.ray && this.zoomToCursor) {
                 this.computedPerFrameZoomPickPoint = pickResult.pickedPoint;
@@ -333,7 +334,7 @@ export class GeospatialCameraMovement extends CameraMovement {
     public pickAlongVector(vector: Vector3): Nullable<PickingInfo> {
         this._tempPickingRay.origin.copyFrom(this._cameraPosition);
         this._tempPickingRay.direction.copyFrom(vector);
-        return this._scene.pickWithRay(this._tempPickingRay, this.pickPredicate);
+        return PickWithRay(this._scene, this._tempPickingRay, this.pickPredicate);
     }
 }
 /** @internal */

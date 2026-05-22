@@ -1,4 +1,5 @@
-import { Engine } from "core/Engines";
+import { Engine } from "core/Engines/engine";
+import { vi } from "vitest";
 
 import { AudioBuffer, AudioTestSamples } from "./audioTestSamples";
 
@@ -109,6 +110,21 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
         });
 }
 
+class AudioListenerMock {
+    forwardX = new AudioParamMock();
+    forwardY = new AudioParamMock();
+    forwardZ = new AudioParamMock();
+    positionX = new AudioParamMock();
+    positionY = new AudioParamMock();
+    positionZ = new AudioParamMock();
+    upX = new AudioParamMock();
+    upY = new AudioParamMock();
+    upZ = new AudioParamMock();
+
+    setOrientation = vi.fn().mockName("setOrientation");
+    setPosition = vi.fn().mockName("setPosition");
+}
+
 class GainNodeMock extends AudioNodeMock {
     gain = new AudioParamMock();
 }
@@ -116,15 +132,20 @@ class GainNodeMock extends AudioNodeMock {
 class MediaElementAudioSourceNodeMock extends AudioNodeMock {}
 
 class PannerNodeMock extends AudioNodeMock {
-    coneInnerAngle = new AudioParamMock();
-    coneOuterAngle = new AudioParamMock();
-    coneOuterGain = new AudioParamMock();
+    coneInnerAngle = 360;
+    coneOuterAngle = 360;
+    coneOuterGain = 0;
+    distanceModel = "inverse";
+    maxDistance = 10000;
     orientationX = new AudioParamMock();
     orientationY = new AudioParamMock();
     orientationZ = new AudioParamMock();
+    panningModel = "equalpower";
     positionX = new AudioParamMock();
     positionY = new AudioParamMock();
     positionZ = new AudioParamMock();
+    refDistance = 1;
+    rolloffFactor = 1;
 
     setOrientation = vi.fn().mockName("setOrientation");
 }
@@ -138,6 +159,7 @@ export class AudioContextMock {
 
     currentTime = 0;
     destination = new AudioNodeMock();
+    listener = new AudioListenerMock();
     state = "running";
 
     requireUserInteraction = false;
@@ -295,7 +317,7 @@ export class MockedAudioObjects {
                 statusText: "",
                 response: null as any,
                 responseText: "",
-                responseType: "" as XMLHttpRequestResponseType,
+                responseType: "",
                 responseURL: "",
                 timeout: 0,
                 onprogress: null,
