@@ -27,6 +27,31 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
+/** Internal mirror of ISogTexturePack (defined in loaders) — avoids a circular import. */
+interface ISogPackInternal {
+    version: 1 | 2;
+    splatCount: number;
+    shDegree: number;
+    meansTextureL: BaseTexture;
+    meansTextureU: BaseTexture;
+    scalesTexture: BaseTexture;
+    quatsTexture: BaseTexture;
+    sh0Texture: BaseTexture;
+    shCentroidsTexture?: BaseTexture;
+    shLabelsTexture?: BaseTexture;
+    codebookTexture?: BaseTexture;
+    meansMin: [number, number, number];
+    meansMax: [number, number, number];
+    scalesMin?: [number, number, number];
+    scalesMax?: [number, number, number];
+    sh0Min?: [number, number, number, number];
+    sh0Max?: [number, number, number, number];
+    shnMin?: number;
+    shnMax?: number;
+    shCoeffCount: number;
+    positions: Float32Array;
+}
+
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
 interface IDelayedTextureUpdate {
@@ -394,6 +419,8 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     protected _useRGBACovariants = false;
+    protected _useSog = false;
+    protected _sogParams: Nullable<ISogPackInternal> = null;
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
@@ -630,6 +657,107 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public get shTextures() {
         return this._shTextures;
+    }
+
+    /**
+     * True when this mesh holds raw SOG webp textures (dequantized in-shader) rather than the
+     * pre-decoded covariance/center/color textures produced by the standard splat loader.
+     */
+    public get useSog(): boolean {
+        return this._useSog;
+    }
+
+    /**
+     * SOG dequantization parameters paired with the raw textures.
+     * Set by the splat loader when `useSogTextures: true`. Null otherwise.
+     */
+    public get sogParams(): Nullable<ISogPackInternal> {
+        return this._sogParams;
+    }
+
+    /**
+     * Install a set of raw SOG webp textures and bind the mesh to the in-shader dequantization path.
+     * @param pack SOG texture pack produced by ParseSogMetaAsTextures.
+     * @internal
+     */
+    public setSogTextureData(pack: ISogPackInternal): void {
+        this._useSog = true;
+        this._sogParams?.codebookTexture?.dispose();
+        this._sogParams = pack;
+        this._vertexCount = pack.splatCount;
+        this._shDegree = pack.shDegree ?? 0;
+        this._maxShDegree = this._shDegree;
+
+        // Stride-4 (xyz + 1) — required by the depth-sort worker and the centers texture path.
+        this._splatPositions = pack.positions;
+
+        // Reuse existing texture slots for SOG textures (the shader, under USE_SOG, samples them as RGBA8).
+        this._covariancesATexture?.dispose();
+        this._covariancesBTexture?.dispose();
+        this._centersTexture?.dispose();
+        this._colorsTexture?.dispose();
+        this._rotationsATexture?.dispose();
+        if (this._shTextures) {
+            for (const t of this._shTextures) {
+                t.dispose();
+            }
+        }
+
+        this._centersTexture = pack.meansTextureL;
+        this._covariancesATexture = pack.meansTextureU;
+        this._covariancesBTexture = pack.scalesTexture;
+        this._rotationsATexture = pack.quatsTexture;
+        this._colorsTexture = pack.sh0Texture;
+
+        const shTextures: BaseTexture[] = [];
+        if (pack.shCentroidsTexture) {
+            shTextures.push(pack.shCentroidsTexture);
+        }
+        if (pack.shLabelsTexture) {
+            shTextures.push(pack.shLabelsTexture);
+        }
+        this._shTextures = shTextures.length ? shTextures : null;
+
+        // Force pipeline rebuild so the USE_SOG define and extra samplers are picked up.
+        this._material?.resetDrawCache();
+
+        const size = pack.meansTextureL.getSize();
+        this._textureSize.x = size.width;
+        this._textureSize.y = size.height;
+
+        this._updateSplatIndexBuffer(this._vertexCount);
+        this._instantiateWorker();
+
+        // Compute bounds from the CPU-decoded positions (stride-4) so the mesh is not frustum-culled.
+        const positions = pack.positions as Float32Array;
+        const minimum = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+        const maximum = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+        for (let i = 0; i < this._vertexCount; i++) {
+            const x = positions[i * 4 + 0];
+            const y = positions[i * 4 + 1];
+            const z = positions[i * 4 + 2];
+            if (x < minimum.x) {
+                minimum.x = x;
+            }
+            if (y < minimum.y) {
+                minimum.y = y;
+            }
+            if (z < minimum.z) {
+                minimum.z = z;
+            }
+            if (x > maximum.x) {
+                maximum.x = x;
+            }
+            if (y > maximum.y) {
+                maximum.y = y;
+            }
+            if (z > maximum.z) {
+                maximum.z = z;
+            }
+        }
+        this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+        this.setEnabled(true);
+        this._sortIsDirty = true;
     }
 
     /**
@@ -1855,6 +1983,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._rotationsATexture?.dispose();
         this._rotationsBTexture?.dispose();
         this._rotationScaleTexture?.dispose();
+        this._sogParams?.codebookTexture?.dispose();
         this._rotationsATexture = null;
         this._rotationsBTexture = null;
         this._rotationScaleTexture = null;

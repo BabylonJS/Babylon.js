@@ -31,16 +31,38 @@ var covariancesATexture: texture_2d<f32>;
 var covariancesBTexture: texture_2d<f32>;
 var centersTexture: texture_2d<f32>;
 var colorsTexture: texture_2d<f32>;
+
+#ifdef USE_SOG
+var sogQuatsTexture: texture_2d<f32>;
+uniform sogMeansMin: vec3f;
+uniform sogMeansMax: vec3f;
+#ifdef USE_SOG_V2
+var sogCodebookTexture: texture_2d<f32>;
+#else
+uniform sogScalesMin: vec3f;
+uniform sogScalesMax: vec3f;
+uniform sogSh0Min: vec4f;
+uniform sogSh0Max: vec4f;
+uniform sogShnMin: f32;
+uniform sogShnMax: f32;
+#endif
 #if SH_DEGREE > 0
+var sogShNCentroidsTexture: texture_2d<f32>;
+var sogShNLabelsTexture: texture_2d<f32>;
+uniform sogShCoeffCount: f32;
+#endif
+#endif
+
+#if SH_DEGREE > 0 && !defined(USE_SOG)
 var shTexture0: texture_2d<u32>;
 #endif
-#if SH_DEGREE > 1
+#if SH_DEGREE > 1 && !defined(USE_SOG)
 var shTexture1: texture_2d<u32>;
 #endif
-#if SH_DEGREE > 2
+#if SH_DEGREE > 2 && !defined(USE_SOG)
 var shTexture2: texture_2d<u32>;
 #endif
-#if SH_DEGREE > 3
+#if SH_DEGREE > 3 && !defined(USE_SOG)
 var shTexture3: texture_2d<u32>;
 var shTexture4: texture_2d<u32>;
 #endif
