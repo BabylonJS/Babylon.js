@@ -135,8 +135,9 @@ geometry_thickness = uniforms.vGeometryThickness;
 
 #ifdef ALPHATEST
     #if DEBUGMODE != 88
-        if (alpha < ALPHATESTVALUE)
+        if (alpha < ALPHATESTVALUE) {
             discard;
+        }
     #endif
 
     #ifndef ALPHABLEND

@@ -4303,6 +4303,12 @@
             "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
         },
         {
+            "title": "OpenPBR Geometry Opacity",
+            "playgroundId": "#GRQHVV#327",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458",
             "dependsOn": ["Materials", "Textures"]
