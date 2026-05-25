@@ -24,6 +24,7 @@ import {
     Tooltip,
     TreeItemLayout,
     treeItemLevelToken,
+    typographyStyles,
 } from "@fluentui/react-components";
 import {
     type FluentIcon,
@@ -483,6 +484,57 @@ function GetCommandDescription(command: SceneExplorerCommand): string {
     return command.hotKey ? `${command.displayName} (${GetCommandHotKeyDescription(command)})` : command.displayName;
 }
 
+const useTruncatingBody1Styles = makeStyles({
+    container: {
+        display: "block",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        minWidth: 0,
+        ...typographyStyles.body1,
+    },
+});
+
+const TruncatingBody1: FunctionComponent<{ text: string }> = (props) => {
+    const { text } = props;
+    const classes = useTruncatingBody1Styles();
+    const ref = useRef<HTMLSpanElement | null>(null);
+    const [isTruncated, setIsTruncated] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    useEffect(() => {
+        const element = ref.current;
+        if (!element) {
+            return undefined;
+        }
+
+        const update = () => {
+            setIsTruncated(element.scrollWidth > element.clientWidth);
+        };
+
+        update();
+
+        const observer = new ResizeObserver(update);
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [text]);
+
+    return (
+        <Tooltip content={text} positioning="after" relationship="description" visible={isTruncated && isHovered} onVisibleChange={(_, data) => setIsHovered(data.visible)}>
+            {/*
+              Body1 isn't used here: it doesn't forward refs (so we can't measure the rendered element)
+              and it reapplies its own white-space styling that overrides ours when wrapped, which would
+              break truncation for names containing spaces. Instead, render a single ref'd <span> styled
+              with Fluent typography tokens so we get the same look while keeping full control over
+              truncation and overflow measurement.
+            */}
+            <span ref={ref} className={classes.container}>
+                {text}
+            </span>
+        </Tooltip>
+    );
+};
+
 const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
     const { command } = props;
 
@@ -493,7 +545,7 @@ const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline",
     );
 
     return (
-        <Tooltip content={GetCommandDescription(command)} relationship="label" positioning={"after"}>
+        <Tooltip content={GetCommandDescription(command)} relationship="label" positioning="after">
             <Button icon={<Icon />} appearance="subtle" onClick={() => execute()} />
         </Tooltip>
     );
@@ -513,6 +565,7 @@ const ToggleCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline",
         <ToggleButton
             appearance="transparent"
             title={GetCommandDescription(command)}
+            titlePositioning="after"
             checkedIcon={Icon as FluentIcon}
             value={isEnabled}
             onChange={(val: boolean) => (command.isEnabled = val)}
@@ -844,11 +897,7 @@ const EntityTreeItem: FunctionComponent<
                             className: classes.treeItemLayoutMain,
                         }}
                     >
-                        <Tooltip content={name} relationship="description">
-                            <Body1 wrap={false} truncate>
-                                {name}
-                            </Body1>
-                        </Tooltip>
+                        <TruncatingBody1 text={name} />
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
