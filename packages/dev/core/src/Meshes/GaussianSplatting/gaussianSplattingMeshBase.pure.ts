@@ -924,10 +924,11 @@ export class GaussianSplattingMeshBase extends Mesh {
                     continue;
                 }
 
-                // Also detect drift: if the world or camera state has changed since the last post,
-                // mark dirty so the next render does not silently queue a new sort that completes
-                // after isReady has reported true.
-                if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera)) {
+                // If world matrix drifted (user applied transforms after load), re-sort before first render.
+                // Camera drift is intentionally excluded here: checking camera movement would cause isReady()
+                // to return false indefinitely while the camera is moving. The render loop handles camera
+                // re-sorting continuously via _postToWorker() in render().
+                if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera, true)) {
                     anyDirty = true;
                 }
             }
@@ -1008,13 +1009,17 @@ export class GaussianSplattingMeshBase extends Mesh {
         return localDirection;
     }
 
-    private _isSortStateDirty(cameraViewInfo: ICameraViewInfo, worldMatrix: Matrix, camera: Camera): boolean {
+    private _isSortStateDirty(cameraViewInfo: ICameraViewInfo, worldMatrix: Matrix, camera: Camera, worldMatrixOnly = false): boolean {
         const world = worldMatrix.m;
         const previousWorld = cameraViewInfo.sortWorldMatrix.m;
         for (let i = 0; i < previousWorld.length; i++) {
             if (!Scalar.WithinEpsilon(previousWorld[i], world[i], this.viewUpdateThreshold)) {
                 return true;
             }
+        }
+
+        if (worldMatrixOnly) {
+            return false;
         }
 
         const cameraViewMatrix = camera.getViewMatrix();
@@ -2839,9 +2844,14 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             // If the vertex count changed, we discard this result and trigger a new sort
             if (e.data.depthMix.length != vertexCountPadded) {
-                this._canPostToWorker = true;
-                this._postToWorker(true);
-                this._sortIsDirty = false;
+                // Only re-enable posting and trigger a re-sort if the buffer is available.
+                // If byteLength === 0 the buffer is already in-flight for a newer sort;
+                // that sort's onmessage will handle things when it returns.
+                if (this._depthMix.buffer.byteLength > 0) {
+                    this._canPostToWorker = true;
+                    this._postToWorker(true);
+                    this._sortIsDirty = false;
+                }
                 return;
             }
 
