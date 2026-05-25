@@ -9,10 +9,11 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Texture } from "core/Materials/Textures/texture";
+import { VertexBuffer } from "core/Buffers/buffer";
 
 import "core/Engines/AbstractEngine/abstractEngine.states";
 import "core/Layers/effectLayerSceneComponent";
-import "core/Rendering/depthRendererSceneComponent";
 import "core/Shaders/depth.fragment";
 import "core/Shaders/depth.vertex";
 
@@ -55,6 +56,24 @@ describe("SelectionOutlineLayer", () => {
         createEffect.mockRestore();
 
         return options;
+    };
+
+    const createAlphaTestMaterial = (coordinatesIndex = 0) => {
+        const material = new PBRMaterial("alphaTestMaterial", scene);
+        const texture = new Texture("alphaTexture.jpg", scene);
+        texture.hasAlpha = true;
+        texture.coordinatesIndex = coordinatesIndex;
+        material.albedoTexture = texture;
+        material.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
+
+        return material;
+    };
+
+    const getSelectionDefines = (layer: SelectionOutlineLayer, subMesh: SubMesh) => {
+        vi.spyOn(engine, "createEffect").mockReturnValue({ dispose: vi.fn(), getEngine: () => engine, isReady: () => true } as unknown as Effect);
+        layer.isReady(subMesh, false);
+
+        return subMesh._getDrawWrapper(undefined, true)?.defines as string;
     };
 
     beforeEach(() => {
@@ -201,14 +220,49 @@ describe("SelectionOutlineLayer", () => {
             sphere.material = material;
 
             layer.addSelection(sphere);
-            vi.spyOn(engine, "createEffect").mockReturnValue({ dispose: vi.fn(), getEngine: () => engine, isReady: () => true } as unknown as Effect);
 
             const subMesh = sphere.subMeshes[0];
-            layer.isReady(subMesh, false);
+            const defines = getSelectionDefines(layer, subMesh);
 
-            const defines = subMesh._getDrawWrapper(undefined, true)?.defines;
             expect(defines).toEqual(expect.any(String));
-            expect(defines as string).not.toContain("#define ALPHATEST");
+            expect(defines).not.toContain("#define ALPHATEST");
+        });
+
+        it(`should not compile alpha-test selection sampling when no UV set is available on ${engineName}`, () => {
+            Object.defineProperty(engine, "isWebGPU", { configurable: true, value: isWebGPU });
+
+            const layer = new SelectionOutlineLayer("outline", scene, { useDepthOcclusion: false });
+            const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 1 }, scene);
+
+            sphere.material = createAlphaTestMaterial();
+            sphere.removeVerticesData(VertexBuffer.UVKind);
+            layer.addSelection(sphere);
+
+            const defines = getSelectionDefines(layer, sphere.subMeshes[0]);
+
+            expect(defines).not.toContain("#define ALPHATEST");
+            expect(defines).not.toContain("#define UV1");
+            expect(defines).not.toContain("#define UV2");
+        });
+
+        it(`should compile alpha-test selection sampling with UV2 when UV1 is unavailable on ${engineName}`, () => {
+            Object.defineProperty(engine, "isWebGPU", { configurable: true, value: isWebGPU });
+
+            const layer = new SelectionOutlineLayer("outline", scene, { useDepthOcclusion: false });
+            const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 1 }, scene);
+            const uvData = sphere.getVerticesData(VertexBuffer.UVKind);
+
+            expect(uvData).toBeDefined();
+            sphere.setVerticesData(VertexBuffer.UV2Kind, uvData!);
+            sphere.removeVerticesData(VertexBuffer.UVKind);
+            sphere.material = createAlphaTestMaterial();
+            layer.addSelection(sphere);
+
+            const defines = getSelectionDefines(layer, sphere.subMeshes[0]);
+
+            expect(defines).toContain("#define ALPHATEST");
+            expect(defines).toContain("#define UV2");
+            expect(defines).not.toContain("#define UV1");
         });
     }
 

@@ -11,6 +11,8 @@ import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ThinSelectionOutlineLayer, type IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLayer";
+import { DepthRenderer } from "../Rendering/depthRenderer.pure";
+import { RegisterDepthRendererSceneComponent } from "../Rendering/depthRendererSceneComponent.pure";
 
 import { type Color3 } from "../Maths/math.color.pure";
 import { type Nullable } from "../types";
@@ -150,6 +152,11 @@ export class SelectionOutlineLayer extends EffectLayer {
         this._shouldRender = false;
     }
 
+    private _enableDepthRenderer(): DepthRenderer {
+        RegisterDepthRendererSceneComponent(DepthRenderer);
+        return this._scene.enableDepthRenderer();
+    }
+
     /**
      * Checks if the layer is ready to render.
      * When selections are active and depth occlusion is enabled, this also
@@ -162,7 +169,7 @@ export class SelectionOutlineLayer extends EffectLayer {
         }
 
         if (this.shouldRender() && this.useDepthOcclusion && this.occlusionStrength > 0) {
-            const depthRenderer = this._scene.enableDepthRenderer();
+            const depthRenderer = this._enableDepthRenderer();
             if (!depthRenderer.getDepthMap().isReadyForRendering()) {
                 return false;
             }
@@ -201,7 +208,7 @@ export class SelectionOutlineLayer extends EffectLayer {
         this._thinEffectLayer.bindTexturesForCompose = (effect: Effect): void => {
             effect.setTexture("maskSampler", this._mainTexture);
             if (this.useDepthOcclusion && this.occlusionStrength > 0) {
-                const depthRenderer = this._scene.enableDepthRenderer();
+                const depthRenderer = this._enableDepthRenderer();
                 effect.setTexture("depthSampler", depthRenderer.getDepthMap());
             }
 

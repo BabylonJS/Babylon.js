@@ -241,15 +241,19 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         // Alpha test
         const alphaTestTexture = material.needAlphaTestingForMesh(mesh) ? material.getAlphaTestTexture() : null;
         if (alphaTestTexture) {
-            defines.push("#define ALPHATEST");
-            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && alphaTestTexture.coordinatesIndex === 1) {
+            const hasUV1 = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+            const hasUV2 = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
+            if (hasUV2 && (alphaTestTexture.coordinatesIndex === 1 || !hasUV1)) {
                 attribs.push(VertexBuffer.UV2Kind);
                 defines.push("#define UV2");
                 uv2 = true;
-            } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+            } else if (hasUV1) {
                 attribs.push(VertexBuffer.UVKind);
                 defines.push("#define UV1");
                 uv1 = true;
+            }
+            if (uv1 || uv2) {
+                defines.push("#define ALPHATEST");
             }
         }
 
