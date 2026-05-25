@@ -693,8 +693,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const covB = new Uint16Array(covBSItemSize * textureLength);
         const colorArray = new Uint8Array(textureLength * 4);
 
-        // Determine merged SH degree
-        const hasSH = (splatCountA === 0 || this._shData !== null) && others.every((o) => o._shData !== null);
+        // Determine merged SH degree.
+        // hasSH is true when the merged result will carry SH:
+        //   - Existing compound already has SH (_shDegree>0): preserve it even if new parts
+        //     have no SH — their texel region is pre-filled with 128 (neutral) by AllocateShBuffers.
+        //   - At least one new part carries SH: enable SH for the whole compound; existing
+        //     parts that had no SH also get neutral fill.
+        // Deliberately excludes the case where the existing compound has no SH and no new part
+        // has SH either (shDegreeNew stays 0, no SH textures allocated).
+        const hasSH = this._shDegree > 0 || others.some((o) => o._shData !== null);
         const shDegreeNew = hasSH ? Math.max(this._shDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
         if (hasSH && shDegreeNew > 0) {
@@ -933,10 +940,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         try {
             // --- Upload to GPU ---
             if (incremental) {
-                // SH degree increased: create missing GPU textures from _shData (merged above).
-                // New bands are pre-filled with 128 (neutral); _updateSubTextures re-uploads them
-                // from firstNewLine, which is redundant but harmless.
-                if (sh && this._shTextures && sh.length > this._shTextures.length && this._shData) {
+                // Create missing SH GPU textures: either the compound just gained SH for the first
+                // time (_shTextures===null) or the degree increased (sh.length > _shTextures.length).
+                // Use _shData when available (contains correct merged values for all rows);
+                // fall back to sh[idx] (pre-filled with 128) when _shData is absent (keepInRam=false).
+                // _updateSubTextures will re-upload from firstNewLine, which is redundant but harmless.
+                if (sh && (!this._shTextures || sh.length > this._shTextures.length)) {
+                    if (!this._shTextures) {
+                        this._shTextures = [];
+                    }
                     while (this._shTextures.length < sh.length) {
                         const idx = this._shTextures.length;
                         const shTexture = new RawTexture(
@@ -953,7 +965,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                         shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                         this._shTextures.push(shTexture);
-                        this._updateShTextureData(shTexture, this._shData[idx], textureSize.x, 0, textureSize.y);
+                        const src = this._shData && idx < this._shData.length ? this._shData[idx] : sh[idx];
+                        this._updateShTextureData(shTexture, src, textureSize.x, 0, textureSize.y);
                     }
                 }
 
@@ -1250,6 +1263,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
         if (this._shData) {
             serializationObject.shData = encoding === "base64" ? this._shData.map(EncodeArrayBufferToBase64) : this._shData;
+            serializationObject.shDegree = this._shDegree;
         }
         if (this._partIndices) {
             const compressedIndices = CompressPartIndices(this._partIndices.subarray(0, this._vertexCount));
@@ -1311,7 +1325,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         if (splatsData) {
             const flipY = parsedMesh._flipY ?? false;
-            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices, parsedMesh.shDegree);
         }
 
         if (parsedMesh.partProxies) {
