@@ -1,8 +1,10 @@
 import { type Scene } from "core/scene";
-import { type IParsedSplat, Mode } from "./splatDefs";
+import { type IParsedSplat, type ISogTexturePack, Mode } from "./splatDefs";
 import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { Scalar } from "core/Maths/math.scalar";
 import { type AbstractEngine } from "core/Engines";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Definition of a SOG data file
@@ -408,4 +410,156 @@ export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8A
     );
 
     return await ParseSogDatas(data, imageDataArrays, scene);
+}
+
+function CreateSogTexture(scene: Scene, bits: Uint8Array, width: number, height: number): RawTexture {
+    const tex = new RawTexture(bits, width, height, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+    tex.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    tex.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    return tex;
+}
+
+function DecodeSogPositions(data: SOGRootData, meansl: Uint8Array, meansu: Uint8Array, splatCount: number): Float32Array {
+    const unlog = (n: number) => Math.sign(n) * (Math.exp(Math.abs(n)) - 1);
+    if (!Array.isArray(data.means.mins) || !Array.isArray(data.means.maxs)) {
+        throw new Error("Missing arrays in SOG data.");
+    }
+    // Stride-4 layout (x,y,z,w) expected by the depth-sort worker and the centers texture.
+    const positions = new Float32Array(splatCount * 4);
+    for (let i = 0; i < splatCount; i++) {
+        const index = i * 4;
+        for (let j = 0; j < 3; j++) {
+            const q = (meansu[index + j] << 8) | meansl[index + j];
+            const n = Scalar.Lerp(data.means.mins[j], data.means.maxs[j], q / 65535);
+            positions[i * 4 + j] = unlog(n);
+        }
+        positions[i * 4 + 3] = 1.0;
+    }
+    return positions;
+}
+
+/**
+ * Parse SOG data and produce a set of GPU textures + dequantization parameters.
+ * The shader will sample these raw RGBA8 textures and reconstruct positions/scales/rotations/colors/SH on the GPU.
+ * @param dataOrFiles Either the SOGRootData or a Map of filenames to Uint8Array file data (including meta.json)
+ * @param rootUrl Base URL to load webp files from (if dataOrFiles is SOGRootData)
+ * @param scene The Babylon.js scene
+ * @returns Parsed splat info with `sogTextures` populated.
+ */
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
+export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene): Promise<IParsedSplat> {
+    let data: SOGRootData;
+    let files: Map<string, Uint8Array> | undefined;
+
+    if (dataOrFiles instanceof Map) {
+        files = dataOrFiles;
+        const metaFile = files.get("meta.json");
+        if (!metaFile) {
+            throw new Error("meta.json not found in files Map");
+        }
+        data = JSON.parse(new TextDecoder().decode(metaFile)) as SOGRootData;
+    } else {
+        data = dataOrFiles;
+    }
+
+    const urls = [...data.means.files, ...data.scales.files, ...data.quats.files, ...data.sh0.files];
+    if (data.shN) {
+        urls.push(...data.shN.files);
+    }
+
+    const images: IWebPImage[] = await Promise.all(
+        urls.map(async (fileName) => {
+            if (files && files.has(fileName)) {
+                return await LoadWebpImageData(files.get(fileName)!, fileName, scene.getEngine());
+            }
+            return await LoadWebpImageData(rootUrl, fileName, scene.getEngine());
+        })
+    );
+
+    const splatCount = data.count ?? data.means.shape[0];
+    const engine = scene.getEngine();
+    const splatTextureWidth = Math.min(splatCount, engine.getCaps().maxTextureSize);
+    const splatTextureHeight = Math.ceil(splatCount / splatTextureWidth);
+
+    // means_l, means_u, scales, quats, sh0 share the same (w,h)
+    const meansL = CreateSogTexture(scene, images[0].bits, splatTextureWidth, splatTextureHeight);
+    const meansU = CreateSogTexture(scene, images[1].bits, splatTextureWidth, splatTextureHeight);
+    const scales = CreateSogTexture(scene, images[2].bits, splatTextureWidth, splatTextureHeight);
+    const quats = CreateSogTexture(scene, images[3].bits, splatTextureWidth, splatTextureHeight);
+    const sh0 = CreateSogTexture(scene, images[4].bits, splatTextureWidth, splatTextureHeight);
+
+    let shCentroids: RawTexture | undefined;
+    let shLabels: RawTexture | undefined;
+    let shCoeffCount = 0;
+    let shDegree = 0;
+
+    if (data.shN && images.length >= 7) {
+        const centroidsImage = images[5];
+        const labelsImage = images[6];
+        const centroidsHeight = centroidsImage.bits.length / 4 / centroidsImage.width;
+        shCentroids = CreateSogTexture(scene, centroidsImage.bits, centroidsImage.width, centroidsHeight);
+        const labelsHeight = labelsImage.bits.length / 4 / labelsImage.width;
+        shLabels = CreateSogTexture(scene, labelsImage.bits, labelsImage.width, labelsHeight);
+
+        shCoeffCount = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : data.shN.shape[1] / 3;
+        shDegree = data.shN.bands ?? Math.round(Math.sqrt(shCoeffCount + 1) - 1);
+    }
+
+    // Optional codebook packed into a 1D R32F texture: [scales(256) | sh0(256) | shN(256)]
+    let codebookTexture: RawTexture | undefined;
+    if (data.version === 2) {
+        const codebookSize = 256;
+        const packed = new Float32Array(codebookSize * 3);
+        if (data.scales.codebook) {
+            packed.set(data.scales.codebook.slice(0, codebookSize), 0);
+        }
+        if (data.sh0.codebook) {
+            packed.set(data.sh0.codebook.slice(0, codebookSize), codebookSize);
+        }
+        if (data.shN?.codebook) {
+            packed.set(data.shN.codebook.slice(0, codebookSize), codebookSize * 2);
+        }
+        codebookTexture = new RawTexture(
+            packed,
+            codebookSize * 3,
+            1,
+            Constants.TEXTUREFORMAT_R,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_FLOAT
+        );
+        codebookTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        codebookTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    }
+
+    const meansMins = data.means.mins as number[];
+    const meansMaxs = data.means.maxs as number[];
+
+    const pack: ISogTexturePack = {
+        version: (data.version === 2 ? 2 : 1) as 1 | 2,
+        splatCount,
+        shDegree,
+        meansTextureL: meansL,
+        meansTextureU: meansU,
+        scalesTexture: scales,
+        quatsTexture: quats,
+        sh0Texture: sh0,
+        shCentroidsTexture: shCentroids,
+        shLabelsTexture: shLabels,
+        codebookTexture,
+        meansMin: [meansMins[0], meansMins[1], meansMins[2]],
+        meansMax: [meansMaxs[0], meansMaxs[1], meansMaxs[2]],
+        scalesMin: Array.isArray(data.scales.mins) ? [data.scales.mins[0], data.scales.mins[1], data.scales.mins[2]] : undefined,
+        scalesMax: Array.isArray(data.scales.maxs) ? [data.scales.maxs[0], data.scales.maxs[1], data.scales.maxs[2]] : undefined,
+        sh0Min: Array.isArray(data.sh0.mins) ? [data.sh0.mins[0], data.sh0.mins[1], data.sh0.mins[2], data.sh0.mins[3]] : undefined,
+        sh0Max: Array.isArray(data.sh0.maxs) ? [data.sh0.maxs[0], data.sh0.maxs[1], data.sh0.maxs[2], data.sh0.maxs[3]] : undefined,
+        shnMin: typeof data.shN?.mins === "number" ? data.shN.mins : undefined,
+        shnMax: typeof data.shN?.maxs === "number" ? data.shN.maxs : undefined,
+        shCoeffCount,
+        positions: DecodeSogPositions(data, images[0].bits, images[1].bits, splatCount),
+    };
+
+    return { mode: Mode.Splat, data: new ArrayBuffer(0), hasVertexColors: false, shDegree, sogTextures: pack };
 }

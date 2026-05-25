@@ -34,14 +34,16 @@ import {
     Spinner,
     tokens,
 } from "@fluentui/react-components";
-import { ErrorCircleRegular } from "@fluentui/react-icons";
+import { CheckmarkCircleRegular, ErrorCircleRegular, InfoRegular, WarningRegular } from "@fluentui/react-icons";
 import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
 import { type ToastHandle, type ToastOptions, ToastProvider } from "shared-ui-components/fluent/primitives/toast";
+import { type DialogOptions, type IDialogService, DialogServiceIdentity } from "./services/dialogService";
 import { type IToastService, ToastServiceIdentity } from "./services/toastService";
 import { Theme } from "./components/theme";
+import { DialogContext } from "./contexts/dialogContext";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
 import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "./services/reactContextService";
@@ -72,6 +74,24 @@ const useStyles = makeStyles({
     extensionErrorIcon: {
         color: tokens.colorPaletteRedForeground1,
     },
+    dialogTitle: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    dialogIconSuccess: {
+        color: tokens.colorStatusSuccessForeground1,
+    },
+    dialogIconError: {
+        color: tokens.colorStatusDangerForeground1,
+    },
+    dialogIconWarning: {
+        color: tokens.colorStatusWarningForeground1,
+    },
+    dialogIconInfo: {
+        color: tokens.colorBrandForeground1,
+    },
 });
 
 type ReactContextEntry = {
@@ -84,6 +104,8 @@ type ReactContextAction =
     | { type: "add"; entry: ReactContextEntry }
     | { type: "remove"; provider: Context<unknown>["Provider"] }
     | { type: "update"; provider: Context<unknown>["Provider"]; value: unknown };
+
+type DialogQueueAction = { type: "enqueue"; options: DialogOptions } | { type: "dequeue" };
 
 const ReactContextsWrapper: FunctionComponent<PropsWithChildren<{ contexts: readonly Readonly<ReactContextEntry>[] }>> = ({ contexts, children }) => {
     return <>{contexts.reduceRight<ReactNode>((acc, entry) => createElement(entry.provider, { value: entry.value }, acc), children)}</>;
@@ -165,6 +187,24 @@ export function MakeModularTool(options: ModularToolOptions) {
             }
         }, [toastHandle, toastQueue]);
 
+        // Queue of dialogs to display. We show one at a time (the one at the head of the queue).
+        const [dialogQueue, dispatchDialogQueue] = useReducer((state: readonly DialogOptions[], action: DialogQueueAction): readonly DialogOptions[] => {
+            switch (action.type) {
+                case "enqueue":
+                    return [...state, action.options];
+                case "dequeue":
+                    return state.slice(1);
+            }
+        }, []);
+
+        const showDialog = useCallback((dialogOptions: DialogOptions) => {
+            dispatchDialogQueue({ type: "enqueue", options: dialogOptions });
+        }, []);
+
+        const onDismissDialog = useCallback(() => {
+            dispatchDialogQueue({ type: "dequeue" });
+        }, []);
+
         const [rootComponentService, setRootComponentService] = useState<IRootComponentService>();
 
         const [contexts, updateContexts] = useReducer((state: ReactContextEntry[], action: ReactContextAction): ReactContextEntry[] => {
@@ -219,6 +259,13 @@ export function MakeModularTool(options: ModularToolOptions) {
                             setToastQueue((prev) => [...prev, { message, options }]);
                         },
                     }),
+                });
+
+                // Expose the dialog service so non-React code (e.g. Observable callbacks) can show dialogs.
+                serviceContainer.addService<[IDialogService], []>({
+                    friendlyName: "Dialog Service",
+                    produces: [DialogServiceIdentity],
+                    factory: (): IDialogService => ({ showDialog }),
                 });
 
                 // Register the shell service (top level toolbar/side pane UI layout).
@@ -326,12 +373,28 @@ export function MakeModularTool(options: ModularToolOptions) {
             setExtensionInstallError(undefined);
         }, [setExtensionInstallError]);
 
+        // The dialog at the head of the queue, if any, is the one currently being displayed.
+        const currentDialog = dialogQueue[0];
+        const currentDialogIcon = (() => {
+            switch (currentDialog?.intent) {
+                case "success":
+                    return <CheckmarkCircleRegular className={classes.dialogIconSuccess} />;
+                case "error":
+                    return <ErrorCircleRegular className={classes.dialogIconError} />;
+                case "warning":
+                    return <WarningRegular className={classes.dialogIconWarning} />;
+                case "info":
+                case undefined:
+                    return <InfoRegular className={classes.dialogIconInfo} />;
+            }
+        })();
+
         // Show a spinner until a main view has been set.
         if (!rootComponentService) {
             return (
                 <ReactContextsWrapper contexts={contexts}>
                     <SettingsStoreContext.Provider value={settingsStore}>
-                        <Theme className={classes.app}>
+                        <Theme className={classes.app} targetDocument={targetDocument}>
                             <Spinner className={classes.spinner} />
                         </Theme>
                     </SettingsStoreContext.Provider>
@@ -347,7 +410,7 @@ export function MakeModularTool(options: ModularToolOptions) {
                         settings without the ISettingsService needing to be explicitly passed around. */}
                     <SettingsStoreContext.Provider value={settingsStore}>
                         <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                            <Theme className={classes.app}>
+                            <Theme className={classes.app} targetDocument={targetDocument}>
                                 <ToastProvider imperativeRef={setToastHandle}>
                                     <Dialog open={!!requiredExtensions} modalType="alert">
                                         <DialogSurface>
@@ -399,8 +462,28 @@ export function MakeModularTool(options: ModularToolOptions) {
                                             </DialogBody>
                                         </DialogSurface>
                                     </Dialog>
+                                    <Dialog open={!!currentDialog} modalType="alert">
+                                        <DialogSurface>
+                                            <DialogBody>
+                                                <DialogTitle>
+                                                    <div className={classes.dialogTitle}>
+                                                        {currentDialogIcon}
+                                                        {currentDialog?.title}
+                                                    </div>
+                                                </DialogTitle>
+                                                {currentDialog?.content && <DialogContent>{currentDialog.content}</DialogContent>}
+                                                <DialogActions>
+                                                    <Button appearance="primary" onClick={onDismissDialog}>
+                                                        OK
+                                                    </Button>
+                                                </DialogActions>
+                                            </DialogBody>
+                                        </DialogSurface>
+                                    </Dialog>
                                     <Suspense fallback={<Spinner className={classes.spinner} />}>
-                                        <Content />
+                                        <DialogContext.Provider value={{ showDialog }}>
+                                            <Content />
+                                        </DialogContext.Provider>
                                     </Suspense>
                                 </ToastProvider>
                             </Theme>
@@ -410,6 +493,12 @@ export function MakeModularTool(options: ModularToolOptions) {
             );
         }
     };
+
+    // Derive the target document from the container element. When the container is in a popup
+    // window (or other document distinct from the main one), this is what makes Fluent inject
+    // styles and render portals into the correct document.
+    const containerOwnerDocument = containerElement.ownerDocument;
+    const targetDocument = containerOwnerDocument && containerOwnerDocument !== document ? containerOwnerDocument : undefined;
 
     // Set the container element to be a flex container so that the tool can be displayed properly.
     const originalContainerElementDisplay = containerElement.style.display;

@@ -71,7 +71,7 @@ export const Dialog: FC<DialogProps> = (props) => {
                         action={
                             onDismiss ? (
                                 <DialogTrigger action="close">
-                                    <Button appearance="subtle" aria-label="close" icon={DismissRegular} />
+                                    <Button appearance="subtle" ariaLabel="close" icon={DismissRegular} />
                                 </DialogTrigger>
                             ) : undefined
                         }

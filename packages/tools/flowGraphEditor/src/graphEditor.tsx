@@ -1,16 +1,11 @@
 import * as React from "react";
 import { type GlobalState } from "./globalState";
-import { NodeListComponent } from "./components/nodeList/nodeListComponent";
-import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
-import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SerializationTools } from "./serializationTools";
 import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 
-import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
@@ -21,28 +16,153 @@ import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { SplitContainer } from "shared-ui-components/split/splitContainer";
-import { Splitter } from "shared-ui-components/split/splitter";
-import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
-import { ScenePreviewComponent } from "./components/preview/scenePreviewComponent";
-import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
-import { VariablesPanelComponent } from "./components/variables/variablesPanelComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
 import { HelpDialogComponent } from "./components/help/helpDialogComponent";
 import { type HelpTopicId } from "./components/help/helpContent";
-import { ContextMenuComponent, type ContextMenuEntry } from "./components/contextMenu/contextMenuComponent";
-import { ToastContainerComponent, ShowToast } from "./components/toast/toastComponent";
+import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
+import { ShowToast } from "./components/toast/toastComponent";
 import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
-import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
+import { Divider, makeStyles, Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Title3, mergeClasses, tokens } from "@fluentui/react-components";
+import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
+import { createVirtualElementFromClick, type PositioningVirtualElement } from "@fluentui/react-positioning";
+
+/**
+ * Local context-menu item shape used by the right-click menu on the graph canvas.
+ * Built dynamically by `_onContextMenu` and rendered inline as Fluent `<MenuItem>`s.
+ */
+type ContextMenuItem = {
+    label: string;
+    action: () => void;
+    shortcut?: string;
+    disabled?: boolean;
+    ariaLabel?: string;
+};
+type ContextMenuSeparator = { isSeparator: true };
+type ContextMenuEntry = ContextMenuItem | ContextMenuSeparator;
+function IsContextMenuSeparator(entry: ContextMenuEntry): entry is ContextMenuSeparator {
+    return "isSeparator" in entry && entry.isSeparator === true;
+}
+
+const MobileBlockerMediaQuery = "@media screen and (max-width: 899px)";
+
+const useGraphEditorLayoutStyles = makeStyles({
+    diagramContainer: {
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        background: "#3a4a4f",
+        fontFamily: "acumin-pro",
+        fontSize: "14px",
+    },
+    diagramCanvasPane: {
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        flex: 1,
+        minHeight: 0,
+        overflow: "hidden",
+        "& > :last-child": {
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden",
+        },
+    },
+    blocker: {
+        position: "absolute",
+        width: "calc(100% - 40px)",
+        height: "100%",
+        top: 0,
+        left: 0,
+        background: "rgba(20, 20, 20, 0.95)",
+        fontFamily: "acumin-pro",
+        color: "white",
+        fontSize: "24px",
+        display: "none",
+        alignContent: "center",
+        justifyContent: "center",
+        userSelect: "none",
+        padding: "20px",
+        textAlign: "center",
+        [MobileBlockerMediaQuery]: {
+            display: "grid",
+        },
+    },
+    waitScreen: {
+        display: "grid",
+        justifyContent: "center",
+        alignContent: "center",
+        height: "100%",
+        width: "100%",
+        background: "#464646",
+        opacity: 0.95,
+        color: "white",
+        fontFamily: "acumin-pro",
+        fontSize: "24px",
+        position: "absolute",
+        top: 0,
+        left: 0,
+    },
+    hidden: {
+        visibility: "hidden",
+    },
+});
+
+const LogHeightAdjustCSSVar = "--flow-graph-log-height-adjust";
+
+const useLogResizeStyles = makeStyles({
+    divider: {
+        flex: "0 0 auto",
+        margin: "0",
+        minHeight: tokens.spacingVerticalM,
+        cursor: "ns-resize",
+        alignItems: "end",
+    },
+    logPane: {
+        flex: "0 0 auto",
+        overflow: "hidden",
+        minHeight: 0,
+    },
+});
+
+/**
+ * Renders the resize handle (Fluent `<Divider>`) and the resizable log container as siblings.
+ *
+ * This only exists as a separate function component because {@link useResizeHandle} is a React
+ * hook and cannot be called from a class component's render method. Once {@link GraphEditor}
+ * is converted to a function component, this can be deleted: the divider and the resizable
+ * div can become inline siblings of the canvas pane in `GraphEditor`'s render, with
+ * `useResizeHandle` called directly in `GraphEditor` itself.
+ * @param props The component props.
+ * @returns A fragment containing the divider and the resizable log container.
+ */
+const LogResizeRegion: React.FC<React.PropsWithChildren> = ({ children }) => {
+    const classes = useLogResizeStyles();
+    const { elementRef, handleRef } = useResizeHandle({
+        growDirection: "up",
+        relative: true,
+        variableName: LogHeightAdjustCSSVar,
+        variableTarget: "element",
+    });
+    return (
+        <>
+            <Divider ref={handleRef} className={classes.divider} />
+            <div ref={elementRef} className={classes.logPane} style={{ height: `clamp(40px, calc(120px + var(${LogHeightAdjustCSSVar}, 0px)), 500px)` }}>
+                {children}
+            </div>
+        </>
+    );
+};
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
  * receive those fields via the config object. Without this, `_defaultValue` on the
- * DataConnection starts as `undefined` and the property panel can't show a text field.
+ * DataConnection starts as `undefined` a nd the property panel can't show a text field.
  * Key = FlowGraphBlockNames string value (i.e. `getClassName()` output).
  */
 interface IGraphEditorProps {
@@ -50,12 +170,129 @@ interface IGraphEditorProps {
 }
 
 interface IGraphEditorState {
-    message: string;
-    isError: boolean;
     helpTopicId: HelpTopicId | undefined | null;
-    contextMenu: { x: number; y: number; items: ContextMenuEntry[] } | null;
+    contextMenu: { target: PositioningVirtualElement; items: ContextMenuEntry[] } | null;
     showHowToUse: boolean;
+    isWaitScreenVisible: boolean;
 }
+
+interface IGraphEditorLayoutProps {
+    globalState: GlobalState;
+    diagramContainerRef: React.RefObject<HTMLDivElement>;
+    graphCanvasRef: React.RefObject<GraphCanvasComponent>;
+    contextMenu: IGraphEditorState["contextMenu"];
+    helpTopicId: IGraphEditorState["helpTopicId"];
+    showHowToUse: boolean;
+    isWaitScreenVisible: boolean;
+    onPointerMove: (evt: React.PointerEvent<HTMLDivElement>) => void;
+    onPointerDown: (evt: React.PointerEvent<HTMLDivElement>) => void;
+    onDragOver: (evt: React.DragEvent<HTMLDivElement>) => void;
+    onDrop: (evt: React.DragEvent<HTMLDivElement>) => void;
+    onContextMenu: (evt: React.MouseEvent) => void;
+    onEmitNewNode: (nodeData: INodeData) => GraphNode;
+    onCloseHelp: () => void;
+    onCloseHowToUse: () => void;
+    onCloseContextMenu: () => void;
+    onMenuAction: (action: () => void) => void;
+}
+
+const GraphEditorLayout: React.FC<IGraphEditorLayoutProps> = (props) => {
+    const {
+        globalState,
+        diagramContainerRef,
+        graphCanvasRef,
+        contextMenu,
+        helpTopicId,
+        showHowToUse,
+        isWaitScreenVisible,
+        onPointerMove,
+        onPointerDown,
+        onDragOver,
+        onDrop,
+        onContextMenu,
+        onEmitNewNode,
+        onCloseHelp,
+        onCloseHowToUse,
+        onCloseContextMenu,
+        onMenuAction,
+    } = props;
+    const classes = useGraphEditorLayoutStyles();
+
+    return (
+        <>
+            <div
+                id="flow-graph-editor-graph-root"
+                className={mergeClasses("diagram-container", classes.diagramContainer)}
+                ref={diagramContainerRef}
+                onPointerMove={onPointerMove}
+                onPointerDown={onPointerDown}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+            >
+                <div className={classes.diagramCanvasPane} onContextMenu={onContextMenu}>
+                    <GraphTabBarComponent globalState={globalState} />
+                    <GraphCanvasComponent
+                        ref={graphCanvasRef}
+                        stateManager={globalState.stateManager}
+                        enableMinimap={true}
+                        enableStickyNotes={true}
+                        enableFindInGraph={true}
+                        enablePortCompatibilityHighlight={true}
+                        enableNodeBadges={true}
+                        onEmitNewNode={onEmitNewNode}
+                    />
+                </div>
+                <LogResizeRegion>
+                    <LogComponent globalState={globalState} />
+                </LogResizeRegion>
+            </div>
+            {helpTopicId !== null && <HelpDialogComponent initialTopicId={helpTopicId ?? undefined} onClose={onCloseHelp} />}
+            {showHowToUse && <HowToUseDialogComponent globalState={globalState} onClose={onCloseHowToUse} />}
+            <div className={classes.blocker}>
+                <Title3 style={{ color: "inherit" }}>Flow Graph Editor needs a horizontal resolution of at least 900px</Title3>
+            </div>
+            <div className={mergeClasses(classes.waitScreen, !isWaitScreenVisible && classes.hidden)}>
+                <Title3 style={{ color: "inherit" }}>Processing...please wait</Title3>
+            </div>
+            {contextMenu && (
+                <Menu
+                    open
+                    onOpenChange={(_, data) => {
+                        if (!data.open) {
+                            onCloseContextMenu();
+                        }
+                    }}
+                    positioning={{ target: contextMenu.target, position: "below", align: "start" }}
+                >
+                    {/* Empty trigger — Fluent requires one but we control open state imperatively. */}
+                    <MenuTrigger disableButtonEnhancement>
+                        <span hidden />
+                    </MenuTrigger>
+                    <MenuPopover>
+                        <MenuList>
+                            {contextMenu.items.map((entry, idx) => {
+                                if (IsContextMenuSeparator(entry)) {
+                                    return <MenuDivider key={`sep-${idx}`} />;
+                                }
+                                return (
+                                    <MenuItem
+                                        key={`item-${idx}`}
+                                        disabled={entry.disabled}
+                                        aria-label={entry.ariaLabel ?? entry.label}
+                                        secondaryContent={entry.shortcut}
+                                        onClick={() => onMenuAction(entry.action)}
+                                    >
+                                        {entry.label}
+                                    </MenuItem>
+                                );
+                            })}
+                        </MenuList>
+                    </MenuPopover>
+                </Menu>
+            )}
+        </>
+    );
+};
 
 /**
  * Main React component for the Flow Graph Editor
@@ -74,10 +311,23 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _beforeActiveGraphObserver: Nullable<Observer<any>> = null;
     private _activeGraphObserver: Nullable<Observer<any>> = null;
     private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
+    private _buildVersion = 0;
     /** Cache for O(1) block→GraphNode lookups (rebuilt on graph load) */
     private _blockToNodeMap = new Map<FlowGraphBlock, GraphNode>();
 
     private _onDocumentKeyDown = (evt: KeyboardEvent) => {
+        // Don't process editor shortcuts (Delete, Backspace, Ctrl+Z, Ctrl+A, Ctrl+F, etc.) while
+        // the user is typing in a text input, textarea, or contentEditable element. Without this
+        // guard, pressing Delete inside a property-panel input would delete the selected node,
+        // and Ctrl+A would select all canvas nodes instead of all the input's text.
+        const target = evt.target as HTMLElement | null;
+        if (target) {
+            const tag = target.tagName;
+            if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable) {
+                return;
+            }
+        }
+
         if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
             return;
         }
@@ -325,11 +575,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         super(props);
 
         this.state = {
-            message: "",
-            isError: true,
             helpTopicId: null,
             contextMenu: null,
             showHowToUse: false,
+            isWaitScreenVisible: false,
         };
 
         this._graphCanvasRef = React.createRef();
@@ -445,10 +694,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
         this.props.globalState.hostDocument.addEventListener("keydown", this._onDocumentKeyDown, false);
-
-        this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.add((message: string) => {
-            this.setState({ message: message, isError: true });
-        });
 
         // ── Validation wiring ──────────────────────────────────────────
         // Provide the editor's block list so "unreachable" detection works.
@@ -567,12 +812,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
             const hasBreakpoint = this.props.globalState.hasBreakpoint(block.uniqueId);
             const isPaused = pausedBlockId === block.uniqueId;
-            node.setBreakpointState(hasBreakpoint, isPaused);
+            node.setBreakpointState(hasBreakpoint || isPaused, isPaused);
         }
     }
 
     /** @internal */
     build(ignoreEditorData = false) {
+        const buildVersion = ++this._buildVersion;
+        const flowGraph = this.props.globalState.flowGraph;
         let editorData = ignoreEditorData ? null : (this.props.globalState.flowGraph as any)._editorData;
         this._graphCanvas._isLoading = true;
 
@@ -583,7 +830,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         // Reset the diagram
-        this._graphCanvas.reset();
+        this._graphCanvas.reset(false);
         this._blockToNodeMap.clear();
 
         // Load graph of nodes from the flow graph
@@ -600,6 +847,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // has completed layout and paint. rAF alone is not sufficient
             // because it fires *before* layout in some browsers.
             setTimeout(() => {
+                if (buildVersion !== this._buildVersion || flowGraph !== this.props.globalState.flowGraph) {
+                    return;
+                }
                 this.reOrganize(null);
             }, 0);
         }
@@ -637,12 +887,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     /** @internal */
     showWaitScreen() {
-        this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
+        this.setState({ isWaitScreenVisible: true });
     }
 
     /** @internal */
     hideWaitScreen() {
-        this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.add("hidden");
+        this.setState({ isWaitScreenVisible: false });
     }
 
     /** @internal */
@@ -905,7 +1155,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         if (items.length > 0) {
-            this.setState({ contextMenu: { x: evt.clientX, y: evt.clientY, items } });
+            this.setState({ contextMenu: { target: createVirtualElementFromClick(evt.nativeEvent), items } });
         }
     };
 
@@ -1125,9 +1375,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
         const data = event.dataTransfer.getData("babylonjs-flow-graph-node");
 
-        const container = this._diagramContainerRef.current!;
-        const dropX = event.clientX - container.offsetLeft;
-        const dropY = event.clientY - container.offsetTop;
+        // Use the graph canvas's own container rect so the drop point is computed in the
+        // canvas's local coordinate space. The diagram pane includes toolbars (tab bar,
+        // graph controls, variables panel) above the canvas, so its bounding rect is offset.
+        const canvasContainer = this._graphCanvas?.canvasContainer;
+        if (!canvasContainer) {
+            return;
+        }
+        const rect = canvasContainer.getBoundingClientRect();
+        const dropX = event.clientX - rect.left;
+        const dropY = event.clientY - rect.top;
 
         // Check if this is a composite template drop
         const dropTemplate = AllCompositeTemplates[data];
@@ -1221,115 +1478,69 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     /** @internal */
     override render() {
         return (
-            <Portal globalState={this.props.globalState}>
-                <SplitContainer
-                    id="flow-graph-editor-graph-root"
-                    direction={SplitDirection.Horizontal}
-                    onPointerMove={(evt) => {
-                        this._mouseLocationX = evt.pageX;
-                        this._mouseLocationY = evt.pageY;
-                    }}
-                    onPointerDown={(evt) => {
-                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
-                            return;
-                        }
-                        this.props.globalState.lockObject.lock = false;
-                    }}
-                    onDragOver={(evt) => {
-                        // Allow dropping 3D scene files anywhere on the editor.
-                        // Check both DataTransferItem.kind (modern) and dataTransfer.types (legacy/Firefox)
-                        // to ensure preventDefault is called even when items list is unavailable.
-                        const dt = evt.dataTransfer;
-                        const hasFile =
-                            (dt?.items && Array.from(dt.items).some((item) => item.kind === "file")) ||
-                            (dt?.types && (dt.types.includes("Files") || dt.types.includes("application/x-moz-file")));
-                        if (hasFile) {
-                            evt.preventDefault();
-                            evt.stopPropagation();
-                        }
-                    }}
-                    onDrop={(evt) => {
-                        const files = evt.dataTransfer?.files;
-                        if (!files || files.length === 0) {
-                            return;
-                        }
-                        // Always prevent default when files are dropped to avoid browser navigation.
+            <GraphEditorLayout
+                globalState={this.props.globalState}
+                diagramContainerRef={this._diagramContainerRef}
+                graphCanvasRef={this._graphCanvasRef}
+                contextMenu={this.state.contextMenu}
+                helpTopicId={this.state.helpTopicId}
+                showHowToUse={this.state.showHowToUse}
+                isWaitScreenVisible={this.state.isWaitScreenVisible}
+                onPointerMove={(evt) => {
+                    this._mouseLocationX = evt.pageX;
+                    this._mouseLocationY = evt.pageY;
+                }}
+                onPointerDown={(evt) => {
+                    if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                        return;
+                    }
+                    this.props.globalState.lockObject.lock = false;
+                }}
+                onDragOver={(evt) => {
+                    // Allow dropping 3D scene files anywhere on the editor, and node-list drag items
+                    // onto the central content. Check both DataTransferItem.kind (modern) and
+                    // dataTransfer.types (legacy/Firefox) to ensure preventDefault is called even
+                    // when items list is unavailable.
+                    const dt = evt.dataTransfer;
+                    const hasFile =
+                        (dt?.items && Array.from(dt.items).some((item) => item.kind === "file")) ||
+                        (dt?.types && (dt.types.includes("Files") || dt.types.includes("application/x-moz-file")));
+                    const hasNodeData = dt?.types && dt.types.includes("babylonjs-flow-graph-node");
+                    if (hasFile || hasNodeData) {
                         evt.preventDefault();
                         evt.stopPropagation();
-                        const supportedExtensions = [".glb", ".gltf", ".babylon"];
-                        for (let i = 0; i < files.length; i++) {
-                            const name = files[i].name.toLowerCase();
-                            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
-                                this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
-                                return;
-                            }
+                    }
+                }}
+                onDrop={(evt) => {
+                    // Files dropped on the canvas itself (block palette items) are handled by the
+                    // inner pane below. This top-level handler only intercepts 3D scene files
+                    // dropped anywhere in the central content.
+                    const files = evt.dataTransfer?.files;
+                    if (!files || files.length === 0) {
+                        this.dropNewBlock(evt);
+                        return;
+                    }
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    const supportedExtensions = [".glb", ".gltf", ".babylon"];
+                    for (let i = 0; i < files.length; i++) {
+                        const name = files[i].name.toLowerCase();
+                        if (supportedExtensions.some((ext) => name.endsWith(ext))) {
+                            this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
+                            return;
                         }
-                    }}
-                >
-                    {/* Node creation menu */}
-                    <NodeListComponent globalState={this.props.globalState} />
-
-                    <Splitter size={8} minSize={180} initialSize={200} maxSize={350} controlledSide={ControlledSize.First} />
-
-                    {/* The node graph diagram */}
-                    <SplitContainer
-                        direction={SplitDirection.Vertical}
-                        className="diagram-container"
-                        containerRef={this._diagramContainerRef}
-                        onDrop={(event) => {
-                            this.dropNewBlock(event);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                        }}
-                    >
-                        <div className="diagram-canvas-pane" onContextMenu={this._onContextMenu}>
-                            <GraphTabBarComponent globalState={this.props.globalState} />
-                            <GraphControlsComponent globalState={this.props.globalState} />
-                            <VariablesPanelComponent globalState={this.props.globalState} />
-                            <GraphCanvasComponent
-                                ref={this._graphCanvasRef}
-                                stateManager={this.props.globalState.stateManager}
-                                enableMinimap={true}
-                                enableStickyNotes={true}
-                                enableFindInGraph={true}
-                                enablePortCompatibilityHighlight={true}
-                                enableNodeBadges={true}
-                                onEmitNewNode={(nodeData) => {
-                                    return this.appendBlock(nodeData.data as FlowGraphBlock);
-                                }}
-                            />
-                        </div>
-                        <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
-                        <LogComponent globalState={this.props.globalState} />
-                    </SplitContainer>
-
-                    <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
-
-                    {/* Property tab + Scene preview */}
-                    <SplitContainer direction={SplitDirection.Vertical} className="fge-right-panel">
-                        <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
-                        <Splitter size={8} minSize={150} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
-                        <ScenePreviewComponent globalState={this.props.globalState} />
-                    </SplitContainer>
-                </SplitContainer>
-                <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                {this.state.helpTopicId !== null && (
-                    <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
-                )}
-                {this.state.showHowToUse && <HowToUseDialogComponent globalState={this.props.globalState} onClose={() => this.setState({ showHowToUse: false })} />}
-                <div className="blocker">Flow Graph Editor needs a horizontal resolution of at least 900px</div>
-                <div className="wait-screen hidden">Processing...please wait</div>
-                {this.state.contextMenu && (
-                    <ContextMenuComponent
-                        x={this.state.contextMenu.x}
-                        y={this.state.contextMenu.y}
-                        items={this.state.contextMenu.items}
-                        onClose={() => this.setState({ contextMenu: null })}
-                    />
-                )}
-                <ToastContainerComponent globalState={this.props.globalState} />
-            </Portal>
+                    }
+                }}
+                onContextMenu={this._onContextMenu}
+                onEmitNewNode={(nodeData) => this.appendBlock(nodeData.data as FlowGraphBlock)}
+                onCloseHelp={() => this.setState({ helpTopicId: null })}
+                onCloseHowToUse={() => this.setState({ showHowToUse: false })}
+                onCloseContextMenu={() => this.setState({ contextMenu: null })}
+                onMenuAction={(action) => {
+                    action();
+                    this.setState({ contextMenu: null });
+                }}
+            />
         );
     }
 }

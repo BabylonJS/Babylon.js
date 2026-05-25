@@ -238,6 +238,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "SOGS with SH no texture lookup",
+            "playgroundId": "#QA2662#24",
+            "errorRatio": 5,
+            "referenceImage": "gsplat-sogs-sh-nolookup.png",
+            "dependsOn": ["Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Part Test",
             "playgroundId": "#BTS11N#0",
             "errorRatio": 5,
@@ -4327,6 +4335,12 @@
         {
             "title": "OpenPBR glTF Surface Tinting",
             "playgroundId": "#GRQHVV#325",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
+        },
+        {
+            "title": "OpenPBR Geometry Opacity",
+            "playgroundId": "#GRQHVV#327",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
         },

@@ -87,6 +87,10 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public IS_COMPOUND = false;
     /** Defines the maximum number of parts (computed from engine caps at runtime) */
     public MAX_PART_COUNT = GaussianSplattingMaxPartCount;
+    /** Defines whether SOG raw-texture in-shader dequantization is enabled */
+    public USE_SOG = false;
+    /** Defines whether SOG v2 (codebook) dequantization is enabled */
+    public USE_SOG_V2 = false;
 
     /**
      * Constructor of the defines.
@@ -184,6 +188,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "shTexture3",
         "shTexture4",
         "partIndicesTexture",
+        "sogQuatsTexture",
+        "sogShNCentroidsTexture",
+        "sogShNLabelsTexture",
+        "sogCodebookTexture",
     ];
     protected static _UniformBuffers = ["Scene", "Mesh"];
     protected static _VoxelUniforms = [
@@ -216,6 +224,15 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "depthValues",
         "partWorld",
         "partVisibility",
+        "sogMeansMin",
+        "sogMeansMax",
+        "sogScalesMin",
+        "sogScalesMax",
+        "sogSh0Min",
+        "sogSh0Max",
+        "sogShnMin",
+        "sogShnMax",
+        "sogShCoeffCount",
     ];
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
@@ -304,6 +321,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         defines["IS_COMPOUND"] = gsMesh.isCompound;
         defines["MAX_PART_COUNT"] = GetGaussianSplattingMaxPartCount(engine);
+        defines["USE_SOG"] = gsMesh.useSog;
+        defines["USE_SOG_V2"] = gsMesh.useSog && gsMesh.sogParams?.version === 2;
 
         // Compensation
         const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
@@ -462,7 +481,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
-            if (gsMesh.shTextures) {
+            if (gsMesh.useSog) {
+                GaussianSplattingMaterial._BindSogUniforms(gsMesh, effect);
+            } else if (gsMesh.shTextures) {
                 for (let i = 0; i < gsMesh.shTextures.length; i++) {
                     effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
                 }
@@ -471,6 +492,38 @@ export class GaussianSplattingMaterial extends PushMaterial {
             // Bind part indices texture, if the
             gsMesh.bindExtraEffectUniforms(effect);
         }
+    }
+
+    /**
+     * Bind SOG dequantization uniforms + raw textures.
+     * @internal
+     */
+    protected static _BindSogUniforms(gsMesh: GaussianSplattingMesh, effect: Effect): void {
+        const p = gsMesh.sogParams;
+        if (!p) {
+            return;
+        }
+        effect.setTexture("sogQuatsTexture", gsMesh.rotationsATexture);
+        if (gsMesh.shTextures && gsMesh.shTextures.length >= 2) {
+            effect.setTexture("sogShNCentroidsTexture", gsMesh.shTextures[0]);
+            effect.setTexture("sogShNLabelsTexture", gsMesh.shTextures[1]);
+        }
+        if (p.codebookTexture) {
+            effect.setTexture("sogCodebookTexture", p.codebookTexture);
+        }
+        effect.setFloat3("sogMeansMin", p.meansMin[0], p.meansMin[1], p.meansMin[2]);
+        effect.setFloat3("sogMeansMax", p.meansMax[0], p.meansMax[1], p.meansMax[2]);
+        if (p.scalesMin && p.scalesMax) {
+            effect.setFloat3("sogScalesMin", p.scalesMin[0], p.scalesMin[1], p.scalesMin[2]);
+            effect.setFloat3("sogScalesMax", p.scalesMax[0], p.scalesMax[1], p.scalesMax[2]);
+        }
+        if (p.sh0Min && p.sh0Max) {
+            effect.setFloat4("sogSh0Min", p.sh0Min[0], p.sh0Min[1], p.sh0Min[2], p.sh0Min[3]);
+            effect.setFloat4("sogSh0Max", p.sh0Max[0], p.sh0Max[1], p.sh0Max[2], p.sh0Max[3]);
+        }
+        effect.setFloat("sogShnMin", p.shnMin ?? 0);
+        effect.setFloat("sogShnMax", p.shnMax ?? 0);
+        effect.setFloat("sogShCoeffCount", p.shCoeffCount ?? 0);
     }
     /**
      * Binds the submesh to this material by preparing the effect and shader to draw
