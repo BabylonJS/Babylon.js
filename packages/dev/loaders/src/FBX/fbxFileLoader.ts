@@ -90,8 +90,14 @@ interface IFBXSceneLoaderAsyncResult extends ISceneLoaderAsyncResult {
  * Pure TypeScript implementation — no Autodesk FBX SDK dependency.
  */
 export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
+    /**
+     * Defines the name of the plugin.
+     */
     public readonly name = FBXFileLoaderMetadata.name;
 
+    /**
+     * Defines the extension the plugin is able to load.
+     */
     public readonly extensions = FBXFileLoaderMetadata.extensions;
 
     private readonly _options: Required<FBXFileLoaderOptions>;

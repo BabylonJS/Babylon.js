@@ -1,5 +1,8 @@
 import { type ISceneLoaderPluginExtensions, type ISceneLoaderPluginMetadata } from "core/index";
 
+/**
+ * Defines the FBX loader plugin metadata.
+ */
 export const FBXFileLoaderMetadata = {
     name: "fbx",
 

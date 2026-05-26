@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { NullEngine } from "core/Engines";
+import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
