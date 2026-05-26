@@ -66,6 +66,13 @@ describe("FBX animation interpretation", () => {
         expect(animations[0].curveNodes[0].curves[0].keys.map((key) => key.time)).toEqual([0, 1]);
         expect(animations[0].layers[0].diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["unsupported-layer-blend-mode", "partial-layer-weight"]);
     });
+
+    it("extracts ASCII key attributes parsed as Float64Array", () => {
+        const animations = extractAnimations(resolveConnections(createAsciiKeyAttributesDocument()));
+        const keys = animations[0].curveNodes[0].curves[0].keys;
+
+        expect(keys.map((key) => key.interpolation)).toEqual(["constant", "cubic"]);
+    });
 });
 
 function createSampledKeys(count: number, fps: number): FBXKeyframe[] {
@@ -103,6 +110,35 @@ function createAnimationDocument(): FBXDocument {
                     createObject("AnimationCurve", 4, "AnimCurve::X", "", [
                         { name: "KeyTime", properties: [{ type: "int64[]", value: new Float64Array([FBX_TIME_UNIT, FBX_TIME_UNIT * 2]) }], children: [] },
                         { name: "KeyValueFloat", properties: [{ type: "float32[]", value: new Float32Array([3, 6]) }], children: [] },
+                    ]),
+                ],
+            },
+            {
+                name: "Connections",
+                properties: [],
+                children: [createConnection("OO", 2, 1), createConnection("OO", 3, 2), createConnection("OP", 3, 10, "Lcl Translation"), createConnection("OP", 4, 3, "d|X")],
+            },
+        ],
+    };
+}
+
+function createAsciiKeyAttributesDocument(): FBXDocument {
+    return {
+        version: 7400,
+        nodes: [
+            {
+                name: "Objects",
+                properties: [],
+                children: [
+                    createObject("Model", 10, "Model::Animated", "Null"),
+                    createObject("AnimationStack", 1, "AnimStack::Take 001", ""),
+                    createObject("AnimationLayer", 2, "AnimLayer::BaseLayer", ""),
+                    createObject("AnimationCurveNode", 3, "AnimationCurveNode::T", ""),
+                    createObject("AnimationCurve", 4, "AnimCurve::X", "", [
+                        { name: "KeyTime", properties: [{ type: "int64[]", value: new Float64Array([0, FBX_TIME_UNIT]) }], children: [] },
+                        { name: "KeyValueFloat", properties: [{ type: "float32[]", value: new Float32Array([3, 6]) }], children: [] },
+                        { name: "KeyAttrFlags", properties: [{ type: "float64[]", value: new Float64Array([0x00000002, 0x00000008]) }], children: [] },
+                        { name: "KeyAttrRefCount", properties: [{ type: "float64[]", value: new Float64Array([1, 1]) }], children: [] },
                     ]),
                 ],
             },

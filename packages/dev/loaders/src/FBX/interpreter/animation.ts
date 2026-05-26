@@ -52,6 +52,7 @@ export interface FBXCurveNodeData {
     curves: FBXCurveData[];
 }
 
+/** Unsupported animation curve node preserved for diagnostics and future support. */
 export interface FBXUnsupportedCurveNodeData {
     /** Raw AnimationCurveNode property type/name */
     type: string;
@@ -69,13 +70,21 @@ export interface FBXUnsupportedCurveNodeData {
     defaultValues: Record<string, number>;
 }
 
+/** Recoverable animation import issue. */
 export interface FBXAnimationDiagnostic {
+    /** Diagnostic category. */
     type: "multiple-animation-layers" | "unsupported-layer-blend-mode" | "partial-layer-weight" | "unsupported-curve-node";
+    /** Human-readable diagnostic message. */
     message: string;
+    /** Animation layer name associated with the diagnostic, if applicable. */
     layerName?: string;
+    /** AnimationCurveNode object ID associated with the diagnostic, if applicable. */
     curveNodeId?: number;
+    /** AnimationCurveNode type/name associated with the diagnostic, if applicable. */
     curveNodeType?: string;
+    /** Target object ID associated with the diagnostic, if applicable. */
     targetId?: number | null;
+    /** Target property name associated with the diagnostic, if applicable. */
     propertyName?: string;
 }
 
@@ -575,6 +584,11 @@ function isSampledAnimationCurve(curveNode: FBXNode, keys: readonly FBXKeyframe[
     return cleanFBXName(rawName) === "FbxMayaSample Curve" || isFrameBakedSampledCurve(keys);
 }
 
+/**
+ * Determines whether a key sequence appears to be a uniformly frame-baked sampled curve.
+ * @param keys - Keyframes to inspect
+ * @returns true if the keys look like sampled frame data rather than authored interpolation
+ */
 export function isFrameBakedSampledCurve(keys: readonly FBXKeyframe[]): boolean {
     if (keys.length < SAMPLED_CURVE_MIN_KEY_COUNT) {
         return false;
@@ -670,6 +684,12 @@ function hasMeaningfulCubicTangents(keys: readonly FBXKeyframe[]): boolean {
     return maxLinearDeviation > deviationTolerance;
 }
 
+/**
+ * Samples an FBX animation curve at a specific time.
+ * @param curveData - Curve data to sample
+ * @param time - Time in seconds
+ * @returns The sampled value, or null when the curve has no keys
+ */
 export function sampleFBXCurveAtTime(curveData: FBXCurveData | undefined, time: number): number | null {
     if (!curveData || curveData.keys.length === 0) {
         return null;
@@ -726,6 +746,13 @@ function toInt64Array(value: unknown): Float64Array | null {
 function toInt32Array(value: unknown): Int32Array | null {
     if (value instanceof Int32Array) {
         return value;
+    }
+    if (value instanceof Float32Array || value instanceof Float64Array) {
+        const result = new Int32Array(value.length);
+        for (let i = 0; i < value.length; i++) {
+            result[i] = value[i];
+        }
+        return result;
     }
     return null;
 }
