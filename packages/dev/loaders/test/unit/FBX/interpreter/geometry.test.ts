@@ -21,6 +21,12 @@ describe("FBX geometry fidelity", () => {
         expect(geometry.diagnostics.some((diagnostic) => diagnostic.type === "degenerate-polygon")).toBe(true);
     });
 
+    it("preserves non-zero all-same material indices", () => {
+        const geometry = extractGeometry(createGeometryNode([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0], [0, 1, 2, -4], [createLayerElementMaterial([1], "AllSame")]), 1);
+
+        expect(Array.from(geometry.materialIndices ?? [])).toEqual([1, 1]);
+    });
+
     it("expands tangent and binormal layer elements", () => {
         const geometry = extractGeometry(
             createGeometryNode(
@@ -56,12 +62,12 @@ function createGeometryNode(vertices: number[], polygonVertexIndex: number[], ch
     };
 }
 
-function createLayerElementMaterial(materials: number[]): FBXNode {
+function createLayerElementMaterial(materials: number[], mapping = "ByPolygon"): FBXNode {
     return {
         name: "LayerElementMaterial",
         properties: [{ type: "int32", value: 0 }],
         children: [
-            child("MappingInformationType", "ByPolygon"),
+            child("MappingInformationType", mapping),
             child("ReferenceInformationType", "Direct"),
             { name: "Materials", properties: [{ type: "int32[]", value: new Int32Array(materials) }], children: [] },
         ],

@@ -9,11 +9,17 @@ export interface FBXUVSet {
     data: Float64Array;
 }
 
+/** Recoverable geometry import issue. */
 export interface FBXGeometryDiagnostic {
+    /** Diagnostic category. */
     type: "degenerate-polygon" | "triangulation-fallback" | "layer-index-out-of-bounds" | "layer-data-too-short";
+    /** Human-readable diagnostic message. */
     message: string;
+    /** Polygon index associated with the diagnostic, if applicable. */
     polygonIndex?: number;
+    /** Layer element name associated with the diagnostic, if applicable. */
     layerName?: string;
+    /** Source data index associated with the diagnostic, if applicable. */
     index?: number;
 }
 
@@ -139,7 +145,7 @@ export function extractGeometry(geometryNode: FBXNode, nodeId: number): FBXGeome
             }
         }
 
-        if (!allSame) {
+        if (!allSame || firstMat !== 0) {
             const triCount = result.indices.length / 3;
             materialIndices = new Int32Array(triCount);
             for (let ti = 0; ti < triangles.length; ti++) {
@@ -427,9 +433,14 @@ function extractMaterialIndices(matNode: FBXNode, polygonCount: number): Int32Ar
     const reference = getPropertyValue<string>(referenceNode, 0) ?? "";
 
     if (mapping === "AllSame") {
-        // All polygons use material index 0
+        const materialsNode = findChildByName(matNode, "Materials");
+        const rawIndices = materialsNode ? toInt32Array(getNodeArrayValue(materialsNode)) : null;
+        const materialIndex = rawIndices && rawIndices.length > 0 ? rawIndices[0] : 0;
         const indices = new Int32Array(polygonCount);
-        return indices; // already filled with 0
+        if (materialIndex !== 0) {
+            indices.fill(materialIndex);
+        }
+        return indices;
     }
 
     if (mapping === "ByPolygon") {

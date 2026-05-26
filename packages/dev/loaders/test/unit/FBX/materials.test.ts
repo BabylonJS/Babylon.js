@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -93,8 +94,7 @@ describe("FBX material texture loading", () => {
 
         await loader.importMeshAsync(null, scene, buildMaterialOnlyFbx(textureSlot), "/textures/");
 
-        const material = scene.materials.find((entry): entry is StandardMaterial => entry instanceof StandardMaterial);
-        expect(material).toBeDefined();
+        const material = getStandardMaterial(scene);
         expect(material.bumpTexture).toBeDefined();
         expect(material.bumpTexture?.gammaSpace).toBe(false);
         expect(material.invertNormalMapX).toBe(false);
@@ -106,8 +106,7 @@ describe("FBX material texture loading", () => {
 
         await loader.importMeshAsync(null, scene, buildMaterialOnlyFbx(textureSlot), "/textures/");
 
-        const material = scene.materials.find((entry): entry is StandardMaterial => entry instanceof StandardMaterial);
-        expect(material).toBeDefined();
+        const material = getStandardMaterial(scene);
         expect(material.bumpTexture?.gammaSpace).toBe(false);
         expect(material.invertNormalMapX).toBe(false);
         expect(material.invertNormalMapY).toBe(true);
@@ -119,8 +118,7 @@ describe("FBX material texture loading", () => {
 
         await loader.importMeshAsync(null, scene, buildMaterialOnlyFbx("NormalMap"), "/textures/");
 
-        const material = scene.materials.find((entry): entry is StandardMaterial => entry instanceof StandardMaterial);
-        expect(material).toBeDefined();
+        const material = getStandardMaterial(scene);
         expect(material.invertNormalMapX).toBe(false);
         expect(material.invertNormalMapY).toBe(false);
     });
@@ -233,4 +231,57 @@ describe("FBX material texture loading", () => {
         expect(scene.materials).not.toContain(container.materials[0]);
         expect(scene.textures).not.toContain(container.textures[0]);
     });
+
+    it("uses non-zero all-same material slots", async () => {
+        const loader = new FBXFileLoader();
+
+        const result = await loader.importMeshAsync(null, scene, buildAllSameMaterialSlotFbx(), "");
+
+        const material = result.meshes[0].material;
+        expect(material).toBeInstanceOf(MultiMaterial);
+        expect((material as MultiMaterial).subMaterials[0]?.name).toBe("SecondMaterial");
+    });
 });
+
+function getStandardMaterial(scene: Scene): StandardMaterial {
+    const material = scene.materials.find((entry): entry is StandardMaterial => entry instanceof StandardMaterial);
+    if (!material) {
+        throw new Error("Expected an FBX StandardMaterial to be created.");
+    }
+    return material;
+}
+
+function buildAllSameMaterialSlotFbx(): string {
+    return `; FBX 7.4.0 project file
+Objects: {
+    Geometry: 1, "Geometry::Quad", "Mesh" {
+        Vertices: *12 {
+            a: 0,0,0,1,0,0,1,1,0,0,1,0
+        }
+        PolygonVertexIndex: *4 {
+            a: 0,1,2,-4
+        }
+        LayerElementMaterial: 0 {
+            MappingInformationType: "AllSame"
+            ReferenceInformationType: "Direct"
+            Materials: *1 {
+                a: 1
+            }
+        }
+    }
+    Model: 2, "Model::Quad", "Mesh" {
+    }
+    Material: 3, "Material::FirstMaterial", "" {
+        ShadingModel: "Lambert"
+    }
+    Material: 4, "Material::SecondMaterial", "" {
+        ShadingModel: "Lambert"
+    }
+}
+Connections: {
+    C: "OO", 1, 2
+    C: "OO", 2, 0
+    C: "OO", 3, 2
+    C: "OO", 4, 2
+}`;
+}
