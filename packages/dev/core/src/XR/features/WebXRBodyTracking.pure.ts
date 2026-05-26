@@ -810,6 +810,17 @@ export const MixamoAimChildOverrides: Partial<Record<WebXRBodyJoint, WebXRBodyJo
     [WebXRBodyJoint.RIGHT_HAND_WRIST]: WebXRBodyJoint.RIGHT_HAND_MIDDLE_METACARPAL,
 };
 
+const HandTwistReferenceJoints: Partial<Record<WebXRBodyJoint, { first: WebXRBodyJoint; second: WebXRBodyJoint }>> = {
+    [WebXRBodyJoint.LEFT_HAND_WRIST]: {
+        first: WebXRBodyJoint.LEFT_HAND_INDEX_METACARPAL,
+        second: WebXRBodyJoint.LEFT_HAND_LITTLE_METACARPAL,
+    },
+    [WebXRBodyJoint.RIGHT_HAND_WRIST]: {
+        first: WebXRBodyJoint.RIGHT_HAND_INDEX_METACARPAL,
+        second: WebXRBodyJoint.RIGHT_HAND_LITTLE_METACARPAL,
+    },
+};
+
 /**
  * Resolve the Mixamo rig mapping for a given body mesh, auto-detecting the
  * `mixamorig:` bone-name prefix. Falls back to the unprefixed names.
@@ -961,6 +972,9 @@ export class WebXRTrackedBody implements IDisposable {
     /** Bind-space local child direction for each mapped bone. */
     private _bindLocalAimDirections = new Map<Bone, Vector3>();
 
+    /** Bind-space local hand-plane normal used to correct wrist/hand twist from tracked finger positions. */
+    private _bindLocalTwistNormals = new Map<Bone, Vector3>();
+
     /**
      * XR joint index to aim each mapped bone at. This can be a mapped joint
      * (same as `_boneToJointIdx.get(aimChildBone)`) or an **unmapped** XR
@@ -970,6 +984,9 @@ export class WebXRTrackedBody implements IDisposable {
      * "where the hand is pointing".
      */
     private _boneAimTargetJointIdx = new Map<Bone, number>();
+
+    /** Per-bone pair of tracked joints that define the hand plane used for twist correction. */
+    private _boneTwistReferenceJointIdx = new Map<Bone, { first: number; second: number }>();
 
     /**
      * Per-mapped-bone bind-pose world rotation in mesh-local space
@@ -1021,6 +1038,15 @@ export class WebXRTrackedBody implements IDisposable {
     private _tempParentAccumRot = new Quaternion();
     /** Scratch quaternion reused for the parent-world intermediate product. */
     private _tempParentAccumTmp = new Quaternion();
+
+    /** Scratch vectors reused by hand twist correction. */
+    private _tempTwistFirst = new Vector3();
+    private _tempTwistSecond = new Vector3();
+    private _tempTwistNormal = new Vector3();
+    private _tempCurrentTwistNormal = new Vector3();
+    private _tempProjectedTwistNormal = new Vector3();
+    private _tempProjectedDesiredTwistNormal = new Vector3();
+    private _tempTwistCross = new Vector3();
 
     /** The skeleton reference for iterating bones in parent-first order. */
     private _skeleton: Nullable<import("../../Bones/skeleton").Skeleton> = null;
@@ -1242,7 +1268,9 @@ export class WebXRTrackedBody implements IDisposable {
         this._mappedBoneBindLocals.clear();
         this._mappedChildBones.clear();
         this._bindLocalAimDirections.clear();
+        this._bindLocalTwistNormals.clear();
         this._boneAimTargetJointIdx.clear();
+        this._boneTwistReferenceJointIdx.clear();
         this._bindBoneWorldRotMeshLocal.clear();
         this._computedBoneNewWorldRot.clear();
         this._computedBoneNewWorldRotFrameId.clear();
@@ -1331,6 +1359,35 @@ export class WebXRTrackedBody implements IDisposable {
                 }
             }
 
+            const findBestUnmappedDescendantForJoint = (bone: Bone, targetJointName: WebXRBodyJoint): Bone | null => {
+                const tokens = targetJointName
+                    .toLowerCase()
+                    .split(/[_\-\s]+/)
+                    .filter((t) => t.length >= 4 && t !== "left" && t !== "right" && t !== "hand" && t !== "foot" && t !== "joint" && t !== "body");
+                let bestDescendant: Bone | null = null;
+                let bestScore = 0;
+                const walk = (b: Bone): void => {
+                    for (const child of b.children) {
+                        if (!this._boneToJointIdx.has(child)) {
+                            const lname = child.name.toLowerCase();
+                            let score = 0;
+                            for (const t of tokens) {
+                                if (lname.indexOf(t) !== -1) {
+                                    score++;
+                                }
+                            }
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestDescendant = child;
+                            }
+                            walk(child);
+                        }
+                    }
+                };
+                walk(bone);
+                return bestScore > 0 ? bestDescendant : null;
+            };
+
             for (const bone of Array.from(this._boneToJointIdx.keys())) {
                 // Prefer an explicit override (XR-joint → XR-joint) when provided.
                 const selfJointIdx = this._boneToJointIdx.get(bone)!;
@@ -1384,39 +1441,17 @@ export class WebXRTrackedBody implements IDisposable {
                 //   offset).
                 if (overrideTargetJointIdx !== -1 && overrideTargetJointName) {
                     this._boneAimTargetJointIdx.set(bone, overrideTargetJointIdx);
-
-                    // Extract significant tokens from target joint name.
-                    // "LEFT_HAND_MIDDLE_METACARPAL" → ["middle", "metacarpal"]
-                    const tokens = overrideTargetJointName
-                        .toLowerCase()
-                        .split(/[_\-\s]+/)
-                        .filter((t) => t.length >= 4 && t !== "left" && t !== "right" && t !== "hand" && t !== "foot" && t !== "joint" && t !== "body");
-                    // Find best-matching descendant bone: most tokens matched,
-                    // prefer shorter names (closer to the target).
-                    let bestDescendant: Bone | null = null;
-                    let bestScore = 0;
-                    const walk = (b: Bone): void => {
-                        for (const child of b.children) {
-                            if (!this._boneToJointIdx.has(child)) {
-                                const lname = child.name.toLowerCase();
-                                let score = 0;
-                                for (const t of tokens) {
-                                    if (lname.indexOf(t) !== -1) {
-                                        score++;
-                                    }
-                                }
-                                if (score > bestScore) {
-                                    bestScore = score;
-                                    bestDescendant = child;
-                                }
-                                walk(child);
-                            }
+                    const twistReferences = HandTwistReferenceJoints[selfJointName];
+                    if (twistReferences) {
+                        const firstIdx = BodyJointNameToIndex.get(twistReferences.first);
+                        const secondIdx = BodyJointNameToIndex.get(twistReferences.second);
+                        if (firstIdx !== undefined && secondIdx !== undefined) {
+                            this._boneTwistReferenceJointIdx.set(bone, { first: firstIdx, second: secondIdx });
                         }
-                    };
-                    walk(bone);
+                    }
 
-                    if (bestDescendant && bestScore > 0) {
-                        const descendant: Bone = bestDescendant;
+                    const descendant = findBestUnmappedDescendantForJoint(bone, overrideTargetJointName);
+                    if (descendant) {
                         const boneBindPos = bindWorldPositions.get(bone);
                         // Walk up: descendant's bind world position isn't in
                         // bindWorldPositions (only mapped bones were added).
@@ -1434,6 +1469,19 @@ export class WebXRTrackedBody implements IDisposable {
                                     this._tempLocalDirection.normalize();
                                     this._bindLocalAimDirections.set(bone, this._tempLocalDirection.clone());
                                 }
+                            }
+                        }
+
+                        if (twistReferences && boneBindPos && descBindFinal && bindWorldRotation) {
+                            const firstDescendant = findBestUnmappedDescendantForJoint(bone, twistReferences.first);
+                            const secondDescendant = findBestUnmappedDescendantForJoint(bone, twistReferences.second);
+                            const firstBindFinal = firstDescendant ? bindPoseFinals.get(firstDescendant) : null;
+                            const secondBindFinal = secondDescendant ? bindPoseFinals.get(secondDescendant) : null;
+                            if (firstBindFinal && secondBindFinal) {
+                                descBindFinal.decompose(undefined, undefined, this._tempPosVec);
+                                firstBindFinal.decompose(undefined, undefined, this._tempTwistFirst);
+                                secondBindFinal.decompose(undefined, undefined, this._tempTwistSecond);
+                                this._storeBindLocalTwistNormalFromPositions(bone, boneBindPos, this._tempPosVec, this._tempTwistFirst, this._tempTwistSecond, bindWorldRotation);
                             }
                         }
                     }
@@ -1764,6 +1812,18 @@ export class WebXRTrackedBody implements IDisposable {
                 this._tempJointMatrix.multiplyToRef(this._meshWorldMatrixInverse, this._tempLocalMatrix);
                 this._tempLocalMatrix.decompose(undefined, undefined, this._desiredFinalPositions[targetIdx]);
             });
+            this._boneTwistReferenceJointIdx.forEach((twistReferences) => {
+                if (!this._jointHasBone[twistReferences.first]) {
+                    Matrix.FromArrayToRef(this._jointTransformMatrices, twistReferences.first * 16, this._tempJointMatrix);
+                    this._tempJointMatrix.multiplyToRef(this._meshWorldMatrixInverse, this._tempLocalMatrix);
+                    this._tempLocalMatrix.decompose(undefined, undefined, this._desiredFinalPositions[twistReferences.first]);
+                }
+                if (!this._jointHasBone[twistReferences.second]) {
+                    Matrix.FromArrayToRef(this._jointTransformMatrices, twistReferences.second * 16, this._tempJointMatrix);
+                    this._tempJointMatrix.multiplyToRef(this._meshWorldMatrixInverse, this._tempLocalMatrix);
+                    this._tempLocalMatrix.decompose(undefined, undefined, this._desiredFinalPositions[twistReferences.second]);
+                }
+            });
 
             // Auto-capture bind on first frame when enabled.
             if (!this._hasTrackedBind && this.autoCaptureBindOnFirstFrame) {
@@ -1850,6 +1910,50 @@ export class WebXRTrackedBody implements IDisposable {
         this._hasTrackedBind = false;
     }
 
+    private _computeNormalFromJointPositions(origin: Vector3, aimTarget: Vector3, first: Vector3, second: Vector3, result: Vector3): boolean {
+        aimTarget.subtractToRef(origin, this._tempDirection);
+        if (this._tempDirection.lengthSquared() < 1e-8) {
+            return false;
+        }
+        this._tempDirection.normalize();
+
+        first.subtractToRef(second, this._tempTwistCross);
+        if (this._tempTwistCross.lengthSquared() < 1e-8) {
+            return false;
+        }
+        this._tempTwistCross.normalize();
+
+        Vector3.CrossToRef(this._tempDirection, this._tempTwistCross, result);
+        if (result.lengthSquared() < 1e-8) {
+            return false;
+        }
+        result.normalize();
+        return true;
+    }
+
+    private _projectOnPlaneToRef(vector: Vector3, planeNormal: Vector3, result: Vector3): boolean {
+        const dot = Vector3.Dot(vector, planeNormal);
+        result.copyFrom(planeNormal).scaleInPlace(-dot).addInPlace(vector);
+        if (result.lengthSquared() < 1e-8) {
+            return false;
+        }
+        result.normalize();
+        return true;
+    }
+
+    private _storeBindLocalTwistNormalFromPositions(bone: Bone, origin: Vector3, aimTarget: Vector3, first: Vector3, second: Vector3, bindWorldRotation: Quaternion): void {
+        if (!this._computeNormalFromJointPositions(origin, aimTarget, first, second, this._tempTwistNormal)) {
+            return;
+        }
+        Quaternion.InverseToRef(bindWorldRotation, this._tempRotQuat2);
+        this._tempTwistNormal.rotateByQuaternionToRef(this._tempRotQuat2, this._tempLocalDirection);
+        if (this._tempLocalDirection.lengthSquared() < 1e-8) {
+            return;
+        }
+        this._tempLocalDirection.normalize();
+        this._bindLocalTwistNormals.set(bone, this._tempLocalDirection.clone());
+    }
+
     /** Internal: copy current desiredFinals into the tracked-bind slots. */
     private _captureTrackedBindFromDesiredFinals(): void {
         if (!this._trackedBindDesiredFinalRot) {
@@ -1873,6 +1977,15 @@ export class WebXRTrackedBody implements IDisposable {
                 continue;
             }
             this._trackedBindDesiredFinalPos![targetIdx].copyFrom(this._desiredFinalPositions[targetIdx]);
+        }
+
+        for (const twistReferences of Array.from(this._boneTwistReferenceJointIdx.values())) {
+            if (!this._jointHasBone[twistReferences.first]) {
+                this._trackedBindDesiredFinalPos![twistReferences.first].copyFrom(this._desiredFinalPositions[twistReferences.first]);
+            }
+            if (!this._jointHasBone[twistReferences.second]) {
+                this._trackedBindDesiredFinalPos![twistReferences.second].copyFrom(this._desiredFinalPositions[twistReferences.second]);
+            }
         }
 
         // For any bone whose aim target is UNMAPPED and therefore wasn't
@@ -1900,6 +2013,26 @@ export class WebXRTrackedBody implements IDisposable {
             }
             this._tempLocalDirection.normalize();
             this._bindLocalAimDirections.set(bone, this._tempLocalDirection.clone());
+        }
+
+        for (const [bone, twistReferences] of Array.from(this._boneTwistReferenceJointIdx)) {
+            if (this._bindLocalTwistNormals.has(bone)) {
+                continue;
+            }
+            const selfJointIdx = this._boneToJointIdx.get(bone);
+            const targetIdx = this._boneAimTargetJointIdx.get(bone);
+            const bindWorldRot = this._bindBoneWorldRotMeshLocal.get(bone);
+            if (selfJointIdx === undefined || targetIdx === undefined || !bindWorldRot) {
+                continue;
+            }
+            this._storeBindLocalTwistNormalFromPositions(
+                bone,
+                this._trackedBindDesiredFinalPos![selfJointIdx],
+                this._trackedBindDesiredFinalPos![targetIdx],
+                this._trackedBindDesiredFinalPos![twistReferences.first],
+                this._trackedBindDesiredFinalPos![twistReferences.second],
+                bindWorldRot
+            );
         }
 
         this._hasTrackedBind = true;
@@ -1986,6 +2119,36 @@ export class WebXRTrackedBody implements IDisposable {
                             // Correction: shortest-arc rotation taking current aim → desired aim.
                             Quaternion.FromUnitVectorsToRef(this._tempLocalDirection, this._tempDirection, this._tempRotQuat2);
                             // Apply correction in world space (pre-multiply column-vector).
+                            this._tempRotQuat2.multiplyToRef(this._tempBoneWorldRot, this._tempDeltaQuat);
+                            this._tempBoneWorldRot.copyFrom(this._tempDeltaQuat);
+                            this._tempBoneWorldRot.normalize();
+                        }
+                    }
+                }
+
+                // _computeNormalFromJointPositions leaves the aim direction in
+                // _tempDirection, which _projectOnPlaneToRef uses as the
+                // projection plane normal below.
+                const twistReferences = this._boneTwistReferenceJointIdx.get(bone);
+                const bindLocalTwistNormal = this._bindLocalTwistNormals.get(bone);
+                if (twistReferences && bindLocalTwistNormal && targetIdx !== undefined) {
+                    if (
+                        this._computeNormalFromJointPositions(
+                            this._desiredFinalPositions[jointIdx],
+                            this._desiredFinalPositions[targetIdx],
+                            this._desiredFinalPositions[twistReferences.first],
+                            this._desiredFinalPositions[twistReferences.second],
+                            this._tempTwistNormal
+                        )
+                    ) {
+                        // Rotate bind-space twist normal by the current world orientation,
+                        // then rotate around the aimed axis to match the tracked hand plane.
+                        bindLocalTwistNormal.rotateByQuaternionToRef(this._tempBoneWorldRot, this._tempCurrentTwistNormal);
+                        if (
+                            this._projectOnPlaneToRef(this._tempCurrentTwistNormal, this._tempDirection, this._tempProjectedTwistNormal) &&
+                            this._projectOnPlaneToRef(this._tempTwistNormal, this._tempDirection, this._tempProjectedDesiredTwistNormal)
+                        ) {
+                            Quaternion.FromUnitVectorsToRef(this._tempProjectedTwistNormal, this._tempProjectedDesiredTwistNormal, this._tempRotQuat2);
                             this._tempRotQuat2.multiplyToRef(this._tempBoneWorldRot, this._tempDeltaQuat);
                             this._tempBoneWorldRot.copyFrom(this._tempDeltaQuat);
                             this._tempBoneWorldRot.normalize();
