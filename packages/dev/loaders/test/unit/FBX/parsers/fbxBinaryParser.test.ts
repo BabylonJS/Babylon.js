@@ -18,6 +18,12 @@ describe("parseBinaryFBX", () => {
         expect(doc.nodes).toEqual([{ name: "Test", properties: [], children: [] }]);
     });
 
+    it("rejects truncated binary headers", () => {
+        const buffer = createBinaryFBX(21);
+
+        expect(() => parseBinaryFBX(buffer.buffer)).toThrow("Truncated binary FBX header");
+    });
+
     it("rejects child nodes whose end offset escapes the parent node", () => {
         const parentOffset = HEADER_SIZE;
         const childOffset = parentOffset + NODE_HEADER_SIZE + 6;
@@ -46,8 +52,8 @@ describe("parseBinaryFBX", () => {
     });
 });
 
-function createBinaryFBX(byteLength: number): Uint8Array {
-    const bytes = new Uint8Array(byteLength);
+function createBinaryFBX(byteLength: number): Uint8Array<ArrayBuffer> {
+    const bytes = new Uint8Array(new ArrayBuffer(byteLength));
     for (let i = 0; i < MAGIC.length; i++) {
         bytes[i] = MAGIC.charCodeAt(i);
     }

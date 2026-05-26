@@ -18,6 +18,9 @@ export function parseBinaryFBX(buffer: ArrayBuffer): FBXDocument {
     if (magic !== FBX_MAGIC) {
         throw new Error("Not a valid binary FBX file");
     }
+    if (buffer.byteLength < HEADER_SIZE) {
+        throw new Error("Truncated binary FBX header");
+    }
 
     const version = view.getUint32(23, true);
     // v7.5+ uses 64-bit offsets in node records
