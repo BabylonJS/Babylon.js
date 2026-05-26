@@ -7,7 +7,7 @@ import { SpriteNode } from "../../src/nodes/spriteNode";
 import { ControlNode } from "../../src/nodes/controlNode";
 import { Node } from "../../src/nodes/node";
 import { type RawElement, type RawLottieAnimation, type RawShapeLayer, type RawTextJustify, type RawTextLayer, type RawTransform } from "../../src/parsing/rawTypes";
-import { type AnimationConfiguration, type AnimationConfigurationOptions, UpdateConfiguration } from "../../src/animationConfiguration";
+import { type AnimationConfiguration, type ResolvedAnimationConfiguration, UpdateConfiguration } from "../../src/animationConfiguration";
 
 // Minimal valid transform with a configurable anchor point.
 function makeTransform(anchorPoint: number[] = [0, 0]): RawTransform {
@@ -80,7 +80,7 @@ function makeMockRenderingManager(): RenderingManager {
     return mock as unknown as RenderingManager;
 }
 
-function makeConfiguration(configuration: AnimationConfigurationOptions = {}): AnimationConfiguration {
+function makeConfiguration(configuration: Partial<AnimationConfiguration> = {}): ResolvedAnimationConfiguration {
     return UpdateConfiguration(configuration, 4096, 1);
 }
 

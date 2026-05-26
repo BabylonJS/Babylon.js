@@ -1,6 +1,6 @@
 import { type Nullable } from "core/types";
 import { type RawLottieAnimation } from "./parsing/rawTypes";
-import { type AnimationConfigurationOptions } from "./animationConfiguration";
+import { type AnimationConfiguration } from "./animationConfiguration";
 
 /**
  * Input parameters required to load and play an animation
@@ -13,7 +13,7 @@ export type AnimationInput = {
     /** A map of variables to be used in the animation */
     variables: Nullable<Map<string, string>>;
     /** Configuration options for the animation */
-    configuration: Nullable<AnimationConfigurationOptions>;
+    configuration: Nullable<Partial<AnimationConfiguration>>;
     /** Callback invoked after the first frame of the animation has been rendered. Not serialized to workers. */
     onFirstRender?: () => void;
 };

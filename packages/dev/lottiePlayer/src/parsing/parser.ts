@@ -26,7 +26,7 @@ import { type RenderingManager } from "../rendering/renderingManager";
 import { Node } from "../nodes/node";
 import { ControlNode } from "../nodes/controlNode";
 
-import { type AnimationConfiguration } from "../animationConfiguration";
+import { type ResolvedAnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Type of the vector properties in the Lottie animation. It determines how the vector values are interpreted in Babylon.js.
@@ -104,7 +104,7 @@ export async function GetRawAnimationDataAsync(urlToFile: string): Promise<RawLo
  */
 export class Parser {
     private _packer: SpritePacker;
-    private readonly _configuration: AnimationConfiguration;
+    private readonly _configuration: ResolvedAnimationConfiguration;
     private readonly _animationInfo: AnimationInfo;
     private readonly _renderingManager: RenderingManager;
 
@@ -133,7 +133,7 @@ export class Parser {
      * @param configuration Configuration options for the animation parser.
      * @param renderingManager Object that manages the rendering of the sprites in the animation.
      */
-    public constructor(packer: SpritePacker, animationData: RawLottieAnimation, configuration: AnimationConfiguration, renderingManager: RenderingManager) {
+    public constructor(packer: SpritePacker, animationData: RawLottieAnimation, configuration: ResolvedAnimationConfiguration, renderingManager: RenderingManager) {
         this._packer = packer;
         this._configuration = configuration;
         this._renderingManager = renderingManager;

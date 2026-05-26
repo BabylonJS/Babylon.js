@@ -22,7 +22,7 @@ import { ApplyLottieTextContext, DrawLottieText, MeasureLottieText, ResolveLotti
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
-import { type AnimationConfiguration } from "../animationConfiguration";
+import { type ResolvedAnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Type alias for the 2D drawing context used by the sprite packer.
@@ -117,7 +117,7 @@ export class SpritePacker {
     private readonly _isHtmlCanvas: boolean;
     private _atlasScale: number;
     private readonly _variables: Map<string, string>;
-    private readonly _configuration: AnimationConfiguration;
+    private readonly _configuration: ResolvedAnimationConfiguration;
     private _rawFonts: Map<string, RawFont> | undefined;
 
     private _pages: AtlasPage[];
@@ -163,7 +163,7 @@ export class SpritePacker {
      * @param variables Map of variables to replace in the animation file.
      * @param configuration Configuration options for the sprite packer.
      */
-    public constructor(engine: ThinEngine, isHtmlCanvas: boolean, atlasScale: number, variables: Map<string, string>, configuration: AnimationConfiguration) {
+    public constructor(engine: ThinEngine, isHtmlCanvas: boolean, atlasScale: number, variables: Map<string, string>, configuration: ResolvedAnimationConfiguration) {
         this._engine = engine;
         this._isHtmlCanvas = isHtmlCanvas;
         this._atlasScale = atlasScale;

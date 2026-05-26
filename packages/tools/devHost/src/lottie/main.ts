@@ -1,4 +1,4 @@
-import { type AnimationConfigurationOptions, type LottieCompatibilityMode } from "lottie-player/animationConfiguration";
+import { type AnimationConfiguration, type LottieCompatibilityMode } from "lottie-player/animationConfiguration";
 import { type RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
@@ -60,7 +60,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const debug = debugParam !== "false";
 
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
-    const configuration: AnimationConfigurationOptions = {
+    const configuration: Partial<AnimationConfiguration> = {
         backgroundColor: { r: 255 / 255, g: 255 / 255, b: 255 / 255, a: 1 }, // Background color for the animation canvas, visual tests use white
         stopAtFrame: stopAtFrame, // If set, the animation will stop at this frame (used by visual tests)
         debug: debug, // Log unsupported lottie features after parsing

@@ -107,15 +107,15 @@ export type AnimationConfiguration = {
     /**
      * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
      */
-    compatibility: ResolvedLottieCompatibilityOptions;
+    compatibility: LottieCompatibilityOptions;
 };
 
 /**
- * Configuration options accepted by the Lottie animation player.
+ * Fully resolved configuration used internally by the Lottie animation player.
  */
-export type AnimationConfigurationOptions = Omit<Partial<AnimationConfiguration>, "compatibility"> & {
-    /** Compatibility options for known behavior differences between Babylon.js Lottie player versions. */
-    compatibility?: LottieCompatibilityOptions;
+export type ResolvedAnimationConfiguration = Omit<AnimationConfiguration, "compatibility"> & {
+    /** Resolved compatibility options for known behavior differences between Babylon.js Lottie player versions. */
+    compatibility: ResolvedLottieCompatibilityOptions;
 };
 
 /**
@@ -136,14 +136,7 @@ export const DefaultConfiguration = {
         textLayerPlacement: "spec",
         solidLayerRendering: "spec",
     },
-} as const satisfies AnimationConfiguration;
-
-function NormalizeCompatibilityOptions(options?: LottieCompatibilityOptions): ResolvedLottieCompatibilityOptions {
-    return {
-        textLayerPlacement: options?.textLayerPlacement ?? DefaultConfiguration.compatibility.textLayerPlacement,
-        solidLayerRendering: options?.solidLayerRendering ?? DefaultConfiguration.compatibility.solidLayerRendering,
-    };
-}
+} as const satisfies ResolvedAnimationConfiguration;
 
 /**
  * Creates the final animation configuration by merging the provided partial configuration with the default configuration.
@@ -153,12 +146,14 @@ function NormalizeCompatibilityOptions(options?: LottieCompatibilityOptions): Re
  * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios where window is not available).
  * @returns The final animation configuration.
  */
-export function UpdateConfiguration(newConfig: AnimationConfigurationOptions, maxTextureSize: number, mainThreadDevicePixelRatio?: number): AnimationConfiguration {
-    const compatibility = NormalizeCompatibilityOptions(newConfig.compatibility);
+export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, maxTextureSize: number, mainThreadDevicePixelRatio?: number): ResolvedAnimationConfiguration {
     const config = {
         ...DefaultConfiguration,
         ...newConfig,
-        compatibility,
+        compatibility: {
+            ...DefaultConfiguration.compatibility,
+            ...newConfig.compatibility,
+        },
     };
 
     // If atlas dimensions are 0 (auto-detect), calculate optimal values based on GPU capabilities
