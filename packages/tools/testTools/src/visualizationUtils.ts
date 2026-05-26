@@ -211,14 +211,12 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
             window.engine.runRenderLoop(function () {
                 try {
                     if (renderCount <= 0) {
-                        if (window.scene!.isReady()) {
-                            window.engine && window.engine.stopRenderLoop();
-                            return resolve(true);
-                        } else {
-                            window.engine && window.engine.stopRenderLoop();
+                        window.engine && window.engine.stopRenderLoop();
+                        const ready = window.scene!.isReady();
+                        if (!ready) {
                             console.error("Scene is not ready after rendering is done");
-                            return resolve(false);
                         }
+                        return resolve(ready);
                     } else {
                         window.scene && window.scene.render();
                         renderCount--;

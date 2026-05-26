@@ -601,18 +601,18 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount, continu
             window.engine.runRenderLoop(function () {
                 try {
                     if (renderCount <= 0) {
-                        if (window.scene!.isReady()) {
+                        const ready = window.scene!.isReady();
+                        if (!ready || !continueRenderingOnDone) {
+                            window.engine && window.engine.stopRenderLoop();
+                        }
+                        if (ready) {
                             if (continueRenderingOnDone) {
                                 window.scene && window.scene.render();
-                            } else {
-                                window.engine && window.engine.stopRenderLoop();
                             }
-                            return resolve(true);
                         } else {
-                            window.engine && window.engine.stopRenderLoop();
                             console.error("Scene is not ready after rendering is done");
-                            return resolve(false);
                         }
+                        return resolve(ready);
                     } else {
                         (window as any).onRenderCallback && (window as any).onRenderCallback();
                         window.scene && window.scene.render();
