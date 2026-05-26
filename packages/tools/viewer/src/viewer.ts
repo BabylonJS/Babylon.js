@@ -1020,7 +1020,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
         const watchMesh = (mesh: AbstractMesh) => {
             if (!meshMaterialObservers.has(mesh)) {
-                const observer = mesh.onMaterialChangedObservable.add(() => rebuild());
+                const observer = mesh.onMaterialChangedObservable.add(rebuild);
                 if (observer) {
                     meshMaterialObservers.set(mesh, observer);
                 }
