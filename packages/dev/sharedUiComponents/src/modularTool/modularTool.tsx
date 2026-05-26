@@ -46,6 +46,7 @@ import { Theme } from "./components/theme";
 import { DialogContext } from "./contexts/dialogContext";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
+import { TeachingMomentsContext } from "./contexts/teachingMomentsContext";
 import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "./services/reactContextService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 
@@ -147,6 +148,11 @@ export type ModularToolOptions = {
      * will be resolved from this parent.
      */
     parentContainer?: ServiceContainer;
+
+    /**
+     * When true, all teaching moments are disabled and will not be shown.
+     */
+    disableTeachingMoments?: boolean;
 } & ShellServiceOptions;
 
 /**
@@ -155,7 +161,9 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions) {
-    const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [], parentContainer } = options;
+    const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [], parentContainer, disableTeachingMoments = false } = options;
+
+    const teachingMomentsContextValue = { disabled: disableTeachingMoments };
 
     // Create the settings store immediately as it will be exposed to services and through React context.
     const settingsStore = new SettingsStore(namespace);
@@ -392,13 +400,15 @@ export function MakeModularTool(options: ModularToolOptions) {
         // Show a spinner until a main view has been set.
         if (!rootComponentService) {
             return (
-                <ReactContextsWrapper contexts={contexts}>
-                    <SettingsStoreContext.Provider value={settingsStore}>
-                        <Theme className={classes.app} targetDocument={targetDocument}>
-                            <Spinner className={classes.spinner} />
-                        </Theme>
-                    </SettingsStoreContext.Provider>
-                </ReactContextsWrapper>
+                <TeachingMomentsContext.Provider value={teachingMomentsContextValue}>
+                    <ReactContextsWrapper contexts={contexts}>
+                        <SettingsStoreContext.Provider value={settingsStore}>
+                            <Theme className={classes.app} targetDocument={targetDocument}>
+                                <Spinner className={classes.spinner} />
+                            </Theme>
+                        </SettingsStoreContext.Provider>
+                    </ReactContextsWrapper>
+                </TeachingMomentsContext.Provider>
             );
         } else {
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -406,89 +416,91 @@ export function MakeModularTool(options: ModularToolOptions) {
 
             return (
                 <ReactContextsWrapper contexts={contexts}>
-                    {/* Expose the settings store as a React context so that UI components can read/write
+                    <TeachingMomentsContext.Provider value={teachingMomentsContextValue}>
+                        {/* Expose the settings store as a React context so that UI components can read/write
                         settings without the ISettingsService needing to be explicitly passed around. */}
-                    <SettingsStoreContext.Provider value={settingsStore}>
-                        <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                            <Theme className={classes.app} targetDocument={targetDocument}>
-                                <ToastProvider imperativeRef={setToastHandle}>
-                                    <Dialog open={!!requiredExtensions} modalType="alert">
-                                        <DialogSurface>
-                                            <DialogBody>
-                                                <DialogTitle>Required Extensions</DialogTitle>
-                                                <DialogContent>
-                                                    Opening this URL requires the following extensions to be installed and enabled:
-                                                    <ul>
-                                                        {requiredExtensions?.map((name) => (
-                                                            <li key={name}>{name}</li>
-                                                        ))}
-                                                    </ul>
-                                                </DialogContent>
-                                                <DialogActions>
-                                                    <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
-                                                        Install & Enable
-                                                    </Button>
-                                                    <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
-                                                        No Thanks
-                                                    </Button>
-                                                </DialogActions>
-                                            </DialogBody>
-                                        </DialogSurface>
-                                    </Dialog>
-                                    <Dialog open={!!extensionInstallError} modalType="alert">
-                                        <DialogSurface>
-                                            <DialogBody>
-                                                <DialogTitle>
-                                                    <div className={classes.extensionErrorTitleDiv}>
-                                                        Extension Install Error
-                                                        <ErrorCircleRegular className={classes.extensionErrorIcon} />
-                                                    </div>
-                                                </DialogTitle>
-                                                <DialogContent>
-                                                    <List>
-                                                        <ListItem>
-                                                            <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
-                                                        </ListItem>
-                                                        <ListItem>
-                                                            <Body1>{`${extensionInstallError?.error}`}</Body1>
-                                                        </ListItem>
-                                                    </List>
-                                                </DialogContent>
-                                                <DialogActions>
-                                                    <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
-                                                        Close
-                                                    </Button>
-                                                </DialogActions>
-                                            </DialogBody>
-                                        </DialogSurface>
-                                    </Dialog>
-                                    <Dialog open={!!currentDialog} modalType="alert">
-                                        <DialogSurface>
-                                            <DialogBody>
-                                                <DialogTitle>
-                                                    <div className={classes.dialogTitle}>
-                                                        {currentDialogIcon}
-                                                        {currentDialog?.title}
-                                                    </div>
-                                                </DialogTitle>
-                                                {currentDialog?.content && <DialogContent>{currentDialog.content}</DialogContent>}
-                                                <DialogActions>
-                                                    <Button appearance="primary" onClick={onDismissDialog}>
-                                                        OK
-                                                    </Button>
-                                                </DialogActions>
-                                            </DialogBody>
-                                        </DialogSurface>
-                                    </Dialog>
-                                    <Suspense fallback={<Spinner className={classes.spinner} />}>
-                                        <DialogContext.Provider value={{ showDialog }}>
-                                            <Content />
-                                        </DialogContext.Provider>
-                                    </Suspense>
-                                </ToastProvider>
-                            </Theme>
-                        </ExtensionManagerContext.Provider>
-                    </SettingsStoreContext.Provider>
+                        <SettingsStoreContext.Provider value={settingsStore}>
+                            <ExtensionManagerContext.Provider value={extensionManagerContext}>
+                                <Theme className={classes.app} targetDocument={targetDocument}>
+                                    <ToastProvider imperativeRef={setToastHandle}>
+                                        <Dialog open={!!requiredExtensions} modalType="alert">
+                                            <DialogSurface>
+                                                <DialogBody>
+                                                    <DialogTitle>Required Extensions</DialogTitle>
+                                                    <DialogContent>
+                                                        Opening this URL requires the following extensions to be installed and enabled:
+                                                        <ul>
+                                                            {requiredExtensions?.map((name) => (
+                                                                <li key={name}>{name}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </DialogContent>
+                                                    <DialogActions>
+                                                        <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
+                                                            Install & Enable
+                                                        </Button>
+                                                        <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
+                                                            No Thanks
+                                                        </Button>
+                                                    </DialogActions>
+                                                </DialogBody>
+                                            </DialogSurface>
+                                        </Dialog>
+                                        <Dialog open={!!extensionInstallError} modalType="alert">
+                                            <DialogSurface>
+                                                <DialogBody>
+                                                    <DialogTitle>
+                                                        <div className={classes.extensionErrorTitleDiv}>
+                                                            Extension Install Error
+                                                            <ErrorCircleRegular className={classes.extensionErrorIcon} />
+                                                        </div>
+                                                    </DialogTitle>
+                                                    <DialogContent>
+                                                        <List>
+                                                            <ListItem>
+                                                                <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
+                                                            </ListItem>
+                                                            <ListItem>
+                                                                <Body1>{`${extensionInstallError?.error}`}</Body1>
+                                                            </ListItem>
+                                                        </List>
+                                                    </DialogContent>
+                                                    <DialogActions>
+                                                        <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
+                                                            Close
+                                                        </Button>
+                                                    </DialogActions>
+                                                </DialogBody>
+                                            </DialogSurface>
+                                        </Dialog>
+                                        <Dialog open={!!currentDialog} modalType="alert">
+                                            <DialogSurface>
+                                                <DialogBody>
+                                                    <DialogTitle>
+                                                        <div className={classes.dialogTitle}>
+                                                            {currentDialogIcon}
+                                                            {currentDialog?.title}
+                                                        </div>
+                                                    </DialogTitle>
+                                                    {currentDialog?.content && <DialogContent>{currentDialog.content}</DialogContent>}
+                                                    <DialogActions>
+                                                        <Button appearance="primary" onClick={onDismissDialog}>
+                                                            OK
+                                                        </Button>
+                                                    </DialogActions>
+                                                </DialogBody>
+                                            </DialogSurface>
+                                        </Dialog>
+                                        <Suspense fallback={<Spinner className={classes.spinner} />}>
+                                            <DialogContext.Provider value={{ showDialog }}>
+                                                <Content />
+                                            </DialogContext.Provider>
+                                        </Suspense>
+                                    </ToastProvider>
+                                </Theme>
+                            </ExtensionManagerContext.Provider>
+                        </SettingsStoreContext.Provider>
+                    </TeachingMomentsContext.Provider>
                 </ReactContextsWrapper>
             );
         }
