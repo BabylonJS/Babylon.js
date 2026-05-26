@@ -100,7 +100,15 @@ MakeModularTool({
 - `SettingsStore` (persisted user preferences)
 - `ThemeService` + optional `ThemeSelectorService`
 - `ShellService` (layout: central content, side panes, toolbars)
-- `ToastProvider` for toast notifications
+- `ToastProvider` + `IToastService` for toast notifications (consume `ToastServiceIdentity` — do not roll your own container)
+- `IDialogService` (consume `DialogServiceIdentity`) for modal alert/confirm dialogs — replaces ad-hoc `MessageDialog`
+
+### Cross-window / popup hosting
+
+`MakeModularTool` derives `targetDocument` from `containerElement.ownerDocument`. If your tool's entry function (e.g. `Show(options)`) hosts the editor in a popup window, just pass the popup body as `containerElement` — Fluent/Griffel/`Theme` plumb cross-window automatically.
+
+- For a fully-Fluent popup, use `OpenPopupWindow` from `shared-ui-components/fluent/hoc/popupWindow`.
+- If part of your tool still ships traditional CSS/SCSS (e.g. `shared-ui-components/nodeGraphSystem/`'s graph canvas), keep the legacy `CreatePopup` from `shared-ui-components/popupHelper` — it copies stylesheets into the popup. Fluent and `CreatePopup` coexist fine.
 
 ---
 
@@ -477,3 +485,97 @@ For `satisfies` clauses in const option arrays, use `satisfies DropdownOption<st
 8. **Switch hooks** — use `useObservableState` from `shared-ui-components/modularTool/` instead of local hooks
 9. **Delete obsolete files** — remove SCSS, FA wrappers, legacy components
 10. **Build & verify** — ensure clean build and correct rendering in both themes
+
+---
+
+## 11. Patterns for Large Editor Ports
+
+Distilled from the Flow Graph Editor port (`packages/tools/flowGraphEditor/`). See its `port-to-fluent.md` for the full plan.
+
+### Phased execution
+
+For tools too large to port in one go (NME-class), use phases that each leave the build green:
+
+1. **Bootstrap & shell** — add Fluent deps, create a `GlobalState` service, wrap the existing class component as a single `addCentralContent` passthrough, switch entry point to `MakeModularTool`.
+2. **Decompose layout** — extract each pane into its own service that still wraps the _legacy_ component. Delete `SplitContainer`/`Splitter` once the shell owns the layout.
+3. **Port surrounding components** — rewrite each pane/dialog/toolbar to Fluent + `makeStyles`. One component at a time.
+4. **Port property panels** — replace `shared-ui-components/lines/*` with Fluent property-line HOCs.
+5. **Cleanup** — delete local `sharedComponents/`, all `.scss`, obsolete `package.json` devDeps; run lint/format/build/e2e.
+
+### `MakeXService(options)` factory pattern
+
+When a service needs instance-specific inputs from the tool's entry function (e.g. `Show(options)`), export a factory rather than a static `ServiceDefinition`:
+
+```ts
+export function MakeGlobalStateService(options: IMyToolOptions, hostElement: HTMLElement): ServiceDefinition<[IGlobalStateService], []> {
+    return {
+        friendlyName: "Global State Service",
+        produces: [GlobalStateServiceIdentity],
+        factory: () => {
+            const globalState = new GlobalState(options.scene);
+            // wire options into globalState...
+            return { globalState, dispose: () => { /* cleanup */ } };
+        },
+    };
+}
+
+// In Show(options):
+MakeModularTool({
+    serviceDefinitions: [MakeGlobalStateService(options, hostElement), CentralServiceDefinition, ...],
+    /* ... */
+});
+```
+
+Prefer this over a `parentContainer` for instance-scoped data.
+
+### Bridge services for legacy observables
+
+When the existing codebase uses `globalState.on*Observable` to trigger UI (toasts, dialogs, etc.), don't rewrite all call sites. Add a small "bridge" service that consumes the framework service and forwards observable events:
+
+```ts
+export const ToastBridgeServiceDefinition: ServiceDefinition<[], [IGlobalStateService, IToastService]> = {
+    friendlyName: "Toast Bridge Service",
+    consumes: [GlobalStateServiceIdentity, ToastServiceIdentity],
+    factory: (gs, toast) => {
+        const observer = gs.globalState.onToastNotification.add((d) => toast.showToast(d.message, { intent: d.severity }));
+        return { dispose: () => observer?.remove() };
+    },
+};
+```
+
+Same pattern works for `DialogBridge` → `IDialogService`, etc. Delete the legacy renderer (`ToastContainerComponent`, `MessageDialog`) once bridged.
+
+### `ToolContext` override per pane
+
+Dense property panels often want `size: "small"` independent of the user's tool-wide setting. Override `ToolContext` _inside_ the pane's content function (spread the parent first so other fields are inherited):
+
+```tsx
+content: () => {
+    const parent = useContext(ToolContext);
+    const ctx = useMemo(() => ({ ...parent, size: "small" as const }), [parent]);
+    return <ToolContext.Provider value={ctx}><PropertyTab .../></ToolContext.Provider>;
+},
+```
+
+### Toolbar hosts global actions
+
+Convert global buttons (Help, How-to-use, documentation links) to `shellService.addToolbarItem({ horizontalLocation: "right", verticalLocation: "bottom" })`. Existing top-of-canvas control bars (play/pause/undo/redo) fit naturally in `{ horizontalLocation: "left", verticalLocation: "top" }`, removing the need for a custom bar above the canvas.
+
+Buttons typically just notify an existing `globalState.on*Requested` observable so the dialog overlay logic stays where it is.
+
+### Side panes — `ExtensibleAccordion`, title + icon
+
+- Use `ExtensibleAccordion` (from `shared-ui-components/modularTool/components/extensibleAccordion`) for node lists and property tabs — gives filtering and pinning for free.
+- Set `title` and `icon` on `addSidePane` so the shell renders the tool name/logo in the pane header (mirrors `viewer-configurator/configuratorService.tsx`). Use Fluent icons first; `createFluentIcon` only for Babylon-specific glyphs (logo, port markers).
+
+### `FileUploadLine` for file inputs
+
+Replace local `FileButtonLineComponent`-style components with `FileUploadLine` from `shared-ui-components/fluent/hoc/fileUploadLine`. Its callback receives a `FileList` — read `files[0]` if you previously took a single `File`.
+
+### Shared `Dialog` primitive
+
+Use `Dialog` from `shared-ui-components/fluent/primitives/dialog` (open + title + children + actions) for ad-hoc dialogs instead of composing `FluentDialog` + `DialogSurface` + `DialogBody` directly.
+
+### Keep `GraphCanvasComponent` out of scope
+
+The shared `shared-ui-components/nodeGraphSystem/` graph canvas is consumed by every node-graph editor and still ships SCSS. Don't try to port it during a tool-level Fluent migration — only port the surrounding shell, panes, dialogs, and property panels.

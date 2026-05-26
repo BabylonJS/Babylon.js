@@ -24,7 +24,7 @@ import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { ParseSogMeta, type SOGRootData } from "./sog";
+import { ParseSogMeta, ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
 import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
@@ -215,26 +215,38 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            if (parsedSOG.sogTextures) {
+                gaussianSplatting.setSogTextureData(parsedSOG.sogTextures);
+            } else {
+                gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            }
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
         };
 
+        const engine = scene.getEngine();
+        let useSogTextures = this._loadingOptions.useSogTextures;
+        if (useSogTextures && !engine.isWebGPU && engine.version < 2) {
+            Logger.Warn("SPLATFileLoader: useSogTextures requires WebGL2 or WebGPU. Falling back to CPU path.");
+            useSogTextures = false;
+        }
+        const sogParser = useSogTextures ? ParseSogMetaAsTextures : ParseSogMeta;
+
         // check if data is json string
         if (typeof data === "string") {
             const dataSOG = JSON.parse(data) as SOGRootData;
             if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
-                return new Promise((resolve) => {
-                    ParseSogMeta(dataSOG, rootUrl, scene)
+                return new Promise((resolve, reject) => {
+                    sogParser(dataSOG, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         })
                         // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG data.", { cause: e }));
                         });
                 });
             }
@@ -243,17 +255,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const u8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
         // ZIP signature check for SOG
         if (u8[0] === 0x50 && u8[1] === 0x4b) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._unzipWithFFlateAsync(u8).then((files) => {
-                    ParseSogMeta(files, rootUrl, scene)
+                    sogParser(files, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         }) // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG zip data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG zip data.", { cause: e }));
                         });
                 });
             });

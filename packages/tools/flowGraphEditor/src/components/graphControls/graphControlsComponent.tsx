@@ -1,516 +1,577 @@
-import * as React from "react";
+import { type FunctionComponent, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+
+import { Body1, Caption1, Button, Divider, Dropdown, Input, Option, Tooltip, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import {
+    AddRegular,
+    ArrowRedoRegular,
+    ArrowResetRegular,
+    ArrowUndoRegular,
+    BugRegular,
+    CheckmarkRegular,
+    EditRegular,
+    FastForwardRegular,
+    FlashRegular,
+    NextRegular,
+    PauseRegular,
+    PlayRegular,
+    StopRegular,
+    SubtractRegular,
+} from "@fluentui/react-icons";
+
 import { type Nullable } from "core/types";
-import { type Observer } from "core/Misc/observable";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
-import { type IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
-import { type GlobalState } from "../../globalState";
-import { LogEntry } from "../log/logComponent";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 
-import "./graphControls.scss";
+import { type GlobalState } from "../../globalState";
+import { LogEntry } from "../log/logComponent";
 
 interface IGraphControlsProps {
     globalState: GlobalState;
 }
 
-interface IGraphControlsState {
-    graphState: FlowGraphState;
-    debugMode: boolean;
-    liveValidation: boolean;
-    validationResult: Nullable<IFlowGraphValidationResult>;
-    breakpointPaused: boolean;
-    timeScale: number;
-    contextList: Array<{ index: number; uniqueId: string; name: string }>;
-    selectedContextIndex: number;
-    editingContextIndex: number | null;
-    editingContextName: string;
-}
+const useStyles = makeStyles({
+    bar: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        // Use rowGap so that when items wrap onto a second row the rows are spaced sensibly.
+        columnGap: tokens.spacingHorizontalXS,
+        rowGap: tokens.spacingVerticalXXS,
+        flexShrink: 0,
+        boxSizing: "border-box",
+        flexWrap: "wrap",
+    },
+    separator: {
+        // Fluent's `Divider` defaults to `flex-grow: 1`, which is fine in fixed-width toolbars
+        // (see inspector-v2's curve editor topBar). Our toolbar has `flex-wrap: wrap` so that
+        // slack does exist on the row - without `flexGrow: 0` each divider would expand to
+        // consume it. Width and height pin the visible line.
+        flexGrow: 0,
+        width: "1px",
+        height: "20px",
+        margin: `0 ${tokens.spacingHorizontalXS}`,
+    },
+    label: {
+        fontSize: tokens.fontSizeBase100,
+        fontWeight: tokens.fontWeightSemibold,
+        color: tokens.colorNeutralForeground3,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
+        marginRight: tokens.spacingHorizontalXXS,
+    },
+    state: {
+        marginLeft: tokens.spacingHorizontalS,
+        fontSize: tokens.fontSizeBase100,
+        fontWeight: tokens.fontWeightSemibold,
+        letterSpacing: "0.03em",
+        textTransform: "uppercase",
+    },
+    stateStack: {
+        // CSS grid stack: all four labels share grid cell 1/1 so the container's intrinsic
+        // width equals the widest label. Only the currently-active label is visible - the
+        // others reserve the same space with `visibility: hidden`. This eliminates horizontal
+        // shift of subsequent toolbar items as the graph state changes.
+        display: "inline-grid",
+        marginLeft: tokens.spacingHorizontalS,
+    },
+    stateStackChild: {
+        gridArea: "1 / 1",
+        marginLeft: 0,
+    },
+    stateHidden: {
+        visibility: "hidden",
+    },
+    stateStopped: { color: tokens.colorNeutralForeground3 },
+    stateRunning: { color: tokens.colorPaletteGreenForeground1 },
+    statePaused: { color: tokens.colorPaletteYellowForeground1 },
+    stateBreakpoint: {
+        color: tokens.colorPaletteRedForeground1,
+        animationName: { from: { opacity: 1 }, to: { opacity: 0.5 } },
+        animationDuration: "1s",
+        animationIterationCount: "infinite",
+        animationDirection: "alternate",
+    },
+    validationSummary: {
+        marginLeft: tokens.spacingHorizontalXS,
+        fontSize: tokens.fontSizeBase100,
+        fontWeight: tokens.fontWeightSemibold,
+        letterSpacing: "0.03em",
+        padding: `2px ${tokens.spacingHorizontalXS}`,
+        borderRadius: tokens.borderRadiusSmall,
+    },
+    validationSummaryError: {
+        color: tokens.colorPaletteRedForeground1,
+        background: tokens.colorPaletteRedBackground2,
+    },
+    validationSummaryWarning: {
+        color: tokens.colorPaletteYellowForeground1,
+        background: tokens.colorPaletteYellowBackground2,
+    },
+    contextGroup: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXXS,
+    },
+    contextDropdown: {
+        minWidth: "120px",
+        maxWidth: "160px",
+    },
+    contextRenameInput: { width: "120px" },
+    timeScale: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXXS,
+    },
+    speedButton: {
+        // Fluent's Button has a baseline min-width that makes short labels like "0.1x" much
+        // wider than they need to be. Collapse to the content's intrinsic width with a small
+        // pad so all four presets fit comfortably and don't overflow the toolbar.
+        minWidth: "auto",
+        paddingLeft: tokens.spacingHorizontalXS,
+        paddingRight: tokens.spacingHorizontalXS,
+    },
+});
+
+const SpeedPresets = [0.1, 0.25, 0.5, 1] as const;
 
 /**
  * Toolbar component that provides Start / Pause / Stop / Reset controls for the flow graph.
+ *
+ * Help and How-to-use buttons have moved to the shell's bottom-right toolbar (registered
+ * by `toolbarService.tsx`).  Everything else stays in this in-canvas controls bar.
+ * @param props - The component props.
+ * @returns The rendered controls toolbar.
  */
-export class GraphControlsComponent extends React.Component<IGraphControlsProps, IGraphControlsState> {
-    private _stateObserver: Nullable<Observer<FlowGraphState>> = null;
-    private _builtObserver: Nullable<Observer<void>> = null;
-    private _debugModeObserver: Nullable<Observer<boolean>> = null;
-    private _liveValidationObserver: Nullable<Observer<boolean>> = null;
-    private _validationResultObserver: Nullable<Observer<Nullable<IFlowGraphValidationResult>>> = null;
-    private _breakpointHitObserver: Nullable<Observer<IFlowGraphPendingActivation>> = null;
-    private _timeScaleObserver: Nullable<Observer<number>> = null;
-    private _contextListObserver: Nullable<Observer<void>> = null;
-    private _selectedContextObserver: Nullable<Observer<number>> = null;
+export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = (props) => {
+    const { globalState } = props;
+    const classes = useStyles();
 
-    constructor(props: IGraphControlsProps) {
-        super(props);
-        this.state = {
-            graphState: props.globalState.flowGraph.state,
-            debugMode: props.globalState.isDebugMode,
-            liveValidation: props.globalState.liveValidation,
-            validationResult: props.globalState.validationResult,
-            breakpointPaused: false,
-            timeScale: props.globalState.timeScale,
-            contextList: props.globalState.getContextList(),
-            selectedContextIndex: props.globalState.selectedContextIndex,
-            editingContextIndex: null,
-            editingContextName: "",
+    const [graphState, setGraphState] = useState<FlowGraphState>(globalState.flowGraph.state);
+    const [debugMode, setDebugMode] = useState(globalState.isDebugMode);
+    const [liveValidation, setLiveValidation] = useState(globalState.liveValidation);
+    const [validationResult, setValidationResult] = useState<Nullable<IFlowGraphValidationResult>>(globalState.validationResult);
+    const [breakpointPaused, setBreakpointPaused] = useState(false);
+    const [timeScale, setTimeScale] = useState(globalState.timeScale);
+    const [contextList, setContextList] = useState(globalState.getContextList());
+    const [selectedContextIndex, setSelectedContextIndex] = useState(globalState.selectedContextIndex);
+    const [editingContextIndex, setEditingContextIndex] = useState<number | null>(null);
+    const [editingContextName, setEditingContextName] = useState("");
+    const [, forceUpdate] = useState({});
+
+    // Re-subscribe to the active flow graph's state observable whenever the graph reference
+    // is replaced (e.g. after deserialization).
+    const stateObserverRef = useRef<{ remove: () => void } | null>(null);
+    useEffect(() => {
+        const subscribeToFlowGraph = () => {
+            stateObserverRef.current?.remove();
+            const flowGraph = globalState.flowGraph;
+            if (!flowGraph) {
+                return;
+            }
+            const obs = flowGraph.onStateChangedObservable.add((newState) => {
+                if (newState === FlowGraphState.Stopped || newState === FlowGraphState.Paused) {
+                    setGraphState(newState);
+                    setBreakpointPaused(false);
+                } else {
+                    setGraphState(newState);
+                }
+                setContextList(globalState.getContextList());
+            });
+            stateObserverRef.current = { remove: () => obs?.remove() };
+            setGraphState(flowGraph.state);
         };
-    }
 
-    override componentDidMount() {
-        this._subscribeToFlowGraph();
-
-        // When a new graph is loaded (deserialized), the flowGraph reference on
-        // globalState is replaced.  Re-subscribe so we track the *new* graph's state.
-        this._builtObserver = this.props.globalState.onBuiltObservable.add(() => {
-            this._subscribeToFlowGraph();
-            this.setState({ contextList: this.props.globalState.getContextList(), selectedContextIndex: this.props.globalState.selectedContextIndex });
+        subscribeToFlowGraph();
+        const builtObs = globalState.onBuiltObservable.add(() => {
+            subscribeToFlowGraph();
+            setContextList(globalState.getContextList());
+            setSelectedContextIndex(globalState.selectedContextIndex);
         });
-
-        this._debugModeObserver = this.props.globalState.onDebugModeChanged.add((debugMode) => {
-            this.setState({ debugMode });
-        });
-
-        this._liveValidationObserver = this.props.globalState.onLiveValidationChanged.add((liveValidation) => {
-            this.setState({ liveValidation });
-        });
-
-        this._validationResultObserver = this.props.globalState.onValidationResultChanged.add((validationResult) => {
-            this.setState({ validationResult });
-        });
-
-        this._breakpointHitObserver = this.props.globalState.onBreakpointHit.add((activation) => {
-            this.setState({ breakpointPaused: true });
-            this.props.globalState.onLogRequiredObservable.notifyObservers(
+        const debugObs = globalState.onDebugModeChanged.add((m) => setDebugMode(m));
+        const liveObs = globalState.onLiveValidationChanged.add((l) => setLiveValidation(l));
+        const validationObs = globalState.onValidationResultChanged.add((r) => setValidationResult(r));
+        const breakpointObs = globalState.onBreakpointHit.add((activation) => {
+            setBreakpointPaused(true);
+            globalState.onLogRequiredObservable.notifyObservers(
                 new LogEntry(`Breakpoint hit: ${activation.block.getClassName()} (${activation.block.name ?? activation.block.uniqueId})`, false)
             );
         });
+        const timeScaleObs = globalState.onTimeScaleChanged.add((t) => setTimeScale(t));
+        const contextListObs = globalState.onContextListChanged.add(() => setContextList(globalState.getContextList()));
+        const selectedContextObs = globalState.onSelectedContextChanged.add((index) => setSelectedContextIndex(index));
 
-        this._timeScaleObserver = this.props.globalState.onTimeScaleChanged.add((timeScale) => {
-            this.setState({ timeScale });
-        });
+        return () => {
+            stateObserverRef.current?.remove();
+            stateObserverRef.current = null;
+            builtObs?.remove();
+            debugObs?.remove();
+            liveObs?.remove();
+            validationObs?.remove();
+            breakpointObs?.remove();
+            timeScaleObs?.remove();
+            contextListObs?.remove();
+            selectedContextObs?.remove();
+        };
+    }, [globalState]);
 
-        this._contextListObserver = this.props.globalState.onContextListChanged.add(() => {
-            this.setState({ contextList: this.props.globalState.getContextList() });
-        });
+    const log = useCallback(
+        (message: string) => {
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, false));
+        },
+        [globalState]
+    );
 
-        this._selectedContextObserver = this.props.globalState.onSelectedContextChanged.add((index) => {
-            this.setState({ selectedContextIndex: index });
-        });
-    }
-
-    override componentWillUnmount() {
-        this._stateObserver?.remove();
-        this._stateObserver = null;
-        this._builtObserver?.remove();
-        this._builtObserver = null;
-        this._debugModeObserver?.remove();
-        this._debugModeObserver = null;
-        this._liveValidationObserver?.remove();
-        this._liveValidationObserver = null;
-        this._validationResultObserver?.remove();
-        this._validationResultObserver = null;
-        this._breakpointHitObserver?.remove();
-        this._breakpointHitObserver = null;
-        this._timeScaleObserver?.remove();
-        this._timeScaleObserver = null;
-        this._contextListObserver?.remove();
-        this._contextListObserver = null;
-        this._selectedContextObserver?.remove();
-        this._selectedContextObserver = null;
-    }
-
-    /**
-     * (Re-)subscribe to the current flowGraph's onStateChangedObservable and
-     * sync the component state with the graph's current state.
-     */
-    private _subscribeToFlowGraph() {
-        // Remove previous subscription (may point to an old FlowGraph instance)
-        this._stateObserver?.remove();
-        this._stateObserver = null;
-
-        const flowGraph = this.props.globalState.flowGraph;
-        if (!flowGraph) {
-            return;
-        }
-
-        this._stateObserver = flowGraph.onStateChangedObservable.add((newState) => {
-            // When the graph stops or is paused externally, clear the breakpoint-paused state
-            if (newState === FlowGraphState.Stopped || newState === FlowGraphState.Paused) {
-                this.setState({ graphState: newState, breakpointPaused: false, contextList: this.props.globalState.getContextList() });
-            } else {
-                this.setState({ graphState: newState, contextList: this.props.globalState.getContextList() });
-            }
-        });
-
-        // Sync immediately – the new graph is likely in Stopped state
-        this.setState({ graphState: flowGraph.state });
-    }
-
-    private _log(message: string) {
-        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, false));
-    }
-
-    private _onStart() {
+    const onStart = useCallback(() => {
         try {
-            // Wire the flow graph to the preview scene so events (pick, tick, etc.)
-            // fire on the visible scene, not the editor's hidden host scene.
-            // setScene() clears stale execution contexts so start() creates
-            // a fresh one with the correct scene.
-            const previewScene = this.props.globalState.sceneContext?.scene;
+            // Wire the flow graph to the preview scene so events fire on the visible scene.
+            const previewScene = globalState.sceneContext?.scene;
             if (previewScene) {
-                this.props.globalState.flowGraph.setScene(previewScene);
+                globalState.snapshotUserVariables();
+                globalState.flowGraph.setScene(previewScene);
+                globalState.restoreSavedContexts();
+                const inputElement = previewScene.getEngine().getInputElement();
+                inputElement?.focus();
             }
-            this.props.globalState.flowGraph.start();
-            this._log("Flow graph started.");
+            globalState.flowGraph.start();
+            log("Flow graph started.");
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error starting graph: ${err}`, true));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error starting graph: ${err}`, true));
         }
-    }
+    }, [globalState, log]);
 
-    private _onPause() {
+    const onPause = useCallback(() => {
         try {
-            this.props.globalState.flowGraph.pause();
-            this._log("Flow graph paused.");
+            globalState.flowGraph.pause();
+            log("Flow graph paused.");
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error pausing graph: ${err}`, true));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error pausing graph: ${err}`, true));
         }
-    }
+    }, [globalState, log]);
 
-    private _onStop() {
+    const onStop = useCallback(() => {
         try {
-            // Snapshot user variables before stop() clears execution contexts
-            this.props.globalState.snapshotUserVariables();
-            this.props.globalState.flowGraph.stop();
-            this.setState({ breakpointPaused: false });
-            this._log("Flow graph stopped.");
+            globalState.snapshotUserVariables();
+            globalState.flowGraph.stop();
+            globalState.restoreSavedContexts();
+            setBreakpointPaused(false);
+            log("Flow graph stopped.");
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stopping graph: ${err}`, true));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stopping graph: ${err}`, true));
         }
-    }
+    }, [globalState, log]);
 
-    private _onContinue() {
+    const onContinue = useCallback(() => {
         try {
-            this.props.globalState.continueExecution();
-            this.setState({ breakpointPaused: false });
-            this._log("Resuming from breakpoint.");
+            globalState.continueExecution();
+            setBreakpointPaused(false);
+            log("Resuming from breakpoint.");
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error continuing: ${err}`, true));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error continuing: ${err}`, true));
         }
-    }
+    }, [globalState, log]);
 
-    private _onStep() {
+    const onStep = useCallback(() => {
         try {
-            this.setState({ breakpointPaused: false });
-            this.props.globalState.stepExecution();
-            // stepExecution is synchronous — if another breakpoint was hit, the
-            // observer will have already fired and set breakpointPaused back to true.
+            setBreakpointPaused(false);
+            globalState.stepExecution();
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stepping: ${err}`, true));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stepping: ${err}`, true));
         }
-    }
+    }, [globalState]);
 
-    private async _onResetAsync() {
+    const onResetAsync = useCallback(async () => {
         try {
-            this.props.globalState.flowGraph.stop();
-
-            // If a scene was loaded from a snippet, reload it
-            if (this.props.globalState.snippetId && this.props.globalState.sceneContext) {
-                this._log("Reloading scene snippet...");
-
-                // Wait for the scene context to be rebuilt after the snippet reloads
+            globalState.snapshotUserVariables();
+            globalState.flowGraph.stop();
+            globalState.restoreSavedContexts();
+            const canReloadScene = globalState.sceneSource === "snippet" || globalState.sceneSource === "default" || (!globalState.sceneSource && !globalState.snippetId);
+            if (canReloadScene && globalState.sceneContext) {
+                log(globalState.sceneSource === "snippet" ? "Reloading scene snippet..." : "Recreating default scene...");
                 const sceneContextReady = new Promise<void>((resolve, reject) => {
-                    const observer = this.props.globalState.onSceneContextChanged.add((ctx) => {
-                        this.props.globalState.onSceneContextChanged.remove(observer);
+                    const observer = globalState.onSceneContextChanged.add((ctx) => {
+                        globalState.onSceneContextChanged.remove(observer);
                         if (ctx) {
                             resolve();
                         } else {
                             reject(new Error("Snippet reload failed"));
                         }
                     });
-
-                    // Safety timeout so the reset never hangs indefinitely
                     setTimeout(() => {
-                        this.props.globalState.onSceneContextChanged.remove(observer);
-                        reject(new Error("Snippet reload timed out"));
+                        globalState.onSceneContextChanged.remove(observer);
+                        reject(new Error("Scene reload timed out"));
                     }, 30_000);
                 });
-
-                // Request the snippet reload
-                this.props.globalState.onReloadSnippetRequested.notifyObservers();
-
-                // Wait for the new scene context to arrive
+                globalState.onReloadSnippetRequested.notifyObservers();
                 await sceneContextReady;
-
-                // Wait for all assets in the new scene to finish loading
-                const scene = this.props.globalState.sceneContext!.scene;
+                const scene = globalState.sceneContext!.scene;
                 if (!scene.isReady(true)) {
-                    this._log("Waiting for scene assets to load...");
+                    log("Waiting for scene assets to load...");
                     await scene.whenReadyAsync(true);
                 }
             }
-
-            this._log("Flow graph reset. Press Start to run.");
+            log("Flow graph reset. Press Start to run.");
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error resetting graph: ${err}`, true));
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error resetting graph: ${err}`, true));
         }
-    }
+    }, [globalState, log]);
 
-    private _commitContextRename() {
-        const { editingContextIndex, editingContextName } = this.state;
+    const commitContextRename = useCallback(() => {
         if (editingContextIndex === null) {
             return;
         }
         const trimmed = editingContextName.trim();
         if (trimmed) {
-            this.props.globalState.renameContext(editingContextIndex, trimmed);
+            globalState.renameContext(editingContextIndex, trimmed);
         }
-        this.setState({ editingContextIndex: null, editingContextName: "" });
-    }
+        setEditingContextIndex(null);
+        setEditingContextName("");
+    }, [editingContextIndex, editingContextName, globalState]);
 
-    private _renderContextSelector(): React.ReactNode {
-        const { contextList, selectedContextIndex, editingContextIndex, editingContextName } = this.state;
+    const onValidate = useCallback(() => {
+        globalState.runValidation();
+        const result = globalState.validationResult;
+        if (result && result.issues.length > 0) {
+            const errorStr = result.errorCount > 0 ? `${result.errorCount} error(s)` : "";
+            const warnStr = result.warningCount > 0 ? `${result.warningCount} warning(s)` : "";
+            const parts = [errorStr, warnStr].filter(Boolean).join(", ");
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Validation: ${parts}`, result.errorCount > 0));
+            const maxIssues = 20;
+            for (let i = 0; i < Math.min(result.issues.length, maxIssues); i++) {
+                const issue = result.issues[i];
+                const prefix = issue.severity === FlowGraphValidationSeverity.Error ? "[Error]" : "[Warn]";
+                const blockName = issue.block?.name ?? "Graph";
+                globalState.onLogRequiredObservable.notifyObservers(
+                    new LogEntry(`  ${prefix} ${blockName}: ${issue.message}`, issue.severity === FlowGraphValidationSeverity.Error, issue.block)
+                );
+            }
+            if (result.issues.length > maxIssues) {
+                globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`  ... and ${result.issues.length - maxIssues} more issue(s).`, false));
+            }
+        } else {
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Validation passed - no issues found.", false));
+        }
+    }, [globalState]);
 
+    const isStopped = graphState === FlowGraphState.Stopped;
+    const isStarted = graphState === FlowGraphState.Started;
+    const isPaused = graphState === FlowGraphState.Paused;
+
+    const canStart = isStopped || isPaused;
+    const canPause = isStarted;
+    const canStop = isStarted || isPaused;
+    const canContinue = breakpointPaused;
+    const canStep = breakpointPaused;
+
+    // Render all four state labels stacked in the same grid cell so the container reserves
+    // space for the widest one ("Breakpoint"). Only the active label is visible; the others are
+    // visibility: hidden so they still contribute to the cell's intrinsic width and prevent the
+    // surrounding toolbar items from shifting horizontally as state transitions happen.
+    const activeStateKey = breakpointPaused ? "Breakpoint" : isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
+    const stateEntries: { key: string; label: string; className: string }[] = [
+        { key: "Stopped", label: "Stopped", className: classes.stateStopped },
+        { key: "Running", label: "Running", className: classes.stateRunning },
+        { key: "Paused", label: "Paused", className: classes.statePaused },
+        { key: "Breakpoint", label: "Breakpoint", className: classes.stateBreakpoint },
+    ];
+
+    const validationSummary: ReactNode = (() => {
+        if (!validationResult || validationResult.issues.length === 0) {
+            return null;
+        }
+        const hasErrors = validationResult.errorCount > 0;
+        const cls = hasErrors ? classes.validationSummaryError : classes.validationSummaryWarning;
+        const label = hasErrors ? `${validationResult.errorCount}E ${validationResult.warningCount}W` : `${validationResult.warningCount}W`;
         return (
-            <div className="fge-context-selector">
-                <span className="fge-context-label">Ctx</span>
-                <select
-                    className="fge-context-dropdown"
-                    value={selectedContextIndex}
-                    onChange={(e) => {
-                        this.props.globalState.selectedContextIndex = parseInt(e.target.value, 10);
+            <Tooltip content={`${validationResult.errorCount} error(s), ${validationResult.warningCount} warning(s)`} relationship="description">
+                <Body1 className={mergeClasses(classes.validationSummary, cls)}>{label}</Body1>
+            </Tooltip>
+        );
+    })();
+
+    const selectedContext = contextList.find((c) => c.index === selectedContextIndex);
+
+    return (
+        <div className={classes.bar}>
+            <Tooltip content="Undo (Ctrl+Z)" relationship="label">
+                <Button
+                    size="small"
+                    appearance="subtle"
+                    icon={<ArrowUndoRegular />}
+                    disabled={!globalState.stateManager.historyStack?.canUndo}
+                    onClick={() => {
+                        globalState.stateManager.historyStack?.undo();
+                        forceUpdate({});
+                    }}
+                />
+            </Tooltip>
+            <Tooltip content="Redo (Ctrl+Shift+Z)" relationship="label">
+                <Button
+                    size="small"
+                    appearance="subtle"
+                    icon={<ArrowRedoRegular />}
+                    disabled={!globalState.stateManager.historyStack?.canRedo}
+                    onClick={() => {
+                        globalState.stateManager.historyStack?.redo();
+                        forceUpdate({});
+                    }}
+                />
+            </Tooltip>
+            <Divider vertical className={classes.separator} />
+            <Tooltip content="Start" relationship="label">
+                <Button size="small" appearance="subtle" icon={<PlayRegular />} onClick={onStart} disabled={!canStart} />
+            </Tooltip>
+            <Tooltip content="Pause" relationship="label">
+                <Button size="small" appearance="subtle" icon={<PauseRegular />} onClick={onPause} disabled={!canPause} />
+            </Tooltip>
+            <Tooltip content="Stop" relationship="label">
+                <Button size="small" appearance="subtle" icon={<StopRegular />} onClick={onStop} disabled={!canStop} />
+            </Tooltip>
+            <Tooltip content="Reset" relationship="label">
+                <Button size="small" appearance="subtle" icon={<ArrowResetRegular />} onClick={() => void onResetAsync()} />
+            </Tooltip>
+            <Tooltip content="Continue (resume from breakpoint)" relationship="label">
+                <Button size="small" appearance="subtle" icon={<FastForwardRegular />} onClick={onContinue} disabled={!canContinue} />
+            </Tooltip>
+            <Tooltip content="Step (execute one block)" relationship="label">
+                <Button size="small" appearance="subtle" icon={<NextRegular />} onClick={onStep} disabled={!canStep} />
+            </Tooltip>
+            <div className={classes.stateStack}>
+                {stateEntries.map((entry) => (
+                    <Body1
+                        key={entry.key}
+                        className={mergeClasses(classes.state, classes.stateStackChild, entry.className, entry.key !== activeStateKey ? classes.stateHidden : undefined)}
+                    >
+                        {entry.label}
+                    </Body1>
+                ))}
+            </div>
+            <Divider vertical className={classes.separator} />
+            <div className={classes.contextGroup}>
+                <Caption1 className={classes.label}>Ctx</Caption1>
+                <Dropdown
+                    aria-label="Execution context"
+                    className={classes.contextDropdown}
+                    size="small"
+                    value={selectedContext?.name ?? ""}
+                    selectedOptions={[String(selectedContextIndex)]}
+                    onOptionSelect={(_, data) => {
+                        if (data.optionValue !== undefined) {
+                            globalState.selectedContextIndex = parseInt(data.optionValue, 10);
+                        }
                     }}
                 >
                     {contextList.map((ctx) => (
-                        <option key={ctx.uniqueId} value={ctx.index}>
+                        <Option key={ctx.uniqueId} value={String(ctx.index)} text={ctx.name}>
                             {ctx.name}
-                        </option>
+                        </Option>
                     ))}
-                </select>
-                <button
-                    className="fge-ctrl-btn fge-ctx-add"
-                    title="Add execution context"
-                    onClick={() => {
-                        const idx = this.props.globalState.createNewContext();
-                        if (idx >= 0) {
-                            this.props.globalState.selectedContextIndex = idx;
-                            this._log(`Created context ${idx}.`);
-                        }
-                    }}
-                >
-                    +
-                </button>
-                <button
-                    className="fge-ctrl-btn fge-ctx-remove"
-                    title="Remove selected context"
-                    disabled={contextList.length <= 1}
-                    onClick={() => {
-                        if (this.props.globalState.removeContextAt(selectedContextIndex)) {
-                            this._log(`Removed context ${selectedContextIndex}.`);
-                        }
-                    }}
-                >
-                    −
-                </button>
+                </Dropdown>
+                <Tooltip content="Add execution context" relationship="label">
+                    <Button
+                        size="small"
+                        appearance="subtle"
+                        icon={<AddRegular />}
+                        onClick={() => {
+                            const idx = globalState.createNewContext();
+                            if (idx >= 0) {
+                                globalState.selectedContextIndex = idx;
+                                log(`Created context ${idx}.`);
+                            }
+                        }}
+                    />
+                </Tooltip>
+                <Tooltip content="Remove selected context" relationship="label">
+                    <Button
+                        size="small"
+                        appearance="subtle"
+                        icon={<SubtractRegular />}
+                        disabled={contextList.length <= 1}
+                        onClick={() => {
+                            if (globalState.removeContextAt(selectedContextIndex)) {
+                                log(`Removed context ${selectedContextIndex}.`);
+                            }
+                        }}
+                    />
+                </Tooltip>
                 {editingContextIndex !== null ? (
-                    <input
-                        className="fge-ctx-rename-input"
-                        type="text"
-                        value={editingContextName}
+                    <Input
+                        className={classes.contextRenameInput}
+                        size="small"
                         autoFocus
-                        onChange={(e) => this.setState({ editingContextName: e.target.value })}
+                        value={editingContextName}
+                        onChange={(_, data) => setEditingContextName(data.value)}
                         onKeyDown={(e) => {
                             e.stopPropagation();
                             if (e.key === "Enter") {
-                                this._commitContextRename();
+                                commitContextRename();
                             } else if (e.key === "Escape") {
-                                this.setState({ editingContextIndex: null, editingContextName: "" });
+                                setEditingContextIndex(null);
+                                setEditingContextName("");
                             }
                         }}
-                        onBlur={() => this._commitContextRename()}
+                        onBlur={commitContextRename}
                     />
                 ) : (
-                    <button
-                        className="fge-ctrl-btn fge-ctx-rename"
-                        title="Rename selected context"
-                        onClick={() => {
-                            const ctx = contextList.find((c) => c.index === selectedContextIndex);
-                            if (ctx) {
-                                this.setState({ editingContextIndex: selectedContextIndex, editingContextName: ctx.name });
-                            }
-                        }}
-                    >
-                        ✎
-                    </button>
+                    <Tooltip content="Rename selected context" relationship="label">
+                        <Button
+                            size="small"
+                            appearance="subtle"
+                            icon={<EditRegular />}
+                            onClick={() => {
+                                const ctx = contextList.find((c) => c.index === selectedContextIndex);
+                                if (ctx) {
+                                    setEditingContextIndex(selectedContextIndex);
+                                    setEditingContextName(ctx.name);
+                                }
+                            }}
+                        />
+                    </Tooltip>
                 )}
             </div>
-        );
-    }
-
-    private _renderValidationSummary(): React.ReactNode {
-        const result = this.state.validationResult;
-        if (!result || result.issues.length === 0) {
-            return null;
-        }
-        const hasErrors = result.errorCount > 0;
-        const cls = hasErrors ? "fge-validation-summary error" : "fge-validation-summary warning";
-        const label = hasErrors ? `${result.errorCount}E ${result.warningCount}W` : `${result.warningCount}W`;
-        return (
-            <span className={cls} title={`${result.errorCount} error(s), ${result.warningCount} warning(s)`}>
-                {label}
-            </span>
-        );
-    }
-
-    override render() {
-        const { graphState, breakpointPaused } = this.state;
-        const isStopped = graphState === FlowGraphState.Stopped;
-        const isStarted = graphState === FlowGraphState.Started;
-        const isPaused = graphState === FlowGraphState.Paused;
-
-        const canStart = isStopped || isPaused;
-        const canPause = isStarted;
-        const canStop = isStarted || isPaused;
-        const canReset = true; // Always available — reloads the scene and stops the graph
-        const canContinue = breakpointPaused;
-        const canStep = breakpointPaused;
-
-        const stateLabel = breakpointPaused ? "Breakpoint" : isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
-        const stateCls = breakpointPaused ? "state-breakpoint" : isStopped ? "state-stopped" : isStarted ? "state-running" : "state-paused";
-
-        return (
-            <div className="fge-graph-controls">
-                <button
-                    className="fge-ctrl-btn fge-ctrl-undo"
-                    title="Undo (Ctrl+Z)"
+            <Divider vertical className={classes.separator} />
+            <Tooltip content={debugMode ? "Disable Debug Mode" : "Enable Debug Mode"} relationship="label">
+                <Button
+                    size="small"
+                    appearance={debugMode ? "primary" : "subtle"}
+                    icon={<BugRegular />}
                     onClick={() => {
-                        this.props.globalState.stateManager.historyStack?.undo();
-                        this.forceUpdate();
+                        globalState.isDebugMode = !globalState.isDebugMode;
                     }}
-                    disabled={!this.props.globalState.stateManager.historyStack?.canUndo}
-                >
-                    ↩
-                </button>
-                <button
-                    className="fge-ctrl-btn fge-ctrl-redo"
-                    title="Redo (Ctrl+Shift+Z)"
+                />
+            </Tooltip>
+            <Divider vertical className={classes.separator} />
+            <Tooltip content="Validate graph" relationship="label">
+                <Button size="small" appearance="subtle" icon={<CheckmarkRegular />} onClick={onValidate} />
+            </Tooltip>
+            <Tooltip content={liveValidation ? "Disable Live Validation" : "Enable Live Validation"} relationship="label">
+                <Button
+                    size="small"
+                    appearance={liveValidation ? "primary" : "subtle"}
+                    icon={<FlashRegular />}
                     onClick={() => {
-                        this.props.globalState.stateManager.historyStack?.redo();
-                        this.forceUpdate();
+                        globalState.liveValidation = !globalState.liveValidation;
                     }}
-                    disabled={!this.props.globalState.stateManager.historyStack?.canRedo}
-                >
-                    ↪
-                </button>
-                <span className="fge-ctrl-separator" />
-                <button className="fge-ctrl-btn fge-ctrl-start" title="Start" onClick={() => this._onStart()} disabled={!canStart}>
-                    ▶
-                </button>
-                <button className="fge-ctrl-btn fge-ctrl-pause" title="Pause" onClick={() => this._onPause()} disabled={!canPause}>
-                    ⏸
-                </button>
-                <button className="fge-ctrl-btn fge-ctrl-stop" title="Stop" onClick={() => this._onStop()} disabled={!canStop}>
-                    ⏹
-                </button>
-                <button className="fge-ctrl-btn fge-ctrl-reset" title="Reset" onClick={() => void this._onResetAsync()} disabled={!canReset}>
-                    ↺
-                </button>
-                <button className="fge-ctrl-btn fge-ctrl-continue" title="Continue (resume from breakpoint)" onClick={() => this._onContinue()} disabled={!canContinue}>
-                    ▶▶
-                </button>
-                <button className="fge-ctrl-btn fge-ctrl-step" title="Step (execute one block)" onClick={() => this._onStep()} disabled={!canStep}>
-                    ▶|
-                </button>
-                <span className={`fge-ctrl-state ${stateCls}`}>{stateLabel}</span>
-                <span className="fge-ctrl-separator" />
-                {this._renderContextSelector()}
-                <span className="fge-ctrl-separator" />
-                <button
-                    className={`fge-ctrl-btn fge-ctrl-debug ${this.state.debugMode ? "active" : ""}`}
-                    title={this.state.debugMode ? "Disable Debug Mode" : "Enable Debug Mode"}
-                    onClick={() => {
-                        this.props.globalState.isDebugMode = !this.props.globalState.isDebugMode;
-                    }}
-                >
-                    🔍
-                </button>
-                <span className="fge-ctrl-separator" />
-                <button
-                    className="fge-ctrl-btn fge-ctrl-validate"
-                    title="Validate graph"
-                    onClick={() => {
-                        this.props.globalState.runValidation();
-                        const result = this.props.globalState.validationResult;
-                        if (result && result.issues.length > 0) {
-                            const errorStr = result.errorCount > 0 ? `${result.errorCount} error(s)` : "";
-                            const warnStr = result.warningCount > 0 ? `${result.warningCount} warning(s)` : "";
-                            const parts = [errorStr, warnStr].filter(Boolean).join(", ");
-                            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Validation: ${parts}`, result.errorCount > 0));
-                            // Emit individual issues as clickable log entries (max 20 to avoid flooding)
-                            const maxIssues = 20;
-                            for (let i = 0; i < Math.min(result.issues.length, maxIssues); i++) {
-                                const issue = result.issues[i];
-                                const prefix = issue.severity === FlowGraphValidationSeverity.Error ? "[Error]" : "[Warn]";
-                                const blockName = issue.block?.name ?? "Graph";
-                                this.props.globalState.onLogRequiredObservable.notifyObservers(
-                                    new LogEntry(`  ${prefix} ${blockName}: ${issue.message}`, issue.severity === FlowGraphValidationSeverity.Error, issue.block)
-                                );
-                            }
-                            if (result.issues.length > maxIssues) {
-                                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`  ... and ${result.issues.length - maxIssues} more issue(s).`, false));
-                            }
-                        } else {
-                            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Validation passed — no issues found.", false));
-                        }
-                    }}
-                >
-                    ✓
-                </button>
-                <button
-                    className={`fge-ctrl-btn fge-ctrl-live-validate ${this.state.liveValidation ? "active" : ""}`}
-                    title={this.state.liveValidation ? "Disable Live Validation" : "Enable Live Validation"}
-                    onClick={() => {
-                        this.props.globalState.liveValidation = !this.props.globalState.liveValidation;
-                    }}
-                >
-                    ⚡
-                </button>
-                {this._renderValidationSummary()}
-                <span className="fge-ctrl-separator" />
-                <div className="fge-time-scale">
-                    <span className="fge-time-scale-label">Speed</span>
-                    {[0.1, 0.25, 0.5, 1].map((s) => (
-                        <button
-                            key={s}
-                            className={`fge-ctrl-btn fge-time-scale-btn ${this.state.timeScale === s ? "active" : ""}`}
-                            title={`${s}× speed`}
+                />
+            </Tooltip>
+            {validationSummary}
+            <Divider vertical className={classes.separator} />
+            <div className={classes.timeScale}>
+                <Caption1 className={classes.label}>Speed</Caption1>
+                {SpeedPresets.map((s) => (
+                    <Tooltip key={s} content={`${s}x speed`} relationship="label">
+                        <Button
+                            className={classes.speedButton}
+                            size="small"
+                            appearance={timeScale === s ? "primary" : "subtle"}
                             onClick={() => {
-                                this.props.globalState.timeScale = s;
+                                globalState.timeScale = s;
                             }}
                         >
-                            {s}×
-                        </button>
-                    ))}
-                </div>
-                <span className="fge-ctrl-separator" />
-                <button
-                    className="fge-ctrl-btn fge-ctrl-help"
-                    title="Help"
-                    onClick={() => {
-                        this.props.globalState.onHelpRequested.notifyObservers(undefined);
-                    }}
-                >
-                    ?
-                </button>
-                <button
-                    className="fge-ctrl-btn fge-ctrl-howto"
-                    title="How to Use (embed code samples)"
-                    onClick={() => {
-                        this.props.globalState.onHowToUseRequested.notifyObservers();
-                    }}
-                >
-                    {"</>"}
-                </button>
+                            {s}x
+                        </Button>
+                    </Tooltip>
+                ))}
             </div>
-        );
-    }
-}
+        </div>
+    );
+};

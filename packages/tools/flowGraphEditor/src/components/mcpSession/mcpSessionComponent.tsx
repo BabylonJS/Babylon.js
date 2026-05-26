@@ -2,20 +2,30 @@ import { type FunctionComponent, useCallback, useEffect, useState } from "react"
 import { type GlobalState } from "../../globalState";
 import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import {
     CloseMcpEditorSessionEventSource,
     NormalizeMcpEditorSessionUrl,
     OpenMcpEditorSessionEventSource,
     PostMcpEditorSessionDocumentAsync,
 } from "shared-ui-components/mcp/mcpEditorSessionConnection";
+import { makeStyles, tokens } from "@fluentui/react-components";
 
 interface IMcpSessionComponentProps {
     globalState: GlobalState;
 }
+
+const useStyles = makeStyles({
+    buttonStack: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalXS,
+        alignItems: "stretch",
+        padding: `${tokens.spacingVerticalXS} 0`,
+    },
+});
 
 async function LoadFlowGraphFromJsonAsync(globalState: GlobalState, json: unknown): Promise<void> {
     await SerializationTools.DeserializeAsync(json, globalState);
@@ -33,6 +43,7 @@ async function LoadFlowGraphFromJsonAsync(globalState: GlobalState, json: unknow
  */
 export const McpSessionComponent: FunctionComponent<IMcpSessionComponentProps> = (props) => {
     const { globalState } = props;
+    const classes = useStyles();
     const [url, setUrl] = useState<string>(globalState.mcpSessionUrl ?? "");
     const [connected, setConnected] = useState<boolean>(globalState.mcpSessionConnected);
 
@@ -127,42 +138,38 @@ export const McpSessionComponent: FunctionComponent<IMcpSessionComponentProps> =
     }, [globalState]);
 
     return (
-        <LineContainerComponent title="MCP SESSION" closed={true}>
-            <TextInputLineComponent
-                label="Session URL"
-                value={url}
-                onChange={(value) => setUrl(value)}
-                placeholder="http://localhost:3001/session/..."
-                disabled={connected}
-                lockObject={globalState.lockObject}
-            />
-            <TextLineComponent label="Status" value={connected ? "Connected" : "Disconnected"} color={connected ? "#4caf50" : "#888"} />
+        <>
+            <TextInputPropertyLine label="Session URL" value={url} onChange={(value) => setUrl(value)} disabled={connected} />
+            <TextPropertyLine label="Status" value={connected ? "Connected" : "Disconnected"} />
             {!connected ? (
-                <>
-                    <ButtonLineComponent
+                <div className={classes.buttonStack}>
+                    <Button
                         label="Connect"
+                        title="Connect"
                         onClick={() => {
                             void handleConnect(false);
                         }}
                     />
-                    <ButtonLineComponent
+                    <Button
                         label="Connect & Push"
+                        title="Connect & Push"
                         onClick={() => {
                             void handleConnect(true);
                         }}
                     />
-                </>
+                </div>
             ) : (
-                <>
-                    <ButtonLineComponent label="Disconnect" onClick={handleDisconnect} />
-                    <ButtonLineComponent
+                <div className={classes.buttonStack}>
+                    <Button label="Disconnect" title="Disconnect" onClick={handleDisconnect} />
+                    <Button
                         label="Push to MCP"
+                        title="Push to MCP"
                         onClick={() => {
                             void handlePush();
                         }}
                     />
-                </>
+                </div>
             )}
-        </LineContainerComponent>
+        </>
     );
 };

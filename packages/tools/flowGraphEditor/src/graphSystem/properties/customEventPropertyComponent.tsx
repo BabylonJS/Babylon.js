@@ -1,15 +1,15 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import {
-    GeneralPropertyTabComponent,
-    ConstructorVariablesPropertyTabComponent,
-    DataConnectionsPropertyTabComponent,
-    GenericPropertyTabComponent,
-} from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { StringDropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+import { DismissRegular } from "@fluentui/react-icons";
+
+import { RenderGeneralSection, RenderConstructorVariablesSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 import { FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
@@ -22,6 +22,85 @@ interface ICustomEventPropertyState {
     newKeyName: string;
     newKeyType: string;
 }
+
+const useStyles = makeStyles({
+    entryRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        padding: `0 ${tokens.spacingHorizontalXS}`,
+        width: "100%",
+    },
+    entryName: {
+        flex: 1,
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+    },
+    entryTypePicker: {
+        width: "120px",
+    },
+    empty: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
+
+const TypeOptions: DropdownOption<string>[] = FLOW_GRAPH_TYPE_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }));
+
+const EntryRow: React.FunctionComponent<{ name: string; typeName: string; onChangeType: (typeName: string) => void; onRemove: () => void }> = ({
+    name,
+    typeName,
+    onChangeType,
+    onRemove,
+}) => {
+    const classes = useStyles();
+    return (
+        <LineContainer uniqueId={`event-data-${name}`}>
+            <div className={classes.entryRow}>
+                <Body1 className={classes.entryName}>{name}</Body1>
+                <div className={classes.entryTypePicker}>
+                    <StringDropdown options={TypeOptions} value={typeName} onChange={onChangeType} />
+                </div>
+                <Button title={`Remove ${name}`} appearance="subtle" icon={DismissRegular} onClick={onRemove} />
+            </div>
+        </LineContainer>
+    );
+};
+
+const EventDataContent: React.FunctionComponent<{
+    keys: string[];
+    eventData: Record<string, { type: any }>;
+    newKeyName: string;
+    newKeyType: string;
+    canAdd: boolean;
+    onChangeNewKeyName: (value: string) => void;
+    onChangeNewKeyType: (value: string) => void;
+    onChangeEntryType: (key: string, typeName: string) => void;
+    onAddEntry: () => void;
+    onRemoveEntry: (key: string) => void;
+}> = ({ keys, eventData, newKeyName, newKeyType, canAdd, onChangeNewKeyName, onChangeNewKeyType, onChangeEntryType, onAddEntry, onRemoveEntry }) => {
+    const classes = useStyles();
+    return (
+        <>
+            {keys.map((key) => (
+                <EntryRow
+                    key={key}
+                    name={key}
+                    typeName={eventData[key].type?.typeName || "any"}
+                    onChangeType={(t) => onChangeEntryType(key, t)}
+                    onRemove={() => onRemoveEntry(key)}
+                />
+            ))}
+            {keys.length === 0 && <Body1 className={classes.empty}>No event data defined.</Body1>}
+            <TextInputPropertyLine label="Name" value={newKeyName} onChange={onChangeNewKeyName} />
+            <StringDropdownPropertyLine label="Type" options={TypeOptions} value={newKeyType} onChange={onChangeNewKeyType} />
+            <Button label="Add Entry" title="Add entry" disabled={!canAdd} onClick={onAddEntry} />
+        </>
+    );
+};
 
 /**
  * Property panel for FlowGraphReceiveCustomEventBlock and FlowGraphSendCustomEventBlock.
@@ -119,10 +198,6 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
-    private _getTypeName(entry: { type: any }): string {
-        return entry.type?.typeName || "any";
-    }
-
     private _changeEntryType(key: string, newTypeName: string) {
         const block = this._getBlock();
         const config = block.config as any;
@@ -153,76 +228,33 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
         const eventData = this._getEventData();
         const keys = Object.keys(eventData);
         const isReceive = this._isReceiveBlock();
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <ConstructorVariablesPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphCustomEventProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
+                {RenderConstructorVariablesSection(this.props)}
 
-                <LineContainerComponent title={isReceive ? "EVENT DATA OUTPUTS" : "EVENT DATA INPUTS"}>
-                    {keys.map((key) => {
-                        const typeName = this._getTypeName(eventData[key]);
-                        return (
-                            <div key={key} style={{ display: "flex", alignItems: "center", padding: "0 4px", gap: "4px" }}>
-                                <span style={{ color: "#ccc", fontSize: "12px", paddingLeft: "8px", minWidth: "60px" }}>{key}</span>
-                                <OptionsLine
-                                    label=""
-                                    options={FLOW_GRAPH_TYPE_OPTIONS as any}
-                                    target={eventData[key]}
-                                    propertyName="type"
-                                    valuesAreStrings={true}
-                                    noDirectUpdate={true}
-                                    extractValue={() => typeName}
-                                    onSelect={(v) => this._changeEntryType(key, v as string)}
-                                />
-                                <button
-                                    onClick={() => this._removeEntry(key)}
-                                    style={{
-                                        background: "none",
-                                        border: "none",
-                                        color: "#f55",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                        padding: "2px 6px",
-                                    }}
-                                    title={`Remove ${key}`}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        );
-                    })}
-                    {keys.length === 0 && <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>No event data defined.</div>}
-
-                    {/* New entry form */}
-                    <TextInputLineComponent
-                        label="Name"
-                        lockObject={stateManager.lockObject}
-                        target={this.state}
-                        propertyName="newKeyName"
-                        throttlePropertyChangedNotification={true}
-                        onChange={(v) => this.setState({ newKeyName: v })}
+                <AccordionSection title={isReceive ? "Event Data Outputs" : "Event Data Inputs"} collapseByDefault={false}>
+                    <EventDataContent
+                        keys={keys}
+                        eventData={eventData}
+                        newKeyName={this.state.newKeyName}
+                        newKeyType={this.state.newKeyType}
+                        canAdd={!!this.state.newKeyName.trim()}
+                        onChangeNewKeyName={(v) => this.setState({ newKeyName: v })}
+                        onChangeNewKeyType={(v) => this.setState({ newKeyType: v })}
+                        onChangeEntryType={(k, t) => this._changeEntryType(k, t)}
+                        onAddEntry={() => this._addEntry()}
+                        onRemoveEntry={(k) => this._removeEntry(k)}
                     />
-                    <OptionsLine
-                        label="Type"
-                        options={FLOW_GRAPH_TYPE_OPTIONS as any}
-                        target={this.state}
-                        propertyName="newKeyType"
-                        valuesAreStrings={true}
-                        noDirectUpdate={true}
-                        extractValue={() => this.state.newKeyType}
-                        onSelect={(v) => this.setState({ newKeyType: v as string })}
-                    />
-                    <ButtonLineComponent label="Add Entry" onClick={() => this._addEntry()} isDisabled={!this.state.newKeyName.trim()} />
-                </LineContainerComponent>
+                </AccordionSection>
 
-                <DataConnectionsPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <GenericPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-            </>
+                {RenderDataConnectionsSection(this.props)}
+                {RenderGenericPropStoreSections(this.props)}
+            </Accordion>
         );
     }
 }

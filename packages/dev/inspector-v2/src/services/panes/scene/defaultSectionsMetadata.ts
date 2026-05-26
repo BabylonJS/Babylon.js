@@ -13,6 +13,7 @@ export const enum DefaultSectionsOrder {
     FrameGraphs = 1200,
     Atmosphere = 1300,
     Sounds = 1400,
+    AudioV2 = 1500,
 }
 
 export const enum DefaultCommandsOrder {

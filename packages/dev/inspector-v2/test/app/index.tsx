@@ -5,32 +5,43 @@
 // Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
 // Inspector v1 extensibility API: https://localhost:1338/#10HGIN#7
 
-import { type Nullable } from "core/types";
+import {
+    ArcRotateCamera,
+    ClusteredLightContainer,
+    Color3,
+    Color4,
+    CreateAudioEngineAsync,
+    CreateSoundAsync,
+    Engine,
+    HavokPlugin,
+    ImageProcessingPostProcess,
+    ImportMeshAsync,
+    LoadAssetContainerAsync,
+    MeshBuilder,
+    MultiMaterial,
+    NodeMaterial,
+    PBRMaterial,
+    ParticleHelper,
+    PhysicsAggregate,
+    PhysicsMotionType,
+    PhysicsShapeType,
+    PointLight,
+    Scene,
+    Sound,
+    SpotLight,
+    StandardMaterial,
+    Texture,
+    Vector3,
+    type Nullable,
+} from "core/pure";
 
-import { Engine } from "core/Engines/engine";
-import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";
-import { ParticleHelper } from "core/Particles/particleHelper";
-import { Vector3 } from "core/Maths/math.vector";
-import { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
-import { PhysicsAggregate } from "core/Physics/v2/physicsAggregate";
-import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
-import { Scene } from "core/scene";
+// Not re-exported from core/pure because smartAssetManager has module side effects.
+import { LoadSmartAssetAsync, RemoveSmartAssetAsync } from "core/SmartAssets/smartAssetManager";
+
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
-import { Color3, Color4 } from "core/Maths/math.color";
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { MeshBuilder } from "core/Meshes/meshBuilder";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { MultiMaterial } from "core/Materials/multiMaterial";
-import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
-import { Sound } from "core/Audio/sound";
-import { PointLight } from "core/Lights/pointLight";
-import { SpotLight } from "core/Lights/spotLight";
-import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
+
 import { ShowInspector } from "../../src/inspector";
 // import "../../src/legacy/legacy";
 
@@ -57,10 +68,14 @@ const scene = new Scene(engine);
 
 let camera: Nullable<ArcRotateCamera> = null;
 
+// Register the airplane glb as a Smart Asset so it round-trips through
+// `.babylonproj` as a URL reference (not as 4 MB of inlined PBR materials),
+// shows up in the Inspector's Smart Assets list, and can be reloaded /
+// swapped from the Inspector UI.
+const AirplaneKey = "acrobaticPlane";
+
 async function loadModelAsync() {
-    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
-    assetContainer.addAllToScene();
-    return assetContainer;
+    await LoadSmartAssetAsync(scene, AirplaneKey, "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb");
 }
 
 function createParticleSystem() {
@@ -221,6 +236,25 @@ async function createSound() {
     });
 }
 
+async function createSpatialSoundV2() {
+    const audioEngine = await CreateAudioEngineAsync();
+    const sound = await CreateSoundAsync(
+        "SpatialMusic",
+        "https://playground.babylonjs.com/sounds/violons11.wav",
+        {
+            loop: true,
+            autoplay: false,
+            spatialEnabled: true,
+        },
+        audioEngine
+    );
+    // Attach to a non-root mesh from the loaded glTF hierarchy.
+    const planePart = scene.getMeshByName("aerobatic_plane.2");
+    if (planePart) {
+        sound.spatial.attach(planePart);
+    }
+}
+
 async function createClusteredLight() {
     await import("core/Lights/Clustered/clusteredLightingSceneComponent");
     const pointLight1 = new PointLight("clusteredPoint1", new Vector3(1, 1, 0), scene);
@@ -230,7 +264,7 @@ async function createClusteredLight() {
 }
 
 (async () => {
-    let assetContainer = await loadModelAsync();
+    await loadModelAsync();
     createCamera();
 
     createParticleSystem();
@@ -252,6 +286,8 @@ async function createClusteredLight() {
 
     createSound();
 
+    await createSpatialSoundV2();
+
     await createClusteredLight();
 
     engine.runRenderLoop(() => {
@@ -263,6 +299,7 @@ async function createClusteredLight() {
     });
 
     let isDropping = false;
+    let droppedContainer: import("core/assetContainer").AssetContainer | null = null;
     canvas.addEventListener("drop", async (event) => {
         if (!isDropping) {
             const file = event.dataTransfer?.files[0];
@@ -270,9 +307,14 @@ async function createClusteredLight() {
                 event.preventDefault();
                 isDropping = true;
                 try {
-                    assetContainer.dispose();
-                    assetContainer = await LoadAssetContainerAsync(file, scene);
-                    assetContainer.addAllToScene();
+                    // Drop replaces whatever's currently loaded: remove the SAM-
+                    // tracked airplane if it's still around, then ad-hoc load
+                    // the dropped file via LoadAssetContainerAsync (not SAM —
+                    // drag-and-drop is for quick scratch testing).
+                    await RemoveSmartAssetAsync(scene, AirplaneKey).catch(() => {});
+                    droppedContainer?.dispose();
+                    droppedContainer = await LoadAssetContainerAsync(file, scene);
+                    droppedContainer.addAllToScene();
                     createCamera();
                 } finally {
                     isDropping = false;
