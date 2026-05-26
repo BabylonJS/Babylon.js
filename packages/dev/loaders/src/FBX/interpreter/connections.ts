@@ -1,34 +1,52 @@
 /* eslint-disable @typescript-eslint/naming-convention, jsdoc/require-param, jsdoc/require-returns */
-import { type FBXDocument, type FBXNode, cleanFBXName, findDocumentNode, getPropertyValue } from "../types/fbxTypes";
+import { type FBXDocument, type FBXNode, cleanFBXName, findDocumentNode, getPropertyValue, getSafeFBXObjectId } from "../types/fbxTypes";
 
 /** Connection type: OO = object-to-object, OP = object-to-property */
 export type ConnectionType = "OO" | "OP";
 
+/** A resolved FBX object connection. */
 export interface FBXConnection {
+    /** Connection type. */
     type: ConnectionType;
+    /** Child object ID. */
     childId: number;
+    /** Parent object ID. */
     parentId: number;
     /** For OP connections, the property name on the parent (e.g. "DiffuseColor") */
     propertyName?: string;
 }
 
+/** Object table entry used by the FBX connection graph. */
 export interface FBXObjectEntry {
+    /** Object ID. */
     id: number;
+    /** Object node. */
     node: FBXNode;
+    /** Source of the object entry. */
     source: "Objects" | "legacySyntheticGeometry";
+    /** Legacy string object name, when applicable. */
     legacyName?: string;
+    /** True if the object was synthesized for legacy compatibility. */
     synthetic: boolean;
 }
 
+/** Raw connection-table entry and import status. */
 export interface FBXConnectionEntry {
+    /** Source node name. */
     source: "C" | "Connect";
+    /** Raw connection type. */
     rawType?: string;
+    /** Child object ID, when resolved. */
     childId?: number;
+    /** Parent object ID, when resolved. */
     parentId?: number;
+    /** OP connection property name, when present. */
     propertyName?: string;
+    /** True if the connection was accepted into the resolved graph. */
     accepted: boolean;
 }
 
+/** Reason a connection produced a diagnostic. */
 export type FBXConnectionDiagnosticReason =
     | "unsupported-connection-type"
     | "missing-connection-endpoint"
@@ -37,16 +55,25 @@ export type FBXConnectionDiagnosticReason =
     | "duplicate-parent"
     | "self-loop";
 
+/** Recoverable connection graph issue. */
 export interface FBXConnectionDiagnostic {
+    /** Diagnostic reason. */
     reason: FBXConnectionDiagnosticReason;
+    /** Human-readable diagnostic message. */
     message: string;
+    /** Connection-table index associated with the diagnostic, if applicable. */
     connectionIndex?: number;
+    /** Connection type associated with the diagnostic, if applicable. */
     type?: string;
+    /** Child object ID associated with the diagnostic, if applicable. */
     childId?: number;
+    /** Parent object ID associated with the diagnostic, if applicable. */
     parentId?: number;
+    /** OP connection property name associated with the diagnostic, if applicable. */
     propertyName?: string;
 }
 
+/** Resolved FBX object and connection graph. */
 export interface FBXObjectMap {
     /** All objects by their unique ID */
     objects: Map<number, FBXNode>;
@@ -252,10 +279,7 @@ export function getChildren(map: FBXObjectMap, parentId: number, nodeName?: stri
 }
 
 function toObjectNumber(value: unknown): number | undefined {
-    if (typeof value === "number") {
-        return value;
-    }
-    return undefined;
+    return getSafeFBXObjectId(value);
 }
 
 function toObjectId(value: unknown, legacyIds: Map<string, number>): number | undefined {

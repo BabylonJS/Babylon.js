@@ -7,6 +7,7 @@
 /** Individual property value within an FBX node */
 export type FBXPropertyValue = boolean | number | string | Float32Array | Float64Array | Int32Array | Uint8Array;
 
+/** Parsed FBX property type identifier. */
 export type FBXPropertyType =
     | "boolean" // 'C'
     | "int16" // 'Y'
@@ -22,21 +23,29 @@ export type FBXPropertyType =
     | "int64[]" // 'l'
     | "boolean[]"; // 'b' (stored as Uint8Array where 0=false, 1=true)
 
+/** Individual property within an FBX node. */
 export interface FBXProperty {
+    /** Parsed property type. */
     type: FBXPropertyType;
+    /** Parsed property value. */
     value: FBXPropertyValue;
 }
 
 /** A node in the FBX document tree */
 export interface FBXNode {
+    /** Node name. */
     name: string;
+    /** Node properties. */
     properties: FBXProperty[];
+    /** Child nodes. */
     children: FBXNode[];
 }
 
 /** Top-level parsed FBX document */
 export interface FBXDocument {
+    /** FBX file version. */
     version: number;
+    /** Top-level document nodes. */
     nodes: FBXNode[];
 }
 
@@ -63,11 +72,26 @@ export function getPropertyValue<T extends FBXPropertyValue>(node: FBXNode, inde
     return undefined;
 }
 
+/**
+ * Converts an FBX object ID value to a safe JavaScript number.
+ * @param value - Parsed FBX object ID value
+ * @returns The object ID, or undefined when the value is not numeric
+ */
+export function getSafeFBXObjectId(value: unknown): number | undefined {
+    if (typeof value !== "number") {
+        return undefined;
+    }
+    if (!Number.isSafeInteger(value)) {
+        throw new Error(`Unsafe FBX object ID ${value.toString()}: object IDs must be safe integers.`);
+    }
+    return value;
+}
+
 /** Get the numeric ID from a node (first property is typically the int64 UID) */
 export function getNodeId(node: FBXNode): number | undefined {
     const prop = node.properties[0];
     if (prop && (prop.type === "int64" || prop.type === "int32")) {
-        return Number(prop.value);
+        return getSafeFBXObjectId(prop.value);
     }
     return undefined;
 }
@@ -76,7 +100,7 @@ export function getNodeId(node: FBXNode): number | undefined {
  * Clean FBX object names.
  * FBX names may contain:
  *   - A "Class::" prefix (e.g. "Model::valkyrie_mesh") — strip it
- *   - A "\x00\x01ClassName" suffix in binary (e.g. "valkyrie_mesh\x00\x01Model") — strip it
+ *   - A binary null/control-character class suffix — strip it
  */
 export function cleanFBXName(fbxName: string): string {
     // Strip \x00\x01 suffix (binary FBX name/class separator)

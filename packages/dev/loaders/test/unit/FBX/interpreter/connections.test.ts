@@ -68,6 +68,41 @@ describe("resolveConnections", () => {
         expect(map.parentOf.get(1)?.id).toBe(3);
         expect(map.diagnostics.some((diagnostic) => diagnostic.reason === "duplicate-parent")).toBe(true);
     });
+
+    it("rejects unsafe numeric object IDs", () => {
+        expect(() =>
+            resolveConnections({
+                version: 7500,
+                nodes: [
+                    {
+                        name: "Objects",
+                        properties: [],
+                        children: [createObject("Model", Number.MAX_SAFE_INTEGER + 1, "Unsafe", "Null")],
+                    },
+                ],
+            })
+        ).toThrow("Unsafe FBX object ID");
+    });
+
+    it("rejects unsafe numeric connection endpoint IDs", () => {
+        expect(() =>
+            resolveConnections({
+                version: 7500,
+                nodes: [
+                    {
+                        name: "Objects",
+                        properties: [],
+                        children: [createObject("Model", 1, "Safe", "Null")],
+                    },
+                    {
+                        name: "Connections",
+                        properties: [],
+                        children: [createConnection("OO", Number.MAX_SAFE_INTEGER + 1, 0)],
+                    },
+                ],
+            })
+        ).toThrow("Unsafe FBX object ID");
+    });
 });
 
 function createObject(name: string, id: number, objectName: string, subType: string): FBXNode {
