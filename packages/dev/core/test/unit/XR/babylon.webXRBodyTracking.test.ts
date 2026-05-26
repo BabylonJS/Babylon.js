@@ -2142,17 +2142,20 @@ describe("WebXRTrackedBody - hand twist correction", () => {
         anyTrackedBody._desiredFinalPositions[rightIndexIdx].set(0, 0, -1);
         anyTrackedBody._desiredFinalPositions[rightLittleIdx].set(0, 0, 1);
 
-        // Start from a wrist rotation that has correct aim (X axis) but wrong roll.
-        const wrongRoll = Quaternion.RotationAxis(Vector3.Right(), Math.PI * 0.5);
+        // Start from a wrist rotation with correct aim (X axis) but opposite twist normal,
+        // which triggers the near-opposite projected-vector correction path.
+        const wrongRoll = Quaternion.RotationAxis(Vector3.Right(), Math.PI);
         Matrix.ComposeToRef(Vector3.One(), wrongRoll, Vector3.Zero(), anyTrackedBody._desiredFinals[rightWristIdx]);
 
         anyTrackedBody._retargetDeltaFromBind(1.0);
 
         const corrected = trackedBody.jointTransforms[rightWristIdx].rotationQuaternion!;
         const correctedTwistNormal = Vector3.Up().rotateByQuaternionToRef(corrected, new Vector3());
+        const correctedAim = Vector3.Right().rotateByQuaternionToRef(corrected, new Vector3());
         const expectedTwistNormal = new Vector3(0, 1, 0);
 
         expect(Vector3.Dot(correctedTwistNormal, expectedTwistNormal)).toBeGreaterThan(0.999);
+        expect(Vector3.Dot(correctedAim, Vector3.Right())).toBeGreaterThan(0.999);
     });
 });
 

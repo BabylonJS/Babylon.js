@@ -1046,6 +1046,7 @@ export class WebXRTrackedBody implements IDisposable {
     private _tempCurrentTwistNormal = new Vector3();
     private _tempProjectedTwistNormal = new Vector3();
     private _tempProjectedDesiredTwistNormal = new Vector3();
+    private _tempTwistAimAxis = new Vector3();
     private _tempTwistCross = new Vector3();
 
     /** The skeleton reference for iterating bones in parent-first order. */
@@ -1910,12 +1911,12 @@ export class WebXRTrackedBody implements IDisposable {
         this._hasTrackedBind = false;
     }
 
-    private _computeNormalFromJointPositions(origin: Vector3, aimTarget: Vector3, first: Vector3, second: Vector3, result: Vector3): boolean {
-        aimTarget.subtractToRef(origin, this._tempDirection);
-        if (this._tempDirection.lengthSquared() < 1e-8) {
+    private _computeNormalFromJointPositions(origin: Vector3, aimTarget: Vector3, first: Vector3, second: Vector3, result: Vector3, aimAxisResult: Vector3): boolean {
+        aimTarget.subtractToRef(origin, aimAxisResult);
+        if (aimAxisResult.lengthSquared() < 1e-8) {
             return false;
         }
-        this._tempDirection.normalize();
+        aimAxisResult.normalize();
 
         first.subtractToRef(second, this._tempTwistCross);
         if (this._tempTwistCross.lengthSquared() < 1e-8) {
@@ -1923,7 +1924,7 @@ export class WebXRTrackedBody implements IDisposable {
         }
         this._tempTwistCross.normalize();
 
-        Vector3.CrossToRef(this._tempDirection, this._tempTwistCross, result);
+        Vector3.CrossToRef(aimAxisResult, this._tempTwistCross, result);
         if (result.lengthSquared() < 1e-8) {
             return false;
         }
@@ -1942,7 +1943,7 @@ export class WebXRTrackedBody implements IDisposable {
     }
 
     private _storeBindLocalTwistNormalFromPositions(bone: Bone, origin: Vector3, aimTarget: Vector3, first: Vector3, second: Vector3, bindWorldRotation: Quaternion): void {
-        if (!this._computeNormalFromJointPositions(origin, aimTarget, first, second, this._tempTwistNormal)) {
+        if (!this._computeNormalFromJointPositions(origin, aimTarget, first, second, this._tempTwistNormal, this._tempTwistAimAxis)) {
             return;
         }
         Quaternion.InverseToRef(bindWorldRotation, this._tempRotQuat2);
@@ -2126,9 +2127,6 @@ export class WebXRTrackedBody implements IDisposable {
                     }
                 }
 
-                // _computeNormalFromJointPositions leaves the aim direction in
-                // _tempDirection, which _projectOnPlaneToRef uses as the
-                // projection plane normal below.
                 const twistReferences = this._boneTwistReferenceJointIdx.get(bone);
                 const bindLocalTwistNormal = this._bindLocalTwistNormals.get(bone);
                 if (twistReferences && bindLocalTwistNormal && targetIdx !== undefined) {
@@ -2138,17 +2136,23 @@ export class WebXRTrackedBody implements IDisposable {
                             this._desiredFinalPositions[targetIdx],
                             this._desiredFinalPositions[twistReferences.first],
                             this._desiredFinalPositions[twistReferences.second],
-                            this._tempTwistNormal
+                            this._tempTwistNormal,
+                            this._tempTwistAimAxis
                         )
                     ) {
                         // Rotate bind-space twist normal by the current world orientation,
                         // then rotate around the aimed axis to match the tracked hand plane.
                         bindLocalTwistNormal.rotateByQuaternionToRef(this._tempBoneWorldRot, this._tempCurrentTwistNormal);
                         if (
-                            this._projectOnPlaneToRef(this._tempCurrentTwistNormal, this._tempDirection, this._tempProjectedTwistNormal) &&
-                            this._projectOnPlaneToRef(this._tempTwistNormal, this._tempDirection, this._tempProjectedDesiredTwistNormal)
+                            this._projectOnPlaneToRef(this._tempCurrentTwistNormal, this._tempTwistAimAxis, this._tempProjectedTwistNormal) &&
+                            this._projectOnPlaneToRef(this._tempTwistNormal, this._tempTwistAimAxis, this._tempProjectedDesiredTwistNormal)
                         ) {
-                            Quaternion.FromUnitVectorsToRef(this._tempProjectedTwistNormal, this._tempProjectedDesiredTwistNormal, this._tempRotQuat2);
+                            const dot = Vector3.Dot(this._tempProjectedTwistNormal, this._tempProjectedDesiredTwistNormal);
+                            if (dot < -0.9999) {
+                                Quaternion.RotationAxisToRef(this._tempTwistAimAxis, Math.PI, this._tempRotQuat2);
+                            } else {
+                                Quaternion.FromUnitVectorsToRef(this._tempProjectedTwistNormal, this._tempProjectedDesiredTwistNormal, this._tempRotQuat2);
+                            }
                             this._tempRotQuat2.multiplyToRef(this._tempBoneWorldRot, this._tempDeltaQuat);
                             this._tempBoneWorldRot.copyFrom(this._tempDeltaQuat);
                             this._tempBoneWorldRot.normalize();
