@@ -777,7 +777,7 @@ jobs:
       dependsOn:
           - Build
           - FormatLint
-      timeoutInMinutes: 15
+      timeoutInMinutes: 30
       pool:
           vmImage: windows-latest
       steps:
@@ -833,6 +833,17 @@ jobs:
                 UnitTests.exe
             displayName: "Run unit tests"
             retryCountOnTaskFailure: 3
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: |
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
+            displayName: "Downlevel scripts for Native"
 
           - script: |
                 cd
