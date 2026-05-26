@@ -25,22 +25,9 @@ const babelOptions = {
         setPublicClassFields: true,
         superIsCallableConstructor: true,
     },
-    presets: [
-        [
-            "@babel/preset-env",
-            {
-                bugfixes: true,
-                modules: false,
-                // Babel does not expose a Chakra target. Edge 18 is the closest
-                // preset-env target for Chakra-era JavaScript support, but we
-                // still force class lowering because Native currently consumes
-                // ES5-style constructor/prototype UMD output.
-                targets: { edge: "18" },
-                include: ["@babel/plugin-transform-classes"],
-                useBuiltIns: false,
-            },
-        ],
-    ],
+    // Keep the transform narrowly scoped so CI can isolate class syntax
+    // compatibility without introducing broad preset-env semantic drift.
+    plugins: ["@babel/plugin-transform-classes"],
 };
 
 function isNativeScriptFile(filePath) {
