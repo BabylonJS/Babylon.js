@@ -842,8 +842,8 @@ jobs:
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
           - script: |
-                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
-            displayName: "Downlevel scripts for Native"
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\babylon.max.js
+            displayName: "Downlevel core script for Native"
 
           - script: |
                 cd
