@@ -845,29 +845,6 @@ jobs:
                 npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\babylon.max.js
             displayName: "Downlevel core script for Native"
 
-            - pwsh: |
-              $scriptPath = "..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\validation_native.js"
-              if (-not (Test-Path $scriptPath)) {
-                Write-Host "Native validation script not found at $scriptPath"
-                exit 0
-              }
-
-              $content = Get-Content -Raw -Path $scriptPath
-              $updated = $content
-
-              # Temporary mitigation: remove the single known hanging case.
-              $updated = [regex]::Replace($updated, '(?ms)\{[^{}]*"#U8O4EP#1"[^{}]*\}\s*,?', '')
-              $updated = [regex]::Replace($updated, '(?m)^.*Gaussian Splatting Compressed ply SH.*\r?\n?', '')
-              $updated = [regex]::Replace($updated, '(?m)^.*#U8O4EP#1.*\r?\n?', '')
-
-              if ($updated -ne $content) {
-                Set-Content -Path $scriptPath -Value $updated -NoNewline
-                Write-Host "Removed Native visualization case #U8O4EP#1 (Gaussian Splatting Compressed ply SH)."
-              } else {
-                Write-Host "Case #U8O4EP#1 not found in validation script; no changes applied."
-              }
-            displayName: "Skip known hanging Native Gaussian splatting case"
-
           - script: |
                 cd
                 cd ..\BabylonNativeNightlyPlayground\RelWithDebInfo
