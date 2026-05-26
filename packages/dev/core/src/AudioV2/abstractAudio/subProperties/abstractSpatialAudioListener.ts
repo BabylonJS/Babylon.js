@@ -66,6 +66,11 @@ export abstract class AbstractSpatialAudioListener {
     public abstract isAttached: boolean;
 
     /**
+     * The scene node this listener is currently attached to, or `null` if not attached.
+     */
+    public abstract attachedNode: Nullable<Node>;
+
+    /**
      * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.
      * - The listener's position and rotation will not update faster than this time, but they may update slower depending on the frame rate.
      */

@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "Maths/math.color.ts": ["top-level-call"],
+        "Maths/math.vector.ts": ["top-level-call"]
+    }
+}

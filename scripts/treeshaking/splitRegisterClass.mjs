@@ -9,24 +9,26 @@
  *   - FILE.ts       — thin re-export wrapper + RegisterClass calls
  *
  * Usage:
- *   node scripts/treeshaking/splitRegisterClass.mjs [--dry-run] [--file <rel-path>] [--verbose]
+ *   node scripts/treeshaking/splitRegisterClass.mjs [--dry-run] [--file <rel-path>] [--verbose] [--format]
  *
  * Flags:
  *   --dry-run   Show what would be done without writing files
  *   --file <p>  Only process a single file (relative path from core/src)
  *   --verbose   Show detailed output for each file
+ *   --format    Format generated files after writing them
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, resolve, dirname, basename, relative } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
+const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest/core");
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -35,6 +37,7 @@ const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
 const VERBOSE = args.includes("--verbose");
+const FORMAT = args.includes("--format");
 const fileIdx = args.indexOf("--file");
 const SINGLE_FILE = fileIdx !== -1 ? args[fileIdx + 1] : null;
 
@@ -244,7 +247,7 @@ function generateSplit(source, analysis, relPath) {
 
 function main() {
     // Load manifest
-    const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
+    const manifest = readSideEffectsManifest(MANIFEST_PATH);
     const entries = manifest.manifest;
 
     // Filter to RegisterClass-only files
@@ -334,8 +337,8 @@ function main() {
         errors.forEach((e) => console.log(`  ${e.file}: ${e.error}`));
     }
 
-    // Format all generated/modified files with Prettier
-    if (!DRY_RUN && writtenFiles.length > 0) {
+    // Optionally format all generated/modified files with Prettier
+    if (FORMAT && !DRY_RUN && writtenFiles.length > 0) {
         console.log(`\nFormatting ${writtenFiles.length} files with Prettier...`);
         try {
             const BATCH = 100;

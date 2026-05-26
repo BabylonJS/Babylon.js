@@ -1,0 +1,9 @@
+{
+    "version": 1,
+    "files": {
+        "Audio/audioEngine.ts": ["top-level-call"],
+        "Audio/audioSceneComponent.ts": ["top-level-call"],
+        "Audio/audioSceneComponent.types.ts": ["declare-module"],
+        "Audio/sound.ts": ["top-level-call"]
+    }
+}

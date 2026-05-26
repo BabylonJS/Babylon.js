@@ -4,6 +4,7 @@ export * from "./abstractAudioBus";
 export * from "./abstractAudioNode";
 export * from "./abstractAudioOutNode";
 export * from "./abstractSound";
+export * from "./abstractSoundSource";
 export * from "./audioBus";
 export * from "./audioEngineV2";
 export * from "./mainAudioBus";

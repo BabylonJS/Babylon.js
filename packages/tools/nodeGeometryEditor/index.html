@@ -47,7 +47,7 @@
         <!-- CDN bootstrap: loads babylon.js from babylonServer (port 1337), then calls
              BABYLON.NodeGeometryEditor.Show(). The shim at /babylon.nodeGeometryEditor.js
              (served by Vite middleware) captures those args and emits a CustomEvent. -->
-        <script src="./index.js"></script>
+        <script type="module" src="/src/bootstrap.js"></script>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>

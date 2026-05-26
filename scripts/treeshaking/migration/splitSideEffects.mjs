@@ -36,12 +36,13 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "
 import { join, resolve, dirname, basename, relative } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
+import { readSideEffectsManifest } from "../sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest.json");
+const MANIFEST_PATH = join(REPO_ROOT, "scripts/treeshaking/side-effects-manifest/core");
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -1361,7 +1362,7 @@ function generateSplit(source, lines, imports, sideEffectBlocks, relPath) {
 
 function main() {
     // Load manifest for initial filtering
-    const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8")).manifest;
+    const manifest = readSideEffectsManifest(MANIFEST_PATH).manifest;
 
     // Find candidates: files with side effects
     let candidates = manifest.filter((entry) => {

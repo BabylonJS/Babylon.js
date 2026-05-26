@@ -1,10 +1,13 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+
+import { RenderGeneralSection } from "./genericNodePropertyComponent";
 import { type FlowGraphGetAssetBlock, type IFlowGraphGetAssetBlockConfiguration } from "core/FlowGraph/Blocks/Data/flowGraphGetAssetBlock";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { type GlobalState } from "../../globalState";
@@ -12,7 +15,7 @@ import { type SceneContext } from "../../sceneContext";
 import { type Observer } from "core/Misc/observable";
 
 // FlowGraphAssetType is a const enum; mirror string values here so bundlers do not inline stale values.
-const AssetTypeOptions = [
+const AssetTypeOptions: DropdownOption<string>[] = [
     { label: "Mesh", value: "Mesh" },
     { label: "Light", value: "Light" },
     { label: "Camera", value: "Camera" },
@@ -20,6 +23,14 @@ const AssetTypeOptions = [
     { label: "AnimationGroup", value: "AnimationGroup" },
     { label: "Animation", value: "Animation" },
 ];
+
+const useStyles = makeStyles({
+    helpText: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
 
 /**
  * Returns the named scene objects for a given FlowGraphAssetType string.
@@ -64,6 +75,54 @@ function GetIndexValue(idx: number | FlowGraphInteger | undefined): number {
 interface IGetAssetPropertyState {
     sceneContext: SceneContext | null;
 }
+
+const AssetConfigurationContent: React.FunctionComponent<{
+    stateManager: IPropertyComponentProps["stateManager"];
+    blockId: string;
+    currentType: string;
+    config: IFlowGraphGetAssetBlockConfiguration<any>;
+    sceneContext: SceneContext | null;
+    sceneAssets: Array<{ uniqueId: number; name: string }> | null;
+    resolvedAssetId: number;
+    useUniqueId: boolean;
+    onTypeChange: (newType: string) => void;
+    onIndexChange: (newIndex: number, useUniqueId: boolean) => void;
+    onUseUniqueIdChange: (v: boolean) => void;
+}> = ({ blockId, currentType, config, sceneContext, sceneAssets, resolvedAssetId, useUniqueId, onTypeChange, onIndexChange, onUseUniqueIdChange }) => {
+    const classes = useStyles();
+    return (
+        <>
+            <StringDropdownPropertyLine key={`type-${blockId}`} label="Asset Type" options={AssetTypeOptions} value={currentType} onChange={onTypeChange} />
+
+            {sceneAssets ? (
+                <>
+                    <NumberDropdownPropertyLine
+                        key={`asset-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
+                        label="Asset"
+                        options={
+                            [
+                                { label: "(none)", value: -1 },
+                                ...sceneAssets.map((a) => ({
+                                    label: a.name || `(id ${a.uniqueId})`,
+                                    value: a.uniqueId,
+                                })),
+                            ] as DropdownOption<number>[]
+                        }
+                        value={resolvedAssetId}
+                        onChange={(uid) => onIndexChange(uid, uid !== -1)}
+                    />
+                    {sceneAssets.length === 0 && <Body1 className={classes.helpText}>No {currentType.toLowerCase()}s found in the scene.</Body1>}
+                </>
+            ) : (
+                <>
+                    <NumberInputPropertyLine label="Index" value={GetIndexValue(config.index)} step={1} onChange={(v) => onIndexChange(Math.trunc(v), false)} />
+                    <SwitchPropertyLine label="Use Unique ID" value={useUniqueId} onChange={onUseUniqueIdChange} />
+                    <Body1 className={classes.helpText}>Load a scene snippet in the Preview panel to pick assets by name.</Body1>
+                </>
+            )}
+        </>
+    );
+};
 
 /**
  * Specialized property panel for FlowGraphGetAssetBlock.
@@ -197,7 +256,7 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
+        const { stateManager } = this.props;
         const block = this._getBlock();
         const config = this._getConfig();
         const blockId = block.uniqueId;
@@ -209,74 +268,29 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
         const resolvedAssetId = this._resolveCurrentAssetId(sceneAssets);
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphGetAssetProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
 
-                <LineContainerComponent title="ASSET CONFIGURATION">
-                    {/* Asset type selector */}
-                    <OptionsLine
-                        key={`type-${blockId}`}
-                        label="Asset Type"
-                        options={AssetTypeOptions}
-                        target={config}
-                        propertyName="type"
-                        valuesAreStrings={true}
-                        onSelect={(value) => this._onTypeChange(value as string)}
+                <AccordionSection title="Asset Configuration" collapseByDefault={false}>
+                    <AssetConfigurationContent
+                        stateManager={stateManager}
+                        blockId={blockId}
+                        currentType={currentType}
+                        config={config}
+                        sceneContext={sceneContext}
+                        sceneAssets={sceneAssets}
+                        resolvedAssetId={resolvedAssetId}
+                        useUniqueId={useUniqueId}
+                        onTypeChange={(t) => this._onTypeChange(t)}
+                        onIndexChange={(idx, useUid) => this._onIndexChange(idx, useUid)}
+                        onUseUniqueIdChange={(v) => {
+                            config.useIndexAsUniqueId = v;
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this._getBlock());
+                            this.forceUpdate();
+                        }}
                     />
-
-                    {sceneAssets ? (
-                        /* Scene-aware picker: dropdown of real scene objects */
-                        <>
-                            <OptionsLine
-                                key={`asset-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
-                                label="Asset"
-                                options={[
-                                    { label: "(none)", value: -1 },
-                                    ...sceneAssets.map((a) => ({
-                                        label: a.name || `(id ${a.uniqueId})`,
-                                        value: a.uniqueId,
-                                    })),
-                                ]}
-                                target={config}
-                                propertyName="index"
-                                extractValue={() => resolvedAssetId}
-                                noDirectUpdate={true}
-                                onSelect={(value) => {
-                                    const uid = value as number;
-                                    this._onIndexChange(uid, uid !== -1);
-                                }}
-                            />
-                            {sceneAssets.length === 0 && (
-                                <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No {currentType.toLowerCase()}s found in the scene.</div>
-                            )}
-                        </>
-                    ) : (
-                        /* No scene loaded: raw index input */
-                        <>
-                            <FloatLineComponent
-                                label="Index"
-                                lockObject={stateManager.lockObject}
-                                digits={0}
-                                step={"1"}
-                                isInteger={true}
-                                target={{ _idx: GetIndexValue(config.index) }}
-                                propertyName="_idx"
-                                onChange={(v) => this._onIndexChange(v, false)}
-                            />
-                            <CheckBoxLineComponent
-                                label="Use Unique ID"
-                                isSelected={() => useUniqueId}
-                                onSelect={(v) => {
-                                    config.useIndexAsUniqueId = v;
-                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this._getBlock());
-                                    this.forceUpdate();
-                                }}
-                            />
-                            <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick assets by name.</div>
-                        </>
-                    )}
-                </LineContainerComponent>
-            </>
+                </AccordionSection>
+            </Accordion>
         );
     }
 }

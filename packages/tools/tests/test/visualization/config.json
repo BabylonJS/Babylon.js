@@ -2,6 +2,14 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "MSAA RTT samples=4 (magnified)",
+            "playgroundId": "#DY1H5P#0",
+            "referenceImage": "msaa-rtt-samples4-magnified.png",
+            "errorRatio": 5,
+            "excludeFromPerformance": true,
+            "dependsOn": ["Rendering", "Textures"]
+        },
+        {
             "title": "Merge Meshes with submeshes",
             "playgroundId": "#ZHPFRQ",
             "referenceImage": "mergemeshes-sub.png",
@@ -64,6 +72,12 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting SPZ V4 Extensions",
+            "playgroundId": "#XSNFXP#25",
+            "referenceImage": "gsplat-spz-v4-extensions.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "Gaussian Splatting SPZ SH Order 4",
             "playgroundId": "#XSNFXP#5",
             "referenceImage": "gsplat-spz-sh-order-4.png",
@@ -116,10 +130,88 @@
             "dependsOn": ["GaussianSplatting", "Lights", "Loaders", "SPLATLoader", "Shadows"]
         },
         {
+            "title": "Gaussian Splatting Debug Opacity Scale",
+            "playgroundId": "#XSNFXP#16",
+            "referenceImage": "gsplat-debug-opacity-scale.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Opacity Saturate",
+            "playgroundId": "#XSNFXP#17",
+            "referenceImage": "gsplat-debug-opacity-saturate.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Size Culling",
+            "playgroundId": "#XSNFXP#19",
+            "referenceImage": "gsplat-debug-size-culling.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Opacity Culling",
+            "playgroundId": "#XSNFXP#20",
+            "referenceImage": "gsplat-debug-opacity-culling.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Clipping Box",
+            "playgroundId": "#XSNFXP#21",
+            "referenceImage": "gsplat-debug-clipping-box.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Diffuse Only",
+            "playgroundId": "#XSNFXP#22",
+            "referenceImage": "gsplat-debug-diffuse-only.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug SH4 Only",
+            "playgroundId": "#XSNFXP#24",
+            "referenceImage": "gsplat-debug-sh4-only.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Compound Incremental Update",
+            "playgroundId": "#DAID4Q#7",
+            "referenceImage": "gsplat-compound-incremental-update.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Compound No SH then Full SH",
+            "playgroundId": "#DAID4Q#8",
+            "referenceImage": "gsplat-compound-no-sh-then-full-sh.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
             "title": "Gaussian Splatting IBL Shadows",
-            "playgroundId": "#DAID4Q",
+            "playgroundId": "#DAID4Q#2",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Single Part",
+            "playgroundId": "#DAID4Q#4",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-single-part.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts",
+            "playgroundId": "#DAID4Q#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts Mixed Visibility",
+            "playgroundId": "#DAID4Q#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts-mixed-visibility.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
             "excludeFromPerformance": true
         },
@@ -146,10 +238,27 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "SOGS with SH no texture lookup",
+            "playgroundId": "#QA2662#24",
+            "errorRatio": 5,
+            "referenceImage": "gsplat-sogs-sh-nolookup.png",
+            "dependsOn": ["Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Part Test",
             "playgroundId": "#BTS11N#0",
             "errorRatio": 5,
             "referenceImage": "gsplat-part-test.png",
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Debug Part Test",
+            "playgroundId": "#BTS11N#2",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-debug-part-test.png",
             "dependsOn": ["GaussianSplatting", "Loaders"],
             "excludeFromPerformance": true
         },
@@ -4230,6 +4339,12 @@
             "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
         },
         {
+            "title": "OpenPBR Geometry Opacity",
+            "playgroundId": "#GRQHVV#327",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458",
             "dependsOn": ["Materials", "Textures"]
@@ -4565,7 +4680,7 @@
         },
         {
             "title": "Particles - Helper - Smoke",
-            "playgroundId": "#XRRTC0#5",
+            "playgroundId": "#XRRTC0#6",
             "referenceImage": "particles-helper-smoke.png",
             "dependsOn": ["Lights", "PBR", "Particles", "PostProcesses", "Textures"]
         },

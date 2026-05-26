@@ -98,7 +98,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The alpha cutoff threshold (ignored for OpenPBR)
      */
     public set alphaCutOff(value: number) {
-        // OpenPBR doesn't have a direct equivalent, but could be implemented if needed
+        this._material.alphaCutOff = value;
     }
 
     /**
@@ -106,7 +106,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns Default value of 0.5 (OpenPBR doesn't support this directly)
      */
     public get alphaCutOff(): number {
-        return 0.5; // Default value
+        return this._material.alphaCutOff;
     }
 
     /**
@@ -120,10 +120,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Gets whether alpha is used from the base color texture.
-     * @returns Always false for OpenPBR as it's handled automatically
+     * @returns True if alpha is used from the base color texture
      */
     public get useAlphaFromBaseColorTexture(): boolean {
-        return false;
+        return this._material._useAlphaFromBaseColorTexture;
     }
 
     /**

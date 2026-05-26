@@ -676,7 +676,8 @@ export class ObjectRenderer {
             if (!this.dontSetTransformationMatrix) {
                 this._scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
             }
-            this._scene.activeCamera = camera;
+            // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged for this internal render pass.
+            this._scene._activeCamera = camera;
             this._engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
         }
 
@@ -701,7 +702,8 @@ export class ObjectRenderer {
             scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
         }
 
-        scene.activeCamera = this._currentSceneCamera;
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged for this internal render pass.
+        scene._activeCamera = this._currentSceneCamera;
         if (this._currentSceneCamera) {
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(this._currentSceneCamera.getViewMatrix(), this._currentSceneCamera.getProjectionMatrix(true));

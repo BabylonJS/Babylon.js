@@ -10,11 +10,15 @@ import { SceneContext } from "../../sceneContext";
 import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
-
-import "./scenePreview.scss";
+import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
+import { CheckmarkRegular } from "@fluentui/react-icons";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
+}
+
+interface IScenePreviewComponentInnerProps extends IScenePreviewComponentProps {
+    classes: ReturnType<typeof useStyles>;
 }
 
 interface IScenePreviewComponentState {
@@ -24,13 +28,92 @@ interface IScenePreviewComponentState {
     sceneObjectCount: number;
 }
 
+const useStyles = makeStyles({
+    container: {
+        display: "grid",
+        gridTemplateRows: "auto 1fr auto",
+        height: "100%",
+        width: "100%",
+        overflow: "hidden",
+        background: tokens.colorNeutralBackground3,
+        color: tokens.colorNeutralForeground1,
+        fontSize: tokens.fontSizeBase200,
+    },
+    loader: { background: tokens.colorNeutralBackground2 },
+    inputRow: {
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
+    },
+    fillInput: { width: "100%" },
+    error: {
+        color: tokens.colorPaletteRedForeground1,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
+        fontSize: tokens.fontSizeBase300,
+    },
+    status: {
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
+        fontSize: tokens.fontSizeBase300,
+        color: tokens.colorNeutralForeground2,
+    },
+    statusCount: {
+        color: tokens.colorPaletteGreenForeground1,
+        fontWeight: tokens.fontWeightBold,
+    },
+    statusWired: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXXS,
+        marginLeft: tokens.spacingHorizontalS,
+        color: tokens.colorPaletteGreenForeground1,
+        fontSize: tokens.fontSizeBase300,
+    },
+    canvasContainer: {
+        position: "relative",
+        overflow: "hidden",
+        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    },
+    canvas: {
+        display: "block",
+        width: "100%",
+        height: "100%",
+        outline: "none",
+        padding: 0,
+    },
+    summary: {
+        background: tokens.colorNeutralBackground2,
+        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+        padding: `${tokens.spacingVerticalXS} 0`,
+        overflowY: "auto",
+        maxHeight: "120px",
+    },
+    categoryItem: {
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalM}`,
+        fontSize: tokens.fontSizeBase300,
+        ":hover": { background: tokens.colorNeutralBackground1Hover },
+    },
+    categoryLabel: { color: tokens.colorNeutralForeground2 },
+    categoryCount: {
+        color: tokens.colorPaletteGreenForeground1,
+        fontWeight: tokens.fontWeightBold,
+    },
+});
+
 /**
  * Component that provides a Playground snippet loader and a live scene preview.
- * Loading a snippet executes its createScene(), renders the result in a canvas,
- * and populates a SceneContext that catalogues every object in the scene for use
- * as references in flow graph blocks.
+ * Wraps the stateful inner class so we can use `makeStyles` (a hook).
+ * @param props - The component props.
+ * @returns The rendered scene preview.
  */
-export class ScenePreviewComponent extends React.Component<IScenePreviewComponentProps, IScenePreviewComponentState> {
+export const ScenePreviewComponent: React.FunctionComponent<IScenePreviewComponentProps> = (props) => {
+    const classes = useStyles();
+    return <ScenePreviewInner {...props} classes={classes} />;
+};
+
+class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps, IScenePreviewComponentState> {
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _onContextRefreshedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
@@ -39,7 +122,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     private _onDropEventObserver: Nullable<Observer<DragEvent>> = null;
 
     /** @internal */
-    constructor(props: IScenePreviewComponentProps) {
+    constructor(props: IScenePreviewComponentInnerProps) {
         super(props);
         this._canvasRef = React.createRef();
 
@@ -75,8 +158,11 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
         // When a reload is requested (e.g. from the Reset button), re-run the current snippet
         this._onReloadSnippetRequestedObserver = this.props.globalState.onReloadSnippetRequested.add(() => {
-            if (this.state.snippetId) {
+            const sceneSource = this.props.globalState.sceneSource;
+            if ((sceneSource === "snippet" || (!sceneSource && this.state.snippetId)) && this.state.snippetId) {
                 void this.loadSnippetAsync();
+            } else if (sceneSource === "default" || (!sceneSource && !this.state.snippetId)) {
+                void this._createDefaultSceneAsync();
             }
         });
 
@@ -85,8 +171,30 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             this._handleDrop(e);
         });
 
-        // Create a default scene so the editor is usable without a snippet
-        if (!this.props.globalState.sceneContext && !this.props.globalState.snippetId) {
+        // Reconcile the existing scene (if any) with the freshly mounted canvas. The component can be
+        // re-mounted while a sceneContext already exists — for example when the side pane is undocked
+        // into a popup window and then re-docked back into the main window. Each mount creates a new
+        // <canvas> DOM element, but the Engine on the existing sceneContext is bound to the previous
+        // canvas, and a WebGL context cannot be transferred between canvas elements. Detect the
+        // mismatch and rebuild against the new canvas; if a snippet is already loaded, re-run it,
+        // otherwise create the default scene. Loses in-flight preview interaction state but preserves
+        // the editor's snippet selection.
+        const ctx = this.props.globalState.sceneContext;
+        const canvas = this._canvasRef.current;
+        const canvasMismatch = !!ctx && !!canvas && ctx.engine.getRenderingCanvas() !== canvas;
+        const pendingSnippetId = this.props.globalState.snippetId;
+        if (canvasMismatch) {
+            this._disposeCurrentScene();
+            if (pendingSnippetId) {
+                this.setState({ snippetId: pendingSnippetId }, () => {
+                    void this.loadSnippetAsync();
+                });
+            } else {
+                void this._createDefaultSceneAsync();
+            }
+        } else if (!ctx && !pendingSnippetId) {
+            // First mount with no prior state — create a default scene so the editor is usable
+            // without a snippet.
             void this._createDefaultSceneAsync();
         }
     }
@@ -126,6 +234,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             oldCtx.engine.dispose();
             oldCtx.dispose();
             this.props.globalState.sceneContext = null;
+            this.props.globalState.sceneSource = null;
         }
     }
 
@@ -144,7 +253,16 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         engine.resize();
 
         const canvas = this._canvasRef.current;
-        const resizeHandler = () => engine.resize();
+        // Resize the engine's internal buffer AND re-render immediately so the canvas paints
+        // at the new size during the same frame the ResizeObserver fires. Without the inline
+        // re-render, the GL buffer at the old size flashes briefly stretched into the new CSS
+        // size, which reads as a visible flicker while the user drags the pane edge.
+        const resizeHandler = () => {
+            engine.resize();
+            if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+                scene.render();
+            }
+        };
         window.addEventListener("resize", resizeHandler);
 
         let resizeObserver: ResizeObserver | null = null;
@@ -162,11 +280,13 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     /**
      * Build a SceneContext and publish it to the editor.
      * @param scene - the scene to wrap in a SceneContext
+     * @param source - the source used to create the preview scene
      * @returns the newly created SceneContext
      */
-    private _publishSceneContext(scene: Scene) {
+    private _publishSceneContext(scene: Scene, source: "default" | "snippet" | "file") {
         const sceneContext = new SceneContext(scene);
         this.props.globalState.sceneContext = sceneContext;
+        this.props.globalState.sceneSource = source;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
@@ -240,7 +360,9 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
             this._setupEngineRenderLoop(scene, engine);
 
-            const sceneContext = this._publishSceneContext(scene);
+            const sceneContext = this._publishSceneContext(scene, "default");
+            this.props.globalState.snippetId = "";
+            this.setState({ snippetId: "" });
             this.props.globalState.onLogRequiredObservable.notifyObservers(
                 new LogEntry(
                     `Default scene created with ${sceneContext.entries.length} objects. Drop a .glb/.gltf/.babylon file or load a Playground snippet to replace it.`,
@@ -415,7 +537,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
             await scene.whenReadyAsync(true);
 
-            const sceneContext = this._publishSceneContext(scene);
+            const sceneContext = this._publishSceneContext(scene, "file");
             this.props.globalState.snippetId = "";
 
             // Detect flow graphs from the loaded file:
@@ -589,7 +711,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             await scene.whenReadyAsync(true);
 
             // Build the scene context
-            const sceneContext = this._publishSceneContext(scene);
+            const sceneContext = this._publishSceneContext(scene, "snippet");
             this.props.globalState.snippetId = this.state.snippetId;
 
             this.setState({ isLoading: false });
@@ -617,46 +739,49 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
     /** @internal */
     override render() {
+        const { classes } = this.props;
         const { snippetId, isLoading, error, sceneObjectCount } = this.state;
         const ctx = this.props.globalState.sceneContext;
 
         return (
-            <div className="scene-preview-container">
-                <div className="snippet-loader">
-                    <div className="snippet-header">SCENE CONTEXT</div>
-                    <div className="snippet-input-row">
-                        <input
-                            type="text"
-                            className="snippet-input"
+            <div className={classes.container}>
+                <div className={classes.loader}>
+                    <div className={classes.inputRow}>
+                        <Input
+                            className={classes.fillInput}
+                            size="small"
                             placeholder="Playground ID or URL..."
                             value={snippetId}
-                            onChange={(e) => this.setState({ snippetId: e.target.value })}
+                            onChange={(_, data) => this.setState({ snippetId: data.value })}
                             onKeyDown={this._handleKeyDown}
                             disabled={isLoading}
                         />
-                        <button className="snippet-load-btn" onClick={() => void this.loadSnippetAsync()} disabled={isLoading || !snippetId}>
+                        <Button size="small" appearance="primary" onClick={() => void this.loadSnippetAsync()} disabled={isLoading || !snippetId}>
                             {isLoading ? "..." : "Load"}
-                        </button>
+                        </Button>
                     </div>
-                    {error && <div className="snippet-error">{error}</div>}
+                    {error && <Body1 className={classes.error}>{error}</Body1>}
                     {ctx && (
-                        <div className="snippet-status">
-                            <span className="status-count">{sceneObjectCount}</span> objects in scene context
-                            <span className="status-wired" title="Flow graph execution contexts will resolve asset references from this scene">
-                                &#x2713; wired to flow graph
-                            </span>
+                        <div className={classes.status}>
+                            <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> objects in scene context
+                            <Tooltip content="Flow graph execution contexts will resolve asset references from this scene" relationship="description">
+                                <Body1 className={classes.statusWired}>
+                                    <CheckmarkRegular /> wired to flow graph
+                                </Body1>
+                            </Tooltip>
                         </div>
                     )}
                 </div>
-                <div className="preview-canvas-container" onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
-                    <canvas ref={this._canvasRef} className="preview-canvas" />
+                <div className={classes.canvasContainer} onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
+                    <canvas ref={this._canvasRef} className={classes.canvas} tabIndex={0} />
                 </div>
-                {ctx && <div className="context-summary">{this._renderCategorySummary(ctx)}</div>}
+                {ctx && <div className={classes.summary}>{this._renderCategorySummary(ctx)}</div>}
             </div>
         );
     }
 
     private _renderCategorySummary(ctx: SceneContext) {
+        const { classes } = this.props;
         const categories = [
             { label: "Meshes", count: ctx.meshes.length },
             { label: "Lights", count: ctx.lights.length },
@@ -669,11 +794,11 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         ].filter((c) => c.count > 0);
 
         return (
-            <div className="category-list">
+            <div>
                 {categories.map((c) => (
-                    <div key={c.label} className="category-item">
-                        <span className="category-label">{c.label}</span>
-                        <span className="category-count">{c.count}</span>
+                    <div key={c.label} className={classes.categoryItem}>
+                        <Body1 className={classes.categoryLabel}>{c.label}</Body1>
+                        <Body1 className={classes.categoryCount}>{c.count}</Body1>
                     </div>
                 ))}
             </div>

@@ -2151,6 +2151,25 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     }
 
     /**
+     * @returns true when the material needs alpha blending — i.e. when geometry_opacity < 1
+     * or a geometry opacity texture is present.
+     */
+    public override needAlphaBlending(): boolean {
+        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null;
+    }
+
+    /**
+     * Specifies if the mesh will require alpha blending.
+     * Overridden to check geometry_opacity before the _hasTransparencyMode short-circuit in the
+     * base class, which would otherwise always return false when _transparencyMode is MATERIAL_OPAQUE.
+     * @param mesh The mesh to check
+     * @returns true if alpha blending is needed for the mesh
+     */
+    public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null || super.needAlphaBlendingForMesh(mesh);
+    }
+
+    /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
      * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g baseColor and opacity), only clone it once and reuse it on the other channels. Default false.
@@ -2537,6 +2556,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
+        const needToAlwaysBindUniformBuffers = engine._features.needToAlwaysBindUniformBuffers;
 
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
@@ -2669,18 +2689,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             BindClipPlane(this._activeEffect, this, scene);
 
             this.bindEyePosition(effect);
-        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+        } else if (needToAlwaysBindUniformBuffers) {
             this._needToBindSceneUbo = true;
         }
 
         this.bindPropertiesForSubMesh(this._uniformBuffer, scene, scene.getEngine() as Engine, subMesh);
 
-        if (mustRebind || !this.isFrozen) {
-            // Lights
-            if (scene.lightsEnabled && !this._disableLighting) {
-                BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
-            }
+        // Lights
+        if ((mustRebind || !this.isFrozen || needToAlwaysBindUniformBuffers) && scene.lightsEnabled && !this._disableLighting) {
+            BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+        }
 
+        if (mustRebind || !this.isFrozen) {
             // View
             this.bindView(effect);
 

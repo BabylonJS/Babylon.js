@@ -1,10 +1,10 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { type NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
-import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { type ConnectionPointPortData } from "../connectionPointPortData";
 
 export interface INodePortPropertyTabComponentProps {
@@ -20,6 +20,7 @@ export class NodePortPropertyTabComponent extends React.Component<INodePortPrope
     toggleExposeOnFrame(value: boolean) {
         this.props.nodePort.exposedOnFrame = value;
         this.props.stateManager.onExposePortOnFrameObservable.notifyObservers(this.props.nodePort.node);
+        this.forceUpdate();
     }
 
     override render() {
@@ -27,36 +28,35 @@ export class NodePortPropertyTabComponent extends React.Component<INodePortPrope
 
         const info = this.props.nodePort.hasLabel() ? (
             <>
-                {this.props.nodePort.hasLabel() && (
-                    <TextInputLineComponent lockObject={this.props.stateManager.lockObject} label="Port Label" propertyName="portName" target={this.props.nodePort} />
-                )}
-                <TextLineComponent label="Kind" value={portData.connectionKind} />
-                <TextLineComponent label="Name" value={portData.name} />
+                <TextInputPropertyLine
+                    label="Port Label"
+                    value={this.props.nodePort.portName ?? ""}
+                    onChange={(value) => {
+                        this.props.nodePort.portName = value;
+                        this.forceUpdate();
+                    }}
+                />
+                <TextPropertyLine label="Kind" value={portData.connectionKind} />
+                <TextPropertyLine label="Name" value={portData.name} />
                 {this.props.nodePort.node.enclosingFrameId !== -1 && (
-                    <CheckBoxLineComponent
+                    <SwitchPropertyLine
                         label="Expose Port on Frame"
-                        target={this.props.nodePort}
-                        isSelected={() => this.props.nodePort.exposedOnFrame}
-                        onSelect={(value: boolean) => this.toggleExposeOnFrame(value)}
-                        propertyName="exposedOnFrame"
+                        value={this.props.nodePort.exposedOnFrame}
                         disabled={this.props.nodePort.disabled}
+                        onChange={(value) => this.toggleExposeOnFrame(value)}
                     />
                 )}
             </>
         ) : (
-            <TextLineComponent label="This node cannot be exposed to the frame." value=" "></TextLineComponent>
+            <TextPropertyLine label="" value="This node cannot be exposed to the frame." />
         );
 
         return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">FLOW GRAPH EDITOR</div>
-                </div>
-                <div>
-                    <LineContainerComponent title="GENERAL">{info}</LineContainerComponent>
-                </div>
-            </div>
+            <Accordion uniqueId="FlowGraphNodePortProperties">
+                <AccordionSection title="General" collapseByDefault={false}>
+                    {info}
+                </AccordionSection>
+            </Accordion>
         );
     }
 }

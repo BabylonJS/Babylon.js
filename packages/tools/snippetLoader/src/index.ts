@@ -1,5 +1,6 @@
 export { LoadSnippet, ParseSnippetResponse, CreateTypeScriptTranspiler } from "./snippetLoader";
 export type { ILoadSnippetOptions } from "./snippetLoader";
+export { ParseDataSnippetResponse } from "./parseDataSnippetResponse";
 export { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 export { SaveSnippet } from "./saveSnippet";
 export { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";

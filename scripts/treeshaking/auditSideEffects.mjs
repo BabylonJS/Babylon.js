@@ -17,22 +17,50 @@
  *   8. declare module augmentations
  *
  * Usage:
- *   node scripts/treeshaking/auditSideEffects.mjs [--json] [--summary] [--out <path>]
+ *   node scripts/treeshaking/auditSideEffects.mjs [--json] [--summary] [--out <path>] [--details]
  *
  * Options:
- *   --json     Output the full manifest as JSON to stdout
+ *   --json     Output the full diagnostic report as JSON to stdout
+ *   --details  Write the full diagnostic report when used with --out
  *   --summary  Print a human-readable summary (default if no flags)
- *   --out <p>  Write the JSON manifest to <path>
+ *   --out <p>  Write the compact committed manifest shards to <path>
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, relative, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { writeSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
 const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function toPosixPath(filePath) {
+    return filePath.split(/[/\\]+/).join("/");
+}
+
+function compareCodePoint(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function isGeneratedShaderPath(relPath) {
+    return relPath.startsWith("Shaders/") || relPath.startsWith("ShadersWGSL/");
+}
+
+function hasGeneratedShaderSource(filePath) {
+    const sourcePath = filePath.replace(/\.ts$/, "");
+    return !!statSyncNoThrow(`${sourcePath}.fx`)?.isFile() || !!statSyncNoThrow(`${sourcePath}.wgsl`)?.isFile();
+}
+
+function isGeneratedShader(filePath) {
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
+    return isGeneratedShaderPath(relPath) && hasGeneratedShaderSource(filePath);
+}
 
 // ---------------------------------------------------------------------------
 // File collection
@@ -51,10 +79,40 @@ function collectTsFiles(dir) {
         if (entry.isDirectory()) {
             results.push(...collectTsFiles(fullPath));
         } else if (entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && !entry.name.endsWith(".test.ts") && !entry.name.endsWith(".spec.ts")) {
+            if (isStaleGeneratedShader(fullPath)) {
+                continue;
+            }
             results.push(fullPath);
         }
     }
     return results;
+}
+
+/**
+ * Generated shader .ts files are ignored by git and can survive locally after their .fx source is deleted.
+ * Exclude those stale artifacts so local generated output cannot drift the committed manifest.
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isStaleGeneratedShader(filePath) {
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
+    if (!isGeneratedShaderPath(relPath)) {
+        return false;
+    }
+
+    return !hasGeneratedShaderSource(filePath);
+}
+
+/**
+ * @param {string} filePath
+ * @returns {import("fs").Stats | undefined}
+ */
+function statSyncNoThrow(filePath) {
+    try {
+        return statSync(filePath);
+    } catch {
+        return undefined;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -97,7 +155,8 @@ function isEscaped(text, index) {
 function analyzeFile(filePath) {
     const source = readFileSync(filePath, "utf-8");
     const lines = source.split("\n");
-    const relPath = relative(CORE_SRC, filePath);
+    const relPath = toPosixPath(relative(CORE_SRC, filePath));
+    const generatedShader = isGeneratedShader(filePath);
     const sideEffects = [];
 
     // Track brace depth to distinguish top-level from nested scope.
@@ -199,10 +258,6 @@ function analyzeFile(filePath) {
                 }
             }
         }
-        // Reset string state at end of line (single/double quotes don't span lines)
-        inSingleQuote = false;
-        inDoubleQuote = false;
-
         // Track declare module blocks
         if (prevDepth === 0 && /^\s*declare\s+module\s+/.test(lines[i])) {
             inDeclareModule = true;
@@ -274,7 +329,7 @@ function analyzeFile(filePath) {
         if (/ShaderStore\.\w*Store\w*\s*\[/.test(trimmed)) {
             sideEffects.push({
                 type: "shader-store-write",
-                line: lineNum,
+                line: generatedShader ? 0 : lineNum,
                 text: trimmed.substring(0, 120),
             });
         }
@@ -329,7 +384,7 @@ function analyzeFile(filePath) {
             // Skip calls already matched by more specific patterns
             const alreadyCaught = /\bRegisterClass\s*\(/.test(trimmed) || /\bNode\.AddNodeConstructor\s*\(/.test(trimmed) || /\bAddNodeConstructor\s*\(/.test(trimmed);
             // Skip false positives from GLSL/WGSL shader string content
-            const isShaderContent = relPath.startsWith("Shaders/") || relPath.startsWith("ShadersWGSL/");
+            const isShaderContent = isGeneratedShaderPath(relPath);
             if (!reserved.has(keyword) && !alreadyCaught && !isShaderContent) {
                 sideEffects.push({
                     type: "top-level-call",
@@ -377,6 +432,7 @@ function analyzeFile(filePath) {
 function main() {
     const args = process.argv.slice(2);
     const wantJson = args.includes("--json");
+    const wantDetails = args.includes("--details");
     const wantSummary = args.includes("--summary") || !wantJson;
     const outIdx = args.indexOf("--out");
     const outPath = outIdx !== -1 ? args[outIdx + 1] : null;
@@ -392,7 +448,7 @@ function main() {
     }
 
     // Sort by file path
-    manifest.sort((a, b) => a.file.localeCompare(b.file));
+    manifest.sort((a, b) => compareCodePoint(a.file, b.file));
 
     // Compute summary stats
     const stats = {
@@ -421,8 +477,13 @@ function main() {
     const output = { stats, manifest };
 
     if (outPath) {
-        writeFileSync(resolve(process.cwd(), outPath), JSON.stringify(output, null, 2));
-        console.error(`Manifest written to ${outPath}`);
+        let writtenPath = resolve(process.cwd(), outPath);
+        if (wantDetails) {
+            writeFileSync(writtenPath, JSON.stringify(output, null, 4));
+        } else {
+            writtenPath = writeSideEffectsManifest(writtenPath, manifest);
+        }
+        console.error(`Manifest written to ${toPosixPath(relative(process.cwd(), writtenPath))}`);
     }
 
     if (wantJson && !outPath) {

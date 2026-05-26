@@ -240,8 +240,7 @@
             })();
 
             function getLoadModelOptions() {
-                const materialValue = document.querySelector("#materialSelect").value;
-                return materialValue === "openpbr" ? { pluginOptions: { gltf: { useOpenPBR: true } } } : undefined;
+                return { useOpenPBR: document.querySelector("#materialSelect").value === "openpbr" };
             }
 
             globalThis.onDrop = async (event) => {
@@ -249,8 +248,15 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    currentSource = file;
-                    await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
+                    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+                    if (extension === ".hdr" || extension === ".env") {
+                        // blob: URLs have no extension, so pass it explicitly
+                        const url = URL.createObjectURL(file);
+                        await viewerDetails.viewer.loadEnvironment(url, { lighting: true, skybox: true, extension });
+                    } else {
+                        currentSource = file;
+                        await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
+                    }
                 }
             };
 
@@ -410,7 +416,7 @@
                 viewer.updateShadows({ quality: value });
             };
             globalThis.onMaterial = () => {
-                viewerDetails.viewer.loadModel(currentSource, getLoadModelOptions());
+                viewerDetails?.viewer.loadModel(currentSource, getLoadModelOptions());
             };
         </script>
     </body>
