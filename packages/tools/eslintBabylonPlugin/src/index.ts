@@ -869,13 +869,21 @@ const plugin: IPlugin = {
                         "Call/new expression in a .pure.ts file must be annotated with /*#__PURE__*/. " + "Without it, bundlers cannot tree-shake this code. Expression: {{expr}}",
                 },
             },
-            create(context: { filename?: string; getFilename?: () => string; sourceCode?: any; getSourceCode?: () => any; report: (desc: any) => void }) {
-                const filename = context.filename ?? context.getFilename?.() ?? "";
+            create(context: eslint.Rule.RuleContext) {
+                const filename = context.filename;
                 if (!filename.endsWith(".pure.ts")) {
                     return {};
                 }
 
-                const sourceCode = context.sourceCode ?? context.getSourceCode?.();
+                const sourceCode = context.sourceCode;
+
+                type TypeScriptExpressionWrapper = ESTree.BaseExpression & {
+                    type: "TSAsExpression" | "TSTypeAssertion" | "TSSatisfiesExpression" | "TSNonNullExpression";
+                    expression: PureAnnotationNode;
+                };
+
+                type PureAnnotationNode = ESTree.Node | TypeScriptExpressionWrapper;
+                type PureAnnotationCallOrNewExpression = ESTree.SimpleCallExpression | ESTree.NewExpression;
 
                 /**
                  * Unwrap TS type assertions (e.g. `new Foo() as Bar`) to find the
@@ -883,14 +891,14 @@ const plugin: IPlugin = {
                  * @param node - The AST node to unwrap.
                  * @returns The unwrapped CallExpression/NewExpression, or null.
                  */
-                function findCallOrNew(node: any): any {
+                function findCallOrNew(node: PureAnnotationNode | null | undefined): PureAnnotationCallOrNewExpression | null {
                     if (!node) {
                         return null;
                     }
                     if (node.type === "NewExpression" || node.type === "CallExpression") {
                         return node;
                     }
-                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression") {
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
                         return findCallOrNew(node.expression);
                     }
                     return null;
@@ -901,9 +909,9 @@ const plugin: IPlugin = {
                  * @param node - The AST node to check.
                  * @returns True if a #__PURE__ annotation precedes the node.
                  */
-                function hasPureAnnotation(node: any): boolean {
+                function hasPureAnnotation(node: PureAnnotationCallOrNewExpression): boolean {
                     // getCommentsBefore returns leading comments attached to the node
-                    const comments = sourceCode.getCommentsBefore?.(node) ?? [];
+                    const comments = sourceCode.getCommentsBefore(node);
                     for (const c of comments) {
                         if (c.type === "Block" && c.value.trim() === "#__PURE__") {
                             return true;
@@ -911,14 +919,14 @@ const plugin: IPlugin = {
                     }
                     // Also check the immediately preceding token (comment) in case
                     // ESLint attached it differently
-                    const prev = sourceCode.getTokenBefore?.(node, { includeComments: true });
+                    const prev = sourceCode.getTokenBefore(node, { includeComments: true });
                     if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") {
                         return true;
                     }
                     return false;
                 }
 
-                const safelyAutofixablePureConstructors = new Set([
+                const safelyAutofixablePureConstructors = new Set<string>([
                     "Map",
                     "Set",
                     "WeakMap",
@@ -935,7 +943,7 @@ const plugin: IPlugin = {
                     "Viewport",
                 ]);
 
-                function unwrapExpression(node: any): any {
+                function unwrapExpression(node: PureAnnotationNode | null | undefined): PureAnnotationNode | null | undefined {
                     if (!node) {
                         return node;
                     }
@@ -945,28 +953,28 @@ const plugin: IPlugin = {
                     return node;
                 }
 
-                function isSimplePureArgument(node: any): boolean {
-                    node = unwrapExpression(node);
-                    if (!node) {
+                function isSimplePureArgument(node: PureAnnotationNode | null | undefined): boolean {
+                    const unwrappedNode = unwrapExpression(node);
+                    if (!unwrappedNode) {
                         return true;
                     }
-                    switch (node.type) {
+                    switch (unwrappedNode.type) {
                         case "Identifier":
                         case "Literal":
                         case "ThisExpression":
                             return true;
                         case "TemplateLiteral":
-                            return node.expressions.length === 0;
+                            return unwrappedNode.expressions.length === 0;
                         case "UnaryExpression":
                             // Reject side-effecting unary operators; allow safe ones.
-                            if (node.operator === "delete") {
+                            if (unwrappedNode.operator === "delete") {
                                 return false;
                             }
-                            return isSimplePureArgument(node.argument);
+                            return isSimplePureArgument(unwrappedNode.argument);
                         case "ArrayExpression":
-                            return node.elements.every((element: any) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
+                            return unwrappedNode.elements.every((element) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
                         case "ObjectExpression":
-                            return node.properties.every((property: any) => {
+                            return unwrappedNode.properties.every((property) => {
                                 if (property.type === "SpreadElement" || property.computed) {
                                     return false;
                                 }
@@ -977,11 +985,14 @@ const plugin: IPlugin = {
                     }
                 }
 
-                function hasOnlySimplePureArguments(node: any): boolean {
-                    return (node.arguments ?? []).every((argument: any) => isSimplePureArgument(argument));
+                function hasOnlySimplePureArguments(node: PureAnnotationCallOrNewExpression): boolean {
+                    // Keep autofix limited to arguments that are already values or literal containers.
+                    // For example, `new Vector3(GetXValue(), 0, 0)` still needs manual review because
+                    // the argument call may have side effects even though `Vector3` itself is safe.
+                    return node.arguments.every((argument) => isSimplePureArgument(argument));
                 }
 
-                function isSafelyAutofixablePureExpression(node: any): boolean {
+                function isSafelyAutofixablePureExpression(node: PureAnnotationCallOrNewExpression): boolean {
                     if (node.type === "NewExpression") {
                         // Only accept a plain Identifier callee (e.g. `new Vector3()`).
                         // Member-expression callees like `new SomeNamespace.Vector3()` are
@@ -1013,14 +1024,14 @@ const plugin: IPlugin = {
                     return false;
                 }
 
-                function reportMissing(callOrNew: any) {
+                function reportMissing(callOrNew: PureAnnotationCallOrNewExpression) {
                     const text = sourceCode.getText(callOrNew);
                     const canAutofix = isSafelyAutofixablePureExpression(callOrNew);
                     context.report({
                         node: callOrNew,
                         messageId: "missing-pure-annotation",
                         data: { expr: text.length > 60 ? text.slice(0, 57) + "..." : text },
-                        fix: canAutofix ? (fixer: any) => fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ") : undefined,
+                        fix: canAutofix ? (fixer: eslint.Rule.RuleFixer) => fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ") : undefined,
                     });
                 }
 
