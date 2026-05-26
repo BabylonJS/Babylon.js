@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { Vector3 } from "core/Maths/math.vector";
 
 describe("ObjectRenderer.shouldRender", () => {
     let engine: Engine;
@@ -88,6 +90,25 @@ describe("ObjectRenderer.shouldRender", () => {
         expect(renderer.shouldRender()).toBe(false);
         expect(renderer.shouldRender()).toBe(false);
         expect(renderer.shouldRender()).toBe(true);
+
+        renderer.dispose();
+    });
+
+    it("should not notify active camera observers while using a render target camera", () => {
+        const sceneCamera = new ArcRotateCamera("sceneCamera", 0, 0, 10, Vector3.Zero(), scene);
+        const renderTargetCamera = new ArcRotateCamera("renderTargetCamera", 0, 0, 10, Vector3.Zero(), scene);
+        const renderer = new ObjectRenderer("test", scene);
+        const activeCameraChanged = vi.fn();
+
+        renderer.activeCamera = renderTargetCamera;
+        scene.onActiveCameraChanged.add(activeCameraChanged);
+
+        renderer.initRender(256, 256);
+        expect(scene.activeCamera).toBe(renderTargetCamera);
+
+        renderer.finishRender();
+        expect(scene.activeCamera).toBe(sceneCamera);
+        expect(activeCameraChanged).not.toHaveBeenCalled();
 
         renderer.dispose();
     });
