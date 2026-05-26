@@ -23,6 +23,14 @@ describe("FBX blend shape in-betweens", () => {
         expect(Array.from(channel.shapes[0].vertices)).toEqual([1, 0, 0]);
         expect(channel.diagnostics).toEqual([]);
     });
+
+    it("extracts ASCII shape indexes parsed as Float64Array", () => {
+        const blendShapes = extractBlendShapes(resolveConnections(createAsciiShapeIndexesDocument()));
+        const shape = blendShapes[0].channels[0].shapes[0];
+
+        expect(Array.from(shape.indices)).toEqual([0]);
+        expect(Array.from(shape.vertices)).toEqual([1, 0, 0]);
+    });
 });
 
 function createBlendShapeDocument(): FBXDocument {
@@ -78,11 +86,34 @@ function createSingleShapeFullWeightsDocument(): FBXDocument {
     };
 }
 
-function createShape(id: number, vertices: number[]): FBXNode {
+function createAsciiShapeIndexesDocument(): FBXDocument {
+    return {
+        version: 7400,
+        nodes: [
+            {
+                name: "Objects",
+                properties: [],
+                children: [
+                    createObject("Geometry", 1, "Geometry::Base", "Mesh"),
+                    createObject("Deformer", 2, "Deformer::BlendShape", "BlendShape"),
+                    createObject("Deformer", 3, "SubDeformer::Smile", "BlendShapeChannel"),
+                    createShape(4, [1, 0, 0], new Float64Array([0])),
+                ],
+            },
+            {
+                name: "Connections",
+                properties: [],
+                children: [createConnection("OO", 2, 1), createConnection("OO", 3, 2), createConnection("OO", 4, 3)],
+            },
+        ],
+    };
+}
+
+function createShape(id: number, vertices: number[], indexes: Int32Array | Float64Array = new Int32Array([0])): FBXNode {
     return {
         ...createObject("Geometry", id, `Geometry::Shape${id.toString()}`, "Shape"),
         children: [
-            { name: "Indexes", properties: [{ type: "int32[]", value: new Int32Array([0]) }], children: [] },
+            { name: "Indexes", properties: [{ type: indexes instanceof Int32Array ? "int32[]" : "float64[]", value: indexes }], children: [] },
             { name: "Vertices", properties: [{ type: "float64[]", value: new Float64Array(vertices) }], children: [] },
         ],
     };

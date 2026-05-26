@@ -227,16 +227,8 @@ function extractShape(shapeNode: FBXNode): FBXShapeData | null {
         return null;
     }
 
-    // Convert indices
-    let indices: Uint32Array;
-    if (rawIndices instanceof Int32Array) {
-        indices = new Uint32Array(rawIndices.length);
-        for (let i = 0; i < rawIndices.length; i++) {
-            indices[i] = rawIndices[i];
-        }
-    } else if (rawIndices instanceof Uint32Array) {
-        indices = rawIndices;
-    } else {
+    const indices = toUint32Array(rawIndices);
+    if (!indices) {
         return null;
     }
 
@@ -263,4 +255,18 @@ function extractShape(shapeNode: FBXNode): FBXShapeData | null {
     }
 
     return { indices, vertices, normals };
+}
+
+function toUint32Array(value: unknown): Uint32Array | null {
+    if (value instanceof Uint32Array) {
+        return value;
+    }
+    if (value instanceof Int32Array || value instanceof Float32Array || value instanceof Float64Array) {
+        const result = new Uint32Array(value.length);
+        for (let i = 0; i < value.length; i++) {
+            result[i] = value[i];
+        }
+        return result;
+    }
+    return null;
 }
