@@ -241,6 +241,16 @@ describe("FBX material texture loading", () => {
         expect(material).toBeInstanceOf(MultiMaterial);
         expect((material as MultiMaterial).subMaterials[0]?.name).toBe("SecondMaterial");
     });
+
+    it("imports requested child meshes below filtered parent meshes", async () => {
+        const loader = new FBXFileLoader();
+
+        const result = await loader.importMeshAsync("ChildMesh", scene, buildNestedMeshFbx(), "");
+
+        expect(result.meshes.map((mesh) => mesh.name)).toEqual(["ChildMesh"]);
+        expect(result.transformNodes.some((node) => node.name === "ParentMesh")).toBe(true);
+        expect(result.meshes[0].parent?.name).toBe("ParentMesh");
+    });
 });
 
 function getStandardMaterial(scene: Scene): StandardMaterial {
@@ -282,6 +292,38 @@ Connections: {
     C: "OO", 1, 2
     C: "OO", 2, 0
     C: "OO", 3, 2
+    C: "OO", 4, 2
+}`;
+}
+
+function buildNestedMeshFbx(): string {
+    return `; FBX 7.4.0 project file
+Objects: {
+    Geometry: 1, "Geometry::ParentGeometry", "Mesh" {
+        Vertices: *9 {
+            a: 0,0,0,1,0,0,0,1,0
+        }
+        PolygonVertexIndex: *3 {
+            a: 0,1,-3
+        }
+    }
+    Model: 2, "Model::ParentMesh", "Mesh" {
+    }
+    Geometry: 3, "Geometry::ChildGeometry", "Mesh" {
+        Vertices: *9 {
+            a: 0,0,0,1,0,0,0,1,0
+        }
+        PolygonVertexIndex: *3 {
+            a: 0,1,-3
+        }
+    }
+    Model: 4, "Model::ChildMesh", "Mesh" {
+    }
+}
+Connections: {
+    C: "OO", 1, 2
+    C: "OO", 2, 0
+    C: "OO", 3, 4
     C: "OO", 4, 2
 }`;
 }

@@ -570,12 +570,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const localMatrix = FBXFileLoader._computeFBXModelLocalMatrix(model);
         const fbxWorldMatrix = localMatrix.multiply(parentFBXWorldMatrix);
 
-        if (model.geometry && model.subType === "Mesh") {
+        if (model.geometry && model.subType === "Mesh" && (!nameFilter || nameFilter(model.name))) {
             // Create mesh
-            if (nameFilter && !nameFilter(model.name)) {
-                return;
-            }
-
             const skeleton = skeletonByGeometryId.get(model.geometry.id);
             const skin = skinByGeometryId.get(model.geometry.id);
             const skinBinding = skinBindingByGeometryId.get(model.geometry.id);
@@ -646,6 +642,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 );
             }
         } else {
+            if (model.geometry && model.subType === "Mesh" && nameFilter && !FBXFileLoader._modelSubtreeMatchesNameFilter(model, nameFilter)) {
+                return;
+            }
+
             // Transform node (Null type or no geometry)
             const transformNode = new TransformNode(model.name, scene);
             if (parent) {
@@ -681,6 +681,18 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 );
             }
         }
+    }
+
+    private static _modelSubtreeMatchesNameFilter(model: FBXModelData, nameFilter: (name: string) => boolean): boolean {
+        for (const child of model.children) {
+            if (child.geometry && child.subType === "Mesh" && nameFilter(child.name)) {
+                return true;
+            }
+            if (FBXFileLoader._modelSubtreeMatchesNameFilter(child, nameFilter)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static _applyModelMetadata(node: TransformNode | Mesh, model: FBXModelData): void {
