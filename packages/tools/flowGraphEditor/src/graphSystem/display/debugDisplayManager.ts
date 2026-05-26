@@ -1,6 +1,5 @@
 import { type IDisplayManager, type VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import * as styles from "./debugDisplayManager.module.scss";
 import { type FlowGraphDebugBlock } from "core/FlowGraph/Blocks/Data/flowGraphDebugBlock";
 
 export class DebugDisplayManager implements IDisplayManager {
@@ -36,11 +35,24 @@ export class DebugDisplayManager implements IDisplayManager {
         const connections = visualContent.connections;
         const selectionBorder = visualContent.selectionBorder;
 
-        visual.classList.add(styles.debugBlock);
-        headerContainer.classList.add(styles.hidden);
-        content.classList.add(styles.debugContent);
+        visual.style.width = "40px";
+        visual.style.gridTemplateRows = "0px 40px 0px";
+        visual.style.borderRadius = "5px";
+        visual.style.transform = "translateY(-7px)";
+
+        headerContainer.style.display = "none";
+
+        content.style.width = "20px";
+        content.style.transform = "translate(16px, 10px)";
+        content.style.fontSize = "16px";
+        content.style.fontWeight = "bold";
+        content.style.color = "white";
+        content.style.pointerEvents = "none";
+        content.style.userSelect = "none";
         content.textContent = "?";
-        connections.classList.add(styles.translatedConnections);
-        selectionBorder.classList.add(styles.roundSelectionBorder);
+
+        connections.style.transform = "translateY(7px)";
+
+        selectionBorder.style.borderRadius = "0px";
     }
 }

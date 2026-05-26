@@ -628,6 +628,15 @@ export class GeometryBufferRenderer {
             return false;
         }
 
+        // GaussianSplattingMesh stores splat indices in position.z (not world-space Z).
+        // The generic geometry.vertex shader misreads this as world coordinates, producing
+        // garbage positions and normals, and thus it should be excluded from the G-buffer
+        // rendering. GaussianSplattingCompoundMesh returns the same class name intentionally,
+        // so this single check covers both variants.
+        if (subMesh.getMesh().getClassName() === "GaussianSplattingMesh") {
+            return false;
+        }
+
         const defines = [];
         const attribs = [VertexBuffer.PositionKind];
         const mesh = subMesh.getMesh();

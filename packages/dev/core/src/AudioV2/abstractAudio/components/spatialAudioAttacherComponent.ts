@@ -33,6 +33,27 @@ export class _SpatialAudioAttacherComponent {
     }
 
     /**
+     * The scene node this attacher is currently attached to, or `null` if not attached.
+     */
+    public get sceneNode(): Nullable<Node> {
+        return this._sceneNode;
+    }
+
+    /**
+     * Whether the attacher is using the scene node's bounding box for positioning.
+     */
+    public get useBoundingBox(): boolean {
+        return this._useBoundingBox;
+    }
+
+    /**
+     * Which components (position, rotation, or both) of the scene node's world transform drive the spatial audio.
+     */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attachmentType;
+    }
+
+    /**
      * Attaches to a scene node.
      *
      * Detaches automatically before attaching to the given scene node.

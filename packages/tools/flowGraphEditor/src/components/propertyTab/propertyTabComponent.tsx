@@ -1,12 +1,9 @@
 import * as React from "react";
 import { type GlobalState } from "../../globalState";
 import { type Nullable } from "core/types";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { StringTools } from "shared-ui-components/stringTools";
-import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { SerializationTools } from "../../serializationTools";
-import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Engine } from "core/Engines/engine";
 import { FramePropertyTabComponent } from "../../graphSystem/properties/framePropertyComponent";
@@ -14,23 +11,31 @@ import { FrameNodePortPropertyTabComponent } from "../../graphSystem/properties/
 import { NodePortPropertyTabComponent } from "../../graphSystem/properties/nodePortPropertyComponent";
 import { type Observer } from "core/Misc/observable";
 import { LogEntry } from "../log/logComponent";
-import "./propertyTab.scss";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { type FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Constants } from "core/Engines/constants";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ShowToast } from "../toast/toastComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { makeStyles, tokens } from "@fluentui/react-components";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
     lockObject: LockObject;
+}
+
+interface IPropertyTabInnerProps extends IPropertyTabComponentProps {
+    classes: ReturnType<typeof useStyles>;
 }
 
 interface IPropertyTabComponentState {
@@ -41,13 +46,45 @@ interface IPropertyTabComponentState {
     uploadInProgress: boolean;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
+const useStyles = makeStyles({
+    root: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflowY: "auto",
+        background: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForeground1,
+    },
+    buttonStack: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalXS,
+        alignItems: "stretch",
+        padding: `${tokens.spacingVerticalXS} 0`,
+    },
+});
+
+/**
+ * Property tab - right-pane content.
+ *
+ * Displays either the property panel of the currently selected node/frame/port, or a
+ * default view of editor-wide controls (UI, options, file, snippet) organised into a
+ * Fluent `Accordion`.  Wraps the stateful inner class so we can use `makeStyles`.
+ * @param props - The component props.
+ * @returns The rendered property tab.
+ */
+export const PropertyTabComponent: React.FunctionComponent<IPropertyTabComponentProps> = (props) => {
+    const classes = useStyles();
+    return <PropertyTabInner {...props} classes={classes} />;
+};
+
+class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _onHashChange = () => {
         void this._loadSnippetFromHashAsync();
     };
 
-    constructor(props: IPropertyTabComponentProps) {
+    constructor(props: IPropertyTabInnerProps) {
         super(props);
 
         this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null, uploadInProgress: false };
@@ -230,7 +267,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     });
                 }
 
-                ShowToast(this.props.globalState, "Graph saved — ID: " + newId + " (copied to clipboard)", "success");
+                ShowToast(this.props.globalState, "Graph saved - ID: " + newId + " (copied to clipboard)", "success");
             } else {
                 ShowToast(this.props.globalState, `Unable to save flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`, "error");
             }
@@ -280,16 +317,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     override render() {
+        const { classes } = this.props;
         if (this.state.currentNode) {
-            return (
-                <div id="propertyTab">
-                    <div id="header">
-                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div id="title">FLOW GRAPH EDITOR</div>
-                    </div>
-                    {this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}
-                </div>
-            );
+            return <div className={classes.root}>{this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}</div>;
         }
 
         if (this.state.currentFrameNodePort && this.state.currentFrame) {
@@ -312,94 +342,81 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         const gridSize = DataStorage.ReadNumber("GridSize", 20);
+        const showGrid = DataStorage.ReadBoolean("ShowGrid", true);
+        const docUrl = "https://doc.babylonjs.com/features/featuresDeepDive/flowGraph";
 
         return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">FLOW GRAPH EDITOR</div>
-                </div>
-                <div>
-                    <LineContainerComponent title="GENERAL">
-                        <TextLineComponent label="Version" value={Engine.Version} />
-                        <TextLineComponent
-                            label="Help"
-                            value="doc.babylonjs.com"
-                            underline={true}
-                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/features/featuresDeepDive/flowGraph", "_blank")}
-                        />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="UI">
-                        <ButtonLineComponent
-                            label="Zoom to fit"
-                            onClick={() => {
-                                this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
-                            }}
-                        />
-                        <ButtonLineComponent
-                            label="Reorganize"
-                            onClick={() => {
-                                this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
-                            }}
-                        />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="OPTIONS">
-                        <SliderLineComponent
-                            lockObject={this.props.lockObject}
+            <div className={classes.root}>
+                <Accordion uniqueId="FlowGraphPropertyTab" enablePinnedItems enableSearchItems>
+                    <AccordionSection title="General" collapseByDefault={false}>
+                        <TextPropertyLine label="Version" value={Engine.Version} />
+                        <LinkPropertyLine label="Help" value="doc.babylonjs.com" url={docUrl} />
+                    </AccordionSection>
+
+                    <AccordionSection title="UI" collapseByDefault={false}>
+                        <div className={classes.buttonStack}>
+                            <Button label="Zoom to fit" title="Zoom to fit" onClick={() => this.props.globalState.onZoomToFitRequiredObservable.notifyObservers()} />
+                            <Button label="Reorganize" title="Reorganize" onClick={() => this.props.globalState.onReOrganizedRequiredObservable.notifyObservers()} />
+                        </div>
+                    </AccordionSection>
+
+                    <AccordionSection title="Options" collapseByDefault={false}>
+                        <SyncedSliderPropertyLine
                             label="Grid size"
-                            minimum={0}
-                            maximum={100}
+                            min={0}
+                            max={100}
                             step={5}
-                            decimalCount={0}
-                            directValue={gridSize}
+                            value={gridSize}
                             onChange={(value) => {
                                 DataStorage.WriteNumber("GridSize", value);
                                 this.props.globalState.stateManager.onGridSizeChanged.notifyObservers();
                                 this.forceUpdate();
                             }}
                         />
-                        <CheckBoxLineComponent
+                        <SwitchPropertyLine
                             label="Show grid"
-                            isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
-                            onSelect={(value: boolean) => {
+                            value={showGrid}
+                            onChange={(value) => {
                                 DataStorage.WriteBoolean("ShowGrid", value);
                                 this.props.globalState.stateManager.onGridSizeChanged.notifyObservers();
+                                this.forceUpdate();
                             }}
                         />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="FILE">
-                        <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                        <FileButtonLineComponent label="Load glTF" onClick={(file) => this.loadGlb(file)} accept=".glb,.gltf" />
-                        <ButtonLineComponent
-                            label="Save"
-                            onClick={() => {
-                                this.save();
-                            }}
-                        />
-                        {this.props.globalState.customSave && (
-                            <ButtonLineComponent
-                                label={this.props.globalState.customSave.label}
-                                isDisabled={this.state.uploadInProgress}
-                                onClick={() => {
-                                    this.customSave();
+                    </AccordionSection>
+
+                    <AccordionSection title="File" collapseByDefault={false}>
+                        <div className={classes.buttonStack}>
+                            <FileUploadLine label="Load" accept=".json" onClick={(files) => this.load(files[0])} />
+                            <FileUploadLine label="Load glTF" accept=".glb,.gltf" onClick={(files) => this.loadGlb(files[0])} />
+                            <Button label="Save" title="Save" onClick={() => this.save()} />
+                            {this.props.globalState.customSave && (
+                                <Button
+                                    label={this.props.globalState.customSave.label}
+                                    title={this.props.globalState.customSave.label}
+                                    disabled={this.state.uploadInProgress}
+                                    onClick={() => this.customSave()}
+                                />
+                            )}
+                        </div>
+                    </AccordionSection>
+
+                    <AccordionSection title="Snippet" collapseByDefault={false}>
+                        {this.props.globalState.flowGraphSnippetId && (
+                            <TextInputPropertyLine
+                                label="Snippet ID"
+                                value={this.props.globalState.flowGraphSnippetId}
+                                onChange={(value) => {
+                                    this.props.globalState.flowGraphSnippetId = value;
+                                    this.forceUpdate();
                                 }}
                             />
                         )}
-                    </LineContainerComponent>
-                    <LineContainerComponent title="SNIPPET">
-                        {this.props.globalState.flowGraphSnippetId && (
-                            <TextInputLineComponent
-                                label="Snippet ID"
-                                lockObject={this.props.lockObject}
-                                value={this.props.globalState.flowGraphSnippetId}
-                                target={this.props.globalState}
-                                propertyName="flowGraphSnippetId"
-                            />
-                        )}
-                        <ButtonLineComponent label="Load from snippet server" onClick={async () => await this.loadFromSnippetAsync()} />
-                        <ButtonLineComponent label="Save to snippet server" onClick={async () => await this.saveToSnippetServerAsync()} />
-                    </LineContainerComponent>
-                </div>
+                        <div className={classes.buttonStack}>
+                            <Button label="Load from snippet server" title="Load from snippet server" onClick={async () => await this.loadFromSnippetAsync()} />
+                            <Button label="Save to snippet server" title="Save to snippet server" onClick={async () => await this.saveToSnippetServerAsync()} />
+                        </div>
+                    </AccordionSection>
+                </Accordion>
             </div>
         );
     }

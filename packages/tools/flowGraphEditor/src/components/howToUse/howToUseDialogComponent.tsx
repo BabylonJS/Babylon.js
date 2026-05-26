@@ -1,65 +1,109 @@
-import * as React from "react";
+import { type FunctionComponent, useCallback, useState } from "react";
+
+import { Button, Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, Subtitle2, Text, makeStyles, tokens } from "@fluentui/react-components";
+import { CheckmarkRegular, CopyRegular } from "@fluentui/react-icons";
+
 import { type GlobalState } from "../../globalState";
-import "./howToUse.scss";
 
 interface IHowToUseDialogProps {
     globalState: GlobalState;
     onClose: () => void;
 }
 
-interface IHowToUseDialogState {
-    copiedIndex: number | null;
-}
+const useStyles = makeStyles({
+    surface: {
+        width: "700px",
+        maxWidth: "90%",
+        maxHeight: "80vh",
+    },
+    body: {
+        // Constrain DialogContent to fit within the shrunk surface, accounting for
+        // DialogSurface's 24px top/bottom padding. This ensures content scrolls within
+        // the visible dialog area instead of overflowing.
+        maxHeight: "calc(80vh - 2 * 24px)",
+        minHeight: 0,
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalL,
+    },
+    section: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalS,
+    },
+    codeBlock: {
+        position: "relative",
+        background: tokens.colorNeutralBackground3,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRadius: tokens.borderRadiusMedium,
+        padding: tokens.spacingHorizontalM,
+        fontFamily: tokens.fontFamilyMonospace,
+        fontSize: tokens.fontSizeBase200,
+        whiteSpace: "pre",
+        overflowX: "auto",
+        color: tokens.colorNeutralForeground1,
+    },
+    copyButton: {
+        position: "absolute",
+        top: tokens.spacingVerticalS,
+        right: tokens.spacingHorizontalS,
+    },
+    inlineCode: {
+        background: tokens.colorNeutralBackground3,
+        padding: `1px ${tokens.spacingHorizontalXS}`,
+        borderRadius: tokens.borderRadiusSmall,
+        fontFamily: tokens.fontFamilyMonospace,
+        fontSize: tokens.fontSizeBase200,
+    },
+});
+
+const CodeBlock: FunctionComponent<{ code: string }> = ({ code }) => {
+    const classes = useStyles();
+    const [copied, setCopied] = useState(false);
+    const onCopy = useCallback(() => {
+        if (!navigator.clipboard) {
+            return;
+        }
+        // eslint-disable-next-line github/no-then
+        navigator.clipboard
+            .writeText(code)
+            // eslint-disable-next-line github/no-then
+            .then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            })
+            // eslint-disable-next-line github/no-then
+            .catch(() => {
+                /* clipboard not available */
+            });
+    }, [code]);
+
+    return (
+        <div className={classes.codeBlock}>
+            <Button className={classes.copyButton} size="small" appearance="secondary" icon={copied ? <CheckmarkRegular /> : <CopyRegular />} onClick={onCopy}>
+                {copied ? "Copied!" : "Copy"}
+            </Button>
+            {code}
+        </div>
+    );
+};
 
 /**
  * Dialog that shows code samples for integrating a saved flow graph into a user's project.
+ * @returns The rendered "How to use" dialog.
  */
-export class HowToUseDialogComponent extends React.Component<IHowToUseDialogProps, IHowToUseDialogState> {
-    /** @internal */
-    constructor(props: IHowToUseDialogProps) {
-        super(props);
-        this.state = { copiedIndex: null };
-    }
+export const HowToUseDialogComponent: FunctionComponent<IHowToUseDialogProps> = ({ globalState, onClose }) => {
+    const classes = useStyles();
+    const snippetId = globalState.flowGraphSnippetId;
 
-    private _copyToClipboard(text: string, index: number) {
-        if (navigator.clipboard) {
-            navigator.clipboard
-                .writeText(text)
-                // eslint-disable-next-line github/no-then
-                .then(() => {
-                    this.setState({ copiedIndex: index });
-                    setTimeout(() => this.setState({ copiedIndex: null }), 2000);
-                })
-                // eslint-disable-next-line github/no-then
-                .catch(() => {
-                    /* clipboard not available */
-                });
-        }
-    }
-
-    private _renderCodeBlock(code: string, index: number) {
-        const isCopied = this.state.copiedIndex === index;
-        return (
-            <div className="fge-howto-code-block">
-                <button className={`fge-howto-copy-btn${isCopied ? " copied" : ""}`} onClick={() => this._copyToClipboard(code, index)}>
-                    {isCopied ? "Copied!" : "Copy"}
-                </button>
-                {code}
-            </div>
-        );
-    }
-
-    /** @internal */
-    override render() {
-        const snippetId = this.props.globalState.flowGraphSnippetId;
-
-        const snippetCode = `import { ParseFlowGraphCoordinatorFromSnippetAsync } from "@babylonjs/core/FlowGraph/flowGraphParser";
+    const snippetCode = `import { ParseFlowGraphCoordinatorFromSnippetAsync } from "@babylonjs/core/FlowGraph/flowGraphParser";
 
 // After creating your scene:
     const coordinator = await ParseFlowGraphCoordinatorFromSnippetAsync("${snippetId || "<your-snippet-id>"}", { scene });
     coordinator.start();`;
 
-        const fileCode = `import { ParseCoordinatorAsync } from "@babylonjs/core/FlowGraph/flowGraphParser";
+    const fileCode = `import { ParseCoordinatorAsync } from "@babylonjs/core/FlowGraph/flowGraphParser";
 
 // Load the saved JSON file:
 const response = await fetch("./flowGraph.json");
@@ -69,43 +113,39 @@ const data = await response.json();
     const coordinator = await ParseCoordinatorAsync(data, { scene });
     coordinator.start();`;
 
-        return (
-            <div className="fge-howto-overlay" onPointerDown={() => this.props.onClose()}>
-                <div className="fge-howto-dialog" onPointerDown={(e) => e.stopPropagation()}>
-                    <div className="fge-howto-header">
-                        <h2>How to Use This Flow Graph</h2>
-                        <button className="fge-howto-close" aria-label="Close" onClick={this.props.onClose}>
-                            ✕
-                        </button>
-                    </div>
-                    <div className="fge-howto-body">
-                        <div className="fge-howto-section">
-                            <h3>Method 1: From Snippet Server</h3>
-                            <p>
+    return (
+        <Dialog open onOpenChange={(_, data) => !data.open && onClose()}>
+            <DialogSurface className={classes.surface}>
+                <DialogBody>
+                    <DialogTitle>How to Use This Flow Graph</DialogTitle>
+                    <DialogContent className={classes.body}>
+                        <div className={classes.section}>
+                            <Subtitle2>Method 1: From Snippet Server</Subtitle2>
+                            <Text>
                                 {snippetId
                                     ? `Your graph is saved with snippet ID: ${snippetId}. Use the following code to load it.`
                                     : "Save your graph to the snippet server first, then use the snippet ID in the code below."}
-                            </p>
-                            {this._renderCodeBlock(snippetCode, 0)}
+                            </Text>
+                            <CodeBlock code={snippetCode} />
                         </div>
 
-                        <div className="fge-howto-section">
-                            <h3>Method 2: From JSON File</h3>
-                            <p>Download your graph as a JSON file (using the Save button in the property panel), then load it with this code.</p>
-                            {this._renderCodeBlock(fileCode, 1)}
+                        <div className={classes.section}>
+                            <Subtitle2>Method 2: From JSON File</Subtitle2>
+                            <Text>Download your graph as a JSON file (using the Save button in the property panel), then load it with this code.</Text>
+                            <CodeBlock code={fileCode} />
                         </div>
 
-                        <div className="fge-howto-section">
-                            <h3>Notes</h3>
-                            <p>
-                                Both methods create a <code>FlowGraphCoordinator</code> that manages the execution context. Call <code>flowGraph.start()</code> after parsing to
-                                begin execution. The scene&apos;s objects (meshes, lights, cameras) will be automatically available to the flow graph through the coordinator&apos;s
-                                context.
-                            </p>
+                        <div className={classes.section}>
+                            <Subtitle2>Notes</Subtitle2>
+                            <Text>
+                                Both methods create a <Text className={classes.inlineCode}>FlowGraphCoordinator</Text> that manages the execution context. Call{" "}
+                                <Text className={classes.inlineCode}>flowGraph.start()</Text> after parsing to begin execution. The scene&apos;s objects (meshes, lights, cameras)
+                                will be automatically available to the flow graph through the coordinator&apos;s context.
+                            </Text>
                         </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-}
+                    </DialogContent>
+                </DialogBody>
+            </DialogSurface>
+        </Dialog>
+    );
+};

@@ -14,6 +14,14 @@ vi.mock("../../src/tools/utilities", () => ({
     },
 }));
 
+vi.mock("@dev/core", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@dev/core")>();
+    return {
+        ...actual,
+        AddSmartAssetManagerCreatedObserver: undefined,
+    };
+});
+
 import { Observable } from "@dev/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RenderingComponent } from "../../src/components/rendererComponent";
@@ -70,6 +78,12 @@ describe("RenderingComponent", () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    it("constructs when the loaded framework does not expose Smart Asset observer registration", () => {
+        const globalState = createMockGlobalState();
+
+        expect(() => new RenderingComponent({ globalState })).not.toThrow();
     });
 
     it("does not close Inspector when Smart Assets already reopened it during a run", async () => {

@@ -2551,6 +2551,7 @@ export class GLTFLoader implements IGLTFLoader {
                 adapter.alphaCutOff = material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff;
                 if (baseColorTexture) {
                     baseColorTexture.hasAlpha = true;
+                    adapter.useAlphaFromBaseColorTexture = true;
                 }
                 break;
             }
