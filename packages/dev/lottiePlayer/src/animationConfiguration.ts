@@ -107,7 +107,7 @@ export type AnimationConfiguration = {
     /**
      * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
      */
-    compatibility: LottieCompatibilityOptions;
+    compatibility?: LottieCompatibilityOptions;
 };
 
 /**
@@ -151,8 +151,8 @@ export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, 
         ...DefaultConfiguration,
         ...newConfig,
         compatibility: {
-            ...DefaultConfiguration.compatibility,
-            ...newConfig.compatibility,
+            textLayerPlacement: newConfig.compatibility?.textLayerPlacement ?? DefaultConfiguration.compatibility.textLayerPlacement,
+            solidLayerRendering: newConfig.compatibility?.solidLayerRendering ?? DefaultConfiguration.compatibility.solidLayerRendering,
         },
     };
 
