@@ -918,15 +918,111 @@ const plugin: IPlugin = {
                     return false;
                 }
 
+                const safelyAutofixablePureConstructors = new Set([
+                    "Map",
+                    "Set",
+                    "WeakMap",
+                    "WeakSet",
+                    "Color3",
+                    "Color4",
+                    "Matrix",
+                    "Plane",
+                    "Quaternion",
+                    "Size",
+                    "Vector2",
+                    "Vector3",
+                    "Vector4",
+                    "Viewport",
+                ]);
+
+                function unwrapExpression(node: any): any {
+                    if (!node) {
+                        return node;
+                    }
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
+                        return unwrapExpression(node.expression);
+                    }
+                    return node;
+                }
+
+                function getCalleeName(node: any): string | undefined {
+                    node = unwrapExpression(node);
+                    if (node?.type === "Identifier") {
+                        return node.name;
+                    }
+                    if (node?.type === "MemberExpression" && !node.computed) {
+                        return getCalleeName(node.property);
+                    }
+                    return undefined;
+                }
+
+                function getCalleePath(node: any): string | undefined {
+                    node = unwrapExpression(node);
+                    if (node?.type === "Identifier") {
+                        return node.name;
+                    }
+                    if (node?.type === "MemberExpression" && !node.computed) {
+                        const objectPath = getCalleePath(node.object);
+                        const propertyName = getCalleeName(node.property);
+                        return objectPath && propertyName ? `${objectPath}.${propertyName}` : undefined;
+                    }
+                    return undefined;
+                }
+
+                function isSimplePureArgument(node: any): boolean {
+                    node = unwrapExpression(node);
+                    if (!node) {
+                        return true;
+                    }
+                    switch (node.type) {
+                        case "Identifier":
+                        case "Literal":
+                        case "ThisExpression":
+                            return true;
+                        case "TemplateLiteral":
+                            return node.expressions.length === 0;
+                        case "UnaryExpression":
+                            return isSimplePureArgument(node.argument);
+                        case "ArrayExpression":
+                            return node.elements.every((element: any) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
+                        case "ObjectExpression":
+                            return node.properties.every((property: any) => {
+                                if (property.type === "SpreadElement" || property.computed) {
+                                    return false;
+                                }
+                                return isSimplePureArgument(property.value);
+                            });
+                        default:
+                            return false;
+                    }
+                }
+
+                function hasOnlySimplePureArguments(node: any): boolean {
+                    return (node.arguments ?? []).every((argument: any) => isSimplePureArgument(argument));
+                }
+
+                function isSafelyAutofixablePureExpression(node: any): boolean {
+                    if (node.type === "NewExpression") {
+                        const calleeName = getCalleeName(node.callee);
+                        return !!calleeName && safelyAutofixablePureConstructors.has(calleeName) && hasOnlySimplePureArguments(node);
+                    }
+
+                    if (node.type === "CallExpression") {
+                        const calleePath = getCalleePath(node.callee);
+                        return !!calleePath && calleePath.startsWith("Math.") && hasOnlySimplePureArguments(node);
+                    }
+
+                    return false;
+                }
+
                 function reportMissing(callOrNew: any) {
                     const text = sourceCode.getText(callOrNew);
+                    const canAutofix = isSafelyAutofixablePureExpression(callOrNew);
                     context.report({
                         node: callOrNew,
                         messageId: "missing-pure-annotation",
                         data: { expr: text.length > 60 ? text.slice(0, 57) + "..." : text },
-                        fix(fixer: any) {
-                            return fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ");
-                        },
+                        fix: canAutofix ? (fixer: any) => fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ") : undefined,
                     });
                 }
 
