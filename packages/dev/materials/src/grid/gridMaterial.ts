@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, serializeAsVector3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import { type Matrix, Vector4, Vector3 } from "core/Maths/math.vector";
+import { type Matrix, Vector4, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
+import { type Nullable } from "core/types";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
@@ -25,6 +26,18 @@ import {
 } from "core/Materials/materialHelper.functions";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
+/**
+ * Antialiasing mode for GridMaterial grid lines.
+ */
+export enum GridMaterialAntialiasMode {
+    /** No antialiasing — hard pixel edges */
+    None = 0,
+    /** Cosine-smoothed edges (original behavior) */
+    Cosine = 1,
+    /** Box-filter integral — higher quality, required for ORIGIN_MARKER */
+    BoxFilter = 2,
+}
+
 class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;
@@ -33,7 +46,8 @@ class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE5 = false;
     public CLIPPLANE6 = false;
     public OPACITY = false;
-    public ANTIALIAS = false;
+    public ANTIALIAS_COSINE = false;
+    public ANTIALIAS_BOX = false;
     public TRANSPARENT = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
@@ -45,6 +59,10 @@ class GridMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
+    public MULTI_SCALE = false;
+    public HORIZON_FADE = false;
+    public BELOW_LINE_COLOR = false;
+    public ORIGIN_MARKER = false;
 
     constructor() {
         super();
@@ -100,10 +118,83 @@ export class GridMaterial extends PushMaterial {
     public opacity = 1.0;
 
     /**
-     * Whether to antialias the grid
+     * Antialiasing mode for grid lines. Defaults to Cosine (original behavior).
+     * @deprecated Use antialiasMode instead.
+     */
+    public get antialias(): boolean {
+        return this.antialiasMode !== GridMaterialAntialiasMode.None;
+    }
+    public set antialias(value: boolean) {
+        this.antialiasMode = value ? GridMaterialAntialiasMode.Cosine : GridMaterialAntialiasMode.None;
+    }
+
+    /**
+     * Antialiasing mode for grid lines. Defaults to Cosine (original behavior).
      */
     @serialize()
-    public antialias = true;
+    public antialiasMode: GridMaterialAntialiasMode = GridMaterialAntialiasMode.Cosine;
+
+    /**
+     * Color of grid lines when the camera is below the surface.
+     * When set, lineColor acts as the above-surface color.
+     */
+    @serializeAsColor3()
+    public belowLineColor: Nullable<Color3> = null;
+
+    /**
+     * Enable multi-scale (10-octave) grid LOD.
+     */
+    @serialize()
+    public useMultiScale: boolean = false;
+
+    /**
+     * World-unit spacing of the finest octave. Default 0.001.
+     */
+    @serialize()
+    public minGridSpacing: number = 0.001;
+
+    /**
+     * Number of logarithmic octaves rendered (1–16). Default 10.
+     */
+    @serialize()
+    public gridOctaves: number = 10;
+
+    /**
+     * Enable camera-distance-aware horizon (grazing-angle) fade.
+     */
+    @serialize()
+    public useHorizonFade: boolean = false;
+
+    /**
+     * Render an ultra-fine crosshair at the world origin (requires BoxFilter AA).
+     */
+    @serialize()
+    public useOriginMarker: boolean = false;
+
+    /**
+     * When true, only grid lines are visible — non-grid pixels are discarded.
+     * Also enables a depth pre-pass so grid lines correctly occlude translucent objects (e.g. Gaussian splats).
+     * This is independent of the opacity property.
+     */
+    @serialize()
+    public get linesOnly(): boolean {
+        return this._linesOnly;
+    }
+    public set linesOnly(value: boolean) {
+        if (this._linesOnly === value) {
+            return;
+        }
+        this._linesOnly = value;
+        this.needDepthPrePass = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+    private _linesOnly = false;
+
+    /**
+     * Scales grid line width. Values > 1 produce thicker lines. Default 1.0.
+     */
+    @serialize()
+    public gridThicknessModifier: number = 1.0;
 
     /**
      * Determine RBG output is premultiplied by alpha value.
@@ -143,7 +234,7 @@ export class GridMaterial extends PushMaterial {
      * @returns whether or not the grid requires alpha blending.
      */
     public override needAlphaBlending(): boolean {
-        return this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());
+        return this.opacity < 1.0 || this.linesOnly || (this._opacityTexture && this._opacityTexture.isReady());
     }
 
     public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
@@ -170,8 +261,8 @@ export class GridMaterial extends PushMaterial {
             return true;
         }
 
-        if (defines.TRANSPARENT !== this.opacity < 1.0) {
-            defines.TRANSPARENT = !defines.TRANSPARENT;
+        if (defines.TRANSPARENT !== this.linesOnly) {
+            defines.TRANSPARENT = this.linesOnly;
             defines.markAsUnprocessed();
         }
 
@@ -185,8 +276,32 @@ export class GridMaterial extends PushMaterial {
             defines.markAsUnprocessed();
         }
 
-        if (defines.ANTIALIAS !== this.antialias) {
-            defines.ANTIALIAS = !defines.ANTIALIAS;
+        const wantsCosinAA = this.antialiasMode === GridMaterialAntialiasMode.Cosine;
+        const wantsBoxAA = this.antialiasMode === GridMaterialAntialiasMode.BoxFilter;
+        if (defines.ANTIALIAS_COSINE !== wantsCosinAA || defines.ANTIALIAS_BOX !== wantsBoxAA) {
+            defines.ANTIALIAS_COSINE = wantsCosinAA;
+            defines.ANTIALIAS_BOX = wantsBoxAA;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.MULTI_SCALE !== this.useMultiScale) {
+            defines.MULTI_SCALE = this.useMultiScale;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.HORIZON_FADE !== this.useHorizonFade) {
+            defines.HORIZON_FADE = this.useHorizonFade;
+            defines.markAsUnprocessed();
+        }
+
+        const wantsBelowColor = this.belowLineColor !== null;
+        if (defines.BELOW_LINE_COLOR !== wantsBelowColor) {
+            defines.BELOW_LINE_COLOR = wantsBelowColor;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.ORIGIN_MARKER !== this.useOriginMarker) {
+            defines.ORIGIN_MARKER = this.useOriginMarker;
             defines.markAsUnprocessed();
         }
 
@@ -244,6 +359,13 @@ export class GridMaterial extends PushMaterial {
                 "vOpacityInfos",
                 "visibility",
                 "logarithmicDepthConstant",
+                "cameraPosition",
+                "cameraDirection",
+                "viewportSize",
+                "belowLineColor",
+                "gridOctaves",
+                "minGridSpacing",
+                "gridThicknessModifier",
             ];
             // Defines
             const join = defines.toString();
@@ -326,6 +448,16 @@ export class GridMaterial extends PushMaterial {
             this._gridControl.z = this.minorUnitVisibility;
             this._gridControl.w = this.opacity;
             this._activeEffect.setVector4("gridControl", this._gridControl);
+            this._activeEffect.setFloat("gridThicknessModifier", this.gridThicknessModifier);
+
+            if (defines.BELOW_LINE_COLOR && this.belowLineColor) {
+                this._activeEffect.setColor3("belowLineColor", this.belowLineColor);
+            }
+
+            if (defines.MULTI_SCALE) {
+                this._activeEffect.setFloat("minGridSpacing", this.minGridSpacing);
+                this._activeEffect.setInt("gridOctaves", Math.max(1, Math.min(16, Math.round(this.gridOctaves))));
+            }
 
             if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                 this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
@@ -342,6 +474,17 @@ export class GridMaterial extends PushMaterial {
         }
         // Fog
         BindFogParameters(scene, mesh, this._activeEffect);
+
+        // Camera uniforms — must be updated every frame
+        if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR) {
+            const cam = scene.activeCamera;
+            if (cam) {
+                this._activeEffect.setVector3("cameraPosition", cam.position);
+                this._activeEffect.setVector3("cameraDirection", cam.getForwardRay().direction);
+                const engine = scene.getEngine();
+                this._activeEffect.setVector2("viewportSize", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+            }
+        }
 
         this._afterBind(mesh, this._activeEffect, subMesh);
     }

@@ -18,6 +18,9 @@ attribute vec2 uv2;
 // Varying
 varying vec3 vPosition;
 varying vec3 vNormal;
+#if defined(HORIZON_FADE) || defined(BELOW_LINE_COLOR) || defined(ORIGIN_MARKER)
+varying vec3 vWorldPos;
+#endif
 
 #include<logDepthDeclaration>
 #include<fogVertexDeclaration>
@@ -69,6 +72,9 @@ void main(void) {
 
     vPosition = position;
     vNormal = normal;
+#if defined(HORIZON_FADE) || defined(BELOW_LINE_COLOR) || defined(ORIGIN_MARKER)
+    vWorldPos = worldPos.xyz;
+#endif
 
 #define CUSTOM_VERTEX_MAIN_END
 }
