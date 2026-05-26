@@ -31,10 +31,10 @@ const KINDS = {
 };
 
 const kindToCheckFunction = {
-    CLASS: (child, parent) => checkBaseComments("CLASS", child, parent),
+    CLASS: (child, parent, context) => checkBaseComments("CLASS", child, parent, context),
     PROPERTY: checkPropertyComments,
     METHOD: checkMethodComments,
-    INTERFACE: (child, parent) => checkBaseComments("INTERFACE", child, parent),
+    INTERFACE: (child, parent, context) => checkBaseComments("INTERFACE", child, parent, context),
 };
 
 const TestResultType = {
@@ -51,15 +51,93 @@ function getKind(child) {
     return kind;
 }
 
-function checkBaseComments(type, child, parent) {
-    return traverseChildrenLookingForComments(child, parent);
+function checkBaseComments(type, child, parent, context) {
+    return traverseChildrenLookingForComments(child, parent, context);
 }
 
 function isInternal(child) {
     return child.comment?.modifierTags?.find((tag) => tag === "@internal");
 }
 
-function traverseChildrenLookingForComments(child, parent, isSignature = false) {
+function getReferenceName(reference) {
+    if (!reference) {
+        return undefined;
+    }
+
+    if (reference.name) {
+        return reference.name;
+    }
+
+    if (reference.target?.qualifiedName) {
+        return reference.target.qualifiedName;
+    }
+
+    return undefined;
+}
+
+function getReferencedReflection(reference, context) {
+    if (!reference) {
+        return undefined;
+    }
+
+    if (typeof reference.target === "number" && reference.target > 0) {
+        return context.reflectionsById.get(reference.target);
+    }
+
+    const referenceName = getReferenceName(reference);
+    return referenceName ? context.reflectionsByQualifiedName.get(referenceName) : undefined;
+}
+
+function getInheritanceReferences(child) {
+    return [child.overwrites, child.inheritedFrom, child.implementationOf].filter(Boolean);
+}
+
+function hasCompleteOwnComment(child) {
+    if (child.comment) {
+        if (child.parameters) {
+            for (const param of child.parameters) {
+                if (!param.comment) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    const signature = child.signatures?.[0] ?? child.type?.declaration?.signatures?.[0];
+    return signature ? hasCompleteOwnComment(signature) : false;
+}
+
+function hasInheritedComment(child, context, checkedReflections = new Set()) {
+    for (const reference of getInheritanceReferences(child)) {
+        const referenceName = getReferenceName(reference);
+        const referencedReflection = getReferencedReflection(reference, context);
+
+        if (!referencedReflection) {
+            // The overridden member can belong to a class that is outside the TypeDoc model,
+            // for example a non-exported intermediate base class. In that case the override
+            // metadata is the only inheritance signal available to the analyzer.
+            return true;
+        }
+
+        const reflectionKey = referencedReflection.id ?? referenceName;
+        if (reflectionKey !== undefined) {
+            if (checkedReflections.has(reflectionKey)) {
+                continue;
+            }
+            checkedReflections.add(reflectionKey);
+        }
+
+        if (hasCompleteOwnComment(referencedReflection) || hasInheritedComment(referencedReflection, context, checkedReflections)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function traverseChildrenLookingForComments(child, parent, context) {
     if (!child) {
         return;
     }
@@ -102,8 +180,11 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
         }
         result.result = TestResultType.PASS;
         return result;
+    } else if (hasInheritedComment(child, context)) {
+        result.result = TestResultType.PASS;
+        return result;
     } else if (child.signatures || child.type?.declaration?.signatures) {
-        const signatureResult = traverseChildrenLookingForComments(child.signatures?.length > 0 ? child.signatures[0] : child.type.declaration.signatures[0], parent, true);
+        const signatureResult = traverseChildrenLookingForComments(child.signatures?.length > 0 ? child.signatures[0] : child.type.declaration.signatures[0], parent, context);
         // const signatureResults = child.signatures[0]
         //     .map((sig) => traverseChildrenLookingForComments(sig, parent, true))
         //     .flat()
@@ -121,15 +202,15 @@ function isVisible(child, parent) {
     return child.flags.isPublic || (!child.flags.isPrivate && !child.flags.isProtected && parentKind === "INTERFACE");
 }
 
-function checkPropertyComments(child, parent) {
+function checkPropertyComments(child, parent, context) {
     if (isVisible(child, parent)) {
-        return traverseChildrenLookingForComments(child, parent);
+        return traverseChildrenLookingForComments(child, parent, context);
     }
 }
 
-function checkMethodComments(child, parent) {
+function checkMethodComments(child, parent, context) {
     if (isVisible(child, parent)) {
-        return traverseChildrenLookingForComments(child, parent);
+        return traverseChildrenLookingForComments(child, parent, context);
     }
 }
 
@@ -144,26 +225,58 @@ function addErrorToArray(error, errorArray) {
     // console.log(error);
 }
 
+function collectReflections(child, parent, context) {
+    if (!child) {
+        return;
+    }
+
+    if (child.id !== undefined) {
+        context.reflectionsById.set(child.id, child);
+    }
+
+    if (parent?.name) {
+        context.reflectionsByQualifiedName.set(`${parent.name}.${child.name}`, child);
+    }
+
+    if (child.children) {
+        child.children.forEach((grandchild) => collectReflections(grandchild, child, context));
+    }
+
+    if (child.signatures) {
+        child.signatures.forEach((signature) => collectReflections(signature, child, context));
+    }
+}
+
+function createContext(data) {
+    const context = {
+        reflectionsById: new Map(),
+        reflectionsByQualifiedName: new Map(),
+    };
+
+    collectReflections(data, null, context);
+    return context;
+}
+
 // Define a recursive function to iterate over the children
-function checkCommentsOnChild(child, parent, namesToCheck = []) {
+function checkCommentsOnChild(child, parent, namesToCheck = [], context) {
     if (isInternal(child)) return [];
     const errors = [];
     // Check if the child is a declaration
     if ((namesToCheck.length === 0 || namesToCheck.includes(child.name)) && !sourceInNodeModules(child)) {
         const childKind = getKind(child);
         if (childKind in kindToCheckFunction) {
-            addErrorToArray(kindToCheckFunction[childKind](child, parent), errors);
+            addErrorToArray(kindToCheckFunction[childKind](child, parent, context), errors);
         }
     }
 
     // If the child has its own children, recursively call this function on them
     if (child.children) {
-        child.children.forEach((grandchild) => addErrorToArray(checkCommentsOnChild(grandchild, child, namesToCheck), errors));
+        child.children.forEach((grandchild) => addErrorToArray(checkCommentsOnChild(grandchild, child, namesToCheck, context), errors));
     }
     // console.log(errors.flat().filter((e) => e.result !== TestResultType.PASS));
     return errors.flat().filter((e) => e.result !== TestResultType.PASS);
 }
 
 export const commentAnalyzer = (data, namesToCheck = []) => {
-    return checkCommentsOnChild(data, null, namesToCheck);
+    return checkCommentsOnChild(data, null, namesToCheck, createContext(data));
 };
