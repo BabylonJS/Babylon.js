@@ -945,30 +945,6 @@ const plugin: IPlugin = {
                     return node;
                 }
 
-                function getCalleeName(node: any): string | undefined {
-                    node = unwrapExpression(node);
-                    if (node?.type === "Identifier") {
-                        return node.name;
-                    }
-                    if (node?.type === "MemberExpression" && !node.computed) {
-                        return getCalleeName(node.property);
-                    }
-                    return undefined;
-                }
-
-                function getCalleePath(node: any): string | undefined {
-                    node = unwrapExpression(node);
-                    if (node?.type === "Identifier") {
-                        return node.name;
-                    }
-                    if (node?.type === "MemberExpression" && !node.computed) {
-                        const objectPath = getCalleePath(node.object);
-                        const propertyName = getCalleeName(node.property);
-                        return objectPath && propertyName ? `${objectPath}.${propertyName}` : undefined;
-                    }
-                    return undefined;
-                }
-
                 function isSimplePureArgument(node: any): boolean {
                     node = unwrapExpression(node);
                     if (!node) {
@@ -982,6 +958,10 @@ const plugin: IPlugin = {
                         case "TemplateLiteral":
                             return node.expressions.length === 0;
                         case "UnaryExpression":
+                            // Reject side-effecting unary operators; allow safe ones.
+                            if (node.operator === "delete") {
+                                return false;
+                            }
                             return isSimplePureArgument(node.argument);
                         case "ArrayExpression":
                             return node.elements.every((element: any) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
@@ -1003,13 +983,31 @@ const plugin: IPlugin = {
 
                 function isSafelyAutofixablePureExpression(node: any): boolean {
                     if (node.type === "NewExpression") {
-                        const calleeName = getCalleeName(node.callee);
-                        return !!calleeName && safelyAutofixablePureConstructors.has(calleeName) && hasOnlySimplePureArguments(node);
+                        // Only accept a plain Identifier callee (e.g. `new Vector3()`).
+                        // Member-expression callees like `new SomeNamespace.Vector3()` are
+                        // rejected because the trailing name alone cannot confirm the type.
+                        const calleeNode = unwrapExpression(node.callee);
+                        if (!calleeNode || calleeNode.type !== "Identifier") {
+                            return false;
+                        }
+                        return safelyAutofixablePureConstructors.has(calleeNode.name) && hasOnlySimplePureArguments(node);
                     }
 
                     if (node.type === "CallExpression") {
-                        const calleePath = getCalleePath(node.callee);
-                        return !!calleePath && calleePath.startsWith("Math.") && hasOnlySimplePureArguments(node);
+                        // Only accept a direct `Math.<identifier>(...)` call —
+                        // not chains like `Math.abs.call(...)` / `Math.max.bind(...)`.
+                        const calleeNode = unwrapExpression(node.callee);
+                        if (
+                            !calleeNode ||
+                            calleeNode.type !== "MemberExpression" ||
+                            calleeNode.computed ||
+                            calleeNode.object?.type !== "Identifier" ||
+                            calleeNode.object.name !== "Math" ||
+                            calleeNode.property?.type !== "Identifier"
+                        ) {
+                            return false;
+                        }
+                        return hasOnlySimplePureArguments(node);
                     }
 
                     return false;
