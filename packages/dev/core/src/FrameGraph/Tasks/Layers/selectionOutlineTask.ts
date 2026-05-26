@@ -15,8 +15,9 @@ export class FrameGraphSelectionOutlineLayerTask extends FrameGraphBaseLayerTask
      * The depth texture to use when rendering the selection outline layer.
      * It must store the scene depth in camera view space Z, normalized or not.
      * If not normalized, the storeCameraSpaceZ option must be passed to the constructor.
+     * Required only when layer.useDepthOcclusion is true and layer.occlusionStrength is greater than zero.
      */
-    public depthTexture: FrameGraphTextureHandle;
+    public depthTexture: FrameGraphTextureHandle | undefined;
 
     /**
      * Constructs a new selection outline layer task.
@@ -39,13 +40,17 @@ export class FrameGraphSelectionOutlineLayerTask extends FrameGraphBaseLayerTask
     }
 
     public override record() {
-        if (this.depthTexture === undefined) {
+        const useDepthOcclusion = this.layer.useDepthOcclusion && this.layer.occlusionStrength > 0;
+
+        if (useDepthOcclusion && this.depthTexture === undefined) {
             throw new Error(`FrameGraphSelectionOutlineLayerTask "${this.name}": depthTexture is required`);
         }
 
         super.record(false, (context: FrameGraphRenderContext, effect: Effect) => {
-            context.bindTextureHandle(effect, "depthSampler", this.depthTexture);
             context.bindTextureHandle(effect, "maskSampler", this._objectRendererForLayerTask.outputTexture);
+            if (useDepthOcclusion) {
+                context.bindTextureHandle(effect, "depthSampler", this.depthTexture!);
+            }
         });
 
         this.layer.textureWidth = this._layerTextureDimensions.width;

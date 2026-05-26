@@ -786,6 +786,13 @@ export class ThinEffectLayer {
         return isReady;
     }
 
+    protected _disposeMergeEffects(): void {
+        for (const drawWrapper of this._mergeDrawWrapper) {
+            drawWrapper.dispose();
+        }
+        this._mergeDrawWrapper = [];
+    }
+
     /**
      * Checks if the layer is ready to be used.
      * @returns true if the layer is ready to be used
@@ -1098,10 +1105,7 @@ export class ThinEffectLayer {
             this._indexBuffer = null;
         }
 
-        for (const drawWrapper of this._mergeDrawWrapper) {
-            drawWrapper.dispose();
-        }
-        this._mergeDrawWrapper = [];
+        this._disposeMergeEffects();
 
         this._objectRenderer.dispose();
 

@@ -120,7 +120,7 @@ geometry_thickness = uniforms.vGeometryThickness;
 #if defined(BASE_COLOR) && defined(ALPHA_FROM_BASE_COLOR_TEXTURE)
     alpha *= baseColorFromTexture.a;
 #elif defined(GEOMETRY_OPACITY)
-    alpha *= opacityFromTexture.a;
+    alpha *= opacityFromTexture.r;
     alpha *= uniforms.vGeometryOpacityInfos.y;
 #endif
 

@@ -68,7 +68,7 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
                 "NodeRenderGraphBaseObjectRendererBlock"
             )
         );
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
         this.depth.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth | NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth
@@ -95,6 +95,7 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         const outlineThickness = this.outlineThickness;
         const occlusionStrength = this.occlusionStrength;
         const occlusionThreshold = this.occlusionThreshold;
+        const useDepthOcclusion = this.useDepthOcclusion;
 
         this._frameGraphTask?.dispose();
 
@@ -108,6 +109,7 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         this.outlineThickness = outlineThickness;
         this.occlusionStrength = occlusionStrength;
         this.occlusionThreshold = occlusionThreshold;
+        this.useDepthOcclusion = useDepthOcclusion;
 
         this._additionalConstructionParameters = [layerTextureRatio, layerTextureFixedSize, layerTextureType];
     }
@@ -188,6 +190,16 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         this._frameGraphTask.layer.occlusionThreshold = value;
     }
 
+    /** Whether to use depth when drawing selection outlines */
+    @editableInPropertyPage("Use depth occlusion", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get useDepthOcclusion() {
+        return this._frameGraphTask.layer.useDepthOcclusion;
+    }
+
+    public set useDepthOcclusion(value: boolean) {
+        this._frameGraphTask.layer.useDepthOcclusion = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -248,6 +260,7 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         codes.push(`${this._codeVariableName}.outlineThickness = ${this.outlineThickness};`);
         codes.push(`${this._codeVariableName}.occlusionStrength = ${this.occlusionStrength};`);
         codes.push(`${this._codeVariableName}.occlusionThreshold = ${this.occlusionThreshold};`);
+        codes.push(`${this._codeVariableName}.useDepthOcclusion = ${this.useDepthOcclusion};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -257,6 +270,7 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         serializationObject.outlineThickness = this.outlineThickness;
         serializationObject.occlusionStrength = this.occlusionStrength;
         serializationObject.occlusionThreshold = this.occlusionThreshold;
+        serializationObject.useDepthOcclusion = this.useDepthOcclusion;
         return serializationObject;
     }
 
@@ -266,6 +280,7 @@ export class NodeRenderGraphSelectionOutlineLayerBlock extends NodeRenderGraphBl
         this.outlineThickness = serializationObject.outlineThickness;
         this.occlusionStrength = serializationObject.occlusionStrength;
         this.occlusionThreshold = serializationObject.occlusionThreshold;
+        this.useDepthOcclusion = serializationObject.useDepthOcclusion ?? true;
     }
 }
 

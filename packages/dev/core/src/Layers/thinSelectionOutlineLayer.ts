@@ -1,5 +1,7 @@
 import { VertexBuffer } from "../Buffers/buffer";
 import { Camera } from "../Cameras/camera";
+import { RegisterAbstractEngineStates } from "../Engines/AbstractEngine/abstractEngine.states.pure";
+import { RegisterAbstractEngineStencil } from "../Engines/AbstractEngine/abstractEngine.stencil.pure";
 import { Constants } from "../Engines/constants";
 import { type ThinEngine } from "../Engines/thinEngine";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
@@ -39,6 +41,11 @@ export interface IThinSelectionOutlineLayerOptions extends IThinEffectLayerOptio
      * @see {@link Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL}
      */
     outlineMethod?: number;
+
+    /**
+     * Whether to use depth when drawing selection outlines. Disable this to avoid depth renderer usage and draw selected outlines without depth clipping.
+     */
+    useDepthOcclusion?: boolean;
 }
 
 /**
@@ -67,14 +74,48 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public outlineThickness: number = 2.0;
 
     /**
-     * The strength of the occlusion effect (default: 0.8)
-     */
-    public occlusionStrength: number = 0.8;
-
-    /**
      * The occlusion threshold (default: 0.0001)
      */
     public occlusionThreshold: number = 0.0001;
+
+    private _occlusionStrength = 0.8;
+    private _useDepthOcclusion = true;
+
+    /**
+     * The strength of the occlusion effect (default: 0.8)
+     */
+    public get occlusionStrength(): number {
+        return this._occlusionStrength;
+    }
+
+    public set occlusionStrength(value: number) {
+        const wasUsingComposeDepthOcclusion = this._shouldUseComposeDepthOcclusion;
+        this._occlusionStrength = value;
+        if (wasUsingComposeDepthOcclusion !== this._shouldUseComposeDepthOcclusion) {
+            this._disposeMergeEffects();
+        }
+    }
+
+    /**
+     * Whether to use depth when drawing selection outlines.
+     * Disable this to avoid depth renderer usage; selected outlines will not be clipped by scene or selected geometry.
+     */
+    public get useDepthOcclusion(): boolean {
+        return this._useDepthOcclusion;
+    }
+
+    public set useDepthOcclusion(value: boolean) {
+        const wasUsingComposeDepthOcclusion = this._shouldUseComposeDepthOcclusion;
+        this._useDepthOcclusion = value;
+        this._options.useDepthOcclusion = value;
+        if (wasUsingComposeDepthOcclusion !== this._shouldUseComposeDepthOcclusion) {
+            this._disposeMergeEffects();
+        }
+    }
+
+    private get _shouldUseComposeDepthOcclusion(): boolean {
+        return this._useDepthOcclusion && this._occlusionStrength > 0;
+    }
 
     /**
      * The width of the source texture
@@ -106,6 +147,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public constructor(name: string, scene?: Scene, options?: Partial<IThinSelectionOutlineLayerOptions>, dontCheckIfReady = false) {
         super(name, scene, options !== undefined ? !!options.forceGLSL : false);
 
+        RegisterAbstractEngineStates();
+        RegisterAbstractEngineStencil();
+
         // Adapt options
         this._options = {
             mainTextureRatio: 1.0,
@@ -118,8 +162,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
             storeCameraSpaceZ: false,
             outlineMethod: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL,
+            useDepthOcclusion: true,
             ...options,
         };
+        this._useDepthOcclusion = this._options.useDepthOcclusion;
 
         // Fall back to a supported mask texture type if the device doesn't support rendering to float framebuffers
         // or linear filtering of float textures (e.g. OES_texture_float_linear missing on some iOS versions)
@@ -193,17 +239,21 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         const color = false;
 
         // Alpha test
-        if (material.needAlphaTestingForMesh(mesh)) {
-            defines.push("#define ALPHATEST");
-            if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+        const alphaTestTexture = material.needAlphaTestingForMesh(mesh) ? material.getAlphaTestTexture() : null;
+        if (alphaTestTexture) {
+            const hasUV1 = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+            const hasUV2 = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
+            if (hasUV2 && (alphaTestTexture.coordinatesIndex === 1 || !hasUV1)) {
+                attribs.push(VertexBuffer.UV2Kind);
+                defines.push("#define UV2");
+                uv2 = true;
+            } else if (hasUV1) {
                 attribs.push(VertexBuffer.UVKind);
                 defines.push("#define UV1");
                 uv1 = true;
             }
-            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                attribs.push(VertexBuffer.UV2Kind);
-                defines.push("#define UV2");
-                uv2 = true;
+            if (uv1 || uv2) {
+                defines.push("#define ALPHATEST");
             }
         }
 
@@ -366,6 +416,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     /** @internal */
     public override _createMergeEffect(): Effect {
         const defines: string[] = [];
+        const uniformsNames = ["screenSize", "outlineColor", "outlineThickness"];
+        const samplers = ["maskSampler"];
+
         switch (this._options.outlineMethod) {
             case Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL:
                 defines.push("#define OUTLINELAYER_SAMPLING_TRIDIRECTIONAL");
@@ -374,6 +427,13 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 defines.push("#define OUTLINELAYER_SAMPLING_OCTADIRECTIONAL");
                 break;
         }
+
+        if (this._shouldUseComposeDepthOcclusion) {
+            defines.push("#define OUTLINELAYER_DEPTH_OCCLUSION");
+            uniformsNames.push("occlusionStrength", "occlusionThreshold");
+            samplers.push("depthSampler");
+        }
+
         const join = defines.join("\n");
 
         return this._engine.createEffect(
@@ -385,8 +445,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             },
             <IEffectCreationOptions>{
                 attributes: [VertexBuffer.PositionKind],
-                uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength", "occlusionThreshold"],
-                samplers: ["maskSampler", "depthSampler"],
+                uniformsNames,
+                samplers,
                 defines: join,
                 fallbacks: null,
                 onCompiled: null,
@@ -597,10 +657,27 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 }
             }
 
-            // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
-                effect.setMatrix("world", world)
-            );
+            if (!this._useDepthOcclusion) {
+                const previousDepthBuffer = engine.getDepthBuffer();
+                const previousDepthWrite = engine.getDepthWrite();
+                engine.setDepthBuffer(false);
+                engine.setDepthWrite(false);
+
+                try {
+                    // Draw
+                    renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+                        effect.setMatrix("world", world)
+                    );
+                } finally {
+                    engine.setDepthBuffer(previousDepthBuffer);
+                    engine.setDepthWrite(previousDepthWrite);
+                }
+            } else {
+                // Draw
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+                    effect.setMatrix("world", world)
+                );
+            }
         } else {
             // Need to reset refresh rate of the main map
             this._objectRenderer.resetRefreshCounter();
@@ -616,8 +693,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         effect.setFloat2("screenSize", this.textureWidth, this.textureHeight);
         effect.setColor3("outlineColor", this.outlineColor);
         effect.setFloat("outlineThickness", this.outlineThickness);
-        effect.setFloat("occlusionStrength", this.occlusionStrength);
-        effect.setFloat("occlusionThreshold", this.occlusionThreshold);
+        if (this._shouldUseComposeDepthOcclusion) {
+            effect.setFloat("occlusionStrength", this.occlusionStrength);
+            effect.setFloat("occlusionThreshold", this.occlusionThreshold);
+        }
 
         // Cache
         const engine = this._engine;

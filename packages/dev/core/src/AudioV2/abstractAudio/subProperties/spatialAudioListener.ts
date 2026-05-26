@@ -19,6 +19,11 @@ export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener
         return this._attacherComponent !== null && this._attacherComponent.isAttached;
     }
 
+    /** @internal */
+    public get attachedNode(): Nullable<Node> {
+        return this._attacherComponent?.sceneNode ?? null;
+    }
+
     /**
      * Attaches to a scene node.
      *

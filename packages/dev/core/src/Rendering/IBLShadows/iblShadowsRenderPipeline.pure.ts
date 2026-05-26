@@ -725,9 +725,20 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             bounds.max = Vector3.Maximize(bounds.max, localBounds.max);
         }
 
+        if (this._shadowCastingMeshes.length === 0) {
+            Logger.Warn("IBL Shadows: updateSceneBounds called with no shadow-casting meshes.");
+            this.voxelGridSize = 1.0;
+            return;
+        }
+        // If no visible geometry contributed, bounds stay at sentinel values. Keep the
+        // last valid invWorldScale and return silently — this is expected when all parts
+        // are temporarily hidden (e.g. while switching between displayed models).
+        if (bounds.min.x > bounds.max.x) {
+            return;
+        }
         const size = bounds.max.subtract(bounds.min);
         this.voxelGridSize = Math.max(size.x, size.y, size.z);
-        if (this._shadowCastingMeshes.length === 0 || !isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
+        if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
             Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
             this.voxelGridSize = 1.0;
             return;
