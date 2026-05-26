@@ -92,13 +92,25 @@ function getInheritanceReferences(child) {
     return [child.overwrites, child.inheritedFrom, child.implementationOf].filter(Boolean);
 }
 
+function getParameters(child) {
+    return child.parameters ?? child.signatures?.[0]?.parameters ?? child.type?.declaration?.signatures?.[0]?.parameters ?? [];
+}
+
+function inheritedCommentCoversParameters(child, referencedReflection) {
+    const childParameters = getParameters(child);
+    if (childParameters.length === 0) {
+        return true;
+    }
+
+    const inheritedParameterNames = new Set(getParameters(referencedReflection).map((param) => param.name));
+    return childParameters.every((param) => inheritedParameterNames.has(param.name));
+}
+
 function hasCompleteOwnComment(child) {
     if (child.comment) {
-        if (child.parameters) {
-            for (const param of child.parameters) {
-                if (!param.comment) {
-                    return false;
-                }
+        for (const param of getParameters(child)) {
+            if (!param.comment) {
+                return false;
             }
         }
 
@@ -115,10 +127,15 @@ function hasInheritedComment(child, context, checkedReflections = new Set()) {
         const referencedReflection = getReferencedReflection(reference, context);
 
         if (!referencedReflection) {
-            // The overridden member can belong to a class that is outside the TypeDoc model,
-            // for example a non-exported intermediate base class. In that case the override
-            // metadata is the only inheritance signal available to the analyzer.
-            return true;
+            // TypeDoc sets target to -1 when the referenced member is outside the model
+            // (e.g. a non-exported intermediate base class). Accept those overrides when
+            // the override has no parameters, since there is nothing to verify.
+            // If target was a valid positive ID but wasn't found in the index, that is an
+            // indexing miss — continue checking other inheritance references instead.
+            if (typeof reference.target !== "number" || reference.target <= 0) {
+                return getParameters(child).length === 0;
+            }
+            continue;
         }
 
         const reflectionKey = referencedReflection.id ?? referenceName;
@@ -129,7 +146,10 @@ function hasInheritedComment(child, context, checkedReflections = new Set()) {
             checkedReflections.add(reflectionKey);
         }
 
-        if (hasCompleteOwnComment(referencedReflection) || hasInheritedComment(referencedReflection, context, checkedReflections)) {
+        if (
+            inheritedCommentCoversParameters(child, referencedReflection) &&
+            (hasCompleteOwnComment(referencedReflection) || hasInheritedComment(referencedReflection, context, checkedReflections))
+        ) {
             return true;
         }
     }
