@@ -609,6 +609,7 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount, continu
                             }
                             return resolve(true);
                         } else {
+                            window.engine && window.engine.stopRenderLoop();
                             console.error("Scene is not ready after rendering is done");
                             return resolve(false);
                         }
