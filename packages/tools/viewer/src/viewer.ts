@@ -660,14 +660,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._applyCameraAutoOrbitSpeed();
         this._applyCameraAutoOrbitDelay();
 
-        // Use onAfterRenderObservable (end of scene.render()) rather than
-        // onAfterRenderCameraObservable (end of per-camera loop) so that
-        // onAfterRenderObservable fires in all rendering modes — including when a
-        // NodeRenderGraph frame graph is active, which bypasses the per-camera loop
-        // entirely and therefore never fires onAfterRenderCameraObservable.
-        // Annotations (babylon-viewer-annotation) listen to the "viewerrender" event
-        // dispatched from this observable; if it stops firing they freeze in place
-        // and cannot be hidden when the model changes.
         this._scene.onAfterRenderObservable.add(() => {
             this.onAfterRenderObservable.notifyObservers();
         });
@@ -1020,9 +1012,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
         const watchMesh = (mesh: AbstractMesh) => {
             if (!meshMaterialObservers.has(mesh)) {
-                const observer = mesh.onMaterialChangedObservable.add(() => rebuild());
+                const observer = mesh.onMaterialChangedObservable.add(rebuild);
                 if (observer) {
-                    meshMaterialObservers.set(mesh, observer);
+                    observer.remove();
                 }
             }
         };
@@ -1413,11 +1405,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._activeModel?.dispose();
         this._activeModelBacking = null;
         this.selectedAnimation = -1;
-
-        // Clear all hotspots when the model changes.
-        if (Object.keys(this.hotSpots).length > 0) {
-            this.hotSpots = {};
-        }
 
         if (source) {
             const model = await this._loadModel(source, options, internalAbortSignal);
