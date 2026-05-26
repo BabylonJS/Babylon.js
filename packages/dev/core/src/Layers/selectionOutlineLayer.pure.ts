@@ -11,6 +11,8 @@ import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ThinSelectionOutlineLayer, type IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLayer";
+import { DepthRenderer } from "../Rendering/depthRenderer.pure";
+import { RegisterDepthRendererSceneComponent } from "../Rendering/depthRendererSceneComponent.pure";
 
 import { type Color3 } from "../Maths/math.color.pure";
 import { type Nullable } from "../types";
@@ -89,6 +91,20 @@ export class SelectionOutlineLayer extends EffectLayer {
         this._thinEffectLayer.occlusionThreshold = value;
     }
 
+    /**
+     * Whether to use depth when drawing selection outlines.
+     * Disable this to avoid depth renderer usage; selected outlines will not be clipped by scene or selected geometry.
+     */
+    @serialize()
+    public get useDepthOcclusion(): boolean {
+        return this._thinEffectLayer.useDepthOcclusion;
+    }
+
+    public set useDepthOcclusion(value: boolean) {
+        this._thinEffectLayer.useDepthOcclusion = value;
+        this._options.useDepthOcclusion = value;
+    }
+
     @serialize("options")
     private _options: Required<ISelectionOutlineLayerOptions>;
 
@@ -116,6 +132,7 @@ export class SelectionOutlineLayer extends EffectLayer {
             forceGLSL: false,
             storeCameraSpaceZ: false,
             outlineMethod: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL,
+            useDepthOcclusion: true,
             ...options,
         };
 
@@ -135,10 +152,15 @@ export class SelectionOutlineLayer extends EffectLayer {
         this._shouldRender = false;
     }
 
+    private _enableDepthRenderer(): DepthRenderer {
+        RegisterDepthRendererSceneComponent(DepthRenderer);
+        return this._scene.enableDepthRenderer();
+    }
+
     /**
      * Checks if the layer is ready to render.
-     * When selections are active, this also lazily creates the depth renderer
-     * and checks that its depth map is ready.
+     * When selections are active and depth occlusion is enabled, this also
+     * lazily creates the depth renderer and checks that its depth map is ready.
      * @returns true if the layer is ready
      */
     public override isLayerReady(): boolean {
@@ -146,8 +168,8 @@ export class SelectionOutlineLayer extends EffectLayer {
             return false;
         }
 
-        if (this.shouldRender()) {
-            const depthRenderer = this._scene.enableDepthRenderer();
+        if (this.shouldRender() && this.useDepthOcclusion && this.occlusionStrength > 0) {
+            const depthRenderer = this._enableDepthRenderer();
             if (!depthRenderer.getDepthMap().isReadyForRendering()) {
                 return false;
             }
@@ -185,8 +207,10 @@ export class SelectionOutlineLayer extends EffectLayer {
 
         this._thinEffectLayer.bindTexturesForCompose = (effect: Effect): void => {
             effect.setTexture("maskSampler", this._mainTexture);
-            const depthRenderer = this._scene.enableDepthRenderer();
-            effect.setTexture("depthSampler", depthRenderer.getDepthMap());
+            if (this.useDepthOcclusion && this.occlusionStrength > 0) {
+                const depthRenderer = this._enableDepthRenderer();
+                effect.setTexture("depthSampler", depthRenderer.getDepthMap());
+            }
 
             const mainTextureDesiredSize = this._mainTextureDesiredSize;
             this._thinEffectLayer.textureWidth = mainTextureDesiredSize.width;

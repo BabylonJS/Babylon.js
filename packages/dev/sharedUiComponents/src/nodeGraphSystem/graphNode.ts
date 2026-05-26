@@ -1070,7 +1070,11 @@ export class GraphNode {
         };
     }
 
-    public dispose() {
+    /**
+     * Disposes this visual graph node.
+     * @param disposeContent - Whether to dispose the underlying node content and disconnect links.
+     */
+    public dispose(disposeContent = true) {
         if (this._stateManager.activeNode === this) {
             this._stateManager.activeNode = null;
         }
@@ -1078,8 +1082,10 @@ export class GraphNode {
             this._displayManager.onDispose(this.content, this._stateManager);
         }
 
-        // notify frame observers that this node is being deleted
-        this._stateManager.onGraphNodeRemovalObservable.notifyObservers(this);
+        if (disposeContent) {
+            // notify frame observers that this node is being deleted
+            this._stateManager.onGraphNodeRemovalObservable.notifyObservers(this);
+        }
 
         if (this._onSelectionChangedObserver) {
             this._stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
@@ -1115,9 +1121,11 @@ export class GraphNode {
 
         const links = this._links.slice(0);
         for (const link of links) {
-            link.dispose();
+            link.dispose(disposeContent, disposeContent);
         }
 
-        this.content.dispose();
+        if (disposeContent) {
+            this.content.dispose();
+        }
     }
 }
