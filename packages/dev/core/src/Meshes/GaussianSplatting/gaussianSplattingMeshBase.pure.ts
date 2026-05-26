@@ -642,7 +642,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._needsRotationScaleTextures = value;
         if (value && this._covariancesATexture) {
             if (this._splatsData) {
-                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false });
+                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false }, undefined, this._shDegree);
             } else {
                 Logger.Error(
                     "GaussianSplattingMeshBase: needsRotationScaleTextures was enabled after the mesh was already loaded, but the splat data is not kept in RAM. " +
@@ -1881,10 +1881,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const width = engine.getCaps().maxTextureSize;
                 const height = Math.ceil(splatCount / width);
                 // create array for the number of textures needed.
-                for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-                    const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
-                    sh.push(texture);
-                }
+                sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
                 for (let i = 0; i < splatCount; i++) {
                     for (let shIndexWrite = 0; shIndexWrite < header.shCoefficientCount; shIndexWrite++) {
@@ -3068,4 +3065,23 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         return this;
     }
+}
+
+/**
+ * Allocates SH texture buffers pre-filled with 128 (the neutral encoding of ~0.0 in the
+ * shader's decompose() function). Padding bytes beyond the actual coefficients in the last
+ * texture are read as higher-order SH bands when the mesh is added to a compound with a
+ * higher degree; zero would decode to -1.0 instead, producing wrong colors.
+ * @param textureCount number of SH textures to allocate
+ * @param bytesEach byte size of each texture buffer
+ * @returns array of initialized Uint8Array buffers
+ */
+export function AllocateShBuffers(textureCount: number, bytesEach: number): Uint8Array[] {
+    const result: Uint8Array[] = [];
+    for (let i = 0; i < textureCount; i++) {
+        const arr = new Uint8Array(bytesEach);
+        arr.fill(128);
+        result.push(arr);
+    }
+    return result;
 }

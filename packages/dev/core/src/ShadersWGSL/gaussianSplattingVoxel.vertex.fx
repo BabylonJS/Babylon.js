@@ -47,6 +47,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
 
 #if IS_COMPOUND
+    if (uniforms.partVisibility[splat.partIndex] == 0.0) {
+        // Discard: push outside NDC cube [-1,1] — vertex shaders cannot use discard.
+        // Must return vertexOutputs (not bare return) because WGSL forbids bare return
+        // in a non-void function; vertexOutputs is zero-initialised so other fields are safe.
+        vertexOutputs.position = vec4f(2.0, 2.0, 2.0, 1.0);
+        return vertexOutputs;
+    }
     let splatWorld: mat4x4f = getPartWorld(splat.partIndex);
 #else
     let splatWorld: mat4x4f = mesh.world;

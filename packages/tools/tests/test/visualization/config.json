@@ -172,10 +172,46 @@
             "dependsOn": ["GaussianSplatting"]
         },
         {
+            "title": "Gaussian Splatting Compound Incremental Update",
+            "playgroundId": "#DAID4Q#7",
+            "referenceImage": "gsplat-compound-incremental-update.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Compound No SH then Full SH",
+            "playgroundId": "#DAID4Q#8",
+            "referenceImage": "gsplat-compound-no-sh-then-full-sh.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
             "title": "Gaussian Splatting IBL Shadows",
             "playgroundId": "#DAID4Q#2",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Single Part",
+            "playgroundId": "#DAID4Q#4",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-single-part.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts",
+            "playgroundId": "#DAID4Q#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts Mixed Visibility",
+            "playgroundId": "#DAID4Q#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts-mixed-visibility.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
             "excludeFromPerformance": true
         },
