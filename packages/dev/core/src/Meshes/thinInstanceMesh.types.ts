@@ -101,8 +101,9 @@ declare module "./mesh.pure" {
          * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
          * @param applyMorph  defines whether to apply the morph target before computing the bounding info
+         * @param applyBakedVertexAnimation defines whether to apply baked vertex animation before computing the bounding info
          */
-        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean, applySkeleton?: boolean, applyMorph?: boolean): void;
+        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean, applySkeleton?: boolean, applyMorph?: boolean, applyBakedVertexAnimation?: boolean): void;
 
         /** @internal */
         _thinInstanceInitializeUserStorage(): void;
