@@ -400,15 +400,15 @@ export function MakeModularTool(options: ModularToolOptions) {
         // Show a spinner until a main view has been set.
         if (!rootComponentService) {
             return (
-                <TeachingMomentsContext.Provider value={teachingMomentsContextValue}>
-                    <ReactContextsWrapper contexts={contexts}>
+                <ReactContextsWrapper contexts={contexts}>
+                    <TeachingMomentsContext.Provider value={teachingMomentsContextValue}>
                         <SettingsStoreContext.Provider value={settingsStore}>
                             <Theme className={classes.app} targetDocument={targetDocument}>
                                 <Spinner className={classes.spinner} />
                             </Theme>
                         </SettingsStoreContext.Provider>
-                    </ReactContextsWrapper>
-                </TeachingMomentsContext.Provider>
+                    </TeachingMomentsContext.Provider>
+                </ReactContextsWrapper>
             );
         } else {
             // eslint-disable-next-line @typescript-eslint/naming-convention

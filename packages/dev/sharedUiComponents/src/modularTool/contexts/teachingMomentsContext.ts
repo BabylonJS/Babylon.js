@@ -2,7 +2,9 @@ import { createContext, useContext } from "react";
 
 type TeachingMomentsContext = {
     /**
-     * When true, all teaching moments are suppressed regardless of their individual state.
+     * When true, all teaching moments are suppressed regardless of any caller-supplied
+     * `suppress` argument and regardless of whether the user has previously dismissed
+     * the teaching moment.
      */
     disabled: boolean;
 };
