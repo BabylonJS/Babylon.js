@@ -99,7 +99,7 @@ export class GridMaterial extends PushMaterial {
     public minorUnitVisibility = 0.33;
 
     /**
-     * The grid opacity outside of the lines.
+     * Overall mesh opacity. In linesOnly mode this also scales the maximum line alpha.
      */
     @serialize()
     public opacity = 1.0;
@@ -130,10 +130,10 @@ export class GridMaterial extends PushMaterial {
     public minGridSpacing: number = 0.001;
 
     /**
-     * Number of logarithmic octaves rendered (1–16). Default 10.
+     * Number of logarithmic octaves rendered (1–8). Default 4.
      */
     @serialize()
-    public gridOctaves: number = 10;
+    public gridOctaves: number = 4;
 
     /**
      * Enable camera-distance-aware horizon (grazing-angle) fade.
@@ -142,15 +142,16 @@ export class GridMaterial extends PushMaterial {
     public useHorizonFade: boolean = false;
 
     /**
-     * Render an ultra-fine crosshair at the world origin (requires BoxFilter AA).
+     * Render an ultra-fine crosshair at the world origin.
      */
     @serialize()
     public useOriginMarker: boolean = false;
 
     /**
      * When true, only grid lines are visible — non-grid pixels are discarded.
-     * Also enables a depth pre-pass so grid lines correctly occlude translucent objects (e.g. Gaussian splats).
-     * This is independent of the opacity property.
+     * Puts the material in the alpha-blend queue and enables a depth pre-pass so grid lines
+     * correctly occlude translucent objects (e.g. Gaussian splats). Set mesh.alphaIndex to a
+     * value lower than other transparent objects so the depth pre-pass fires first.
      */
     @serialize()
     public get linesOnly(): boolean {
@@ -429,7 +430,7 @@ export class GridMaterial extends PushMaterial {
 
             if (defines.MULTI_SCALE) {
                 this._activeEffect.setFloat("minGridSpacing", this.minGridSpacing);
-                this._activeEffect.setInt("gridOctaves", Math.max(1, Math.min(16, Math.round(this.gridOctaves))));
+                this._activeEffect.setInt("gridOctaves", Math.max(1, Math.min(8, Math.round(this.gridOctaves))));
             }
 
             if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
@@ -449,7 +450,7 @@ export class GridMaterial extends PushMaterial {
         BindFogParameters(scene, mesh, this._activeEffect);
 
         // Camera uniforms — must be updated every frame
-        if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR) {
+        if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR || defines.ORIGIN_MARKER) {
             const cam = scene.activeCamera;
             if (cam) {
                 this._activeEffect.setVector3("cameraPosition", cam.position);

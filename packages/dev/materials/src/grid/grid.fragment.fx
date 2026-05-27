@@ -4,6 +4,27 @@
 #define PI 3.14159
 #define MAX_OCTAVES 8
 
+// Fraction of viewport height used as minimum screen-space line width, scaled by camera distance.
+// Prevents lines from collapsing to sub-pixel width at long range.
+#define LINE_WIDTH_SCREEN_FRACTION 0.004
+
+// High exponent keeps the horizon fade binary-like — grid stays fully visible until
+// within ~1° of the horizon, then drops sharply to zero.
+#define HORIZON_FADE_EXPONENT 400.0
+
+// Scale factor mapping world units to origin-marker UV space (1 unit = 10M world units).
+// The crosshair spans ±10,000,000 world units around the origin.
+#define ORIGIN_MARKER_SPAN 10000000.0
+
+// Screen-space width fraction for the origin marker line, tuned to stay ~1px at any distance.
+#define ORIGIN_MARKER_WIDTH_SCALE 0.00000015
+
+// Origin marker values below this threshold are ignored to avoid dim halos overriding the grid.
+#define ORIGIN_MARKER_THRESHOLD 0.0001
+
+// Minimum alpha for anti-aliased line edges in linesOnly mode, keeps soft transitions visible.
+#define TRANSPARENT_MIN_OPACITY 0.08
+
 precision highp float;
 
 uniform float visibility;
@@ -91,6 +112,8 @@ float contributionOnAxis(float position, float tcLineWidthCap, float thicknessMo
     float ddy = dFdy(position);
     float differentialLength = length(vec2(ddx, ddy)) * SQRT2;
 
+    // tcLineWidthCap: minimum line width derived from camera distance, prevents
+    // lines from disappearing to sub-pixel width at long range.
     if (tcLineWidthCap > 0.0) {
         differentialLength = max(differentialLength, tcLineWidthCap);
     }
@@ -127,13 +150,13 @@ void main(void) {
     float tc = length(vWorldPos - cameraPosition);
 #endif
 #ifdef HORIZON_FADE
-    tcLineWidthCap = 0.004 * tc / viewportSize.y;
+    tcLineWidthCap = LINE_WIDTH_SCREEN_FRACTION * tc / viewportSize.y;
     vec3 rd = normalize(vWorldPos - cameraPosition);
     if (abs(rd.y) > 0.99) {
         horizonFade = 1.0;
     } else {
         vec3 flatRayDir = normalize(vec3(rd.x, 0.0, rd.z));
-        horizonFade = -pow(abs(dot(rd, flatRayDir)), 400.0) + 1.0;
+        horizonFade = -pow(abs(dot(rd, flatRayDir)), HORIZON_FADE_EXPONENT) + 1.0;
     }
 #endif
 
@@ -170,13 +193,13 @@ void main(void) {
 
     grid *= horizonFade;
 
-    // --- Origin marker (world-origin crosshair, box-filter only) ---
+    // --- Origin marker (world-origin crosshair) ---
 #ifdef ORIGIN_MARKER
-    float tcOrigin = 0.00000015 * tc / viewportSize.y;
-    float ox = contributionOnAxis(vWorldPos.x / 10000000.0, tcOrigin, gridThicknessModifier);
-    float oz = contributionOnAxis(vWorldPos.z / 10000000.0, tcOrigin, gridThicknessModifier);
+    float tcOrigin = ORIGIN_MARKER_WIDTH_SCALE * tc / viewportSize.y;
+    float ox = contributionOnAxis(vWorldPos.x / ORIGIN_MARKER_SPAN, tcOrigin, gridThicknessModifier);
+    float oz = contributionOnAxis(vWorldPos.z / ORIGIN_MARKER_SPAN, tcOrigin, gridThicknessModifier);
     float originMask = clamp(ox + oz, 0.0, 1.0) * horizonFade;
-    if (originMask > 0.0001) grid = originMask;
+    if (originMask > ORIGIN_MARKER_THRESHOLD) grid = originMask;
 #endif
 
     // --- Line color (above/below camera) ---
@@ -197,7 +220,7 @@ void main(void) {
     float opacity = gridControl.w;
 #ifdef TRANSPARENT
     if (grid < 0.01) discard;
-    opacity = clamp(grid, 0.08, gridControl.w * grid);
+    opacity = clamp(grid, TRANSPARENT_MIN_OPACITY, gridControl.w * grid);
 #endif
 
 #ifdef OPACITY
