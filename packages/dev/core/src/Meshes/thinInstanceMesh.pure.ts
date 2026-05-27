@@ -108,14 +108,15 @@ function TryUpdateBakedVertexAnimationThinInstanceBoundingInfo(mesh: Mesh, vecto
 
     const cache = {};
     const settings = TmpVectors.Vector4[0];
-    const rawMinimum = TmpVectors.Vector3[0];
-    const rawMaximum = TmpVectors.Vector3[1];
-    const globalMinimum = TmpVectors.Vector3[2];
-    const globalMaximum = TmpVectors.Vector3[3];
-    const localMinimum = TmpVectors.Vector3[4];
-    const localMaximum = TmpVectors.Vector3[5];
+    const rawMinimum = TmpVectors.Vector3[1];
+    const rawMaximum = TmpVectors.Vector3[2];
+    const globalMinimum = TmpVectors.Vector3[3];
+    const globalMaximum = TmpVectors.Vector3[4];
+    const localMinimum = TmpVectors.Vector3[5];
+    const localMaximum = TmpVectors.Vector3[6];
     const matrix = TmpVectors.Matrix[2];
     const bias = mesh.geometry ? mesh.geometry.boundingBias : null;
+    const vertexCount = mesh.getTotalVertices();
 
     rawMinimum.setAll(Number.POSITIVE_INFINITY);
     rawMaximum.setAll(Number.NEGATIVE_INFINITY);
@@ -147,7 +148,7 @@ function TryUpdateBakedVertexAnimationThinInstanceBoundingInfo(mesh: Mesh, vecto
             return false;
         }
 
-        ExtractMinAndMaxToRef(positionData, mesh.getTotalVertices(), localMinimum, localMaximum);
+        ExtractMinAndMaxToRef(positionData, vertexCount, localMinimum, localMaximum);
         ApplyBoundingBiasToMinAndMax(localMinimum, localMaximum, bias);
         rawMinimum.minimizeInPlace(localMinimum);
         rawMaximum.maximizeInPlace(localMaximum);
@@ -156,7 +157,7 @@ function TryUpdateBakedVertexAnimationThinInstanceBoundingInfo(mesh: Mesh, vecto
         if (bias) {
             UpdateTransformedMinAndMaxToRef(localMinimum, localMaximum, matrix, globalMinimum, globalMaximum);
         } else {
-            UpdateTransformedDataMinAndMaxToRef(positionData, mesh.getTotalVertices(), matrix, globalMinimum, globalMaximum);
+            UpdateTransformedDataMinAndMaxToRef(positionData, vertexCount, matrix, globalMinimum, globalMaximum);
         }
     }
 

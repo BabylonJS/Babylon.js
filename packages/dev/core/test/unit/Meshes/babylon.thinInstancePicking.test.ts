@@ -126,6 +126,26 @@ describe("ThinInstance picking", () => {
             expect(box.rawBoundingInfo!.maximum.y).toBeCloseTo(10.5);
         });
 
+        it("aggregates bounds from multiple instanced baked vertex animation settings", () => {
+            const manager = createBakedVertexAnimationManager(box);
+
+            box.thinInstanceAdd(Matrix.Identity(), false);
+            box.thinInstanceAdd(Matrix.Translation(20, 0, 0), true);
+            box.thinInstanceSetBuffer("bakedVertexAnimationSettingsInstanced", new Float32Array([0, 1, 0, 30, 0, 1, 1, 30]), 4);
+
+            manager.time = 0;
+            box.thinInstanceRefreshBoundingInfo(true, false, false, true);
+
+            expect(box.getBoundingInfo().minimum.x).toBeCloseTo(-0.5);
+            expect(box.getBoundingInfo().maximum.x).toBeCloseTo(20.5);
+            expect(box.getBoundingInfo().minimum.y).toBeCloseTo(-0.5);
+            expect(box.getBoundingInfo().maximum.y).toBeCloseTo(10.5);
+            expect(box.rawBoundingInfo!.minimum.x).toBeCloseTo(-0.5);
+            expect(box.rawBoundingInfo!.maximum.x).toBeCloseTo(0.5);
+            expect(box.rawBoundingInfo!.minimum.y).toBeCloseTo(-0.5);
+            expect(box.rawBoundingInfo!.maximum.y).toBeCloseTo(10.5);
+        });
+
         it("uses animated vertices instead of local animated AABB corners for thin-instance bounds", () => {
             const diagonalMesh = new Mesh("diagonal", scene);
             diagonalMesh.setVerticesData(VertexBuffer.PositionKind, new Float32Array([0, 0, 0, 1, 1, 0]));
