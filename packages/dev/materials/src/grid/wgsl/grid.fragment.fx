@@ -33,7 +33,7 @@ uniform gridThicknessModifier: f32;
 
 #ifdef MULTI_SCALE
 uniform minGridSpacing: f32;
-uniform gridOctaves: i32;
+uniform gridOctaves: f32;
 #endif
 
 #if defined(HORIZON_FADE) || defined(BELOW_LINE_COLOR) || defined(ORIGIN_MARKER)
@@ -158,7 +158,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #ifdef MULTI_SCALE
     for (var i: i32 = 0; i < MAX_OCTAVES; i++) {
-        if (i >= uniforms.gridOctaves) { break; }
+        if (i >= i32(uniforms.gridOctaves)) { break; }
         let scale: f32 = uniforms.minGridSpacing * pow(10.0, f32(i));
         let gridPos: vec3f = (fragmentInputs.vPosition + uniforms.gridOffset.xyz) / scale;
         let gx: f32 = contributionOnAxis(gridPos.x, tcLineWidthCap, uniforms.gridThicknessModifier) * normalImpactOnAxis(normal.x);

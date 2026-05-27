@@ -440,7 +440,7 @@ export class GridMaterial extends PushMaterial {
 
             if (defines.MULTI_SCALE) {
                 this._activeEffect.setFloat("minGridSpacing", this.minGridSpacing);
-                this._activeEffect.setInt("gridOctaves", Math.max(1, Math.min(8, Math.round(this.gridOctaves))));
+                this._activeEffect.setFloat("gridOctaves", Math.max(1, Math.min(8, Math.round(this.gridOctaves))));
             }
 
             if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {

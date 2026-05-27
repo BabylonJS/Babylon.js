@@ -37,7 +37,7 @@ uniform float gridThicknessModifier;
 
 #ifdef MULTI_SCALE
 uniform float minGridSpacing;
-uniform int gridOctaves;
+uniform float gridOctaves;
 #endif
 
 #if defined(HORIZON_FADE) || defined(BELOW_LINE_COLOR) || defined(ORIGIN_MARKER)
@@ -162,7 +162,7 @@ void main(void) {
 
 #ifdef MULTI_SCALE
     for (int i = 0; i < MAX_OCTAVES; i++) {
-        if (i >= gridOctaves) break;
+        if (i >= int(gridOctaves)) break;
         float scale = minGridSpacing * pow(10.0, float(i));
         vec3 gridPos = (vPosition + gridOffset.xyz) / scale;
         float gx = contributionOnAxis(gridPos.x, tcLineWidthCap, gridThicknessModifier) * normalImpactOnAxis(normal.x);
