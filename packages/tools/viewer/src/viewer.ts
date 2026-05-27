@@ -18,7 +18,6 @@ import {
     type ISceneLoaderProgressEvent,
     type LoadAssetContainerOptions,
     type Nullable,
-    type Observable,
     type Observer,
     type PickingInfo,
     type ShaderMaterial,
@@ -49,6 +48,7 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Mesh } from "core/Meshes/mesh";
 import { computeMaxExtents, RemoveUnreferencedVerticesData } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
+import { Observable } from "core/Misc/observable";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
@@ -533,6 +533,17 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private readonly _shadowState: ShadowState = {};
     private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
 
+    private _objectListFilters: ReadonlyArray<(mesh: AbstractMesh) => boolean> = [];
+    private _objectListModelChangedObserver: Nullable<Observer<Nullable<string | File | ArrayBufferView>>> = null;
+
+    /**
+     * Fired whenever the filtered object lists managed by an active frame graph are recomputed.
+     * Each entry in the array corresponds to the filter at the same index passed to
+     * {@link _setActiveFrameGraph}. Fires once immediately when _setActiveFrameGraph is called,
+     * and again after every model change.
+     */
+    public readonly onObjectListsUpdated = new Observable<ReadonlyArray<ReadonlyArray<AbstractMesh>>>();
+
     public constructor(
         private readonly _engine: AbstractEngine,
         protected readonly _options?: Readonly<ViewerOptions>
@@ -939,13 +950,19 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     protected _updateSSAOPipeline() {
+        // Always abort any in-flight SSAO init first, regardless of frame graph state.
+        this._ssaoAbortController?.abort(new AbortError("SSAO pipeline is being updated."));
+        this._ssaoAbortController = null;
+
         if (this._scene.frameGraph) {
-            return; // SSAO2RenderingPipeline is bypassed when a frame graph is active
+            // SSAO2RenderingPipeline is incompatible with the frame graph render path.
+            // Tear down any existing pipeline so it doesn't consume resources while dormant.
+            this._disableSSAOPipeline();
+            return;
         }
 
         observePromise(
             (async () => {
-                this._ssaoAbortController?.abort(new AbortError("SSAO is being changed before previous SSAO finished initializing."));
                 this._ssaoAbortController = new AbortController();
                 const abortSignal = this._ssaoAbortController.signal;
 
@@ -976,95 +993,44 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     /**
-     * Keeps a filtered mesh list current and calls a setter whenever it changes.
-     *
-     * The setter is called immediately and again whenever:
-     *  - a mesh is added to or removed from the scene, or
-     *  - a mesh's material changes (which can shift it between filter buckets).
-     *
-     * Intended to be called from a derived class after a NodeRenderGraph has been built,
-     * to keep an ObjectList input block's mesh array in sync without replacing the block's
-     * value (which would clear its downstream output connection).
-     *
-     * Typical usage:
-     * ```ts
-     * const objectList = block.value as FrameGraphObjectList;
-     * this._bindObjectList(
-     *   (meshes) => { objectList.meshes = meshes; },
-     *   (mesh) => !mesh.material?.needAlphaBlending()
-     * );
-     * ```
-     *
-     * @param setMeshes Callback invoked with the filtered mesh array on every change.
-     * @param filter Predicate that selects which scene meshes belong in this list.
-     * @returns A disposable that tears down all scene and mesh observers.
-     */
-    protected _bindObjectList(setMeshes: (meshes: AbstractMesh[]) => void, filter: (mesh: AbstractMesh) => boolean): IDisposable {
-        const rebuild = () => {
-            setMeshes(this._scene.meshes.filter(filter));
-        };
-
-        // Populate immediately.
-        rebuild();
-
-        // Track per-mesh material-change observers so we don't double-subscribe.
-        const meshMaterialObservers = new Map<AbstractMesh, Observer<AbstractMesh>>();
-
-        const watchMesh = (mesh: AbstractMesh) => {
-            if (!meshMaterialObservers.has(mesh)) {
-                const observer = mesh.onMaterialChangedObservable.add(rebuild);
-                if (observer) {
-                    observer.remove();
-                }
-            }
-        };
-
-        const unwatchMesh = (mesh: AbstractMesh) => {
-            const observer = meshMaterialObservers.get(mesh);
-            if (observer) {
-                mesh.onMaterialChangedObservable.remove(observer);
-                meshMaterialObservers.delete(mesh);
-            }
-        };
-
-        for (const mesh of this._scene.meshes) {
-            watchMesh(mesh);
-        }
-
-        const newMeshObserver = this._scene.onNewMeshAddedObservable.add((mesh) => {
-            watchMesh(mesh);
-            rebuild();
-        });
-
-        const removedMeshObserver = this._scene.onMeshRemovedObservable.add((mesh) => {
-            unwatchMesh(mesh);
-            rebuild();
-        });
-
-        return {
-            dispose: () => {
-                this._scene.onNewMeshAddedObservable.remove(newMeshObserver);
-                this._scene.onMeshRemovedObservable.remove(removedMeshObserver);
-                for (const [mesh, observer] of meshMaterialObservers) {
-                    mesh.onMaterialChangedObservable.remove(observer);
-                }
-                meshMaterialObservers.clear();
-            },
-        };
-    }
-
-    /**
      * Applies the specified FrameGraph to the scene, or clears the active frame graph when null.
      * Call this from a derived class after constructing and building a FrameGraph.
-     * When a frame graph is active, SSAO is suppressed (it is incompatible with the frame graph
-     * render path). When cleared, SSAO is re-evaluated.
+     *
+     * Optionally accepts an array of mesh filter predicates. For each predicate, the viewer
+     * maintains a filtered list of scene meshes and fires {@link onObjectListsUpdated} with all
+     * lists whenever the active model changes. The observable also fires immediately on this call
+     * so the caller can perform initial wiring without a separate code path.
+     *
      * @param frameGraph The FrameGraph to activate, or null to revert to default rendering.
+     * @param filters Optional array of predicates — one per ObjectList input block to populate.
      */
-    protected _setActiveFrameGraph(frameGraph: Nullable<FrameGraph>): void {
+    protected _setActiveFrameGraph(frameGraph: Nullable<FrameGraph>, filters: ReadonlyArray<(mesh: AbstractMesh) => boolean> = []): void {
+        // Tear down any existing object-list tracking.
+        this.onModelChanged.remove(this._objectListModelChangedObserver);
+        this._objectListModelChangedObserver = null;
+        this._objectListFilters = [];
+
         this._scene.frameGraph = frameGraph;
+
+        // Always re-evaluate SSAO: tear it down when a frame graph is active,
+        // rebuild it when the frame graph is cleared.
+        this._updateSSAOPipeline();
+
         if (!frameGraph) {
-            this._updateSSAOPipeline();
+            return;
         }
+
+        this._objectListFilters = filters;
+
+        const notify = () => {
+            this.onObjectListsUpdated.notifyObservers(this._objectListFilters.map((filter) => this._scene.meshes.filter(filter)));
+        };
+
+        // Fire immediately so the caller can wire up ObjectList blocks in one place.
+        notify();
+
+        // Re-fire after every model change so lists stay current as models are swapped.
+        this._objectListModelChangedObserver = this.onModelChanged.add(notify);
     }
 
     /**
@@ -2278,6 +2244,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._imageProcessingConfigurationObserver.remove();
         this._beforeRenderObserver?.remove();
         this._snapshotHelper?.dispose();
+
+        this.onModelChanged.remove(this._objectListModelChangedObserver);
+        this.onObjectListsUpdated.clear();
 
         // Base disposes observables and sets _isDisposed = true
         super.dispose();
