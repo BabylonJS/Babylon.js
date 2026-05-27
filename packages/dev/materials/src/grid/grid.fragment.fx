@@ -76,7 +76,7 @@ float isPointOnLine(float position, float differentialLength) {
     float fractionPartOfPosition = position - floor(position + 0.5); // fract part around unit [-0.5; 0.5]
     fractionPartOfPosition /= differentialLength; // adapt to the screen space size it takes
 
-    #ifdef ANTIALIAS_COSINE
+    #ifdef ANTIALIAS
     fractionPartOfPosition = clamp(fractionPartOfPosition, -1., 1.);
     float result = 0.5 + 0.5 * cos(fractionPartOfPosition * PI); // Convert to 0-1 for antialiasing.
     return result;
@@ -85,29 +85,6 @@ float isPointOnLine(float position, float differentialLength) {
     #endif
 }
 
-#if defined(ANTIALIAS_BOX) || defined(ORIGIN_MARKER)
-float filteredGrid(vec2 p, vec2 dpdx, vec2 dpdy, float normLineWidth, bool noRepeat) {
-    float N = 1.0 / normLineWidth;
-    vec2 w = max(abs(dpdx), abs(dpdy)) + normLineWidth * 0.001;
-    vec2 a = p + 0.5 * w;
-    vec2 b = p - 0.5 * w;
-    if (noRepeat) {
-        a = clamp(a, vec2(0.0), vec2(1.0));
-        b = clamp(b, vec2(0.0), vec2(1.0));
-    }
-    vec2 NW = N * w;
-    if (NW.x == 0.0 || NW.y == 0.0) return 1.0;
-    vec2 i = (floor(a) + min(fract(a) * N, 1.0) - floor(b) - min(fract(b) * N, 1.0)) / NW;
-    return 1.0 - (1.0 - i.x) * (1.0 - i.y);
-}
-
-float gridWithUnitSpacing(vec2 p, float normLineWidth, float gridUnitSpacing, bool noRepeat) {
-    vec2 uv = p / gridUnitSpacing + vec2(normLineWidth * 0.5);
-    vec2 ddx_uv = dFdx(uv);
-    vec2 ddy_uv = dFdy(uv);
-    return filteredGrid(uv, ddx_uv, ddy_uv, normLineWidth, noRepeat);
-}
-#endif
 
 float contributionOnAxis(float position, float tcLineWidthCap, float thicknessModifier) {
     float ddx = dFdx(position);
@@ -119,22 +96,7 @@ float contributionOnAxis(float position, float tcLineWidthCap, float thicknessMo
     }
 
     float lineWidth = differentialLength * thicknessModifier;
-    float result;
-
-#ifdef ANTIALIAS_BOX
-    float normLineWidth = lineWidth;
-    float N = 1.0 / normLineWidth;
-    float p = position + normLineWidth * 0.5;
-    float w = max(abs(ddx), abs(ddy)) + normLineWidth * 0.001;
-    float a = p + 0.5 * w;
-    float b = p - 0.5 * w;
-    float NW = N * w;
-    result = NW > 0.0
-        ? clamp((floor(a) + min(fract(a) * N, 1.0) - floor(b) - min(fract(b) * N, 1.0)) / NW, 0.0, 1.0)
-        : 0.0;
-#else
-    result = isPointOnLine(position, lineWidth);
-#endif
+    float result = isPointOnLine(position, lineWidth);
 
     result *= getDynamicVisibility(position);
     result *= getAnisotropicAttenuation(differentialLength);

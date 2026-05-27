@@ -26,18 +26,6 @@ import {
 } from "core/Materials/materialHelper.functions";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
-/**
- * Antialiasing mode for GridMaterial grid lines.
- */
-export enum GridMaterialAntialiasMode {
-    /** No antialiasing — hard pixel edges */
-    None = 0,
-    /** Cosine-smoothed edges (original behavior) */
-    Cosine = 1,
-    /** Box-filter integral — higher quality, required for ORIGIN_MARKER */
-    BoxFilter = 2,
-}
-
 class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;
@@ -46,8 +34,7 @@ class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE5 = false;
     public CLIPPLANE6 = false;
     public OPACITY = false;
-    public ANTIALIAS_COSINE = false;
-    public ANTIALIAS_BOX = false;
+    public ANTIALIAS = false;
     public TRANSPARENT = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
@@ -118,21 +105,10 @@ export class GridMaterial extends PushMaterial {
     public opacity = 1.0;
 
     /**
-     * Antialiasing mode for grid lines. Defaults to Cosine (original behavior).
-     * @deprecated Use antialiasMode instead.
-     */
-    public get antialias(): boolean {
-        return this.antialiasMode !== GridMaterialAntialiasMode.None;
-    }
-    public set antialias(value: boolean) {
-        this.antialiasMode = value ? GridMaterialAntialiasMode.Cosine : GridMaterialAntialiasMode.None;
-    }
-
-    /**
-     * Antialiasing mode for grid lines. Defaults to Cosine (original behavior).
+     * Whether to antialias the grid
      */
     @serialize()
-    public antialiasMode: GridMaterialAntialiasMode = GridMaterialAntialiasMode.Cosine;
+    public antialias = true;
 
     /**
      * Color of grid lines when the camera is below the surface.
@@ -234,7 +210,7 @@ export class GridMaterial extends PushMaterial {
      * @returns whether or not the grid requires alpha blending.
      */
     public override needAlphaBlending(): boolean {
-        return this.opacity < 1.0 || this.linesOnly || (this._opacityTexture && this._opacityTexture.isReady());
+        return this.linesOnly || this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());
     }
 
     public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
@@ -276,11 +252,8 @@ export class GridMaterial extends PushMaterial {
             defines.markAsUnprocessed();
         }
 
-        const wantsCosinAA = this.antialiasMode === GridMaterialAntialiasMode.Cosine;
-        const wantsBoxAA = this.antialiasMode === GridMaterialAntialiasMode.BoxFilter;
-        if (defines.ANTIALIAS_COSINE !== wantsCosinAA || defines.ANTIALIAS_BOX !== wantsBoxAA) {
-            defines.ANTIALIAS_COSINE = wantsCosinAA;
-            defines.ANTIALIAS_BOX = wantsBoxAA;
+        if (defines.ANTIALIAS !== this.antialias) {
+            defines.ANTIALIAS = this.antialias;
             defines.markAsUnprocessed();
         }
 

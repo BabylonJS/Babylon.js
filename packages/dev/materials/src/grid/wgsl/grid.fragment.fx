@@ -69,7 +69,7 @@ fn isPointOnLine(position: f32, differentialLength: f32) -> f32 {
     var fractionPartOfPosition: f32 = position - floor(position + 0.5);
     fractionPartOfPosition = fractionPartOfPosition / differentialLength;
 
-    #ifdef ANTIALIAS_COSINE
+    #ifdef ANTIALIAS
     fractionPartOfPosition = clamp(fractionPartOfPosition, -1., 1.);
     var result: f32 = 0.5 + 0.5 * cos(fractionPartOfPosition * PI);
     return result;
@@ -81,27 +81,6 @@ fn isPointOnLine(position: f32, differentialLength: f32) -> f32 {
     #endif
 }
 
-#if defined(ANTIALIAS_BOX) || defined(ORIGIN_MARKER)
-fn filteredGrid(p: vec2f, gradX: vec2f, gradY: vec2f, normLineWidth: f32, noRepeat: bool) -> f32 {
-    let N: f32 = 1.0 / normLineWidth;
-    var w: vec2f = max(abs(gradX), abs(gradY)) + normLineWidth * 0.001;
-    var a: vec2f = p + 0.5 * w;
-    var b: vec2f = p - 0.5 * w;
-    if (noRepeat) {
-        a = clamp(a, vec2f(0.0), vec2f(1.0));
-        b = clamp(b, vec2f(0.0), vec2f(1.0));
-    }
-    let NW: vec2f = N * w;
-    if (NW.x == 0.0 || NW.y == 0.0) { return 1.0; }
-    let i: vec2f = (floor(a) + min(fract(a) * N, vec2f(1.0)) - floor(b) - min(fract(b) * N, vec2f(1.0))) / NW;
-    return 1.0 - (1.0 - i.x) * (1.0 - i.y);
-}
-
-fn gridWithUnitSpacing(p: vec2f, normLineWidth: f32, gridUnitSpacing: f32, noRepeat: bool) -> f32 {
-    let uv: vec2f = p / gridUnitSpacing + vec2f(normLineWidth * 0.5);
-    return filteredGrid(uv, dpdx(uv), dpdy(uv), normLineWidth, noRepeat);
-}
-#endif
 
 fn contributionOnAxis(position: f32, tcLineWidthCap: f32, thicknessModifier: f32) -> f32 {
     let ddx: f32 = dpdx(position);
@@ -113,24 +92,7 @@ fn contributionOnAxis(position: f32, tcLineWidthCap: f32, thicknessModifier: f32
     }
 
     let lineWidth: f32 = differentialLength * thicknessModifier;
-    var result: f32;
-
-#ifdef ANTIALIAS_BOX
-    let normLineWidth: f32 = lineWidth;
-    let N: f32 = 1.0 / normLineWidth;
-    let p: f32 = position + normLineWidth * 0.5;
-    let w: f32 = max(abs(ddx), abs(ddy)) + normLineWidth * 0.001;
-    let a: f32 = p + 0.5 * w;
-    let b: f32 = p - 0.5 * w;
-    let NW: f32 = N * w;
-    if (NW > 0.0) {
-        result = clamp((floor(a) + min(fract(a) * N, 1.0) - floor(b) - min(fract(b) * N, 1.0)) / NW, 0.0, 1.0);
-    } else {
-        result = 0.0;
-    }
-#else
-    result = isPointOnLine(position, lineWidth);
-#endif
+    var result: f32 = isPointOnLine(position, lineWidth);
 
     result = result * getDynamicVisibility(position);
     result = result * getAnisotropicAttenuation(differentialLength);
