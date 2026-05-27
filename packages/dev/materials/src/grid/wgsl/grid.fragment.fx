@@ -41,9 +41,6 @@ uniform cameraPosition: vec3f;
 uniform viewportSize: vec2f;
 #endif
 
-#ifdef HORIZON_FADE
-uniform cameraDirection: vec3f;
-#endif
 
 #ifdef BELOW_LINE_COLOR
 uniform belowLineColor: vec3f;
@@ -213,7 +210,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
     var opacity: f32 = uniforms.gridControl.w;
-#ifdef TRANSPARENT
+#ifdef LINES_ONLY
     if (grid < 0.01) { discard; }
     opacity = clamp(grid, TRANSPARENT_MIN_OPACITY, uniforms.gridControl.w * grid);
 #endif
@@ -224,7 +221,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     fragmentOutputs.color = vec4f(color.rgb, opacity * uniforms.visibility);
 
-#ifdef TRANSPARENT
+#ifdef LINES_ONLY
     #ifdef PREMULTIPLYALPHA
         fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb * opacity, fragmentOutputs.color.a);
     #endif

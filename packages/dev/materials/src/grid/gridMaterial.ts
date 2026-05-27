@@ -35,7 +35,7 @@ class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE6 = false;
     public OPACITY = false;
     public ANTIALIAS = false;
-    public TRANSPARENT = false;
+    public LINES_ONLY = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
     public MAX_LINE = false;
@@ -115,10 +115,20 @@ export class GridMaterial extends PushMaterial {
      * When set, lineColor acts as the above-surface color.
      */
     @serializeAsColor3()
-    public belowLineColor: Nullable<Color3> = null;
+    public get belowLineColor(): Nullable<Color3> {
+        return this._belowLineColor;
+    }
+    public set belowLineColor(value: Nullable<Color3>) {
+        if (this._belowLineColor === value) {
+            return;
+        }
+        this._belowLineColor = value;
+        this._markAllSubMeshesAsMiscDirty();
+    }
+    private _belowLineColor: Nullable<Color3> = null;
 
     /**
-     * Enable multi-scale (10-octave) grid LOD.
+     * Enable multi-scale logarithmic grid LOD. Number of octaves is controlled by gridOctaves.
      */
     @serialize()
     public useMultiScale: boolean = false;
@@ -163,12 +173,12 @@ export class GridMaterial extends PushMaterial {
         }
         this._linesOnly = value;
         this.needDepthPrePass = value;
-        this._markAllSubMeshesAsTexturesDirty();
+        this._markAllSubMeshesAsMiscDirty();
     }
     private _linesOnly = false;
 
     /**
-     * Scales grid line width. Values > 1 produce thicker lines. Default 1.0.
+     * Scales grid line width. Values \> 1 produce thicker lines. Default 1.0.
      */
     @serialize()
     public gridThicknessModifier: number = 1.0;
@@ -194,6 +204,7 @@ export class GridMaterial extends PushMaterial {
     public opacityTexture: BaseTexture;
 
     private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
+    private _viewportSize: Vector2 = new Vector2();
 
     /**
      * constructor
@@ -238,8 +249,8 @@ export class GridMaterial extends PushMaterial {
             return true;
         }
 
-        if (defines.TRANSPARENT !== this.linesOnly) {
-            defines.TRANSPARENT = this.linesOnly;
+        if (defines.LINES_ONLY !== this.linesOnly) {
+            defines.LINES_ONLY = this.linesOnly;
             defines.markAsUnprocessed();
         }
 
@@ -268,7 +279,7 @@ export class GridMaterial extends PushMaterial {
             defines.markAsUnprocessed();
         }
 
-        const wantsBelowColor = this.belowLineColor !== null;
+        const wantsBelowColor = this._belowLineColor !== null;
         if (defines.BELOW_LINE_COLOR !== wantsBelowColor) {
             defines.BELOW_LINE_COLOR = wantsBelowColor;
             defines.markAsUnprocessed();
@@ -334,7 +345,6 @@ export class GridMaterial extends PushMaterial {
                 "visibility",
                 "logarithmicDepthConstant",
                 "cameraPosition",
-                "cameraDirection",
                 "viewportSize",
                 "belowLineColor",
                 "gridOctaves",
@@ -424,8 +434,8 @@ export class GridMaterial extends PushMaterial {
             this._activeEffect.setVector4("gridControl", this._gridControl);
             this._activeEffect.setFloat("gridThicknessModifier", this.gridThicknessModifier);
 
-            if (defines.BELOW_LINE_COLOR && this.belowLineColor) {
-                this._activeEffect.setColor3("belowLineColor", this.belowLineColor);
+            if (defines.BELOW_LINE_COLOR && this._belowLineColor) {
+                this._activeEffect.setColor3("belowLineColor", this._belowLineColor);
             }
 
             if (defines.MULTI_SCALE) {
@@ -454,9 +464,10 @@ export class GridMaterial extends PushMaterial {
             const cam = scene.activeCamera;
             if (cam) {
                 this._activeEffect.setVector3("cameraPosition", cam.position);
-                this._activeEffect.setVector3("cameraDirection", cam.getForwardRay().direction);
                 const engine = scene.getEngine();
-                this._activeEffect.setVector2("viewportSize", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+                this._viewportSize.x = engine.getRenderWidth();
+                this._viewportSize.y = engine.getRenderHeight();
+                this._activeEffect.setVector2("viewportSize", this._viewportSize);
             }
         }
 

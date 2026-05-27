@@ -45,9 +45,6 @@ uniform vec3 cameraPosition;
 uniform vec2 viewportSize;
 #endif
 
-#ifdef HORIZON_FADE
-uniform vec3 cameraDirection;
-#endif
 
 #ifdef BELOW_LINE_COLOR
 uniform vec3 belowLineColor;
@@ -218,7 +215,7 @@ void main(void) {
 #endif
 
     float opacity = gridControl.w;
-#ifdef TRANSPARENT
+#ifdef LINES_ONLY
     if (grid < 0.01) discard;
     opacity = clamp(grid, TRANSPARENT_MIN_OPACITY, gridControl.w * grid);
 #endif
@@ -230,7 +227,7 @@ void main(void) {
     // Apply the color.
     gl_FragColor = vec4(color.rgb, opacity * visibility);
 
-#ifdef TRANSPARENT
+#ifdef LINES_ONLY
     #ifdef PREMULTIPLYALPHA
         gl_FragColor.rgb *= opacity;
     #endif
