@@ -2885,13 +2885,13 @@
             "title": "Grid Material",
             "playgroundId": "#RKGF05",
             "referenceImage": "grid-material.png",
-            "dependsOn": ["Materials", "Meshes"]
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
         },
         {
             "title": "Multi Scale Grid Material",
             "playgroundId": "#RKGF05#5",
             "referenceImage": "multi-scale-grid-material.png",
-            "dependsOn": ["Materials", "Meshes"]
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
         },
         {
             "title": "water-material",

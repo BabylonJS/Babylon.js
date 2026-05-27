@@ -463,7 +463,7 @@ export class GridMaterial extends PushMaterial {
         if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR || defines.ORIGIN_MARKER) {
             const cam = scene.activeCamera;
             if (cam) {
-                this._activeEffect.setVector3("cameraPosition", cam.position);
+                this._activeEffect.setVector3("cameraPosition", cam.globalPosition);
                 const engine = scene.getEngine();
                 this._viewportSize.x = engine.getRenderWidth();
                 this._viewportSize.y = engine.getRenderHeight();
@@ -496,6 +496,13 @@ export class GridMaterial extends PushMaterial {
         return "GridMaterial";
     }
 
+    /**
+     * Parse a JSON input to create back a grid material.
+     * @param source the JSON data to parse
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new grid material
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
         return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);
     }

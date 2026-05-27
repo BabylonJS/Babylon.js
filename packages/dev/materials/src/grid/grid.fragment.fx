@@ -227,11 +227,8 @@ void main(void) {
     // Apply the color.
     gl_FragColor = vec4(color.rgb, opacity * visibility);
 
-#ifdef LINES_ONLY
-    #ifdef PREMULTIPLYALPHA
-        gl_FragColor.rgb *= opacity;
-    #endif
-#else
+#ifdef PREMULTIPLYALPHA
+    gl_FragColor.rgb *= opacity;
 #endif
 
 #include<logDepthFragment>

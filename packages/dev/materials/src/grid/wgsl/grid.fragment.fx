@@ -221,11 +221,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     fragmentOutputs.color = vec4f(color.rgb, opacity * uniforms.visibility);
 
-#ifdef LINES_ONLY
-    #ifdef PREMULTIPLYALPHA
-        fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb * opacity, fragmentOutputs.color.a);
-    #endif
-#else
+#ifdef PREMULTIPLYALPHA
+    fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb * opacity, fragmentOutputs.color.a);
 #endif
 
 #include<logDepthFragment>
