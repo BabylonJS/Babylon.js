@@ -10,6 +10,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3, type Quaternion } from "core/Maths/math.vector.pure";
 
 import { Logger } from "core/Misc/logger";
+import { Observable } from "core/Misc/observable";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -447,6 +448,13 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
 
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
+
+    /** Fired after parts are added or the mesh is rebuilt following a removal. Payload is the new part count. */
+    public readonly onPartCountChangedObservable = new Observable<number>();
+
+    /** Fired after part-removal validation passes but before the mesh is rebuilt.
+     *  Payload is the original (pre-removal) part index. */
+    public readonly onPartRemovedObservable = new Observable<number>();
 
     /**
      * Returns a byte-accurate view for retained splat data, preserving any non-zero byte offset.

@@ -228,6 +228,33 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     }
 
     /**
+     * Removes the per-part override slot at `removedIndex` and shifts all higher-indexed
+     * slots down by one, keeping the arrays aligned with the compound mesh's new part layout.
+     * Called automatically by GaussianSplattingDebugger when a part is removed.
+     * @param removedIndex The original (pre-removal) part index that was removed.
+     */
+    public shiftPartOptions(removedIndex: number): void {
+        const arrays = [
+            this._partClippingBoxes,
+            this._partOpacityCullings,
+            this._partSizeCullings,
+            this._partOpacityScales,
+            this._partOpacitySaturates,
+            this._partShDcs,
+            this._partShOrder1s,
+            this._partShOrder2s,
+            this._partShOrder3s,
+            this._partShOrder4s,
+        ];
+        for (const arr of arrays) {
+            if (removedIndex < arr.length) {
+                arr.splice(removedIndex, 1);
+            }
+        }
+        this._markDirty();
+    }
+
+    /**
      * World-space axis-aligned clipping box. Splats outside are not rendered.
      * Set to null to disable clipping.
      * Example: `{ min: new Vector3(-2,-2,-2), max: new Vector3(2,2,2) }`

@@ -1060,6 +1060,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._postToWorker(true);
             }
 
+            this.onPartCountChangedObservable.notifyObservers(this.partCount);
             return { proxyMeshes, assignedPartIndices };
         } catch (e) {
             // Ensure the gates are always restored so sorting is not permanently frozen.
@@ -1126,6 +1127,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             }
         }
 
+        // Notify listeners before mutation so they can record state keyed on the original index.
+        this.onPartRemovedObservable.notifyObservers(index);
+
         // --- Reset this mesh to an empty state ---
         // Terminate the sort worker before zeroing _vertexCount. The worker's onmessage handler
         // compares depthMix.length against (_vertexCount + 15) & ~0xf; with _vertexCount = 0 that
@@ -1187,6 +1191,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (survivors.length === 0) {
             // Nothing left — leave the mesh empty.
             this.setEnabled(false);
+            this.onPartCountChangedObservable.notifyObservers(0);
             return;
         }
 
