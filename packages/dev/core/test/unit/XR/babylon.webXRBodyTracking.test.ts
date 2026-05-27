@@ -15,7 +15,15 @@ import { Skeleton } from "core/Bones/skeleton";
 import { Bone } from "core/Bones/bone";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Mesh } from "core/Meshes/mesh";
-import { MixamoRigMapping, MixamoAimChildOverrides, WebXRBodyJoint, BodyJointParentIndex, WebXRBodyTracking, _ResolveMixamoRigMapping } from "core/XR/features/WebXRBodyTracking";
+import {
+    MixamoRigMapping,
+    MixamoAimChildOverrides,
+    WebXRBodyJoint,
+    BodyJointParentIndex,
+    WebXRBodyTracking,
+    WebXRTrackedBody,
+    _ResolveMixamoRigMapping,
+} from "core/XR/features/WebXRBodyTracking";
 import { WebXRFeatureName, WebXRFeaturesManager } from "core/XR/webXRFeaturesManager";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from "vitest";
@@ -2082,6 +2090,72 @@ describe("WebXRBodyTracking - _ResolveMixamoRigMapping", () => {
         child.parent = root;
         const resolved = _ResolveMixamoRigMapping(root);
         expect(resolved[WebXRBodyJoint.HIPS]).toBe("mixamorig:Hips");
+    });
+});
+
+describe("WebXRTrackedBody - hand twist correction", () => {
+    let engine: Engine;
+    let scene: Scene;
+
+    beforeEach(() => {
+        engine = new NullEngine({ renderHeight: 256, renderWidth: 256, textureSize: 256 });
+        scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uses tracked hand-plane references to resolve wrist roll around the aim axis", () => {
+        const trackedBody = new WebXRTrackedBody(scene, undefined, undefined, 1.0, false, true, MixamoAimChildOverrides);
+        const skeleton = new Skeleton("s", "s", scene);
+        const wristBone = new Bone("RightHand", skeleton, null, Matrix.Identity());
+
+        const idxOf = (joint: WebXRBodyJoint): number => {
+            const idx = WebXRBodyTracking.AllBodyJoints.indexOf(joint);
+            expect(idx).toBeGreaterThanOrEqual(0);
+            return idx;
+        };
+
+        const rightWristIdx = idxOf(WebXRBodyJoint.RIGHT_HAND_WRIST);
+        const rightMiddleIdx = idxOf(WebXRBodyJoint.RIGHT_HAND_MIDDLE_METACARPAL);
+        const rightIndexIdx = idxOf(WebXRBodyJoint.RIGHT_HAND_INDEX_METACARPAL);
+        const rightLittleIdx = idxOf(WebXRBodyJoint.RIGHT_HAND_LITTLE_METACARPAL);
+
+        const anyTrackedBody = trackedBody as any;
+        anyTrackedBody._skeleton = skeleton;
+        anyTrackedBody._desiredFinals = Array.from({ length: WebXRBodyTracking.AllBodyJoints.length }, () => Matrix.Identity());
+        anyTrackedBody._desiredFinalPositions = Array.from({ length: WebXRBodyTracking.AllBodyJoints.length }, () => Vector3.Zero());
+        anyTrackedBody._trackedBindDesiredFinalRot = Array.from({ length: WebXRBodyTracking.AllBodyJoints.length }, () => Quaternion.Identity());
+        anyTrackedBody._trackedBindDesiredFinalPos = Array.from({ length: WebXRBodyTracking.AllBodyJoints.length }, () => Vector3.Zero());
+        anyTrackedBody._boneToJointIdx.set(wristBone, rightWristIdx);
+        anyTrackedBody._bindBoneWorldRotMeshLocal.set(wristBone, Quaternion.Identity());
+        anyTrackedBody._mappedBoneBindLocals.set(wristBone, Matrix.Identity());
+        anyTrackedBody._boneAimTargetJointIdx.set(wristBone, rightMiddleIdx);
+        anyTrackedBody._bindLocalAimDirections.set(wristBone, new Vector3(1, 0, 0));
+        anyTrackedBody._boneTwistReferenceJointIdx.set(wristBone, { first: rightIndexIdx, second: rightLittleIdx });
+        anyTrackedBody._bindLocalTwistNormals.set(wristBone, new Vector3(0, 1, 0));
+
+        anyTrackedBody._desiredFinalPositions[rightWristIdx].set(0, 0, 0);
+        anyTrackedBody._desiredFinalPositions[rightMiddleIdx].set(1, 0, 0);
+        anyTrackedBody._desiredFinalPositions[rightIndexIdx].set(0, 0, -1);
+        anyTrackedBody._desiredFinalPositions[rightLittleIdx].set(0, 0, 1);
+
+        // Start from a wrist rotation with correct aim (X axis) but opposite twist normal,
+        // which triggers the near-opposite projected-vector correction path.
+        const wrongRoll = Quaternion.RotationAxis(Vector3.Right(), Math.PI);
+        Matrix.ComposeToRef(Vector3.One(), wrongRoll, Vector3.Zero(), anyTrackedBody._desiredFinals[rightWristIdx]);
+
+        anyTrackedBody._retargetDeltaFromBind(1.0);
+
+        const corrected = trackedBody.jointTransforms[rightWristIdx].rotationQuaternion!;
+        const correctedTwistNormal = Vector3.Up().rotateByQuaternionToRef(corrected, new Vector3());
+        const correctedAim = Vector3.Right().rotateByQuaternionToRef(corrected, new Vector3());
+        const expectedTwistNormal = new Vector3(0, 1, 0);
+
+        expect(Vector3.Dot(correctedTwistNormal, expectedTwistNormal)).toBeGreaterThan(0.999);
+        expect(Vector3.Dot(correctedAim, Vector3.Right())).toBeGreaterThan(0.999);
     });
 });
 

@@ -9,7 +9,7 @@ import { SpriteRenderer } from "core/Sprites/spriteRenderer";
 
 import { type ThinMatrix } from "../maths/matrix";
 
-import { type AnimationConfiguration } from "../animationConfiguration";
+import { type ResolvedAnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Represents all the sprites from the animation and manages their rendering.
@@ -24,14 +24,14 @@ export class RenderingManager {
     private _spriteLayerIndices: number[];
     private _spriteAtlasIndices: number[];
     private _batches: { sprites: ThinSprite[]; pageIndex: number }[];
-    private readonly _configuration: AnimationConfiguration;
+    private readonly _configuration: ResolvedAnimationConfiguration;
 
     /**
      * Creates a new instance of the RenderingManager.
      * @param engine ThinEngine instance used for rendering.
      * @param configuration Configuration options for the rendering manager.
      */
-    public constructor(engine: ThinEngine, configuration: AnimationConfiguration) {
+    public constructor(engine: ThinEngine, configuration: ResolvedAnimationConfiguration) {
         this._engine = engine;
         this._spritesTextures = [];
         this._sprites = [];
