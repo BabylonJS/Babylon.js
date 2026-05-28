@@ -469,8 +469,8 @@ export class TransmissionHelper {
         this._disposed = true;
 
         // Unregister scene-level observers so this helper stops reacting to mesh changes.
-        this._newMeshObserver.remove();
-        this._removedMeshObserver.remove();
+        this._newMeshObserver?.remove();
+        this._removedMeshObserver?.remove();
         this._newMeshObserver = null;
         this._removedMeshObserver = null;
 

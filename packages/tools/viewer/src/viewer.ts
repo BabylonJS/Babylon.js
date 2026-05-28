@@ -20,6 +20,7 @@ import {
     type LoadAssetContainerOptions,
     type Nullable,
     type Observer,
+    type Observable,
     type PickingInfo,
     type ShaderMaterial,
     type ShadowGenerator,
@@ -47,7 +48,6 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Mesh } from "core/Meshes/mesh";
 import { computeMaxExtents, RemoveUnreferencedVerticesData } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
-import { Observable } from "core/Misc/observable";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
@@ -536,12 +536,15 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private _objectListModelChangedObserver: Nullable<Observer<Nullable<string | File | ArrayBufferView>>> = null;
 
     /**
-     * Fired whenever the filtered object lists managed by an active frame graph are recomputed.
+     * Called whenever the filtered object lists managed by an active frame graph are recomputed.
      * Each entry in the array corresponds to the filter at the same index passed to
-     * {@link _setActiveFrameGraph}. Fires once immediately when _setActiveFrameGraph is called,
-     * and again after every model change.
+     * {@link _setActiveFrameGraph}. Called once immediately when _setActiveFrameGraph is called,
+     * and again after every model change. Override in a subclass to wire ObjectList input blocks
+     * or perform other per-model setup without managing observer lifetimes manually.
+     * @param _objectLists The filtered lists of meshes corresponding to the filters passed to _setActiveFrameGraph.
      */
-    public readonly onObjectListsUpdated = new Observable<ReadonlyArray<ReadonlyArray<AbstractMesh>>>();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _onObjectListsUpdated(_objectLists: ReadonlyArray<ReadonlyArray<AbstractMesh>>): void {}
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -953,20 +956,13 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._ssaoAbortController?.abort(new AbortError("SSAO pipeline is being updated."));
         this._ssaoAbortController = null;
 
-        if (this._scene.frameGraph) {
-            // SSAO2RenderingPipeline is incompatible with the frame graph render path.
-            // Tear down any existing pipeline so it doesn't consume resources while dormant.
-            this._disableSSAOPipeline();
-            return;
-        }
-
         observePromise(
             (async () => {
                 this._ssaoAbortController = new AbortController();
                 const abortSignal = this._ssaoAbortController.signal;
 
                 await this._updateSSAOLock.lockAsync(async () => {
-                    let shouldEnable = this._ssaoOption === "enabled";
+                    let shouldEnable = this._ssaoOption === "enabled" && !this._scene.frameGraph;
 
                     if (this._ssaoOption === "auto") {
                         const hasModels = this._loadedModels.length > 0;
@@ -996,8 +992,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
      * Call this from a derived class after constructing and building a FrameGraph.
      *
      * Optionally accepts an array of mesh filter predicates. For each predicate, the viewer
-     * maintains a filtered list of scene meshes and fires {@link onObjectListsUpdated} with all
-     * lists whenever the active model changes. The observable also fires immediately on this call
+     * maintains a filtered list of scene meshes and calls {@link _onObjectListsUpdated} with all
+     * lists whenever the active model changes. The method is also called immediately on this call
      * so the caller can perform initial wiring without a separate code path.
      *
      * @param frameGraph The FrameGraph to activate, or null to revert to default rendering.
@@ -1022,7 +1018,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._objectListFilters = filters;
 
         const notify = () => {
-            this.onObjectListsUpdated.notifyObservers(this._objectListFilters.map((filter) => this._scene.meshes.filter(filter)));
+            this._onObjectListsUpdated(this._objectListFilters.map((filter) => this._scene.meshes.filter(filter)));
         };
 
         // Fire immediately so the caller can wire up ObjectList blocks in one place.
@@ -2245,7 +2241,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._snapshotHelper?.dispose();
 
         this.onModelChanged.remove(this._objectListModelChangedObserver);
-        this.onObjectListsUpdated.clear();
 
         // Base disposes observables and sets _isDisposed = true
         super.dispose();
