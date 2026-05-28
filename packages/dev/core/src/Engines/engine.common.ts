@@ -210,8 +210,8 @@ function GetFontOffsetFromCanvas(font: string): Nullable<{ ascent: number; heigh
 
         context.font = font;
         const metrics = context.measureText("Hg");
-        const ascent = Number(metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent);
-        const descent = Number(metrics.fontBoundingBoxDescent ?? metrics.actualBoundingBoxDescent);
+        const ascent = Number(metrics.actualBoundingBoxAscent ?? metrics.fontBoundingBoxAscent);
+        const descent = Number(metrics.actualBoundingBoxDescent ?? metrics.fontBoundingBoxDescent);
         const offset = { ascent, height: ascent + descent, descent };
         return IsValidFontOffset(offset) ? offset : null;
     } catch {
