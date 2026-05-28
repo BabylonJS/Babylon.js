@@ -2891,6 +2891,18 @@
             "dependsOn": ["Lights", "Materials"]
         },
         {
+            "title": "Grid Material",
+            "playgroundId": "#RKGF05",
+            "referenceImage": "grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Multi Scale Grid Material",
+            "playgroundId": "#RKGF05#5",
+            "referenceImage": "multi-scale-grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
             "title": "water-material",
             "playgroundId": "#EUH2VL#1",
             "dependsOn": ["LibMaterials", "Materials", "Textures"],
