@@ -3,9 +3,9 @@ import { type AssetContainer } from "../assetContainer";
 import { type Node } from "../node";
 import { type Material } from "../Materials/material";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
-import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { CubeTexture } from "../Materials/Textures/cubeTexture.pure";
+import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture.pure";
 import { type AnimationGroup } from "../Animations/animationGroup";
 import { Observable, type Observer } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
@@ -22,7 +22,7 @@ import {
 } from "./smartAssetSerializer";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
+const SMART_ASSET_MANAGER_KEY = "babylonjs:smartAssetManager";
 
 /**
  * Stateful handle for a scene's smart asset registry.
@@ -79,8 +79,18 @@ type SmartAssetManagerInternals = {
     sceneDisposeObserver: ReturnType<Scene["onDisposeObservable"]["add"]> | null;
 };
 
-const SmartAssetManagerInternals = new WeakMap<SmartAssetManager, SmartAssetManagerInternals>();
-const OnSmartAssetManagerCreatedObservable = new Observable<SmartAssetManager>();
+// Lazy-initialised module state. Wrapped in accessors so the module has
+// no top-level side effects and is trivially tree-shakeable: nothing
+// allocates until a SmartAssetManager is actually created.
+let _InternalsMap: WeakMap<SmartAssetManager, SmartAssetManagerInternals> | undefined;
+function GetInternalsMap(): WeakMap<SmartAssetManager, SmartAssetManagerInternals> {
+    return (_InternalsMap ??= new WeakMap());
+}
+
+let _OnCreatedObservable: Observable<SmartAssetManager> | undefined;
+function GetOnCreatedObservable(): Observable<SmartAssetManager> {
+    return (_OnCreatedObservable ??= new Observable());
+}
 
 /**
  * Creates a new SmartAssetManager state object and attaches it to the scene.
@@ -107,7 +117,7 @@ function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         blobUrls: new Map(),
         sceneDisposeObserver: null,
     };
-    SmartAssetManagerInternals.set(manager, internal);
+    GetInternalsMap().set(manager, internal);
 
     if (!scene.metadata) {
         scene.metadata = {};
@@ -117,7 +127,7 @@ function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
     // Auto-dispose when the scene is disposed so the manager doesn't outlive it.
     internal.sceneDisposeObserver = scene.onDisposeObservable.add(() => DisposeSmartAssetManager(manager));
 
-    OnSmartAssetManagerCreatedObservable.notifyObservers(manager);
+    GetOnCreatedObservable().notifyObservers(manager);
 
     return manager;
 }
@@ -143,7 +153,7 @@ export function GetSmartAssetManager(scene: Scene): SmartAssetManager {
  */
 export function AddSmartAssetManagerCreatedObserver(callback: (manager: SmartAssetManager) => void): Observer<SmartAssetManager> {
     // Wrap so the EventState second-arg from Observable.add isn't passed through to the caller.
-    return OnSmartAssetManagerCreatedObservable.add((manager) => callback(manager));
+    return GetOnCreatedObservable().add((manager) => callback(manager));
 }
 
 /**
@@ -497,11 +507,11 @@ function TrackLoadedSmartAssetContainer(manager: SmartAssetManager, key: string,
  * @param manager - The smart asset manager state.
  */
 export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
-    const internal = SmartAssetManagerInternals.get(manager);
+    const internal = GetInternalsMap().get(manager);
     if (!internal) {
         return;
     }
-    SmartAssetManagerInternals.delete(manager);
+    GetInternalsMap().delete(manager);
 
     if (internal.sceneDisposeObserver) {
         manager.scene.onDisposeObservable.remove(internal.sceneDisposeObserver);
@@ -536,7 +546,7 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
 }
 
 function GetSmartAssetInternals(manager: SmartAssetManager): SmartAssetManagerInternals {
-    const internal = SmartAssetManagerInternals.get(manager);
+    const internal = GetInternalsMap().get(manager);
     if (!internal) {
         throw new Error("SmartAssetManager: Unknown manager state.");
     }
@@ -633,15 +643,14 @@ function TrackSmartAssetContainerObjects(manager: SmartAssetManager, key: string
     }
 }
 
-const TextureExtensions = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"]);
-
+let _TextureExtensions: Set<string> | undefined;
 /**
  * Returns the set of file extensions (including the leading dot) that {@link LoadAllSmartAssetsAsync}
  * treats as standalone textures.
  * @returns A read-only set of texture file extensions.
  */
 export function GetSmartAssetTextureExtensions(): ReadonlySet<string> {
-    return TextureExtensions;
+    return (_TextureExtensions ??= new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"]));
 }
 
 /**
@@ -650,9 +659,9 @@ export function GetSmartAssetTextureExtensions(): ReadonlySet<string> {
  * @returns True if the URL has a texture file extension.
  */
 function IsTextureUrl(url: string): boolean {
-    return TextureExtensions.has(GetExtensionFromUrl(url));
+    return GetSmartAssetTextureExtensions().has(GetExtensionFromUrl(url));
 }
 
 function IsTextureExtension(extension: string | undefined): boolean {
-    return extension !== undefined && TextureExtensions.has(extension.toLowerCase());
+    return extension !== undefined && GetSmartAssetTextureExtensions().has(extension.toLowerCase());
 }
