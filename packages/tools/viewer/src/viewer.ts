@@ -10,6 +10,7 @@ import {
     type Camera,
     type CubeTexture,
     type Engine,
+    type FrameGraph,
     type HDRCubeTexture,
     type IblCdfGenerator,
     type IblShadowsRenderPipeline,
@@ -24,8 +25,6 @@ import {
     type ShadowGenerator,
     type SSAO2RenderingPipeline,
 } from "core/index";
-
-import { type FrameGraph } from "core/FrameGraph/frameGraph";
 
 import { type MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 

@@ -479,7 +479,7 @@ export class TransmissionHelper {
         for (const mesh of allTracked) {
             const observer = this._materialObservers[mesh.uniqueId];
             if (observer) {
-                mesh.onMaterialChangedObservable.remove(observer);
+                observer.remove();
                 delete this._materialObservers[mesh.uniqueId];
             }
         }
