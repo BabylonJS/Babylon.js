@@ -2014,6 +2014,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._worker?.terminate();
         this._worker = null;
 
+        this.onPartCountChangedObservable.clear();
+        this.onPartRemovedObservable.clear();
+
         // delete meshes created for each camera
         this._cameraViewInfos.forEach((cameraViewInfo) => {
             cameraViewInfo.mesh.dispose();

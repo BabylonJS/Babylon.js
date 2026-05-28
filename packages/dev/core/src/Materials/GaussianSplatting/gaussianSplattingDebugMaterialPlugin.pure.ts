@@ -103,6 +103,9 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _partShOrder2s: Array<Nullable<boolean>> = [];
     private _partShOrder3s: Array<Nullable<boolean>> = [];
     private _partShOrder4s: Array<Nullable<boolean>> = [];
+    // Single registry of every _part* array — shiftPartOptions iterates this instead of
+    // listing each array by name, so adding a new per-part field only requires adding it here.
+    private readonly _partArrays: Array<Array<unknown>>;
 
     // Per-part debug LUT: MAX_PART_COUNT × 5 RGBA float texture (dbgPartData)
     private _dbgPartDataTexture: Nullable<RawTexture> = null;
@@ -115,6 +118,18 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
      */
     constructor(material: GaussianSplattingMaterial) {
         super(material, "GaussianSplattingDebug", 200, new GaussianSplattingDebugDefines(), true, true);
+        this._partArrays = [
+            this._partClippingBoxes,
+            this._partOpacityCullings,
+            this._partSizeCullings,
+            this._partOpacityScales,
+            this._partOpacitySaturates,
+            this._partShDcs,
+            this._partShOrder1s,
+            this._partShOrder2s,
+            this._partShOrder3s,
+            this._partShOrder4s,
+        ];
     }
 
     private _isAnyFeatureActive(): boolean {
@@ -230,23 +245,11 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     /**
      * Removes the per-part override slot at `removedIndex` and shifts all higher-indexed
      * slots down by one, keeping the arrays aligned with the compound mesh's new part layout.
-     * Called automatically by GaussianSplattingDebugger when a part is removed.
-     * @param removedIndex The original (pre-removal) part index that was removed.
+     * @param removedIndex The original (pre-removal) part index.
+     * @internal
      */
     public shiftPartOptions(removedIndex: number): void {
-        const arrays = [
-            this._partClippingBoxes,
-            this._partOpacityCullings,
-            this._partSizeCullings,
-            this._partOpacityScales,
-            this._partOpacitySaturates,
-            this._partShDcs,
-            this._partShOrder1s,
-            this._partShOrder2s,
-            this._partShOrder3s,
-            this._partShOrder4s,
-        ];
-        for (const arr of arrays) {
+        for (const arr of this._partArrays) {
             if (removedIndex < arr.length) {
                 arr.splice(removedIndex, 1);
             }

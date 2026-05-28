@@ -36,6 +36,7 @@ export class GaussianSplattingDebugger {
     private _plugins: GaussianSplattingDebugMaterialPlugin[] = [];
     private _meshes: GaussianSplattingMeshBase[] = [];
     private _disposeObservers: Observer<Node>[] = [];
+    // observable.add() returns Nullable<Observer<T>>; Observable.remove() accepts null safely.
     private _partCountObservers: Nullable<Observer<number>>[] = [];
     private _partRemovedObservers: Nullable<Observer<number>>[] = [];
 
