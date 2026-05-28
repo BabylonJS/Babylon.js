@@ -10,7 +10,7 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
 import { type AnimationGroup } from "core/Animations/animationGroup";
-import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager";
+import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager.pure";
 
 /**
  * Inspector service that captures property edits made through Inspector and
