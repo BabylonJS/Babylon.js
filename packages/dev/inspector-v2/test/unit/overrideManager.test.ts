@@ -592,7 +592,7 @@ describe("OverrideManager", () => {
             // Verify that the override module's own source does not import the SAM module —
             // if SAM creation is observable here, it's because Scene metadata exists, not
             // because OverrideManager touched SAM.
-            const samBefore = (scene.metadata as any)?.[Symbol.for("babylonjs:smartAssetManager")];
+            const samBefore = (scene.metadata as any)?.["babylonjs:smartAssetManager"];
             AddOverride(scene, {
                 targetType: "scene",
                 targetName: "",
@@ -600,10 +600,10 @@ describe("OverrideManager", () => {
                 propertyPath: "fogDensity",
                 value: 0.4,
             });
-            const samAfter = (scene.metadata as any)?.[Symbol.for("babylonjs:smartAssetManager")];
+            const samAfter = (scene.metadata as any)?.["babylonjs:smartAssetManager"];
             expect(samBefore).toBe(samAfter);
 
-            // The smartAssetManager Symbol is also intentionally NOT a key on OverrideManager's scene metadata
+            // The smartAssetManager key is also intentionally NOT present on OverrideManager's scene metadata
             // until something else creates one. Sanity check: GetSmartAssetManager is a no-op here.
             // (When invoked it would attach a SAM, but we never invoked it.)
             expect(typeof GetSmartAssetManager).toBe("function");
