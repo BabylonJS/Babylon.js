@@ -105,9 +105,6 @@ float isPointOnLine(float position, float differentialLength) {
 
 
 float contributionOnAxis(float position, float tcLineWidthCap, float thicknessModifier) {
-    // Note: local variables must NOT be named ddx/ddy — those are HLSL built-in
-    // function names, and SPIRV-Cross GLSL->HLSL emission triggers D3DCompile
-    // X3005 ("identifier represents a variable") on Babylon Native.
     float dPosDx = dFdx(position);
     float dPosDy = dFdy(position);
     float differentialLength = length(vec2(dPosDx, dPosDy)) * SQRT2;
