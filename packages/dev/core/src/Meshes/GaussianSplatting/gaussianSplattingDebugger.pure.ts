@@ -36,6 +36,9 @@ export class GaussianSplattingDebugger {
     private _plugins: GaussianSplattingDebugMaterialPlugin[] = [];
     private _meshes: GaussianSplattingMeshBase[] = [];
     private _disposeObservers: Observer<Node>[] = [];
+    // observable.add() returns Nullable<Observer<T>>; Observable.remove() accepts null safely.
+    private _partCountObservers: Nullable<Observer<number>>[] = [];
+    private _partRemovedObservers: Nullable<Observer<number>>[] = [];
 
     // Cached option state so newly added meshes inherit current settings
     private _clippingBox: Nullable<{ min: Vector3; max: Vector3 }> = null;
@@ -70,6 +73,16 @@ export class GaussianSplattingDebugger {
         this._meshes.push(mesh);
         this._plugins.push(plugin);
         this._disposeObservers.push(mesh.onDisposeObservable.add(() => this.removeMesh(mesh))!);
+        this._partCountObservers.push(
+            mesh.onPartCountChangedObservable.add((count) => {
+                plugin.partCount = count;
+            })
+        );
+        this._partRemovedObservers.push(
+            mesh.onPartRemovedObservable.add((removedIndex) => {
+                plugin.shiftPartOptions(removedIndex);
+            })
+        );
     }
 
     /**
@@ -82,21 +95,29 @@ export class GaussianSplattingDebugger {
             return;
         }
         mesh.onDisposeObservable.remove(this._disposeObservers[idx]);
+        mesh.onPartCountChangedObservable.remove(this._partCountObservers[idx]);
+        mesh.onPartRemovedObservable.remove(this._partRemovedObservers[idx]);
         this._plugins[idx].dispose();
         this._meshes.splice(idx, 1);
         this._plugins.splice(idx, 1);
         this._disposeObservers.splice(idx, 1);
+        this._partCountObservers.splice(idx, 1);
+        this._partRemovedObservers.splice(idx, 1);
     }
 
     /** Disposes all debug plugins and clears the mesh list. */
     public dispose(): void {
         for (let i = 0; i < this._meshes.length; i++) {
             this._meshes[i].onDisposeObservable.remove(this._disposeObservers[i]);
+            this._meshes[i].onPartCountChangedObservable.remove(this._partCountObservers[i]);
+            this._meshes[i].onPartRemovedObservable.remove(this._partRemovedObservers[i]);
             this._plugins[i].dispose();
         }
         this._meshes.length = 0;
         this._plugins.length = 0;
         this._disposeObservers.length = 0;
+        this._partCountObservers.length = 0;
+        this._partRemovedObservers.length = 0;
     }
 
     /**

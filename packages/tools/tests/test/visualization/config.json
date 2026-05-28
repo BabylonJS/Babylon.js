@@ -263,6 +263,15 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting Debug Part Auto Tracking Test",
+            "playgroundId": "#BTS11N#3",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-debug-part-auto-tracking-test.png",
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Part Serialize Test",
             "playgroundId": "#XQZVOI#0",
             "errorRatio": 5,
