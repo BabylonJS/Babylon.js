@@ -21,8 +21,12 @@ import {
     ReadJsonSourceAsync,
 } from "./smartAssetSerializer";
 
+// Keep this a Symbol (not a string): scene.metadata is a publicly enumerable
+// object, and routing SAM through a symbol key keeps it out of Object.values /
+// JSON.stringify so the inspector's metadata viewer doesn't recurse into the
+// manager (which holds a back-reference to the scene, creating a cycle).
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SMART_ASSET_MANAGER_KEY = "babylonjs:smartAssetManager";
+const SMART_ASSET_MANAGER_KEY = /*#__PURE__*/ Symbol("babylonjs:smartAssetManager");
 
 /**
  * Stateful handle for a scene's smart asset registry.

@@ -20,6 +20,18 @@ import { type IOverrideEntry } from "../../src/projects/overrideEntry";
 
 const mockDispose = vi.fn();
 
+/**
+ * Returns true if any symbol-keyed entry on scene.metadata matches the smartAssetManager key.
+ * @param scene - The scene whose metadata to inspect.
+ * @returns True if the smartAssetManager key is present on the scene's metadata.
+ */
+function HasSmartAssetManagerOnMetadata(scene: Scene): boolean {
+    if (!scene.metadata) {
+        return false;
+    }
+    return Object.getOwnPropertySymbols(scene.metadata).some((s) => s.description === "babylonjs:smartAssetManager");
+}
+
 let _currentScene: Scene | null = null;
 
 function createMockContainer(meshNames: string[] = ["Mesh1"], materialNames: string[] = ["Material1"]) {
@@ -592,7 +604,7 @@ describe("OverrideManager", () => {
             // Verify that the override module's own source does not import the SAM module —
             // if SAM creation is observable here, it's because Scene metadata exists, not
             // because OverrideManager touched SAM.
-            const samBefore = (scene.metadata as any)?.["babylonjs:smartAssetManager"];
+            const samBefore = HasSmartAssetManagerOnMetadata(scene);
             AddOverride(scene, {
                 targetType: "scene",
                 targetName: "",
@@ -600,8 +612,9 @@ describe("OverrideManager", () => {
                 propertyPath: "fogDensity",
                 value: 0.4,
             });
-            const samAfter = (scene.metadata as any)?.["babylonjs:smartAssetManager"];
-            expect(samBefore).toBe(samAfter);
+            const samAfter = HasSmartAssetManagerOnMetadata(scene);
+            expect(samBefore).toBe(false);
+            expect(samAfter).toBe(false);
 
             // The smartAssetManager key is also intentionally NOT present on OverrideManager's scene metadata
             // until something else creates one. Sanity check: GetSmartAssetManager is a no-op here.
