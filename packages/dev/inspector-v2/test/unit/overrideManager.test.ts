@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { GetSmartAssetManager, LoadSmartAssetAsync, ReloadSmartAssetAsync } from "core/SmartAssets/smartAssetManager";
+import { GetSmartAssetManager, LoadSmartAssetAsync, ReloadSmartAssetAsync } from "core/SmartAssets/smartAssetManager.pure";
 import {
     AddOverride,
     ApplyAllOverrides,

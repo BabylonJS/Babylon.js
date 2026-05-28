@@ -16,7 +16,7 @@ import {
     RegisterSmartAsset,
     RemoveSmartAssetAsync,
     SerializeSmartAssetManagerMap,
-} from "core/SmartAssets/smartAssetManager";
+} from "core/SmartAssets/smartAssetManager.pure";
 import { type ISerializedSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "core/SmartAssets/smartAssetSerializer";
 import { ClearOverrides, DeserializeAndApplyOverrides, SerializeOverrides } from "./overrideManager";
 import { type IOverrideEntry } from "./overrideEntry";
