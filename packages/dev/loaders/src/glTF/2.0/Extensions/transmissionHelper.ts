@@ -469,8 +469,8 @@ export class TransmissionHelper {
         this._disposed = true;
 
         // Unregister scene-level observers so this helper stops reacting to mesh changes.
-        this._scene.onNewMeshAddedObservable.remove(this._newMeshObserver);
-        this._scene.onMeshRemovedObservable.remove(this._removedMeshObserver);
+        this._newMeshObserver.remove();
+        this._removedMeshObserver.remove();
         this._newMeshObserver = null;
         this._removedMeshObserver = null;
 
@@ -483,6 +483,18 @@ export class TransmissionHelper {
                 delete this._materialObservers[mesh.uniqueId];
             }
         }
+
+        // Also remove any remaining observers that were registered before deferred
+        // classification added their meshes to the caches.
+        for (const mesh of this._scene.meshes) {
+            const observer = this._materialObservers[mesh.uniqueId];
+            if (observer) {
+                mesh.onMaterialChangedObservable.remove(observer);
+                delete this._materialObservers[mesh.uniqueId];
+            }
+        }
+
+        this._materialObservers = {};
 
         this._scene._transmissionHelper = undefined;
         if (this._opaqueRenderTarget) {
