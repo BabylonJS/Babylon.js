@@ -101,9 +101,9 @@ fn isPointOnLine(position: f32, differentialLength: f32) -> f32 {
 
 
 fn contributionOnAxis(position: f32, tcLineWidthCap: f32, thicknessModifier: f32) -> f32 {
-    let ddx: f32 = dpdx(position);
-    let ddy: f32 = dpdy(position);
-    var differentialLength: f32 = length(vec2f(ddx, ddy)) * SQRT2;
+    let dPosDx: f32 = dpdx(position);
+    let dPosDy: f32 = dpdy(position);
+    var differentialLength: f32 = length(vec2f(dPosDx, dPosDy)) * SQRT2;
 
     // tcLineWidthCap: minimum line width derived from camera distance, prevents
     // lines from disappearing to sub-pixel width at long range.

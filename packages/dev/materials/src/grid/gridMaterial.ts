@@ -344,13 +344,17 @@ export class GridMaterial extends PushMaterial {
                 "vOpacityInfos",
                 "visibility",
                 "logarithmicDepthConstant",
-                "cameraPosition",
-                "viewportSize",
-                "belowLineColor",
-                "gridOctaves",
-                "minGridSpacing",
                 "gridThicknessModifier",
             ];
+            if (defines.MULTI_SCALE) {
+                uniforms.push("minGridSpacing", "gridOctaves");
+            }
+            if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR || defines.ORIGIN_MARKER) {
+                uniforms.push("cameraPosition", "viewportSize");
+            }
+            if (defines.BELOW_LINE_COLOR) {
+                uniforms.push("belowLineColor");
+            }
             // Defines
             const join = defines.toString();
             AddClipPlaneUniforms(uniforms);
