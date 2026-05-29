@@ -38,6 +38,7 @@ import { type WebRequest } from "core/Misc/webRequest";
 import { type PerformanceMonitor } from "core/Misc/performanceMonitor";
 import { type ILoadingScreen } from "../Loading/loadingScreen.pure";
 import { EngineStore } from "./engineStore";
+import { type ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
 import { Logger } from "../Misc/logger";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { PrecisionDate } from "../Misc/precisionDate";
@@ -76,6 +77,13 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
     // Note that there is kind of a typing issue here, as `setTimeout` might return something else than a number (NodeJs returns a NodeJS.Timeout object).
     // Also if the global `requestAnimationFrame`'s returnType is number, `requester.requestPostAnimationFrame` and `requester.requestAnimationFrame` types
     // are `any`.
+
+    if (requester) {
+        const { requestAnimationFrame } = requester as { requestAnimationFrame: (callback: FrameRequestCallback) => number };
+        if (typeof requestAnimationFrame === "function") {
+            return requestAnimationFrame(func);
+        }
+    }
 
     if (!IsWindowObjectExist()) {
         if (typeof requestAnimationFrame === "function") {
@@ -853,6 +861,11 @@ export abstract class AbstractEngine {
     protected _activeRenderLoops = new Array<() => void>();
 
     /**
+     * If set, will be used to request the next animation frame for the render loop
+     */
+    public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
+
+    /**
      * Gets the list of current active render loop functions
      * @returns a read only array with the current render loop functions
      */
@@ -882,6 +895,17 @@ export abstract class AbstractEngine {
     }
 
     protected _cancelFrame() {
+        if (this.customAnimationFrameRequester) {
+            if (this._frameHandler !== 0) {
+                this._frameHandler = 0;
+                const { cancelAnimationFrame } = this.customAnimationFrameRequester;
+                if (cancelAnimationFrame) {
+                    cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
+                }
+            }
+            return;
+        }
+
         if (this._frameHandler !== 0) {
             const handlerToCancel = this._frameHandler;
             this._frameHandler = 0;
@@ -1016,7 +1040,7 @@ export abstract class AbstractEngine {
         // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
         // already been queued (e.g., if `stopRenderLoop` and `runRenderLoop` is called mid frame).
         if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
-            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+            this._queueNewFrameForRenderLoop();
         }
     }
 
@@ -1042,6 +1066,18 @@ export abstract class AbstractEngine {
         return QueueNewFrame(bindedRenderFunction, requester);
     }
 
+    protected _queueNewFrameForRenderLoop(): void {
+        if (this.customAnimationFrameRequester) {
+            this.customAnimationFrameRequester.requestID = this._queueNewFrame(
+                this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
+                this.customAnimationFrameRequester
+            );
+            this._frameHandler = this.customAnimationFrameRequester.requestID;
+        } else {
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+        }
+    }
+
     /**
      * Register and execute a render loop. The engine can have more than one render function
      * @param renderFunction defines the function to continuously execute
@@ -1055,7 +1091,7 @@ export abstract class AbstractEngine {
 
         // On the first added function, start the render loop.
         if (this._activeRenderLoops.length === 1 && this._frameHandler === 0) {
-            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+            this._queueNewFrameForRenderLoop();
         }
     }
 
