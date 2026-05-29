@@ -252,14 +252,13 @@ export function MakeModularTool(options: ModularToolOptions) {
                     produces: [ReactContextServiceIdentity],
                     factory: (): IReactContextService => ({
                         addContext<T>(provider: Context<T>["Provider"], initialValue: T, options?: { order?: number }): ReactContextHandle<T> {
-                            const typedProvider = provider;
-                            updateContexts({ type: "add", entry: { provider: typedProvider, value: initialValue, order: options?.order ?? 0 } });
+                            updateContexts({ type: "add", entry: { provider: provider, value: initialValue, order: options?.order ?? 0 } });
                             return {
                                 updateValue: (newValue: T) => {
-                                    updateContexts({ type: "update", provider: typedProvider, value: newValue });
+                                    updateContexts({ type: "update", provider: provider, value: newValue });
                                 },
                                 dispose: () => {
-                                    updateContexts({ type: "remove", provider: typedProvider });
+                                    updateContexts({ type: "remove", provider: provider });
                                 },
                             };
                         },
