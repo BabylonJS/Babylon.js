@@ -505,8 +505,8 @@ export class ThinNativeEngine extends ThinEngine {
      */
     protected override _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
         // Use the provided requestAnimationFrame, unless the requester is the window. In that case, we will default to the Babylon Native version of requestAnimationFrame.
-        if (requester.requestAnimationFrame && requester !== window) {
-            requester.requestAnimationFrame(bindedRenderFunction);
+        if (requester?.requestAnimationFrame && requester !== this.getHostWindow()) {
+            return requester.requestAnimationFrame(bindedRenderFunction);
         } else {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
