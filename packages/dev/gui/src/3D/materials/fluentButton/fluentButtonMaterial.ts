@@ -18,6 +18,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { Constants } from "core/Engines/constants";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
@@ -42,6 +43,8 @@ class FluentButtonMaterialDefines extends MaterialDefines {
  * @since 5.0.0
  */
 export class FluentButtonMaterial extends PushMaterial {
+    private _shadersLoaded = false;
+
     /**
      * URL pointing to the texture used to define the coloring for the fluent blob effect.
      */
@@ -429,6 +432,7 @@ export class FluentButtonMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: 4,
+                shaderLanguage: this._shaderLanguage,
             });
 
             subMesh.setEffect(
@@ -444,6 +448,16 @@ export class FluentButtonMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/fluentButton.vertex"), import("./wgsl/fluentButton.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),
@@ -559,6 +573,10 @@ export class FluentButtonMaterial extends PushMaterial {
         return [];
     }
 
+    /**
+     * Disposes the material.
+     * @param forceDisposeEffect specifies if effects should be forcefully disposed
+     */
     public override dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
     }
@@ -578,6 +596,13 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 
     // Statics
+    /**
+     * Creates a fluent button material from parsed material data.
+     * @param source defines the JSON representation of the material
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new fluent button material
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): FluentButtonMaterial {
         return SerializationHelper.Parse(() => new FluentButtonMaterial(source.name, scene), source, scene, rootUrl);
     }
