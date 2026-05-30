@@ -58,6 +58,7 @@ describe("ThinEngine", () => {
 
                 expect(canceledRequestIds).toEqual([8]);
                 expect(thinEngine._frameHandler).toBe(0);
+                expect(thinEngine.customAnimationFrameRequester.requestID).toBeUndefined();
             } finally {
                 thinEngine.dispose();
             }

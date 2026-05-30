@@ -902,6 +902,7 @@ export abstract class AbstractEngine {
                 if (cancelAnimationFrame) {
                     cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
                 }
+                delete this.customAnimationFrameRequester.requestID;
             }
             return;
         }

@@ -90,6 +90,7 @@ describe("NullEngine", () => {
 
                 expect(canceledRequestIds).toEqual([42]);
                 expect(nullEngine._frameHandler).toBe(0);
+                expect(nullEngine.customAnimationFrameRequester.requestID).toBeUndefined();
             } finally {
                 nullEngine.dispose();
             }
