@@ -102,6 +102,9 @@ export class TransmissionHelper {
     private _opaqueMeshesCache: AbstractMesh[] = [];
     private _transparentMeshesCache: AbstractMesh[] = [];
     private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
+    private _newMeshObserver: Nullable<Observer<AbstractMesh>> = null;
+    private _removedMeshObserver: Nullable<Observer<AbstractMesh>> = null;
+    private _disposed = false;
 
     // Material implementations registered by loaders. Each entry maps a material class
     // to its adapter class so the helper can classify and interact with materials
@@ -295,6 +298,13 @@ export class TransmissionHelper {
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
+            // Guard: skip if the helper was disposed before this deferred callback fires.
+            // Without this, a disposed helper with a null _opaqueRenderTarget would stamp
+            // null onto transmission materials, overriding any texture already assigned by
+            // an active frame graph or other external code.
+            if (this._disposed) {
+                return;
+            }
             if (mesh.material) {
                 const classification = this._classifyMeshMaterials(mesh);
                 if (classification === "transparent") {
@@ -331,9 +341,9 @@ export class TransmissionHelper {
     private _parseScene(): void {
         this._scene.meshes.forEach(this._addMesh.bind(this));
         // Listen for when a mesh is added to the scene and add it to our cache lists.
-        this._scene.onNewMeshAddedObservable.add(this._addMesh.bind(this));
+        this._newMeshObserver = this._scene.onNewMeshAddedObservable.add(this._addMesh.bind(this));
         // Listen for when a mesh is removed from to the scene and remove it from our cache lists.
-        this._scene.onMeshRemovedObservable.add(this._removeMesh.bind(this));
+        this._removedMeshObserver = this._scene.onMeshRemovedObservable.add(this._removeMesh.bind(this));
     }
 
     // When one of the meshes in the scene has its material changed, make sure that it's in the correct cache list.
@@ -453,6 +463,39 @@ export class TransmissionHelper {
      * Dispose all the elements created by the Helper.
      */
     public dispose(): void {
+        // Set the disposed flag first so any pending SetImmediate callbacks (from _addMesh)
+        // are no-ops. Without this guard a deferred _classifyMeshMaterials call would stamp
+        // a null _opaqueRenderTarget onto transmission materials after disposal.
+        this._disposed = true;
+
+        // Unregister scene-level observers so this helper stops reacting to mesh changes.
+        this._newMeshObserver?.remove();
+        this._removedMeshObserver?.remove();
+        this._newMeshObserver = null;
+        this._removedMeshObserver = null;
+
+        // Remove per-mesh material-change observers for all tracked meshes.
+        const allTracked = [...this._transparentMeshesCache, ...this._opaqueMeshesCache];
+        for (const mesh of allTracked) {
+            const observer = this._materialObservers[mesh.uniqueId];
+            if (observer) {
+                observer.remove();
+                delete this._materialObservers[mesh.uniqueId];
+            }
+        }
+
+        // Also remove any remaining observers that were registered before deferred
+        // classification added their meshes to the caches.
+        for (const mesh of this._scene.meshes) {
+            const observer = this._materialObservers[mesh.uniqueId];
+            if (observer) {
+                observer.remove();
+                delete this._materialObservers[mesh.uniqueId];
+            }
+        }
+
+        this._materialObservers = {};
+
         this._scene._transmissionHelper = undefined;
         if (this._opaqueRenderTarget) {
             this._opaqueRenderTarget.dispose();
