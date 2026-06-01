@@ -964,7 +964,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                 await this._updateSSAOLock.lockAsync(async () => {
                     let shouldEnable = this._ssaoOption === "enabled" && !this._scene.frameGraph;
 
-                    if (this._ssaoOption === "auto") {
+                    if (this._ssaoOption === "auto" && !this._scene.frameGraph) {
                         const hasModels = this._loadedModels.length > 0;
                         const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
                         const iblShadowsEnabled = this._shadowQuality === "high";
