@@ -1034,7 +1034,7 @@ export abstract class AbstractEngine {
     }
 
     /** @internal */
-    public _renderLoop(timestamp: number | undefined): void {
+    public _renderLoop(timestamp?: number): void {
         this._processFrame(timestamp);
 
         // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
