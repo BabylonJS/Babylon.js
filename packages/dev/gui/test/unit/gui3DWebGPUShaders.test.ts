@@ -5,6 +5,7 @@ import { Scene } from "core/scene";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { FluentMaterial } from "../../src/3D/materials/fluent/fluentMaterial";
 import { FluentBackplateMaterial } from "../../src/3D/materials/fluentBackplate/fluentBackplateMaterial";
+import { FluentButtonMaterial } from "../../src/3D/materials/fluentButton/fluentButtonMaterial";
 import { HandleMaterial } from "../../src/3D/materials/handle/handleMaterial";
 
 function createWebGPUNullEngine(): NullEngine {
@@ -63,6 +64,22 @@ describe("GUI3D WebGPU shaders", () => {
         const material = new FluentBackplateMaterial("backplate", scene);
         (material as any)._blobTexture.isReady = () => true;
         (material as any)._iridescentMap.isReady = () => true;
+        const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
+
+        expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0])).toBe(true);
+        expect(createEffect).toHaveBeenCalled();
+
+        const options = createEffect.mock.calls[0][1] as any;
+        expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
+        expect(options.extraInitializationsAsync).toBeTypeOf("function");
+    });
+
+    it("uses WGSL when FluentButtonMaterial creates an effect under WebGPU", () => {
+        engine = createWebGPUNullEngine();
+        scene = new Scene(engine);
+        const mesh = MeshBuilder.CreatePlane("button", {}, scene);
+        const material = new FluentButtonMaterial("button", scene);
+        (material as any)._blobTexture.isReady = () => true;
         const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
 
         expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0])).toBe(true);
