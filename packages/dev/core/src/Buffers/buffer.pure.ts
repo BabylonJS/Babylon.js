@@ -394,6 +394,11 @@ export class VertexBuffer {
     public static readonly FLOAT = Constants.FLOAT;
 
     /**
+     * The half float type.
+     */
+    public static readonly HALF_FLOAT = Constants.HALF_FLOAT;
+
+    /**
      * Gets a boolean indicating if the Buffer is disposed
      */
     public get isDisposed(): boolean {
@@ -592,10 +597,33 @@ export class VertexBuffer {
         this._computeHashCode();
     }
 
+    private static _GetTypeHashIndex(type: number): number {
+        switch (type) {
+            case VertexBuffer.BYTE:
+                return 0;
+            case VertexBuffer.UNSIGNED_BYTE:
+                return 1;
+            case VertexBuffer.SHORT:
+                return 2;
+            case VertexBuffer.UNSIGNED_SHORT:
+                return 3;
+            case VertexBuffer.INT:
+                return 4;
+            case VertexBuffer.UNSIGNED_INT:
+                return 5;
+            case VertexBuffer.FLOAT:
+                return 6;
+            case VertexBuffer.HALF_FLOAT:
+                return 7;
+            default:
+                throw new Error(`Invalid vertex buffer type '${type}'`);
+        }
+    }
+
     private _computeHashCode(): void {
         // note: cast to any because the property is declared readonly
         (this.hashCode as any) =
-            ((this.type - 5120) << 0) +
+            (VertexBuffer._GetTypeHashIndex(this.type) << 0) +
             ((this.normalized ? 1 : 0) << 3) +
             (this._size << 4) +
             ((this._instanced ? 1 : 0) << 6) +

@@ -7,6 +7,55 @@ import { type DataArray, type FloatArray, type IndicesArray, type TypedArray, ty
  */
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
 
+const FloatView = new Float32Array(1);
+const Int32View = new Int32Array(FloatView.buffer);
+
+/**
+ * Converts a half float to a number.
+ * @param value the half-float bit pattern to convert
+ * @returns the decoded number
+ */
+function FromHalfFloat(value: number): number {
+    const s = (value & 0x8000) >> 15;
+    const e = (value & 0x7c00) >> 10;
+    const f = value & 0x03ff;
+    if (e === 0) {
+        return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
+    } else if (e === 0x1f) {
+        return f ? NaN : (s ? -1 : 1) * Infinity;
+    }
+    return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
+}
+
+/**
+ * Converts a number to a half float.
+ * @param value the number to convert
+ * @returns the half-float bit pattern
+ */
+function ToHalfFloat(value: number): number {
+    FloatView[0] = value;
+    const x = Int32View[0];
+    let bits = (x >> 16) & 0x8000;
+    let m = (x >> 12) & 0x07ff;
+    const e = (x >> 23) & 0xff;
+    if (e < 103) {
+        return bits;
+    }
+    if (e > 142) {
+        bits |= 0x7c00;
+        bits |= (e === 255 ? 0 : 1) && x & 0x007fffff;
+        return bits;
+    }
+    if (e < 113) {
+        m |= 0x0800;
+        bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
+        return bits;
+    }
+    bits |= ((e - 112) << 10) | (m >> 1);
+    bits += m & 1;
+    return bits;
+}
+
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
         case Constants.BYTE: {
@@ -36,6 +85,9 @@ function GetFloatValue(dataView: DataView, type: number, byteOffset: number, nor
                 value = value / 65535;
             }
             return value;
+        }
+        case Constants.HALF_FLOAT: {
+            return FromHalfFloat(dataView.getUint16(byteOffset, true));
         }
         case Constants.INT: {
             return dataView.getInt32(byteOffset, true);
@@ -82,6 +134,10 @@ function SetFloatValue(dataView: DataView, type: number, byteOffset: number, nor
             dataView.setUint16(byteOffset, value, true);
             break;
         }
+        case Constants.HALF_FLOAT: {
+            dataView.setUint16(byteOffset, ToHalfFloat(value), true);
+            break;
+        }
         case Constants.INT: {
             dataView.setInt32(byteOffset, value, true);
             break;
@@ -112,6 +168,7 @@ export function GetTypeByteLength(type: number): number {
             return 1;
         case Constants.SHORT:
         case Constants.UNSIGNED_SHORT:
+        case Constants.HALF_FLOAT:
             return 2;
         case Constants.INT:
         case Constants.UNSIGNED_INT:
@@ -136,6 +193,8 @@ export function GetTypedArrayConstructor(componentType: number): TypedArrayConst
         case Constants.SHORT:
             return Int16Array;
         case Constants.UNSIGNED_SHORT:
+            return Uint16Array;
+        case Constants.HALF_FLOAT:
             return Uint16Array;
         case Constants.INT:
             return Int32Array;
@@ -351,11 +410,12 @@ export function GetTypedArrayData(
     }
     if (byteStride !== tightlyPackedByteStride) {
         const copy = new constructor(count);
-        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, false, (values, index) => {
-            for (let i = 0; i < size; i++) {
-                copy[index + i] = values[i];
-            }
-        });
+        const src = new Uint8Array(buffer, adjustedByteOffset);
+        const dst = new Uint8Array(copy.buffer);
+        const rowBytes = size * typeByteLength;
+        for (let v = 0, s = 0, d = 0; v < totalVertices; v++, s += byteStride, d += rowBytes) {
+            dst.set(src.subarray(s, s + rowBytes), d);
+        }
         return copy;
     }
 
