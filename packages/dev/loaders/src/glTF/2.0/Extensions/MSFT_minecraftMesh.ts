@@ -46,7 +46,8 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
             if (extra) {
-                if (!this._loader._pbrMaterialImpl) {
+                const impl = this._loader._pbrMaterialImpls.get("pbr");
+                if (!impl) {
                     throw new Error(`${extraContext}: Material type not supported`);
                 }
 

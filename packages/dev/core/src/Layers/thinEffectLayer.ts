@@ -23,6 +23,7 @@ import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes 
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { type Vector2 } from "../Maths/math.vector";
 
 /**
@@ -432,7 +433,7 @@ export class ThinEffectLayer {
         this._objectRenderer.renderList = null;
 
         // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
-        const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
+        const hasBoundingBoxRenderer = _IsSideEffectImplemented(this._scene.getBoundingBoxRenderer);
 
         let boundingBoxRendererEnabled = false;
         if (hasBoundingBoxRenderer) {
@@ -785,6 +786,13 @@ export class ThinEffectLayer {
         return isReady;
     }
 
+    protected _disposeMergeEffects(): void {
+        for (const drawWrapper of this._mergeDrawWrapper) {
+            drawWrapper.dispose();
+        }
+        this._mergeDrawWrapper = [];
+    }
+
     /**
      * Checks if the layer is ready to be used.
      * @returns true if the layer is ready to be used
@@ -1097,10 +1105,7 @@ export class ThinEffectLayer {
             this._indexBuffer = null;
         }
 
-        for (const drawWrapper of this._mergeDrawWrapper) {
-            drawWrapper.dispose();
-        }
-        this._mergeDrawWrapper = [];
+        this._disposeMergeEffects();
 
         this._objectRenderer.dispose();
 

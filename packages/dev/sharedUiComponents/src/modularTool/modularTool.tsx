@@ -34,16 +34,19 @@ import {
     Spinner,
     tokens,
 } from "@fluentui/react-components";
-import { ErrorCircleRegular } from "@fluentui/react-icons";
+import { CheckmarkCircleRegular, ErrorCircleRegular, InfoRegular, WarningRegular } from "@fluentui/react-icons";
 import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
 import { type ToastHandle, type ToastOptions, ToastProvider } from "shared-ui-components/fluent/primitives/toast";
+import { type DialogOptions, type IDialogService, DialogServiceIdentity } from "./services/dialogService";
 import { type IToastService, ToastServiceIdentity } from "./services/toastService";
 import { Theme } from "./components/theme";
+import { DialogContext } from "./contexts/dialogContext";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
+import { TeachingMomentsContext } from "./contexts/teachingMomentsContext";
 import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "./services/reactContextService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 
@@ -72,18 +75,38 @@ const useStyles = makeStyles({
     extensionErrorIcon: {
         color: tokens.colorPaletteRedForeground1,
     },
+    dialogTitle: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    dialogIconSuccess: {
+        color: tokens.colorStatusSuccessForeground1,
+    },
+    dialogIconError: {
+        color: tokens.colorStatusDangerForeground1,
+    },
+    dialogIconWarning: {
+        color: tokens.colorStatusWarningForeground1,
+    },
+    dialogIconInfo: {
+        color: tokens.colorBrandForeground1,
+    },
 });
 
 type ReactContextEntry = {
-    provider: Context<unknown>["Provider"];
+    provider: Context<any>["Provider"];
     value: unknown;
     order: number;
 };
 
 type ReactContextAction =
     | { type: "add"; entry: ReactContextEntry }
-    | { type: "remove"; provider: Context<unknown>["Provider"] }
-    | { type: "update"; provider: Context<unknown>["Provider"]; value: unknown };
+    | { type: "remove"; provider: Context<any>["Provider"] }
+    | { type: "update"; provider: Context<any>["Provider"]; value: unknown };
+
+type DialogQueueAction = { type: "enqueue"; options: DialogOptions } | { type: "dequeue" };
 
 const ReactContextsWrapper: FunctionComponent<PropsWithChildren<{ contexts: readonly Readonly<ReactContextEntry>[] }>> = ({ contexts, children }) => {
     return <>{contexts.reduceRight<ReactNode>((acc, entry) => createElement(entry.provider, { value: entry.value }, acc), children)}</>;
@@ -125,6 +148,11 @@ export type ModularToolOptions = {
      * will be resolved from this parent.
      */
     parentContainer?: ServiceContainer;
+
+    /**
+     * When true, all teaching moments are disabled and will not be shown.
+     */
+    disableTeachingMoments?: boolean;
 } & ShellServiceOptions;
 
 /**
@@ -133,7 +161,9 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions) {
-    const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [], parentContainer } = options;
+    const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [], parentContainer, disableTeachingMoments = false } = options;
+
+    const teachingMomentsContextValue = { disabled: disableTeachingMoments };
 
     // Create the settings store immediately as it will be exposed to services and through React context.
     const settingsStore = new SettingsStore(namespace);
@@ -148,7 +178,6 @@ export function MakeModularTool(options: ModularToolOptions) {
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
-        const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
@@ -165,18 +194,45 @@ export function MakeModularTool(options: ModularToolOptions) {
             }
         }, [toastHandle, toastQueue]);
 
-        const [rootComponentService, setRootComponentService] = useState<IRootComponentService>();
-
-        const [contexts, updateContexts] = useReducer((state: ReactContextEntry[], action: ReactContextAction): ReactContextEntry[] => {
+        // Queue of dialogs to display. We show one at a time (the one at the head of the queue).
+        const [dialogQueue, dispatchDialogQueue] = useReducer((state: readonly DialogOptions[], action: DialogQueueAction): readonly DialogOptions[] => {
             switch (action.type) {
-                case "add":
-                    return [...state, action.entry].sort((a, b) => a.order - b.order);
-                case "remove":
-                    return state.filter((e) => e.provider !== action.provider);
-                case "update":
-                    return state.map((e) => (e.provider === action.provider ? { ...e, value: action.value } : e));
+                case "enqueue":
+                    return [...state, action.options];
+                case "dequeue":
+                    return state.slice(1);
             }
         }, []);
+
+        const showDialog = useCallback((dialogOptions: DialogOptions) => {
+            dispatchDialogQueue({ type: "enqueue", options: dialogOptions });
+        }, []);
+
+        const onDismissDialog = useCallback(() => {
+            dispatchDialogQueue({ type: "dequeue" });
+        }, []);
+
+        const [rootComponentService, setRootComponentService] = useState<IRootComponentService>();
+
+        const [contexts, updateContexts] = useReducer(
+            (state: ReactContextEntry[], action: ReactContextAction): ReactContextEntry[] => {
+                switch (action.type) {
+                    case "add":
+                        return [...state, action.entry].sort((a, b) => a.order - b.order);
+                    case "remove":
+                        return state.filter((e) => e.provider !== action.provider);
+                    case "update":
+                        return state.map((e) => (e.provider === action.provider ? { ...e, value: action.value } : e));
+                }
+            },
+            [
+                // Static contexts seeded into the wrapper so they don't add JSX nesting below.
+                // Negative orders keep them as the outermost providers (lowest order = outermost via reduceRight).
+                { provider: TeachingMomentsContext.Provider, value: teachingMomentsContextValue, order: -2 },
+                { provider: SettingsStoreContext.Provider, value: settingsStore, order: -1 },
+                { provider: ExtensionManagerContext.Provider, value: undefined, order: 0 },
+            ]
+        );
 
         // This is the main async initialization.
         useEffect(() => {
@@ -196,14 +252,13 @@ export function MakeModularTool(options: ModularToolOptions) {
                     produces: [ReactContextServiceIdentity],
                     factory: (): IReactContextService => ({
                         addContext<T>(provider: Context<T>["Provider"], initialValue: T, options?: { order?: number }): ReactContextHandle<T> {
-                            const typedProvider = provider as Context<unknown>["Provider"];
-                            updateContexts({ type: "add", entry: { provider: typedProvider, value: initialValue, order: options?.order ?? 0 } });
+                            updateContexts({ type: "add", entry: { provider: provider, value: initialValue, order: options?.order ?? 0 } });
                             return {
                                 updateValue: (newValue: T) => {
-                                    updateContexts({ type: "update", provider: typedProvider, value: newValue });
+                                    updateContexts({ type: "update", provider: provider, value: newValue });
                                 },
                                 dispose: () => {
-                                    updateContexts({ type: "remove", provider: typedProvider });
+                                    updateContexts({ type: "remove", provider: provider });
                                 },
                             };
                         },
@@ -219,6 +274,13 @@ export function MakeModularTool(options: ModularToolOptions) {
                             setToastQueue((prev) => [...prev, { message, options }]);
                         },
                     }),
+                });
+
+                // Expose the dialog service so non-React code (e.g. Observable callbacks) can show dialogs.
+                serviceContainer.addService<[IDialogService], []>({
+                    friendlyName: "Dialog Service",
+                    produces: [DialogServiceIdentity],
+                    factory: (): IDialogService => ({ showDialog }),
                 });
 
                 // Register the shell service (top level toolbar/side pane UI layout).
@@ -289,7 +351,7 @@ export function MakeModularTool(options: ModularToolOptions) {
                 }
 
                 // Set the contexts.
-                setExtensionManagerContext({ extensionManager });
+                updateContexts({ type: "update", provider: ExtensionManagerContext.Provider, value: { extensionManager } });
 
                 return () => {
                     extensionManager.dispose();
@@ -326,15 +388,29 @@ export function MakeModularTool(options: ModularToolOptions) {
             setExtensionInstallError(undefined);
         }, [setExtensionInstallError]);
 
+        // The dialog at the head of the queue, if any, is the one currently being displayed.
+        const currentDialog = dialogQueue[0];
+        const currentDialogIcon = (() => {
+            switch (currentDialog?.intent) {
+                case "success":
+                    return <CheckmarkCircleRegular className={classes.dialogIconSuccess} />;
+                case "error":
+                    return <ErrorCircleRegular className={classes.dialogIconError} />;
+                case "warning":
+                    return <WarningRegular className={classes.dialogIconWarning} />;
+                case "info":
+                case undefined:
+                    return <InfoRegular className={classes.dialogIconInfo} />;
+            }
+        })();
+
         // Show a spinner until a main view has been set.
         if (!rootComponentService) {
             return (
                 <ReactContextsWrapper contexts={contexts}>
-                    <SettingsStoreContext.Provider value={settingsStore}>
-                        <Theme className={classes.app}>
-                            <Spinner className={classes.spinner} />
-                        </Theme>
-                    </SettingsStoreContext.Provider>
+                    <Theme className={classes.app} targetDocument={targetDocument}>
+                        <Spinner className={classes.spinner} />
+                    </Theme>
                 </ReactContextsWrapper>
             );
         } else {
@@ -343,73 +419,93 @@ export function MakeModularTool(options: ModularToolOptions) {
 
             return (
                 <ReactContextsWrapper contexts={contexts}>
-                    {/* Expose the settings store as a React context so that UI components can read/write
-                        settings without the ISettingsService needing to be explicitly passed around. */}
-                    <SettingsStoreContext.Provider value={settingsStore}>
-                        <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                            <Theme className={classes.app}>
-                                <ToastProvider imperativeRef={setToastHandle}>
-                                    <Dialog open={!!requiredExtensions} modalType="alert">
-                                        <DialogSurface>
-                                            <DialogBody>
-                                                <DialogTitle>Required Extensions</DialogTitle>
-                                                <DialogContent>
-                                                    Opening this URL requires the following extensions to be installed and enabled:
-                                                    <ul>
-                                                        {requiredExtensions?.map((name) => (
-                                                            <li key={name}>{name}</li>
-                                                        ))}
-                                                    </ul>
-                                                </DialogContent>
-                                                <DialogActions>
-                                                    <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
-                                                        Install & Enable
-                                                    </Button>
-                                                    <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
-                                                        No Thanks
-                                                    </Button>
-                                                </DialogActions>
-                                            </DialogBody>
-                                        </DialogSurface>
-                                    </Dialog>
-                                    <Dialog open={!!extensionInstallError} modalType="alert">
-                                        <DialogSurface>
-                                            <DialogBody>
-                                                <DialogTitle>
-                                                    <div className={classes.extensionErrorTitleDiv}>
-                                                        Extension Install Error
-                                                        <ErrorCircleRegular className={classes.extensionErrorIcon} />
-                                                    </div>
-                                                </DialogTitle>
-                                                <DialogContent>
-                                                    <List>
-                                                        <ListItem>
-                                                            <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
-                                                        </ListItem>
-                                                        <ListItem>
-                                                            <Body1>{`${extensionInstallError?.error}`}</Body1>
-                                                        </ListItem>
-                                                    </List>
-                                                </DialogContent>
-                                                <DialogActions>
-                                                    <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
-                                                        Close
-                                                    </Button>
-                                                </DialogActions>
-                                            </DialogBody>
-                                        </DialogSurface>
-                                    </Dialog>
-                                    <Suspense fallback={<Spinner className={classes.spinner} />}>
-                                        <Content />
-                                    </Suspense>
-                                </ToastProvider>
-                            </Theme>
-                        </ExtensionManagerContext.Provider>
-                    </SettingsStoreContext.Provider>
+                    <Theme className={classes.app} targetDocument={targetDocument}>
+                        <ToastProvider imperativeRef={setToastHandle}>
+                            <Dialog open={!!requiredExtensions} modalType="alert">
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>Required Extensions</DialogTitle>
+                                        <DialogContent>
+                                            Opening this URL requires the following extensions to be installed and enabled:
+                                            <ul>
+                                                {requiredExtensions?.map((name) => (
+                                                    <li key={name}>{name}</li>
+                                                ))}
+                                            </ul>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
+                                                Install & Enable
+                                            </Button>
+                                            <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
+                                                No Thanks
+                                            </Button>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                            <Dialog open={!!extensionInstallError} modalType="alert">
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>
+                                            <div className={classes.extensionErrorTitleDiv}>
+                                                Extension Install Error
+                                                <ErrorCircleRegular className={classes.extensionErrorIcon} />
+                                            </div>
+                                        </DialogTitle>
+                                        <DialogContent>
+                                            <List>
+                                                <ListItem>
+                                                    <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
+                                                </ListItem>
+                                                <ListItem>
+                                                    <Body1>{`${extensionInstallError?.error}`}</Body1>
+                                                </ListItem>
+                                            </List>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
+                                                Close
+                                            </Button>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                            <Dialog open={!!currentDialog} modalType="alert">
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>
+                                            <div className={classes.dialogTitle}>
+                                                {currentDialogIcon}
+                                                {currentDialog?.title}
+                                            </div>
+                                        </DialogTitle>
+                                        {currentDialog?.content && <DialogContent>{currentDialog.content}</DialogContent>}
+                                        <DialogActions>
+                                            <Button appearance="primary" onClick={onDismissDialog}>
+                                                OK
+                                            </Button>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                            <Suspense fallback={<Spinner className={classes.spinner} />}>
+                                <DialogContext.Provider value={{ showDialog }}>
+                                    <Content />
+                                </DialogContext.Provider>
+                            </Suspense>
+                        </ToastProvider>
+                    </Theme>
                 </ReactContextsWrapper>
             );
         }
     };
+
+    // Derive the target document from the container element. When the container is in a popup
+    // window (or other document distinct from the main one), this is what makes Fluent inject
+    // styles and render portals into the correct document.
+    const containerOwnerDocument = containerElement.ownerDocument;
+    const targetDocument = containerOwnerDocument && containerOwnerDocument !== document ? containerOwnerDocument : undefined;
 
     // Set the container element to be a flex container so that the tool can be displayed properly.
     const originalContainerElementDisplay = containerElement.style.display;

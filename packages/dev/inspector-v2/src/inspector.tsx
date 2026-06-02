@@ -41,6 +41,7 @@ import { TexturePropertiesServiceDefinition } from "./services/panes/properties/
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
 import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmosphereExplorerService";
+import { AudioV2ExplorerServiceDefinition } from "./services/panes/scene/audioV2ExplorerService";
 import { DisposableCommandServiceDefinition } from "./services/panes/scene/disposableCommandService";
 import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
@@ -59,7 +60,8 @@ import { SettingsServiceDefinition } from "shared-ui-components/modularTool/serv
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
-import { SmartAssetsServiceDefinition } from "./services/panes/smartAssetsService";
+import { OverrideCaptureServiceDefinition } from "./services/overrideCaptureService";
+import { BabylonProjectAuthoringServiceDefinition } from "./services/panes/babylonProjectAuthoringService";
 import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/import/gltfAnimationImportService";
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
@@ -329,6 +331,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             FrameGraphExplorerServiceDefinition,
             AtmosphereExplorerServiceDefinition,
             SoundExplorerServiceDefinition,
+            AudioV2ExplorerServiceDefinition,
             DisposableCommandServiceDefinition,
 
             // Properties pane tab and related services.
@@ -368,7 +371,8 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             ToolsServiceDefinition,
             ExportServiceDefinition,
             SmartAssetPromptServiceDefinition,
-            SmartAssetsServiceDefinition,
+            BabylonProjectAuthoringServiceDefinition,
+            OverrideCaptureServiceDefinition,
             GLTFAnimationImportServiceDefinition,
             GLTFLoaderOptionsServiceDefinition,
             GLTFValidationServiceDefinition,
@@ -426,6 +430,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             sidePaneRemapper: options.sidePaneRemapper,
             leftPaneDefaultCollapsed: options.leftPaneDefaultCollapsed,
             rightPaneDefaultCollapsed: options.rightPaneDefaultCollapsed,
+            disableTeachingMoments: options.disableTeachingMoments,
         });
         disposeActions.push(async () => await modularTool.dispose());
 

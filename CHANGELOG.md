@@ -1,5 +1,135 @@
 # Changelog
 
+## 9.10.1
+
+### Core
+
+- Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
+- Add DOM-free font offset fallback - by [matthargett](https://github.com/matthargett) ([#18463](https://github.com/BabylonJS/Babylon.js/pull/18463))
+- Fix: DSM detects modern Xbox controllers on Linux as Generic - by [AmoebaChant](https://github.com/AmoebaChant) ([#18514](https://github.com/BabylonJS/Babylon.js/pull/18514))
+- feat(Gsplat): Add auto-tracking to GaussianSplattingDebugger for compound mesh mutations - by [raymondyfei](https://github.com/raymondyfei) ([#18515](https://github.com/BabylonJS/Babylon.js/pull/18515))
+
+### Inspector
+
+- Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
+
+### Lottie Player
+
+- Updating worker name for webpack - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18519](https://github.com/BabylonJS/Babylon.js/pull/18519))
+
+### Materials
+
+- feat(GridMaterial): Multi-scale LOD, horizon fade, depth compositing, and above/below color - by [raymondyfei](https://github.com/raymondyfei) ([#18509](https://github.com/BabylonJS/Babylon.js/pull/18509))
+
+## 9.10.0
+
+### Core
+
+- PBR: Fix refraction intensity applied to irradiance - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18513](https://github.com/BabylonJS/Babylon.js/pull/18513))
+
+## 9.9.2
+
+### Core
+
+- fix(xr): correct hand/wrist twist orientation on XR body tracking entry - by [RaananW](https://github.com/RaananW) ([#18505](https://github.com/BabylonJS/Babylon.js/pull/18505))
+- Fix thin-instance bounds for baked vertex animation - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18512](https://github.com/BabylonJS/Babylon.js/pull/18512))
+- Add selection outline depth occlusion toggle - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18498](https://github.com/BabylonJS/Babylon.js/pull/18498))
+- fix(GSplat): Multiple Critical Voxelization and Compound Bugs - by [raymondyfei](https://github.com/raymondyfei) ([#18496](https://github.com/BabylonJS/Babylon.js/pull/18496))
+- Prevent render target camera swaps from notifying active camera observers - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18500](https://github.com/BabylonJS/Babylon.js/pull/18500))
+- GS fix small issues - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18499](https://github.com/BabylonJS/Babylon.js/pull/18499))
+- Fix opacity blending in OpenPBR - [_Bug Fix_] by [MiiBond](https://github.com/MiiBond) ([#18497](https://github.com/BabylonJS/Babylon.js/pull/18497))
+- Use SOG texture option - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18475](https://github.com/BabylonJS/Babylon.js/pull/18475))
+- Add Audio V2 support to Inspector v2 - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18480](https://github.com/BabylonJS/Babylon.js/pull/18480))
+
+### Inspector
+
+- Inspector V2: add material texture debug toggle and improve scene explorer tooltips - by [ryantrem](https://github.com/ryantrem) ([#18494](https://github.com/BabylonJS/Babylon.js/pull/18494))
+- Add Audio V2 support to Inspector v2 - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18480](https://github.com/BabylonJS/Babylon.js/pull/18480))
+
+### Loaders
+
+- fix(GSplat): Multiple Critical Voxelization and Compound Bugs - by [raymondyfei](https://github.com/raymondyfei) ([#18496](https://github.com/BabylonJS/Babylon.js/pull/18496))
+- Fix opacity blending in OpenPBR - [_Bug Fix_] by [MiiBond](https://github.com/MiiBond) ([#18497](https://github.com/BabylonJS/Babylon.js/pull/18497))
+- Use SOG texture option - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18475](https://github.com/BabylonJS/Babylon.js/pull/18475))
+
+### Lottie Player
+
+- Add Lottie compatibility options for text and solid layers - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18507](https://github.com/BabylonJS/Babylon.js/pull/18507))
+
+### Playground
+
+- Fix Playground loading with older framework versions - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18501](https://github.com/BabylonJS/Babylon.js/pull/18501))
+
+## 9.9.1
+
+### Core
+
+- Fix wrapped texture restore after context loss + Native MSAA-RTT support - by [bghgary](https://github.com/bghgary) ([#18469](https://github.com/BabylonJS/Babylon.js/pull/18469))
+- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+
+### Inspector
+
+- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+
+### Materials
+
+- Fix PBRCustomMaterial cached effect cleanup - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18493](https://github.com/BabylonJS/Babylon.js/pull/18493))
+
+### Playground
+
+- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+
+## 9.9.0
+
+### Core
+
+- Fix adaptToDeviceRatio option state - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18492](https://github.com/BabylonJS/Babylon.js/pull/18492))
+- Drop hardcoded field list in InputMapper._entryCoversAllConditionsOf - by [georginahalpern](https://github.com/georginahalpern) ([#18477](https://github.com/BabylonJS/Babylon.js/pull/18477))
+- Add drag and drop for HDR files in viewer - by [MiiBond](https://github.com/MiiBond) ([#18482](https://github.com/BabylonJS/Babylon.js/pull/18482))
+- Fix GPUPicker GLSL integer precision - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18487](https://github.com/BabylonJS/Babylon.js/pull/18487))
+- Add Gaussian Splatting Debug Material + SPZ V4 support - by [raymondyfei](https://github.com/raymondyfei) ([#18459](https://github.com/BabylonJS/Babylon.js/pull/18459))
+- Fix node particle editor package output - by [RaananW](https://github.com/RaananW) ([#18474](https://github.com/BabylonJS/Babylon.js/pull/18474))
+- Make InputMapper.setInteraction auto-add when matched entry is broader - by [georginahalpern](https://github.com/georginahalpern) ([#18461](https://github.com/BabylonJS/Babylon.js/pull/18461))
+- Fix frozen material light binding for WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18472](https://github.com/BabylonJS/Babylon.js/pull/18472))
+- Clean up node block shader barrel exports - by [RaananW](https://github.com/RaananW) ([#18465](https://github.com/BabylonJS/Babylon.js/pull/18465))
+
+### Inspector
+
+- Fix Inspector v2 Havok wasm serving - by [RaananW](https://github.com/RaananW) ([#18464](https://github.com/BabylonJS/Babylon.js/pull/18464))
+
+### Loaders
+
+- Trigger transmission helper from KHR_materials_diffuse_transmission. - by [MiiBond](https://github.com/MiiBond) ([#18451](https://github.com/BabylonJS/Babylon.js/pull/18451))
+- Add Gaussian Splatting Debug Material + SPZ V4 support - by [raymondyfei](https://github.com/raymondyfei) ([#18459](https://github.com/BabylonJS/Babylon.js/pull/18459))
+
+### Materials
+
+- Fix PBRCustomMaterial compiled effect cleanup - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18471](https://github.com/BabylonJS/Babylon.js/pull/18471))
+
+### Node Geometry Editor
+
+- Fix node editor URL snippet loading - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18486](https://github.com/BabylonJS/Babylon.js/pull/18486))
+
+### Node Particle Editor
+
+- Fix node editor URL snippet loading - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18486](https://github.com/BabylonJS/Babylon.js/pull/18486))
+
+### Node Render Graph Editor
+
+- Fix node editor URL snippet loading - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18486](https://github.com/BabylonJS/Babylon.js/pull/18486))
+
+### Viewer
+
+- Add drag and drop for HDR files in viewer - by [MiiBond](https://github.com/MiiBond) ([#18482](https://github.com/BabylonJS/Babylon.js/pull/18482))
+
+## 9.8.0
+
+### Core
+
+- Tree-shaking - the pure barrel - by [RaananW](https://github.com/RaananW) ([#18441](https://github.com/BabylonJS/Babylon.js/pull/18441))
+- Add distance-only spatial mode to Audio Engine V2 - by [VicenteCartas](https://github.com/VicenteCartas) ([#18462](https://github.com/BabylonJS/Babylon.js/pull/18462))
+- Camera input mapping system with backward-compatible legacy flag support - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18379](https://github.com/BabylonJS/Babylon.js/pull/18379))
+
 ## 9.7.0
 
 ### Core

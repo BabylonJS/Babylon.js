@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./abstractMesh";
-import "./abstractMesh.decalMap";
 export * from "./abstractMesh.hotSpot";
 export * from "./Compression/index";
 export * from "./csg";
@@ -34,12 +33,12 @@ export * from "./GreasedLine/greasedLineBaseMesh";
 export * from "./csg2";
 export * from "./mesh.vertexData.functions";
 export * from "./mesh.vertexData.subdivide";
-import "./thinInstanceMesh";
 export * from "./thinInstanceMesh";
 export * from "./Node/index";
 export * from "./GaussianSplatting/gaussianSplattingMeshBase";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
 export * from "./GaussianSplatting/gaussianSplattingCompoundMesh";
+export * from "./GaussianSplatting/gaussianSplattingDebugger";
 
 // LineMesh
 export * from "../Shaders/color.fragment";
@@ -60,3 +59,6 @@ export * from "../ShadersWGSL/meshUVSpaceRendererMasker.vertex";
 export * from "../ShadersWGSL/meshUVSpaceRendererMasker.fragment";
 export * from "../ShadersWGSL/meshUVSpaceRendererFinaliser.fragment";
 export * from "../ShadersWGSL/meshUVSpaceRendererFinaliser.vertex";
+
+import "./abstractMesh.decalMap";
+import "./thinInstanceMesh";

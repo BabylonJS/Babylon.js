@@ -1,12 +1,12 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type GlobalState } from "../../globalState";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;
@@ -33,41 +33,48 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
 
     override render() {
         return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">FLOW GRAPH EDITOR</div>
-                </div>
-                <div>
-                    <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent label="Name" propertyName="name" lockObject={this.props.globalState.lockObject} target={this.props.frame} />
-                        <Color3LineComponent lockObject={this.props.globalState.lockObject} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
-                        <TextInputLineComponent lockObject={this.props.globalState.lockObject} label="Comments" propertyName="comments" target={this.props.frame} />
-                        {!this.props.frame.isCollapsed && (
-                            <ButtonLineComponent
-                                label="Collapse"
-                                onClick={() => {
-                                    this.props.frame.isCollapsed = true;
-                                }}
-                            />
-                        )}
-                        {this.props.frame.isCollapsed && (
-                            <ButtonLineComponent
-                                label="Expand"
-                                onClick={() => {
-                                    this.props.frame.isCollapsed = false;
-                                }}
-                            />
-                        )}
-                        <ButtonLineComponent
-                            label="Export"
-                            onClick={() => {
-                                this.props.frame.export();
-                            }}
-                        />
-                    </LineContainerComponent>
-                </div>
-            </div>
+            <Accordion uniqueId="FlowGraphFrameProperties">
+                <AccordionSection title="General" collapseByDefault={false}>
+                    <TextInputPropertyLine
+                        label="Name"
+                        value={this.props.frame.name}
+                        onChange={(value) => {
+                            this.props.frame.name = value;
+                            this.forceUpdate();
+                        }}
+                    />
+                    <Color3PropertyLine
+                        label="Color"
+                        value={this.props.frame.color}
+                        onChange={(value) => {
+                            this.props.frame.color = value.clone();
+                            this.forceUpdate();
+                        }}
+                    />
+                    <TextInputPropertyLine
+                        label="Comments"
+                        value={this.props.frame.comments ?? ""}
+                        onChange={(value) => {
+                            this.props.frame.comments = value;
+                            this.forceUpdate();
+                        }}
+                    />
+                    <Button
+                        label={this.props.frame.isCollapsed ? "Expand" : "Collapse"}
+                        title={this.props.frame.isCollapsed ? "Expand frame" : "Collapse frame"}
+                        onClick={() => {
+                            this.props.frame.isCollapsed = !this.props.frame.isCollapsed;
+                        }}
+                    />
+                    <Button
+                        label="Export"
+                        title="Export frame"
+                        onClick={() => {
+                            this.props.frame.export();
+                        }}
+                    />
+                </AccordionSection>
+            </Accordion>
         );
     }
 }

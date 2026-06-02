@@ -33,6 +33,27 @@ export class _SpatialAudioAttacherComponent {
     }
 
     /**
+     * The scene node this attacher is currently attached to, or `null` if not attached.
+     */
+    public get sceneNode(): Nullable<Node> {
+        return this._sceneNode;
+    }
+
+    /**
+     * Whether the attacher is using the scene node's bounding box for positioning.
+     */
+    public get useBoundingBox(): boolean {
+        return this._useBoundingBox;
+    }
+
+    /**
+     * Which components (position, rotation, or both) of the scene node's world transform drive the spatial audio.
+     */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attachmentType;
+    }
+
+    /**
      * Attaches to a scene node.
      *
      * Detaches automatically before attaching to the given scene node.
@@ -82,7 +103,9 @@ export class _SpatialAudioAttacherComponent {
      * This is called automatically by default and only needs to be called manually if automatic updates are disabled.
      */
     public update() {
-        if (this._attachmentType & SpatialAudioAttachmentType.Position) {
+        const updatesPosition = !!(this._attachmentType & SpatialAudioAttachmentType.Position);
+
+        if (updatesPosition) {
             if (this._useBoundingBox && (this._sceneNode as AbstractMesh).getBoundingInfo) {
                 this._position.copyFrom((this._sceneNode as AbstractMesh).getBoundingInfo().boundingBox.centerWorld);
             } else {
@@ -98,6 +121,10 @@ export class _SpatialAudioAttacherComponent {
 
             this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
             this._spatialAudioNode._updateRotation();
+        }
+
+        if (!updatesPosition && "panningEnabled" in this._spatialAudioNode && !this._spatialAudioNode.panningEnabled) {
+            this._spatialAudioNode._updatePosition();
         }
     }
 }

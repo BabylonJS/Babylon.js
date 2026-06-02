@@ -1,8 +1,10 @@
 // samplers
 var maskSamplerSampler: sampler;
 var maskSampler: texture_2d<f32>;
+#ifdef OUTLINELAYER_DEPTH_OCCLUSION
 var depthSamplerSampler: sampler;
 var depthSampler: texture_2d<f32>;
+#endif
 
 // varyings
 varying vUV: vec2f;
@@ -11,20 +13,22 @@ varying vUV: vec2f;
 uniform screenSize: vec2f;
 uniform outlineColor: vec3f;
 uniform outlineThickness: f32;
+#ifdef OUTLINELAYER_DEPTH_OCCLUSION
 uniform occlusionStrength: f32;
 uniform occlusionThreshold: f32;
+#endif
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    
+
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
     let texelSize: vec2f = 1.0 / uniforms.screenSize;
     let sampleOffset: vec2f = texelSize * uniforms.outlineThickness;
 
-    // sample mask texture for edge detection and depth-based occlusion
+    // sample mask texture for edge detection
     // sample mask texture at center and neighboring pixels
 #if defined(OUTLINELAYER_SAMPLING_TRIDIRECTIONAL) || defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
     let maskTopCenter: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, fragmentInputs.vUV + vec2f(0.0, sampleOffset.y), 0.0).rg;
@@ -63,59 +67,65 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
     let outlineMask: f32 = step(0.5, edgeStrength); // 0.5 is the outline threshold
 
-    // sample depth texture for depth-based occlusion
-#if defined(OUTLINELAYER_SAMPLING_TRIDIRECTIONAL) || defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
-    let depthTopCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(0.0, sampleOffset.y), 0.0).r;
-    let depthTopRight: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + sampleOffset, 0.0).r;
+    var finalOutlineMask: f32 = outlineMask;
 
-    let depthMiddleCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV, 0.0).r;
-    let depthMiddleRight: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(sampleOffset.x, 0.0), 0.0).r;
+#ifdef OUTLINELAYER_DEPTH_OCCLUSION
+    if (outlineMask > 0.0) {
+        // sample depth texture for depth-based occlusion
+#if defined(OUTLINELAYER_SAMPLING_TRIDIRECTIONAL) || defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
+        let depthTopCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(0.0, sampleOffset.y), 0.0).r;
+        let depthTopRight: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + sampleOffset, 0.0).r;
+
+        let depthMiddleCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV, 0.0).r;
+        let depthMiddleRight: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(sampleOffset.x, 0.0), 0.0).r;
 #endif
 #if defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
-    let depthTopLeft: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(-sampleOffset.x, sampleOffset.y), 0.0).r;
+        let depthTopLeft: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(-sampleOffset.x, sampleOffset.y), 0.0).r;
 
-    let depthMiddleLeft: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(-sampleOffset.x, 0.0), 0.0).r;
+        let depthMiddleLeft: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(-sampleOffset.x, 0.0), 0.0).r;
 
-    let depthBottomRight: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(sampleOffset.x, -sampleOffset.y), 0.0).r;
-    let depthBottomCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(0.0, -sampleOffset.y), 0.0).r;
-    let depthBottomLeft: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(-sampleOffset.x, -sampleOffset.y), 0.0).r;
+        let depthBottomRight: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(sampleOffset.x, -sampleOffset.y), 0.0).r;
+        let depthBottomCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(0.0, -sampleOffset.y), 0.0).r;
+        let depthBottomLeft: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(-sampleOffset.x, -sampleOffset.y), 0.0).r;
 #endif
 
-    // compute occlusion factor based on depth differences
+        // compute occlusion factor based on depth differences
 #if defined(OUTLINELAYER_SAMPLING_TRIDIRECTIONAL) || defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
-    let occlusionTopCenter: f32 = step(uniforms.occlusionThreshold, abs(maskTopCenter.g - depthTopCenter));
-    let occlusionTopRight: f32 = step(uniforms.occlusionThreshold, abs(maskTopRight.g - depthTopRight));
+        let occlusionTopCenter: f32 = step(uniforms.occlusionThreshold, abs(maskTopCenter.g - depthTopCenter));
+        let occlusionTopRight: f32 = step(uniforms.occlusionThreshold, abs(maskTopRight.g - depthTopRight));
 
-    let occlusionMiddleCenter: f32 = step(uniforms.occlusionThreshold, abs(maskMiddleCenter.g - depthMiddleCenter));
-    let occlusionMiddleRight: f32 = step(uniforms.occlusionThreshold, abs(maskMiddleRight.g - depthMiddleRight));
+        let occlusionMiddleCenter: f32 = step(uniforms.occlusionThreshold, abs(maskMiddleCenter.g - depthMiddleCenter));
+        let occlusionMiddleRight: f32 = step(uniforms.occlusionThreshold, abs(maskMiddleRight.g - depthMiddleRight));
 #endif
 #if defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
-    let occlusionTopLeft: f32 = step(uniforms.occlusionThreshold, abs(maskTopLeft.g - depthTopLeft));
+        let occlusionTopLeft: f32 = step(uniforms.occlusionThreshold, abs(maskTopLeft.g - depthTopLeft));
 
-    let occlusionMiddleLeft: f32 = step(uniforms.occlusionThreshold, abs(maskMiddleLeft.g - depthMiddleLeft));
+        let occlusionMiddleLeft: f32 = step(uniforms.occlusionThreshold, abs(maskMiddleLeft.g - depthMiddleLeft));
 
-    let occlusionBottomRight: f32 = step(uniforms.occlusionThreshold, abs(maskBottomRight.g - depthBottomRight));
-    let occlusionBottomCenter: f32 = step(uniforms.occlusionThreshold, abs(maskBottomCenter.g - depthBottomCenter));
-    let occlusionBottomLeft: f32 = step(uniforms.occlusionThreshold, abs(maskBottomLeft.g - depthBottomLeft));
+        let occlusionBottomRight: f32 = step(uniforms.occlusionThreshold, abs(maskBottomRight.g - depthBottomRight));
+        let occlusionBottomCenter: f32 = step(uniforms.occlusionThreshold, abs(maskBottomCenter.g - depthBottomCenter));
+        let occlusionBottomLeft: f32 = step(uniforms.occlusionThreshold, abs(maskBottomLeft.g - depthBottomLeft));
 #endif
 
-    var occlusionFactor: f32 = occlusionMiddleCenter;
+        var occlusionFactor: f32 = occlusionMiddleCenter;
 #ifdef OUTLINELAYER_SAMPLING_TRIDIRECTIONAL
-    occlusionFactor = min(occlusionFactor, occlusionTopCenter);
-    occlusionFactor = min(occlusionFactor, occlusionTopRight);
-    occlusionFactor = min(occlusionFactor, occlusionMiddleRight);
+        occlusionFactor = min(occlusionFactor, occlusionTopCenter);
+        occlusionFactor = min(occlusionFactor, occlusionTopRight);
+        occlusionFactor = min(occlusionFactor, occlusionMiddleRight);
 #elif defined(OUTLINELAYER_SAMPLING_OCTADIRECTIONAL)
-    occlusionFactor = min(occlusionFactor, occlusionTopCenter);
-    occlusionFactor = min(occlusionFactor, occlusionTopRight);
-    occlusionFactor = min(occlusionFactor, occlusionTopLeft);
-    occlusionFactor = min(occlusionFactor, occlusionMiddleRight);
-    occlusionFactor = min(occlusionFactor, occlusionMiddleLeft);
-    occlusionFactor = min(occlusionFactor, occlusionBottomRight);
-    occlusionFactor = min(occlusionFactor, occlusionBottomCenter);
-    occlusionFactor = min(occlusionFactor, occlusionBottomLeft);
+        occlusionFactor = min(occlusionFactor, occlusionTopCenter);
+        occlusionFactor = min(occlusionFactor, occlusionTopRight);
+        occlusionFactor = min(occlusionFactor, occlusionTopLeft);
+        occlusionFactor = min(occlusionFactor, occlusionMiddleRight);
+        occlusionFactor = min(occlusionFactor, occlusionMiddleLeft);
+        occlusionFactor = min(occlusionFactor, occlusionBottomRight);
+        occlusionFactor = min(occlusionFactor, occlusionBottomCenter);
+        occlusionFactor = min(occlusionFactor, occlusionBottomLeft);
 #endif
 
-    let finalOutlineMask: f32 = outlineMask * (1.0 - uniforms.occlusionStrength * occlusionFactor);
+        finalOutlineMask *= 1.0 - uniforms.occlusionStrength * occlusionFactor;
+    }
+#endif
 
     fragmentOutputs.color = vec4f(uniforms.outlineColor, finalOutlineMask);
 

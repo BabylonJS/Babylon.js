@@ -47,3 +47,19 @@ export * from "../../Shaders/hdrIrradianceFiltering.vertex";
 export * from "../../Shaders/hdrIrradianceFiltering.fragment";
 export * from "../../ShadersWGSL/hdrIrradianceFiltering.vertex";
 export * from "../../ShadersWGSL/hdrIrradianceFiltering.fragment";
+
+// HDR filtering shader includes (needed by external packages)
+export * from "../../ShadersWGSL/ShadersInclude/importanceSampling";
+export * from "../../ShadersWGSL/ShadersInclude/pbrBRDFFunctions";
+export * from "../../ShadersWGSL/ShadersInclude/hdrFilteringFunctions";
+export * from "../../Shaders/ShadersInclude/importanceSampling";
+export * from "../../Shaders/ShadersInclude/pbrBRDFFunctions";
+export * from "../../Shaders/ShadersInclude/hdrFilteringFunctions";
+
+// Intersection & LTC helper functions (needed by external packages)
+export * from "../../ShadersWGSL/ShadersInclude/clusteredLightingFunctions";
+export * from "../../ShadersWGSL/ShadersInclude/intersectionFunctions";
+export * from "../../ShadersWGSL/ShadersInclude/ltcHelperFunctions";
+export * from "../../Shaders/ShadersInclude/clusteredLightingFunctions";
+export * from "../../Shaders/ShadersInclude/intersectionFunctions";
+export * from "../../Shaders/ShadersInclude/ltcHelperFunctions";

@@ -8,6 +8,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { type Animatable } from "../Animations/animatable.core";
 import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { Animation } from "../Animations/animation";
+import { AnimationMakeAnimationAdditive } from "../Animations/animation.pure";
 import { AnimationRange } from "../Animations/animationRange";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
@@ -481,7 +482,7 @@ export class Skeleton implements IAnimatable {
             }
 
             for (let animIndex = 0; animIndex < animations.length; animIndex++) {
-                Animation.MakeAnimationAdditive(animations[animIndex], referenceFrame, range);
+                AnimationMakeAnimationAdditive(animations[animIndex], referenceFrame, range);
             }
         }
 

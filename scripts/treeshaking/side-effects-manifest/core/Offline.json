@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "Offline/database.ts": ["top-level-call"]
+    }
+}

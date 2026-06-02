@@ -53,7 +53,7 @@ aggShadow = aggShadow / numLights;
         finalIrradiance *= surfaceAlbedo.rgb;
     #endif
 
-    #if defined(SS_REFRACTION)
+    #if defined(SS_REFRACTION) && !defined(LEGACY_SPECULAR_ENERGY_CONSERVATION) // if LEGACY_SPECULAR_ENERGY_CONSERVATION is defined, surfaceAlbedo has already been multiplied by refractionOpacity (and finalIrradiance is already or will be multiplied by surfaceAlbedo)
         finalIrradiance *= subSurfaceOut.refractionOpacity;
     #endif
 

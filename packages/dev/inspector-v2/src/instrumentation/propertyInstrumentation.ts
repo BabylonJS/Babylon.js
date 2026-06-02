@@ -117,9 +117,13 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
             // Replace the property with a new one that calls the hooks in addition to the original getter and setter.
             !Reflect.defineProperty(target, propertyKey, {
                 configurable: true,
-                get: getValue ? () => getValue.call(target) : undefined,
-                set: (newValue: unknown) => {
-                    setValue.call(target, newValue);
+                get: getValue
+                    ? function (this: unknown) {
+                          return getValue!.call(this);
+                      }
+                    : undefined,
+                set: function (this: unknown, newValue: unknown) {
+                    setValue.call(this, newValue);
                     for (const { afterSet } of hooksForKey!) {
                         afterSet?.(newValue);
                     }

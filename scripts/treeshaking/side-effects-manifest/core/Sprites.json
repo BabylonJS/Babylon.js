@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "files": {
+        "Sprites/spriteMap.ts": ["bare-import"],
+        "Sprites/spriteSceneComponent.ts": ["top-level-call"],
+        "Sprites/spriteSceneComponent.types.ts": ["declare-module"]
+    }
+}

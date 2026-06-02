@@ -41,6 +41,13 @@ export type SPLATLoadingOptions = {
     needsRotationScaleTextures?: boolean;
 
     /**
+     * Load SOG files as raw GPU textures and dequantize in the shader.
+     * Skips the CPU decode pass and yields much faster load times.
+     * Requires WebGL2 / WebGPU. Defaults to false (CPU decode).
+     */
+    useSogTextures?: boolean;
+
+    /**
      * URL to load the spz WASM ES module from (e.g. the \@adobe/spz package).
      * When provided, the WASM-based SPZ loader is used, which supports extra features
      * such as antialiasing metadata, and vendor-specific extensions such as safe-orbit
