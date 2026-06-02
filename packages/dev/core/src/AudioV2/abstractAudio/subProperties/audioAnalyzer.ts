@@ -114,6 +114,18 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     }
 
     /** @internal */
+    public override getByteTimeDomainData(): Uint8Array {
+        const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
+        if (!subNode) {
+            Logger.Warn("AudioAnalyzer not enabled");
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.enableAsync();
+            return super.getByteTimeDomainData();
+        }
+        return subNode.getByteTimeDomainData();
+    }
+
+    /** @internal */
     public getFloatFrequencyData(): Float32Array {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
@@ -123,5 +135,17 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
             return _GetEmptyFloatFrequencyData();
         }
         return subNode.getFloatFrequencyData();
+    }
+
+    /** @internal */
+    public override getFloatTimeDomainData(): Float32Array {
+        const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
+        if (!subNode) {
+            Logger.Warn("AudioAnalyzer not enabled");
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.enableAsync();
+            return super.getFloatTimeDomainData();
+        }
+        return subNode.getFloatTimeDomainData();
     }
 }
