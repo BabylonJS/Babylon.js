@@ -273,14 +273,15 @@ export class FluentButtonMaterial extends PushMaterial {
     public globalRightIndexTipPosition = Vector3.Zero();
 
     private _blobTexture: Texture;
+    private _blobTextureUrl: string;
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_ADD;
         this.disableDepthWrite = true;
         this.backFaceCulling = false;
-        const blobTextureUrl = Tools.GetAssetUrl(FluentButtonMaterial.BLOB_TEXTURE_URL);
-        this._blobTexture = new Texture(blobTextureUrl, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._blobTextureUrl = Tools.GetAssetUrl(FluentButtonMaterial.BLOB_TEXTURE_URL);
+        this._blobTexture = new Texture(this._blobTextureUrl, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public override needAlphaBlending(): boolean {
@@ -311,6 +312,15 @@ export class FluentButtonMaterial extends PushMaterial {
 
         const defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
+
+        const blobTextureError = this._blobTexture.errorObject;
+        if (this._blobTexture.loadingError || blobTextureError) {
+            const textureErrorMessage = blobTextureError?.message || (blobTextureError?.exception instanceof Error ? blobTextureError.exception.message : undefined);
+            throw new Error(
+                `FluentButtonMaterial "${this.name}" failed to load blob texture "${this._blobTextureUrl}"${textureErrorMessage ? `: ${textureErrorMessage}` : ""}. Check FluentButtonMaterial.BLOB_TEXTURE_URL and asset availability.`,
+                { cause: blobTextureError?.exception }
+            );
+        }
 
         if (!this._blobTexture.isReady()) {
             return false;
