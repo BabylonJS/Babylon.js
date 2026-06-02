@@ -672,6 +672,15 @@ export interface IWebXRBodyTrackingOptions {
     useBoneOrientationOffsets?: boolean;
 
     /**
+     * Capture the first tracked frame as the rest pose for delta-from-bind retargeting.
+     *
+     * This is useful only when the user starts tracking in a known calibration pose. It is
+     * disabled by default because capturing an arbitrary startup pose can bake in a fixed
+     * hand or forearm roll offset for the rest of the session.
+     */
+    autoCaptureBindOnFirstFrame?: boolean;
+
+    /**
      * Rotation applied in each tracked joint's local frame to re-base the
      * XR joint axes. Some runtimes (e.g., some Meta Quest builds) emit body
      * joint poses whose +Z axis points along the bone (parent → child), while
@@ -1009,11 +1018,12 @@ export class WebXRTrackedBody implements IDisposable {
     private _hasTrackedBind = false;
 
     /**
-     * When `true` (default), the first tracked frame after the feature
-     * attaches is used as the "rest" pose for delta-from-bind retargeting.
-     * Set to `false` to require an explicit {@link captureTrackedBind} call.
+     * When `true`, the first tracked frame after the feature attaches is used
+     * as the "rest" pose for delta-from-bind retargeting. Set to `true` only
+     * when tracking starts in a known calibration pose; otherwise arbitrary
+     * startup hand/forearm roll can be captured as a fixed session offset.
      */
-    public autoCaptureBindOnFirstFrame = true;
+    public autoCaptureBindOnFirstFrame = false;
 
     /** Scratch quaternion for retarget delta composition. */
     private _tempDeltaQuat = new Quaternion();
@@ -1033,6 +1043,10 @@ export class WebXRTrackedBody implements IDisposable {
     private _computedBoneNewWorldRot = new Map<Bone, Quaternion>();
     /** Per-bone marker: frame id at which the pooled rotation above was last set. */
     private _computedBoneNewWorldRotFrameId = new Map<Bone, number>();
+    /** Per-frame world rotations used by the direct-retarget aim-correction path. */
+    private _computedDirectWorldRotations = new Map<Bone, Quaternion>();
+    /** Per-bone marker for direct-retarget world rotations. */
+    private _computedDirectWorldRotationsFrameId = new Map<Bone, number>();
     private _currentRetargetFrameId = 0;
     /** Scratch quaternion reused for the parent-world accumulation loop. */
     private _tempParentAccumRot = new Quaternion();
@@ -1275,6 +1289,8 @@ export class WebXRTrackedBody implements IDisposable {
         this._bindBoneWorldRotMeshLocal.clear();
         this._computedBoneNewWorldRot.clear();
         this._computedBoneNewWorldRotFrameId.clear();
+        this._computedDirectWorldRotations.clear();
+        this._computedDirectWorldRotationsFrameId.clear();
         this._trackedBindDesiredFinalRot = null;
         this._trackedBindDesiredFinalPos = null;
         this._hasTrackedBind = false;
@@ -1780,7 +1796,7 @@ export class WebXRTrackedBody implements IDisposable {
             const scaleFactor = this._jointScaleFactor;
             const useInitialSkinMatrix = this._skeleton.needInitialSkinMatrix;
             const useBoneOrientationOffsets = this._useBoneOrientationOffsets;
-            const computedWorldRotations = useBoneOrientationOffsets ? new Map<Bone, Quaternion>() : null;
+            const computedWorldRotations = useBoneOrientationOffsets ? this._computedDirectWorldRotations : null;
 
             if (useInitialSkinMatrix) {
                 this._skeletonMesh.getPoseMatrix().invertToRef(this._initialSkinMatrixInverse);
@@ -1896,8 +1912,8 @@ export class WebXRTrackedBody implements IDisposable {
      * avatar.
      *
      * Call this after the user assumes a known rest pose (e.g. T-pose,
-     * A-pose, arms-at-sides). By default the feature auto-captures on the
-     * first tracked frame — disable via {@link autoCaptureBindOnFirstFrame}.
+     * A-pose, arms-at-sides). Automatic first-frame capture is opt-in via
+     * {@link autoCaptureBindOnFirstFrame}.
      */
     public captureTrackedBind(): void {
         this._captureTrackedBindFromDesiredFinals();
@@ -2256,6 +2272,8 @@ export class WebXRTrackedBody implements IDisposable {
         if (!this._skeleton || !this._skeletonMesh) {
             return;
         }
+        this._currentRetargetFrameId++;
+
         for (const bone of this._skeleton.bones) {
             const parentBone = bone.getParent();
             const jointIdx = this._boneToJointIdx.get(bone);
@@ -2275,12 +2293,11 @@ export class WebXRTrackedBody implements IDisposable {
                 this._tempLocalMatrix.decompose(jointTransform.scaling, jointTransform.rotationQuaternion!, jointTransform.position);
 
                 if (useBoneOrientationOffsets) {
-                    const childBone = this._mappedChildBones.get(bone);
                     const bindLocalAimDirection = this._bindLocalAimDirections.get(bone);
-                    const childJointIdx = childBone ? this._boneToJointIdx.get(childBone) : undefined;
+                    const targetJointIdx = this._boneAimTargetJointIdx.get(bone);
 
-                    if (bindLocalAimDirection && childJointIdx !== undefined) {
-                        this._desiredFinalPositions[childJointIdx].subtractToRef(this._desiredFinalPositions[jointIdx], this._tempDirection);
+                    if (bindLocalAimDirection && targetJointIdx !== undefined) {
+                        this._desiredFinalPositions[targetJointIdx].subtractToRef(this._desiredFinalPositions[jointIdx], this._tempDirection);
                         if (this._tempDirection.lengthSquared() > 1e-8) {
                             this._tempDirection.normalize();
                             this._desiredFinals[jointIdx].decompose(this._tempScaleVector, this._tempRotQuat, this._tempPosVec);
@@ -2292,7 +2309,10 @@ export class WebXRTrackedBody implements IDisposable {
                                 this._tempRotQuat.multiplyToRef(this._tempRotQuat2, this._tempRotQuat);
 
                                 if (parentBone) {
-                                    const parentWorldRotation = computedWorldRotations?.get(parentBone);
+                                    const parentWorldRotation =
+                                        computedWorldRotations && this._computedDirectWorldRotationsFrameId.get(parentBone) === this._currentRetargetFrameId
+                                            ? computedWorldRotations.get(parentBone)
+                                            : undefined;
                                     if (parentWorldRotation) {
                                         Quaternion.InverseToRef(parentWorldRotation, this._tempRotQuat2);
                                         this._tempRotQuat.multiplyToRef(this._tempRotQuat2, jointTransform.rotationQuaternion!);
@@ -2336,7 +2356,13 @@ export class WebXRTrackedBody implements IDisposable {
 
                 if (computedWorldRotations) {
                     bone.getFinalMatrix().decompose(this._tempScaleVector, this._tempRotQuat, this._tempPosVec);
-                    computedWorldRotations.set(bone, this._tempRotQuat.clone());
+                    let computedWorldRotation = computedWorldRotations.get(bone);
+                    if (!computedWorldRotation) {
+                        computedWorldRotation = new Quaternion();
+                        computedWorldRotations.set(bone, computedWorldRotation);
+                    }
+                    computedWorldRotation.copyFrom(this._tempRotQuat);
+                    this._computedDirectWorldRotationsFrameId.set(bone, this._currentRetargetFrameId);
                 }
             } else {
                 // Unmapped bone: chain bind-pose local × parent final.
@@ -2420,6 +2446,8 @@ export class WebXRTrackedBody implements IDisposable {
         }
         this._unmappedBoneNodes = [];
         this._boneToJointIdx.clear();
+        this._computedDirectWorldRotations.clear();
+        this._computedDirectWorldRotationsFrameId.clear();
         this._skeleton = null;
         this._jointHasBone.fill(false);
         this._jointParentJointIdx.fill(-1);
@@ -2635,6 +2663,7 @@ export class WebXRBodyTracking extends WebXRAbstractFeature {
                 aimChildOverrides,
                 this.options.jointLocalRotationOffset
             );
+            this._trackedBody.autoCaptureBindOnFirstFrame = this.options.autoCaptureBindOnFirstFrame ?? false;
         } catch (e) {
             this._lastFrameDebugInfo = "ATTACH ERROR: " + e;
             Logger.Warn("WebXR Body Tracking: failed to create tracked body: " + e);

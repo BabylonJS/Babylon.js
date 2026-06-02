@@ -2093,7 +2093,7 @@ describe("WebXRBodyTracking - _ResolveMixamoRigMapping", () => {
     });
 });
 
-describe("WebXRTrackedBody - hand twist correction", () => {
+describe("WebXRTrackedBody - hand retargeting", () => {
     let engine: Engine;
     let scene: Scene;
 
@@ -2156,6 +2156,89 @@ describe("WebXRTrackedBody - hand twist correction", () => {
 
         expect(Vector3.Dot(correctedTwistNormal, expectedTwistNormal)).toBeGreaterThan(0.999);
         expect(Vector3.Dot(correctedAim, Vector3.Right())).toBeGreaterThan(0.999);
+        trackedBody.dispose();
+    });
+
+    const leftWristIdx = JOINT_NAMES.indexOf(WebXRBodyJoint.LEFT_HAND_WRIST);
+    const leftMiddleMetacarpalIdx = JOINT_NAMES.indexOf(WebXRBodyJoint.LEFT_HAND_MIDDLE_METACARPAL);
+
+    const createIdentityJointMatrices = (): Float32Array => {
+        const matrices = new Float32Array(BODY_JOINT_COUNT * 16);
+        for (let i = 0; i < BODY_JOINT_COUNT; i++) {
+            const offset = i * 16;
+            matrices[offset] = 1;
+            matrices[offset + 5] = 1;
+            matrices[offset + 10] = 1;
+            matrices[offset + 15] = 1;
+        }
+        return matrices;
+    };
+
+    const setJointPose = (matrices: Float32Array, jointIdx: number, rotation: Quaternion, position: Vector3): void => {
+        const matrix = new Matrix();
+        Matrix.ComposeToRef(new Vector3(1, 1, 1), rotation, position, matrix);
+        matrix.copyToArray(matrices, jointIdx * 16);
+    };
+
+    const createHandFrame = (wristRollRadians: number): Float32Array => {
+        const matrices = createIdentityJointMatrices();
+        setJointPose(matrices, leftWristIdx, Quaternion.RotationAxis(new Vector3(0, 1, 0), wristRollRadians), Vector3.Zero());
+        setJointPose(matrices, leftMiddleMetacarpalIdx, Quaternion.Identity(), new Vector3(0, 1, 0));
+        return matrices;
+    };
+
+    const createTrackedHand = (): { trackedBody: WebXRTrackedBody; handBone: Bone } => {
+        const mesh = new Mesh("hand-mesh", scene);
+        const skeleton = new Skeleton("hand-skeleton", "hand-skeleton", scene);
+        mesh.skeleton = skeleton;
+
+        const handBone = new Bone("LeftHand", skeleton, null, Matrix.Identity(), null, Matrix.Identity(), 0);
+        new Bone("LeftMiddleMetacarpal", skeleton, handBone, Matrix.Translation(0, 1, 0), null, Matrix.Translation(0, 1, 0));
+        mesh.computeWorldMatrix(true);
+
+        const trackedBody = new WebXRTrackedBody(scene, mesh, { [WebXRBodyJoint.LEFT_HAND_WRIST]: "LeftHand" }, 1, false, true, {
+            [WebXRBodyJoint.LEFT_HAND_WRIST]: WebXRBodyJoint.LEFT_HAND_MIDDLE_METACARPAL,
+        });
+
+        return { trackedBody, handBone };
+    };
+
+    const getBoneWorldRotation = (bone: Bone): Quaternion => {
+        const rotation = new Quaternion();
+        bone.getFinalMatrix().decompose(undefined, rotation, undefined);
+        rotation.normalize();
+        return rotation;
+    };
+
+    it("does not bake first-frame wrist roll into later hand orientation", () => {
+        const currentFrame = createHandFrame(0);
+
+        const startsPalmUp = createTrackedHand();
+        startsPalmUp.trackedBody.replayRawJointMatrices(createHandFrame(Math.PI), true);
+        startsPalmUp.trackedBody.replayRawJointMatrices(currentFrame, true);
+        const afterPalmUpStart = getBoneWorldRotation(startsPalmUp.handBone);
+
+        const startsNeutral = createTrackedHand();
+        startsNeutral.trackedBody.replayRawJointMatrices(currentFrame, true);
+        const afterNeutralStart = getBoneWorldRotation(startsNeutral.handBone);
+
+        expect(Math.abs(Quaternion.Dot(afterPalmUpStart, afterNeutralStart))).toBeGreaterThan(0.9999);
+
+        startsPalmUp.trackedBody.dispose();
+        startsNeutral.trackedBody.dispose();
+    });
+
+    it("keeps first-frame bind capture opt-in for calibrated startup poses", () => {
+        const tracked = createTrackedHand();
+        tracked.trackedBody.autoCaptureBindOnFirstFrame = true;
+
+        tracked.trackedBody.replayRawJointMatrices(createHandFrame(Math.PI), true);
+        tracked.trackedBody.replayRawJointMatrices(createHandFrame(0), true);
+
+        const rotation = getBoneWorldRotation(tracked.handBone);
+        expect(Math.abs(Quaternion.Dot(rotation, Quaternion.Identity()))).toBeLessThan(0.01);
+
+        tracked.trackedBody.dispose();
     });
 });
 
