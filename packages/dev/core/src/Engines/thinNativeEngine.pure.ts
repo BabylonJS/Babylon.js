@@ -1993,6 +1993,11 @@ export class ThinNativeEngine extends ThinEngine {
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
         internalTexture.width = internalTexture.baseWidth;
         internalTexture.height = internalTexture.baseHeight;
+        const layerCount = this._engine.getTextureLayerCount(texture);
+        if (layerCount > 1) {
+            internalTexture.is2DArray = true;
+            internalTexture.depth = layerCount;
+        }
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -2029,6 +2034,13 @@ export class ThinNativeEngine extends ThinEngine {
         if (newWidth !== internalTexture.baseWidth || newHeight !== internalTexture.baseHeight) {
             throw new Error(
                 `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
+            );
+        }
+        const newLayerCount = this._engine.getTextureLayerCount(texture);
+        const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
+        if (newLayerCount !== oldLayerCount) {
+            throw new Error(
+                `updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`
             );
         }
 
