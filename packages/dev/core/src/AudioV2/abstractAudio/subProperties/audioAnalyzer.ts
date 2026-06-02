@@ -6,9 +6,7 @@ import { _GetAudioAnalyzerSubNode, _SetAudioAnalyzerProperty } from "../subNodes
 import { AudioSubNode } from "../subNodes/audioSubNode";
 
 let EmptyByteFrequencyData: Nullable<Uint8Array> = null;
-let EmptyByteTimeDomainData: Nullable<Uint8Array> = null;
 let EmptyFloatFrequencyData: Nullable<Float32Array> = null;
-let EmptyFloatTimeDomainData: Nullable<Float32Array> = null;
 
 /** @internal */
 export function _GetEmptyByteFrequencyData(): Uint8Array {
@@ -19,27 +17,11 @@ export function _GetEmptyByteFrequencyData(): Uint8Array {
 }
 
 /** @internal */
-export function _GetEmptyByteTimeDomainData(): Uint8Array {
-    if (!EmptyByteTimeDomainData) {
-        EmptyByteTimeDomainData = new Uint8Array();
-    }
-    return EmptyByteTimeDomainData;
-}
-
-/** @internal */
 export function _GetEmptyFloatFrequencyData(): Float32Array {
     if (!EmptyFloatFrequencyData) {
         EmptyFloatFrequencyData = new Float32Array();
     }
     return EmptyFloatFrequencyData;
-}
-
-/** @internal */
-export function _GetEmptyFloatTimeDomainData(): Float32Array {
-    if (!EmptyFloatTimeDomainData) {
-        EmptyFloatTimeDomainData = new Float32Array();
-    }
-    return EmptyFloatTimeDomainData;
 }
 
 /** @internal */
@@ -138,7 +120,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
             Logger.Warn("AudioAnalyzer not enabled");
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.enableAsync();
-            return _GetEmptyByteTimeDomainData();
+            return super.getByteTimeDomainData();
         }
         return subNode.getByteTimeDomainData();
     }
@@ -162,7 +144,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
             Logger.Warn("AudioAnalyzer not enabled");
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.enableAsync();
-            return _GetEmptyFloatTimeDomainData();
+            return super.getFloatTimeDomainData();
         }
         return subNode.getFloatTimeDomainData();
     }
