@@ -143,6 +143,24 @@ export function _CommonDispose(commonEngine: AbstractEngine, canvas: Nullable<HT
  * @returns an object containing ascent, height and descent
  */
 export function GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    const domFontOffset = GetFontOffsetFromDom(font);
+    if (domFontOffset) {
+        return domFontOffset;
+    }
+
+    const canvasFontOffset = GetFontOffsetFromCanvas(font);
+    if (canvasFontOffset) {
+        return canvasFontOffset;
+    }
+
+    return GetFallbackFontOffset(font);
+}
+
+function GetFontOffsetFromDom(font: string): Nullable<{ ascent: number; height: number; descent: number }> {
+    if (!IsDocumentAvailable() || !document.body) {
+        return null;
+    }
+
     const text = document.createElement("span");
     text.textContent = "Hg";
     text.style.font = font;
@@ -169,7 +187,57 @@ export function GetFontOffset(font: string): { ascent: number; height: number; d
     } finally {
         document.body.removeChild(div);
     }
-    return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+
+    const offset = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+    return IsValidFontOffset(offset) ? offset : null;
+}
+
+function GetFontOffsetFromCanvas(font: string): Nullable<{ ascent: number; height: number; descent: number }> {
+    let canvas: Nullable<OffscreenCanvas | HTMLCanvasElement> = null;
+    try {
+        if (typeof OffscreenCanvas !== "undefined") {
+            canvas = new OffscreenCanvas(64, 64);
+        } else if (IsDocumentAvailable() && typeof document.createElement === "function") {
+            canvas = document.createElement("canvas");
+            canvas.width = 64;
+            canvas.height = 64;
+        }
+
+        const context = canvas?.getContext("2d") as Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
+        if (!context) {
+            return null;
+        }
+
+        context.font = font;
+        const metrics = context.measureText("Hg");
+        const ascent = Number(metrics.actualBoundingBoxAscent ?? metrics.fontBoundingBoxAscent);
+        const descent = Number(metrics.actualBoundingBoxDescent ?? metrics.fontBoundingBoxDescent);
+        const offset = { ascent, height: ascent + descent, descent };
+        return IsValidFontOffset(offset) ? offset : null;
+    } catch {
+        return null;
+    } finally {
+        const disposableCanvas = canvas as Nullable<{ dispose?: () => void }>;
+        if (typeof disposableCanvas?.dispose === "function") {
+            disposableCanvas.dispose();
+        }
+    }
+}
+
+function GetFallbackFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    const size = Math.max(1, GetCssPixelFontSize(font));
+    const ascent = size * 0.8;
+    const descent = size * 0.2;
+    return { ascent, height: ascent + descent, descent };
+}
+
+function GetCssPixelFontSize(font: string): number {
+    const match = /(?:^|\s)([0-9]+(?:\.[0-9]+)?)px(?:\/|\s|$)/.exec(String(font || ""));
+    return match ? Number(match[1]) : 16;
+}
+
+function IsValidFontOffset(offset: { ascent: number; height: number; descent: number }): boolean {
+    return Number.isFinite(offset.ascent) && Number.isFinite(offset.height) && Number.isFinite(offset.descent) && offset.height > 0;
 }
 
 /** @internal */

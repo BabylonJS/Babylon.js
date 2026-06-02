@@ -1,17 +1,19 @@
 
 ### Core
 
-- Fix wrapped texture restore after context loss + Native MSAA-RTT support - by [bghgary](https://github.com/bghgary) ([#18469](https://github.com/BabylonJS/Babylon.js/pull/18469))
-- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+- Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
+- Add DOM-free font offset fallback - by [matthargett](https://github.com/matthargett) ([#18463](https://github.com/BabylonJS/Babylon.js/pull/18463))
+- Fix: DSM detects modern Xbox controllers on Linux as Generic - by [AmoebaChant](https://github.com/AmoebaChant) ([#18514](https://github.com/BabylonJS/Babylon.js/pull/18514))
+- feat(Gsplat): Add auto-tracking to GaussianSplattingDebugger for compound mesh mutations - by [raymondyfei](https://github.com/raymondyfei) ([#18515](https://github.com/BabylonJS/Babylon.js/pull/18515))
 
 ### Inspector
 
-- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+- Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
+
+### Lottie Player
+
+- Updating worker name for webpack - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18519](https://github.com/BabylonJS/Babylon.js/pull/18519))
 
 ### Materials
 
-- Fix PBRCustomMaterial cached effect cleanup - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18493](https://github.com/BabylonJS/Babylon.js/pull/18493))
-
-### Playground
-
-- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+- feat(GridMaterial): Multi-scale LOD, horizon fade, depth compositing, and above/below color - by [raymondyfei](https://github.com/raymondyfei) ([#18509](https://github.com/BabylonJS/Babylon.js/pull/18509))

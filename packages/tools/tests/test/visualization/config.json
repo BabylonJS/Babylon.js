@@ -263,6 +263,15 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting Debug Part Auto Tracking Test",
+            "playgroundId": "#BTS11N#3",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-debug-part-auto-tracking-test.png",
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Part Serialize Test",
             "playgroundId": "#XQZVOI#0",
             "errorRatio": 5,
@@ -2880,6 +2889,18 @@
             "title": "cube-with-holes-using-stencil-buffer",
             "playgroundId": "#CW5PRI#11",
             "dependsOn": ["Lights", "Materials"]
+        },
+        {
+            "title": "Grid Material",
+            "playgroundId": "#RKGF05",
+            "referenceImage": "grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Multi Scale Grid Material",
+            "playgroundId": "#RKGF05#5",
+            "referenceImage": "multi-scale-grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
         },
         {
             "title": "water-material",

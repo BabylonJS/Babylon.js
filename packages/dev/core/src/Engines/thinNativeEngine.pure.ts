@@ -280,12 +280,18 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${ThinNativeEngine.PROTOCOL_VERSION} (JS)`);
         }
 
-        if (this._engine.setDeviceLostCallback) {
-            this._engine.setDeviceLostCallback(() => {
-                this.onContextLostObservable.notifyObservers(this);
-                this._contextWasLost = true;
-                this._restoreEngineAfterContextLost();
-            });
+        // Prefer setRenderResetCallback (accurate name -- fires when bgfx is (re)initialized,
+        // i.e. on device restore). Fall back to the legacy setDeviceLostCallback for backward
+        // compatibility with older BabylonNative builds. See BabylonNative #1722.
+        const renderResetCallback = () => {
+            this.onContextLostObservable.notifyObservers(this);
+            this._contextWasLost = true;
+            this._restoreEngineAfterContextLost();
+        };
+        if (this._engine.setRenderResetCallback) {
+            this._engine.setRenderResetCallback(renderResetCallback);
+        } else if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(renderResetCallback);
         }
 
         this._webGLVersion = 2;

@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { GetSmartAssetManager, GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManager";
+import { GetSmartAssetManager, GetSmartAssetTextureExtensions } from "core/SmartAssets/smartAssetManager.pure";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";

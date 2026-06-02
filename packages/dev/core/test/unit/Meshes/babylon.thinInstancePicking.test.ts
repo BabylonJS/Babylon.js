@@ -1,14 +1,21 @@
-import { type Engine, NullEngine } from "core/Engines";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Constants } from "core/Engines/constants";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
-import { type Mesh, MeshBuilder } from "core/Meshes";
+import { Mesh } from "core/Meshes/mesh";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { PickingInfo } from "core/Collisions/pickingInfo";
 import { PickingCustomization, Ray } from "core/Culling/ray";
-import "core/Culling/ray";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { BakedVertexAnimationManager } from "core/BakedVertexAnimation/bakedVertexAnimationManager";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import "core/Materials/standardMaterial";
 import "core/Meshes/thinInstanceMesh";
 
 describe("ThinInstance picking", () => {
-    let engine: Engine;
+    let engine: NullEngine;
     let scene: Scene;
     let box: Mesh;
 
@@ -32,6 +39,41 @@ describe("ThinInstance picking", () => {
         box.thinInstanceEnablePicking = true;
     }
 
+    function setSingleBoneInfluence(mesh: Mesh) {
+        const vertexCount = mesh.getTotalVertices();
+        const matricesIndices = new Float32Array(vertexCount * 4);
+        const matricesWeights = new Float32Array(vertexCount * 4);
+
+        for (let index = 0; index < vertexCount; ++index) {
+            matricesWeights[index * 4] = 1;
+        }
+
+        mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+        mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
+        mesh.numBoneInfluencers = 1;
+    }
+
+    function createBakedVertexAnimationTexture() {
+        const textureData = new Float32Array(64);
+
+        Matrix.Identity().copyToArray(textureData, 0);
+        Matrix.Identity().copyToArray(textureData, 16);
+        Matrix.Translation(0, 10, 0).copyToArray(textureData, 32);
+        Matrix.Identity().copyToArray(textureData, 48);
+
+        return RawTexture.CreateRGBATexture(textureData, 8, 2, scene, false, false, Texture.NEAREST_NEAREST, Constants.TEXTURETYPE_FLOAT);
+    }
+
+    function createBakedVertexAnimationManager(mesh: Mesh) {
+        setSingleBoneInfluence(mesh);
+
+        const manager = new BakedVertexAnimationManager(scene);
+        manager.texture = createBakedVertexAnimationTexture();
+        mesh.bakedVertexAnimationManager = manager;
+
+        return manager;
+    }
+
     beforeEach(() => {
         engine = new NullEngine({
             renderHeight: 256,
@@ -50,6 +92,73 @@ describe("ThinInstance picking", () => {
         PickingCustomization.internalPickerForMesh = undefined;
         scene.dispose();
         engine.dispose();
+    });
+
+    describe("refreshBoundingInfo", () => {
+        it("does not apply baked vertex animation unless requested", () => {
+            const manager = createBakedVertexAnimationManager(box);
+
+            box.thinInstanceAdd(Matrix.Identity(), true);
+            box.thinInstanceSetBuffer("bakedVertexAnimationSettingsInstanced", new Float32Array([0, 1, 0, 30]), 4);
+
+            manager.time = 1 / 30;
+            box.thinInstanceRefreshBoundingInfo(true);
+            expect(box.getBoundingInfo().minimum.y).toBeCloseTo(-0.5);
+            expect(box.getBoundingInfo().maximum.y).toBeCloseTo(0.5);
+        });
+
+        it("updates bounds from instanced baked vertex animation settings", () => {
+            const manager = createBakedVertexAnimationManager(box);
+
+            box.thinInstanceAdd(Matrix.Identity(), true);
+            box.thinInstanceSetBuffer("bakedVertexAnimationSettingsInstanced", new Float32Array([0, 1, 0, 30]), 4);
+
+            manager.time = 0;
+            box.thinInstanceRefreshBoundingInfo(true, false, false, true);
+            expect(box.getBoundingInfo().minimum.y).toBeCloseTo(-0.5);
+            expect(box.getBoundingInfo().maximum.y).toBeCloseTo(0.5);
+
+            manager.time = 1 / 30;
+            box.thinInstanceRefreshBoundingInfo(true, false, false, true);
+            expect(box.getBoundingInfo().minimum.y).toBeCloseTo(9.5);
+            expect(box.getBoundingInfo().maximum.y).toBeCloseTo(10.5);
+            expect(box.rawBoundingInfo!.minimum.y).toBeCloseTo(9.5);
+            expect(box.rawBoundingInfo!.maximum.y).toBeCloseTo(10.5);
+        });
+
+        it("aggregates bounds from multiple instanced baked vertex animation settings", () => {
+            const manager = createBakedVertexAnimationManager(box);
+
+            box.thinInstanceAdd(Matrix.Identity(), false);
+            box.thinInstanceAdd(Matrix.Translation(20, 0, 0), true);
+            box.thinInstanceSetBuffer("bakedVertexAnimationSettingsInstanced", new Float32Array([0, 1, 0, 30, 0, 1, 1, 30]), 4);
+
+            manager.time = 0;
+            box.thinInstanceRefreshBoundingInfo(true, false, false, true);
+
+            expect(box.getBoundingInfo().minimum.x).toBeCloseTo(-0.5);
+            expect(box.getBoundingInfo().maximum.x).toBeCloseTo(20.5);
+            expect(box.getBoundingInfo().minimum.y).toBeCloseTo(-0.5);
+            expect(box.getBoundingInfo().maximum.y).toBeCloseTo(10.5);
+            expect(box.rawBoundingInfo!.minimum.x).toBeCloseTo(-0.5);
+            expect(box.rawBoundingInfo!.maximum.x).toBeCloseTo(0.5);
+            expect(box.rawBoundingInfo!.minimum.y).toBeCloseTo(-0.5);
+            expect(box.rawBoundingInfo!.maximum.y).toBeCloseTo(10.5);
+        });
+
+        it("uses animated vertices instead of local animated AABB corners for thin-instance bounds", () => {
+            const diagonalMesh = new Mesh("diagonal", scene);
+            diagonalMesh.setVerticesData(VertexBuffer.PositionKind, new Float32Array([0, 0, 0, 1, 1, 0]));
+            createBakedVertexAnimationManager(diagonalMesh);
+
+            diagonalMesh.thinInstanceAdd(Matrix.RotationZ(Math.PI / 4), true);
+            diagonalMesh.thinInstanceSetBuffer("bakedVertexAnimationSettingsInstanced", new Float32Array([0, 0, 0, 30]), 4);
+
+            diagonalMesh.thinInstanceRefreshBoundingInfo(true, false, false, true);
+            expect(diagonalMesh.getBoundingInfo().minimum.x).toBeCloseTo(0);
+            expect(diagonalMesh.getBoundingInfo().maximum.x).toBeCloseTo(0);
+            expect(diagonalMesh.getBoundingInfo().maximum.y).toBeCloseTo(Math.SQRT2);
+        });
     });
 
     describe("pickWithRay", () => {

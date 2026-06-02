@@ -1,11 +1,179 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable, type DeepImmutableObject } from "../types";
-import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector.pure";
+import { type Nullable, type DeepImmutableObject, type FloatArray } from "../types";
+import { type Vector2, Vector3, TmpVectors, Matrix } from "../Maths/math.vector.pure";
 import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { Mesh } from "../Meshes/mesh.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
+
+const BakedVertexAnimationSettingsInstancedKind = "bakedVertexAnimationSettingsInstanced";
+
+function HasCpuReadableBakedVertexAnimationData(mesh: Mesh): boolean {
+    const textureData = mesh.bakedVertexAnimationManager?.texture?.getInternalTexture()?._bufferView;
+
+    return textureData instanceof Float32Array || textureData instanceof Uint16Array;
+}
+
+function ExtractMinAndMaxToRef(data: FloatArray, count: number, minimum: Vector3, maximum: Vector3): void {
+    minimum.setAll(Number.POSITIVE_INFINITY);
+    maximum.setAll(Number.NEGATIVE_INFINITY);
+
+    for (let index = 0; index < count * 3; index += 3) {
+        const x = data[index];
+        const y = data[index + 1];
+        const z = data[index + 2];
+
+        if (x < minimum.x) {
+            minimum.x = x;
+        }
+        if (y < minimum.y) {
+            minimum.y = y;
+        }
+        if (z < minimum.z) {
+            minimum.z = z;
+        }
+        if (x > maximum.x) {
+            maximum.x = x;
+        }
+        if (y > maximum.y) {
+            maximum.y = y;
+        }
+        if (z > maximum.z) {
+            maximum.z = z;
+        }
+    }
+}
+
+function ApplyBoundingBiasToMinAndMax(minimum: Vector3, maximum: Vector3, bias: Nullable<Vector2>): void {
+    if (!bias) {
+        return;
+    }
+
+    minimum.x -= minimum.x * bias.x + bias.y;
+    minimum.y -= minimum.y * bias.x + bias.y;
+    minimum.z -= minimum.z * bias.x + bias.y;
+    maximum.x += maximum.x * bias.x + bias.y;
+    maximum.y += maximum.y * bias.x + bias.y;
+    maximum.z += maximum.z * bias.x + bias.y;
+}
+
+function UpdateTransformedMinAndMaxToRef(minimum: Vector3, maximum: Vector3, matrix: Matrix, globalMinimum: Vector3, globalMaximum: Vector3): void {
+    const corner = TmpVectors.Vector3[7];
+    const transformed = TmpVectors.Vector3[8];
+
+    for (let x = 0; x < 2; ++x) {
+        for (let y = 0; y < 2; ++y) {
+            for (let z = 0; z < 2; ++z) {
+                corner.set(x ? maximum.x : minimum.x, y ? maximum.y : minimum.y, z ? maximum.z : minimum.z);
+                Vector3.TransformCoordinatesToRef(corner, matrix, transformed);
+                globalMinimum.minimizeInPlace(transformed);
+                globalMaximum.maximizeInPlace(transformed);
+            }
+        }
+    }
+}
+
+function UpdateTransformedDataMinAndMaxToRef(data: FloatArray, count: number, matrix: Matrix, globalMinimum: Vector3, globalMaximum: Vector3): void {
+    const transformed = TmpVectors.Vector3[7];
+
+    for (let index = 0; index < count * 3; index += 3) {
+        Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], matrix, transformed);
+        globalMinimum.minimizeInPlace(transformed);
+        globalMaximum.maximizeInPlace(transformed);
+    }
+}
+
+function UpdateRawBoundingVectors(vectors: Vector3[], rawBoundingInfo: BoundingInfo): void {
+    vectors.length = 0;
+
+    for (let v = 0; v < rawBoundingInfo.boundingBox.vectors.length; ++v) {
+        vectors.push(rawBoundingInfo.boundingBox.vectors[v].clone());
+    }
+}
+
+function TryUpdateBakedVertexAnimationThinInstanceBoundingInfo(mesh: Mesh, vectors: Vector3[], applyMorph: boolean): boolean {
+    const storage = mesh._userThinInstanceBuffersStorage;
+    const bakedVertexAnimationSettingsData = storage?.data[BakedVertexAnimationSettingsInstancedKind];
+    const bakedVertexAnimationSettingsStride = storage?.strides[BakedVertexAnimationSettingsInstancedKind];
+
+    if (!bakedVertexAnimationSettingsData || !bakedVertexAnimationSettingsStride || bakedVertexAnimationSettingsStride < 4 || !HasCpuReadableBakedVertexAnimationData(mesh)) {
+        return false;
+    }
+
+    const matrixData = mesh._thinInstanceDataStorage.matrixData;
+    if (!matrixData) {
+        return false;
+    }
+
+    const cache = {};
+    const settings = TmpVectors.Vector4[0];
+    const rawMinimum = TmpVectors.Vector3[1];
+    const rawMaximum = TmpVectors.Vector3[2];
+    const globalMinimum = TmpVectors.Vector3[3];
+    const globalMaximum = TmpVectors.Vector3[4];
+    const localMinimum = TmpVectors.Vector3[5];
+    const localMaximum = TmpVectors.Vector3[6];
+    const matrix = TmpVectors.Matrix[2];
+    const bias = mesh.geometry ? mesh.geometry.boundingBias : null;
+    const vertexCount = mesh.getTotalVertices();
+
+    rawMinimum.setAll(Number.POSITIVE_INFINITY);
+    rawMaximum.setAll(Number.NEGATIVE_INFINITY);
+    globalMinimum.setAll(Number.POSITIVE_INFINITY);
+    globalMaximum.setAll(Number.NEGATIVE_INFINITY);
+
+    for (let index = 0; index < mesh._thinInstanceDataStorage.instancesCount; ++index) {
+        const settingsOffset = index * bakedVertexAnimationSettingsStride;
+        settings.set(
+            bakedVertexAnimationSettingsData[settingsOffset],
+            bakedVertexAnimationSettingsData[settingsOffset + 1],
+            bakedVertexAnimationSettingsData[settingsOffset + 2],
+            bakedVertexAnimationSettingsData[settingsOffset + 3]
+        );
+
+        const positionData = mesh._getData(
+            {
+                applyMorph,
+                applyBakedVertexAnimation: true,
+                bakedVertexAnimationSettings: settings,
+                updatePositionsArray: false,
+                cache,
+            },
+            null,
+            VertexBuffer.PositionKind
+        );
+
+        if (!positionData) {
+            return false;
+        }
+
+        ExtractMinAndMaxToRef(positionData, vertexCount, localMinimum, localMaximum);
+        ApplyBoundingBiasToMinAndMax(localMinimum, localMaximum, bias);
+        rawMinimum.minimizeInPlace(localMinimum);
+        rawMaximum.maximizeInPlace(localMaximum);
+
+        Matrix.FromArrayToRef(matrixData, index * 16, matrix);
+        if (bias) {
+            UpdateTransformedMinAndMaxToRef(localMinimum, localMaximum, matrix, globalMinimum, globalMaximum);
+        } else {
+            UpdateTransformedDataMinAndMaxToRef(positionData, vertexCount, matrix, globalMinimum, globalMaximum);
+        }
+    }
+
+    if (!isFinite(rawMinimum.x) || !isFinite(globalMinimum.x)) {
+        return false;
+    }
+
+    const boundingInfo = mesh.getBoundingInfo();
+    boundingInfo.reConstruct(globalMinimum, globalMaximum);
+    mesh.rawBoundingInfo = new BoundingInfo(rawMinimum, rawMaximum);
+    UpdateRawBoundingVectors(vectors, mesh.rawBoundingInfo);
+
+    mesh._updateBoundingInfo();
+
+    return true;
+}
 
 let _Registered = false;
 /**
@@ -297,7 +465,12 @@ export function RegisterThinInstanceMesh(): void {
         return this._thinInstanceDataStorage.worldMatrices;
     };
 
-    Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInfo: boolean = false, applySkeleton: boolean = false, applyMorph: boolean = false) {
+    Mesh.prototype.thinInstanceRefreshBoundingInfo = function (
+        forceRefreshParentInfo: boolean = false,
+        applySkeleton: boolean = false,
+        applyMorph: boolean = false,
+        applyBakedVertexAnimation: boolean = false
+    ) {
         if (!this._thinInstanceDataStorage.matrixData || !this._thinInstanceDataStorage.matrixBuffer) {
             return;
         }
@@ -306,7 +479,16 @@ export function RegisterThinInstanceMesh(): void {
 
         if (forceRefreshParentInfo || !this.rawBoundingInfo) {
             vectors.length = 0;
-            this.refreshBoundingInfo(applySkeleton, applyMorph);
+            if (applyBakedVertexAnimation && TryUpdateBakedVertexAnimationThinInstanceBoundingInfo(this, vectors, applyMorph)) {
+                return;
+            }
+
+            const useBakedVertexAnimation = applyBakedVertexAnimation && this.bakedVertexAnimationManager?.isEnabled && HasCpuReadableBakedVertexAnimationData(this);
+            if (useBakedVertexAnimation) {
+                this.refreshBoundingInfo({ applySkeleton, applyMorph, applyBakedVertexAnimation: true, updatePositionsArray: false });
+            } else {
+                this.refreshBoundingInfo(applySkeleton, applyMorph);
+            }
             const boundingInfo = this.getBoundingInfo();
             this.rawBoundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
         }

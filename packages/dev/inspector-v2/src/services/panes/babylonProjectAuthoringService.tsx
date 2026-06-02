@@ -11,7 +11,7 @@ import {
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
     UnloadSmartAssetAsync,
-} from "core/SmartAssets/smartAssetManager";
+} from "core/SmartAssets/smartAssetManager.pure";
 import { Tools } from "core/Misc/tools";
 
 import { type Material } from "core/Materials/material";
