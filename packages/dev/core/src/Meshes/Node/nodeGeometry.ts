@@ -1,9 +1,9 @@
 import { Observable } from "../../Misc/observable";
 import { type Nullable } from "../../types";
-import { Mesh } from "../mesh";
+import { Mesh } from "../mesh.pure";
 import { type VertexData } from "../mesh.vertexData";
 import { type Scene } from "../../scene";
-import { GeometryOutputBlock } from "./Blocks/geometryOutputBlock";
+import { GeometryOutputBlock } from "./Blocks/geometryOutputBlock.pure";
 import { type NodeGeometryBlock } from "./nodeGeometryBlock";
 import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { GetClass } from "../../Misc/typeStore";
@@ -11,12 +11,12 @@ import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
-import { BoxBlock } from "./Blocks/Sources/boxBlock";
+import { BoxBlock } from "./Blocks/Sources/boxBlock.pure";
 import { type GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { PrecisionDate } from "../../Misc/precisionDate";
 import { type TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import { type TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type Color4 } from "../../Maths/math.color";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 

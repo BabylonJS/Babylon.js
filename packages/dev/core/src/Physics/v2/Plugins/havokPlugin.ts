@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector.pure";
 import {
     PhysicsShapeType,
     PhysicsConstraintType,
@@ -26,10 +26,10 @@ import { type PhysicsMaterial, PhysicsMaterialCombineMode } from "../physicsMate
 import { PhysicsShape } from "../physicsShape";
 import { BoundingBox } from "../../../Culling/boundingBox";
 import { type TransformNode } from "../../../Meshes/transformNode";
-import { Mesh } from "../../../Meshes/mesh";
-import { InstancedMesh } from "../../../Meshes/instancedMesh";
+import { Mesh } from "../../../Meshes/mesh.pure";
+import { InstancedMesh } from "../../../Meshes/instancedMesh.pure";
 import { type Scene } from "../../../scene";
-import { VertexBuffer } from "../../../Buffers/buffer";
+import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { BuildArray } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import { type Nullable, type FloatArray } from "../../../types";

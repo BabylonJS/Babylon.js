@@ -9,24 +9,6 @@
             "target": "Animations/animation.ts"
         },
         {
-            "importer": "Animations/animatorAvatar.ts",
-            "kind": "imports",
-            "source": "../Meshes/abstractMesh",
-            "target": "Meshes/abstractMesh.ts"
-        },
-        {
-            "importer": "Animations/animatorAvatar.ts",
-            "kind": "imports",
-            "source": "../Meshes/transformNode",
-            "target": "Meshes/transformNode.ts"
-        },
-        {
-            "importer": "Animations/animatorAvatar.ts",
-            "kind": "imports",
-            "source": "core/Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
             "importer": "Animations/pathCursor.ts",
             "kind": "imports",
             "source": "../Maths/math.vector",
@@ -1425,30 +1407,6 @@
             "target": "Meshes/mesh.ts"
         },
         {
-            "importer": "Meshes/Node/nodeGeometry.ts",
-            "kind": "imports",
-            "source": "../../Misc/tools",
-            "target": "Misc/tools.ts"
-        },
-        {
-            "importer": "Meshes/Node/nodeGeometry.ts",
-            "kind": "imports",
-            "source": "../mesh",
-            "target": "Meshes/mesh.ts"
-        },
-        {
-            "importer": "Meshes/Node/nodeGeometry.ts",
-            "kind": "imports",
-            "source": "./Blocks/Sources/boxBlock",
-            "target": "Meshes/Node/Blocks/Sources/boxBlock.ts"
-        },
-        {
-            "importer": "Meshes/Node/nodeGeometry.ts",
-            "kind": "imports",
-            "source": "./Blocks/geometryOutputBlock",
-            "target": "Meshes/Node/Blocks/geometryOutputBlock.ts"
-        },
-        {
             "importer": "Meshes/Node/nodeGeometryBuildState.ts",
             "kind": "imports",
             "source": "../../Maths/math.vector",
@@ -1473,58 +1431,10 @@
             "target": "Buffers/buffer.ts"
         },
         {
-            "importer": "Meshes/csg2.ts",
-            "kind": "imports",
-            "source": "../Buffers/buffer",
-            "target": "Buffers/buffer.ts"
-        },
-        {
-            "importer": "Meshes/csg2.ts",
-            "kind": "imports",
-            "source": "./mesh",
-            "target": "Meshes/mesh.ts"
-        },
-        {
-            "importer": "Meshes/csg2.ts",
-            "kind": "imports",
-            "source": "core/Materials/multiMaterial",
-            "target": "Materials/multiMaterial.ts"
-        },
-        {
-            "importer": "Meshes/csg2.ts",
-            "kind": "imports",
-            "source": "core/Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
             "importer": "Meshes/geodesicMesh.ts",
             "kind": "imports",
             "source": "../Maths/math.vector",
             "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Meshes/geometry.ts",
-            "kind": "imports",
-            "source": "../Buffers/buffer",
-            "target": "Buffers/buffer.ts"
-        },
-        {
-            "importer": "Meshes/geometry.ts",
-            "kind": "imports",
-            "source": "../Maths/math.color",
-            "target": "Maths/math.color.ts"
-        },
-        {
-            "importer": "Meshes/geometry.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Meshes/geometry.ts",
-            "kind": "imports",
-            "source": "../Misc/tools",
-            "target": "Misc/tools.ts"
         },
         {
             "importer": "Meshes/lattice.material.ts",
@@ -1561,30 +1471,6 @@
             "kind": "imports",
             "source": "../Maths/math.vector",
             "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Meshes/meshSimplification.ts",
-            "kind": "imports",
-            "source": "../Buffers/buffer",
-            "target": "Buffers/buffer.ts"
-        },
-        {
-            "importer": "Meshes/meshSimplification.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Meshes/meshSimplification.ts",
-            "kind": "imports",
-            "source": "../Meshes/mesh",
-            "target": "Meshes/mesh.ts"
-        },
-        {
-            "importer": "Meshes/meshSimplification.ts",
-            "kind": "imports",
-            "source": "../Misc/tools",
-            "target": "Misc/tools.ts"
         },
         {
             "importer": "Meshes/meshUVSpaceRenderer.ts",
@@ -1791,30 +1677,6 @@
             "target": "scene.ts"
         },
         {
-            "importer": "Misc/textureTools.ts",
-            "kind": "imports",
-            "source": "../Materials/Textures/renderTargetTexture",
-            "target": "Materials/Textures/renderTargetTexture.ts"
-        },
-        {
-            "importer": "Misc/textureTools.ts",
-            "kind": "imports",
-            "source": "../Materials/Textures/texture",
-            "target": "Materials/Textures/texture.ts"
-        },
-        {
-            "importer": "Misc/textureTools.ts",
-            "kind": "imports",
-            "source": "../PostProcesses/passPostProcess",
-            "target": "PostProcesses/passPostProcess.ts"
-        },
-        {
-            "importer": "Misc/textureTools.ts",
-            "kind": "imports",
-            "source": "../PostProcesses/postProcess",
-            "target": "PostProcesses/postProcess.ts"
-        },
-        {
             "importer": "Misc/thinMinMaxReducer.ts",
             "kind": "imports",
             "source": "../Materials/effectRenderer",
@@ -2007,30 +1869,6 @@
             "target": "Maths/math.vector.ts"
         },
         {
-            "importer": "Physics/physicsHelper.ts",
-            "kind": "imports",
-            "source": "../Culling/ray",
-            "target": "Culling/ray.ts"
-        },
-        {
-            "importer": "Physics/physicsHelper.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Physics/physicsHelper.ts",
-            "kind": "imports",
-            "source": "../Meshes/Builders/cylinderBuilder",
-            "target": "Meshes/Builders/cylinderBuilder.ts"
-        },
-        {
-            "importer": "Physics/physicsHelper.ts",
-            "kind": "imports",
-            "source": "../Meshes/Builders/sphereBuilder",
-            "target": "Meshes/Builders/sphereBuilder.ts"
-        },
-        {
             "importer": "Physics/physicsImpostor.ts",
             "kind": "exports",
             "source": "./v1/physicsImpostor",
@@ -2059,30 +1897,6 @@
             "kind": "imports",
             "source": "../../Maths/math.vector",
             "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Physics/v2/Plugins/havokPlugin.ts",
-            "kind": "imports",
-            "source": "../../../Buffers/buffer",
-            "target": "Buffers/buffer.ts"
-        },
-        {
-            "importer": "Physics/v2/Plugins/havokPlugin.ts",
-            "kind": "imports",
-            "source": "../../../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Physics/v2/Plugins/havokPlugin.ts",
-            "kind": "imports",
-            "source": "../../../Meshes/instancedMesh",
-            "target": "Meshes/instancedMesh.ts"
-        },
-        {
-            "importer": "Physics/v2/Plugins/havokPlugin.ts",
-            "kind": "imports",
-            "source": "../../../Meshes/mesh",
-            "target": "Meshes/mesh.ts"
         },
         {
             "importer": "Physics/v2/characterController.ts",
@@ -2149,30 +1963,6 @@
             "kind": "imports",
             "source": "../../Misc/tools",
             "target": "Misc/tools.ts"
-        },
-        {
-            "importer": "PostProcesses/bloomEffect.ts",
-            "kind": "imports",
-            "source": "../Materials/Textures/texture",
-            "target": "Materials/Textures/texture.ts"
-        },
-        {
-            "importer": "PostProcesses/bloomEffect.ts",
-            "kind": "imports",
-            "source": "./bloomMergePostProcess",
-            "target": "PostProcesses/bloomMergePostProcess.ts"
-        },
-        {
-            "importer": "PostProcesses/bloomEffect.ts",
-            "kind": "imports",
-            "source": "./blurPostProcess",
-            "target": "PostProcesses/blurPostProcess.ts"
-        },
-        {
-            "importer": "PostProcesses/bloomEffect.ts",
-            "kind": "imports",
-            "source": "./extractHighlightsPostProcess",
-            "target": "PostProcesses/extractHighlightsPostProcess.ts"
         },
         {
             "importer": "PostProcesses/depthOfFieldEffect.ts",
@@ -2385,30 +2175,6 @@
             "target": "Maths/math.vector.ts"
         },
         {
-            "importer": "PostProcesses/thinSSAO2PostProcess.ts",
-            "kind": "imports",
-            "source": "core/Cameras/camera",
-            "target": "Cameras/camera.ts"
-        },
-        {
-            "importer": "PostProcesses/thinSSAO2PostProcess.ts",
-            "kind": "imports",
-            "source": "core/Materials/Textures/texture",
-            "target": "Materials/Textures/texture.ts"
-        },
-        {
-            "importer": "PostProcesses/thinSSAO2PostProcess.ts",
-            "kind": "imports",
-            "source": "core/Materials/effectRenderer",
-            "target": "Materials/effectRenderer.ts"
-        },
-        {
-            "importer": "PostProcesses/thinSSAO2PostProcess.ts",
-            "kind": "imports",
-            "source": "core/Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
             "importer": "PostProcesses/thinSSRBlurCombinerPostProcess.ts",
             "kind": "imports",
             "source": "../Materials/effectRenderer",
@@ -2457,30 +2223,6 @@
             "target": "Materials/effectRenderer.ts"
         },
         {
-            "importer": "PostProcesses/thinTAAPostProcess.ts",
-            "kind": "imports",
-            "source": "../Cameras/camera",
-            "target": "Cameras/camera.ts"
-        },
-        {
-            "importer": "PostProcesses/thinTAAPostProcess.ts",
-            "kind": "imports",
-            "source": "./RenderPipeline/Pipelines/taaMaterialManager",
-            "target": "PostProcesses/RenderPipeline/Pipelines/taaMaterialManager.ts"
-        },
-        {
-            "importer": "PostProcesses/thinTAAPostProcess.ts",
-            "kind": "imports",
-            "source": "core/Materials/effectRenderer",
-            "target": "Materials/effectRenderer.ts"
-        },
-        {
-            "importer": "PostProcesses/thinTAAPostProcess.ts",
-            "kind": "imports",
-            "source": "core/Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
             "importer": "PostProcesses/thinTonemapPostProcess.ts",
             "kind": "imports",
             "source": "../Materials/effectRenderer",
@@ -2503,78 +2245,6 @@
             "kind": "imports",
             "source": "./postProcess",
             "target": "PostProcesses/postProcess.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
-            "kind": "imports",
-            "source": "../../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
-            "kind": "imports",
-            "source": "../../PostProcesses/postProcess",
-            "target": "PostProcesses/postProcess.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
-            "kind": "imports",
-            "source": "../../Rendering/geometryBufferRenderer",
-            "target": "Rendering/geometryBufferRenderer.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
-            "kind": "imports",
-            "source": "core/Materials/Textures/Procedurals/proceduralTexture",
-            "target": "Materials/Textures/Procedurals/proceduralTexture.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
-            "kind": "imports",
-            "source": "../../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
-            "kind": "imports",
-            "source": "../../PostProcesses/postProcess",
-            "target": "PostProcesses/postProcess.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
-            "kind": "imports",
-            "source": "../../Rendering/geometryBufferRenderer",
-            "target": "Rendering/geometryBufferRenderer.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
-            "kind": "imports",
-            "source": "core/Materials/Textures/Procedurals/proceduralTexture",
-            "target": "Materials/Textures/Procedurals/proceduralTexture.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
-            "kind": "imports",
-            "source": "../../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
-            "kind": "imports",
-            "source": "../../PostProcesses/postProcess",
-            "target": "PostProcesses/postProcess.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
-            "kind": "imports",
-            "source": "../../Rendering/geometryBufferRenderer",
-            "target": "Rendering/geometryBufferRenderer.ts"
-        },
-        {
-            "importer": "Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
-            "kind": "imports",
-            "source": "core/Materials/Textures/Procedurals/proceduralTexture",
-            "target": "Materials/Textures/Procedurals/proceduralTexture.ts"
         },
         {
             "importer": "Rendering/depthPeelingRenderer.ts",
@@ -2661,30 +2331,6 @@
             "target": "PostProcesses/subSurfaceScatteringPostProcess.ts"
         },
         {
-            "importer": "Rendering/utilityLayerRenderer.ts",
-            "kind": "imports",
-            "source": "../Lights/hemisphericLight",
-            "target": "Lights/hemisphericLight.ts"
-        },
-        {
-            "importer": "Rendering/utilityLayerRenderer.ts",
-            "kind": "imports",
-            "source": "../Maths/math.color",
-            "target": "Maths/math.color.ts"
-        },
-        {
-            "importer": "Rendering/utilityLayerRenderer.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Rendering/utilityLayerRenderer.ts",
-            "kind": "imports",
-            "source": "../scene",
-            "target": "scene.ts"
-        },
-        {
             "importer": "SmartAssets/smartAssetSerializer.ts",
             "kind": "imports",
             "source": "../Misc/tools",
@@ -2701,30 +2347,6 @@
             "kind": "imports",
             "source": "../Maths/math.vector",
             "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Sprites/spriteManager.ts",
-            "kind": "imports",
-            "source": "../Materials/Textures/texture",
-            "target": "Materials/Textures/texture.ts"
-        },
-        {
-            "importer": "Sprites/spriteManager.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "Sprites/spriteManager.ts",
-            "kind": "imports",
-            "source": "../Misc/tools",
-            "target": "Misc/tools.ts"
-        },
-        {
-            "importer": "Sprites/spriteManager.ts",
-            "kind": "imports",
-            "source": "./spriteSceneComponent",
-            "target": "Sprites/spriteSceneComponent.ts"
         },
         {
             "importer": "Sprites/spritePackedManager.ts",
@@ -2781,78 +2403,6 @@
             "target": "Meshes/mesh.ts"
         },
         {
-            "importer": "XR/motionController/webXRProfiledMotionController.ts",
-            "kind": "imports",
-            "source": "../../Materials/standardMaterial",
-            "target": "Materials/standardMaterial.ts"
-        },
-        {
-            "importer": "XR/motionController/webXRProfiledMotionController.ts",
-            "kind": "imports",
-            "source": "../../Maths/math.color",
-            "target": "Maths/math.color.ts"
-        },
-        {
-            "importer": "XR/motionController/webXRProfiledMotionController.ts",
-            "kind": "imports",
-            "source": "../../Meshes/Builders/sphereBuilder",
-            "target": "Meshes/Builders/sphereBuilder.ts"
-        },
-        {
-            "importer": "XR/motionController/webXRProfiledMotionController.ts",
-            "kind": "imports",
-            "source": "../../Meshes/mesh",
-            "target": "Meshes/mesh.ts"
-        },
-        {
-            "importer": "XR/webXRCamera.ts",
-            "kind": "imports",
-            "source": "../Cameras/camera",
-            "target": "Cameras/camera.ts"
-        },
-        {
-            "importer": "XR/webXRCamera.ts",
-            "kind": "imports",
-            "source": "../Cameras/freeCamera",
-            "target": "Cameras/freeCamera.ts"
-        },
-        {
-            "importer": "XR/webXRCamera.ts",
-            "kind": "imports",
-            "source": "../Cameras/targetCamera",
-            "target": "Cameras/targetCamera.ts"
-        },
-        {
-            "importer": "XR/webXRCamera.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "XR/webXRDefaultExperience.ts",
-            "kind": "imports",
-            "source": "./features/WebXRControllerPointerSelection",
-            "target": "XR/features/WebXRControllerPointerSelection.ts"
-        },
-        {
-            "importer": "XR/webXRDefaultExperience.ts",
-            "kind": "imports",
-            "source": "./features/WebXRControllerTeleportation",
-            "target": "XR/features/WebXRControllerTeleportation.ts"
-        },
-        {
-            "importer": "XR/webXRDefaultExperience.ts",
-            "kind": "imports",
-            "source": "./features/WebXRHandTracking",
-            "target": "XR/features/WebXRHandTracking.ts"
-        },
-        {
-            "importer": "XR/webXRDefaultExperience.ts",
-            "kind": "imports",
-            "source": "./features/WebXRNearInteraction",
-            "target": "XR/features/WebXRNearInteraction.ts"
-        },
-        {
             "importer": "XR/webXREnterExitUI.ts",
             "kind": "imports",
             "source": "../Misc/tools",
@@ -2878,30 +2428,6 @@
         },
         {
             "importer": "XR/webXRInput.ts",
-            "kind": "imports",
-            "source": "./motionController/webXRMotionControllerManager",
-            "target": "XR/motionController/webXRMotionControllerManager.ts"
-        },
-        {
-            "importer": "XR/webXRInputSource.ts",
-            "kind": "imports",
-            "source": "../Maths/math.vector",
-            "target": "Maths/math.vector.ts"
-        },
-        {
-            "importer": "XR/webXRInputSource.ts",
-            "kind": "imports",
-            "source": "../Meshes/mesh",
-            "target": "Meshes/mesh.ts"
-        },
-        {
-            "importer": "XR/webXRInputSource.ts",
-            "kind": "imports",
-            "source": "../Misc/tools",
-            "target": "Misc/tools.ts"
-        },
-        {
-            "importer": "XR/webXRInputSource.ts",
             "kind": "imports",
             "source": "./motionController/webXRMotionControllerManager",
             "target": "XR/motionController/webXRMotionControllerManager.ts"

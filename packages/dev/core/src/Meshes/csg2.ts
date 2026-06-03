@@ -1,14 +1,14 @@
-import { Mesh } from "./mesh";
+import { Mesh } from "./mesh.pure";
 import { type IDisposable, type Scene } from "core/scene";
 import { type IVertexDataLike, VertexData } from "./mesh.vertexData";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Logger } from "core/Misc/logger";
-import { MultiMaterial } from "core/Materials/multiMaterial";
+import { MultiMaterial } from "core/Materials/multiMaterial.pure";
 import { SubMesh } from "./subMesh";
 import { type Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type FloatArray, type Nullable } from "core/types";
-import { type Matrix, Vector3 } from "core/Maths/math.vector";
+import { type Matrix, Vector3 } from "core/Maths/math.vector.pure";
 
 /**
  * Main manifold library

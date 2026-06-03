@@ -1,13 +1,13 @@
 import { Constants } from "../../Engines/constants";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type Scene } from "../../scene";
-import { Matrix, Vector4 } from "../../Maths/math.vector";
-import { PostProcess, type PostProcessOptions } from "../../PostProcesses/postProcess";
+import { Matrix, Vector4 } from "../../Maths/math.vector.pure";
+import { PostProcess, type PostProcessOptions } from "../../PostProcesses/postProcess.pure";
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { type Camera } from "../../Cameras/camera";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
-import { ProceduralTexture, type IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer.pure";
+import { ProceduralTexture, type IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture.pure";
 import { type CubeTexture } from "../../Materials/Textures/cubeTexture";
 import { Logger } from "../../Misc/logger";
 import { type EventState } from "../../Misc/observable";
