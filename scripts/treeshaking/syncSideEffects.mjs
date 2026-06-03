@@ -24,10 +24,11 @@
  *      "Actions/action.js".
  *
  * Usage:
- *   node scripts/treeshaking/syncSideEffects.mjs [--dry-run] [--verbose]
+ *   node scripts/treeshaking/syncSideEffects.mjs [--dry-run] [--check] [--verbose]
  *
  * Options:
  *   --dry-run   Print the generated array but don't write to package.json
+ *   --check     Validate package.json without writing
  *   --verbose   Print detailed information about glob/individual decisions
  */
 
@@ -93,6 +94,15 @@ function getFileNameWithoutExtension(filePath) {
  */
 function canUseInBraceGlob(fileName) {
     return /^[A-Za-z0-9_.-]+$/.test(fileName);
+}
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+function compareStrings(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /**
@@ -175,7 +185,7 @@ function createSideEffectsEntries(files, globDirs, verbose) {
     entries.push("**/index.js");
 
     // 1. Glob patterns for fully side-effectful directories
-    for (const dir of [...globDirs].sort()) {
+    for (const dir of [...globDirs].sort(compareStrings)) {
         entries.push(`${dir}/**`);
     }
 
@@ -189,7 +199,7 @@ function createSideEffectsEntries(files, globDirs, verbose) {
         filesByDirectory.set(directory, files);
     };
 
-    for (const file of files.sort()) {
+    for (const file of [...files].sort(compareStrings)) {
         const topDir = getTopDir(file);
         if (globDirs.has(topDir)) {
             continue;
@@ -207,8 +217,8 @@ function createSideEffectsEntries(files, globDirs, verbose) {
 
     let braceGlobCount = 0;
     let individualFileCount = 0;
-    for (const [directory, fileNames] of [...filesByDirectory.entries()].sort(([dirA], [dirB]) => dirA.localeCompare(dirB))) {
-        const sortedFileNames = [...new Set(fileNames)].sort();
+    for (const [directory, fileNames] of [...filesByDirectory.entries()].sort(([dirA], [dirB]) => compareStrings(dirA, dirB))) {
+        const sortedFileNames = [...new Set(fileNames)].sort(compareStrings);
         if (sortedFileNames.length > 1 && sortedFileNames.every(canUseInBraceGlob)) {
             braceGlobCount++;
             const prefix = directory ? `${directory}/` : "";
