@@ -125,6 +125,11 @@ export class GlobalState {
     storeEditorData: (serializationObject: any) => void;
     shiftKeyPressed: boolean = false;
 
+    mcpSessionUrl: string | null = null;
+    mcpSessionConnected: boolean = false;
+    mcpEventSource: EventSource | null = null;
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     customSave?: { label: string; action: (data: string) => Promise<string> };
     customLoad?: { label: string; action: (data: string) => Promise<string> };
     public constructor() {

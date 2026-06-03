@@ -599,9 +599,15 @@ export class Tools {
             Tools.LoadFile(
                 scriptUrl,
                 (data) => {
-                    Function(data as string).apply(null);
-                    if (onSuccess) {
-                        onSuccess();
+                    try {
+                        Function(data as string).apply(null);
+                        if (onSuccess) {
+                            onSuccess();
+                        }
+                    } catch (exception) {
+                        if (onError) {
+                            onError("LoadScript Error", exception);
+                        }
                     }
                 },
                 undefined,

@@ -6,14 +6,192 @@ import { type IComputeEffectCreationOptions, type IComputeShaderPath, ComputeEff
 import { type IComputeContext } from "../../../Compute/IComputeContext";
 import { type IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
 import { type Nullable } from "../../../types";
-import { type ComputeBindingList, type ComputeBindingMapping, type ComputeCompilationMessages } from "../../Extensions/engine.computeShader.pure";
+import { ComputeBindingType, type ComputeBindingList, type ComputeBindingMapping, type ComputeCompilationMessages } from "../../Extensions/engine.computeShader.pure";
+import { Constants } from "../../constants";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 import { type WebGPUPerfCounter } from "../webgpuPerfCounter";
 import { type DataBuffer } from "../../../Buffers/dataBuffer";
 import { WebGPUEngine } from "../../webgpuEngine.pure";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type BaseTexture } from "../../../Materials/Textures/baseTexture.pure";
 
 let _Registered = false;
+
+const _GetComputeStorageBufferType = (source: string, group: number, binding: number): WebGPUConstants.BufferBindingType => {
+    const bindingPattern = `@binding\\(${binding}\\)\\s*@group\\(${group}\\)`;
+    const groupPattern = `@group\\(${group}\\)\\s*@binding\\(${binding}\\)`;
+    const declarationPattern = `(?:${bindingPattern}|${groupPattern})\\s*var<storage\\s*,\\s*(read|read_write)>`;
+    const access = source.match(new RegExp(declarationPattern))?.[1];
+
+    return access === "read" ? WebGPUConstants.BufferBindingType.ReadOnlyStorage : WebGPUConstants.BufferBindingType.Storage;
+};
+
+const _GetComputeTextureViewDimension = (source: string, group: number, binding: number): WebGPUConstants.TextureViewDimension => {
+    const bindingPattern = `@binding\\(${binding}\\)\\s*@group\\(${group}\\)`;
+    const groupPattern = `@group\\(${group}\\)\\s*@binding\\(${binding}\\)`;
+    const declaration = source.match(new RegExp(`(?:${bindingPattern}|${groupPattern})\\s*var\\s+\\w+\\s*:\\s*(texture_\\w+)`))?.[1];
+
+    switch (declaration) {
+        case "texture_2d_array":
+        case "texture_depth_2d_array":
+            return WebGPUConstants.TextureViewDimension.E2dArray;
+        case "texture_cube":
+            return WebGPUConstants.TextureViewDimension.Cube;
+        case "texture_cube_array":
+            return WebGPUConstants.TextureViewDimension.CubeArray;
+        case "texture_3d":
+            return WebGPUConstants.TextureViewDimension.E3d;
+        default:
+            return WebGPUConstants.TextureViewDimension.E2d;
+    }
+};
+
+const _GetInternalTexture = (texture: BaseTexture | InternalTexture): Nullable<InternalTexture> => {
+    const internalTexture = texture as InternalTexture;
+    if (internalTexture._hardwareTexture !== undefined) {
+        return internalTexture;
+    }
+
+    return (texture as BaseTexture)._texture;
+};
+
+const _GetComputeTextureSampleType = (texture: BaseTexture | InternalTexture, textureFloatLinearFiltering: boolean): WebGPUConstants.TextureSampleType => {
+    const internalTexture = _GetInternalTexture(texture);
+
+    if (!internalTexture) {
+        return WebGPUConstants.TextureSampleType.Float;
+    }
+
+    const textureIsDepth = internalTexture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && internalTexture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+    if (textureIsDepth) {
+        return WebGPUConstants.TextureSampleType.Depth;
+    }
+
+    if (internalTexture.type === Constants.TEXTURETYPE_FLOAT && !textureFloatLinearFiltering) {
+        return WebGPUConstants.TextureSampleType.UnfilterableFloat;
+    }
+
+    return WebGPUConstants.TextureSampleType.Float;
+};
+
+const _GetComputePipelineLayout = (
+    device: GPUDevice,
+    bindings: ComputeBindingList,
+    bindingsMapping: ComputeBindingMapping | undefined,
+    shaderSource: string,
+    textureFloatLinearFiltering: boolean
+): Nullable<GPUPipelineLayout> => {
+    if (!bindingsMapping) {
+        return null;
+    }
+
+    const bindGroupLayoutEntries: GPUBindGroupLayoutEntry[][] = [];
+
+    const addEntry = (group: number, entry: GPUBindGroupLayoutEntry) => {
+        const entries = (bindGroupLayoutEntries[group] ??= []);
+        const existingIndex = entries.findIndex((item) => item.binding === entry.binding);
+        if (existingIndex >= 0) {
+            entries[existingIndex] = entry;
+        } else {
+            entries.push(entry);
+        }
+    };
+
+    for (const key in bindings) {
+        const binding = bindings[key];
+        const location = bindingsMapping[key];
+        if (!location) {
+            continue;
+        }
+
+        const group = location.group;
+        const bindingIndex = location.binding;
+
+        switch (binding.type) {
+            case ComputeBindingType.Texture:
+            case ComputeBindingType.TextureWithoutSampler:
+            case ComputeBindingType.InternalTexture: {
+                const sampleType = _GetComputeTextureSampleType(binding.object as BaseTexture | InternalTexture, textureFloatLinearFiltering);
+
+                if (binding.type === ComputeBindingType.Texture) {
+                    addEntry(group, {
+                        binding: bindingIndex - 1,
+                        visibility: WebGPUConstants.ShaderStage.Compute,
+                        sampler: {
+                            type:
+                                sampleType === WebGPUConstants.TextureSampleType.UnfilterableFloat
+                                    ? WebGPUConstants.SamplerBindingType.NonFiltering
+                                    : WebGPUConstants.SamplerBindingType.Filtering,
+                        },
+                    });
+                }
+
+                addEntry(group, {
+                    binding: bindingIndex,
+                    visibility: WebGPUConstants.ShaderStage.Compute,
+                    texture: {
+                        sampleType,
+                        viewDimension: _GetComputeTextureViewDimension(shaderSource, group, bindingIndex),
+                        multisampled: false,
+                    },
+                });
+                break;
+            }
+            case ComputeBindingType.StorageTexture: {
+                addEntry(group, {
+                    binding: bindingIndex,
+                    visibility: WebGPUConstants.ShaderStage.Compute,
+                    storageTexture: {
+                        access: WebGPUConstants.StorageTextureAccess.WriteOnly,
+                        format: ((binding.object as BaseTexture)._texture!._hardwareTexture as any).format,
+                        viewDimension: _GetComputeTextureViewDimension(shaderSource, group, bindingIndex),
+                    },
+                });
+                break;
+            }
+            case ComputeBindingType.UniformBuffer:
+                addEntry(group, {
+                    binding: bindingIndex,
+                    visibility: WebGPUConstants.ShaderStage.Compute,
+                    buffer: { type: WebGPUConstants.BufferBindingType.Uniform },
+                });
+                break;
+            case ComputeBindingType.StorageBuffer:
+            case ComputeBindingType.DataBuffer:
+                addEntry(group, {
+                    binding: bindingIndex,
+                    visibility: WebGPUConstants.ShaderStage.Compute,
+                    buffer: { type: _GetComputeStorageBufferType(shaderSource, group, bindingIndex) },
+                });
+                break;
+            case ComputeBindingType.Sampler:
+                addEntry(group, {
+                    binding: bindingIndex,
+                    visibility: WebGPUConstants.ShaderStage.Compute,
+                    sampler: { type: WebGPUConstants.SamplerBindingType.Filtering },
+                });
+                break;
+            case ComputeBindingType.ExternalTexture:
+                addEntry(group, {
+                    binding: bindingIndex,
+                    visibility: WebGPUConstants.ShaderStage.Compute,
+                    externalTexture: {},
+                });
+                break;
+        }
+    }
+
+    const bindGroupLayouts: GPUBindGroupLayout[] = [];
+    for (let i = 0; i < bindGroupLayoutEntries.length; i++) {
+        const entries = bindGroupLayoutEntries[i] ?? [];
+        entries.sort((a, b) => a.binding - b.binding);
+        bindGroupLayouts[i] = device.createBindGroupLayout({ entries });
+    }
+
+    return device.createPipelineLayout({ bindGroupLayouts });
+};
+
 /**
  * Register side effects for enginesWebGPUExtensionsEngineComputeShader.
  * Safe to call multiple times; only the first call has an effect.
@@ -37,7 +215,7 @@ export function RegisterEnginesWebGPUExtensionsEngineComputeShader(): void {
     ): ComputeEffect {
         const compute = typeof baseName === "string" ? baseName : baseName.computeToken || baseName.computeSource || baseName.computeElement || baseName.compute;
 
-        const name = compute + "@" + options.defines;
+        const name = compute + "@" + options.defines + (options.useExplicitComputePipelineLayout ? "@explicitComputePipelineLayout" : "");
         if (this._compiledComputeEffects[name]) {
             const compiledEffect = this._compiledComputeEffects[name];
             if (options.onCompiled && compiledEffect.isReady()) {
@@ -111,8 +289,12 @@ export function RegisterEnginesWebGPUExtensionsEngineComputeShader(): void {
         const computeContext = context as WebGPUComputeContext;
 
         if (!contextPipeline.computePipeline) {
+            const explicitLayout = effect._useExplicitComputePipelineLayout
+                ? _GetComputePipelineLayout(this._device, bindings, bindingsMapping, contextPipeline.sources?.compute ?? "", this._caps.textureFloatLinearFiltering)
+                : null;
+            computeContext.clear();
             contextPipeline.computePipeline = this._device.createComputePipeline({
-                layout: WebGPUConstants.AutoLayoutMode.Auto,
+                layout: explicitLayout ?? WebGPUConstants.AutoLayoutMode.Auto,
                 compute: contextPipeline.stage!,
             });
         }

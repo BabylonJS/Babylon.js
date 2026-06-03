@@ -1,0 +1,537 @@
+{
+  "customType": "BABYLON.NodeParticleSystemSet",
+  "blocks": [
+    {
+      "customType": "BABYLON.BoxShapeBlock",
+      "id": 1,
+      "name": "shape1",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 2,
+          "targetConnectionName": "particle"
+        },
+        {
+          "name": "direction1",
+          "displayName": "direction1"
+        },
+        {
+          "name": "direction2",
+          "displayName": "direction2"
+        },
+        {
+          "name": "minEmitBox",
+          "displayName": "minEmitBox"
+        },
+        {
+          "name": "maxEmitBox",
+          "displayName": "maxEmitBox"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.CreateParticleBlock",
+      "id": 2,
+      "name": "create1",
+      "inputs": [
+        {
+          "name": "emitPower",
+          "displayName": "emitPower"
+        },
+        {
+          "name": "lifeTime",
+          "displayName": "lifeTime",
+          "inputName": "lifeTime",
+          "targetBlockId": 3,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "color",
+          "displayName": "color"
+        },
+        {
+          "name": "colorDead",
+          "displayName": "colorDead"
+        },
+        {
+          "name": "scale",
+          "displayName": "scale"
+        },
+        {
+          "name": "angle",
+          "displayName": "angle"
+        },
+        {
+          "name": "size",
+          "displayName": "size"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "particle",
+          "displayName": "particle"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 3,
+      "name": "lifetime1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 0,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true,
+      "value": 2,
+      "valueType": "number"
+    },
+    {
+      "customType": "BABYLON.UpdateAgeBlock",
+      "id": 4,
+      "name": "updateAge1",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 1,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "age",
+          "displayName": "age",
+          "inputName": "age",
+          "targetBlockId": 5,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 5,
+      "name": "ageInput1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 3,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true
+    },
+    {
+      "customType": "BABYLON.ParticleTextureSourceBlock",
+      "id": 6,
+      "name": "texture1",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "texture",
+          "displayName": "texture"
+        }
+      ],
+      "invertY": true,
+      "serializedCachedData": false,
+      "url": "https://assets.babylonjs.com/textures/flare.png"
+    },
+    {
+      "customType": "BABYLON.SystemBlock",
+      "id": 7,
+      "name": "system1",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 4,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "emitRate",
+          "displayName": "emitRate"
+        },
+        {
+          "name": "texture",
+          "displayName": "texture",
+          "inputName": "texture",
+          "targetBlockId": 6,
+          "targetConnectionName": "texture"
+        },
+        {
+          "name": "translationPivot",
+          "displayName": "translationPivot"
+        },
+        {
+          "name": "textureMask",
+          "displayName": "textureMask"
+        },
+        {
+          "name": "targetStopDuration",
+          "displayName": "targetStopDuration"
+        },
+        {
+          "name": "onStart",
+          "displayName": "onStart"
+        },
+        {
+          "name": "onEnd",
+          "displayName": "onEnd"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "system",
+          "displayName": "system"
+        }
+      ],
+      "blendMode": 0,
+      "capacity": 1000,
+      "manualEmitCount": -1,
+      "startDelay": 0,
+      "updateSpeed": 0.0167,
+      "preWarmCycles": 0,
+      "preWarmStepOffset": 0,
+      "isBillboardBased": true,
+      "billBoardMode": 7,
+      "isLocal": false,
+      "disposeOnStop": false,
+      "doNoStart": false,
+      "renderingGroupId": 0
+    },
+    {
+      "customType": "BABYLON.SphereShapeBlock",
+      "id": 8,
+      "name": "shape2",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 9,
+          "targetConnectionName": "particle"
+        },
+        {
+          "name": "radius",
+          "displayName": "radius"
+        },
+        {
+          "name": "radiusRange",
+          "displayName": "radiusRange"
+        },
+        {
+          "name": "directionRandomizer",
+          "displayName": "directionRandomizer"
+        },
+        {
+          "name": "direction1",
+          "displayName": "direction1"
+        },
+        {
+          "name": "direction2",
+          "displayName": "direction2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.CreateParticleBlock",
+      "id": 9,
+      "name": "create2",
+      "inputs": [
+        {
+          "name": "emitPower",
+          "displayName": "emitPower"
+        },
+        {
+          "name": "lifeTime",
+          "displayName": "lifeTime",
+          "inputName": "lifeTime",
+          "targetBlockId": 10,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "color",
+          "displayName": "color"
+        },
+        {
+          "name": "colorDead",
+          "displayName": "colorDead"
+        },
+        {
+          "name": "scale",
+          "displayName": "scale"
+        },
+        {
+          "name": "angle",
+          "displayName": "angle"
+        },
+        {
+          "name": "size",
+          "displayName": "size"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "particle",
+          "displayName": "particle"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 10,
+      "name": "lifetime2",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 0,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true,
+      "value": 5,
+      "valueType": "number"
+    },
+    {
+      "customType": "BABYLON.UpdateAgeBlock",
+      "id": 11,
+      "name": "updateAge2",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 8,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "age",
+          "displayName": "age",
+          "inputName": "age",
+          "targetBlockId": 12,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 12,
+      "name": "ageInput2",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 3,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true
+    },
+    {
+      "customType": "BABYLON.ParticleTextureSourceBlock",
+      "id": 13,
+      "name": "texture2",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "texture",
+          "displayName": "texture"
+        }
+      ],
+      "invertY": true,
+      "serializedCachedData": false,
+      "url": "https://assets.babylonjs.com/textures/flare.png"
+    },
+    {
+      "customType": "BABYLON.SystemBlock",
+      "id": 14,
+      "name": "system2",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 11,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "emitRate",
+          "displayName": "emitRate"
+        },
+        {
+          "name": "texture",
+          "displayName": "texture",
+          "inputName": "texture",
+          "targetBlockId": 13,
+          "targetConnectionName": "texture"
+        },
+        {
+          "name": "translationPivot",
+          "displayName": "translationPivot"
+        },
+        {
+          "name": "textureMask",
+          "displayName": "textureMask"
+        },
+        {
+          "name": "targetStopDuration",
+          "displayName": "targetStopDuration"
+        },
+        {
+          "name": "onStart",
+          "displayName": "onStart"
+        },
+        {
+          "name": "onEnd",
+          "displayName": "onEnd"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "system",
+          "displayName": "system"
+        }
+      ],
+      "blendMode": 0,
+      "capacity": 1000,
+      "manualEmitCount": -1,
+      "startDelay": 0,
+      "updateSpeed": 0.0167,
+      "preWarmCycles": 0,
+      "preWarmStepOffset": 0,
+      "isBillboardBased": true,
+      "billBoardMode": 7,
+      "isLocal": false,
+      "disposeOnStop": false,
+      "doNoStart": false,
+      "renderingGroupId": 0
+    }
+  ],
+  "comment": "Two independent particle systems in a single set.",
+  "name": "MultiSystemParticles",
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 680,
+        "y": 0
+      },
+      {
+        "blockId": 2,
+        "x": 340,
+        "y": 0
+      },
+      {
+        "blockId": 3,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "blockId": 4,
+        "x": 1020,
+        "y": 0
+      },
+      {
+        "blockId": 5,
+        "x": 680,
+        "y": 180
+      },
+      {
+        "blockId": 6,
+        "x": 1020,
+        "y": 180
+      },
+      {
+        "blockId": 7,
+        "x": 1360,
+        "y": 0
+      },
+      {
+        "blockId": 8,
+        "x": 680,
+        "y": 360
+      },
+      {
+        "blockId": 9,
+        "x": 340,
+        "y": 180
+      },
+      {
+        "blockId": 10,
+        "x": 0,
+        "y": 180
+      },
+      {
+        "blockId": 11,
+        "x": 1020,
+        "y": 360
+      },
+      {
+        "blockId": 12,
+        "x": 680,
+        "y": 540
+      },
+      {
+        "blockId": 13,
+        "x": 1020,
+        "y": 540
+      },
+      {
+        "blockId": 14,
+        "x": 1360,
+        "y": 180
+      }
+    ]
+  }
+}
