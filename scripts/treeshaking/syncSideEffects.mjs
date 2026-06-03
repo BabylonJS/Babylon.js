@@ -15,7 +15,12 @@
  *      (e.g. Shaders/, ShadersWGSL/), emit a single recursive glob:
  *      "Shaders/**".
  *
- *   2. For individual files outside those directories, emit explicit paths:
+ *   2. For files outside those directories, group files in the same folder
+ *      with brace globs where possible:
+ *      "Actions/{action,condition}.js".
+ *
+ *   3. For folders with only one remaining side-effectful file, emit the
+ *      explicit path:
  *      "Actions/action.js".
  *
  * Usage:
@@ -58,6 +63,36 @@ function getTopDir(filePath) {
     const normalizedPath = toPosixPath(filePath);
     const slashIndex = normalizedPath.indexOf("/");
     return slashIndex === -1 ? normalizedPath : normalizedPath.substring(0, slashIndex);
+}
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function getDirectory(filePath) {
+    const normalizedPath = toPosixPath(filePath);
+    const slashIndex = normalizedPath.lastIndexOf("/");
+    return slashIndex === -1 ? "" : normalizedPath.substring(0, slashIndex);
+}
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function getFileNameWithoutExtension(filePath) {
+    const normalizedPath = toPosixPath(filePath);
+    const slashIndex = normalizedPath.lastIndexOf("/");
+    const fileName = slashIndex === -1 ? normalizedPath : normalizedPath.substring(slashIndex + 1);
+    return fileName.replace(/\.ts$/, "");
+}
+
+/**
+ * Keep brace globs simple enough for webpack's glob-to-regexp and Rollup's picomatch handling.
+ * @param {string} fileName
+ * @returns {boolean}
+ */
+function canUseInBraceGlob(fileName) {
+    return /^[A-Za-z0-9_.-]+$/.test(fileName);
 }
 
 /**
@@ -126,6 +161,79 @@ function updatePackageJson(pkgPath, sideEffects) {
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + "\n");
 }
 
+/**
+ * @param {string[]} files
+ * @param {Set<string>} globDirs
+ * @param {boolean} verbose
+ * @returns {string[]}
+ */
+function createSideEffectsEntries(files, globDirs, verbose) {
+    const entries = [];
+
+    // 0. All barrel index files are side-effectful (they re-export wrappers
+    //    that call Register* functions, so bundlers must traverse them)
+    entries.push("**/index.js");
+
+    // 1. Glob patterns for fully side-effectful directories
+    for (const dir of [...globDirs].sort()) {
+        entries.push(`${dir}/**`);
+    }
+
+    // 2. Brace globs for files that share the same directory. This keeps the
+    //    sideEffects array short without marking unrelated sibling modules as
+    //    side-effectful.
+    const filesByDirectory = new Map();
+    const addFile = (directory, fileName) => {
+        const files = filesByDirectory.get(directory) ?? [];
+        files.push(fileName);
+        filesByDirectory.set(directory, files);
+    };
+
+    for (const file of files.sort()) {
+        const topDir = getTopDir(file);
+        if (globDirs.has(topDir)) {
+            continue;
+        }
+
+        const jsPath = file.replace(/\.ts$/, ".js");
+        if (jsPath === "index.js" || jsPath.endsWith("/index.js")) {
+            continue;
+        }
+
+        const directory = getDirectory(file);
+        const fileName = getFileNameWithoutExtension(file);
+        addFile(directory, fileName);
+    }
+
+    let braceGlobCount = 0;
+    let individualFileCount = 0;
+    for (const [directory, fileNames] of [...filesByDirectory.entries()].sort(([dirA], [dirB]) => dirA.localeCompare(dirB))) {
+        const sortedFileNames = [...new Set(fileNames)].sort();
+        if (sortedFileNames.length > 1 && sortedFileNames.every(canUseInBraceGlob)) {
+            braceGlobCount++;
+            const prefix = directory ? `${directory}/` : "";
+            entries.push(`${prefix}{${sortedFileNames.join(",")}}.js`);
+            if (verbose) {
+                console.log(`BRACE: ${prefix}{...}.js (${sortedFileNames.length} files)`);
+            }
+            continue;
+        }
+
+        for (const fileName of sortedFileNames) {
+            individualFileCount++;
+            const prefix = directory ? `${directory}/` : "";
+            entries.push(`${prefix}${fileName}.js`);
+        }
+    }
+
+    if (verbose) {
+        console.log(`Brace patterns: ${braceGlobCount}`);
+        console.log(`Individual files after grouping: ${individualFileCount}`);
+    }
+
+    return entries;
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -163,31 +271,10 @@ function main() {
         }
     }
 
-    // Build the sideEffects list for the public package
-    const entries = [];
-
-    // 0. All barrel index files are side-effectful (they re-export wrappers
-    //    that call Register* functions, so bundlers must traverse them)
-    entries.push("**/index.js");
-
-    // 1. Glob patterns for fully side-effectful directories
-    for (const dir of [...globDirs].sort()) {
-        entries.push(`${dir}/**`);
-    }
-
-    // 2. Individual file entries for everything else
-    for (const file of seFiles.sort()) {
-        const topDir = getTopDir(file);
-        if (globDirs.has(topDir)) {
-            continue; // Already covered by glob
-        }
-        // Public package uses .js extension (compiled output)
-        entries.push(file.replace(/\.ts$/, ".js"));
-    }
+    const entries = createSideEffectsEntries(seFiles, globDirs, verbose);
 
     if (verbose || dryRun) {
         console.log(`\nGlob patterns: ${globDirs.size}`);
-        console.log(`Individual files: ${entries.length - globDirs.size}`);
         console.log(`Total sideEffects entries: ${entries.length}`);
     }
 
