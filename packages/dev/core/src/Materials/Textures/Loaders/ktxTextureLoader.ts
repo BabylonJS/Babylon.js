@@ -83,6 +83,15 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         const engine = texture.getEngine();
         const ktx = new KhronosTextureContainer(data, 6);
 
+        const mappedFormat = MapSRGBToLinear(ktx.glInternalFormat);
+        if (mappedFormat) {
+            texture.format = mappedFormat;
+            texture._useSRGBBuffer = texture.getEngine()._getUseSRGBBuffer(true, !texture.generateMipMaps);
+            texture._gammaSpace = true;
+        } else {
+            texture.format = ktx.glInternalFormat;
+        }
+
         const loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;
 
         engine._unpackFlipY(true);
@@ -123,7 +132,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
             const mappedFormat = MapSRGBToLinear(ktx.glInternalFormat);
             if (mappedFormat) {
                 texture.format = mappedFormat;
-                texture._useSRGBBuffer = texture.getEngine()._getUseSRGBBuffer(true, texture.generateMipMaps);
+                texture._useSRGBBuffer = texture.getEngine()._getUseSRGBBuffer(true, !texture.generateMipMaps);
                 texture._gammaSpace = true;
             } else {
                 texture.format = ktx.glInternalFormat;
