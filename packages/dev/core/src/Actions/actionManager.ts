@@ -1,11 +1,11 @@
 import { type Nullable } from "../types";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Scene } from "../scene";
-import { Vector3, Vector4 } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
-import { Condition, ValueCondition } from "./condition";
-import { type IAction, Action } from "./action";
-import { DoNothingAction } from "./directActions";
+import { Vector3, Vector4 } from "../Maths/math.vector.pure";
+import { Color3, Color4 } from "../Maths/math.color.pure";
+import { Condition, ValueCondition } from "./condition.pure";
+import { type IAction, Action } from "./action.pure";
+import { DoNothingAction } from "./directActions.pure";
 
 import { EngineStore } from "../Engines/engineStore";
 import { type IActionEvent } from "../Actions/actionEvent";

@@ -1,15 +1,15 @@
 import { type AbstractMesh } from "../../../Meshes/abstractMesh";
-import { VertexBuffer } from "../../../Buffers/buffer";
+import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { type Scene } from "../../../scene";
 import { type Material } from "../../material";
-import { Texture } from "../texture";
-import { DynamicTexture } from "../dynamicTexture";
+import { Texture } from "../texture.pure";
+import { DynamicTexture } from "../dynamicTexture.pure";
 import { type Nullable } from "../../../types";
-import { Vector2 } from "../../../Maths/math.vector";
-import { Color3, Color4 } from "../../../Maths/math.color";
+import { Vector2 } from "../../../Maths/math.vector.pure";
+import { Color3, Color4 } from "../../../Maths/math.color.pure";
 import { TexturePackerFrame } from "./frame";
 import { Logger } from "../../../Misc/logger";
-import { Tools } from "../../../Misc/tools";
+import { Tools } from "../../../Misc/tools.pure";
 import { Constants } from "core/Engines/constants";
 
 /**
