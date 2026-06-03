@@ -136,6 +136,9 @@ function hasValueImport(importDeclaration) {
     if (ts.isNamespaceImport(namedBindings)) {
         return true;
     }
+    if (namedBindings.elements.length === 0) {
+        return true;
+    }
     return namedBindings.elements.some((element) => !element.isTypeOnly);
 }
 
@@ -148,6 +151,9 @@ function hasValueExport(exportDeclaration) {
         return true;
     }
     if (ts.isNamespaceExport(exportClause)) {
+        return true;
+    }
+    if (exportClause.elements.length === 0) {
         return true;
     }
     return exportClause.elements.some((element) => !element.isTypeOnly);
