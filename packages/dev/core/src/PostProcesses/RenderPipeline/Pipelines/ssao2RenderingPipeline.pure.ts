@@ -301,6 +301,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @returns True if all the post processes in the pipeline are ready
      */
     public isReady() {
+        this._syncNormalsInWorldSpace();
         return this._thinSSAORenderingPipeline.isReady();
     }
 
@@ -365,18 +366,14 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (!this._forcedGeometryBuffer) {
                 scene.enableGeometryBufferRenderer();
             }
-            if (scene.geometryBufferRenderer?.generateNormalsInWorldSpace) {
-                Logger.Error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
-            }
         } else {
             scene.enablePrePassRenderer();
-            if (scene.prePassRenderer?.generateNormalsInWorldSpace) {
-                Logger.Error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
-            }
         }
+        this._syncNormalsInWorldSpace();
 
         this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), undefined, this._textureType);
         this._originalColorPostProcess.onBeforeRenderObservable.add(() => {
+            this._syncNormalsInWorldSpace();
             const camera = this._scene.activeCamera;
             this._thinSSAORenderingPipeline._ssaoPostProcess.camera = camera;
             if (camera && this._currentCameraMode !== camera.mode) {
@@ -487,6 +484,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     // Private Methods
+
+    private _syncNormalsInWorldSpace(): void {
+        const normalsInWorldSpace = !!(this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace);
+        this._thinSSAORenderingPipeline._ssaoPostProcess.normalsInWorldSpace = normalsInWorldSpace;
+    }
 
     /** @internal */
     public override _rebuild() {
