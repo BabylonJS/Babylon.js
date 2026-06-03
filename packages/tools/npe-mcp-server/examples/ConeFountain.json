@@ -1,0 +1,397 @@
+{
+  "customType": "BABYLON.NodeParticleSystemSet",
+  "blocks": [
+    {
+      "customType": "BABYLON.ConeShapeBlock",
+      "id": 1,
+      "name": "cone",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 2,
+          "targetConnectionName": "particle"
+        },
+        {
+          "name": "radius",
+          "displayName": "radius"
+        },
+        {
+          "name": "angle",
+          "displayName": "angle"
+        },
+        {
+          "name": "radiusRange",
+          "displayName": "radiusRange"
+        },
+        {
+          "name": "heightRange",
+          "displayName": "heightRange"
+        },
+        {
+          "name": "directionRandomizer",
+          "displayName": "directionRandomizer"
+        },
+        {
+          "name": "direction1",
+          "displayName": "direction1"
+        },
+        {
+          "name": "direction2",
+          "displayName": "direction2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.CreateParticleBlock",
+      "id": 2,
+      "name": "create",
+      "inputs": [
+        {
+          "name": "emitPower",
+          "displayName": "emitPower"
+        },
+        {
+          "name": "lifeTime",
+          "displayName": "lifeTime",
+          "inputName": "lifeTime",
+          "targetBlockId": 3,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "color",
+          "displayName": "color"
+        },
+        {
+          "name": "colorDead",
+          "displayName": "colorDead"
+        },
+        {
+          "name": "scale",
+          "displayName": "scale",
+          "inputName": "scale",
+          "targetBlockId": 4,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "angle",
+          "displayName": "angle"
+        },
+        {
+          "name": "size",
+          "displayName": "size"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "particle",
+          "displayName": "particle"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 3,
+      "name": "lifetime",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 0,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true,
+      "value": 4,
+      "valueType": "number"
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 4,
+      "name": "scale",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 4,
+      "contextualValue": 0,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true,
+      "value": [
+        0.1,
+        0.1
+      ],
+      "valueType": "BABYLON.Vector2"
+    },
+    {
+      "customType": "BABYLON.UpdateAgeBlock",
+      "id": 5,
+      "name": "updateAge",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 1,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "age",
+          "displayName": "age",
+          "inputName": "age",
+          "targetBlockId": 6,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 6,
+      "name": "ageInput",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 3,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true
+    },
+    {
+      "customType": "BABYLON.UpdateDirectionBlock",
+      "id": 7,
+      "name": "updateDir",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 5,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "direction",
+          "displayName": "direction",
+          "inputName": "direction",
+          "targetBlockId": 8,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleInputBlock",
+      "id": 8,
+      "name": "dirInput",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 8,
+      "contextualValue": 2,
+      "systemSource": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true
+    },
+    {
+      "customType": "BABYLON.BasicPositionUpdateBlock",
+      "id": 9,
+      "name": "updatePos",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 7,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.ParticleTextureSourceBlock",
+      "id": 10,
+      "name": "texture",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "texture",
+          "displayName": "texture"
+        }
+      ],
+      "invertY": true,
+      "serializedCachedData": false,
+      "url": "https://assets.babylonjs.com/textures/flare.png"
+    },
+    {
+      "customType": "BABYLON.SystemBlock",
+      "id": 11,
+      "name": "system",
+      "inputs": [
+        {
+          "name": "particle",
+          "displayName": "particle",
+          "inputName": "particle",
+          "targetBlockId": 9,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "emitRate",
+          "displayName": "emitRate"
+        },
+        {
+          "name": "texture",
+          "displayName": "texture",
+          "inputName": "texture",
+          "targetBlockId": 10,
+          "targetConnectionName": "texture"
+        },
+        {
+          "name": "translationPivot",
+          "displayName": "translationPivot"
+        },
+        {
+          "name": "textureMask",
+          "displayName": "textureMask"
+        },
+        {
+          "name": "targetStopDuration",
+          "displayName": "targetStopDuration"
+        },
+        {
+          "name": "onStart",
+          "displayName": "onStart"
+        },
+        {
+          "name": "onEnd",
+          "displayName": "onEnd"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "system",
+          "displayName": "system"
+        }
+      ],
+      "blendMode": 0,
+      "capacity": 1000,
+      "manualEmitCount": -1,
+      "startDelay": 0,
+      "updateSpeed": 0.0167,
+      "preWarmCycles": 0,
+      "preWarmStepOffset": 0,
+      "isBillboardBased": true,
+      "billBoardMode": 7,
+      "isLocal": false,
+      "disposeOnStop": false,
+      "doNoStart": false,
+      "renderingGroupId": 0
+    }
+  ],
+  "comment": "Fountain effect using a cone shape.",
+  "name": "ConeFountain",
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 680,
+        "y": 0
+      },
+      {
+        "blockId": 2,
+        "x": 340,
+        "y": 0
+      },
+      {
+        "blockId": 3,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "blockId": 4,
+        "x": 0,
+        "y": 180
+      },
+      {
+        "blockId": 5,
+        "x": 1020,
+        "y": 0
+      },
+      {
+        "blockId": 6,
+        "x": 680,
+        "y": 180
+      },
+      {
+        "blockId": 7,
+        "x": 1360,
+        "y": 0
+      },
+      {
+        "blockId": 8,
+        "x": 1020,
+        "y": 180
+      },
+      {
+        "blockId": 9,
+        "x": 1700,
+        "y": 0
+      },
+      {
+        "blockId": 10,
+        "x": 1700,
+        "y": 180
+      },
+      {
+        "blockId": 11,
+        "x": 2040,
+        "y": 0
+      }
+    ]
+  }
+}

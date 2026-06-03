@@ -1,0 +1,188 @@
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
+import { type GlobalState } from "../../globalState.js";
+import { LogEntry, LogLevel } from "../log/logComponent.js";
+import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import {
+    CloseMcpEditorSessionEventSource,
+    NormalizeMcpEditorSessionUrl,
+    OpenMcpEditorSessionEventSource,
+    PostMcpEditorSessionDocumentAsync,
+} from "shared-ui-components/mcp/mcpEditorSessionConnection";
+
+interface IMcpSessionComponentProps {
+    globalState: GlobalState;
+}
+
+/**
+ * Panel that connects to a live MCP session for bidirectional Smart Filter sync.
+ * @param props - Component props.
+ * @returns The React element.
+ */
+export const McpSessionComponent: FunctionComponent<IMcpSessionComponentProps> = (props) => {
+    const { globalState } = props;
+    const [url, setUrl] = useState<string>(globalState.mcpSessionUrl ?? "");
+    const [connected, setConnected] = useState<boolean>(globalState.mcpSessionConnected);
+
+    useEffect(() => {
+        const observer = globalState.onMcpSessionStateChangedObservable.add((state) => {
+            setConnected(state);
+        });
+        setConnected(globalState.mcpSessionConnected);
+        if (globalState.mcpSessionUrl) {
+            setUrl(globalState.mcpSessionUrl);
+        }
+        return () => {
+            globalState.onMcpSessionStateChangedObservable.remove(observer);
+        };
+    }, [globalState]);
+
+    const logError = useCallback(
+        (message: string) => {
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, LogLevel.Error));
+        },
+        [globalState]
+    );
+
+    const loadSmartFilterFromJson = useCallback(
+        (json: unknown) => {
+            void (async () => {
+                if (!globalState.pasteSmartFilterFromStringAsync) {
+                    logError("MCP Session: Loading is not available in this host.");
+                    return;
+                }
+
+                try {
+                    if (await globalState.pasteSmartFilterFromStringAsync(JSON.stringify(json))) {
+                        globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                        globalState.onClearUndoStack.notifyObservers();
+                    }
+                } catch (err) {
+                    logError(`MCP Session: Load failed - ${err}`);
+                }
+            })();
+        },
+        [globalState, logError]
+    );
+
+    const pushSmartFilterAsync = useCallback(
+        async (sessionUrl: string) => {
+            if (!globalState.copySmartFilterToStringAsync) {
+                logError("MCP Session: Pushing is not available in this host.");
+                return;
+            }
+
+            globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+            const serializedSmartFilter = await globalState.copySmartFilterToStringAsync();
+            const res = await PostMcpEditorSessionDocumentAsync(sessionUrl, serializedSmartFilter);
+            if (!res.ok) {
+                logError(`MCP Session: Push failed (${res.status})`);
+            }
+        },
+        [globalState, logError]
+    );
+
+    const handleConnect = useCallback(
+        async (pushOnConnect: boolean = false) => {
+            const sessionUrl = NormalizeMcpEditorSessionUrl(url);
+            if (!sessionUrl) {
+                return;
+            }
+
+            try {
+                if (pushOnConnect) {
+                    await pushSmartFilterAsync(sessionUrl);
+                }
+
+                CloseMcpEditorSessionEventSource(globalState.mcpEventSource);
+                globalState.mcpEventSource = null;
+
+                const eventSource = OpenMcpEditorSessionEventSource({
+                    sessionUrl,
+                    onDocument: loadSmartFilterFromJson,
+                    onSessionClosed: (reason) => {
+                        globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`MCP Session ended: ${reason}`, LogLevel.Log));
+                        globalState.mcpSessionConnected = false;
+                        globalState.mcpEventSource = null;
+                        globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
+                    },
+                    onConnectionError: () => {
+                        globalState.mcpSessionConnected = false;
+                        globalState.mcpEventSource = null;
+                        globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
+                    },
+                });
+                globalState.mcpEventSource = eventSource;
+
+                globalState.mcpSessionUrl = sessionUrl;
+                globalState.mcpSessionConnected = true;
+                globalState.onMcpSessionStateChangedObservable.notifyObservers(true);
+            } catch (err) {
+                logError(`MCP Session: Connection failed - ${err}`);
+            }
+        },
+        [url, globalState, loadSmartFilterFromJson, logError, pushSmartFilterAsync]
+    );
+
+    const handleDisconnect = useCallback(() => {
+        CloseMcpEditorSessionEventSource(globalState.mcpEventSource);
+        globalState.mcpEventSource = null;
+        globalState.mcpSessionConnected = false;
+        globalState.mcpSessionUrl = null;
+        globalState.onMcpSessionStateChangedObservable.notifyObservers(false);
+    }, [globalState]);
+
+    const handlePush = useCallback(async () => {
+        if (!globalState.mcpSessionUrl) {
+            return;
+        }
+
+        try {
+            await pushSmartFilterAsync(globalState.mcpSessionUrl);
+        } catch (err) {
+            logError(`MCP Session: Push failed - ${err}`);
+        }
+    }, [globalState.mcpSessionUrl, logError, pushSmartFilterAsync]);
+
+    return (
+        <LineContainerComponent title="MCP SESSION" closed={true}>
+            <TextInputLineComponent
+                label="Session URL"
+                value={url}
+                onChange={(value) => setUrl(value)}
+                placeholder="http://localhost:3001/session/..."
+                disabled={connected}
+                lockObject={globalState.lockObject}
+            />
+            <TextLineComponent label="Status" value={connected ? "Connected" : "Disconnected"} color={connected ? "#4caf50" : "#888"} />
+            {!connected ? (
+                <>
+                    <ButtonLineComponent
+                        label="Connect"
+                        onClick={() => {
+                            void handleConnect(false);
+                        }}
+                    />
+                    <ButtonLineComponent
+                        label="Connect & Push"
+                        onClick={() => {
+                            void handleConnect(true);
+                        }}
+                    />
+                </>
+            ) : (
+                <>
+                    <ButtonLineComponent label="Disconnect" onClick={handleDisconnect} />
+                    <ButtonLineComponent
+                        label="Push to MCP"
+                        onClick={() => {
+                            void handlePush();
+                        }}
+                    />
+                </>
+            )}
+        </LineContainerComponent>
+    );
+};

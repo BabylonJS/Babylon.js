@@ -14,6 +14,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent.js";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent.js";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent.js";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent.js";
 import { BlockTools } from "../../blockTools.js";
 
 import { type Nullable } from "core/types";
@@ -72,7 +73,6 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         // this._modeSelect = React.createRef();
     }
 
-    // eslint-disable-next-line babylonjs/available
     override componentDidMount() {
         this.props.globalState.stateManager.onSelectionChangedObservable.add((options: Nullable<ISelectionChangedOptions>) => {
             const { selection } = options || {};
@@ -125,7 +125,6 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         }
     }
 
-    // eslint-disable-next-line babylonjs/available
     override componentWillUnmount() {
         if (this._onResetRequiredObserver) {
             this._onResetRequiredObserver.remove();
@@ -179,7 +178,6 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         }
     }
 
-    // eslint-disable-next-line babylonjs/available
     override render() {
         if (this.state.currentNode) {
             return (
@@ -221,6 +219,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                     <div id="title">SMART FILTER EDITOR</div>
                 </div>
                 <div>
+                    <McpSessionComponent globalState={this.props.globalState} />
                     <LineContainerComponent title="GENERAL">
                         <TextLineComponent label="Version" value={SmartFilterCoreVersion} />
                         <TextLineComponent
