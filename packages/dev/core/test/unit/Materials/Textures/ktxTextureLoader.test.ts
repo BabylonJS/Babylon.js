@@ -6,6 +6,7 @@ import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/
 import { _KTXTextureLoader } from "core/Materials/Textures/Loaders/ktxTextureLoader";
 
 const KTX_IDENTIFIER = [0xab, 0x4b, 0x54, 0x58, 0x20, 0x31, 0x31, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a];
+const GL_RGBA = 0x1908;
 
 function createKtx1Data(glInternalFormat: number, faceCount = 1): Uint8Array {
     const imageSize = 16;
@@ -18,7 +19,7 @@ function createKtx1Data(glInternalFormat: number, faceCount = 1): Uint8Array {
     header.setUint32(8, 1, true); // glTypeSize
     header.setUint32(12, 0, true); // glFormat
     header.setUint32(16, glInternalFormat, true);
-    header.setUint32(20, Constants.TEXTUREFORMAT_RGBA, true);
+    header.setUint32(20, GL_RGBA, true);
     header.setUint32(24, 4, true); // pixelWidth
     header.setUint32(28, 4, true); // pixelHeight
     header.setUint32(32, 0, true); // pixelDepth
