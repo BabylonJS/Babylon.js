@@ -1,5 +1,5 @@
-import { VertexBuffer } from "../Buffers/buffer";
-import { Camera } from "../Cameras/camera";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { Camera } from "../Cameras/camera.pure";
 import { RegisterAbstractEngineStates } from "../Engines/AbstractEngine/abstractEngine.states.pure";
 import { RegisterAbstractEngineStencil } from "../Engines/AbstractEngine/abstractEngine.stencil.pure";
 import { Constants } from "../Engines/constants";
@@ -11,7 +11,7 @@ import { Material } from "../Materials/material";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Color3, Color4 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type InstancedMesh } from "../Meshes/instancedMesh";
 import { type Mesh } from "../Meshes/mesh";

@@ -6,7 +6,7 @@ import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGrap
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { type FlowGraphTypes, getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
-import { Animation } from "core/Animations/animation.pure";
+import { type Animation, AnimationCreateAnimation } from "core/Animations/animation.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
@@ -161,12 +161,12 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
             return customBuildAnimation(null, null, context)(keys, 60, type.animationType, easingFunction);
         }
         if (typeof propertyName === "string") {
-            const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);
+            const animation = AnimationCreateAnimation(propertyName, type.animationType, 60, easingFunction);
             animation.setKeys(keys);
             return [animation];
         } else {
             const animations = propertyName.map((name) => {
-                const animation = Animation.CreateAnimation(name, type.animationType, 60, easingFunction);
+                const animation = AnimationCreateAnimation(name, type.animationType, 60, easingFunction);
                 animation.setKeys(keys);
                 return animation;
             });

@@ -1,12 +1,12 @@
 import { type Geometry } from "../Meshes/geometry";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 import { Constants } from "../Engines/constants";
-import { MultiMaterial } from "../Materials/multiMaterial";
+import { MultiMaterial } from "../Materials/multiMaterial.pure";
 import { type Material } from "../Materials/material";
 import { type Scene } from "../scene";
 import { type Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators.serialization";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type CubeTexture } from "../Materials/Textures/cubeTexture";
 import { type Node } from "../node";
 import { type TransformNode } from "../Meshes/transformNode";

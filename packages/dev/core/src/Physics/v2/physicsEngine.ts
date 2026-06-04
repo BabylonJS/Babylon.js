@@ -1,5 +1,5 @@
 import { type Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector.pure";
 import { type IPhysicsEngine } from "../IPhysicsEngine";
 import { type IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
 import { type IRaycastQuery, PhysicsRaycastResult } from "../physicsRaycastResult";

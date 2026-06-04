@@ -1,7 +1,7 @@
 import { type Nullable } from "../types";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type PostProcess } from "./postProcess";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Constants } from "../Engines/constants";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
@@ -71,6 +71,9 @@ export class PostProcessManager {
         return activePostProcesses;
     }
 
+    /**
+     * Observable raised before post processes are rendered.
+     */
     public onBeforeRenderObservable = new Observable<PostProcessManager>();
 
     /**

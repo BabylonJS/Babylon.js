@@ -1,6 +1,6 @@
 import { type EffectWrapperCreationOptions, type Nullable, type Scene } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
-import { Texture } from "../Materials/Textures/texture";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
 
 /**
  * Post process used to apply color correction

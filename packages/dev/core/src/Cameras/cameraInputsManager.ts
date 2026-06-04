@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Nullable } from "../types";
-import { Camera } from "./camera";
+import { Camera } from "./camera.pure";
 /**
  * @ignore
  * This is a list of all the different input types that are available in the application.

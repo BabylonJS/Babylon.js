@@ -1,4 +1,4 @@
-import { type Matrix, Vector3 } from "../../Maths/math.vector";
+import { type Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { type Particle } from "../../Particles/particle";
 import { type IParticleEmitterType } from "./IParticleEmitterType";
 import { type UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";

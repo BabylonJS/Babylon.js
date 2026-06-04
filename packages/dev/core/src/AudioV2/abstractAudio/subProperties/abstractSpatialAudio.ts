@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../Maths/math.vector.pure";
 import { type Node } from "../../../node";
 import { type Nullable } from "../../../types";
 import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";

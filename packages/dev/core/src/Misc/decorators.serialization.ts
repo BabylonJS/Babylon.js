@@ -7,8 +7,8 @@ import { type Nullable } from "../types";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { Tags } from "./tags";
-import { Color3, Color4 } from "../Maths/math.color";
-import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector";
+import { Color3, Color4 } from "../Maths/math.color.pure";
+import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
 

@@ -5,7 +5,7 @@ import { type Camera } from "../../Cameras/camera";
 import { type ICameraInput } from "../../Cameras/cameraInputsManager";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { type IWheelEvent, EventConstants } from "../../Events/deviceInputEvents";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 
 /**
  * Base class for mouse wheel input..

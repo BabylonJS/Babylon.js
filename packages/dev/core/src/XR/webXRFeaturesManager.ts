@@ -1,5 +1,5 @@
 import { type Observable } from "core/Misc/observable";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type IDisposable } from "../scene";
 import { type IWebXRAnchorSystemOptions, type WebXRAnchorSystem } from "./features/WebXRAnchorSystem";
 import { type IWebXRBackgroundRemoverOptions, type WebXRBackgroundRemover } from "./features/WebXRBackgroundRemover";
@@ -188,28 +188,53 @@ export class WebXRFeatureName {
 
 export type WebXRFeatureNameType = (typeof WebXRFeatureName)[Exclude<keyof typeof WebXRFeatureName, "prototype">];
 
+/**
+ * Maps feature names to their corresponding feature implementation classes.
+ */
 export interface IWebXRFeatureNameTypeMap {
+    /** Anchor system feature implementation. */
     [WebXRFeatureName.ANCHOR_SYSTEM]: WebXRAnchorSystem;
+    /** Background remover feature implementation. */
     [WebXRFeatureName.BACKGROUND_REMOVER]: WebXRBackgroundRemover;
+    /** Depth sensing feature implementation. */
     [WebXRFeatureName.DEPTH_SENSING]: WebXRDepthSensing;
+    /** DOM overlay feature implementation. */
     [WebXRFeatureName.DOM_OVERLAY]: WebXRDomOverlay;
+    /** Eye tracking feature implementation. */
     [WebXRFeatureName.EYE_TRACKING]: WebXREyeTracking;
+    /** Feature points feature implementation. */
     [WebXRFeatureName.FEATURE_POINTS]: WebXRFeaturePointSystem;
+    /** Hand tracking feature implementation. */
     [WebXRFeatureName.HAND_TRACKING]: WebXRHandTracking;
+    /** Hit test feature implementation. */
     [WebXRFeatureName.HIT_TEST]: WebXRHitTest;
+    /** Image tracking feature implementation. */
     [WebXRFeatureName.IMAGE_TRACKING]: WebXRImageTracking;
+    /** Layers feature implementation. */
     [WebXRFeatureName.LAYERS]: WebXRLayers;
+    /** Light estimation feature implementation. */
     [WebXRFeatureName.LIGHT_ESTIMATION]: WebXRLightEstimation;
+    /** Mesh detection feature implementation. */
     [WebXRFeatureName.MESH_DETECTION]: WebXRMeshDetector;
+    /** Controller movement feature implementation. */
     [WebXRFeatureName.MOVEMENT]: WebXRControllerMovement;
+    /** Near interaction feature implementation. */
     [WebXRFeatureName.NEAR_INTERACTION]: WebXRNearInteraction;
+    /** Physics controllers feature implementation. */
     [WebXRFeatureName.PHYSICS_CONTROLLERS]: WebXRControllerPhysics;
+    /** Plane detection feature implementation. */
     [WebXRFeatureName.PLANE_DETECTION]: WebXRPlaneDetector;
+    /** Controller pointer selection feature implementation. */
     [WebXRFeatureName.POINTER_SELECTION]: WebXRControllerPointerSelection;
+    /** Raw camera access feature implementation. */
     [WebXRFeatureName.RAW_CAMERA_ACCESS]: WebXRRawCameraAccess;
+    /** Space warp feature implementation. */
     [WebXRFeatureName.SPACE_WARP]: WebXRSpaceWarp;
+    /** Teleportation feature implementation. */
     [WebXRFeatureName.TELEPORTATION]: WebXRMotionControllerTeleportation;
+    /** Walking locomotion feature implementation. */
     [WebXRFeatureName.WALKING_LOCOMOTION]: WebXRWalkingLocomotion;
+    /** Body tracking feature implementation. */
     [WebXRFeatureName.BODY_TRACKING]: WebXRBodyTracking;
 }
 
@@ -217,27 +242,49 @@ export interface IWebXRFeatureNameTypeMap {
  * Maps feature names to their corresponding options interfaces.
  */
 export interface IWebXRFeatureNameOptionsMap {
+    /** Anchor system feature options. */
     [WebXRFeatureName.ANCHOR_SYSTEM]: IWebXRAnchorSystemOptions;
+    /** Background remover feature options. */
     [WebXRFeatureName.BACKGROUND_REMOVER]: IWebXRBackgroundRemoverOptions;
+    /** Depth sensing feature options. */
     [WebXRFeatureName.DEPTH_SENSING]: IWebXRDepthSensingOptions;
+    /** DOM overlay feature options. */
     [WebXRFeatureName.DOM_OVERLAY]: IWebXRDomOverlayOptions;
+    /** Eye tracking feature options. */
     [WebXRFeatureName.EYE_TRACKING]: undefined;
+    /** Feature points feature options. */
     [WebXRFeatureName.FEATURE_POINTS]: undefined;
+    /** Hand tracking feature options. */
     [WebXRFeatureName.HAND_TRACKING]: IWebXRHandTrackingOptions;
+    /** Hit test feature options. */
     [WebXRFeatureName.HIT_TEST]: IWebXRHitTestOptions;
+    /** Image tracking feature options. */
     [WebXRFeatureName.IMAGE_TRACKING]: IWebXRImageTrackingOptions;
+    /** Layers feature options. */
     [WebXRFeatureName.LAYERS]: IWebXRLayersOptions;
+    /** Light estimation feature options. */
     [WebXRFeatureName.LIGHT_ESTIMATION]: IWebXRLightEstimationOptions;
+    /** Mesh detection feature options. */
     [WebXRFeatureName.MESH_DETECTION]: IWebXRMeshDetectorOptions;
+    /** Controller movement feature options. */
     [WebXRFeatureName.MOVEMENT]: IWebXRControllerMovementOptions;
+    /** Near interaction feature options. */
     [WebXRFeatureName.NEAR_INTERACTION]: IWebXRNearInteractionOptions;
+    /** Physics controllers feature options. */
     [WebXRFeatureName.PHYSICS_CONTROLLERS]: IWebXRControllerPhysicsOptions;
+    /** Plane detection feature options. */
     [WebXRFeatureName.PLANE_DETECTION]: IWebXRPlaneDetectorOptions;
+    /** Controller pointer selection feature options. */
     [WebXRFeatureName.POINTER_SELECTION]: IWebXRControllerPointerSelectionOptions;
+    /** Raw camera access feature options. */
     [WebXRFeatureName.RAW_CAMERA_ACCESS]: IWebXRRawCameraAccessOptions;
+    /** Space warp feature options. */
     [WebXRFeatureName.SPACE_WARP]: undefined;
+    /** Teleportation feature options. */
     [WebXRFeatureName.TELEPORTATION]: IWebXRTeleportationOptions;
+    /** Walking locomotion feature options. */
     [WebXRFeatureName.WALKING_LOCOMOTION]: IWebXRWalkingLocomotionOptions;
+    /** Body tracking feature options. */
     [WebXRFeatureName.BODY_TRACKING]: IWebXRBodyTrackingOptions;
 }
 

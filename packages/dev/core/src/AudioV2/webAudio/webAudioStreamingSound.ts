@@ -1,5 +1,5 @@
 import { Logger } from "../../Misc/logger";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type Nullable } from "../../types";
 import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type {} from "../abstractAudio/abstractSound";

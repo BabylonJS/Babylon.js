@@ -2,7 +2,7 @@ import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPas
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBlurTask } from "./blurTask";
 import { ThinDepthOfFieldBlurPostProcess } from "core/PostProcesses/thinDepthOfFieldBlurPostProcess";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * @internal

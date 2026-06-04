@@ -1,4 +1,4 @@
-import { Vector3 } from "./math.vector";
+import { Vector3 } from "./math.vector.pure";
 
 /** Defines supported spaces */
 export const enum Space {

@@ -12,7 +12,7 @@ import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { defaultValueParseFunction, needsPathConverter } from "./serialization";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions";
 import { type Node } from "core/node";
-import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes";
+import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes.pure";
 import { type FlowGraphConnection } from "./flowGraphConnection";
 import { Constants } from "core/Engines/constants";
 import { WebRequest } from "core/Misc/webRequest";

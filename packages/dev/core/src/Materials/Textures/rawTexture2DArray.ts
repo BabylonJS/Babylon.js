@@ -1,4 +1,4 @@
-import { Texture } from "./texture";
+import { Texture } from "./texture.pure";
 import { Constants } from "../../Engines/constants";
 import { type Nullable } from "../../types";
 

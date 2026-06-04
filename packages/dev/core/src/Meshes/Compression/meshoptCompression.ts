@@ -1,4 +1,4 @@
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type IDisposable } from "../../scene";
 import { type Nullable } from "../../types";
 

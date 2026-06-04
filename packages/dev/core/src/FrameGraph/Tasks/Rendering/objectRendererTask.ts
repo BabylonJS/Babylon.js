@@ -22,7 +22,7 @@ import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } fro
 import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { Constants } from "../../../Engines/constants";
-import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
+import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer.pure";
 import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
 
 /**
@@ -408,6 +408,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         return "FrameGraphObjectRendererTask";
     }
 
+    /**
+     * Records the object renderer task into the frame graph.
+     * @param skipCreationOfDisabledPasses defines whether disabled passes should be skipped
+     * @param additionalExecute defines an optional callback executed by the pass
+     * @returns the recorded render pass
+     */
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         this._checkParameters();
 

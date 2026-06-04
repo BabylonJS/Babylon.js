@@ -12,7 +12,11 @@ declare let global: any;
  * The entry point for a future ESM package should be index.ts
  */
 const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof GlobalObject !== "undefined") {
+function RegisterLegacyGlobal(): void {
+    if (typeof GlobalObject === "undefined") {
+        return;
+    }
+
     GlobalObject.BABYLON = GlobalObject.BABYLON || {};
     const BABYLONGLOBAL = GlobalObject.BABYLON;
     if (!BABYLONGLOBAL.Debug) {
@@ -30,6 +34,8 @@ if (typeof GlobalObject !== "undefined") {
         }
     }
 }
+
+RegisterLegacyGlobal();
 
 export * from "core/index";
 export const Debug = {

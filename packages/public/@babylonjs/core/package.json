@@ -281,6 +281,7 @@
         "Layers/glowLayer.js",
         "Layers/highlightLayer.js",
         "Layers/selectionOutlineLayer.js",
+        "Legacy/legacy.js",
         "LensFlares/lensFlareSystemSceneComponent.js",
         "Lights/Clustered/clusteredLightContainer.js",
         "Lights/Clustered/clusteredLightingSceneComponent.js",

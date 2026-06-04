@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Scene } from "../scene";
-import { Vector2 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Buffers/buffer";
+import { Vector2 } from "../Maths/math.vector.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
@@ -10,7 +10,7 @@ import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ThinEffectLayer, type IThinEffectLayerOptions } from "./thinEffectLayer";
 import { Constants } from "../Engines/constants";
-import { Color4 } from "../Maths/math.color";
+import { Color4 } from "../Maths/math.color.pure";
 import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

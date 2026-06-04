@@ -1,12 +1,12 @@
 import { type AbstractEngine, type Camera, type DirectionalLight, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle } from "core/index";
 import { FrameGraphVolumetricLightingBlendVolumeTask } from "./volumetricLightingBlendVolumeTask";
-import { Matrix, TmpVectors, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Matrix, TmpVectors, Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphClearTextureTask } from "../Texture/clearTextureTask";
 import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const InvViewProjectionMatrix = new Matrix();

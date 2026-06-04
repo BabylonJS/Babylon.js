@@ -3,7 +3,7 @@ import { Observable } from "../Misc/observable";
 import { type IDisposable, type Scene } from "../scene";
 import { type WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { type WebXRRenderTarget, WebXRState } from "./webXRTypes";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 /**
  * Button which can be used to enter a different mode of XR
  */

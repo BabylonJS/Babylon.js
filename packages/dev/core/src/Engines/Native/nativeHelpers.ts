@@ -2,7 +2,7 @@
 import { ErrorCodes, RuntimeError } from "core/Misc/error";
 import { Constants } from "../constants";
 import { type INative } from "./nativeInterfaces";
-import { VertexBuffer } from "core/Buffers/buffer";
+import { VertexBuffer } from "core/Buffers/buffer.pure";
 
 declare const _native: INative;
 

@@ -4,7 +4,7 @@ import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import { type Scene } from "../../scene";
 import { type TransformNode } from "../../Meshes/transformNode";
-import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { WithinEpsilon } from "../../Maths/math.scalar.functions";
 import { PhysicsMotionType, PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import { type Mesh } from "../../Meshes/mesh";

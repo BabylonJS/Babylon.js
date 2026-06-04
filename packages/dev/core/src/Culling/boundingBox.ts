@@ -1,6 +1,6 @@
 import { type DeepImmutable, type Nullable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type BoundingSphere } from "../Culling/boundingSphere";
 
 import { type ICullable } from "./boundingInfo";

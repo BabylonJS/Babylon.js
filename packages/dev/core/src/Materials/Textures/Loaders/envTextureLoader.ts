@@ -1,4 +1,4 @@
-import { GetEnvInfo, UploadEnvLevelsAsync, UploadEnvSpherical } from "../../../Misc/environmentTextureTools";
+import { GetEnvInfo, UploadEnvLevelsAsync, UploadEnvSpherical } from "../../../Misc/environmentTextureTools.pure";
 import { type Nullable } from "../../../types";
 import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { type IInternalTextureLoader } from "./internalTextureLoader";

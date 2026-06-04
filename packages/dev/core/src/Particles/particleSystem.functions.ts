@@ -1,4 +1,4 @@
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";

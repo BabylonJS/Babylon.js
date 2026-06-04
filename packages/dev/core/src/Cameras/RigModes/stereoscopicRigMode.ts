@@ -1,7 +1,7 @@
-import { Camera } from "../camera";
+import { Camera } from "../camera.pure";
 import { Viewport } from "../../Maths/math.viewport";
-import { PassPostProcess } from "../../PostProcesses/passPostProcess";
-import { StereoscopicInterlacePostProcessI } from "../../PostProcesses/stereoscopicInterlacePostProcess";
+import { PassPostProcess } from "../../PostProcesses/passPostProcess.pure";
+import { StereoscopicInterlacePostProcessI } from "../../PostProcesses/stereoscopicInterlacePostProcess.pure";
 
 /**
  * @internal

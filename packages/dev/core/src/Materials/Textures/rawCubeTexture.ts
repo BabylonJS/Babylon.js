@@ -1,10 +1,10 @@
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { _UpdateRGBDAsync as UpdateRGBDAsyncEnvTools } from "../../Misc/environmentTextureTools";
+import { _UpdateRGBDAsync as UpdateRGBDAsyncEnvTools } from "../../Misc/environmentTextureTools.pure";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene";
 import { type SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { InternalTextureSource } from "./internalTexture";
-import { CubeTexture } from "./cubeTexture";
+import { CubeTexture } from "./cubeTexture.pure";
 import { Constants } from "../../Engines/constants";
 
 /**

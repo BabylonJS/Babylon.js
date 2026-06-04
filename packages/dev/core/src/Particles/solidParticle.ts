@@ -1,11 +1,11 @@
 import { type Nullable } from "../types";
-import { type Matrix, Vector3, TmpVectors, Quaternion, Vector4, Vector2 } from "../Maths/math.vector";
-import { Color4 } from "../Maths/math.color";
+import { type Matrix, Vector3, TmpVectors, Quaternion, Vector4, Vector2 } from "../Maths/math.vector.pure";
+import { Color4 } from "../Maths/math.color.pure";
 import { type Mesh } from "../Meshes/mesh";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { type SolidParticleSystem } from "./solidParticleSystem";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Plane } from "../Maths/math.plane";
 import { type Material } from "../Materials/material";
 /**

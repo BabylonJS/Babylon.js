@@ -5,8 +5,8 @@ import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsM
 import { type FlyCamera } from "../../Cameras/flyCamera";
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { type Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math.vector";
-import { Tools } from "../../Misc/tools";
+import { Vector3 } from "../../Maths/math.vector.pure";
+import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 
 /**

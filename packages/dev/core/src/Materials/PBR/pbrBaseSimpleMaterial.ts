@@ -1,7 +1,7 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { type Scene } from "../../scene";
-import { Color3 } from "../../Maths/math.color";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { Color3 } from "../../Maths/math.color.pure";
+import { PBRBaseMaterial } from "./pbrBaseMaterial.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { type Nullable } from "../../types";
 
