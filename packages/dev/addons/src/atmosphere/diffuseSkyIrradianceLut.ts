@@ -5,11 +5,13 @@ import { type Atmosphere } from "./atmosphere";
 import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
-import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
+import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer.pure";
+import { RegisterEnginesExtensionsEngineReadTexture } from "core/Engines/Extensions/engine.readTexture.pure";
+import { RegisterEnginesExtensionsEngineRenderTarget } from "core/Engines/Extensions/engine.renderTarget.pure";
 import { FromHalfFloat } from "core/Misc/textureTools";
 import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
 import { type Nullable } from "core/types";
-import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { Sample2DRgbaToRef } from "./sampling";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderStore } from "core/Engines/shaderStore";
@@ -80,6 +82,9 @@ export class DiffuseSkyIrradianceLut {
      * @param atmosphere - The atmosphere to use.
      */
     constructor(atmosphere: Atmosphere) {
+        RegisterEnginesExtensionsEngineRenderTarget();
+        RegisterEnginesExtensionsEngineReadTexture();
+
         this._atmosphere = atmosphere;
         const scene = atmosphere.scene;
         const engine = scene.getEngine();
