@@ -5,8 +5,9 @@
  *
  * Runs all tree-shaking invariant checks in sequence:
  *   1. Manifest drift (side-effects-manifest/core/ matches source)
- *   2. Pure barrels (pure.ts files match what would be generated)
- *   3. Side-effect stubs (generated stub regions match what would be generated)
+ *   2. Side-effect import closure (manifest-pure files do not add new imports from side-effectful files)
+ *   3. Pure barrels (pure.ts files match what would be generated)
+ *   4. Side-effect stubs (generated stub regions match what would be generated)
  *
  * Exits 0 if all pass, 1 if any fail.
  *
@@ -30,6 +31,11 @@ const checks = [
     {
         name: "Manifest drift",
         script: resolve(__dirname, "checkManifestDrift.mjs"),
+        args: [],
+    },
+    {
+        name: "Side-effect import closure",
+        script: resolve(__dirname, "checkSideEffectImportClosure.mjs"),
         args: [],
     },
     {

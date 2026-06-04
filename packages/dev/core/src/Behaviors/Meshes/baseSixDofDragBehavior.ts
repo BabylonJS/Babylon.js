@@ -1,13 +1,13 @@
 import { type Behavior } from "../../Behaviors/behavior";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
-import { Scene } from "../../scene";
+import { Scene } from "../../scene.pure";
 import { type Nullable } from "../../types";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector.pure";
 import { type Observer, Observable } from "../../Misc/observable";
-import { TransformNode } from "../../Meshes/transformNode";
+import { TransformNode } from "../../Meshes/transformNode.pure";
 import { type PickingInfo } from "../../Collisions/pickingInfo";
-import { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera.pure";
 import { type Ray } from "../../Culling/ray";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";

@@ -3,21 +3,21 @@ import { Logger } from "../Misc/logger";
 import { type Nullable } from "../types";
 import { type PointerInfo } from "../Events/pointerEvents";
 import { type Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { CreateBox } from "../Meshes/Builders/boxBuilder";
-import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
+import { Mesh } from "../Meshes/mesh.pure";
+import { CreateBox } from "../Meshes/Builders/boxBuilder.pure";
+import { CreateLineSystem } from "../Meshes/Builders/linesBuilder.pure";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "../Materials/standardMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { PivotTools } from "../Misc/pivotTools";
-import { Color3 } from "../Maths/math.color";
+import { Color3 } from "../Maths/math.color.pure";
 import { type LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
 import { type IPointerEvent } from "../Events/deviceInputEvents";
-import { TransformNode } from "../Meshes/transformNode";
+import { TransformNode } from "../Meshes/transformNode.pure";
 import { KeyboardEventTypes, type KeyboardInfo } from "../Events/keyboardEvents";
 
 /**

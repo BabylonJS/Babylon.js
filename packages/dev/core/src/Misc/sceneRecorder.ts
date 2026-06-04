@@ -2,18 +2,18 @@
 import { type IDisposable, type Scene } from "../scene";
 import { type Nullable } from "../types";
 import { SceneSerializer } from "./sceneSerializer";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 import { Light } from "../Lights/light";
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import { Skeleton } from "../Bones/skeleton";
 import { Material } from "../Materials/material";
-import { MultiMaterial } from "../Materials/multiMaterial";
-import { TransformNode } from "../Meshes/transformNode";
-import { ParticleSystem } from "../Particles/particleSystem";
+import { MultiMaterial } from "../Materials/multiMaterial.pure";
+import { TransformNode } from "../Meshes/transformNode.pure";
+import { ParticleSystem } from "../Particles/particleSystem.pure";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
 import { ShadowGenerator } from "../Lights/Shadows/shadowGenerator";
-import { PostProcess } from "../PostProcesses/postProcess";
-import { Texture } from "../Materials/Textures/texture";
+import { PostProcess } from "../PostProcesses/postProcess.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { SerializationHelper } from "./decorators.serialization";
 
 /**

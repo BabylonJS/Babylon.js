@@ -1,8 +1,8 @@
-import { Vector3, Matrix, Quaternion, TmpVectors } from "../Maths/math.vector";
+import { Vector3, Matrix, Quaternion, TmpVectors } from "../Maths/math.vector.pure";
 import { type Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
-import { FreeCamera } from "../Cameras/freeCamera";
-import { TargetCamera } from "../Cameras/targetCamera";
+import { Camera } from "../Cameras/camera.pure";
+import { FreeCamera } from "../Cameras/freeCamera.pure";
+import { TargetCamera } from "../Cameras/targetCamera.pure";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";

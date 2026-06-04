@@ -1,9 +1,9 @@
 import { Logger } from "../../../Misc/logger";
 import { type Scene } from "../../../scene";
-import { Vector3, Vector2 } from "../../../Maths/math.vector";
-import { Color4, Color3 } from "../../../Maths/math.color";
-import { Texture } from "../../../Materials/Textures/texture";
-import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture";
+import { Vector3, Vector2 } from "../../../Maths/math.vector.pure";
+import { Color4, Color3 } from "../../../Maths/math.color.pure";
+import { Texture } from "../../../Materials/Textures/texture.pure";
+import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture.pure";
 import { WebRequest } from "../../../Misc/webRequest";
 import { type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 

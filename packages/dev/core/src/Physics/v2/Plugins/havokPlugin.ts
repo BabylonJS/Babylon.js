@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector.pure";
 import {
     PhysicsShapeType,
     PhysicsConstraintType,
@@ -26,10 +25,10 @@ import { type PhysicsMaterial, PhysicsMaterialCombineMode } from "../physicsMate
 import { PhysicsShape } from "../physicsShape";
 import { BoundingBox } from "../../../Culling/boundingBox";
 import { type TransformNode } from "../../../Meshes/transformNode";
-import { Mesh } from "../../../Meshes/mesh";
-import { InstancedMesh } from "../../../Meshes/instancedMesh";
+import { Mesh } from "../../../Meshes/mesh.pure";
+import { InstancedMesh } from "../../../Meshes/instancedMesh.pure";
 import { type Scene } from "../../../scene";
-import { VertexBuffer } from "../../../Buffers/buffer";
+import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { BuildArray } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import { type Nullable, type FloatArray } from "../../../types";
@@ -173,7 +172,12 @@ class MeshAccumulator {
         return { offset: bufferBegin, numObjects: nFloats };
     }
 
-    public freeBuffer(plugin: any, arr: PluginMemoryRef) {
+    /**
+     * Releases a buffer allocated in the physics plugin.
+     * @param plugin - The plugin that owns the allocation.
+     * @param arr - The plugin memory reference to release.
+     */
+    public freeBuffer(plugin: any, arr: PluginMemoryRef): void {
         plugin._free(arr.offset);
     }
 
@@ -209,10 +213,19 @@ class BodyPluginData {
         this.userMassProps = { centerOfMass: undefined, mass: undefined, inertia: undefined, inertiaOrientation: undefined };
     }
 
+    /**
+     * The Havok body identifier associated with this plugin body.
+     */
     public hpBodyId: any;
 
+    /**
+     * Offset of the body's world transform in Havok memory.
+     */
     public worldTransformOffset: number;
 
+    /**
+     * User-defined mass properties for the body.
+     */
     public userMassProps: PhysicsMassProperties;
 
     /**
@@ -232,6 +245,9 @@ class ShapePath
 */
 
 class CollisionContactPoint {
+    /**
+     * Identifier of the body involved in the contact.
+     */
     public bodyId: bigint = BigInt(0); //0,2
     //public colliderId: number = 0; //2,4
     //public shapePath: ShapePath = new ShapePath(); //4,8
@@ -241,12 +257,29 @@ class CollisionContactPoint {
 }
 
 class CollisionEvent {
+    /**
+     * Contact point on the first body.
+     */
     public contactOnA: CollisionContactPoint = new CollisionContactPoint(); //1
+    /**
+     * Contact point on the second body.
+     */
     public contactOnB: CollisionContactPoint = new CollisionContactPoint();
+    /**
+     * Impulse applied by the collision.
+     */
     public impulseApplied: number = 0;
+    /**
+     * Type of collision event reported by Havok.
+     */
     public type: number = 0;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /**
+     * Reads a collision event from Havok memory into an existing event object.
+     * @param buffer - The Havok memory buffer to read from.
+     * @param offset - The byte offset of the event data.
+     * @param eventOut - The collision event object to update.
+     */
     static readToRef(buffer: any, offset: number, eventOut: CollisionEvent) {
         const intBuf = new Int32Array(buffer, offset);
         const floatBuf = new Float32Array(buffer, offset);
@@ -264,11 +297,25 @@ class CollisionEvent {
 }
 
 class TriggerEvent {
+    /**
+     * Identifier of the first body involved in the trigger event.
+     */
     public bodyIdA: bigint = BigInt(0);
+    /**
+     * Identifier of the second body involved in the trigger event.
+     */
     public bodyIdB: bigint = BigInt(0);
+    /**
+     * Type of trigger event reported by Havok.
+     */
     public type: number = 0;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /**
+     * Reads a trigger event from Havok memory into an existing event object.
+     * @param buffer - The Havok memory buffer to read from.
+     * @param offset - The byte offset of the event data.
+     * @param eventOut - The trigger event object to update.
+     */
     static readToRef(buffer: any, offset: number, eventOut: TriggerEvent) {
         const intBuf = new Int32Array(buffer, offset);
         eventOut.type = intBuf[0];
@@ -276,7 +323,9 @@ class TriggerEvent {
         eventOut.bodyIdB = BigInt(intBuf[6]);
     }
 }
-
+/**
+ * Configuration parameters for the Havok plugin
+ */
 export interface HavokPluginParameters {
     /**
      * Maximum number of raycast hits to process
