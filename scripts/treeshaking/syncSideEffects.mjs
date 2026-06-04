@@ -15,11 +15,12 @@
  *      (e.g. Shaders/, ShadersWGSL/), emit a single recursive glob:
  *      "Shaders/**".
  *
- *   2. For files outside those directories, group files in the same folder
- *      with brace globs where possible:
- *      "Actions/{action,condition}.js".
+ *   2. For files outside those directories, use simple `*`/`**` globs where
+ *      the generated glob matches side-effectful files and no side-effect-free
+ *      sibling files:
+ *      "Animations/*types.js".
  *
- *   3. For folders with only one remaining side-effectful file, emit the
+ *   3. For files that cannot be safely grouped with a portable glob, emit the
  *      explicit path:
  *      "Actions/action.js".
  *
@@ -80,20 +81,18 @@ function getDirectory(filePath) {
  * @param {string} filePath
  * @returns {string}
  */
-function getFileNameWithoutExtension(filePath) {
+function getFileName(filePath) {
     const normalizedPath = toPosixPath(filePath);
     const slashIndex = normalizedPath.lastIndexOf("/");
-    const fileName = slashIndex === -1 ? normalizedPath : normalizedPath.substring(slashIndex + 1);
-    return fileName.replace(/\.ts$/, "");
+    return slashIndex === -1 ? normalizedPath : normalizedPath.substring(slashIndex + 1);
 }
 
 /**
- * Keep brace globs simple enough for webpack's glob-to-regexp and Rollup's picomatch handling.
- * @param {string} fileName
- * @returns {boolean}
+ * @param {string} value
+ * @returns {string}
  */
-function canUseInBraceGlob(fileName) {
-    return /^[A-Za-z0-9_.-]+$/.test(fileName);
+function escapeRegExp(value) {
+    return value.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
 }
 
 /**
@@ -103,6 +102,28 @@ function canUseInBraceGlob(fileName) {
  */
 function compareStrings(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/**
+ * @param {string} pattern
+ * @returns {RegExp}
+ */
+function globToRegExp(pattern) {
+    let source = "^";
+    for (let index = 0; index < pattern.length; index++) {
+        const char = pattern[index];
+        if (char === "*") {
+            if (pattern[index + 1] === "*") {
+                source += ".*";
+                index++;
+            } else {
+                source += "[^/]*";
+            }
+        } else {
+            source += escapeRegExp(char);
+        }
+    }
+    return new RegExp(`${source}$`);
 }
 
 /**
@@ -159,6 +180,28 @@ function countTsFilesByTopDir() {
 }
 
 /**
+ * @returns {string[]}
+ */
+function listPublicJsFilesFromSource() {
+    const files = [];
+    function walk(dir) {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+            const fullPath = join(dir, entry.name);
+            if (entry.isDirectory()) {
+                walk(fullPath);
+            } else if (entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && !entry.name.endsWith(".test.ts") && !entry.name.endsWith(".spec.ts")) {
+                if (isStaleGeneratedShader(fullPath)) {
+                    continue;
+                }
+                files.push(toPosixPath(relative(CORE_SRC, fullPath)).replace(/\.ts$/, ".js"));
+            }
+        }
+    }
+    walk(CORE_SRC);
+    return files.sort(compareStrings);
+}
+
+/**
  * Update the "sideEffects" field in a package.json file.
  * @param {string} pkgPath
  * @param {string[]} sideEffects
@@ -172,12 +215,82 @@ function updatePackageJson(pkgPath, sideEffects) {
 }
 
 /**
+ * @param {string} file
+ * @returns {string[]}
+ */
+function createCandidatePatterns(file) {
+    const directory = getDirectory(file);
+    const fileName = getFileName(file);
+    const prefix = directory ? `${directory}/` : "";
+    const stem = fileName.replace(/\.js$/, "");
+    const candidates = [];
+
+    candidates.push(`**/${fileName}`);
+
+    if (fileName.endsWith(".types.js")) {
+        candidates.push("**/*types.js", `${prefix}*.types.js`, `${prefix}*types.js`);
+    }
+
+    if (fileName.endsWith("SceneComponent.js")) {
+        candidates.push("**/*SceneComponent.js");
+    }
+
+    if (fileName.endsWith("SceneComponent.types.js")) {
+        candidates.push("**/*SceneComponent.types.js");
+    }
+
+    const dotIndex = stem.indexOf(".");
+    if (dotIndex !== -1) {
+        candidates.push(`${prefix}${stem.substring(0, dotIndex + 1)}*.js`);
+    }
+
+    for (const part of stem.split(/[._-]/)) {
+        if (part.length >= 4) {
+            candidates.push(`${prefix}*${part}*.js`, `${prefix}${part}*.js`, `${prefix}*${part}.js`);
+        }
+        if (part.length >= 8) {
+            candidates.push(`**/*${part}*.js`, `**/${part}*.js`, `**/*${part}.js`);
+        }
+    }
+
+    return [...new Set(candidates)].sort(compareStrings);
+}
+
+/**
+ * @param {string[]} sideEffectFiles
+ * @param {string[]} allFiles
+ * @returns {{ pattern: string; files: string[] }[]}
+ */
+function createSafeGlobCandidates(sideEffectFiles, allFiles) {
+    const sideEffectSet = new Set(sideEffectFiles);
+    const candidates = new Map();
+
+    for (const file of sideEffectFiles) {
+        for (const pattern of createCandidatePatterns(file)) {
+            if (candidates.has(pattern)) {
+                continue;
+            }
+
+            const matcher = globToRegExp(pattern);
+            const matchedFiles = allFiles.filter((candidate) => matcher.test(candidate));
+            const matchedSideEffectFiles = matchedFiles.filter((candidate) => sideEffectSet.has(candidate));
+            if (matchedSideEffectFiles.length > 1 && matchedFiles.length === matchedSideEffectFiles.length) {
+                candidates.set(pattern, { pattern, files: matchedSideEffectFiles.sort(compareStrings) });
+            }
+        }
+    }
+
+    return [...candidates.values()].sort((a, b) => compareStrings(a.pattern, b.pattern));
+}
+
+/**
  * @param {string[]} files
+ * @param {string[]} allFiles
  * @param {Set<string>} globDirs
  * @param {boolean} verbose
  * @returns {string[]}
  */
-function createSideEffectsEntries(files, globDirs, verbose) {
+function createSideEffectsEntries(files, allFiles, globDirs, verbose) {
     const entries = [];
 
     // 0. All barrel index files are side-effectful (they re-export wrappers
@@ -189,16 +302,7 @@ function createSideEffectsEntries(files, globDirs, verbose) {
         entries.push(`${dir}/**`);
     }
 
-    // 2. Brace globs for files that share the same directory. This keeps the
-    //    sideEffects array short without marking unrelated sibling modules as
-    //    side-effectful.
-    const filesByDirectory = new Map();
-    const addFile = (directory, fileName) => {
-        const files = filesByDirectory.get(directory) ?? [];
-        files.push(fileName);
-        filesByDirectory.set(directory, files);
-    };
-
+    const remainingFiles = [];
     for (const file of [...files].sort(compareStrings)) {
         const topDir = getTopDir(file);
         if (globDirs.has(topDir)) {
@@ -209,36 +313,58 @@ function createSideEffectsEntries(files, globDirs, verbose) {
         if (jsPath === "index.js" || jsPath.endsWith("/index.js")) {
             continue;
         }
-
-        const directory = getDirectory(file);
-        const fileName = getFileNameWithoutExtension(file);
-        addFile(directory, fileName);
+        remainingFiles.push(jsPath);
     }
 
-    let braceGlobCount = 0;
-    let individualFileCount = 0;
-    for (const [directory, fileNames] of [...filesByDirectory.entries()].sort(([dirA], [dirB]) => compareStrings(dirA, dirB))) {
-        const sortedFileNames = [...new Set(fileNames)].sort(compareStrings);
-        if (sortedFileNames.length > 1 && sortedFileNames.every(canUseInBraceGlob)) {
-            braceGlobCount++;
-            const prefix = directory ? `${directory}/` : "";
-            entries.push(`${prefix}{${sortedFileNames.join(",")}}.js`);
-            if (verbose) {
-                console.log(`BRACE: ${prefix}{...}.js (${sortedFileNames.length} files)`);
+    const uncoveredFiles = new Set(remainingFiles);
+    const candidateGlobs = createSafeGlobCandidates(
+        remainingFiles,
+        allFiles.filter((file) => !globDirs.has(getTopDir(file)))
+    );
+    const selectedGlobs = [];
+
+    while (true) {
+        let bestGlob;
+        let bestCoveredFiles = [];
+        for (const candidate of candidateGlobs) {
+            const coveredFiles = candidate.files.filter((file) => uncoveredFiles.has(file));
+            if (
+                coveredFiles.length > 1 &&
+                (!bestGlob ||
+                    coveredFiles.length > bestCoveredFiles.length ||
+                    (coveredFiles.length === bestCoveredFiles.length && candidate.pattern.length < bestGlob.pattern.length))
+            ) {
+                bestGlob = candidate;
+                bestCoveredFiles = coveredFiles;
             }
-            continue;
         }
 
-        for (const fileName of sortedFileNames) {
-            individualFileCount++;
-            const prefix = directory ? `${directory}/` : "";
-            entries.push(`${prefix}${fileName}.js`);
+        if (!bestGlob) {
+            break;
         }
+
+        selectedGlobs.push(bestGlob.pattern);
+        for (const file of bestCoveredFiles) {
+            uncoveredFiles.delete(file);
+        }
+    }
+
+    for (const pattern of selectedGlobs.sort(compareStrings)) {
+        entries.push(pattern);
+        if (verbose) {
+            const matcher = globToRegExp(pattern);
+            const matchedCount = remainingFiles.filter((file) => matcher.test(file)).length;
+            console.log(`GLOB: ${pattern} (${matchedCount} files)`);
+        }
+    }
+
+    for (const file of [...uncoveredFiles].sort(compareStrings)) {
+        entries.push(file);
     }
 
     if (verbose) {
-        console.log(`Brace patterns: ${braceGlobCount}`);
-        console.log(`Individual files after grouping: ${individualFileCount}`);
+        console.log(`Portable glob patterns: ${selectedGlobs.length}`);
+        console.log(`Individual files after grouping: ${uncoveredFiles.size}`);
     }
 
     return entries;
@@ -267,6 +393,7 @@ function main() {
 
     // Count ALL .ts files per top-level directory
     const allByTopDir = countTsFilesByTopDir();
+    const allFiles = listPublicJsFilesFromSource();
 
     // Determine which top-level directories can be covered by a glob
     // (ALL files in the directory have side effects AND directory has >1 file)
@@ -281,7 +408,7 @@ function main() {
         }
     }
 
-    const entries = createSideEffectsEntries(seFiles, globDirs, verbose);
+    const entries = createSideEffectsEntries(seFiles, allFiles, globDirs, verbose);
 
     if (verbose || dryRun) {
         console.log(`\nGlob patterns: ${globDirs.size}`);
