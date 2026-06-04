@@ -1,19 +1,27 @@
 
 ### Core
 
-- Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
-- Add DOM-free font offset fallback - by [matthargett](https://github.com/matthargett) ([#18463](https://github.com/BabylonJS/Babylon.js/pull/18463))
-- Fix: DSM detects modern Xbox controllers on Linux as Generic - by [AmoebaChant](https://github.com/AmoebaChant) ([#18514](https://github.com/BabylonJS/Babylon.js/pull/18514))
-- feat(Gsplat): Add auto-tracking to GaussianSplattingDebugger for compound mesh mutations - by [raymondyfei](https://github.com/raymondyfei) ([#18515](https://github.com/BabylonJS/Babylon.js/pull/18515))
+- Add WGSL shader paths for GUI3D and GPU particles - by [matthargett](https://github.com/matthargett) ([#18460](https://github.com/BabylonJS/Babylon.js/pull/18460))
+- fix(FlowGraph): allow CancelDelay to cancel the first scheduled delay - by [marns](https://github.com/marns) ([#18517](https://github.com/BabylonJS/Babylon.js/pull/18517))
+- Move custom frame requester to AbstractEngine to enable 120fps support in BabylonNative - by [matthargett](https://github.com/matthargett) ([#18521](https://github.com/BabylonJS/Babylon.js/pull/18521))
+- Add RegisterPBRMaterial alias to RegisterPbrMaterial - by [RaananW](https://github.com/RaananW) ([#18528](https://github.com/BabylonJS/Babylon.js/pull/18528))
+- Add waveform analyzer data to AudioEngineV2 - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18529](https://github.com/BabylonJS/Babylon.js/pull/18529))
+- Native: prefer setRenderResetCallback with legacy setDeviceLostCallback fallback - by [bghgary](https://github.com/bghgary) ([#18518](https://github.com/BabylonJS/Babylon.js/pull/18518))
+
+### GUI
+
+- feat(mcp): Add MCP servers for Babylon.js graph editors - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18344](https://github.com/BabylonJS/Babylon.js/pull/18344))
+- Add WGSL shader paths for GUI3D and GPU particles - by [matthargett](https://github.com/matthargett) ([#18460](https://github.com/BabylonJS/Babylon.js/pull/18460))
 
 ### Inspector
 
-- Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
+- Add WGSL shader paths for GUI3D and GPU particles - by [matthargett](https://github.com/matthargett) ([#18460](https://github.com/BabylonJS/Babylon.js/pull/18460))
+- Add an option to disable teaching moments - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18508](https://github.com/BabylonJS/Babylon.js/pull/18508))
 
-### Lottie Player
+### Loaders
 
-- Updating worker name for webpack - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18519](https://github.com/BabylonJS/Babylon.js/pull/18519))
+- Viewer NRG Support - by [MiiBond](https://github.com/MiiBond) ([#18495](https://github.com/BabylonJS/Babylon.js/pull/18495))
 
-### Materials
+### Viewer
 
-- feat(GridMaterial): Multi-scale LOD, horizon fade, depth compositing, and above/below color - by [raymondyfei](https://github.com/raymondyfei) ([#18509](https://github.com/BabylonJS/Babylon.js/pull/18509))
+- Viewer NRG Support - by [MiiBond](https://github.com/MiiBond) ([#18495](https://github.com/BabylonJS/Babylon.js/pull/18495))
