@@ -72,7 +72,7 @@ export interface INativeEngine {
     /**
      * Returns the number of array layers in a native texture.
      * Optional: not present on older Babylon Native builds; callers must
-     * feature-detect (typeof === "function") before invoking.
+     * check for presence before invoking.
      */
     getTextureLayerCount?(texture: NativeTexture): number;
     deleteTexture(texture: NativeTexture): void;
