@@ -69,7 +69,12 @@ export interface INativeEngine {
     loadCubeTextureWithMips(texture: NativeTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
-    getTextureLayerCount(texture: NativeTexture): number;
+    /**
+     * Returns the number of array layers in a native texture.
+     * Optional: not present on older Babylon Native builds; callers must
+     * feature-detect (typeof === "function") before invoking.
+     */
+    getTextureLayerCount?(texture: NativeTexture): number;
     deleteTexture(texture: NativeTexture): void;
     readTexture(
         texture: NativeTexture,

@@ -1993,10 +1993,12 @@ export class ThinNativeEngine extends ThinEngine {
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
         internalTexture.width = internalTexture.baseWidth;
         internalTexture.height = internalTexture.baseHeight;
-        const layerCount = this._engine.getTextureLayerCount(texture);
-        if (layerCount > 1) {
-            internalTexture.is2DArray = true;
-            internalTexture.depth = layerCount;
+        if (typeof this._engine.getTextureLayerCount === "function") {
+            const layerCount = this._engine.getTextureLayerCount(texture);
+            if (layerCount > 1) {
+                internalTexture.is2DArray = true;
+                internalTexture.depth = layerCount;
+            }
         }
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
@@ -2036,12 +2038,14 @@ export class ThinNativeEngine extends ThinEngine {
                 `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
             );
         }
-        const newLayerCount = this._engine.getTextureLayerCount(texture);
-        const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
-        if (newLayerCount !== oldLayerCount) {
-            throw new Error(
-                `updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`
-            );
+        if (typeof this._engine.getTextureLayerCount === "function") {
+            const newLayerCount = this._engine.getTextureLayerCount(texture);
+            const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
+            if (newLayerCount !== oldLayerCount) {
+                throw new Error(
+                    `updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`
+                );
+            }
         }
 
         // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
