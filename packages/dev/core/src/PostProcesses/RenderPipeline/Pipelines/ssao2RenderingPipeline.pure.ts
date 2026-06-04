@@ -486,7 +486,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     // Private Methods
 
     private _syncNormalsInWorldSpace(): void {
-        const normalsInWorldSpace = !!(this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace);
+        const renderer = this._forceGeometryBuffer ? this._geometryBufferRenderer : this._prePassRenderer;
+        const normalsInWorldSpace = !!renderer?.generateNormalsInWorldSpace;
         this._thinSSAORenderingPipeline._ssaoPostProcess.normalsInWorldSpace = normalsInWorldSpace;
     }
 

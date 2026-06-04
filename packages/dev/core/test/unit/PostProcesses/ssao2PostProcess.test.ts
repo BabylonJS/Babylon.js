@@ -1,6 +1,6 @@
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { NullEngine } from "core/Engines/nullEngine";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 import { PostProcessRenderPipelineManager } from "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManager";
 import { RegisterPostProcessRenderPipelineManagerSceneComponent } from "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent.pure";
@@ -61,10 +61,11 @@ describe("ThinSSAO2PostProcess", () => {
         postProcess.dispose();
     });
 
-    it("should bind world-space normal transform as a mat3", () => {
+    it("should bind world-space normal transform as an inverse-transpose mat3", () => {
         const postProcess = new ThinSSAO2PostProcess("ssao", scene);
         const camera = new FreeCamera("camera", new Vector3(1, 2, -3), scene);
-        camera.rotation.set(0.1, 0.2, 0.3);
+        const viewMatrix = Matrix.Scaling(2, 4, 8);
+        vi.spyOn(camera, "getViewMatrix").mockReturnValue(viewMatrix);
         postProcess.camera = camera;
         postProcess.textureWidth = 4;
         postProcess.textureHeight = 4;
@@ -85,21 +86,13 @@ describe("ThinSSAO2PostProcess", () => {
         postProcess.bind(true);
 
         const normalWorldToView = effect.setMatrix3x3.mock.calls.find(([name]) => name === "normalWorldToView")?.[1] as Float32Array;
-        const viewMatrix = camera.getViewMatrix().m;
+        const expectedNormalMatrix = new Matrix();
+        viewMatrix.toNormalMatrix(expectedNormalMatrix);
+        const expected = expectedNormalMatrix.m;
 
         expect(effect.setMatrix).not.toHaveBeenCalledWith("normalWorldToView", expect.anything());
         expect(normalWorldToView).toBeInstanceOf(Float32Array);
-        expect(Array.from(normalWorldToView)).toEqual([
-            viewMatrix[0],
-            viewMatrix[1],
-            viewMatrix[2],
-            viewMatrix[4],
-            viewMatrix[5],
-            viewMatrix[6],
-            viewMatrix[8],
-            viewMatrix[9],
-            viewMatrix[10],
-        ]);
+        expect(Array.from(normalWorldToView)).toEqual([expected[0], expected[1], expected[2], expected[4], expected[5], expected[6], expected[8], expected[9], expected[10]]);
 
         postProcess.dispose();
         camera.dispose();
@@ -131,6 +124,11 @@ describe("ThinSSAO2PostProcess", () => {
         engine._features.supportSSAO2 = true;
         const pipeline = new SSAO2RenderingPipeline("ssao", scene, 1);
         const postProcess = getSSAO2PostProcess(pipeline);
+        const inactiveGeometryBufferRenderer = Object.create(GeometryBufferRenderer.prototype) as GeometryBufferRenderer;
+        inactiveGeometryBufferRenderer.generateNormalsInWorldSpace = false;
+        inactiveGeometryBufferRenderer.dispose = vi.fn();
+        Object.defineProperty(inactiveGeometryBufferRenderer, "isSupported", { value: true });
+        scene.geometryBufferRenderer = inactiveGeometryBufferRenderer;
         const prePassRenderer = scene.prePassRenderer!;
 
         expect(postProcess.normalsInWorldSpace).toBe(false);

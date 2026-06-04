@@ -2,7 +2,7 @@ import { type Nullable, type Scene, type EffectWrapperCreationOptions } from "co
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Camera } from "core/Cameras/camera";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RandomRange } from "core/Maths/math.scalar.functions";
@@ -129,6 +129,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
     private _scene: Scene;
     private _randomTexture: Texture;
     private _sampleSphere: number[];
+    private readonly _normalWorldToViewMatrix = new Matrix();
     private readonly _normalWorldToView = new Float32Array(9);
 
     constructor(name: string, scene: Scene, options?: EffectWrapperCreationOptions) {
@@ -197,9 +198,9 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         }
         effect.setMatrix("projection", projectionMatrix);
         if (this._normalsInWorldSpace) {
-            const viewMatrix = camera.getViewMatrix().m;
+            camera.getViewMatrix().toNormalMatrix(this._normalWorldToViewMatrix);
+            const viewMatrix = this._normalWorldToViewMatrix.m;
             const normalWorldToView = this._normalWorldToView;
-            // Rigid camera/view transforms can use the view rotation directly; non-uniform parent scaling would require inverse-transpose normal handling.
             normalWorldToView[0] = viewMatrix[0];
             normalWorldToView[1] = viewMatrix[1];
             normalWorldToView[2] = viewMatrix[2];
