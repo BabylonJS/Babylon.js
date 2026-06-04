@@ -1,13 +1,13 @@
 import { type Nullable } from "../types";
-import { Color3 } from "../Maths/math.color";
+import { Color3 } from "../Maths/math.color.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
 import { type IParticleSystem } from "./IParticleSystem";
-import { GPUParticleSystem } from "./gpuParticleSystem";
+import { GPUParticleSystem } from "./gpuParticleSystem.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { ParticleSystem } from "../Particles/particleSystem";
+import { ParticleSystem } from "../Particles/particleSystem.pure";
 import { type Scene, type IDisposable } from "../scene";
-import { StandardMaterial } from "../Materials/standardMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type Vector3 } from "../Maths/math.vector";
 
 /** Internal class used to store shapes for emitters */

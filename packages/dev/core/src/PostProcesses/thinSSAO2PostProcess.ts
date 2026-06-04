@@ -1,12 +1,12 @@
 import { type Nullable, type Scene, type EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
-import { EffectWrapper } from "core/Materials/effectRenderer";
+import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
-import { Camera } from "core/Cameras/camera";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector.pure";
+import { Camera } from "core/Cameras/camera.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import { Texture } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture.pure";
 
 /**
  * @internal
