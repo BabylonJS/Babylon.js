@@ -192,6 +192,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting IBL Shadows Camera Switch",
+            "playgroundId": "#DAID4Q#10",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadows-camera-switch.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Compound IBL Shadows Single Part",
             "playgroundId": "#DAID4Q#4",
             "renderCount": 15,
