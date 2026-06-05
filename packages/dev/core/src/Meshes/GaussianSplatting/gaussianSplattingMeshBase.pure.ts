@@ -954,11 +954,10 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         }
 
-        // `_geometry` (inherited from Mesh) is used on a GaussianSplattingMesh ONLY as the
-        // shadow-caster geometry: the shadow generator renders via the top mesh's subMeshes, not
-        // this mesh's render() override, so without this the first shadow pass produces no caster
-        // output. Display rendering and bounds/culling don't use it, so it may be safely nulled
-        // (e.g. on camera removal) and re-cached here from the first available camera view info.
+        // Attach the splat geometry to the GS top mesh so that the shadow generator (which renders
+        // shadow casters via the top mesh's subMeshes, NOT through this mesh's render() override)
+        // has valid geometry on the very first shadow pass. Without this, the first shadow render
+        // happens before render() is called and the GS produces no shadow caster output.
         if (!this._geometry && this._cameraViewInfos.size) {
             this._geometry = this._cameraViewInfos.values().next().value!.mesh.geometry;
         }
@@ -1188,8 +1187,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         this._postToWorker();
 
-        // `_geometry` is used on a GS mesh ONLY as the shadow-caster geometry (see isReady());
-        // bind the first camera view info's geometry so shadow consumers have something to render.
+        // geometry used for shadows, bind the first found in the camera view infos
         if (!this._geometry && this._cameraViewInfos.size) {
             this._geometry = this._cameraViewInfos.values().next().value!.mesh.geometry;
         }
