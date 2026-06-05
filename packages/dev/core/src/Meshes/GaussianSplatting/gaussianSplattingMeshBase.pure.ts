@@ -858,9 +858,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._scene.onCameraRemovedObservable.add((camera: Camera) => {
             const cameraId = camera.uniqueId;
             // delete mesh for this camera
-            if (this._cameraViewInfos.has(cameraId)) {
-                const cameraViewInfos = this._cameraViewInfos.get(cameraId);
-                cameraViewInfos?.mesh.dispose();
+            const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+            if (cameraViewInfos) {
+                // If the cached shadow-caster geometry came from the mesh we're disposing, drop it
+                // so isReady()/render() re-cache it from a surviving camera (see isReady()).
+                // Must run before dispose(), which nulls the inner mesh's geometry.
+                if (this._geometry === cameraViewInfos.mesh.geometry) {
+                    this._geometry = null;
+                }
+                cameraViewInfos.mesh.dispose();
                 this._cameraViewInfos.delete(cameraId);
             }
         });
