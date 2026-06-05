@@ -2,6 +2,7 @@ import { GetEnvInfo, UploadEnvLevelsAsync, UploadEnvSpherical } from "../../../M
 import { type Nullable } from "../../../types";
 import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { type IInternalTextureLoader } from "./internalTextureLoader";
+import { RegisterBaseTexturePolynomial } from "../baseTexture.polynomial.pure";
 
 /**
  * Implementation of the ENV Texture Loader.
@@ -39,6 +40,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
             texture.height = info.width;
 
             try {
+                RegisterBaseTexturePolynomial();
                 UploadEnvSpherical(texture, info);
                 // eslint-disable-next-line github/no-then
                 UploadEnvLevelsAsync(texture, data, info).then(
