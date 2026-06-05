@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as BABYLON from "core/index";
 import * as DebugImport from "core/Debug/index";
+import { RegisterMathColor } from "core/Maths/math.color.pure";
+import { RegisterMathVector } from "core/Maths/math.vector.pure";
 
 declare let global: any;
 
@@ -35,7 +37,13 @@ function RegisterLegacyGlobal(): void {
     }
 }
 
-RegisterLegacyGlobal();
+function RegisterLegacyRuntime(): void {
+    RegisterMathColor();
+    RegisterMathVector();
+    RegisterLegacyGlobal();
+}
+
+RegisterLegacyRuntime();
 
 export * from "core/index";
 export const Debug = {

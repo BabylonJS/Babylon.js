@@ -26,6 +26,9 @@ import { DefaultRenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPi
 import { SSAO2RenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 import "@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import "@babylonjs/core/Rendering/depthRenderer";
+import "@babylonjs/core/Engines/Extensions/engine.multiRender";
+import "@babylonjs/core/Rendering/prePassRenderer";
+import "@babylonjs/core/PostProcesses";
 
 export function run(canvas: HTMLCanvasElement): void {
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
