@@ -64,6 +64,12 @@ export class NullEngineOptions {
      * If supplied, the HTMLCanvasElement to use (e.g. as the inputElement)
      */
     renderingCanvas?: HTMLCanvasElement;
+
+    /**
+     * Enables headless multiview render target support for CPU-side render-state tests.
+     * This does not emulate GPU multiview rendering.
+     */
+    enableMultiview?: boolean;
 }
 
 /**
@@ -71,7 +77,11 @@ export class NullEngineOptions {
  * This can be used in server side scenario or for testing purposes
  */
 export class NullEngine extends Engine {
-    private _options: NullEngineOptions;
+    private _options: NullEngineOptions = new NullEngineOptions();
+
+    private static readonly _MultiviewExtension = {
+        framebufferTextureMultiviewOVR: () => {},
+    };
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
@@ -99,6 +109,13 @@ export class NullEngine extends Engine {
      */
     public override getHardwareScalingLevel(): number {
         return 1.0;
+    }
+
+    /**
+     * Gets a boolean indicating that the engine supports uniform buffers
+     */
+    public override get supportsUniformBuffers(): boolean {
+        return !!this._options.enableMultiview || super.supportsUniformBuffers;
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
@@ -179,6 +196,10 @@ export class NullEngine extends Engine {
             dualSourceBlending: false,
             supportReadWriteStorageTextures: false,
         };
+
+        if (options.enableMultiview) {
+            this._caps.multiview = NullEngine._MultiviewExtension;
+        }
 
         this._features = {
             forceBitmapOverHTMLImageElement: false,
@@ -294,6 +315,52 @@ export class NullEngine extends Engine {
     public override setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
     }
+
+    /**
+     * Creates a uniform buffer.
+     * @param elements defines the content of the uniform buffer
+     * @returns a new data buffer
+     */
+    public override createUniformBuffer(elements: FloatArray): DataBuffer {
+        const buffer = new DataBuffer();
+        buffer.references = 1;
+        buffer.capacity = elements.length;
+        return buffer;
+    }
+
+    /**
+     * Creates a dynamic uniform buffer.
+     * @param elements defines the content of the dynamic uniform buffer
+     * @returns a new data buffer
+     */
+    public override createDynamicUniformBuffer(elements: FloatArray): DataBuffer {
+        return this.createUniformBuffer(elements);
+    }
+
+    /**
+     * Updates a uniform buffer.
+     * @param _uniformBuffer defines the target uniform buffer
+     * @param _elements defines the content to update
+     * @param _offset defines the offset in the uniform buffer where update should start
+     * @param _count defines the size of the data to update
+     */
+    public override updateUniformBuffer(_uniformBuffer: DataBuffer, _elements: FloatArray, _offset?: number, _count?: number): void {}
+
+    /**
+     * Binds a uniform buffer to the current draw context.
+     * @param _buffer defines the buffer to bind
+     * @param _location not used in NullEngine
+     * @param _name name of the uniform variable to bind
+     */
+    public override bindUniformBufferBase(_buffer: DataBuffer, _location: number, _name: string): void {}
+
+    /**
+     * Binds a uniform block to a specific index.
+     * @param _pipelineContext defines the pipeline context to use
+     * @param _blockName defines the block name
+     * @param _index defines the index where to bind the block
+     */
+    public override bindUniformBlock(_pipelineContext: IPipelineContext, _blockName: string, _index: number): void {}
 
     public override createShaderProgram(
         pipelineContext: IPipelineContext,
@@ -799,6 +866,44 @@ export class NullEngine extends Engine {
         this._internalTexturesCache.push(texture);
 
         return rtWrapper;
+    }
+
+    /**
+     * Creates a new multiview render target wrapper for headless render-state tests.
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @returns a new multiview render target wrapper
+     */
+    public override createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper {
+        if (!this.getCaps().multiview) {
+            // eslint-disable-next-line no-throw-literal
+            throw "Multiview is not supported";
+        }
+
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height });
+        const texture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.isMultiview = true;
+        texture.isReady = true;
+        texture.format = Constants.TEXTUREFORMAT_RGBA;
+        texture.samples = 1;
+
+        rtWrapper.setTextures(texture);
+        rtWrapper._depthStencilTexture = texture;
+
+        return rtWrapper;
+    }
+
+    /**
+     * Binds a multiview framebuffer for headless render-state tests.
+     * @param multiviewTexture render target wrapper to bind
+     */
+    public override bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void {
+        this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
     }
 
     /**

@@ -1,7 +1,67 @@
 import { NullEngine } from "core/Engines/nullEngine";
+import { Camera } from "core/Cameras/camera";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { MultiviewRenderTarget } from "core/Materials/Textures/MultiviewRenderTarget";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { Scene } from "core/scene";
 import { describe, expect, it } from "vitest";
 
+import "core/Engines/Extensions/engine.multiview";
+
 type RenderFrameCallback = (timestamp: number) => void;
+
+function configureOrthographicCamera(camera: FreeCamera, x: number): void {
+    camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+    camera.minZ = 0.1;
+    camera.maxZ = 100;
+    camera.orthoLeft = -10;
+    camera.orthoRight = 10;
+    camera.orthoBottom = -10;
+    camera.orthoTop = 10;
+    camera.position.set(x, 0, 0);
+    camera.setTarget(new Vector3(x, 0, 1));
+    camera.getViewMatrix(true);
+    camera.getProjectionMatrix(true);
+}
+
+function createMultiviewScene(): {
+    engine: NullEngine;
+    scene: Scene;
+    parentCamera: FreeCamera;
+    leftCamera: FreeCamera;
+    rightCamera: FreeCamera;
+    renderTarget: MultiviewRenderTarget;
+} {
+    const engine = new NullEngine({
+        renderHeight: 128,
+        renderWidth: 128,
+        textureSize: 128,
+        enableMultiview: true,
+    });
+    const scene = new Scene(engine);
+    const parentCamera = new FreeCamera("parent", Vector3.Zero(), scene);
+    const leftCamera = new FreeCamera("left", Vector3.Zero(), scene);
+    const rightCamera = new FreeCamera("right", Vector3.Zero(), scene);
+    const renderTarget = new MultiviewRenderTarget(scene, { width: 128, height: 128 });
+
+    configureOrthographicCamera(parentCamera, 0);
+    configureOrthographicCamera(leftCamera, -0.5);
+    configureOrthographicCamera(rightCamera, 0.5);
+
+    parentCamera._rigCameras = [leftCamera, rightCamera];
+    parentCamera._renderingMultiview = true;
+    parentCamera.outputRenderTarget = renderTarget;
+    scene.activeCamera = parentCamera;
+
+    return { engine, scene, parentCamera, leftCamera, rightCamera, renderTarget };
+}
+
+function expectMatrixToBeCloseTo(actual: Matrix, expected: Matrix): void {
+    for (let index = 0; index < 16; index++) {
+        expect(actual.m[index]).toBeCloseTo(expected.m[index], 6);
+    }
+}
 
 describe("NullEngine", () => {
     describe("constructor", () => {
@@ -38,6 +98,92 @@ describe("NullEngine", () => {
             expect(nullEngine.isDeterministicLockStep()).toBe(true);
             expect(nullEngine.getTimeStep()).toBe(500); // 0.5 seconds in ms
             expect(nullEngine.getLockstepMaxSteps()).toBe(4);
+        });
+
+        it("advertises multiview only when enabled", () => {
+            const defaultEngine = new NullEngine();
+            const multiviewEngine = new NullEngine({
+                enableMultiview: true,
+            });
+
+            expect(defaultEngine.getCaps().multiview).toBeUndefined();
+            expect(multiviewEngine.getCaps().multiview).toBeTruthy();
+            expect(multiviewEngine.supportsUniformBuffers).toBe(true);
+
+            defaultEngine.dispose();
+            multiviewEngine.dispose();
+        });
+    });
+
+    describe("multiview", () => {
+        it("creates inspectable multiview render targets when enabled", () => {
+            const engine = new NullEngine({
+                enableMultiview: true,
+            });
+            const scene = new Scene(engine);
+            const renderTarget = new MultiviewRenderTarget(scene, { width: 64, height: 32 });
+
+            try {
+                expect(renderTarget.getViewCount()).toBe(2);
+                expect(renderTarget.getRenderWidth()).toBe(64);
+                expect(renderTarget.getRenderHeight()).toBe(32);
+                expect(renderTarget.renderTarget?.texture?.isMultiview).toBe(true);
+                expect(() => renderTarget._bindFrameBuffer()).not.toThrow();
+                expect((engine as any)._currentRenderTarget).toBe(renderTarget.renderTarget);
+            } finally {
+                scene.dispose();
+                engine.dispose();
+            }
+        });
+
+        it("updates left and right view-projection state when rendering multiview", () => {
+            const { engine, scene, parentCamera, leftCamera, rightCamera, renderTarget } = createMultiviewScene();
+
+            try {
+                scene.render();
+
+                const leftViewProjection = leftCamera.getViewMatrix().multiply(leftCamera.getProjectionMatrix());
+                const rightViewProjection = rightCamera.getViewMatrix().multiply(rightCamera.getProjectionMatrix());
+                const multiviewSceneUbo = scene._multiviewSceneUbo;
+
+                expect(parentCamera.outputRenderTarget).toBe(renderTarget);
+                expect(scene._multiviewSceneUboIsActive).toBe(true);
+                expect(multiviewSceneUbo).not.toBeNull();
+                expect(scene.getSceneUniformBuffer()).toBe(multiviewSceneUbo);
+                expect(multiviewSceneUbo!.useUbo).toBe(true);
+                expect(multiviewSceneUbo!.getUniformNames()).toContain("viewProjectionR");
+                expectMatrixToBeCloseTo(scene.getTransformMatrix(), leftViewProjection);
+                expectMatrixToBeCloseTo(scene._transformMatrixR, rightViewProjection);
+            } finally {
+                scene.dispose();
+                engine.dispose();
+            }
+        });
+
+        it("restores active-camera frustum planes after a direct narrowed transform before multiview render", () => {
+            const { engine, scene, leftCamera } = createMultiviewScene();
+            const visibleInWideFrustum = MeshBuilder.CreateBox("visibleInWideFrustum", { size: 1 }, scene);
+
+            try {
+                visibleInWideFrustum.position.set(5, 0, 10);
+                visibleInWideFrustum.computeWorldMatrix(true);
+
+                const view = leftCamera.getViewMatrix(true);
+                const wideProjection = leftCamera.getProjectionMatrix(true);
+                const narrowedProjection = Matrix.OrthoOffCenterLH(-1, 1, -10, 10, leftCamera.minZ, leftCamera.maxZ, engine.isNDCHalfZRange);
+
+                narrowedProjection.updateFlag = wideProjection.updateFlag;
+                scene.setTransformMatrix(view, narrowedProjection);
+
+                expect(visibleInWideFrustum.isInFrustum(scene.frustumPlanes)).toBe(false);
+
+                scene.render();
+
+                expect(visibleInWideFrustum.isInFrustum(scene.frustumPlanes)).toBe(true);
+            } finally {
+                scene.dispose();
+                engine.dispose();
+            }
         });
     });
 
