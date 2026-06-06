@@ -185,6 +185,67 @@ describe("NullEngine", () => {
                 engine.dispose();
             }
         });
+
+        it("restores the active-camera scene transform after a direct narrowed transform (multiview)", () => {
+            const { engine, scene, leftCamera } = createMultiviewScene();
+
+            try {
+                // A capture/RTT path narrows the scene transform mid-frame via a direct
+                // setTransformMatrix; the projection updateFlag is forced to collide with the left
+                // camera's so the pre-fix guard (view/proj flags only) would early-return.
+                const view = leftCamera.getViewMatrix(true);
+                const wideProjection = leftCamera.getProjectionMatrix(true);
+                const narrowedProjection = Matrix.OrthoOffCenterLH(-1, 1, -1, 1, leftCamera.minZ, leftCamera.maxZ, engine.isNDCHalfZRange);
+                narrowedProjection.updateFlag = wideProjection.updateFlag;
+
+                scene.setTransformMatrix(view, narrowedProjection);
+                const narrowedTransform = scene.getTransformMatrix().clone();
+                expectMatrixToBeCloseTo(narrowedTransform, view.multiply(narrowedProjection));
+
+                scene.render();
+
+                // The active-camera render must hand the scene transform back at full FOV, not
+                // early-return on the matching flags and leave it narrowed. (Asserts the transform
+                // directly, where the existing test asserts the downstream culling consequence.)
+                const restoredTransform = scene.getTransformMatrix();
+                expect(restoredTransform.equals(narrowedTransform)).toBe(false);
+                expectMatrixToBeCloseTo(restoredTransform, leftCamera.getViewMatrix().multiply(leftCamera.getProjectionMatrix()));
+            } finally {
+                scene.dispose();
+                engine.dispose();
+            }
+        });
+
+        it("refreshes the right-eye view-projection when a mono transform precedes a multiview render", () => {
+            const { engine, scene, leftCamera, rightCamera } = createMultiviewScene();
+
+            try {
+                scene.render(); // establish the initial right-eye transform
+
+                // The right eye moves; its multiview-UBO transform must be re-derived next render.
+                rightCamera.position.set(4, 0, 0);
+                rightCamera.setTarget(new Vector3(4, 0, 1));
+                const movedRightViewProjection = rightCamera.getViewMatrix(true).multiply(rightCamera.getProjectionMatrix(true));
+
+                // A direct mono setTransformMatrix using the LEFT eye's view flips the multiview UBO
+                // inactive; the projection updateFlag is forced to the left camera's so the pre-fix
+                // guard would early-return the next render and leave the right eye stale. Covers the
+                // _multiviewSceneUboIsActive consequence the frustum test does not.
+                const leftView = leftCamera.getViewMatrix(true);
+                const monoProjection = leftCamera.getProjectionMatrix(true).clone();
+                monoProjection.updateFlag = leftCamera.getProjectionMatrix().updateFlag;
+                scene.setTransformMatrix(leftView, monoProjection);
+                expect(scene._multiviewSceneUboIsActive).toBe(false);
+
+                scene.render();
+
+                expect(scene._multiviewSceneUboIsActive).toBe(true);
+                expectMatrixToBeCloseTo(scene._transformMatrixR, movedRightViewProjection);
+            } finally {
+                scene.dispose();
+                engine.dispose();
+            }
+        });
     });
 
     describe("render loop", () => {
