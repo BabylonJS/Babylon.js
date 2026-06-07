@@ -324,7 +324,7 @@ export class NullEngine extends Engine {
     public override createUniformBuffer(elements: FloatArray): DataBuffer {
         const buffer = new DataBuffer();
         buffer.references = 1;
-        buffer.capacity = elements.length;
+        buffer.capacity = elements instanceof Array ? elements.length * Float32Array.BYTES_PER_ELEMENT : elements.byteLength;
         return buffer;
     }
 
@@ -876,12 +876,11 @@ export class NullEngine extends Engine {
      */
     public override createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper {
         if (!this.getCaps().multiview) {
-            // eslint-disable-next-line no-throw-literal
-            throw "Multiview is not supported";
+            throw new Error("Multiview is not supported");
         }
 
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height });
-        const texture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget, true);
 
         texture.baseWidth = width;
         texture.baseHeight = height;
@@ -893,7 +892,6 @@ export class NullEngine extends Engine {
         texture.samples = 1;
 
         rtWrapper.setTextures(texture);
-        rtWrapper._depthStencilTexture = texture;
 
         return rtWrapper;
     }
