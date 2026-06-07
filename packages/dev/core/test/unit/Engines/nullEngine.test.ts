@@ -1,6 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { MultiviewRenderTarget } from "core/Materials/Textures/MultiviewRenderTarget";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
@@ -49,6 +50,8 @@ function createMultiviewScene(): {
     configureOrthographicCamera(leftCamera, -0.5);
     configureOrthographicCamera(rightCamera, 0.5);
 
+    // WebXR sets this internal multiview state from XR view/render-target data. There is no public
+    // NullEngine setup API that reaches this exact branch without a live XRSession.
     parentCamera._rigCameras = [leftCamera, rightCamera];
     parentCamera._renderingMultiview = true;
     parentCamera.outputRenderTarget = renderTarget;
@@ -113,9 +116,43 @@ describe("NullEngine", () => {
             defaultEngine.dispose();
             multiviewEngine.dispose();
         });
+
+        it("reports uniform buffer capacity in bytes", () => {
+            const engine = new NullEngine({
+                enableMultiview: true,
+            });
+
+            try {
+                expect(engine.createUniformBuffer([0, 1, 2, 3]).capacity).toBe(16);
+                expect(engine.createUniformBuffer(new Float32Array(6)).capacity).toBe(24);
+                expect(engine.createDynamicUniformBuffer(new Float32Array(2)).capacity).toBe(8);
+            } finally {
+                engine.dispose();
+            }
+        });
     });
 
     describe("multiview", () => {
+        it("throws an Error when multiview render targets are requested without opt-in", () => {
+            const engine = new NullEngine();
+            const scene = new Scene(engine);
+            let thrownError: unknown;
+
+            try {
+                try {
+                    new MultiviewRenderTarget(scene, { width: 64, height: 64 });
+                } catch (error) {
+                    thrownError = error;
+                }
+
+                expect(thrownError).toBeInstanceOf(Error);
+                expect((thrownError as Error).message).toBe("Multiview is not supported");
+            } finally {
+                scene.dispose();
+                engine.dispose();
+            }
+        });
+
         it("creates inspectable multiview render targets when enabled", () => {
             const engine = new NullEngine({
                 enableMultiview: true,
@@ -128,6 +165,8 @@ describe("NullEngine", () => {
                 expect(renderTarget.getRenderWidth()).toBe(64);
                 expect(renderTarget.getRenderHeight()).toBe(32);
                 expect(renderTarget.renderTarget?.texture?.isMultiview).toBe(true);
+                expect(renderTarget.renderTarget?.texture?.source).toBe(InternalTextureSource.RenderTarget);
+                expect(renderTarget.renderTarget?.depthStencilTexture).toBeNull();
                 expect(() => renderTarget._bindFrameBuffer()).not.toThrow();
                 expect((engine as any)._currentRenderTarget).toBe(renderTarget.renderTarget);
             } finally {
