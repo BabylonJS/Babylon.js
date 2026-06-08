@@ -128,6 +128,18 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public PREPASS_SCREENSPACE_DEPTH = false;
     /** Clip-space depth index */
     public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
+    /** Reflectivity */
+    public PREPASS_REFLECTIVITY = false;
+    /** Reflectivity index */
+    public PREPASS_REFLECTIVITY_INDEX = -1;
+    /** Velocity */
+    public PREPASS_VELOCITY = false;
+    /** Velocity index */
+    public PREPASS_VELOCITY_INDEX = -1;
+    /** Velocity linear */
+    public PREPASS_VELOCITY_LINEAR = false;
+    /** Velocity linear index */
+    public PREPASS_VELOCITY_LINEAR_INDEX = -1;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
