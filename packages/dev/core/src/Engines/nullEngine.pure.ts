@@ -77,11 +77,7 @@ export class NullEngineOptions {
  * This can be used in server side scenario or for testing purposes
  */
 export class NullEngine extends Engine {
-    private _options: NullEngineOptions = new NullEngineOptions();
-
-    private static readonly _MultiviewExtension = {
-        framebufferTextureMultiviewOVR: () => {},
-    };
+    private _options: NullEngineOptions;
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
@@ -115,7 +111,7 @@ export class NullEngine extends Engine {
      * Gets a boolean indicating that the engine supports uniform buffers
      */
     public override get supportsUniformBuffers(): boolean {
-        return !!this._options.enableMultiview || super.supportsUniformBuffers;
+        return !!this._options?.enableMultiview || super.supportsUniformBuffers;
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
@@ -198,7 +194,7 @@ export class NullEngine extends Engine {
         };
 
         if (options.enableMultiview) {
-            this._caps.multiview = NullEngine._MultiviewExtension;
+            this._caps.multiview = { framebufferTextureMultiviewOVR: () => {} };
         }
 
         this._features = {
