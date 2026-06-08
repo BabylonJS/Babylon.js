@@ -4963,15 +4963,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (activeCamera._renderingMultiview) {
             const leftCamera = activeCamera._rigCameras[0];
             const rightCamera = activeCamera._rigCameras[1];
-            this._setTransformMatrix(
-                leftCamera.getViewMatrix(force),
-                leftCamera.getProjectionMatrix(force),
-                rightCamera.getViewMatrix(force),
-                rightCamera.getProjectionMatrix(force),
-                true
-            );
+            this._setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force), true);
         } else {
-            this._setTransformMatrix(activeCamera.getViewMatrix(force), activeCamera.getProjectionMatrix(force), undefined, undefined, true);
+            this._setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force), undefined, undefined, true);
         }
     }
 
