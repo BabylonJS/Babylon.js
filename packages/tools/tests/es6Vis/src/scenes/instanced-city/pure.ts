@@ -30,12 +30,18 @@ import {
     RegisterThinInstanceMesh,
     RegisterInstancedMesh,
     RegisterEngineDynamicBuffer,
+    RegisterStandardMaterialDecalMap,
+    RegisterAbstractMeshDecalMap,
+    RegisterStandardMaterial,
 } from "@babylonjs/core/pure";
 
 RegisterStandardEngineExtensions();
 RegisterThinInstanceMesh();
 RegisterInstancedMesh();
 RegisterEngineDynamicBuffer();
+RegisterStandardMaterialDecalMap();
+RegisterAbstractMeshDecalMap();
+RegisterStandardMaterial();
 
 export function run(canvas: HTMLCanvasElement): void {
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });

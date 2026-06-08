@@ -1,2 +1,2 @@
 export * from "./internalDeviceSourceManager.pure";
-export * from "./internalDeviceSourceManager.types";
+export type * from "./internalDeviceSourceManager.types";

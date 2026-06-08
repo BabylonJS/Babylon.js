@@ -1,7 +1,7 @@
 import { type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type Mesh, type Observer } from "core/index";
-import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { Observable } from "core/Misc/observable";
-import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer";
+import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer.pure";
 import { FrameGraphTask } from "../../../frameGraphTask";
 
 /**

@@ -106,7 +106,7 @@ Normal mode writes `packages/public/@babylonjs/core/package.json`. `--check` mod
 
 Checks that files omitted from the side-effects manifest do not statically value-import or value-re-export files included in the manifest. This protects the side-effect-free import surface used by pure barrels and public package metadata.
 
-Historical violations are tracked in `side-effect-import-closure-baseline.json` so the check can reject new violations while the existing backlog is migrated incrementally. When intentionally fixing existing violations, update the baseline after reviewing the diff.
+Historical violations can be tracked in `side-effect-import-closure-baseline.json` during migrations so the check can reject new violations while an existing backlog is migrated incrementally. The baseline file is not needed when there are no known violations.
 
 Common commands:
 

@@ -26,14 +26,26 @@ import {
     Vector3,
     DefaultRenderingPipeline,
     SSAO2RenderingPipeline,
+    PostProcessRenderPipelineManager,
+    DepthRenderer,
     RegisterStandardEngineExtensions,
     RegisterEnginesExtensionsEngineRawTexture,
+    RegisterEnginesExtensionsEngineMultiRender,
+    RegisterPostProcess,
+    RegisterPostProcessRenderPipelineManagerSceneComponent,
+    RegisterDepthRendererSceneComponent,
+    RegisterDefaultRenderingPipeline,
+    RegisterSsao2RenderingPipeline,
 } from "@babylonjs/core/pure";
-import "@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
-import "@babylonjs/core/Rendering/depthRenderer";
 
 RegisterStandardEngineExtensions();
 RegisterEnginesExtensionsEngineRawTexture();
+RegisterEnginesExtensionsEngineMultiRender();
+RegisterPostProcess();
+RegisterPostProcessRenderPipelineManagerSceneComponent(PostProcessRenderPipelineManager);
+RegisterDepthRendererSceneComponent(DepthRenderer);
+RegisterDefaultRenderingPipeline();
+RegisterSsao2RenderingPipeline();
 
 export function run(canvas: HTMLCanvasElement): void {
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });

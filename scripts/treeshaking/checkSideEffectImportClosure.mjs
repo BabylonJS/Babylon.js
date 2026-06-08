@@ -47,6 +47,10 @@ function violationKey(violation) {
     return `${violation.importer}\0${violation.kind}\0${violation.source}\0${violation.target}`;
 }
 
+function isPureBarrelPath(relPath) {
+    return relPath === "pure.ts" || relPath.endsWith("/pure.ts");
+}
+
 function formatViolation(violation) {
     return `${violation.importer}:${violation.line} ${violation.kind} ${JSON.stringify(violation.source)} -> ${violation.target}`;
 }
@@ -227,12 +231,24 @@ const baselineViolations = readBaseline().sort(compareViolations);
 const actualByKey = new Map(actualViolations.map((violation) => [violationKey(violation), violation]));
 const baselineByKey = new Map(baselineViolations.map((violation) => [violationKey(violation), violation]));
 
-const newViolations = actualViolations.filter((violation) => !baselineByKey.has(violationKey(violation)));
+const pureBarrelViolations = actualViolations.filter((violation) => isPureBarrelPath(violation.importer));
+const newViolations = actualViolations.filter((violation) => !baselineByKey.has(violationKey(violation)) && !isPureBarrelPath(violation.importer));
 const resolvedBaselineViolations = baselineViolations.filter((violation) => !actualByKey.has(violationKey(violation)));
 
-if (newViolations.length === 0 && resolvedBaselineViolations.length === 0) {
+if (pureBarrelViolations.length === 0 && newViolations.length === 0 && resolvedBaselineViolations.length === 0) {
     console.log(`✅ Side-effect import closure matches baseline (${actualViolations.length} known violation(s)).`);
     process.exit(0);
+}
+
+if (pureBarrelViolations.length > 0) {
+    console.error(`❌ Found ${pureBarrelViolations.length} pure barrel side-effect import closure violation(s):`);
+    console.error("  Pure barrels may never import or re-export side-effectful files, even through the baseline.");
+    for (const violation of pureBarrelViolations.slice(0, 50)) {
+        console.error(`  ${formatViolation(violation)}`);
+    }
+    if (pureBarrelViolations.length > 50) {
+        console.error(`  ...and ${pureBarrelViolations.length - 50} more.`);
+    }
 }
 
 if (newViolations.length > 0) {

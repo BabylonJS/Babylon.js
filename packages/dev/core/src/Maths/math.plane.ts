@@ -1,5 +1,5 @@
 import { type DeepImmutable } from "../types";
-import { Vector3, Matrix } from "./math.vector";
+import { Vector3, Matrix } from "./math.vector.pure";
 import { type IPlaneLike } from "./math.like";
 
 /**

@@ -1,6 +1,6 @@
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
-import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
+import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer.pure";
 import { type IRenderTargetTexture, type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { type ThinTexture } from "../Materials/Textures/thinTexture";
 import { Constants } from "core/Engines/constants";

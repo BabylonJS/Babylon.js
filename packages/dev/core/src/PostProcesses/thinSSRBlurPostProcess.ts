@@ -1,7 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { Vector2 } from "../Maths/math.vector";
+import { Vector2 } from "../Maths/math.vector.pure";
 
 /**
  * @internal

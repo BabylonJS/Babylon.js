@@ -22,6 +22,17 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         return "SubSurfaceScatteringPostProcess";
     }
 
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/imageProcessing.fragment"), import("../ShadersWGSL/subSurfaceScattering.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/imageProcessing.fragment"), import("../Shaders/subSurfaceScattering.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
+    }
+
     constructor(
         name: string,
         scene: Scene,

@@ -2,7 +2,7 @@ import { type DataCursor, CompressionCodes, DecodeFloat32, ParseFloat16, ParseFl
 import { UncompressPIZ, UncompressPXR, UncompressRAW, UncompressRLE, UncompressZIP } from "./exrLoader.compression";
 import { FLOAT32_SIZE, INT16_SIZE, type IEXRDecoder, type IEXRHeader } from "./exrLoader.interfaces";
 import { Constants } from "core/Engines/constants";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 import { ExrLoaderGlobalConfiguration, EXROutputType } from "./exrLoader.configuration";
 
 /**

@@ -1,5 +1,5 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { type Matrix, Vector3 } from "../../Maths/math.vector";
+import { type Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { RandomRange } from "../../Maths/math.scalar.functions";
 import { type Particle } from "../../Particles/particle";
 import { type IParticleEmitterType } from "./IParticleEmitterType";

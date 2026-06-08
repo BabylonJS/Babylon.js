@@ -1,5 +1,5 @@
 import { Epsilon } from "../../Maths/math.constants";
-import { Vector2 } from "../../Maths/math.vector";
+import { Vector2 } from "../../Maths/math.vector.pure";
 import { Clamp } from "../../Maths/math.scalar.functions";
 /**
  * Limits for geospatial camera

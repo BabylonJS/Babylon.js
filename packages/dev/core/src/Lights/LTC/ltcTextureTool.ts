@@ -1,5 +1,5 @@
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 import { type Tuple } from "core/types";
 
 /**

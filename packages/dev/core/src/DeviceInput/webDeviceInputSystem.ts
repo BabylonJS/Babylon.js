@@ -2,7 +2,7 @@ import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type IPointerEvent, type IUIEvent } from "../Events/deviceInputEvents";
 import { IsNavigatorAvailable } from "../Misc/domManagement";
 import { type Observer } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type Nullable } from "../types";
 import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";

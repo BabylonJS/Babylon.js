@@ -1,6 +1,6 @@
 import { type IQuaternionLike } from "../Maths/math.like";
 import { Clamp } from "../Maths/math.scalar.functions";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Vector3 } from "../Maths/math.vector.pure";
 import { Vector3Dot, Vector4Dot } from "../Maths/math.vector.functions";
 import { type DeepImmutable } from "../types";
 

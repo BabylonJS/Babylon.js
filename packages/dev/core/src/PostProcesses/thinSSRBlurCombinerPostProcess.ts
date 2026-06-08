@@ -1,7 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Camera } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { TmpVectors } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector.pure";
 
 /**
  * @internal

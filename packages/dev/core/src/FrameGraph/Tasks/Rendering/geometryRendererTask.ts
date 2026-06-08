@@ -8,7 +8,7 @@ import {
     type FrameGraphRenderPass,
     type ObjectRenderer,
 } from "core/index";
-import { Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color.pure";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
@@ -262,6 +262,12 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         return "FrameGraphGeometryRendererTask";
     }
 
+    /**
+     * Records the geometry renderer task into the frame graph.
+     * @param skipCreationOfDisabledPasses defines whether disabled passes should be skipped
+     * @param additionalExecute defines an optional callback executed by the pass
+     * @returns the recorded render pass
+     */
     public override record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         this._buildClearAttachmentsLayout();
 

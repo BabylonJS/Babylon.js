@@ -1,4 +1,4 @@
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type Particle } from "../Particles/particle";
 import { type IVector3Like } from "../Maths/math.like";
 import { type Texture } from "core/Materials/Textures/texture";
@@ -42,7 +42,13 @@ export class FlowMap {
         public readonly data: Uint8ClampedArray
     ) {}
 
-    public processFlowable(flowable: IFlowable, strength = 1, flowMapSamplePosOrTransformationMatrix?: IVector3Like | Matrix) {
+    /**
+     * Applies the flow map to a flowable object.
+     * @param flowable defines the object to update
+     * @param strength defines the strength of the flow map influence
+     * @param flowMapSamplePosOrTransformationMatrix defines the flow map sample position or transformation matrix
+     */
+    public processFlowable(flowable: IFlowable, strength = 1, flowMapSamplePosOrTransformationMatrix?: IVector3Like | Matrix): void {
         if (!flowMapSamplePosOrTransformationMatrix) {
             return;
         }

@@ -1,10 +1,10 @@
 import { Bone } from "./bone";
-import { Matrix } from "../Maths/math.vector";
+import { Matrix } from "../Maths/math.vector.pure";
 import { type Scene } from "../scene";
 import { type TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh.pure";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
-import { VertexBuffer } from "core/Buffers/buffer";
+import { VertexBuffer } from "core/Buffers/buffer.pure";
 import { Skeleton } from "./skeleton";
 
 /**

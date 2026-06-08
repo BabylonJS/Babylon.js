@@ -1,7 +1,7 @@
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
 import { type Effect } from "../Materials/effect";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { Constants } from "../Engines/constants";
 
 import { type AbstractEngine } from "core/Engines/abstractEngine";

@@ -1,8 +1,8 @@
 import { serialize, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import { type Nullable } from "../types";
 import { type Scene } from "../scene";
-import { type Matrix, Vector3 } from "../Maths/math.vector";
-import { Color3, TmpColors } from "../Maths/math.color";
+import { type Matrix, Vector3 } from "../Maths/math.vector.pure";
+import { Color3, TmpColors } from "../Maths/math.color.pure";
 import { Node } from "../node";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Effect } from "../Materials/effect";

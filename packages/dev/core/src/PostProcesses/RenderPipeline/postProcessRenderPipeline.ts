@@ -1,5 +1,5 @@
 import { type Nullable } from "../../types";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { type Camera } from "../../Cameras/camera";

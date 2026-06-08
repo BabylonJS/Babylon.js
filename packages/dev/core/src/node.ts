@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Scene } from "./scene";
 import { type Nullable } from "./types";
-import { Matrix, Vector3 } from "./Maths/math.vector";
+import { Matrix, Vector3 } from "./Maths/math.vector.pure";
 import { type AbstractEngine } from "./Engines/abstractEngine";
 import { type IBehaviorAware, type Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";

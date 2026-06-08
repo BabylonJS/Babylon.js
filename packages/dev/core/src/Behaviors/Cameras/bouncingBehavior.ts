@@ -7,7 +7,7 @@ import { type Observer } from "../../Misc/observable";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type TransformNode } from "../../Meshes/transformNode";
 import { type Animatable } from "../../Animations/animatable.core";
-import { Animation } from "../../Animations/animation";
+import { Animation } from "../../Animations/animation.pure";
 
 /**
  * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius

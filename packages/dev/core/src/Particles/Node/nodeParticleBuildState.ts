@@ -5,8 +5,8 @@ import { type Particle } from "core/Particles/particle";
 import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 
-import { Color4 } from "core/Maths/math.color";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
