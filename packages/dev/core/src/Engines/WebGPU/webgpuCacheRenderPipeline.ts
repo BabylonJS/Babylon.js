@@ -703,6 +703,16 @@ export abstract class WebGPUCacheRenderPipeline {
                         return normalized ? WebGPUConstants.VertexFormat.Unorm16x4 : WebGPUConstants.VertexFormat.Uint16x4;
                 }
                 break;
+            case VertexBuffer.HALF_FLOAT:
+                switch (size) {
+                    case 1:
+                    case 2:
+                        return WebGPUConstants.VertexFormat.Float16x2;
+                    case 3:
+                    case 4:
+                        return WebGPUConstants.VertexFormat.Float16x4;
+                }
+                break;
             case VertexBuffer.INT:
                 switch (size) {
                     case 1:
