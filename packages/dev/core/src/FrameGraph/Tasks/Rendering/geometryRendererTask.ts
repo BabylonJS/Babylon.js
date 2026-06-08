@@ -471,17 +471,21 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
-            let layout = clearAttachmentsLayout.get(geometryDescription.clearType);
+            const clearType =
+                geometryDescription.type === Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE && this._engine.useReverseDepthBuffer
+                    ? GeometryRenderingTextureClearType.Zero
+                    : geometryDescription.clearType;
+            let layout = clearAttachmentsLayout.get(clearType);
             if (layout === undefined) {
                 layout = [];
-                clearAttachmentsLayout.set(geometryDescription.clearType, layout);
+                clearAttachmentsLayout.set(clearType, layout);
                 for (let j = 0; j < i; j++) {
                     layout[j] = false;
                 }
             }
 
-            clearAttachmentsLayout.forEach((layout, clearType) => {
-                layout.push(clearType === geometryDescription.clearType);
+            clearAttachmentsLayout.forEach((layout, layoutClearType) => {
+                layout.push(layoutClearType === clearType);
             });
 
             allAttachmentsLayout.push(true);
