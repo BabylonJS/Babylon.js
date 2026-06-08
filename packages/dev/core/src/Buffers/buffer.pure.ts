@@ -380,11 +380,13 @@ export class VertexBuffer {
 
     /**
      * The integer type.
+     * Note: supported as a vertex attribute type only on the WebGL and WebGPU engines, not on Babylon Native.
      */
     public static readonly INT = Constants.INT;
 
     /**
      * The unsigned integer type.
+     * Note: supported as a vertex attribute type only on the WebGL and WebGPU engines, not on Babylon Native.
      */
     public static readonly UNSIGNED_INT = Constants.UNSIGNED_INT;
 
@@ -395,6 +397,7 @@ export class VertexBuffer {
 
     /**
      * The half float type.
+     * Note: supported as a vertex attribute type only on the WebGL and WebGPU engines, not on Babylon Native.
      */
     public static readonly HALF_FLOAT = Constants.HALF_FLOAT;
 
@@ -625,7 +628,7 @@ export class VertexBuffer {
         (this.hashCode as any) =
             (VertexBuffer._GetTypeHashIndex(this.type) << 0) +
             ((this.normalized ? 1 : 0) << 3) +
-            (this._size << 4) +
+            ((this._size - 1) << 4) +
             ((this._instanced ? 1 : 0) << 6) +
             /* keep 5 bits free */
             (this.byteStride << 12);

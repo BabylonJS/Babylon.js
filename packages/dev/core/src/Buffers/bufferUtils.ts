@@ -1,60 +1,12 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+import { FromHalfFloat, ToHalfFloat } from "../Misc/halfFloat";
 import { type DataArray, type FloatArray, type IndicesArray, type TypedArray, type TypedArrayConstructor } from "../types";
 
 /**
  * Union of TypedArrays that can be used for vertex data.
  */
 export type VertexDataTypedArray = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
-
-const FloatView = new Float32Array(1);
-const Int32View = new Int32Array(FloatView.buffer);
-
-/**
- * Converts a half float to a number.
- * @param value the half-float bit pattern to convert
- * @returns the decoded number
- */
-function FromHalfFloat(value: number): number {
-    const s = (value & 0x8000) >> 15;
-    const e = (value & 0x7c00) >> 10;
-    const f = value & 0x03ff;
-    if (e === 0) {
-        return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
-    } else if (e === 0x1f) {
-        return f ? NaN : (s ? -1 : 1) * Infinity;
-    }
-    return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
-}
-
-/**
- * Converts a number to a half float.
- * @param value the number to convert
- * @returns the half-float bit pattern
- */
-function ToHalfFloat(value: number): number {
-    FloatView[0] = value;
-    const x = Int32View[0];
-    let bits = (x >> 16) & 0x8000;
-    let m = (x >> 12) & 0x07ff;
-    const e = (x >> 23) & 0xff;
-    if (e < 103) {
-        return bits;
-    }
-    if (e > 142) {
-        bits |= 0x7c00;
-        bits |= (e === 255 ? 0 : 1) && x & 0x007fffff;
-        return bits;
-    }
-    if (e < 113) {
-        m |= 0x0800;
-        bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
-        return bits;
-    }
-    bits |= ((e - 112) << 10) | (m >> 1);
-    bits += m & 1;
-    return bits;
-}
 
 function GetFloatValue(dataView: DataView, type: number, byteOffset: number, normalized: boolean): number {
     switch (type) {
