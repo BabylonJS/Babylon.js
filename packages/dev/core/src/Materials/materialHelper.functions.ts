@@ -1064,6 +1064,15 @@ export function PrepareDefinesForFrameBoundValues(
     }
 }
 
+// Sizing the bone-uniform budget reserves room for the rest of the vertex stage (base uniforms +
+// plugins + clip planes), mirroring GetGaussianSplattingMaxPartCount's reserve. Multiview duplicates
+// the per-eye view/projection, so it reserves more.
+const _BoneUniformBaseReserve = 40;
+const _BoneUniformMultiviewReserve = 64;
+// The budget-risk diagnostic logs once PER SKELETON: its message varies by skeleton/bone-count/caps/
+// multiview, so Logger's per-message limit would not dedupe it. A WeakSet lets disposed skeletons be GC'd.
+const _BoneUniformBudgetWarnedSkeletons = new WeakSet<object>();
+
 /**
  * Prepares the defines for bones
  * @param mesh The mesh containing the geometry data we will draw
@@ -1093,25 +1102,26 @@ export function PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {
             // when a program exceeds that budget — the skinned mesh just never renders, with no error or
             // warning (see Babylon's "A Mysterious Case of Skinned Mesh Disappearances"). Multiview is the
             // common trigger: it duplicates per-eye matrices and adds driver overhead, shrinking the
-            // practical budget below what the device reports. Warn (once) when uniform bone storage is at
-            // risk so the failure is diagnosable; useTextureToStoreBoneMatrices removes bones from the budget.
+            // practical budget below what the device reports. Warn once per skeleton when uniform bone
+            // storage is at risk so the failure is diagnosable; useTextureToStoreBoneMatrices removes bones
+            // from the budget.
             const maxVertexUniformVectors = scene.getEngine().getCaps().maxVertexUniformVectors;
-            if (maxVertexUniformVectors) {
+            if (maxVertexUniformVectors && !_BoneUniformBudgetWarnedSkeletons.has(mesh.skeleton)) {
                 const boneUniformVectors = defines["BonesPerMesh"] * 4;
-                const isMultiview = !!scene.activeCamera?.outputRenderTarget && scene.activeCamera.outputRenderTarget.getViewCount() > 1;
-                // Mirror GaussianSplatting's reserve for the rest of the vertex stage (base uniforms +
-                // plugins/clip planes); reserve more under multiview for the second eye's matrices.
-                const reservedVertexUniforms = isMultiview ? 64 : 40;
+                // Optional-chain getViewCount so an output target without a view-count method can't throw
+                // on this path; mirrors PrepareDefinesForFrameBoundValues' own multiview test.
+                const isMultiview = (scene.activeCamera?.outputRenderTarget?.getViewCount?.() ?? 0) > 1;
+                const reservedVertexUniforms = isMultiview ? _BoneUniformMultiviewReserve : _BoneUniformBaseReserve;
                 const available = Math.max(maxVertexUniformVectors - reservedVertexUniforms, 0);
                 // Overflow the budget outright, or — under multiview, where the practical budget is
                 // smaller than reported — merely dominate it (bones alone are a third or more of nominal).
                 if (boneUniformVectors > available || (isMultiview && boneUniformVectors * 3 > maxVertexUniformVectors)) {
+                    _BoneUniformBudgetWarnedSkeletons.add(mesh.skeleton);
                     Logger.Warn(
                         `Skeleton "${mesh.skeleton.name}": ${mesh.skeleton.bones.length} bones stored as vertex uniforms use ` +
                             `${boneUniformVectors} of ~${available} usable uniform vectors${isMultiview ? " (multiview)" : ""} on a ` +
                             `device reporting ${maxVertexUniformVectors}. This can exceed the GPU vertex-uniform limit and make the ` +
-                            `mesh silently fail to render. Set skeleton.useTextureToStoreBoneMatrices = true to store bone matrices in a texture.`,
-                        1
+                            `mesh silently fail to render. Set skeleton.useTextureToStoreBoneMatrices = true to store bone matrices in a texture.`
                     );
                 }
             }

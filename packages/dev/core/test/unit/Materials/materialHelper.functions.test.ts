@@ -41,9 +41,11 @@ describe("PrepareDefinesForBones uniform-budget warning", () => {
         } as unknown as AbstractMesh;
     };
 
-    it("warns (once) and recommends a bone texture when uniform bones overflow the budget", () => {
+    it("warns once per skeleton (deduped across calls) and recommends a bone texture on overflow", () => {
         const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
-        PrepareDefinesForBones(makeSkinnedMesh(30), { BONETEXTURE: false });
+        const mesh = makeSkinnedMesh(30);
+        PrepareDefinesForBones(mesh, { BONETEXTURE: false });
+        PrepareDefinesForBones(mesh, { BONETEXTURE: false }); // same skeleton -> deduped, no second warn
         expect(warn).toHaveBeenCalledTimes(1);
         expect(String(warn.mock.calls[0][0])).toContain("useTextureToStoreBoneMatrices");
         warn.mockRestore();
