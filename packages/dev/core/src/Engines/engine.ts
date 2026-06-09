@@ -18,3 +18,4 @@ import "./AbstractEngine/abstractEngine.renderPass";
 import "./AbstractEngine/abstractEngine.texture";
 import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";
+import "./AbstractEngine/abstractEngine.scissor";

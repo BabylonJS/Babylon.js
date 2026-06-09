@@ -15,6 +15,7 @@
         "Engines/AbstractEngine/abstractEngine.query.types.ts": ["declare-module"],
         "Engines/AbstractEngine/abstractEngine.renderPass.ts": ["top-level-call"],
         "Engines/AbstractEngine/abstractEngine.renderPass.types.ts": ["declare-module"],
+        "Engines/AbstractEngine/abstractEngine.scissor.ts": ["declare-module"],
         "Engines/AbstractEngine/abstractEngine.states.ts": ["top-level-call"],
         "Engines/AbstractEngine/abstractEngine.states.types.ts": ["declare-module"],
         "Engines/AbstractEngine/abstractEngine.stencil.ts": ["top-level-call"],

@@ -1470,20 +1470,6 @@ export abstract class AbstractEngine {
     public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean, stencilClearValue?: number): void;
 
     /**
-     * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the bottom left corner of the scissor rectangle
-     * @param y defines the y-coordinate of the bottom left corner of the scissor rectangle
-     * @param width defines the width of the scissor rectangle
-     * @param height defines the height of the scissor rectangle
-     */
-    public abstract enableScissor(x: number, y: number, width: number, height: number): void;
-
-    /**
-     * Disable previously set scissor test rectangle
-     */
-    public abstract disableScissor(): void;
-
-    /**
      * Gets a boolean indicating that only power of 2 textures are supported
      * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
      */

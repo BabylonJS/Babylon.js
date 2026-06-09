@@ -136,6 +136,7 @@
         "Engines/AbstractEngine/abstractEngine.loadFile.js",
         "Engines/AbstractEngine/abstractEngine.query.js",
         "Engines/AbstractEngine/abstractEngine.renderPass.js",
+        "Engines/AbstractEngine/abstractEngine.scissor.js",
         "Engines/AbstractEngine/abstractEngine.states.js",
         "Engines/AbstractEngine/abstractEngine.stencil.js",
         "Engines/AbstractEngine/abstractEngine.texture.js",
