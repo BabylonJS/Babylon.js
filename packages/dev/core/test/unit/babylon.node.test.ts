@@ -6,6 +6,7 @@ import { Mesh } from "core/Meshes/mesh";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { NullEngine } from "core/Engines/nullEngine";
 import type { Behavior } from "core/Behaviors/behavior";
+import type { Nullable } from "core/types";
 
 /**
  * Describes the test suite.
@@ -82,28 +83,33 @@ describe("Babylon Node", () => {
 
         class ChildBehavior implements Behavior<Node> {
             public name = "Child";
+            public attachedNode: Nullable<Node> = null;
             public init() {}
-            public attach() {}
-            public detach() {}
+            public attach(target: Node) {
+                this.attachedNode = target;
+            }
+            public detach() {
+                this.attachedNode = null;
+            }
         }
 
         // Parent behavior that owns and registers two child behaviors on its target node, then
         // removes them again in detach(). This mirrors the pattern used by MultiPointerScaleBehavior.
         class ParentBehavior implements Behavior<Node> {
             public name = "Parent";
+            public attachedNode: Nullable<Node> = null;
             public childA = new ChildBehavior();
             public childB = new ChildBehavior();
-            private _owner: Node | null = null;
             public init() {}
             public attach(target: Node) {
-                this._owner = target;
+                this.attachedNode = target;
                 target.addBehavior(this.childA);
                 target.addBehavior(this.childB);
             }
             public detach() {
-                this._owner!.removeBehavior(this.childA);
-                this._owner!.removeBehavior(this.childB);
-                this._owner = null;
+                this.attachedNode!.removeBehavior(this.childA);
+                this.attachedNode!.removeBehavior(this.childB);
+                this.attachedNode = null;
             }
         }
 
