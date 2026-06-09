@@ -26,8 +26,8 @@ describe("PrepareUniformsAndSamplersForLight", () => {
 });
 
 describe("PrepareDefinesForBones uniform-budget warning", () => {
-    const makeSkinnedMesh = (boneCount: number, opts: { maxVertexUniformVectors?: number; isUsingTextureForMatrices?: boolean; multiview?: boolean } = {}): AbstractMesh => {
-        const { maxVertexUniformVectors = 16, isUsingTextureForMatrices = false, multiview = false } = opts;
+    const makeSkinnedMesh = (boneCount: number, opts: { maxVertexUniformVectors?: number; isUsingTextureForMatrices?: boolean } = {}): AbstractMesh => {
+        const { maxVertexUniformVectors = 16, isUsingTextureForMatrices = false } = opts;
         return {
             useBones: true,
             computeBonesUsingShaders: true,
@@ -35,7 +35,6 @@ describe("PrepareDefinesForBones uniform-budget warning", () => {
             skeleton: { name: "test", bones: new Array(boneCount).fill({}), isUsingTextureForMatrices },
             getScene: () => ({
                 prePassRenderer: null,
-                activeCamera: { outputRenderTarget: multiview ? { getViewCount: () => 2 } : null },
                 getEngine: () => ({ getCaps: () => ({ maxVertexUniformVectors }) }),
             }),
         } as unknown as AbstractMesh;
@@ -68,9 +67,24 @@ describe("PrepareDefinesForBones uniform-budget warning", () => {
     it("flags a bone array that dominates the budget under multiview even when it would fit otherwise", () => {
         const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
         // 30 bones -> 124 vectors: fits 256 outright, but exceeds 256/3 once multiview shrinks the budget.
-        PrepareDefinesForBones(makeSkinnedMesh(30, { maxVertexUniformVectors: 256, multiview: true }), { BONETEXTURE: false });
+        // MULTIVIEW is read from the defines (set by PrepareDefinesForFrameBoundValues, which materials
+        // run before the attributes/bones prepare) — no camera/render-target access on this path.
+        PrepareDefinesForBones(makeSkinnedMesh(30, { maxVertexUniformVectors: 256 }), { BONETEXTURE: false, MULTIVIEW: true });
         expect(warn).toHaveBeenCalledTimes(1);
         expect(String(warn.mock.calls[0][0])).toContain("multiview");
+        warn.mockRestore();
+    });
+
+    it("re-evaluates when MULTIVIEW flips for a skeleton that fit in mono (the 2D -> XR transition)", () => {
+        const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+        const mesh = makeSkinnedMesh(30, { maxVertexUniformVectors: 256 });
+        // Mono: 124 vectors fit comfortably -> evaluated, no warn (and the signature is cached).
+        PrepareDefinesForBones(mesh, { BONETEXTURE: false, MULTIVIEW: false });
+        PrepareDefinesForBones(mesh, { BONETEXTURE: false, MULTIVIEW: false }); // same signature -> skipped
+        expect(warn).not.toHaveBeenCalled();
+        // Entering multiview changes the signature -> the budget re-evaluates and now warns.
+        PrepareDefinesForBones(mesh, { BONETEXTURE: false, MULTIVIEW: true });
+        expect(warn).toHaveBeenCalledTimes(1);
         warn.mockRestore();
     });
 });
