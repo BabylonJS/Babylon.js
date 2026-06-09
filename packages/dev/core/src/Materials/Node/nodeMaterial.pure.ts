@@ -1196,6 +1196,49 @@ export class NodeMaterial extends NodeMaterialBase {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ): PostProcess {
+        // The post process effect is built from the shader code produced by the node graph. That code
+        // is only available once the build has completed. Some blocks (e.g. CurrentScreenBlock) load
+        // their shader sources asynchronously, so the build may still be running when this is called
+        // (for instance right after a synchronous NodeMaterial.Parse). Registering the still empty
+        // shaders would make the engine try to fetch them from a URL and fail with a 404, leaving the
+        // post process blank. Defer the effect creation until the build has completed.
+        if (!this._buildWasSuccessful) {
+            if (!postProcess) {
+                // Create the handle now with compilation blocked so callers can attach their observers;
+                // the actual effect is created once the build completes.
+                postProcess = new PostProcess(
+                    this.name + "PostProcess",
+                    "postprocess",
+                    null,
+                    null,
+                    options,
+                    camera!,
+                    samplingMode,
+                    engine,
+                    reusable,
+                    null,
+                    textureType,
+                    "postprocess",
+                    undefined,
+                    true,
+                    textureFormat,
+                    this.shaderLanguage
+                );
+                postProcess.nodeMaterialSource = this;
+            }
+
+            const deferredPostProcess = postProcess;
+            this.onBuildObservable.addOnce(() => {
+                this._createEffectForPostProcess(deferredPostProcess, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
+            });
+
+            if (!this._buildIsInProgress) {
+                this.build();
+            }
+
+            return postProcess;
+        }
+
         let tempName = this.name + this._buildId;
 
         const defines = new NodeMaterialDefines();
@@ -1236,7 +1279,7 @@ export class NodeMaterial extends NodeMaterialBase {
                 { maxSimultaneousLights: this.maxSimultaneousLights },
                 undefined,
                 undefined,
-                tempName,
+                vertexCode ? tempName : "postprocess",
                 tempName
             );
         }
@@ -1258,7 +1301,11 @@ export class NodeMaterial extends NodeMaterialBase {
             const result = this._processDefines(defines);
 
             if (result) {
-                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+                // Recompute the vertex emission for the current build (the graph may have been rebuilt),
+                // and register with the material's shader language so WGSL post processes use the WGSL store.
+                const currentVertexCode = this._sharedData.checks.emitVertex ? this._vertexCompilationState._builtCompilationString : undefined;
+
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, currentVertexCode, this.shaderLanguage);
 
                 TimingTools.SetImmediate(() =>
                     postProcess.updateEffect(
@@ -1268,7 +1315,7 @@ export class NodeMaterial extends NodeMaterialBase {
                         { maxSimultaneousLights: this.maxSimultaneousLights },
                         undefined,
                         undefined,
-                        tempName,
+                        currentVertexCode ? tempName : "postprocess",
                         tempName
                     )
                 );
@@ -1295,31 +1342,13 @@ export class NodeMaterial extends NodeMaterialBase {
         let tempName = this.name + this._buildId;
 
         const proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
+        proceduralTexture.nodeMaterialSource = this;
 
         const defines = new NodeMaterialDefines();
-        const result = this._processDefines(defines);
-        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
-
-        let effect = this.getScene().getEngine().createEffect(
-            {
-                vertexElement: tempName,
-                fragmentElement: tempName,
-            },
-            [VertexBuffer.PositionKind],
-            this._fragmentCompilationState.uniforms,
-            this._fragmentCompilationState.samplers,
-            defines.toString(),
-            result?.fallbacks,
-            undefined,
-            undefined,
-            undefined,
-            this.shaderLanguage
-        );
-
-        proceduralTexture.nodeMaterialSource = this;
-        proceduralTexture._setEffect(effect);
 
         let buildId = this._buildId;
+        let effect: Effect | undefined;
+
         const refreshEffect = () => {
             if (buildId !== this._buildId) {
                 delete Effect.ShadersStore[tempName + "VertexShader"];
@@ -1338,6 +1367,11 @@ export class NodeMaterial extends NodeMaterialBase {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
 
                 TimingTools.SetImmediate(() => {
+                    // The material may have been disposed before this deferred effect creation runs.
+                    if (!this._fragmentCompilationState) {
+                        return;
+                    }
+
                     effect = this.getScene().getEngine().createEffect(
                         {
                             vertexElement: tempName,
@@ -1348,14 +1382,19 @@ export class NodeMaterial extends NodeMaterialBase {
                         this._fragmentCompilationState.samplers,
                         defines.toString(),
                         result?.fallbacks,
-                        undefined
+                        undefined,
+                        undefined,
+                        undefined,
+                        this.shaderLanguage
                     );
 
                     proceduralTexture._setEffect(effect);
                 });
             }
 
-            this._checkInternals(effect);
+            if (effect) {
+                this._checkInternals(effect);
+            }
         };
 
         proceduralTexture.onBeforeGenerationObservable.add(() => {
@@ -1366,6 +1405,37 @@ export class NodeMaterial extends NodeMaterialBase {
         this.onBuildObservable.add(() => {
             refreshEffect();
         });
+
+        // The effect is built from the shader code produced by the node graph, which is only available
+        // once the build has completed. Some blocks (e.g. CurrentScreenBlock) load their shader sources
+        // asynchronously, so the build may still be running here (for instance right after a synchronous
+        // NodeMaterial.Parse). Creating the effect now would register empty shaders and make the engine
+        // fetch them from a URL, failing with a 404. Only create the effect once the build has
+        // succeeded; otherwise the onBuildObservable hook above creates it when the build completes.
+        if (this._buildWasSuccessful) {
+            const result = this._processDefines(defines);
+            Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
+
+            effect = this.getScene().getEngine().createEffect(
+                {
+                    vertexElement: tempName,
+                    fragmentElement: tempName,
+                },
+                [VertexBuffer.PositionKind],
+                this._fragmentCompilationState.uniforms,
+                this._fragmentCompilationState.samplers,
+                defines.toString(),
+                result?.fallbacks,
+                undefined,
+                undefined,
+                undefined,
+                this.shaderLanguage
+            );
+
+            proceduralTexture._setEffect(effect);
+        } else if (!this._buildIsInProgress) {
+            this.build();
+        }
 
         return proceduralTexture;
     }
