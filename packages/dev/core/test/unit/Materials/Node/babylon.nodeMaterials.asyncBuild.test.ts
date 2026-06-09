@@ -1,6 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Effect } from "core/Materials/effect";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
@@ -91,6 +92,56 @@ describe("NodeMaterial effect creation with an asynchronous build", () => {
         expect(registeredRealShader).toBe(true);
 
         registerSpy.mockRestore();
+        proceduralTexture?.dispose();
+    });
+
+    it("registers the post process shaders with the material shader language (WGSL)", async () => {
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+        const material = new NodeMaterial("node", scene, { shaderLanguage: ShaderLanguage.WGSL });
+        material.setToDefaultPostProcess();
+        material.build();
+
+        expect(material.buildIsInProgress).toBe(true);
+
+        const registerSpy = vi.spyOn(Effect, "RegisterShader");
+
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -1), scene);
+        const postProcess = material.createPostProcess(camera);
+
+        await waitForBuild(material);
+
+        // The shader must be registered into the WGSL store (the 4th argument), otherwise a WGSL node
+        // material post process resolves against the GLSL store and fails to compile.
+        const registeredAsWgsl = registerSpy.mock.calls.some(
+            ([name, pixelShader, , shaderLanguage]) => typeof name === "string" && name.startsWith("node") && !!pixelShader && shaderLanguage === ShaderLanguage.WGSL
+        );
+        expect(registeredAsWgsl).toBe(true);
+
+        registerSpy.mockRestore();
+        postProcess?.dispose(camera);
+    });
+
+    it("creates the procedural texture effect with the material shader language (WGSL)", async () => {
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+        const material = new NodeMaterial("node", scene, { shaderLanguage: ShaderLanguage.WGSL });
+        material.setToDefaultProceduralTexture();
+        material.build();
+
+        expect(material.buildIsInProgress).toBe(true);
+
+        const createEffectSpy = vi.spyOn(engine, "createEffect");
+
+        const proceduralTexture = material.createProceduralTexture(256, scene);
+
+        await waitForBuild(material);
+        // The effect is created on a SetImmediate; let it run.
+        await new Promise((resolve) => setTimeout(resolve, 16));
+
+        // createEffect receives the shader language as its 10th argument; it must be WGSL here.
+        const createdAsWgsl = createEffectSpy.mock.calls.some((args) => args[9] === ShaderLanguage.WGSL);
+        expect(createdAsWgsl).toBe(true);
+
+        createEffectSpy.mockRestore();
         proceduralTexture?.dispose();
     });
 });

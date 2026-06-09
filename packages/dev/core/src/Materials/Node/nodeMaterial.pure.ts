@@ -1301,7 +1301,11 @@ export class NodeMaterial extends NodeMaterialBase {
             const result = this._processDefines(defines);
 
             if (result) {
-                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+                // Recompute the vertex emission for the current build (the graph may have been rebuilt),
+                // and register with the material's shader language so WGSL post processes use the WGSL store.
+                const currentVertexCode = this._sharedData.checks.emitVertex ? this._vertexCompilationState._builtCompilationString : undefined;
+
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, currentVertexCode, this.shaderLanguage);
 
                 TimingTools.SetImmediate(() =>
                     postProcess.updateEffect(
@@ -1311,7 +1315,7 @@ export class NodeMaterial extends NodeMaterialBase {
                         { maxSimultaneousLights: this.maxSimultaneousLights },
                         undefined,
                         undefined,
-                        vertexCode ? tempName : "postprocess",
+                        currentVertexCode ? tempName : "postprocess",
                         tempName
                     )
                 );
@@ -1378,7 +1382,10 @@ export class NodeMaterial extends NodeMaterialBase {
                         this._fragmentCompilationState.samplers,
                         defines.toString(),
                         result?.fallbacks,
-                        undefined
+                        undefined,
+                        undefined,
+                        undefined,
+                        this.shaderLanguage
                     );
 
                     proceduralTexture._setEffect(effect);
