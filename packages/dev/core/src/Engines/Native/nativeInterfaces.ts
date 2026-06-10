@@ -74,7 +74,15 @@ export interface INativeEngine {
         generateMipMaps: boolean,
         invertY: boolean
     ): void;
-    loadCubeTexture(texture: NativeTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+    loadCubeTexture(
+        texture: NativeTexture,
+        data: Array<ArrayBufferView>,
+        generateMips: boolean,
+        invertY: boolean,
+        srgb: boolean,
+        onSuccess: (sphericalPolynomial?: Float32Array) => void,
+        onError: () => void
+    ): void;
     loadCubeTextureWithMips(texture: NativeTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
@@ -433,21 +441,45 @@ export const enum NativeTraceLevel {
 /** @internal */
 export interface INative {
     // NativeEngine plugin
+    /**
+     *
+     */
     Engine: INativeEngineConstructor;
+    /**
+     *
+     */
     NativeDataStream: INativeDataStreamConstructor;
 
     // NativeCamera plugin
+    /**
+     *
+     */
     Camera?: INativeCameraConstructor;
 
     // NativeCanvas plugin
+    /**
+     *
+     */
     Canvas?: INativeCanvasConstructor;
+    /**
+     *
+     */
     Image?: INativeImageConstructor;
+    /**
+     *
+     */
     Path2D?: INativePath2DConstructor;
 
     // Native XMLHttpRequest polyfill
+    /**
+     *
+     */
     XMLHttpRequest?: typeof XMLHttpRequest;
 
     // NativeInput plugin
+    /**
+     *
+     */
     DeviceInputSystem?: IDeviceInputSystemConstructor;
 
     // NativeTracing plugin
