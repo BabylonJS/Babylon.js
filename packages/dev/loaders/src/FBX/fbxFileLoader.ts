@@ -404,7 +404,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
         // Apply blend shapes (morph targets) to meshes
         if (fbxScene.blendShapes.length > 0) {
-            this._applyBlendShapes(fbxScene.blendShapes, meshes, scene, fbxScene.unitScaleFactor);
+            this._applyBlendShapes(fbxScene.blendShapes, meshes, scene);
         }
 
         // Create animation groups
@@ -1482,7 +1482,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * FBX Shape vertices are stored as absolute positions for sparse control points.
      * We compute deltas relative to the base mesh positions.
      */
-    private _applyBlendShapes(blendShapes: FBXBlendShapeData[], meshes: Mesh[], scene: Scene, unitScaleFactor: number): void {
+    private _applyBlendShapes(blendShapes: FBXBlendShapeData[], meshes: Mesh[], scene: Scene): void {
         // Build a map from geometry ID to mesh (using the mesh metadata we'll need to store)
         // The mesh's geometry ID is tracked through the model hierarchy during _buildModel.
         // We need to match blendShape.geometryId to the correct mesh.
@@ -1527,7 +1527,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     if (!shape) {
                         continue;
                     }
-                    const targetData = buildMorphTargetData(shape, cpIndices, basePositions, baseNormals, deltaMatrix, normalMatrix, unitScaleFactor);
+                    const targetData = buildMorphTargetData(shape, cpIndices, basePositions, baseNormals, deltaMatrix, normalMatrix);
                     if (!targetData) {
                         continue;
                     }
@@ -2910,8 +2910,7 @@ function buildMorphTargetData(
     basePositions: FloatArray,
     baseNormals: FloatArray | null,
     deltaMatrix: Matrix | null,
-    normalMatrix: Matrix | null,
-    unitScaleFactor: number
+    normalMatrix: Matrix | null
 ): { positions: Float32Array; normals: Float32Array | null } | null {
     const vertexCount = basePositions.length / 3;
     const targetPositions = new Float32Array(vertexCount * 3);
@@ -2948,12 +2947,6 @@ function buildMorphTargetData(
             dx = rv.x;
             dy = rv.y;
             dz = rv.z;
-        }
-
-        if (unitScaleFactor !== 1) {
-            dx *= unitScaleFactor;
-            dy *= unitScaleFactor;
-            dz *= unitScaleFactor;
         }
 
         targetPositions[vi * 3] += dx;

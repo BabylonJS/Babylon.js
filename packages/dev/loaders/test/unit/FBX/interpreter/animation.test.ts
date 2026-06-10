@@ -73,6 +73,18 @@ describe("FBX animation interpretation", () => {
 
         expect(keys.map((key) => key.interpolation)).toEqual(["constant", "cubic"]);
     });
+
+    it("extracts one animation clip per AnimationStack (multi-clip)", () => {
+        const animations = extractAnimations(resolveConnections(createMultiClipDocument()));
+
+        expect(animations).toHaveLength(2);
+        expect(animations.map((animation) => animation.name)).toEqual(["Spin", "Bounce"]);
+        // Each clip targets the same model through its own curve node + curve.
+        expect(animations[0].curveNodes[0].targetModelId).toBe(10);
+        expect(animations[1].curveNodes[0].targetModelId).toBe(10);
+        expect(animations[0].curveNodes[0].curves[0].channel).toBe("d|Y");
+        expect(animations[1].curveNodes[0].curves[0].channel).toBe("d|Y");
+    });
 });
 
 function createSampledKeys(count: number, fps: number): FBXKeyframe[] {
@@ -187,5 +199,57 @@ function createConnection(type: string, child: number, parent: number, propertyN
             ...(propertyName ? [{ type: "string" as const, value: propertyName }] : []),
         ],
         children: [],
+    };
+}
+
+// Two AnimationStacks ("Spin" then "Bounce") that drive one model — the loader should surface each
+// stack as its own clip/animation group.
+function createMultiClipDocument(): FBXDocument {
+    const keyTime = () => ({
+        name: "KeyTime",
+        properties: [{ type: "int64[]" as const, value: new Float64Array([0, FBX_TIME_UNIT]) }],
+        children: [],
+    });
+    return {
+        version: 7400,
+        nodes: [
+            {
+                name: "Objects",
+                properties: [],
+                children: [
+                    createObject("Model", 10, "Model::Animated", "Null"),
+                    // Clip 1 — Spin (rotation).
+                    createObject("AnimationStack", 1, "AnimStack::Spin", ""),
+                    createObject("AnimationLayer", 2, "AnimLayer::BaseLayer", ""),
+                    createObject("AnimationCurveNode", 3, "AnimationCurveNode::R", ""),
+                    createObject("AnimationCurve", 4, "AnimCurve::Y", "", [
+                        keyTime(),
+                        { name: "KeyValueFloat", properties: [{ type: "float32[]", value: new Float32Array([0, 360]) }], children: [] },
+                    ]),
+                    // Clip 2 — Bounce (translation).
+                    createObject("AnimationStack", 5, "AnimStack::Bounce", ""),
+                    createObject("AnimationLayer", 6, "AnimLayer::BaseLayer", ""),
+                    createObject("AnimationCurveNode", 7, "AnimationCurveNode::T", ""),
+                    createObject("AnimationCurve", 8, "AnimCurve::Y", "", [
+                        keyTime(),
+                        { name: "KeyValueFloat", properties: [{ type: "float32[]", value: new Float32Array([-1, 1]) }], children: [] },
+                    ]),
+                ],
+            },
+            {
+                name: "Connections",
+                properties: [],
+                children: [
+                    createConnection("OO", 2, 1),
+                    createConnection("OO", 3, 2),
+                    createConnection("OP", 3, 10, "Lcl Rotation"),
+                    createConnection("OP", 4, 3, "d|Y"),
+                    createConnection("OO", 6, 5),
+                    createConnection("OO", 7, 6),
+                    createConnection("OP", 7, 10, "Lcl Translation"),
+                    createConnection("OP", 8, 7, "d|Y"),
+                ],
+            },
+        ],
     };
 }
