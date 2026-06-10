@@ -29,17 +29,15 @@ import { type Scene } from "core/scene";
 
 import { type GLTFExporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
-import { NullEngine } from "core/Engines/nullEngine";
 import { EncodeImageAsync } from "core/Misc/dumpTools";
 
 import { type Material } from "core/Materials/material";
 import { type StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
-import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
-import { GetMimeType } from "core/Misc/fileTools";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
+import { GetCachedImageAsync, GetFileExtensionFromMimeType } from "../../exportImageUtils";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
@@ -68,21 +66,6 @@ interface IPBRMetallicRoughness {
     baseColorTextureData?: Nullable<Blob>;
 }
 
-function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
-    switch (mimeType) {
-        case ImageMimeType.JPEG:
-            return ".jpg";
-        case ImageMimeType.PNG:
-            return ".png";
-        case ImageMimeType.WEBP:
-            return ".webp";
-        case ImageMimeType.AVIF:
-            return ".avif";
-        case ImageMimeType.KTX2:
-            return ".ktx2";
-    }
-}
-
 /**
  * @param mimeType the MIME type requested by the user
  * @returns true if the given mime type is compatible with glTF
@@ -98,67 +81,6 @@ function IsSupportedMimeType(mimeType?: string): mimeType is ImageMimeType {
         default:
             return false;
     }
-}
-
-/**
- * Gets cached image from a texture, if available.
- * @param babylonTexture texture to check for cached image
- * @returns image data if found and directly usable; null otherwise
- */
-async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<Blob>> {
-    const internalTexture = babylonTexture.getInternalTexture();
-    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
-        return null;
-    }
-    if (internalTexture.invertY) {
-        // On a real engine, the GPU has the texture stored flipped (UNPACK_FLIP_Y_WEBGL),
-        // while the glTF loader uploads with invertY=false. Falling back to GPU readback
-        // produces bytes that round-trip correctly. NullEngine has no GPU readback path,
-        // so the cached URL bytes are the only option.
-        const engine = babylonTexture.getScene()?.getEngine();
-        if (!(engine instanceof NullEngine)) {
-            return null;
-        }
-    }
-
-    const buffer = internalTexture._buffer;
-
-    let data;
-    let mimeType = (babylonTexture as Texture).mimeType;
-
-    try {
-        if (!buffer) {
-            data = await Tools.LoadFileAsync(internalTexture.url);
-            mimeType = GetMimeType(internalTexture.url) || mimeType;
-        } else if (ArrayBuffer.isView(buffer)) {
-            data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
-        } else if (buffer instanceof ArrayBuffer) {
-            data = buffer;
-        } else if (buffer instanceof Blob) {
-            data = await buffer.arrayBuffer();
-            mimeType = buffer.type || mimeType;
-        } else if (typeof buffer === "string") {
-            data = await Tools.LoadFileAsync(buffer);
-            mimeType = GetMimeType(buffer) || mimeType;
-        } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
-            data = await Tools.LoadFileAsync(buffer.src);
-            mimeType = GetMimeType(buffer.src) || mimeType;
-        }
-    } catch {
-        // Failed to load texture data, fall back to GPU texture read via GetTextureDataAsync
-        return null;
-    }
-
-    if (data && !mimeType && internalTexture.url) {
-        const dataUriMatch = internalTexture.url.match(/^data:([^;,]+)/);
-        mimeType = dataUriMatch ? dataUriMatch[1] : GetMimeType(internalTexture.url);
-    }
-
-    if (data && IsSupportedMimeType(mimeType)) {
-        return new Blob([data], { type: mimeType });
-    }
-
-    return null;
 }
 
 /**
@@ -1099,8 +1021,8 @@ export class GLTFMaterialExporter {
             imageIndexPromise = (async () => {
                 // Try to get the image from memory first, if applicable
                 const cache = await GetCachedImageAsync(babylonTexture);
-                if (cache && (requestedMimeType === "none" || cache.type === requestedMimeType)) {
-                    return await this._exportImageAsync(babylonTexture.name, cache);
+                if (cache && IsSupportedMimeType(cache.mimeType) && (requestedMimeType === "none" || cache.mimeType === requestedMimeType)) {
+                    return await this._exportImageAsync(babylonTexture.name, new Blob([cache.data], { type: cache.mimeType }));
                 }
 
                 // Preserve texture mime type if defined
