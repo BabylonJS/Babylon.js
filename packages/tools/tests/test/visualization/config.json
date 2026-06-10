@@ -5305,6 +5305,13 @@
             "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
+        },
+        {
+            "title": "CSG2 Right-Handed glTF winding",
+            "playgroundId": "#1HYT9N#0",
+            "referenceImage": "csg2-righthanded-gltf-winding.png",
+            "errorRatio": 1.5,
+            "dependsOn": ["CSG", "Meshes"]
         }
     ]
 }
