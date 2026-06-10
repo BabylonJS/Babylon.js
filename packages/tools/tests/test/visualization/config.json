@@ -5308,147 +5308,113 @@
         },
         {
             "title": "FBX loader - cube + Phong material",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxCubePhong",
-            "referenceImage": "fbx_m01_cube_phong.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#0",
+            "referenceImage": "fbx-m01-cube-phong.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
         },
         {
             "title": "FBX loader - n-gons + vertex colors",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxNgons",
-            "referenceImage": "fbx_m02_ngons.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#1",
+            "referenceImage": "fbx-m02-ngons.png",
+            "dependsOn": ["Loaders", "Meshes"]
         },
         {
             "title": "FBX loader - smooth vs flat normals",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxNormals",
-            "referenceImage": "fbx_m03_normals.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#2",
+            "referenceImage": "fbx-m03-normals.png",
+            "dependsOn": ["Loaders", "Meshes"]
         },
         {
             "title": "FBX loader - material properties",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxMaterials",
-            "referenceImage": "fbx_m04_materials.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#3",
+            "referenceImage": "fbx-m04-materials.png",
+            "dependsOn": ["Loaders", "Materials"]
         },
         {
             "title": "FBX loader - texture slots",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxTextures",
-            "referenceImage": "fbx_m05_textures.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#4",
+            "referenceImage": "fbx-m05-textures.png",
+            "dependsOn": ["Loaders", "Materials", "Textures"]
         },
         {
             "title": "FBX loader - UV transform",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxUvTransform",
-            "referenceImage": "fbx_m06_uv_transform.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#5",
+            "referenceImage": "fbx-m06-uv-transform.png",
+            "dependsOn": ["Loaders", "Materials", "Textures"]
         },
         {
             "title": "FBX loader - multi-material submeshes",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxMultiMaterial",
-            "referenceImage": "fbx_m07_multimaterial.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#6",
+            "referenceImage": "fbx-m07-multimaterial.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
         },
         {
             "title": "FBX loader - transform chains",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxTransforms",
-            "referenceImage": "fbx_m08_transforms.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#7",
+            "referenceImage": "fbx-m08-transforms.png",
+            "dependsOn": ["Loaders", "Meshes"]
         },
         {
             "title": "FBX loader - skinning",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxSkinning",
-            "referenceImage": "fbx_m09_skinning.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#8",
+            "referenceImage": "fbx-m09-skinning.png",
+            "dependsOn": ["Loaders", "Bones", "Meshes"]
         },
         {
             "title": "FBX loader - morph targets",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxMorph",
-            "referenceImage": "fbx_m10_morph.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#9",
+            "referenceImage": "fbx-m10-morph.png",
+            "dependsOn": ["Loaders", "Morph"]
         },
         {
             "title": "FBX loader - node animation",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxNodeAnim",
-            "referenceImage": "fbx_m11_node_anim.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#10",
+            "referenceImage": "fbx-m11-node-anim.png",
+            "dependsOn": ["Loaders", "Animations"]
         },
         {
             "title": "FBX loader - skeletal animation",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxSkeletalAnim",
-            "referenceImage": "fbx_m12_skeletal_anim.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#11",
+            "referenceImage": "fbx-m12-skeletal-anim.png",
+            "dependsOn": ["Loaders", "Bones", "Animations"]
         },
         {
             "title": "FBX loader - morph animation",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxMorphAnim",
-            "referenceImage": "fbx_m13_morph_anim.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#12",
+            "referenceImage": "fbx-m13-morph-anim.png",
+            "dependsOn": ["Loaders", "Morph", "Animations"]
         },
         {
             "title": "FBX loader - multiple animation clips",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxMultiClip",
-            "referenceImage": "fbx_m14_multiclip.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#13",
+            "referenceImage": "fbx-m14-multiclip.png",
+            "dependsOn": ["Loaders", "Animations"]
         },
         {
             "title": "FBX loader - cameras and lights",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxCameraLights",
-            "referenceImage": "fbx_m15_camera_lights.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#14",
+            "referenceImage": "fbx-m15-camera-lights.png",
+            "dependsOn": ["Loaders", "Cameras", "Lights"]
         },
         {
             "title": "FBX loader - axis Y-up",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxAxisYup",
-            "referenceImage": "fbx_m16_axis_yup.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#15",
+            "referenceImage": "fbx-m16-axis-yup.png",
+            "dependsOn": ["Loaders", "Meshes"]
         },
         {
             "title": "FBX loader - axis Z-up conversion",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxAxisZup",
-            "referenceImage": "fbx_m16_axis_zup.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#16",
+            "referenceImage": "fbx-m16-axis-zup.png",
+            "dependsOn": ["Loaders", "Meshes"]
         },
         {
             "title": "FBX loader - unit scale",
-            "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
-            "functionToCall": "CreateFbxUnits",
-            "referenceImage": "fbx_m16_units.png",
-            "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Loaders"]
+            "playgroundId": "#DZBTQU#17",
+            "referenceImage": "fbx-m16-units.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
             "title": "CSG2 Right-Handed glTF winding",
             "playgroundId": "#1HYT9N#0",
             "referenceImage": "csg2-righthanded-gltf-winding.png",
