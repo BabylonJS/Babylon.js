@@ -45,6 +45,11 @@ export class GlobalState {
     onExportToGLBRequired = new Observable<void>();
     updateState: (left: string, right: string) => void;
 
+    mcpSessionUrl: string | null = null;
+    mcpSessionConnected: boolean = false;
+    mcpEventSource: EventSource | null = null;
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {

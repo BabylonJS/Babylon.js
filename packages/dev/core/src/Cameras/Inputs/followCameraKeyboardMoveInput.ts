@@ -5,7 +5,7 @@ import { type Nullable } from "../../types";
 import { type Observer } from "../../Misc/observable";
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { type Scene } from "../../scene";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 
 /**

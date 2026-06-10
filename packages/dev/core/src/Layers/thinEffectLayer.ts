@@ -3,14 +3,14 @@ import { Observable } from "../Misc/observable";
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
 import { type Scene } from "../scene";
-import { Color4 } from "../Maths/math.color";
+import { Color4 } from "../Maths/math.color.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
-import { type EffectWrapperCreationOptions, EffectWrapper } from "core/Materials/effectRenderer";
+import { type EffectWrapperCreationOptions, EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -786,6 +786,13 @@ export class ThinEffectLayer {
         return isReady;
     }
 
+    protected _disposeMergeEffects(): void {
+        for (const drawWrapper of this._mergeDrawWrapper) {
+            drawWrapper.dispose();
+        }
+        this._mergeDrawWrapper = [];
+    }
+
     /**
      * Checks if the layer is ready to be used.
      * @returns true if the layer is ready to be used
@@ -1098,10 +1105,7 @@ export class ThinEffectLayer {
             this._indexBuffer = null;
         }
 
-        for (const drawWrapper of this._mergeDrawWrapper) {
-            drawWrapper.dispose();
-        }
-        this._mergeDrawWrapper = [];
+        this._disposeMergeEffects();
 
         this._objectRenderer.dispose();
 

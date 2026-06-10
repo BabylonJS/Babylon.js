@@ -10,6 +10,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3, type Quaternion } from "core/Maths/math.vector.pure";
 
 import { Logger } from "core/Misc/logger";
+import { Observable } from "core/Misc/observable";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -26,6 +27,31 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
+
+/** Internal mirror of ISogTexturePack (defined in loaders) — avoids a circular import. */
+interface ISogPackInternal {
+    version: 1 | 2;
+    splatCount: number;
+    shDegree: number;
+    meansTextureL: BaseTexture;
+    meansTextureU: BaseTexture;
+    scalesTexture: BaseTexture;
+    quatsTexture: BaseTexture;
+    sh0Texture: BaseTexture;
+    shCentroidsTexture?: BaseTexture;
+    shLabelsTexture?: BaseTexture;
+    codebookTexture?: BaseTexture;
+    meansMin: [number, number, number];
+    meansMax: [number, number, number];
+    scalesMin?: [number, number, number];
+    scalesMax?: [number, number, number];
+    sh0Min?: [number, number, number, number];
+    sh0Max?: [number, number, number, number];
+    shnMin?: number;
+    shnMax?: number;
+    shCoeffCount: number;
+    positions: Float32Array;
+}
 
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
@@ -394,9 +420,13 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     protected _useRGBACovariants = false;
+    protected _useSog = false;
+    protected _sogParams: Nullable<ISogPackInternal> = null;
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
+    private _splatSizeMin: number = Infinity;
+    private _splatSizeMax: number = -Infinity;
     private _sortIsDirty = false;
 
     // Cached bounding box for incremental addPart updates (O(1) vs O(N) scan of positions)
@@ -418,6 +448,13 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
 
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
+
+    /** Fired after parts are added or the mesh is rebuilt following a removal. Payload is the new part count. */
+    public readonly onPartCountChangedObservable = new Observable<number>();
+
+    /** Fired after part-removal validation passes but before the mesh is rebuilt.
+     *  Payload is the original (pre-removal) part index. */
+    public readonly onPartRemovedObservable = new Observable<number>();
 
     /**
      * Returns a byte-accurate view for retained splat data, preserving any non-zero byte offset.
@@ -533,6 +570,18 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
+     * Returns the min/max size range of splats in this mesh, where size is pow(|det(Σ)|, 1/6)
+     * of the 3D covariance matrix — equivalent to the geometric mean of the principal radii.
+     * Computed automatically during updateData(). Returns null before any data has been loaded.
+     */
+    public get splatSizeRange(): Nullable<{ min: number; max: number }> {
+        if (!isFinite(this._splatSizeMin) || !isFinite(this._splatSizeMax)) {
+            return null;
+        }
+        return { min: this._splatSizeMin, max: this._splatSizeMax };
+    }
+
+    /**
      * Set the number of batch (a batch is 16384 splats) after which a display update is performed
      * A value of 0 (default) means display update will not happens before splat is ready.
      */
@@ -601,7 +650,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._needsRotationScaleTextures = value;
         if (value && this._covariancesATexture) {
             if (this._splatsData) {
-                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false });
+                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false }, undefined, this._shDegree);
             } else {
                 Logger.Error(
                     "GaussianSplattingMeshBase: needsRotationScaleTextures was enabled after the mesh was already loaded, but the splat data is not kept in RAM. " +
@@ -616,6 +665,107 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public get shTextures() {
         return this._shTextures;
+    }
+
+    /**
+     * True when this mesh holds raw SOG webp textures (dequantized in-shader) rather than the
+     * pre-decoded covariance/center/color textures produced by the standard splat loader.
+     */
+    public get useSog(): boolean {
+        return this._useSog;
+    }
+
+    /**
+     * SOG dequantization parameters paired with the raw textures.
+     * Set by the splat loader when `useSogTextures: true`. Null otherwise.
+     */
+    public get sogParams(): Nullable<ISogPackInternal> {
+        return this._sogParams;
+    }
+
+    /**
+     * Install a set of raw SOG webp textures and bind the mesh to the in-shader dequantization path.
+     * @param pack SOG texture pack produced by ParseSogMetaAsTextures.
+     * @internal
+     */
+    public setSogTextureData(pack: ISogPackInternal): void {
+        this._useSog = true;
+        this._sogParams?.codebookTexture?.dispose();
+        this._sogParams = pack;
+        this._vertexCount = pack.splatCount;
+        this._shDegree = pack.shDegree ?? 0;
+        this._maxShDegree = this._shDegree;
+
+        // Stride-4 (xyz + 1) — required by the depth-sort worker and the centers texture path.
+        this._splatPositions = pack.positions;
+
+        // Reuse existing texture slots for SOG textures (the shader, under USE_SOG, samples them as RGBA8).
+        this._covariancesATexture?.dispose();
+        this._covariancesBTexture?.dispose();
+        this._centersTexture?.dispose();
+        this._colorsTexture?.dispose();
+        this._rotationsATexture?.dispose();
+        if (this._shTextures) {
+            for (const t of this._shTextures) {
+                t.dispose();
+            }
+        }
+
+        this._centersTexture = pack.meansTextureL;
+        this._covariancesATexture = pack.meansTextureU;
+        this._covariancesBTexture = pack.scalesTexture;
+        this._rotationsATexture = pack.quatsTexture;
+        this._colorsTexture = pack.sh0Texture;
+
+        const shTextures: BaseTexture[] = [];
+        if (pack.shCentroidsTexture) {
+            shTextures.push(pack.shCentroidsTexture);
+        }
+        if (pack.shLabelsTexture) {
+            shTextures.push(pack.shLabelsTexture);
+        }
+        this._shTextures = shTextures.length ? shTextures : null;
+
+        // Force pipeline rebuild so the USE_SOG define and extra samplers are picked up.
+        this._material?.resetDrawCache();
+
+        const size = pack.meansTextureL.getSize();
+        this._textureSize.x = size.width;
+        this._textureSize.y = size.height;
+
+        this._updateSplatIndexBuffer(this._vertexCount);
+        this._instantiateWorker();
+
+        // Compute bounds from the CPU-decoded positions (stride-4) so the mesh is not frustum-culled.
+        const positions = pack.positions as Float32Array;
+        const minimum = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+        const maximum = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+        for (let i = 0; i < this._vertexCount; i++) {
+            const x = positions[i * 4 + 0];
+            const y = positions[i * 4 + 1];
+            const z = positions[i * 4 + 2];
+            if (x < minimum.x) {
+                minimum.x = x;
+            }
+            if (y < minimum.y) {
+                minimum.y = y;
+            }
+            if (z < minimum.z) {
+                minimum.z = z;
+            }
+            if (x > maximum.x) {
+                maximum.x = x;
+            }
+            if (y > maximum.y) {
+                maximum.y = y;
+            }
+            if (z > maximum.z) {
+                maximum.z = z;
+            }
+        }
+        this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+        this.setEnabled(true);
+        this._sortIsDirty = true;
     }
 
     /**
@@ -708,9 +858,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._scene.onCameraRemovedObservable.add((camera: Camera) => {
             const cameraId = camera.uniqueId;
             // delete mesh for this camera
-            if (this._cameraViewInfos.has(cameraId)) {
-                const cameraViewInfos = this._cameraViewInfos.get(cameraId);
-                cameraViewInfos?.mesh.dispose();
+            const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+            if (cameraViewInfos) {
+                // If the cached shadow-caster geometry came from the mesh we're disposing, drop it
+                // so isReady()/render() re-cache it from a surviving camera (see isReady()).
+                // Must run before dispose(), which nulls the inner mesh's geometry.
+                if (this._geometry === cameraViewInfos.mesh.geometry) {
+                    this._geometry = null;
+                }
+                cameraViewInfos.mesh.dispose();
                 this._cameraViewInfos.delete(cameraId);
             }
         });
@@ -782,10 +938,11 @@ export class GaussianSplattingMeshBase extends Mesh {
                     continue;
                 }
 
-                // Also detect drift: if the world or camera state has changed since the last post,
-                // mark dirty so the next render does not silently queue a new sort that completes
-                // after isReady has reported true.
-                if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera)) {
+                // If world matrix drifted (user applied transforms after load), re-sort before first render.
+                // Camera drift is intentionally excluded here: checking camera movement would cause isReady()
+                // to return false indefinitely while the camera is moving. The render loop handles camera
+                // re-sorting continuously via _postToWorker() in render().
+                if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera, true)) {
                     anyDirty = true;
                 }
             }
@@ -866,13 +1023,17 @@ export class GaussianSplattingMeshBase extends Mesh {
         return localDirection;
     }
 
-    private _isSortStateDirty(cameraViewInfo: ICameraViewInfo, worldMatrix: Matrix, camera: Camera): boolean {
+    private _isSortStateDirty(cameraViewInfo: ICameraViewInfo, worldMatrix: Matrix, camera: Camera, worldMatrixOnly = false): boolean {
         const world = worldMatrix.m;
         const previousWorld = cameraViewInfo.sortWorldMatrix.m;
         for (let i = 0; i < previousWorld.length; i++) {
             if (!Scalar.WithinEpsilon(previousWorld[i], world[i], this.viewUpdateThreshold)) {
                 return true;
             }
+        }
+
+        if (worldMatrixOnly) {
+            return false;
         }
 
         const cameraViewMatrix = camera.getViewMatrix();
@@ -1734,10 +1895,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const width = engine.getCaps().maxTextureSize;
                 const height = Math.ceil(splatCount / width);
                 // create array for the number of textures needed.
-                for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-                    const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
-                    sh.push(texture);
-                }
+                sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
                 for (let i = 0; i < splatCount; i++) {
                     for (let shIndexWrite = 0; shIndexWrite < header.shCoefficientCount; shIndexWrite++) {
@@ -1841,6 +1999,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._rotationsATexture?.dispose();
         this._rotationsBTexture?.dispose();
         this._rotationScaleTexture?.dispose();
+        this._sogParams?.codebookTexture?.dispose();
         this._rotationsATexture = null;
         this._rotationsBTexture = null;
         this._rotationScaleTexture = null;
@@ -1860,6 +2019,9 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         this._worker?.terminate();
         this._worker = null;
+
+        this.onPartCountChangedObservable.clear();
+        this.onPartRemovedObservable.clear();
 
         // delete meshes created for each camera
         this._cameraViewInfos.forEach((cameraViewInfo) => {
@@ -2131,6 +2293,21 @@ export class GaussianSplattingMeshBase extends Mesh {
         covB[dstIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
         covB[dstIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
 
+        const c0 = covariances[0];
+        const c1 = covariances[1];
+        const c2 = covariances[2];
+        const c3 = covariances[3];
+        const c4 = covariances[4];
+        const c5 = covariances[5];
+        const det3d = c0 * (c3 * c5 - c4 * c4) - c1 * (c1 * c5 - c4 * c2) + c2 * (c1 * c4 - c3 * c2);
+        const splatSize = Math.pow(Math.abs(det3d), 1.0 / 6.0);
+        if (splatSize < this._splatSizeMin) {
+            this._splatSizeMin = splatSize;
+        }
+        if (splatSize > this._splatSizeMax) {
+            this._splatSizeMax = splatSize;
+        }
+
         // colors
         colorArray[dstIndex * 4 + 0] = uBuffer[32 * srcIndex + 24 + 0];
         colorArray[dstIndex * 4 + 1] = uBuffer[32 * srcIndex + 24 + 1];
@@ -2389,6 +2566,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         // GPU region untouched. Falls through to the full-rebuild path when textures don't exist yet
         // or the texture height needs to grow.
         const incremental = this._canReuseCachedData(previousVertexCount, vertexCount);
+
+        if (!incremental) {
+            this._splatSizeMin = Infinity;
+            this._splatSizeMax = -Infinity;
+        }
 
         // The first texture line/texel that must be (re-)processed and uploaded.
         // For a full rebuild this is 0. For an incremental update it is the row boundary just before
@@ -2676,9 +2858,14 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             // If the vertex count changed, we discard this result and trigger a new sort
             if (e.data.depthMix.length != vertexCountPadded) {
-                this._canPostToWorker = true;
-                this._postToWorker(true);
-                this._sortIsDirty = false;
+                // Only re-enable posting and trigger a re-sort if the buffer is available.
+                // If byteLength === 0 the buffer is already in-flight for a newer sort;
+                // that sort's onmessage will handle things when it returns.
+                if (this._depthMix.buffer.byteLength > 0) {
+                    this._canPostToWorker = true;
+                    this._postToWorker(true);
+                    this._sortIsDirty = false;
+                }
                 return;
             }
 
@@ -2895,4 +3082,23 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         return this;
     }
+}
+
+/**
+ * Allocates SH texture buffers pre-filled with 128 (the neutral encoding of ~0.0 in the
+ * shader's decompose() function). Padding bytes beyond the actual coefficients in the last
+ * texture are read as higher-order SH bands when the mesh is added to a compound with a
+ * higher degree; zero would decode to -1.0 instead, producing wrong colors.
+ * @param textureCount number of SH textures to allocate
+ * @param bytesEach byte size of each texture buffer
+ * @returns array of initialized Uint8Array buffers
+ */
+export function AllocateShBuffers(textureCount: number, bytesEach: number): Uint8Array[] {
+    const result: Uint8Array[] = [];
+    for (let i = 0; i < textureCount; i++) {
+        const arr = new Uint8Array(bytesEach);
+        arr.fill(128);
+        result.push(arr);
+    }
+    return result;
 }

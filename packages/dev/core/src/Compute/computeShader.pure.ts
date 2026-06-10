@@ -49,6 +49,11 @@ export interface IComputeShaderOptions {
      * If provided, will be called with the shader code so that this code can be updated before it is compiled by the GPU
      */
     processFinalCode?: Nullable<(code: string) => string>;
+
+    /**
+     * If true, the engine should create an explicit pipeline layout for this compute shader instead of using an automatic layout.
+     */
+    useExplicitComputePipelineLayout?: boolean;
 }
 
 type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number; buffer?: Nullable<DataBuffer> } };
@@ -354,6 +359,7 @@ export class ComputeShader {
                 entryPoint: this._options.entryPoint,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
+                useExplicitComputePipelineLayout: this._options.useExplicitComputePipelineLayout,
             });
 
             this._effect = effect;

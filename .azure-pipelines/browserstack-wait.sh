@@ -115,13 +115,13 @@ while [ "$retry" -le "$MAX_RETRIES" ]; do
     exit_code=${PIPESTATUS[0]}
     set -e
 
-    # If it failed due to queue exhaustion (race condition), retry
-    if [ "$exit_code" -ne 0 ] && grep -qi "QUEUE_SIZE_EXCEEDED\|BROWSERSTACK_QUEUE_SIZE_EXCEEDED\|queue.*exceeded\|parallel.*limit.*exceeded" "$OUTPUT_LOG" 2>/dev/null; then
+    # If it failed due to queue exhaustion or a transient BrowserStack Local tunnel disconnect, retry
+    if [ "$exit_code" -ne 0 ] && grep -qi "QUEUE_SIZE_EXCEEDED\|BROWSERSTACK_QUEUE_SIZE_EXCEEDED\|queue.*exceeded\|parallel.*limit.*exceeded\|browserstack.local.*not connected\|local testing through BrowserStack is not connected" "$OUTPUT_LOG" 2>/dev/null; then
         rm -f "$OUTPUT_LOG"
         retry=$((retry + 1))
         if [ "$retry" -le "$MAX_RETRIES" ]; then
             echo ""
-            echo "[browserstack-wait] Sessions were taken between check and launch (race condition). Retrying..."
+            echo "[browserstack-wait] BrowserStack capacity or Local tunnel was lost during launch. Retrying..."
             continue
         fi
         echo "[browserstack-wait] Exhausted all ${MAX_RETRIES} retries."

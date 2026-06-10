@@ -1,8 +1,8 @@
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { type Nullable } from "../types";
 import { type ActionManager } from "../Actions/actionManager";
 import { type ISpriteManager, type SpriteManager } from "./spriteManager";
-import { Color4 } from "../Maths/math.color";
+import { Color4 } from "../Maths/math.color.pure";
 import { Observable } from "../Misc/observable";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { ThinSprite } from "./thinSprite";

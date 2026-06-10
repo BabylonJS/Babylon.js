@@ -1,12 +1,12 @@
 import { type Nullable } from "../types";
 import { type Ray } from "../Culling/ray";
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { type Color3 } from "../Maths/math.color";
 import { type Scene } from "../scene";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type LinesMesh } from "../Meshes/linesMesh";
 
-import { CreateLines } from "../Meshes/Builders/linesBuilder";
+import { CreateLines } from "../Meshes/Builders/linesBuilder.pure";
 import { type Observer } from "../Misc/observable";
 
 /**

@@ -8,7 +8,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { MaterialTextureDebugPropertyLine } from "./materialTextureDebugPropertyLine";
 import { type ISelectionService } from "../../../services/selectionService";
 
 export const StandardMaterialGeneralProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
@@ -51,25 +51,27 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
     return (
         <>
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Diffuse"
                 target={material}
                 propertyKey="diffuseTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Specular"
                 target={material}
                 propertyKey="specularTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 uniqueId="StandardMaterialTextures_Reflection"
                 label="Reflection"
                 target={material}
@@ -77,63 +79,70 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Refraction"
                 target={material}
                 propertyKey="refractionTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Emissive"
                 target={material}
                 propertyKey="emissiveTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Bump"
                 target={material}
                 propertyKey="bumpTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Opacity"
                 target={material}
                 propertyKey="opacityTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Ambient"
                 target={material}
                 propertyKey="ambientTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Lightmap"
                 target={material}
                 propertyKey="lightmapTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Detailmap"
                 target={material.detailMap}
                 propertyKey="texture"
@@ -141,6 +150,7 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty component={SwitchPropertyLine} label="Use Lightmap as Shadowmap" target={material} propertyKey="useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use Detailmap" target={material.detailMap} propertyKey="isEnabled" propertyPath="detailMap.isEnabled" />

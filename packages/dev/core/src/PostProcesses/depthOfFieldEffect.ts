@@ -1,11 +1,11 @@
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { type PostProcess } from "./postProcess";
 import { PostProcessRenderEffect } from "../PostProcesses/RenderPipeline/postProcessRenderEffect";
-import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
-import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
+import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess.pure";
+import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess.pure";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import { type Scene } from "../scene";
 import { Constants } from "../Engines/constants";

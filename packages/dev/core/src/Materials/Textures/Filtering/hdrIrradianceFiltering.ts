@@ -1,10 +1,10 @@
 import { Vector3 } from "../../../Maths/math";
 import { ILog2 } from "../../../Maths/math.scalar.functions";
-import { BaseTexture } from "../baseTexture";
+import { BaseTexture } from "../baseTexture.pure";
 import { type AbstractEngine } from "../../../Engines/abstractEngine";
 import { type Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
-import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
+import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer.pure";
 import { type Nullable } from "../../../types";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 

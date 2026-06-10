@@ -1,0 +1,200 @@
+{
+  "root": {
+    "name": "root",
+    "className": "Container",
+    "children": [
+      {
+        "name": "mainGrid",
+        "className": "Grid",
+        "rows": [
+          {
+            "value": 60,
+            "unit": 1
+          },
+          {
+            "value": 0.5,
+            "unit": 0
+          },
+          {
+            "value": 0.5,
+            "unit": 0
+          }
+        ],
+        "columns": [
+          {
+            "value": 0.5,
+            "unit": 0
+          },
+          {
+            "value": 0.5,
+            "unit": 0
+          }
+        ],
+        "tags": [
+          "0:0",
+          "1:0",
+          "1:1",
+          "2:0",
+          "2:1"
+        ],
+        "rowCount": 3,
+        "columnCount": 2,
+        "children": [
+          {
+            "name": "header",
+            "className": "Rectangle",
+            "background": "#1976D2",
+            "thickness": 0,
+            "children": [
+              {
+                "name": "headerText",
+                "className": "TextBlock",
+                "text": "📊 Dashboard",
+                "color": "white",
+                "fontSize": "24px"
+              }
+            ]
+          },
+          {
+            "name": "usersCard",
+            "className": "Rectangle",
+            "background": "#E91E63",
+            "cornerRadius": 10,
+            "thickness": 0,
+            "width": "0.9",
+            "height": "0.85",
+            "children": [
+              {
+                "name": "usersStack",
+                "className": "StackPanel",
+                "isVertical": true,
+                "children": [
+                  {
+                    "name": "usersValue",
+                    "className": "TextBlock",
+                    "text": "1,234",
+                    "color": "white",
+                    "fontSize": "36px",
+                    "height": "50px"
+                  },
+                  {
+                    "name": "usersLabel",
+                    "className": "TextBlock",
+                    "text": "Active Users",
+                    "color": "rgba(255,255,255,0.8)",
+                    "fontSize": "16px",
+                    "height": "25px"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "ordersCard",
+            "className": "Rectangle",
+            "background": "#FF9800",
+            "cornerRadius": 10,
+            "thickness": 0,
+            "width": "0.9",
+            "height": "0.85",
+            "children": [
+              {
+                "name": "ordersStack",
+                "className": "StackPanel",
+                "isVertical": true,
+                "children": [
+                  {
+                    "name": "ordersValue",
+                    "className": "TextBlock",
+                    "text": "567",
+                    "color": "white",
+                    "fontSize": "36px",
+                    "height": "50px"
+                  },
+                  {
+                    "name": "ordersLabel",
+                    "className": "TextBlock",
+                    "text": "Orders Today",
+                    "color": "rgba(255,255,255,0.8)",
+                    "fontSize": "16px",
+                    "height": "25px"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "revenueCard",
+            "className": "Rectangle",
+            "background": "#4CAF50",
+            "cornerRadius": 10,
+            "thickness": 0,
+            "width": "0.9",
+            "height": "0.85",
+            "children": [
+              {
+                "name": "revenueStack",
+                "className": "StackPanel",
+                "isVertical": true,
+                "children": [
+                  {
+                    "name": "revenueValue",
+                    "className": "TextBlock",
+                    "text": "$12,345",
+                    "color": "white",
+                    "fontSize": "36px",
+                    "height": "50px"
+                  },
+                  {
+                    "name": "revenueLabel",
+                    "className": "TextBlock",
+                    "text": "Revenue",
+                    "color": "rgba(255,255,255,0.8)",
+                    "fontSize": "16px",
+                    "height": "25px"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "errorsCard",
+            "className": "Rectangle",
+            "background": "#9C27B0",
+            "cornerRadius": 10,
+            "thickness": 0,
+            "width": "0.9",
+            "height": "0.85",
+            "children": [
+              {
+                "name": "errorsStack",
+                "className": "StackPanel",
+                "isVertical": true,
+                "children": [
+                  {
+                    "name": "errorsValue",
+                    "className": "TextBlock",
+                    "text": "0.2%",
+                    "color": "white",
+                    "fontSize": "36px",
+                    "height": "50px"
+                  },
+                  {
+                    "name": "errorsLabel",
+                    "className": "TextBlock",
+                    "text": "Error Rate",
+                    "color": "rgba(255,255,255,0.8)",
+                    "fontSize": "16px",
+                    "height": "25px"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "width": 1920,
+  "height": 1080
+}

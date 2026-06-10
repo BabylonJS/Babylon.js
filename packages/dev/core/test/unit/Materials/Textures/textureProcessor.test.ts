@@ -143,6 +143,10 @@ vi.mock("core/Materials/Textures/Procedurals/proceduralTexture", () => ({
     ProceduralTexture: _makeFakePTClass(),
 }));
 
+vi.mock("core/Materials/Textures/Procedurals/proceduralTexture.pure", () => ({
+    ProceduralTexture: _makeFakePTClass(),
+}));
+
 // ── Fake scene / engine helpers ───────────────────────────────────────────────
 
 /**

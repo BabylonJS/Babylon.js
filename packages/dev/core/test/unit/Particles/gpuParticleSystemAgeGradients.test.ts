@@ -1,10 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { NullEngine } from "core/Engines";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { NullEngine } from "core/Engines/nullEngine";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { Scene } from "core/scene";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 // Side-effect import to register the WebGL2ParticleSystem class
 import "core/Particles/webgl2ParticleSystem";
+
+function createReadyEffect(engine: NullEngine): any {
+    return {
+        isReady: () => true,
+        dispose: () => {},
+        getEngine: () => engine,
+    };
+}
 
 describe("GPUParticleSystem Emit Rate Gradients", () => {
     let engine: NullEngine;
@@ -139,6 +148,45 @@ describe("GPUParticleSystem Emit Rate Gradients", () => {
 
         ps.dispose();
         parsed.dispose();
+    });
+});
+
+describe("GPUParticleSystem WebGPU render shader", () => {
+    let engine: NullEngine;
+    let scene: Scene;
+
+    beforeEach(() => {
+        engine = new NullEngine({
+            renderHeight: 256,
+            renderWidth: 256,
+            textureSize: 256,
+            deterministicLockstep: false,
+            lockstepMaxSteps: 1,
+        });
+        Object.defineProperty(engine, "isWebGPU", {
+            configurable: true,
+            value: true,
+        });
+        scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("creates the render effect with WGSL under WebGPU", () => {
+        const ps = new GPUParticleSystem("test", { capacity: 100 }, scene);
+        const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
+
+        ps._getWrapper(0);
+
+        expect(createEffect).toHaveBeenCalled();
+        const options = createEffect.mock.calls[0][1] as any;
+        expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
+        expect(options.extraInitializationsAsync).toBeTypeOf("function");
+
+        ps.dispose();
     });
 });
 

@@ -35,7 +35,7 @@ export type RawFontPathOrigin = 0 | 1 | 2 | 3; // 0: local, 1: css url, 2: scrip
 // Layer data
 export type RawLottieLayer = {
     ind?: number; // Index that can be used for parenting and referenced in expressions
-    ty: RawLayerType; // Layer type. Supported: 3: null, 4: shape, 5: text
+    ty: RawLayerType; // Layer type. Supported: 1: solid, 3: null, 4: shape, 5: text
     nm?: string; // Human readable name
     parent?: number; // Must be the ind property of another layer
     hd?: boolean; // Hidden

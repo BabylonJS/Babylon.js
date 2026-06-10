@@ -1,7 +1,6 @@
 import { type Nullable } from "../../../types";
 import { _AudioAnalyzerSubNode } from "../../abstractAudio/subNodes/audioAnalyzerSubNode";
 import { type AudioAnalyzerFFTSizeType } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
-import { _GetEmptyByteFrequencyData, _GetEmptyFloatFrequencyData } from "../../abstractAudio/subProperties/audioAnalyzer";
 import { type _WebAudioEngine } from "../webAudioEngine";
 import { type IWebAudioInNode } from "../webAudioNode";
 
@@ -15,7 +14,9 @@ export async function _CreateAudioAnalyzerSubNodeAsync(engine: _WebAudioEngine):
 export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements IWebAudioInNode {
     private readonly _analyzerNode: AnalyserNode;
     private _byteFrequencyData: Nullable<Uint8Array<ArrayBuffer>> = null;
+    private _byteTimeDomainData: Nullable<Uint8Array<ArrayBuffer>> = null;
     private _floatFrequencyData: Nullable<Float32Array<ArrayBuffer>> = null;
+    private _floatTimeDomainData: Nullable<Float32Array<ArrayBuffer>> = null;
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {
@@ -76,8 +77,6 @@ export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements I
         super.dispose();
 
         this._clearArrays();
-        this._byteFrequencyData = null;
-        this._floatFrequencyData = null;
 
         this._analyzerNode.disconnect();
     }
@@ -97,6 +96,15 @@ export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements I
     }
 
     /** @internal */
+    public getByteTimeDomainData(): Uint8Array {
+        if (!this._byteTimeDomainData || this._byteTimeDomainData.length === 0) {
+            this._byteTimeDomainData = new Uint8Array(this._analyzerNode.fftSize);
+        }
+        this._analyzerNode.getByteTimeDomainData(this._byteTimeDomainData);
+        return this._byteTimeDomainData;
+    }
+
+    /** @internal */
     public getFloatFrequencyData(): Float32Array {
         if (!this._floatFrequencyData || this._floatFrequencyData.length === 0) {
             this._floatFrequencyData = new Float32Array(this._analyzerNode.frequencyBinCount);
@@ -105,8 +113,19 @@ export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements I
         return this._floatFrequencyData;
     }
 
+    /** @internal */
+    public getFloatTimeDomainData(): Float32Array {
+        if (!this._floatTimeDomainData || this._floatTimeDomainData.length === 0) {
+            this._floatTimeDomainData = new Float32Array(this._analyzerNode.fftSize);
+        }
+        this._analyzerNode.getFloatTimeDomainData(this._floatTimeDomainData);
+        return this._floatTimeDomainData;
+    }
+
     private _clearArrays(): void {
-        this._byteFrequencyData?.set(_GetEmptyByteFrequencyData());
-        this._floatFrequencyData?.set(_GetEmptyFloatFrequencyData());
+        this._byteFrequencyData = null;
+        this._byteTimeDomainData = null;
+        this._floatFrequencyData = null;
+        this._floatTimeDomainData = null;
     }
 }

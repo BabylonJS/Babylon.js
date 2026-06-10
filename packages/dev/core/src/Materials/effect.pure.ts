@@ -393,9 +393,15 @@ export class Effect implements IDisposable {
 
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
-            // Floating promise - should be checked here.
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this._processShaderCodeAsync(null, false, null, extraInitializationsAsync);
+            // eslint-disable-next-line github/no-then
+            void this._processShaderCodeAsync(null, false, null, extraInitializationsAsync).catch((error) => {
+                const message = error?.message ?? String(error);
+                const asyncError = new Error(`Effect async shader preparation failed for "${String(this.name)}": ${message}`);
+                if (error && typeof error.stack === "string") {
+                    asyncError.stack = `${asyncError.message}\nCaused by: ${error.stack}`;
+                }
+                this._processCompilationErrors(asyncError);
+            });
         } else {
             this._pipelineContext = cachedPipeline;
             this._pipelineContext.setEngine(this._engine);
@@ -710,8 +716,8 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the pipeline generation options for this effect
-     * @returns the pipeline generation options
+     * Gets the pipeline generation options for this effect.
+     * @returns the pipeline generation options for this effect
      */
     public getPipelineGenerationOptions(): IPipelineGenerationOptions {
         return {
@@ -884,7 +890,7 @@ export class Effect implements IDisposable {
     }
 
     private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
-        this._compilationError = e.message;
+        this._compilationError = typeof e?.stack === "string" ? e.stack : (e?.message ?? String(e));
         const attributesNames = this._attributesNames;
         const fallbacks = this._fallbacks;
 

@@ -5,7 +5,7 @@ import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
-import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { MaterialTextureDebugPropertyLine } from "./materialTextureDebugPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { RealTimeFilteringQualityOptions } from "./pbrBaseMaterialProperties";
 
@@ -31,13 +31,14 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Base Weight"
                 target={material}
                 propertyKey="baseWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -49,13 +50,14 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Base Color"
                 target={material}
                 propertyKey="baseColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -69,13 +71,14 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Base Metalness"
                 target={material}
                 propertyKey="baseMetalnessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -89,22 +92,24 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Base Diffuse Roughness"
                 target={material}
                 propertyKey="baseDiffuseRoughnessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Ambient Occlusion"
                 target={material}
                 propertyKey="ambientOcclusionTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
         </>
     );
@@ -132,13 +137,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Specular Weight"
                 target={material}
                 propertyKey="specularWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -150,13 +156,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Specular Color"
                 target={material}
                 propertyKey="specularColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -170,13 +177,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Specular Roughness"
                 target={material}
                 propertyKey="specularRoughnessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -190,13 +198,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/microfacetmodel"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Specular Roughness Anisotropy"
                 target={material}
                 propertyKey="specularRoughnessAnisotropyTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -230,13 +239,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Transmission Weight"
                 target={material}
                 propertyKey="transmissionWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -248,13 +258,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Transmission Color"
                 target={material}
                 propertyKey="transmissionColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -270,13 +281,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Transmission Depth"
                 target={material}
                 propertyKey="transmissionDepthTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -288,13 +300,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Transmission Scatter"
                 target={material}
                 propertyKey="transmissionScatterTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -330,13 +343,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Transmission Dispersion Scale"
                 target={material}
                 propertyKey="transmissionDispersionScaleTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
         </>
     );
@@ -359,13 +373,14 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/subsurface"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Subsurface Weight"
                 target={material}
                 propertyKey="subsurfaceWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -377,13 +392,14 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/subsurface"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Subsurface Color"
                 target={material}
                 propertyKey="subsurfaceColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -408,13 +424,14 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/subsurface"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Subsurface Radius Scale"
                 target={material}
                 propertyKey="subsurfaceRadiusScaleTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -453,13 +470,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Coat Weight"
                 target={material}
                 propertyKey="coatWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -471,13 +489,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Coat Color"
                 target={material}
                 propertyKey="coatColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -491,13 +510,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat/roughening"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Coat Roughness"
                 target={material}
                 propertyKey="coatRoughnessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -511,13 +531,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Coat Roughness Anisotropy"
                 target={material}
                 propertyKey="coatRoughnessAnisotropyTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -542,13 +563,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat/darkening"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Coat Darkening"
                 target={material}
                 propertyKey="coatDarkeningTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
         </>
     );
@@ -576,13 +598,14 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/fuzz"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Fuzz Weight"
                 target={material}
                 propertyKey="fuzzWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -594,13 +617,14 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/fuzz"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Fuzz Color"
                 target={material}
                 propertyKey="fuzzColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -614,13 +638,14 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/fuzz"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Fuzz Roughness"
                 target={material}
                 propertyKey="fuzzRoughnessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
         </>
     );
@@ -646,13 +671,14 @@ export const OpenPBRMaterialEmissionProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/emission"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Emission Color"
                 target={material}
                 propertyKey="emissionColorTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -691,13 +717,14 @@ export const OpenPBRMaterialThinFilmProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thin-filmiridescence"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Thin Film Weight"
                 target={material}
                 propertyKey="thinFilmWeightTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -711,13 +738,14 @@ export const OpenPBRMaterialThinFilmProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thin-filmiridescence"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Thin Film Thickness"
                 target={material}
                 propertyKey="thinFilmThicknessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -756,13 +784,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/opacity/transparency"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Geometry Opacity"
                 target={material}
                 propertyKey="geometryOpacityTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={CheckboxPropertyLine}
@@ -773,13 +802,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thin-walledcase"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Geometry Normal"
                 target={material}
                 propertyKey="geometryNormalTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -793,13 +823,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/geometry/tangent"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Geometry Tangent"
                 target={material}
                 propertyKey="geometryTangentTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -813,22 +844,24 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/geometry/coat-tangent"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Geometry Coat Normal"
                 target={material}
                 propertyKey="geometryCoatNormalTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Geometry Coat Tangent"
                 target={material}
                 propertyKey="geometryCoatTangentTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -841,13 +874,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thickness"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Geometry Thickness"
                 target={material}
                 propertyKey="geometryThicknessTexture"
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+                material={material}
             />
         </>
     );

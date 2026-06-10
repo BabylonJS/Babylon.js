@@ -869,13 +869,21 @@ const plugin: IPlugin = {
                         "Call/new expression in a .pure.ts file must be annotated with /*#__PURE__*/. " + "Without it, bundlers cannot tree-shake this code. Expression: {{expr}}",
                 },
             },
-            create(context: { filename?: string; getFilename?: () => string; sourceCode?: any; getSourceCode?: () => any; report: (desc: any) => void }) {
-                const filename = context.filename ?? context.getFilename?.() ?? "";
+            create(context: eslint.Rule.RuleContext) {
+                const filename = context.filename;
                 if (!filename.endsWith(".pure.ts")) {
                     return {};
                 }
 
-                const sourceCode = context.sourceCode ?? context.getSourceCode?.();
+                const sourceCode = context.sourceCode;
+
+                type TypeScriptExpressionWrapper = ESTree.BaseExpression & {
+                    type: "TSAsExpression" | "TSTypeAssertion" | "TSSatisfiesExpression" | "TSNonNullExpression";
+                    expression: PureAnnotationNode;
+                };
+
+                type PureAnnotationNode = ESTree.Node | TypeScriptExpressionWrapper;
+                type PureAnnotationCallOrNewExpression = ESTree.SimpleCallExpression | ESTree.NewExpression;
 
                 /**
                  * Unwrap TS type assertions (e.g. `new Foo() as Bar`) to find the
@@ -883,14 +891,14 @@ const plugin: IPlugin = {
                  * @param node - The AST node to unwrap.
                  * @returns The unwrapped CallExpression/NewExpression, or null.
                  */
-                function findCallOrNew(node: any): any {
+                function findCallOrNew(node: PureAnnotationNode | null | undefined): PureAnnotationCallOrNewExpression | null {
                     if (!node) {
                         return null;
                     }
                     if (node.type === "NewExpression" || node.type === "CallExpression") {
                         return node;
                     }
-                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression") {
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
                         return findCallOrNew(node.expression);
                     }
                     return null;
@@ -901,9 +909,9 @@ const plugin: IPlugin = {
                  * @param node - The AST node to check.
                  * @returns True if a #__PURE__ annotation precedes the node.
                  */
-                function hasPureAnnotation(node: any): boolean {
+                function hasPureAnnotation(node: PureAnnotationCallOrNewExpression): boolean {
                     // getCommentsBefore returns leading comments attached to the node
-                    const comments = sourceCode.getCommentsBefore?.(node) ?? [];
+                    const comments = sourceCode.getCommentsBefore(node);
                     for (const c of comments) {
                         if (c.type === "Block" && c.value.trim() === "#__PURE__") {
                             return true;
@@ -911,22 +919,119 @@ const plugin: IPlugin = {
                     }
                     // Also check the immediately preceding token (comment) in case
                     // ESLint attached it differently
-                    const prev = sourceCode.getTokenBefore?.(node, { includeComments: true });
+                    const prev = sourceCode.getTokenBefore(node, { includeComments: true });
                     if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") {
                         return true;
                     }
                     return false;
                 }
 
-                function reportMissing(callOrNew: any) {
+                const safelyAutofixablePureConstructors = new Set<string>([
+                    "Map",
+                    "Set",
+                    "WeakMap",
+                    "WeakSet",
+                    "Color3",
+                    "Color4",
+                    "Matrix",
+                    "Plane",
+                    "Quaternion",
+                    "Size",
+                    "Vector2",
+                    "Vector3",
+                    "Vector4",
+                    "Viewport",
+                ]);
+
+                function unwrapExpression(node: PureAnnotationNode | null | undefined): PureAnnotationNode | null | undefined {
+                    if (!node) {
+                        return node;
+                    }
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
+                        return unwrapExpression(node.expression);
+                    }
+                    return node;
+                }
+
+                function isSimplePureArgument(node: PureAnnotationNode | null | undefined): boolean {
+                    const unwrappedNode = unwrapExpression(node);
+                    if (!unwrappedNode) {
+                        return true;
+                    }
+                    switch (unwrappedNode.type) {
+                        case "Identifier":
+                        case "Literal":
+                        case "ThisExpression":
+                            return true;
+                        case "TemplateLiteral":
+                            return unwrappedNode.expressions.length === 0;
+                        case "UnaryExpression":
+                            // Reject side-effecting unary operators; allow safe ones.
+                            if (unwrappedNode.operator === "delete") {
+                                return false;
+                            }
+                            return isSimplePureArgument(unwrappedNode.argument);
+                        case "ArrayExpression":
+                            return unwrappedNode.elements.every((element) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
+                        case "ObjectExpression":
+                            return unwrappedNode.properties.every((property) => {
+                                if (property.type === "SpreadElement" || property.computed) {
+                                    return false;
+                                }
+                                return isSimplePureArgument(property.value);
+                            });
+                        default:
+                            return false;
+                    }
+                }
+
+                function hasOnlySimplePureArguments(node: PureAnnotationCallOrNewExpression): boolean {
+                    // Keep autofix limited to arguments that are already values or literal containers.
+                    // For example, `new Vector3(GetXValue(), 0, 0)` still needs manual review because
+                    // the argument call may have side effects even though `Vector3` itself is safe.
+                    return node.arguments.every((argument) => isSimplePureArgument(argument));
+                }
+
+                function isSafelyAutofixablePureExpression(node: PureAnnotationCallOrNewExpression): boolean {
+                    if (node.type === "NewExpression") {
+                        // Only accept a plain Identifier callee (e.g. `new Vector3()`).
+                        // Member-expression callees like `new SomeNamespace.Vector3()` are
+                        // rejected because the trailing name alone cannot confirm the type.
+                        const calleeNode = unwrapExpression(node.callee);
+                        if (!calleeNode || calleeNode.type !== "Identifier") {
+                            return false;
+                        }
+                        return safelyAutofixablePureConstructors.has(calleeNode.name) && hasOnlySimplePureArguments(node);
+                    }
+
+                    if (node.type === "CallExpression") {
+                        // Only accept a direct `Math.<identifier>(...)` call —
+                        // not chains like `Math.abs.call(...)` / `Math.max.bind(...)`.
+                        const calleeNode = unwrapExpression(node.callee);
+                        if (
+                            !calleeNode ||
+                            calleeNode.type !== "MemberExpression" ||
+                            calleeNode.computed ||
+                            calleeNode.object?.type !== "Identifier" ||
+                            calleeNode.object.name !== "Math" ||
+                            calleeNode.property?.type !== "Identifier"
+                        ) {
+                            return false;
+                        }
+                        return hasOnlySimplePureArguments(node);
+                    }
+
+                    return false;
+                }
+
+                function reportMissing(callOrNew: PureAnnotationCallOrNewExpression) {
                     const text = sourceCode.getText(callOrNew);
+                    const canAutofix = isSafelyAutofixablePureExpression(callOrNew);
                     context.report({
                         node: callOrNew,
                         messageId: "missing-pure-annotation",
                         data: { expr: text.length > 60 ? text.slice(0, 57) + "..." : text },
-                        fix(fixer: any) {
-                            return fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ");
-                        },
+                        fix: canAutofix ? (fixer: eslint.Rule.RuleFixer) => fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ") : undefined,
                     });
                 }
 
@@ -1168,20 +1273,16 @@ function loadSideEffectsSet(): Set<string> {
     try {
         // Walk up from this compiled plugin file to the repo root
         // Plugin is at packages/tools/eslintBabylonPlugin/dist/index.js
-        // Manifest is at scripts/treeshaking/side-effects-manifest.json
+        // Manifest is at scripts/treeshaking/side-effects-manifest/core/*.json
+        // or, for older branches, scripts/treeshaking/side-effects-manifest.json
         let dir = __dirname;
         for (let i = 0; i < 10; i++) {
-            const candidate = path.join(dir, "scripts", "treeshaking", "side-effects-manifest.json");
-            if (fs.existsSync(candidate)) {
-                const raw = fs.readFileSync(candidate, "utf-8");
-                const manifest = JSON.parse(raw);
-                if (Array.isArray(manifest.manifest)) {
-                    for (const entry of manifest.manifest) {
-                        if (entry.file) {
-                            _sideEffectFilesCache.add(entry.file);
-                        }
-                    }
-                }
+            const candidate = [
+                path.join(dir, "scripts", "treeshaking", "side-effects-manifest", "core"),
+                path.join(dir, "scripts", "treeshaking", "side-effects-manifest.json"),
+            ].find((candidatePath) => fs.existsSync(candidatePath));
+            if (candidate) {
+                loadSideEffectsManifest(candidate, _sideEffectFilesCache);
                 break;
             }
             const parent = path.dirname(dir);
@@ -1194,6 +1295,41 @@ function loadSideEffectsSet(): Set<string> {
         // Manifest not available — fall back to naming conventions
     }
     return _sideEffectFilesCache;
+}
+
+function loadSideEffectsManifest(manifestPath: string, sideEffectFiles: Set<string>): void {
+    const stat = fs.statSync(manifestPath);
+    if (stat.isDirectory()) {
+        for (const entry of fs.readdirSync(manifestPath, { withFileTypes: true })) {
+            if (entry.isFile() && path.extname(entry.name) === ".json") {
+                loadSideEffectsManifest(path.join(manifestPath, entry.name), sideEffectFiles);
+            }
+        }
+        return;
+    }
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+    if (Array.isArray(manifest.manifest)) {
+        for (const entry of manifest.manifest) {
+            if (entry.file) {
+                sideEffectFiles.add(entry.file);
+            }
+        }
+        return;
+    }
+
+    if (manifest.files && !Array.isArray(manifest.files)) {
+        for (const file of Object.keys(manifest.files)) {
+            sideEffectFiles.add(file);
+        }
+        return;
+    }
+
+    if (Array.isArray(manifest.files)) {
+        for (const file of manifest.files) {
+            sideEffectFiles.add(file);
+        }
+    }
 }
 
 export = plugin;

@@ -1,5 +1,5 @@
 import { Constants } from "../Engines/constants";
-import { PostProcess } from "../PostProcesses/postProcess";
+import { PostProcess } from "../PostProcesses/postProcess.pure";
 
 import { ApplyPostProcess } from "./textureTools";
 

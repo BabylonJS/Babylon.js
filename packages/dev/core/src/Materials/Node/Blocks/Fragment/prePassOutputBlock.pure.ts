@@ -174,10 +174,10 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_SCREENSPACE_DEPTH\r\n`;
         if (screenDepth.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(${screenDepth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+            state.compilationString += ` fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = ${vec4}(${screenDepth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
         } else {
             // We have to write something on the viewDepth output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+            state.compilationString += ` fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
@@ -192,12 +192,12 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_LOCAL_POSITION\r\n`;
         if (localPosition.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(${localPosition.associatedVariableName}.rgb, ${
+            state.compilationString += ` fragData[PREPASS_LOCAL_POSITION_INDEX] = ${vec4}(${localPosition.associatedVariableName}.rgb, ${
                 localPosition.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? localPosition.associatedVariableName + ".a" : "1.0"
             });\r\n`;
         } else {
             // We have to write something on the position output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+            state.compilationString += ` fragData[PREPASS_LOCAL_POSITION_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
@@ -212,12 +212,12 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_WORLD_NORMAL\r\n`;
         if (worldNormal.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}.rgb, ${
+            state.compilationString += ` fragData[PREPASS_WORLD_NORMAL_INDEX] = ${vec4}(${worldNormal.associatedVariableName}.rgb, ${
                 worldNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? worldNormal.associatedVariableName + ".a" : "1.0"
             });\r\n`;
         } else {
             // We have to write something on the normal output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+            state.compilationString += ` fragData[PREPASS_WORLD_NORMAL_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_REFLECTIVITY\r\n`;

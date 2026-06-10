@@ -1,6 +1,6 @@
 import { type Nullable, type AbstractEngine } from "core/index";
 import { ThinBloomMergePostProcess } from "./thinBloomMergePostProcess";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 import { ThinBlurPostProcess } from "./thinBlurPostProcess";
 import { ThinExtractHighlightsPostProcess } from "./thinExtractHighlightsPostProcess";
 

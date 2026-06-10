@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as BABYLON from "core/index";
 import * as DebugImport from "core/Debug/index";
+import { RegisterMathColor } from "core/Maths/math.color.pure";
+import { RegisterMathVector } from "core/Maths/math.vector.pure";
 
 declare let global: any;
 
@@ -12,7 +14,11 @@ declare let global: any;
  * The entry point for a future ESM package should be index.ts
  */
 const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof GlobalObject !== "undefined") {
+function RegisterLegacyGlobal(): void {
+    if (typeof GlobalObject === "undefined") {
+        return;
+    }
+
     GlobalObject.BABYLON = GlobalObject.BABYLON || {};
     const BABYLONGLOBAL = GlobalObject.BABYLON;
     if (!BABYLONGLOBAL.Debug) {
@@ -30,6 +36,14 @@ if (typeof GlobalObject !== "undefined") {
         }
     }
 }
+
+function RegisterLegacyRuntime(): void {
+    RegisterMathColor();
+    RegisterMathVector();
+    RegisterLegacyGlobal();
+}
+
+RegisterLegacyRuntime();
 
 export * from "core/index";
 export const Debug = {

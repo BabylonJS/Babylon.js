@@ -22,9 +22,10 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
      * @param url optional URL to load a Gaussian Splatting file from
      * @param scene the hosting scene
      * @param keepInRam whether to keep the raw splat data in RAM after uploading to GPU
+     * @param needsRotationScaleTextures generate rotation and scale matrix textures required for voxel-based IBL shadows
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
-        super(name, url, scene, keepInRam);
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
+        super(name, url, scene, keepInRam, needsRotationScaleTextures);
     }
 
     /**

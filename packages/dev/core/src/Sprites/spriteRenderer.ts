@@ -3,7 +3,7 @@ import { Constants } from "../Engines/constants";
 import { type IMatrixLike } from "../Maths/math.like";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type DataBuffer } from "../Buffers/dataBuffer";
-import { Buffer, VertexBuffer } from "../Buffers/buffer";
+import { Buffer, VertexBuffer } from "../Buffers/buffer.pure";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { type ThinSprite } from "./thinSprite";
 import { type ISize } from "../Maths/math.size";
@@ -14,7 +14,7 @@ import { type ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 
 /**
  * Options for the SpriteRenderer

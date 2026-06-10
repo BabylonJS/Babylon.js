@@ -72,6 +72,16 @@ export const enum InternalTextureSource {
      * Texture content is a depth texture
      */
     Depth,
+    /**
+     * Texture wraps an externally created graphics resource (WebGL handle, GPUTexture,
+     * native handle, etc.) supplied via wrap{WebGL,Native,WebGPU}Texture. On dispose,
+     * the wrapped resource is released along with the InternalTexture just like any
+     * other source. Consumers can repoint the wrapper at a fresh external handle
+     * (e.g., after context-loss / device-loss restore) via
+     * updateWrapped{WebGL,Native,WebGPU}Texture without losing references held by
+     * materials, render-target wrappers, particle systems, etc.
+     */
+    External,
 }
 
 /**
@@ -555,6 +565,13 @@ export class InternalTexture extends TextureSampler {
                 // Will be handled at the RenderTargetWrapper level
                 break;
             }
+
+            case InternalTextureSource.External: {
+                // The underlying resource is owned by the host application; Babylon cannot rebuild it.
+                // The host re-supplies a fresh handle via updateWrappedWebGLTexture / updateWrappedNativeTexture /
+                // updateWrappedWebGPUTexture from its onContextRestoredObservable handler.
+                break;
+            }
         }
     }
 
@@ -567,6 +584,13 @@ export class InternalTexture extends TextureSampler {
         this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.is2DArray, this.isCube, this.is3D, this.width, this.height, this.depth);
 
         target._hardwareTexture = this._hardwareTexture;
+        // Refresh the target's uniqueId so that caches keyed by uniqueId (e.g. the
+        // WebGPU global bind-group cache) see the hardware texture as a new resource
+        // and rebuild GPU bind groups referencing it. Without this, callers that swap
+        // a raw GPU texture for a prefiltered one (e.g. HDR/PMREM prefiltering) would
+        // continue to receive stale GPUBindGroups that hold views over the now-destroyed
+        // source GPU texture, causing "Destroyed texture used in a submit" errors.
+        target._setUniqueId(InternalTexture._Counter++);
         if (swapAll) {
             target._isRGBD = this._isRGBD;
         }

@@ -4,8 +4,8 @@ import { type Nullable } from "../../types";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import { Tools } from "../../Misc/tools";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
+import { Tools } from "../../Misc/tools.pure";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.

@@ -23,7 +23,7 @@ import { Constants } from "core/Engines/constants";
 import { FrameGraphTextureManager } from "../../frameGraphTextureManager";
 import { getDimensionsFromTextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { FrameGraphPostProcessTask } from "../PostProcesses/postProcessTask";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 import { ThinGlowBlurPostProcess } from "../../../Layers/thinEffectLayer";
 import { FrameGraphExecuteTask } from "../Misc/executeTask";
 
@@ -35,6 +35,9 @@ export const enum FrameGraphBaseLayerBlurType {
 }
 
 class FrameGraphGlowBlurTask extends FrameGraphPostProcessTask {
+    /**
+     * The thin glow blur post process used by the task.
+     */
     public override readonly postProcess: ThinGlowBlurPostProcess;
 
     /**
@@ -47,10 +50,21 @@ class FrameGraphGlowBlurTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinGlowBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 1));
     }
 
+    /**
+     * Gets the current class name.
+     * @returns the class name
+     */
     public override getClassName(): string {
         return "FrameGraphGlowBlurTask";
     }
 
+    /**
+     * Records the glow blur task into the frame graph.
+     * @param skipCreationOfDisabledPasses defines whether disabled passes should be skipped
+     * @param additionalExecute defines an optional callback executed by the pass
+     * @param additionalBindings defines an optional callback used to bind extra resources
+     * @returns the recorded render pass
+     */
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,
@@ -209,14 +223,27 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    /**
+     * Checks whether the layer task is ready.
+     * @returns true if the layer task is ready
+     */
     public override isReady() {
         return this._objectRendererForLayerTask.isReady() && this.layer.isLayerReady();
     }
 
+    /**
+     * Gets the current class name.
+     * @returns the class name
+     */
     public override getClassName(): string {
         return "FrameGraphBaseLayerTask";
     }
 
+    /**
+     * Records the layer task into the frame graph.
+     * @param _skipCreationOfDisabledPasses defines whether disabled passes should be skipped
+     * @param additionalComposeBindings defines an optional callback used to bind extra compose resources
+     */
     public record(_skipCreationOfDisabledPasses?: boolean, additionalComposeBindings?: (context: FrameGraphRenderContext, effect: Effect) => void) {
         if (this.targetTexture === undefined || this.objectRendererTask === undefined) {
             throw new Error(`${this.constructor.name} "${this.name}": targetTexture and objectRendererTask are required`);
@@ -453,6 +480,9 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         this._onAfterRenderingGroupObserver = null;
     }
 
+    /**
+     * Disposes the layer task and its dependent tasks.
+     */
     public override dispose(): void {
         this._clearAfterRenderingGroupObserver();
         this._clearLayerTextureTask.dispose();

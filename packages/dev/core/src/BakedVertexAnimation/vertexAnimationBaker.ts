@@ -1,6 +1,6 @@
 import { type AnimationRange } from "../Animations/animationRange";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
 import { type Scene } from "../scene";

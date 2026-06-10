@@ -144,11 +144,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         // SAMs created asynchronously - after runner.run() returns, e.g. from
         // a setTimeout, deferred load, or user interaction - still get bridged.
         // The `if (!manager.onAssetNotFound)` guard makes re-fires across runs safe.
-        this._smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
-            if (!manager.onAssetNotFound) {
-                manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
-            }
-        });
+        if (typeof AddSmartAssetManagerCreatedObserver === "function") {
+            this._smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
+                if (!manager.onAssetNotFound) {
+                    manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
+                }
+            });
+        }
     }
 
     /**

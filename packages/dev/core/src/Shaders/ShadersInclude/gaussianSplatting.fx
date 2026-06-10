@@ -46,6 +46,9 @@ struct Splat {
     vec4 rotationB;
     vec4 rotationScale;
 #endif
+#ifdef USE_SOG
+    float splatIndex;
+#endif
 };
 
 float getSplatIndex(int localIndex)
@@ -80,25 +83,98 @@ Splat readSplat(float splatIndex)
 {
     Splat splat;
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
+#ifdef USE_SOG
+    // --- SOG raw-texture path. All samplers are RGBA8 normalized with nearest filtering.
+    ivec2 sogUVi = ivec2(int(splatUV.x * dataTextureSize.x), int(splatUV.y * dataTextureSize.y));
+    vec4 mL = texelFetch(centersTexture, sogUVi, 0);          // means_l
+    vec4 mU = texelFetch(covariancesATexture, sogUVi, 0);     // means_u
+    vec4 sRaw = texelFetch(covariancesBTexture, sogUVi, 0);   // scales (3 bytes valid)
+    vec4 qRaw = texelFetch(sogQuatsTexture, sogUVi, 0);       // quaternion 3+mode
+    vec4 c0 = texelFetch(colorsTexture, sogUVi, 0);           // sh0
+
+    // Reconstruct position: q = (u<<8)|l; n = lerp(min,max,q/65535); pos = sign(n)*(exp(|n|)-1)
+    vec3 q16 = (mU.xyz * 256.0 + mL.xyz) * (255.0 / 65535.0);
+    vec3 nPos = mix(sogMeansMin, sogMeansMax, q16);
+    vec3 center = sign(nPos) * (exp(abs(nPos)) - vec3(1.0));
+    splat.center = vec4(center, 1.0);
+
+    // Reconstruct scale (v1: lerp+exp ; v2: codebook lookup)
+#ifdef USE_SOG_V2
+    // codebook layout: [scales 0..255 | sh0 256..511 | shN 512..767], width=768
+    vec3 sIdx = floor(sRaw.xyz * 255.0 + 0.5);
+    vec3 splatScale;
+    splatScale.x = exp(texelFetch(sogCodebookTexture, ivec2(int(sIdx.x), 0), 0).r);
+    splatScale.y = exp(texelFetch(sogCodebookTexture, ivec2(int(sIdx.y), 0), 0).r);
+    splatScale.z = exp(texelFetch(sogCodebookTexture, ivec2(int(sIdx.z), 0), 0).r);
+#else
+    vec3 splatScale = exp(mix(sogScalesMin, sogScalesMax, sRaw.xyz));
+#endif
+
+    // Reconstruct quaternion (largest-omitted, mode in alpha as 252+omitted-index)
+    const float invSqrt2 = 0.70710678118;
+    vec3 qabc = (qRaw.xyz - vec3(0.5)) * 2.0 * invSqrt2;
+    int qMode = int(qRaw.w * 255.0 + 0.5) - 252;
+    float qd = sqrt(max(0.0, 1.0 - dot(qabc, qabc)));
+    vec4 quat;
+    if (qMode == 0)      quat = vec4(qd, qabc.x, qabc.y, qabc.z);
+    else if (qMode == 1) quat = vec4(qabc.x, qd, qabc.y, qabc.z);
+    else if (qMode == 2) quat = vec4(qabc.x, qabc.y, qd, qabc.z);
+    else                 quat = vec4(qabc.x, qabc.y, qabc.z, qd);
+
+    // Build rotation matrix from quaternion (w,x,y,z)
+    float qw = quat.x, qx = quat.y, qy = quat.z, qz = quat.w;
+    mat3 R = mat3(
+        1.0 - 2.0*(qy*qy + qz*qz), 2.0*(qx*qy + qw*qz),       2.0*(qx*qz - qw*qy),
+        2.0*(qx*qy - qw*qz),       1.0 - 2.0*(qx*qx + qz*qz), 2.0*(qy*qz + qw*qx),
+        2.0*(qx*qz + qw*qy),       2.0*(qy*qz - qw*qx),       1.0 - 2.0*(qx*qx + qy*qy)
+    );
+
+    // Covariance = R * diag(2s)^2 * R^T to match the CPU path (which scales by 2x before squaring).
+    mat3 S2 = mat3(4.0*splatScale.x*splatScale.x, 0.0, 0.0,
+                   0.0, 4.0*splatScale.y*splatScale.y, 0.0,
+                   0.0, 0.0, 4.0*splatScale.z*splatScale.z);
+    mat3 Sigma = R * S2 * transpose(R);
+    splat.covA = vec4(Sigma[0][0], Sigma[0][1], Sigma[0][2], Sigma[1][1]);
+    splat.covB = vec4(Sigma[1][2], Sigma[2][2], 0.0, 0.0);
+
+    // Color (sh0): RGB -> 0.5 + c*SH_C0 ; alpha -> sigmoid(c) (v1) or codebook[a] (v2)
+    const float SH_C0 = 0.28209479177387814;
+#ifdef USE_SOG_V2
+    vec3 c3;
+    c3.x = texelFetch(sogCodebookTexture, ivec2(256 + int(c0.x * 255.0 + 0.5), 0), 0).r;
+    c3.y = texelFetch(sogCodebookTexture, ivec2(256 + int(c0.y * 255.0 + 0.5), 0), 0).r;
+    c3.z = texelFetch(sogCodebookTexture, ivec2(256 + int(c0.z * 255.0 + 0.5), 0), 0).r;
+    vec3 colRgb = vec3(0.5) + c3 * SH_C0;
+    float colA = c0.w; // already 0..1
+#else
+    vec4 cLerp = mix(sogSh0Min, sogSh0Max, c0);
+    vec3 colRgb = vec3(0.5) + cLerp.xyz * SH_C0;
+    float colA = 1.0 / (1.0 + exp(-cLerp.w));
+#endif
+    splat.color = vec4(colRgb, colA);
+    splat.splatIndex = splatIndex;
+#else
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
 #if !defined(IS_FOR_VOXELIZATION)
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
 #endif
+#endif
+
 #if SH_DEGREE > 0 || IS_COMPOUND
     ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
 #endif
-#if SH_DEGREE > 0
+#if SH_DEGREE > 0 && !defined(USE_SOG)
     splat.sh0 = texelFetch(shTexture0, splatUVint, 0);
 #endif
-#if SH_DEGREE > 1
+#if SH_DEGREE > 1 && !defined(USE_SOG)
     splat.sh1 = texelFetch(shTexture1, splatUVint, 0);
 #endif
-#if SH_DEGREE > 2
+#if SH_DEGREE > 2 && !defined(USE_SOG)
     splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
-#if SH_DEGREE > 3
+#if SH_DEGREE > 3 && !defined(USE_SOG)
     splat.sh3 = texelFetch(shTexture3, splatUVint, 0);
     splat.sh4 = texelFetch(shTexture4, splatUVint, 0);
 #endif
@@ -116,7 +192,7 @@ Splat readSplat(float splatIndex)
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 // no SH for GS and WebGL1
 // dir = normalized(splat pos - cam pos)
-vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
+vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25], float _so1, float _so2, float _so3, float _so4)
 {
     const float SH_C0 = 0.28209479;
     const float SH_C1 = 0.48860251;
@@ -126,7 +202,7 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
     SH_C2[2] = 0.315391565;
     SH_C2[3] = -1.09254843;
     SH_C2[4] = 0.546274215;
-    
+
     float SH_C3[7];
     SH_C3[0] = -0.59004358;
     SH_C3[1] = 2.890611442;
@@ -153,30 +229,30 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
     float x = dir.x;
     float y = dir.y;
     float z = dir.z;
-    result += - SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+    result += _so1 * (- SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3]);
 
 #if SH_DEGREE > 1
     float xx = x * x, yy = y * y, zz = z * z;
     float xy = x * y, yz = y * z, xz = x * z;
-    result += 
+    result += _so2 * (
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
         SH_C2[2] * (2.0 * zz - xx - yy) * sh[6] +
         SH_C2[3] * xz * sh[7] +
-        SH_C2[4] * (xx - yy) * sh[8];
+        SH_C2[4] * (xx - yy) * sh[8]);
 
 #if SH_DEGREE > 2
-    result += 
+    result += _so3 * (
         SH_C3[0] * y * (3.0 * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
         SH_C3[2] * y * (4.0 * zz - xx - yy) * sh[11] +
         SH_C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh[12] +
         SH_C3[4] * x * (4.0 * zz - xx - yy) * sh[13] +
         SH_C3[5] * z * (xx - yy) * sh[14] +
-        SH_C3[6] * x * (xx - 3.0 * yy) * sh[15];
+        SH_C3[6] * x * (xx - 3.0 * yy) * sh[15]);
 
 #if SH_DEGREE > 3
-    result +=
+    result += _so4 * (
         SH_C4[0] * x * y * (xx - yy) * sh[16] +
         SH_C4[1] * y * z * (3.0 * xx - yy) * sh[17] +
         SH_C4[2] * x * y * (7.0 * zz - 1.0) * sh[18] +
@@ -185,7 +261,7 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
         SH_C4[5] * x * z * (7.0 * zz - 3.0) * sh[21] +
         SH_C4[6] * (xx - yy) * (7.0 * zz - 1.0) * sh[22] +
         SH_C4[7] * x * z * (xx - 3.0 * yy) * sh[23] +
-        SH_C4[8] * (xx * (xx - 3.0 * yy) - yy * (3.0 * xx - yy)) * sh[24];
+        SH_C4[8] * (xx * (xx - 3.0 * yy) - yy * (3.0 * xx - yy)) * sh[24]);
 #endif
 #endif
 #endif
@@ -205,10 +281,52 @@ vec4 decompose(uint value)
     return components * vec4(2./255.) - vec4(1.);
 }
 
+#ifdef USE_SOG
 vec3 computeSH(Splat splat, vec3 dir)
 {
+#if SH_DEGREE > 0
     vec3 sh[25];
-    
+    sh[0] = vec3(0., 0., 0.);
+
+    // Read 16-bit label for this splat from the labels texture (LSB in r, MSB in g).
+    ivec2 labelSize = textureSize(sogShNLabelsTexture, 0);
+    int idx = int(splat.splatIndex + 0.5);
+    int lx = idx - (idx / labelSize.x) * labelSize.x;
+    int ly = idx / labelSize.x;
+    vec4 labelRaw = texelFetch(sogShNLabelsTexture, ivec2(lx, ly), 0);
+    int n = int(labelRaw.r * 255.0 + 0.5) + int(labelRaw.g * 255.0 + 0.5) * 256;
+
+    int coeffs = int(sogShCoeffCount + 0.5);
+    int u = (n - (n / 64) * 64) * coeffs;
+    int v = n / 64;
+
+    for (int k = 0; k < 24; k++) {
+        if (k >= coeffs) break;
+        vec4 centroidRaw = texelFetch(sogShNCentroidsTexture, ivec2(u + k, v), 0);
+        vec3 shCoeff;
+#ifdef USE_SOG_V2
+        int rIdx = int(centroidRaw.r * 255.0 + 0.5);
+        int gIdx = int(centroidRaw.g * 255.0 + 0.5);
+        int bIdx = int(centroidRaw.b * 255.0 + 0.5);
+        shCoeff.r = texelFetch(sogCodebookTexture, ivec2(512 + rIdx, 0), 0).r;
+        shCoeff.g = texelFetch(sogCodebookTexture, ivec2(512 + gIdx, 0), 0).r;
+        shCoeff.b = texelFetch(sogCodebookTexture, ivec2(512 + bIdx, 0), 0).r;
+#else
+        shCoeff = mix(vec3(sogShnMin), vec3(sogShnMax), centroidRaw.rgb);
+#endif
+        sh[k + 1] = shCoeff;
+    }
+
+    return computeColorFromSHDegree(dir, sh, 1., 1., 1., 1.);
+#else
+    return vec3(0., 0., 0.);
+#endif
+}
+#else
+vec3 computeSHWeighted(Splat splat, vec3 dir, float _so1, float _so2, float _so3, float _so4)
+{
+    vec3 sh[25];
+
     sh[0] = vec3(0.,0.,0.);
 #if SH_DEGREE > 0
     vec4 sh00 = decompose(splat.sh0.x);
@@ -265,9 +383,34 @@ vec3 computeSH(Splat splat, vec3 dir)
     sh[23] = vec3(sh16.z, sh16.w, sh17.x);
     sh[24] = vec3(sh17.y, sh17.z, sh17.w);
 #endif
-
-    return computeColorFromSHDegree(dir, sh);
+    return computeColorFromSHDegree(dir, sh, _so1, _so2, _so3, _so4);
 }
+
+vec3 computeSH(Splat splat, vec3 dir)
+{
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
+    float _w1 = 1.0;
+#else
+    float _w1 = 0.0;
+#endif
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
+    float _w2 = 1.0;
+#else
+    float _w2 = 0.0;
+#endif
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
+    float _w3 = 1.0;
+#else
+    float _w3 = 0.0;
+#endif
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
+    float _w4 = 1.0;
+#else
+    float _w4 = 0.0;
+#endif
+    return computeSHWeighted(splat, dir, _w1, _w2, _w3, _w4);
+}
+#endif
 #else
 vec3 computeSH(Splat splat, vec3 dir)
 {

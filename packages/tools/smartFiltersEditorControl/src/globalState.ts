@@ -79,6 +79,14 @@ export class GlobalState {
 
     onSaveEditorDataRequiredObservable: Observable<void>;
 
+    mcpSessionUrl: Nullable<string> = null;
+
+    mcpSessionConnected: boolean = false;
+
+    mcpEventSource: Nullable<EventSource> = null;
+
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     onlyShowCustomBlocksObservable = new Observable<boolean>();
 
     texturePresets: TexturePreset[];

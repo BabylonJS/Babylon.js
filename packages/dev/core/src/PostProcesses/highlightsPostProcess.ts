@@ -1,6 +1,6 @@
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 

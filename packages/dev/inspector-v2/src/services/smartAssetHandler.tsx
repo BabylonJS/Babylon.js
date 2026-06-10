@@ -1,4 +1,4 @@
-import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager.pure";
 import { Observable } from "core/Misc/observable";
 
 type InspectorAssetNotFoundPromptHandlerCallback = (key: string, expectedUrl: string) => Promise<string | File | null>;

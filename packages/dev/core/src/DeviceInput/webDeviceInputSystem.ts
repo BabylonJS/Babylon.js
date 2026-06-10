@@ -2,7 +2,7 @@ import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type IPointerEvent, type IUIEvent } from "../Events/deviceInputEvents";
 import { IsNavigatorAvailable } from "../Misc/domManagement";
 import { type Observer } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type Nullable } from "../types";
 import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";
@@ -898,7 +898,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         if (deviceName.indexOf("054c") !== -1) {
             // DualShock 4 Gamepad
             return deviceName.indexOf("0ce6") !== -1 ? DeviceType.DualSense : DeviceType.DualShock;
-        } else if (deviceName.indexOf("Xbox One") !== -1 || deviceName.search("Xbox 360") !== -1 || deviceName.search("xinput") !== -1) {
+        } else if (
+            deviceName.indexOf("Xbox One") !== -1 ||
+            deviceName.search("Xbox 360") !== -1 ||
+            deviceName.search("xinput") !== -1 ||
+            // Microsoft vendor id covers Xbox Series/One/Elite controllers reported with various names
+            // (e.g. "Xbox Wireless Controller (... Vendor: 045e Product: 0b13)"). Excludes the
+            // Surface Dock Extender, which also reports vendor 045e. Mirrors GamepadManager.
+            (deviceName.indexOf("045e") !== -1 && deviceName.indexOf("Surface Dock") === -1)
+        ) {
             // Xbox Gamepad
             return DeviceType.Xbox;
         } else if (deviceName.indexOf("057e") !== -1) {

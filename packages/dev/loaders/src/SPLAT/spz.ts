@@ -5,6 +5,7 @@ import { runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Mode, type IParsedSplat } from "./splatDefs";
+import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from "@adobe/spz";
 
 const _SpzConversionBatchSize = 32768;
@@ -174,17 +175,12 @@ export function ParseSpz(data: ArrayBuffer, scene: Scene, _loadingOptions: SPLAT
         const textureCount = Math.ceil(shComponentCount / 16); // 4 components can be stored per texture, 4 sh per component
         let shIndexRead = byteOffset;
 
-        // sh is an array of uint8array that will be used to create sh textures
-        const sh: Uint8Array[] = [];
-
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
-        // create array for the number of textures needed.
-        for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-            const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
-            sh.push(texture);
-        }
+
+        // sh is an array of uint8array that will be used to create sh textures
+        const sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         for (let i = 0; i < splatCount; i++) {
             for (let shIndexWrite = 0; shIndexWrite < shComponentCount; shIndexWrite++) {
@@ -279,10 +275,7 @@ export function* ConvertSpzToSplat(cloud: GaussianCloud, scene: Scene, useCorout
         const engine = scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
         const height = Math.ceil(splatCount / width);
-        sh = [];
-        for (let t = 0; t < textureCount; t++) {
-            sh.push(new Uint8Array(height * width * 4 * 4));
-        }
+        sh = AllocateShBuffers(textureCount, height * width * 4 * 4);
 
         // Precompute chunk start/end and hoist texture references out of the per-splat loop
         chunkStarts = new Int32Array(textureCount);

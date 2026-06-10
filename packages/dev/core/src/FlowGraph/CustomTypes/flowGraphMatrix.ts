@@ -1,4 +1,4 @@
-import { Vector3, Vector2 } from "core/Maths/math.vector";
+import { Vector3, Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Interface representing a generic flow graph matrix.

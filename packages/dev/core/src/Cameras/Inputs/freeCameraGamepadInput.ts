@@ -3,7 +3,7 @@ import { type Observer } from "../../Misc/observable";
 import { type Nullable } from "../../types";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
-import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector.pure";
 import { Gamepad } from "../../Gamepads/gamepad";
 
 /**

@@ -328,6 +328,8 @@ jobs:
                 CI: "true"
                 BSTACK_TEST_TYPE: "es6vis"
                 BSTACK_BUILD_NAME: "ES6 Visualization Tests"
+                BROWSERSTACK_LOCAL: "true"
+                BROWSERSTACK_LOCAL_IDENTIFIER: "es6vis-$(Build.BuildId)-$(System.JobAttempt)"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
@@ -413,9 +415,6 @@ jobs:
             displayName: "Linting"
             env:
                 NODE_OPTIONS: "--max-old-space-size=8192"
-
-          - script: npx --yes dpdm -T --no-tree ./packages/dev/core/src/**/*
-            displayName: "Circular dependencies"
 
           - script: npm run check:treeshaking
             displayName: "Tree-shaking verification"

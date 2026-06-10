@@ -505,7 +505,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "9.8.0";
+    public static _CdnVersion = "9.11.0";
 
     /**
      * @internal
@@ -599,9 +599,15 @@ export class Tools {
             Tools.LoadFile(
                 scriptUrl,
                 (data) => {
-                    Function(data as string).apply(null);
-                    if (onSuccess) {
-                        onSuccess();
+                    try {
+                        Function(data as string).apply(null);
+                        if (onSuccess) {
+                            onSuccess();
+                        }
+                    } catch (exception) {
+                        if (onError) {
+                            onError("LoadScript Error", exception);
+                        }
                     }
                 },
                 undefined,

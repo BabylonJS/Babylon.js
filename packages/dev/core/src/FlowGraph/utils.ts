@@ -2,7 +2,7 @@ import { type Matrix, type Quaternion, type Vector2, type Vector3, type Vector4 
 import { type Node } from "../node";
 import { type FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { type FlowGraphMatrix2D, type FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
-import { FlowGraphTypes } from "./flowGraphRichTypes";
+import { FlowGraphTypes } from "./flowGraphRichTypes.pure";
 import { IsNavigatorAvailable } from "core/Misc/domManagement";
 
 /**

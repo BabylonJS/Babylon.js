@@ -7,7 +7,7 @@ import {
     type FrameGraphTextureHandle,
     type Nullable,
 } from "core/index";
-import { Vector3, Matrix } from "core/Maths/math.vector";
+import { Vector3, Matrix } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";

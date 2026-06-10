@@ -1,12 +1,12 @@
 import { type Scene } from "../scene";
-import { TransformNode } from "../Meshes/transformNode";
-import { Mesh } from "../Meshes/mesh";
-import { Texture } from "../Materials/Textures/texture";
-import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
-import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
+import { TransformNode } from "../Meshes/transformNode.pure";
+import { Mesh } from "../Meshes/mesh.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial.pure";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
 import { type Nullable } from "../types";
 import { type Observer, Observable } from "../Misc/observable";
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { Axis } from "../Maths/math";
 
 import { type Camera } from "../Cameras/camera";

@@ -1,4 +1,4 @@
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Given the control points, solve for x based on a given t for a cubic bezier curve

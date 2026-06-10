@@ -3,8 +3,8 @@ import { type FloatArray, type Nullable } from "../types";
 import { type AbstractMesh } from "./abstractMesh";
 import { type Mesh } from "./mesh";
 
-import { VertexBuffer } from "../Buffers/buffer";
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 
 function GetExtentCorners(extent: { minimum: Vector3; maximum: Vector3 }): Array<Vector3> {
     const minX = extent.minimum.x;

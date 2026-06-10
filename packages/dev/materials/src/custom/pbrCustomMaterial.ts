@@ -144,6 +144,8 @@ export class PBRCustomMaterial extends PBRMaterial {
      */
     _customAttributes: string[];
 
+    private readonly _customEffects = new Set<Effect>();
+
     /**
      * Fragment shader string
      */
@@ -323,6 +325,23 @@ export class PBRCustomMaterial extends PBRMaterial {
 
         PBRCustomMaterial.ShaderIndexer++;
         this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
+
+        this.onEffectCreatedObservable.add(({ effect, subMesh }) => {
+            const previousEffect = subMesh?.effect;
+            if (this._isCreatedShaderEffect(effect)) {
+                this._customEffects.add(effect);
+            }
+            if ((!this.allowShaderHotSwapping || effect.isReady()) && previousEffect && previousEffect !== effect && this._isCreatedShaderEffect(previousEffect)) {
+                previousEffect.dispose();
+                if (previousEffect.isDisposed) {
+                    this._customEffects.delete(previousEffect);
+                }
+            }
+        });
+    }
+
+    private _isCreatedShaderEffect(effect: Effect): boolean {
+        return effect._key.startsWith(this._createdShaderName + "+");
     }
 
     /**
@@ -335,6 +354,11 @@ export class PBRCustomMaterial extends PBRMaterial {
         delete Effect.ShadersStore[this._createdShaderName + "PixelShader"];
 
         super.dispose(forceDisposeEffect, forceDisposeTextures);
+
+        this._customEffects.forEach((effect) => {
+            effect.dispose(true);
+        });
+        this._customEffects.clear();
     }
 
     protected override _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {

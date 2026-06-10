@@ -1,0 +1,16 @@
+{
+    "version": 1,
+    "files": {
+        "Lights/Clustered/clusteredLightContainer.ts": ["top-level-call"],
+        "Lights/Clustered/clusteredLightingSceneComponent.ts": ["top-level-call"],
+        "Lights/Clustered/index.ts": ["bare-import"],
+        "Lights/Shadows/cascadedShadowGenerator.ts": ["top-level-call"],
+        "Lights/areaLight.types.ts": ["declare-module"],
+        "Lights/directionalLight.ts": ["top-level-call"],
+        "Lights/hemisphericLight.ts": ["top-level-call"],
+        "Lights/lightingVolume.ts": ["bare-import"],
+        "Lights/pointLight.ts": ["top-level-call"],
+        "Lights/rectAreaLight.ts": ["top-level-call"],
+        "Lights/spotLight.ts": ["top-level-call"]
+    }
+}

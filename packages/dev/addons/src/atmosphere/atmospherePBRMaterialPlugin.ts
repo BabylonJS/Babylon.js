@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 import { type Atmosphere } from "./atmosphere";
-import { type BaseTexture } from "core/Materials/Textures/baseTexture";
-import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture.pure";
+import { type Material } from "core/Materials/material.pure";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { MaterialPluginBase } from "core/Materials/materialPluginBase";
+import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
 import { type Nullable } from "core/types";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";

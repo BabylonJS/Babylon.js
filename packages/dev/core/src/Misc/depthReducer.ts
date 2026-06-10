@@ -2,9 +2,9 @@ import { type Nullable } from "../types";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { type Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { DepthRenderer } from "../Rendering/depthRenderer";
+import { DepthRenderer } from "../Rendering/depthRenderer.pure";
 
-import { MinMaxReducer } from "./minMaxReducer";
+import { MinMaxReducer } from "./minMaxReducer.pure";
 
 /**
  * This class is a small wrapper around the MinMaxReducer class to compute the min/max values of a depth texture

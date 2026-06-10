@@ -2,8 +2,8 @@ import { type IObjectInfo, type IPathToObjectConverter } from "../ObjectModel/ob
 import { type FlowGraphBlock } from "./flowGraphBlock";
 import { type FlowGraphContext } from "./flowGraphContext";
 import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
-import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
-import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
+import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger.pure";
+import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes.pure";
 import { type IObjectAccessor } from "./typeDefinitions";
 
 const PathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}(?=\/|$)/g);

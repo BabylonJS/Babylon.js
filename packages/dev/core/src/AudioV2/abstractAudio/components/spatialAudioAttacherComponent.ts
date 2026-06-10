@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../Maths/math.vector.pure";
 import { type AbstractMesh } from "../../../Meshes/abstractMesh";
 import { type Node } from "../../../node";
 import { type Nullable } from "../../../types";
@@ -30,6 +30,27 @@ export class _SpatialAudioAttacherComponent {
      */
     public get isAttached(): boolean {
         return this._sceneNode !== null;
+    }
+
+    /**
+     * The scene node this attacher is currently attached to, or `null` if not attached.
+     */
+    public get sceneNode(): Nullable<Node> {
+        return this._sceneNode;
+    }
+
+    /**
+     * Whether the attacher is using the scene node's bounding box for positioning.
+     */
+    public get useBoundingBox(): boolean {
+        return this._useBoundingBox;
+    }
+
+    /**
+     * Which components (position, rotation, or both) of the scene node's world transform drive the spatial audio.
+     */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attachmentType;
     }
 
     /**

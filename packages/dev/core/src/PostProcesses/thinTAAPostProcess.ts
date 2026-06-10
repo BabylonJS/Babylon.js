@@ -1,9 +1,9 @@
 import { type Nullable, type EffectWrapperCreationOptions, type Scene } from "core/index";
-import { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera.pure";
 import { Halton2DSequence } from "core/Maths/halton2DSequence";
-import { Vector2 } from "core/Maths/math.vector";
-import { EffectWrapper } from "core/Materials/effectRenderer";
-import { TAAMaterialManager } from "./RenderPipeline/Pipelines/taaMaterialManager";
+import { Vector2 } from "core/Maths/math.vector.pure";
+import { EffectWrapper } from "core/Materials/effectRenderer.pure";
+import { TAAMaterialManager } from "./RenderPipeline/Pipelines/taaMaterialManager.pure";
 
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).

@@ -1,7 +1,7 @@
 import { RandomGUID } from "../Misc/guid";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
 import { type FlowGraphContext } from "./flowGraphContext";
-import { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import { FlowGraphDataConnection } from "./flowGraphDataConnection.pure";
 import { type RichType } from "./flowGraphRichTypes";
 import { type ISerializedFlowGraphBlock, type IObjectAccessor } from "./typeDefinitions";
 import { defaultValueSerializationFunction } from "./serialization";

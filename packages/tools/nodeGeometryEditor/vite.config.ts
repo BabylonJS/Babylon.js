@@ -8,6 +8,7 @@ export default defineConfig((_env) => {
         port: parseInt(process.env.NGE_PORT ?? "1343"),
         aliases: {
             "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+            "@tools/snippet-loader": path.resolve("../../tools/snippetLoader/src"),
         },
         cdnExternals: {
             "@dev/core": "BABYLON",

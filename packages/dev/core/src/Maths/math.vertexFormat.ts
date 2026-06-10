@@ -1,4 +1,4 @@
-import { Vector3, Vector2 } from "./math.vector";
+import { Vector3, Vector2 } from "./math.vector.pure";
 
 /**
  * Contains position and normal vectors for a vertex

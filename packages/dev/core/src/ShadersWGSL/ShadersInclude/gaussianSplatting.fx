@@ -30,6 +30,9 @@ struct Splat {
     rotationB: vec4f,
     rotationScale: vec4f,
 #endif
+#ifdef USE_SOG
+    splatIndex: f32,
+#endif
 };
 
 fn getSplatIndex(localIndex: i32, splatIndex0: vec4f, splatIndex1: vec4f, splatIndex2: vec4f, splatIndex3: vec4f) -> f32 {
@@ -127,22 +130,86 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     var splat: Splat;
     let splatUV = getDataUV(splatIndex, dataTextureSize);
     let splatUVi32 = vec2<i32>(i32(splatUV.x), i32(splatUV.y));
+#ifdef USE_SOG
+    let mL = textureLoad(centersTexture, splatUVi32, 0);
+    let mU = textureLoad(covariancesATexture, splatUVi32, 0);
+    let sRaw = textureLoad(covariancesBTexture, splatUVi32, 0);
+    let qRaw = textureLoad(sogQuatsTexture, splatUVi32, 0);
+    let c0 = textureLoad(colorsTexture, splatUVi32, 0);
+
+    let q16 = (mU.xyz * 256.0 + mL.xyz) * (255.0 / 65535.0);
+    let nPos = mix(uniforms.sogMeansMin, uniforms.sogMeansMax, q16);
+    let center3 = sign(nPos) * (exp(abs(nPos)) - vec3f(1.0));
+    splat.center = vec4f(center3, 1.0);
+
+#ifdef USE_SOG_V2
+    let sIdx = floor(sRaw.xyz * 255.0 + 0.5);
+    var splatScale: vec3f;
+    splatScale.x = exp(textureLoad(sogCodebookTexture, vec2<i32>(i32(sIdx.x), 0), 0).r);
+    splatScale.y = exp(textureLoad(sogCodebookTexture, vec2<i32>(i32(sIdx.y), 0), 0).r);
+    splatScale.z = exp(textureLoad(sogCodebookTexture, vec2<i32>(i32(sIdx.z), 0), 0).r);
+#else
+    let splatScale = exp(mix(uniforms.sogScalesMin, uniforms.sogScalesMax, sRaw.xyz));
+#endif
+
+    let invSqrt2: f32 = 0.70710678118;
+    let qabc = (qRaw.xyz - vec3f(0.5)) * 2.0 * invSqrt2;
+    let qMode = i32(qRaw.w * 255.0 + 0.5) - 252;
+    let qd = sqrt(max(0.0, 1.0 - dot(qabc, qabc)));
+    var quat: vec4f;
+    if (qMode == 0) { quat = vec4f(qd, qabc.x, qabc.y, qabc.z); }
+    else if (qMode == 1) { quat = vec4f(qabc.x, qd, qabc.y, qabc.z); }
+    else if (qMode == 2) { quat = vec4f(qabc.x, qabc.y, qd, qabc.z); }
+    else { quat = vec4f(qabc.x, qabc.y, qabc.z, qd); }
+
+    let qw = quat.x; let qx = quat.y; let qy = quat.z; let qz = quat.w;
+    let R = mat3x3<f32>(
+        1.0 - 2.0*(qy*qy + qz*qz), 2.0*(qx*qy + qw*qz),       2.0*(qx*qz - qw*qy),
+        2.0*(qx*qy - qw*qz),       1.0 - 2.0*(qx*qx + qz*qz), 2.0*(qy*qz + qw*qx),
+        2.0*(qx*qz + qw*qy),       2.0*(qy*qz - qw*qx),       1.0 - 2.0*(qx*qx + qy*qy)
+    );
+    let S2 = mat3x3<f32>(
+        4.0*splatScale.x*splatScale.x, 0.0, 0.0,
+        0.0, 4.0*splatScale.y*splatScale.y, 0.0,
+        0.0, 0.0, 4.0*splatScale.z*splatScale.z
+    );
+    let Sigma = R * S2 * transpose(R);
+    splat.covA = vec4f(Sigma[0][0], Sigma[0][1], Sigma[0][2], Sigma[1][1]);
+    splat.covB = vec4f(Sigma[1][2], Sigma[2][2], 0.0, 0.0);
+
+    let SH_C0_SOG: f32 = 0.28209479177387814;
+#ifdef USE_SOG_V2
+    var c3: vec3f;
+    c3.x = textureLoad(sogCodebookTexture, vec2<i32>(256 + i32(c0.x * 255.0 + 0.5), 0), 0).r;
+    c3.y = textureLoad(sogCodebookTexture, vec2<i32>(256 + i32(c0.y * 255.0 + 0.5), 0), 0).r;
+    c3.z = textureLoad(sogCodebookTexture, vec2<i32>(256 + i32(c0.z * 255.0 + 0.5), 0), 0).r;
+    let colRgb = vec3f(0.5) + c3 * SH_C0_SOG;
+    let colA = c0.w;
+#else
+    let cLerp = mix(uniforms.sogSh0Min, uniforms.sogSh0Max, c0);
+    let colRgb = vec3f(0.5) + cLerp.xyz * SH_C0_SOG;
+    let colA = 1.0 / (1.0 + exp(-cLerp.w));
+#endif
+    splat.color = vec4f(colRgb, colA);
+    splat.splatIndex = splatIndex;
+#else
     splat.center = textureLoad(centersTexture, splatUVi32, 0);
     splat.color = textureLoad(colorsTexture, splatUVi32, 0);
 #if !defined(IS_FOR_VOXELIZATION)
     splat.covA = textureLoad(covariancesATexture, splatUVi32, 0) * splat.center.w;
     splat.covB = textureLoad(covariancesBTexture, splatUVi32, 0) * splat.center.w;
 #endif
-#if SH_DEGREE > 0
+#endif
+#if SH_DEGREE > 0 && !defined(USE_SOG)
     splat.sh0 = textureLoad(shTexture0, splatUVi32, 0);
 #endif
-#if SH_DEGREE > 1
+#if SH_DEGREE > 1 && !defined(USE_SOG)
     splat.sh1 = textureLoad(shTexture1, splatUVi32, 0);
 #endif
-#if SH_DEGREE > 2
+#if SH_DEGREE > 2 && !defined(USE_SOG)
     splat.sh2 = textureLoad(shTexture2, splatUVi32, 0);
 #endif
-#if SH_DEGREE > 3
+#if SH_DEGREE > 3 && !defined(USE_SOG)
     splat.sh3 = textureLoad(shTexture3, splatUVi32, 0);
     splat.sh4 = textureLoad(shTexture4, splatUVi32, 0);
 #endif
@@ -157,7 +224,7 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     return splat;
 }
 
-fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
+fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
 {
     let SH_C0: f32 = 0.28209479;
     let SH_C1: f32 = 0.48860251;
@@ -198,7 +265,7 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     let y: f32 = dir.y;
     let z: f32 = dir.z;
 
-    result += -SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3];
+    result += _so1 * (-SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3]);
 #if SH_DEGREE > 1
     let xx: f32 = x * x;
     let yy: f32 = y * y;
@@ -206,25 +273,25 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
     let xy: f32 = x * y;
     let yz: f32 = y * z;
     let xz: f32 = x * z;
-    result +=
+    result += _so2 * (
         SH_C2[0] * xy * sh[4] +
         SH_C2[1] * yz * sh[5] +
         SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
         SH_C2[3] * xz * sh[7] +
-        SH_C2[4] * (xx - yy) * sh[8];
+        SH_C2[4] * (xx - yy) * sh[8]);
 
 #if SH_DEGREE > 2
-    result +=
+    result += _so3 * (
         SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
         SH_C3[1] * xy * z * sh[10] +
         SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
         SH_C3[3] * z * (2.0f * zz - 3.0f * xx - 3.0f * yy) * sh[12] +
         SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
         SH_C3[5] * z * (xx - yy) * sh[14] +
-        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15];
+        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15]);
 
 #if SH_DEGREE > 3
-    result +=
+    result += _so4 * (
         SH_C4[0] * x * y * (xx - yy) * sh[16] +
         SH_C4[1] * y * z * (3.0f * xx - yy) * sh[17] +
         SH_C4[2] * x * y * (7.0f * zz - 1.0f) * sh[18] +
@@ -233,7 +300,7 @@ fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>) -> vec3f
         SH_C4[5] * x * z * (7.0f * zz - 3.0f) * sh[21] +
         SH_C4[6] * (xx - yy) * (7.0f * zz - 1.0f) * sh[22] +
         SH_C4[7] * x * z * (xx - 3.0f * yy) * sh[23] +
-        SH_C4[8] * (xx * (xx - 3.0f * yy) - yy * (3.0f * xx - yy)) * sh[24];
+        SH_C4[8] * (xx * (xx - 3.0f * yy) - yy * (3.0f * xx - yy)) * sh[24]);
 #endif
 #endif
 #endif
@@ -253,10 +320,52 @@ fn decompose(value: u32) -> vec4f
     return components * vec4f(2./255.) - vec4f(1.);
 }
 
+#ifdef USE_SOG
 fn computeSH(splat: Splat, dir: vec3f) -> vec3f
 {
+#if SH_DEGREE > 0
     var sh: array<vec3<f32>, 25>;
-    
+    sh[0] = vec3f(0., 0., 0.);
+
+    let labelSize = textureDimensions(sogShNLabelsTexture, 0);
+    let idx = i32(splat.splatIndex + 0.5);
+    let lw = i32(labelSize.x);
+    let lx = idx - (idx / lw) * lw;
+    let ly = idx / lw;
+    let labelRaw = textureLoad(sogShNLabelsTexture, vec2<i32>(lx, ly), 0);
+    let n = i32(labelRaw.r * 255.0 + 0.5) + i32(labelRaw.g * 255.0 + 0.5) * 256;
+
+    let coeffs = i32(uniforms.sogShCoeffCount + 0.5);
+    let u = (n - (n / 64) * 64) * coeffs;
+    let v = n / 64;
+
+    for (var k: i32 = 0; k < 24; k = k + 1) {
+        if (k >= coeffs) { break; }
+        let centroidRaw = textureLoad(sogShNCentroidsTexture, vec2<i32>(u + k, v), 0);
+        var shCoeff: vec3f;
+#ifdef USE_SOG_V2
+        let rIdx = i32(centroidRaw.r * 255.0 + 0.5);
+        let gIdx = i32(centroidRaw.g * 255.0 + 0.5);
+        let bIdx = i32(centroidRaw.b * 255.0 + 0.5);
+        shCoeff.r = textureLoad(sogCodebookTexture, vec2<i32>(512 + rIdx, 0), 0).r;
+        shCoeff.g = textureLoad(sogCodebookTexture, vec2<i32>(512 + gIdx, 0), 0).r;
+        shCoeff.b = textureLoad(sogCodebookTexture, vec2<i32>(512 + bIdx, 0), 0).r;
+#else
+        shCoeff = mix(vec3f(uniforms.sogShnMin), vec3f(uniforms.sogShnMax), centroidRaw.rgb);
+#endif
+        sh[k + 1] = shCoeff;
+    }
+
+    return computeColorFromSHDegree(dir, sh, 1., 1., 1., 1.);
+#else
+    return vec3f(0., 0., 0.);
+#endif
+}
+#else
+fn computeSHWeighted(splat: Splat, dir: vec3f, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
+{
+    var sh: array<vec3<f32>, 25>;
+
     sh[0] = vec3f(0., 0., 0.);
 
 #if SH_DEGREE > 0
@@ -314,9 +423,34 @@ fn computeSH(splat: Splat, dir: vec3f) -> vec3f
     sh[23] = vec3f(sh16.z, sh16.w, sh17.x);
     sh[24] = vec3f(sh17.y, sh17.z, sh17.w);
 #endif
-
-    return computeColorFromSHDegree(dir, sh);
+    return computeColorFromSHDegree(dir, sh, _so1, _so2, _so3, _so4);
 }
+
+fn computeSH(splat: Splat, dir: vec3f) -> vec3f
+{
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER1 == 1
+    let _w1: f32 = 1.0;
+#else
+    let _w1: f32 = 0.0;
+#endif
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER2 == 1
+    let _w2: f32 = 1.0;
+#else
+    let _w2: f32 = 0.0;
+#endif
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER3 == 1
+    let _w3: f32 = 1.0;
+#else
+    let _w3: f32 = 0.0;
+#endif
+#if !defined(GS_DBG_ENABLED) || GS_DBG_SH_ORDER4 == 1
+    let _w4: f32 = 1.0;
+#else
+    let _w4: f32 = 0.0;
+#endif
+    return computeSHWeighted(splat, dir, _w1, _w2, _w3, _w4);
+}
+#endif
 
 fn gaussianSplatting(
     meshPos: vec2<f32>, 

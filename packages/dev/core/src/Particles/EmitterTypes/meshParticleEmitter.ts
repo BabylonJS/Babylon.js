@@ -1,10 +1,10 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { type Matrix, Vector3, TmpVectors } from "../../Maths/math.vector";
+import { type Matrix, Vector3, TmpVectors } from "../../Maths/math.vector.pure";
 import { RandomRange } from "../../Maths/math.scalar.functions";
 import { type Particle } from "../../Particles/particle";
 import { type IParticleEmitterType } from "./IParticleEmitterType";
 import { type IndicesArray, type Nullable, type FloatArray } from "../../types";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { type Scene } from "../../scene";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";

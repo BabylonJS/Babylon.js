@@ -13,8 +13,8 @@ import {
     type VideoTexture,
 } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { ComputeShader } from "core/Compute/computeShader";
-import { Vector3 } from "core/Maths/math.vector";
+import { ComputeShader } from "core/Compute/computeShader.pure";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Logger } from "core/Misc/logger";
 

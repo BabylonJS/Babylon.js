@@ -1,4 +1,4 @@
-import { RenderTargetTexture } from "../Textures/renderTargetTexture";
+import { RenderTargetTexture } from "../Textures/renderTargetTexture.pure";
 import { type Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
 import { type Engine } from "../../Engines/engine";

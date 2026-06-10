@@ -26,7 +26,7 @@ import { type RenderingManager } from "../rendering/renderingManager";
 import { Node } from "../nodes/node";
 import { ControlNode } from "../nodes/controlNode";
 
-import { type AnimationConfiguration } from "../animationConfiguration";
+import { type ResolvedAnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Type of the vector properties in the Lottie animation. It determines how the vector values are interpreted in Babylon.js.
@@ -104,7 +104,7 @@ export async function GetRawAnimationDataAsync(urlToFile: string): Promise<RawLo
  */
 export class Parser {
     private _packer: SpritePacker;
-    private readonly _configuration: AnimationConfiguration;
+    private readonly _configuration: ResolvedAnimationConfiguration;
     private readonly _animationInfo: AnimationInfo;
     private readonly _renderingManager: RenderingManager;
 
@@ -133,7 +133,7 @@ export class Parser {
      * @param configuration Configuration options for the animation parser.
      * @param renderingManager Object that manages the rendering of the sprites in the animation.
      */
-    public constructor(packer: SpritePacker, animationData: RawLottieAnimation, configuration: AnimationConfiguration, renderingManager: RenderingManager) {
+    public constructor(packer: SpritePacker, animationData: RawLottieAnimation, configuration: ResolvedAnimationConfiguration, renderingManager: RenderingManager) {
         this._packer = packer;
         this._configuration = configuration;
         this._renderingManager = renderingManager;
@@ -320,7 +320,7 @@ export class Parser {
         }
 
         // We only support solid, null, shape and text layers
-        if (layer.ty !== 1 && layer.ty !== 3 && layer.ty !== 4 && layer.ty !== 5) {
+        if ((layer.ty === 1 && this._configuration.compatibility.solidLayerRendering === "babylon8") || (layer.ty !== 1 && layer.ty !== 3 && layer.ty !== 4 && layer.ty !== 5)) {
             this._unsupportedFeatures.push(`UnsupportedLayerType - Layer Name: ${layer.nm} - Layer Index: ${layer.ind} - Layer Type: ${layer.ty}`);
             return;
         }
@@ -451,10 +451,10 @@ export class Parser {
         // is positioned with its center at (sw/2, -sh/2) in the layer's local space so its top-left
         // sits at the layer origin (0, 0) — matching how After Effects positions a solid layer.
         const sprite = new ThinSprite();
-        sprite._xOffset = spriteInfo.uOffset;
-        sprite._yOffset = spriteInfo.vOffset;
-        sprite._xSize = spriteInfo.cellWidth;
-        sprite._ySize = spriteInfo.cellHeight;
+        sprite._xOffset = spriteInfo.uOffset + spriteInfo.cellWidth / (2 * this._configuration.spriteAtlasWidth);
+        sprite._yOffset = spriteInfo.vOffset + spriteInfo.cellHeight / (2 * this._configuration.spriteAtlasHeight);
+        sprite._xSize = 0;
+        sprite._ySize = 0;
         sprite.width = layer.sw;
         sprite.height = layer.sh;
         sprite.invertV = true;
@@ -490,7 +490,7 @@ export class Parser {
             return undefined;
         }
 
-        const useBabylon8TextPlacement = this._configuration.textLayerCompatibilityMode === "babylon8";
+        const useBabylon8TextPlacement = this._configuration.compatibility.textLayerPlacement === "babylon8";
         const spriteParent = useBabylon8TextPlacement ? parent : this._parseNullLayer(layer, transform, parent);
 
         // Build the ThinSprite from the texture packer information
