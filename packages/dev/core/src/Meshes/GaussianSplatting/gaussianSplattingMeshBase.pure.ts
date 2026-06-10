@@ -2858,14 +2858,17 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             // If the vertex count changed, we discard this result and trigger a new sort
             if (e.data.depthMix.length != vertexCountPadded) {
-                // Only re-enable posting and trigger a re-sort if the buffer is available.
-                // If byteLength === 0 the buffer is already in-flight for a newer sort;
-                // that sort's onmessage will handle things when it returns.
-                if (this._depthMix.buffer.byteLength > 0) {
-                    this._canPostToWorker = true;
-                    this._postToWorker(true);
-                    this._sortIsDirty = false;
+                // Always restore the posting gate. The mutex (_canPostToWorker=false before the
+                // postMessage call) prevents two sorts from being in-flight simultaneously, so
+                // byteLength===0 is a transfer artifact, not evidence of a newer in-flight sort.
+                // Leaving _canPostToWorker=false here permanently deadlocks the sort pipeline.
+                this._canPostToWorker = true;
+                if (this._depthMix.buffer.byteLength === 0) {
+                    // Buffer was transferred and _updateSplatIndexBuffer has not yet recreated it.
+                    this._depthMix = new BigInt64Array(vertexCountPadded);
                 }
+                this._postToWorker(true);
+                this._sortIsDirty = false;
                 return;
             }
 
