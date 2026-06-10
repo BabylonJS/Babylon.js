@@ -24,6 +24,8 @@ import { EngineStore } from "core/Engines/engineStore";
 import { type Camera } from "core/Cameras/camera.pure";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import { type INative } from "core/Engines/Native/nativeInterfaces";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
+import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -379,6 +381,68 @@ export interface PLYHeader {
      * buffer for SH coefficients
      */
     shBuffer: ArrayBuffer | null;
+}
+
+// ── Inter-frame task-queue yield ─────────────────────────────────────────────
+// Depth-sort results arrive via worker postMessage, which is a regular-priority
+// task. At high refresh rates the rAF loop can leave almost no time for the
+// regular task queue, starving sort results for hundreds of milliseconds.
+// Installing a customAnimationFrameRequester that inserts a setTimeout(0) before
+// each rAF forces the event loop to drain regular tasks between frames.
+// The wrapper is ref-counted so it is installed when the first GSplat mesh is
+// created and removed when the last one is disposed.
+
+interface IGsInterFrameYieldRequester extends ICustomAnimationFrameRequester {
+    _gsInterFrameYield: true;
+    _refCount: number;
+}
+
+function _AcquireGsInterFrameYield(engine: AbstractEngine): void {
+    const existing = engine.customAnimationFrameRequester as IGsInterFrameYieldRequester | null;
+    if (existing?._gsInterFrameYield) {
+        existing._refCount++;
+        return;
+    }
+    if (existing) {
+        // Slot is owned by another requester. Don't interfere.
+        return;
+    }
+    let _timeoutId = 0;
+    let _innerRafId = 0;
+    const wrapper: IGsInterFrameYieldRequester = {
+        _gsInterFrameYield: true,
+        _refCount: 1,
+        requestAnimationFrame: (callback: Function): number => {
+            // Insert a setTimeout(0) to yield to the regular task queue (worker
+            // postMessage results, input events) before scheduling the next animation
+            // frame. Without this, a continuous rAF loop at high refresh rates leaves
+            // almost no time for regular tasks, starving worker messages for hundreds of ms.
+            _timeoutId = setTimeout(() => {
+                _innerRafId = requestAnimationFrame(callback as FrameRequestCallback);
+            }, 0) as unknown as number;
+            return _timeoutId;
+        },
+        cancelAnimationFrame: (_id: number) => {
+            clearTimeout(_timeoutId);
+            if (_innerRafId > 0) {
+                cancelAnimationFrame(_innerRafId);
+            }
+            _timeoutId = 0;
+            _innerRafId = 0;
+        },
+    };
+    engine.customAnimationFrameRequester = wrapper;
+}
+
+function _ReleaseGsInterFrameYield(engine: AbstractEngine): void {
+    const existing = engine.customAnimationFrameRequester as IGsInterFrameYieldRequester | null;
+    if (!existing?._gsInterFrameYield) {
+        return;
+    }
+    existing._refCount--;
+    if (existing._refCount === 0) {
+        engine.customAnimationFrameRequester = null;
+    }
 }
 
 /**
@@ -843,6 +907,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this.setEnabled(false);
         // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
         this._useRGBACovariants = !this.getEngine().isWebGPU && this.getEngine().version === 1.0;
+        _AcquireGsInterFrameYield(this.getEngine());
 
         this._keepInRam = keepInRam;
         if (url) {
@@ -2017,6 +2082,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // They can still be used as runtime source buffers by a compound mesh that retained
         // this mesh's data before disposal.
 
+        _ReleaseGsInterFrameYield(this.getEngine());
         this._worker?.terminate();
         this._worker = null;
 
