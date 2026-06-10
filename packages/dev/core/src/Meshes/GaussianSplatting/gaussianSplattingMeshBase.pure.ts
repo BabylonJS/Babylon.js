@@ -398,6 +398,12 @@ interface IGsInterFrameYieldRequester extends ICustomAnimationFrameRequester {
 }
 
 function _AcquireGsInterFrameYield(engine: AbstractEngine): void {
+    // Browser-only optimization: wraps the global requestAnimationFrame, which
+    // doesn't exist on Babylon Native. Skip it there so the engine uses its
+    // default frame scheduling.
+    if (IsNative) {
+        return;
+    }
     const existing = engine.customAnimationFrameRequester as IGsInterFrameYieldRequester | null;
     if (existing?._gsInterFrameYield) {
         existing._refCount++;
