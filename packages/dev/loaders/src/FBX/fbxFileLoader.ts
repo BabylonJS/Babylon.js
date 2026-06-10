@@ -1575,7 +1575,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     private _createCamera(camData: FBXCameraData, modelIdToNode: Map<number, TransformNode>, scene: Scene): FreeCamera | null {
         const parentNode = modelIdToNode.get(camData.modelId);
-        const position = parentNode ? parentNode.position.clone() : Vector3.Zero();
+        const worldMatrix = parentNode ? parentNode.computeWorldMatrix(true) : Matrix.Identity();
+        const position = Vector3.TransformCoordinates(Vector3.Zero(), worldMatrix);
 
         const camera = new FreeCamera(camData.name, position, scene);
         camera.fov = camData.fieldOfView * (Math.PI / 180);
@@ -1606,30 +1607,41 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             camera.orthoLeft = -(orthoHeight * aspect) / 2;
         }
 
-        if (parentNode) {
-            camera.parent = parentNode;
-        }
+        // FBX cameras look down their local +X axis. Derive the world-space look-at target from the
+        // node's world matrix using point transforms so the file's handedness conversion (the
+        // left-handed root applies scaling.z = -1) is reproduced correctly. Transforming a direction
+        // with the rotation alone would mirror it under that reflection and aim the camera wrongly.
+        const target = Vector3.TransformCoordinates(new Vector3(1, 0, 0), worldMatrix);
+        camera.setTarget(target);
 
         return camera;
     }
 
     private _createLight(lightData: FBXLightData, modelIdToNode: Map<number, TransformNode>, scene: Scene): PointLight | DirectionalLight | SpotLight | null {
         const parentNode = modelIdToNode.get(lightData.modelId);
-        const position = parentNode ? parentNode.position.clone() : Vector3.Zero();
+        const worldMatrix = parentNode ? parentNode.computeWorldMatrix(true) : Matrix.Identity();
+        const position = Vector3.TransformCoordinates(Vector3.Zero(), worldMatrix);
         const color = new Color3(lightData.color[0], lightData.color[1], lightData.color[2]);
+
+        // FBX lights point down their local -Z axis. Derive the world-space direction from two points
+        // transformed by the node's world matrix so the handedness conversion (the left-handed root
+        // applies scaling.z = -1) is reproduced correctly; transforming the direction as a normal
+        // would mirror it under that reflection and point the light the wrong way.
+        const forwardPoint = Vector3.TransformCoordinates(new Vector3(0, 0, -1), worldMatrix);
+        const direction = forwardPoint.subtract(position).normalize();
 
         let light: PointLight | DirectionalLight | SpotLight;
 
         switch (lightData.lightType) {
             case 1: // Directional
-                light = new DirectionalLight(lightData.name, new Vector3(0, -1, 0), scene);
+                light = new DirectionalLight(lightData.name, direction, scene);
                 light.diffuse = color;
                 light.intensity = lightData.intensity;
                 break;
             case 2: {
                 // Spot
                 const angle = lightData.coneAngle * (Math.PI / 180);
-                light = new SpotLight(lightData.name, position, new Vector3(0, -1, 0), angle, 2, scene);
+                light = new SpotLight(lightData.name, position, direction, angle, 2, scene);
                 light.diffuse = color;
                 light.intensity = lightData.intensity;
                 break;
@@ -1656,10 +1668,6 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 diagnostics: lightData.diagnostics,
             },
         };
-
-        if (parentNode) {
-            light.parent = parentNode;
-        }
 
         return light;
     }
