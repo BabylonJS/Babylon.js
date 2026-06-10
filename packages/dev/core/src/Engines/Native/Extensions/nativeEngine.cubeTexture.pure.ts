@@ -127,7 +127,15 @@ export function RegisterNativeEngineCubeTexture(): void {
                     // eslint-disable-next-line github/no-then
                     .then(async (data) => {
                         return await new Promise<void>((resolve, reject) => {
-                            this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
+                            this._engine.loadCubeTexture(
+                                texture._hardwareTexture!.underlyingResource,
+                                data,
+                                !noMipmap,
+                                true,
+                                texture._useSRGBBuffer,
+                                () => resolve(),
+                                () => reject(new Error("Failed to load native cubemap"))
+                            );
                         });
                     })
                     // eslint-disable-next-line github/no-then
