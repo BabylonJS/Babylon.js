@@ -101,6 +101,7 @@
         "Engines/engine.ts": ["bare-import"],
         "Engines/nativeEngine.ts": ["top-level-call"],
         "Engines/nullEngine.ts": ["bare-import"],
+        "Engines/thinEngine.scissor.ts": ["bare-import", "top-level-call"],
         "Engines/thinNativeEngine.ts": ["bare-import"],
         "Engines/thinNativeEngine.types.ts": ["declare-module"],
         "Engines/webgpuEngine.ts": ["bare-import"]
