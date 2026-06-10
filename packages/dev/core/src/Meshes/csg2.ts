@@ -471,9 +471,11 @@ export class CSG2 implements IDisposable {
         // effective world-space winding is reflected relative to the default so Manifold's
         // input orientation stays consistent across all sources. This fixes CSG operations
         // in right-handed scenes and with negative-determinant (mirrored) world matrices.
-        const material = mesh.material;
-        let effectiveOrientation = material && material.sideOrientation !== null ? material.sideOrientation : mesh.sideOrientation;
-        if (!ignoreWorldMatrix && worldMatrix.determinant() < 0) {
+        // Use the same effective material the renderer binds (mesh.material falling back to
+        // the scene default) so an explicit sideOrientation override is honored, and reuse
+        // the cached world-matrix determinant.
+        let effectiveOrientation = sourceMaterial.sideOrientation !== null ? sourceMaterial.sideOrientation : mesh.sideOrientation;
+        if (!ignoreWorldMatrix && mesh._getWorldMatrixDeterminant() < 0) {
             effectiveOrientation =
                 effectiveOrientation === Constants.MATERIAL_ClockWiseSideOrientation
                     ? Constants.MATERIAL_CounterClockWiseSideOrientation
