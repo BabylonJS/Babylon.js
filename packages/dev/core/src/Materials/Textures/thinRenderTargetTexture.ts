@@ -26,8 +26,8 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
     /**
      * Instantiates a new ThinRenderTargetTexture.
      * Tiny helper class to wrap a RenderTargetWrapper in a texture.
-     * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache and to hold on the associated RTT
-     * @param engine Define the internalTexture to wrap
+     * This can be used as an internal texture wrapper to benefit from the cache and to hold on the associated RTT
+     * @param engine Define the engine used to create and host the render target
      * @param size Define the size of the RTT to create
      * @param options Define rendertarget options
      */
