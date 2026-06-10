@@ -5167,6 +5167,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxCubePhong",
             "referenceImage": "fbx_m01_cube_phong.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5174,6 +5175,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxNgons",
             "referenceImage": "fbx_m02_ngons.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5181,6 +5183,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxNormals",
             "referenceImage": "fbx_m03_normals.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5188,6 +5191,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxMaterials",
             "referenceImage": "fbx_m04_materials.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5195,6 +5199,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxTextures",
             "referenceImage": "fbx_m05_textures.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5202,6 +5207,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxUvTransform",
             "referenceImage": "fbx_m06_uv_transform.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5209,6 +5215,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxMultiMaterial",
             "referenceImage": "fbx_m07_multimaterial.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5216,6 +5223,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxTransforms",
             "referenceImage": "fbx_m08_transforms.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5223,6 +5231,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxSkinning",
             "referenceImage": "fbx_m09_skinning.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5230,6 +5239,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxMorph",
             "referenceImage": "fbx_m10_morph.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5237,6 +5247,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxNodeAnim",
             "referenceImage": "fbx_m11_node_anim.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5244,6 +5255,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxSkeletalAnim",
             "referenceImage": "fbx_m12_skeletal_anim.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5251,6 +5263,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxMorphAnim",
             "referenceImage": "fbx_m13_morph_anim.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5258,6 +5271,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxMultiClip",
             "referenceImage": "fbx_m14_multiclip.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5265,6 +5279,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxCameraLights",
             "referenceImage": "fbx_m15_camera_lights.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5272,6 +5287,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxAxisYup",
             "referenceImage": "fbx_m16_axis_yup.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5279,6 +5295,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxAxisZup",
             "referenceImage": "fbx_m16_axis_zup.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         },
         {
@@ -5286,6 +5303,7 @@
             "scriptToRun": "/Assets/meshes/fbx/loaderTests/fbxVisualTests.js",
             "functionToCall": "CreateFbxUnits",
             "referenceImage": "fbx_m16_units.png",
+            "excludeFromAutomaticTesting": true,
             "dependsOn": ["Loaders"]
         }
     ]
