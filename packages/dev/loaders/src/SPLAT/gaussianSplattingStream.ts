@@ -5,7 +5,10 @@ import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
 import { Vector3 } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color";
 import { BoundingInfo } from "core/Culling/boundingInfo";
+import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
+import { type LinesMesh } from "core/Meshes/linesMesh";
 import { ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
 import { type ISogTexturePack } from "./splatDefs";
@@ -48,6 +51,8 @@ interface ISOGLODNode {
     bound: { min: number[]; max: number[] };
     children?: ISOGLODNode[];
     lods?: { [level: string]: ISOGLODEntry };
+    /** LOD level currently selected for this node (set during the tree walk). */
+    activeLod?: number;
 }
 
 /**
@@ -72,7 +77,23 @@ export interface IGaussianSplattingStreamOptions {
     deflateURL?: string;
     /** Pre-loaded fflate module. */
     fflate?: any;
+    /** When true, renders a wireframe box per LOD node, colored by the node's active LOD. */
+    debugDisplay?: boolean;
 }
+
+/**
+ * Wireframe colors per LOD level (cycled by `node.activeLod`).
+ */
+const GsLodDebugColors = [
+    new Color4(1.0, 0.2, 0.2, 1.0), // LOD 0 - red
+    new Color4(1.0, 0.6, 0.1, 1.0), // LOD 1 - orange
+    new Color4(1.0, 1.0, 0.2, 1.0), // LOD 2 - yellow
+    new Color4(0.3, 1.0, 0.3, 1.0), // LOD 3 - green
+    new Color4(0.2, 1.0, 1.0, 1.0), // LOD 4 - cyan
+    new Color4(0.4, 0.5, 1.0, 1.0), // LOD 5 - blue
+    new Color4(0.9, 0.4, 1.0, 1.0), // LOD 6 - magenta
+    new Color4(1.0, 1.0, 1.0, 1.0), // LOD 7 - white
+];
 
 /**
  * Streams a PlayCanvas-style SOG LOD scene (`lod-meta.json`) into a single Gaussian Splatting mesh.
@@ -103,6 +124,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Running local-space bounds of all decoded splat centers (for frustum culling / picking).
     private readonly _boundsMin = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private readonly _boundsMax = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+    // Debug LOD-node wireframe display.
+    private _debugDisplay = false;
+    private _debugMesh: Nullable<LinesMesh> = null;
 
     private _disposed = false;
 
@@ -140,6 +165,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
         this._collectLodEntries(metadata.tree);
 
+        if (options.debugDisplay) {
+            this.debugDisplay = true;
+        }
+
         // Kick off streaming without blocking the caller or the render loop.
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         this._streamAllAsync().catch((e) => {
@@ -151,11 +180,110 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         return "GaussianSplattingStream";
     }
 
+    /**
+     * When true, renders a wireframe box per LOD node, colored by the node's active LOD level.
+     */
+    public get debugDisplay(): boolean {
+        return this._debugDisplay;
+    }
+
+    public set debugDisplay(value: boolean) {
+        if (this._debugDisplay === value) {
+            return;
+        }
+        this._debugDisplay = value;
+        if (value) {
+            this._buildDebugDisplay();
+        } else {
+            this._clearDebugDisplay();
+        }
+    }
+
     public override dispose(doNotRecurse?: boolean): void {
         this._disposed = true;
+        this._clearDebugDisplay();
         this._workBuffer?.dispose();
         this._workBuffer = null;
         super.dispose(doNotRecurse);
+    }
+
+    /**
+     * Builds the LOD-node wireframe boxes (one box per leaf node, colored by its active LOD).
+     */
+    private _buildDebugDisplay(): void {
+        this._clearDebugDisplay();
+        const lines: Vector3[][] = [];
+        const colors: Color4[][] = [];
+        this._collectDebugBoxes(this._metadata.tree, lines, colors);
+        if (lines.length === 0) {
+            return;
+        }
+        const mesh = CreateLineSystem(this.name + "_lodDebug", { lines, colors, useVertexAlpha: false }, this._scene);
+        mesh.parent = this;
+        mesh.isPickable = false;
+        mesh.doNotSerialize = true;
+        mesh.reservedDataStore = { hidden: true };
+        this._debugMesh = mesh;
+    }
+
+    /**
+     * Disposes the LOD-node wireframe boxes.
+     */
+    private _clearDebugDisplay(): void {
+        if (this._debugMesh) {
+            this._debugMesh.dispose();
+            this._debugMesh = null;
+        }
+    }
+
+    /**
+     * Recursively appends a wireframe box (12 edges) for each leaf node, colored by its active LOD.
+     * @param node current tree node
+     * @param lines accumulated line segments (local space)
+     * @param colors accumulated per-segment colors
+     */
+    private _collectDebugBoxes(node: ISOGLODNode, lines: Vector3[][], colors: Color4[][]): void {
+        if (node.children) {
+            for (const child of node.children) {
+                this._collectDebugBoxes(child, lines, colors);
+            }
+            return;
+        }
+        if (node.activeLod === undefined) {
+            return;
+        }
+
+        const color = GsLodDebugColors[node.activeLod % GsLodDebugColors.length];
+        const mn = node.bound.min;
+        const mx = node.bound.max;
+        const corners = [
+            new Vector3(mn[0], mn[1], mn[2]),
+            new Vector3(mx[0], mn[1], mn[2]),
+            new Vector3(mx[0], mx[1], mn[2]),
+            new Vector3(mn[0], mx[1], mn[2]),
+            new Vector3(mn[0], mn[1], mx[2]),
+            new Vector3(mx[0], mn[1], mx[2]),
+            new Vector3(mx[0], mx[1], mx[2]),
+            new Vector3(mn[0], mx[1], mx[2]),
+        ];
+        const edges = [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 0],
+            [4, 5],
+            [5, 6],
+            [6, 7],
+            [7, 4],
+            [0, 4],
+            [1, 5],
+            [2, 6],
+            [3, 7],
+        ];
+        for (const edge of edges) {
+            lines.push([corners[edge[0]], corners[edge[1]]]);
+            colors.push([color, color]);
+        }
     }
 
     /**
@@ -191,6 +319,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (!entry || entry.count <= 0) {
             return;
         }
+
+        node.activeLod = bestLevel;
 
         let entries = this._entriesByFile.get(entry.file);
         if (!entries) {
