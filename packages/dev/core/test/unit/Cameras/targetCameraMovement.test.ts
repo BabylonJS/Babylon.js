@@ -129,4 +129,31 @@ describe("TargetCameraMovement", () => {
             expect(camera.movement.input.resolveInteraction("pointer", { button: 0 })).toBeNull();
         });
     });
+
+    describe("inertia accessor convergence", () => {
+        it("seeds the movement system's pan/rotation inertia from the camera default on construction", () => {
+            // Default Camera.inertia is 0.9; the constructor pushes it into the movement system.
+            expect(camera.inertia).toBe(0.9);
+            expect(camera.movement.panInertia).toBe(0.9);
+            expect(camera.movement.rotationInertia).toBe(0.9);
+        });
+
+        it("writes through to the movement system immediately when set", () => {
+            camera.inertia = 0.5;
+            expect(camera.movement.panInertia).toBe(0.5);
+            expect(camera.movement.rotationInertia).toBe(0.5);
+            // The getter reflects the stored value.
+            expect(camera.inertia).toBe(0.5);
+        });
+
+        it("does not clobber a directly-tuned movement inertia on each frame", () => {
+            // Previously _checkInputs re-synced inertia every frame, overwriting direct tuning.
+            // Now the camera only pushes inertia when its own `inertia` property is set.
+            camera.movement.panInertia = 0.2;
+            camera.movement.rotationInertia = 0.2;
+            camera._checkInputs();
+            expect(camera.movement.panInertia).toBe(0.2);
+            expect(camera.movement.rotationInertia).toBe(0.2);
+        });
+    });
 });

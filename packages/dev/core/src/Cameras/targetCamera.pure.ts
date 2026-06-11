@@ -44,6 +44,28 @@ export class TargetCamera extends Camera {
     public movement: CameraMovement;
 
     /**
+     * Defines the inertia (decay coefficient applied per reference frame at 60fps) of the camera.
+     * This helps giving a smooth feeling to the camera movement.
+     *
+     * Override of {@link Camera.inertia} that writes through to the {@link movement} system so the
+     * framerate-independent pan/rotation glide stays in sync. Setting this updates the movement
+     * system immediately (matching the accessor convergence used by {@link ArcRotateCamera}).
+     */
+    public override get inertia(): number {
+        return super.inertia;
+    }
+
+    public override set inertia(value: number) {
+        super.inertia = value;
+        // `movement` is constructed in this class' constructor; guard for the base-constructor
+        // assignment that runs before it exists.
+        if (this.movement) {
+            this.movement.panInertia = value;
+            this.movement.rotationInertia = value;
+        }
+    }
+
+    /**
      * When set, the up vector of the camera will be updated by the rotation of the camera
      */
     @serialize()
@@ -142,6 +164,10 @@ export class TargetCamera extends Camera {
         this.rotation = new Vector3(0, this.getScene().useRightHandedSystem ? Math.PI : 0, 0);
 
         this.movement = new TargetCameraMovement(this.getScene(), this.position);
+        // Seed movement-system inertia from the value set during base/subclass construction.
+        // After this point, the `inertia` setter on this class pushes directly to movement.
+        this.movement.panInertia = this.inertia;
+        this.movement.rotationInertia = this.inertia;
     }
 
     /**
@@ -360,8 +386,6 @@ export class TargetCamera extends Camera {
         movement.panAccumulatedPixels.addInPlace(this.cameraDirection);
         movement.rotationAccumulatedPixels.x += this.cameraRotation.x;
         movement.rotationAccumulatedPixels.y += this.cameraRotation.y;
-        movement.panInertia = this.inertia;
-        movement.rotationInertia = this.inertia;
         movement.computeCurrentFrameDeltas();
         this.cameraDirection.copyFrom(movement.panDeltaCurrentFrame);
         this.cameraRotation.set(movement.rotationDeltaCurrentFrame.x, movement.rotationDeltaCurrentFrame.y);
