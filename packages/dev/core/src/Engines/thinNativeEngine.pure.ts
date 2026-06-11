@@ -2341,6 +2341,76 @@ export class ThinNativeEngine extends ThinEngine {
         return rtWrapper;
     }
 
+    public override createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as NativeRenderTargetWrapper;
+
+        let generateDepthBuffer = true;
+        let generateStencilBuffer = false;
+        let generateMipMaps = false;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        let format = Constants.TEXTUREFORMAT_RGBA;
+        let samples = 1;
+        if (options !== undefined && typeof options === "object") {
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
+            generateStencilBuffer = !!options.generateStencilBuffer;
+            generateMipMaps = !!options.generateMipMaps;
+            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
+            samples = options.samples ?? 1;
+        }
+
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        texture.isCube = true;
+        texture.baseWidth = size;
+        texture.baseHeight = size;
+        texture.width = size;
+        texture.height = size;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.type = type;
+        texture.format = format;
+
+        const nativeTexture = texture._hardwareTexture!.underlyingResource;
+        const nativeTextureFormat = getNativeTextureFormat(format, type);
+        // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
+        const hasMips = samples > 1 ? false : generateMipMaps;
+        this._engine.initializeTexture(nativeTexture, size, size, hasMips, nativeTextureFormat, /*renderTarget*/ true, /*srgb*/ false, samples, /*isCube*/ true);
+        this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
+
+        // The native engine cannot render to all six faces through one framebuffer, so create one
+        // framebuffer per face (the C++ side binds the matching cube layer); bindFramebuffer(faceIndex)
+        // then selects the right one.
+        const framebuffers: NativeFramebuffer[] = [];
+        for (let face = 0; face < 6; face++) {
+            framebuffers.push(this._engine.createFrameBuffer(nativeTexture, size, size, generateStencilBuffer, generateDepthBuffer, samples, face));
+        }
+
+        rtWrapper._framebuffers = framebuffers;
+        rtWrapper._generateDepthBuffer = generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = generateStencilBuffer;
+        rtWrapper._samples = samples;
+
+        rtWrapper.setTextures(texture);
+
+        return rtWrapper;
+    }
+
+    public override generateMipMapsForCubemap(_texture: InternalTexture, _unbind = true): void {
+        // The WebGL path rebinds gl.TEXTURE_CUBE_MAP and calls gl.generateMipmap; both deref _gl, which is
+        // null on Native. bgfx auto-generates the mip chain when a render target texture created with mips is
+        // resolved (the same way 2D RTTs get their mips here -- unBindFramebuffer issues no explicit mipgen),
+        // so this is a no-op on Native.
+    }
+
     public override updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
         if (rtWrapper.samples === samples) {
             return samples;
@@ -2422,15 +2492,16 @@ export class ThinNativeEngine extends ThinEngine {
 
         this._currentRenderTarget = texture;
 
-        if (faceIndex) {
-            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
-        }
-
         if (requiredWidth || requiredHeight) {
             throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
         }
 
-        if (nativeRTWrapper._framebufferDepthStencil) {
+        if (nativeRTWrapper._framebuffers) {
+            // Cube render target: bind the framebuffer for the requested face.
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffers[faceIndex ?? 0]);
+        } else if (faceIndex) {
+            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
+        } else if (nativeRTWrapper._framebufferDepthStencil) {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebufferDepthStencil);
         } else {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
