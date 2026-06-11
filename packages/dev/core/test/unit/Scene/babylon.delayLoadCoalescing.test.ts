@@ -4,11 +4,14 @@ import { Constants } from "core/Engines/constants";
 import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Flush pending microtasks (and the macrotask queue) so the in-flight cache cleanup runs.
+// Flush pending microtasks and macrotasks. The delay-load path chains several async hops
+// (queue -> coalescing helper -> file load -> cache cleanup), so drain a few ticks to fully settle.
 async function flushAsync() {
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    }
 }
 
 describe("Scene delay-loaded file coalescing", () => {
@@ -24,6 +27,10 @@ describe("Scene delay-loaded file coalescing", () => {
             lockstepMaxSteps: 1,
         });
         scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it("coalesces concurrent requests for the same file into a single load", async () => {
@@ -131,5 +138,22 @@ describe("Scene delay-loaded file coalescing", () => {
         expect(scene.getWaitingItemsCount()).toBe(0);
         expect(errorSpy).toHaveBeenCalledTimes(1);
         expect(mesh._delayLoadingFunction).not.toHaveBeenCalled();
+    });
+
+    it("does not log a delay-load failure that is caused by the scene being disposed", async () => {
+        vi.spyOn(scene, "_loadFileAsync").mockRejectedValue(new Error("aborted"));
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        const mesh = new Mesh("disposing", scene);
+        mesh.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+        mesh.delayLoadingFile = "scene/aborted.babylonbinarymeshdata";
+        mesh._delayLoadingFunction = vi.fn();
+
+        mesh._checkDelayState();
+        // Disposing aborts in-flight requests; the resulting rejection is expected teardown, not an error to log.
+        scene.dispose();
+        await flushAsync();
+
+        expect(errorSpy).not.toHaveBeenCalled();
     });
 });

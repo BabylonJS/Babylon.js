@@ -6487,7 +6487,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         let request = this._delayedFileRequests.get(key);
         if (!request) {
-            request = this._loadFileAsync(url, undefined, useOfflineSupport, useArrayBuffer as any);
+            // Branch on the literal type so the correct _loadFileAsync overload is selected without an unsafe cast.
+            request = useArrayBuffer ? this._loadFileAsync(url, undefined, useOfflineSupport, true) : this._loadFileAsync(url, undefined, useOfflineSupport, false);
 
             // Only coalesce while the request is in flight: remove it once settled so later loads can re-fetch.
             const requestToClear = request;

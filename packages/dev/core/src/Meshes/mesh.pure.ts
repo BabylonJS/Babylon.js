@@ -3115,10 +3115,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene.removePendingData(this);
             } catch (error) {
-                // Remove the pending data so the scene can still become ready, and surface the failure for debugging.
+                // Remove the pending data so the scene can still become ready.
                 // The state is intentionally left as LOADING so a persistently failing file is not re-fetched every frame.
                 scene.removePendingData(this);
-                Logger.Error(`Unable to delay load geometry data for mesh "${this.name}" from "${this.delayLoadingFile}": ${error}`);
+                // Don't log when the scene is being disposed: in-flight requests are aborted as part of normal teardown.
+                if (!scene.isDisposed) {
+                    Logger.Error(`Unable to delay load geometry data for mesh "${this.name}" from "${this.delayLoadingFile}": ${error}`);
+                }
             }
         })();
 

@@ -886,10 +886,13 @@ export class Geometry implements IGetSetVerticesData {
                     onLoaded();
                 }
             } catch (error) {
-                // Remove the pending data so the scene can still become ready, and surface the failure for debugging.
+                // Remove the pending data so the scene can still become ready.
                 // The state is intentionally left as LOADING so a persistently failing file is not re-fetched every frame.
                 scene.removePendingData(this);
-                Logger.Error(`Unable to delay load geometry "${this.id}" from "${this.delayLoadingFile}": ${error}`);
+                // Don't log when the scene is being disposed: in-flight requests are aborted as part of normal teardown.
+                if (!scene.isDisposed) {
+                    Logger.Error(`Unable to delay load geometry "${this.id}" from "${this.delayLoadingFile}": ${error}`);
+                }
             }
         })();
     }
