@@ -3,22 +3,38 @@
 import { type Nullable } from "core/types";
 
 /**
+ * Message commands exchanged with the Gaussian Splatting depth-sort worker. Every message carries a
+ * `command` field naming the intended work, instead of inferring it from which payload is present.
+ */
+export const GaussianSplattingSortWorkerCommand = {
+    /** Main -> worker: set the source splat centers (stride 4: xyz + 1). */
+    POSITIONS: "positions",
+    /** Main -> worker: set the compound-mesh rig node matrices. */
+    PART_MATRICES: "partMatrices",
+    /** Main -> worker: set the compound-mesh per-splat rig node indices. */
+    PART_INDICES: "partIndices",
+    /** Main -> worker: set the active source-splat ranges (flat [start0, count0, ...]). */
+    INTERVALS: "intervals",
+    /** Main -> worker: sort the active splats for a camera view. */
+    SORT: "sort",
+    /** Worker -> main: a completed sort result. */
+    SORTED: "sorted",
+} as const;
+
+/**
  * Depth-sort web worker body for Gaussian Splatting meshes.
  *
  * The function is self-contained: it is serialized with `Function.prototype.toString()` and run
- * inside a `Blob`-backed `Worker`, so it must not reference anything from its enclosing module.
+ * inside a `Blob`-backed `Worker`, so it must not reference anything from its enclosing module
+ * (including {@link GaussianSplattingSortWorkerCommand} — the command literals are duplicated here).
  *
- * Messages handled (PlayCanvas-style protocol):
- * - `{ positions }`            once on init: source splat centers, stride 4 (xyz + 1).
- * - `{ partMatrices }`         compound-mesh rig node matrices.
- * - `{ partIndices }`          compound-mesh per-splat rig node index.
- * - `{ intervals }`            active source-splat ranges as flat [start0, count0, start1, count1, ...].
- *                              Persisted across sort requests. The main thread always sends one
- *                              (covering all indices when no LOD filter is active) instead of letting
- *                              the worker assume the full set.
- * - sort request              `{ worldMatrix, cameraForward, cameraPosition, depthMix, cameraId, sortRequestId }`:
- *                              sorts only the splats inside the active intervals, back-to-front,
- *                              and posts back `{ depthMix, cameraId, sortRequestId }`.
+ * The intended work for each message is selected explicitly via its `command` field:
+ * - `positions`    set source splat centers (stride 4: xyz + 1).
+ * - `partMatrices` set compound-mesh rig node matrices.
+ * - `partIndices`  set compound-mesh per-splat rig node indices.
+ * - `intervals`    set active source-splat ranges (flat [start0, count0, ...]); persisted across sorts.
+ * - `sort`         sort the active splats for `{ worldMatrix, cameraForward, cameraPosition, depthMix,
+ *                  cameraId, sortRequestId }` and post back a `sorted` result.
  *
  * @param self - the worker global scope
  */
@@ -34,24 +50,19 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
     let intervals: Nullable<Uint32Array> = null;
 
     self.onmessage = (e: any) => {
-        // updated on init
-        if (e.data.positions) {
+        // The intended work is selected explicitly via the message `command` field. These string
+        // literals must match GaussianSplattingSortWorkerCommand above (this body is serialized in
+        // isolation and cannot reference the shared constant).
+        const command = e.data.command;
+        if (command === "positions") {
             positions = e.data.positions;
-        }
-        // update on rig node changed
-        else if (e.data.partMatrices) {
+        } else if (command === "partMatrices") {
             partMatrices = e.data.partMatrices;
-        }
-        // update on rig node indices changed
-        else if (e.data.partIndices !== undefined) {
+        } else if (command === "partIndices") {
             partIndices = e.data.partIndices;
-        }
-        // update on active interval set changed
-        else if (e.data.intervals !== undefined) {
+        } else if (command === "intervals") {
             intervals = e.data.intervals;
-        }
-        // update on view changed
-        else {
+        } else if (command === "sort") {
             const cameraId = e.data.cameraId;
             const sortRequestId = e.data.sortRequestId;
             const globalWorldMatrix = e.data.worldMatrix;
@@ -62,7 +73,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
 
             if (!positions || !cameraForward) {
                 // Sort request arrived before positions were initialized — return the buffer unchanged so the main thread can unlock _canPostToWorker.
-                self.postMessage({ depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
+                self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
                 return;
             }
 
@@ -150,7 +161,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                 console.error("Gaussian splat sort worker encountered an error (will retry next frame):", sortError);
             }
 
-            self.postMessage({ depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
+            self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
         }
     };
 };

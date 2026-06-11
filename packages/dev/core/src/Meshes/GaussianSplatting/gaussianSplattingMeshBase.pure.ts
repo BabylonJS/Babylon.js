@@ -26,7 +26,7 @@ import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
-import { GaussianSplattingSortWorker } from "./gaussianSplattingSortWorker";
+import { GaussianSplattingSortWorker, GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -712,7 +712,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             return;
         }
         const intervals = this._activeSplatRanges ? new Uint32Array(this._activeSplatRanges) : new Uint32Array([0, this._vertexCount]);
-        this._worker.postMessage({ intervals }, [intervals.buffer]);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.INTERVALS, intervals }, [intervals.buffer]);
     }
 
     /**
@@ -1306,6 +1306,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     if (this._worker) {
                         this._worker.postMessage(
                             {
+                                command: GaussianSplattingSortWorkerCommand.SORT,
                                 worldMatrix: worldMatrix.m,
                                 cameraForward: [cameraViewMatrix.m[2], cameraViewMatrix.m[6], cameraViewMatrix.m[10]],
                                 cameraPosition: [camera.globalPosition.x, camera.globalPosition.y, camera.globalPosition.z],
@@ -2448,7 +2449,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             if (this._worker) {
-                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+                this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
             }
 
             // Handle SH textures in update path - create if they don't exist
@@ -2536,7 +2537,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 if (this._worker) {
                     const positions = Float32Array.from(this._splatPositions!);
                     const vertexCount = this._vertexCount;
-                    this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+                    this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
                 }
                 this._postToWorker(true);
             }
@@ -2575,7 +2576,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._worker) {
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
         }
         this._sortIsDirty = true;
     }
@@ -2937,7 +2938,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const positions = Float32Array.from(this._splatPositions!);
 
-        this._worker.postMessage({ positions }, [positions.buffer]);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions }, [positions.buffer]);
         // The main thread owns the active interval set: send it explicitly (covering all indices when
         // no LOD filter is active) rather than letting the worker assume the full source set.
         this._postIntervalsToWorker();
