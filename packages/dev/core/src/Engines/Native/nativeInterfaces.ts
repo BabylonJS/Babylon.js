@@ -464,45 +464,21 @@ export const enum NativeTraceLevel {
 /** @internal */
 export interface INative {
     // NativeEngine plugin
-    /**
-     *
-     */
     Engine: INativeEngineConstructor;
-    /**
-     *
-     */
     NativeDataStream: INativeDataStreamConstructor;
 
     // NativeCamera plugin
-    /**
-     *
-     */
     Camera?: INativeCameraConstructor;
 
     // NativeCanvas plugin
-    /**
-     *
-     */
     Canvas?: INativeCanvasConstructor;
-    /**
-     *
-     */
     Image?: INativeImageConstructor;
-    /**
-     *
-     */
     Path2D?: INativePath2DConstructor;
 
     // Native XMLHttpRequest polyfill
-    /**
-     *
-     */
     XMLHttpRequest?: typeof XMLHttpRequest;
 
     // NativeInput plugin
-    /**
-     *
-     */
     DeviceInputSystem?: IDeviceInputSystemConstructor;
 
     // NativeTracing plugin
