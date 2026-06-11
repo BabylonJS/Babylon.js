@@ -307,6 +307,10 @@ export class ThinNativeEngine extends ThinEngine {
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
         this._shaderPlatformName = "NATIVE";
+        // Babylon Native is not WebGL and has no _gl context. Report a distinct engine name (like
+        // WebGPU reports "WebGPU") so application/feature code that branches on engine.name === "WebGL"
+        // to touch the WebGL-only _gl context skips the native engine instead of dereferencing null.
+        this._name = "Native";
 
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
@@ -2821,7 +2825,15 @@ export class ThinNativeEngine extends ThinEngine {
         lod: number = 0,
         generateMipMaps = false
     ): void {
-        throw new Error("updateTextureData not implemented.");
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
+        // bgfx updates the requested sub-rectangle of the existing texture (faceIndex selects the cube
+        // face / array layer, lod selects the mip level). invertY is forwarded so the native side can match
+        // the vertical orientation the base texture upload uses. Mip regeneration after a partial update is
+        // not supported on Native, so generateMipMaps is ignored (consistent with the other raw-texture paths).
+        this._engine.updateTextureData(texture._hardwareTexture.underlyingResource, imageData, xOffset, yOffset, width, height, faceIndex, lod, texture.invertY);
     }
 
     /**
