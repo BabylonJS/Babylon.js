@@ -9,6 +9,8 @@ import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { Node } from "../node";
+import { type CameraMovement } from "./cameraMovement";
+import { TargetCameraMovement } from "./targetCameraMovement";
 
 // Temporary cache variables to avoid allocations.
 const TmpMatrix = /*#__PURE__*/ Matrix.Zero();
@@ -32,6 +34,14 @@ export class TargetCamera extends Camera {
      * Define the current rotation the camera is rotating to
      */
     public cameraRotation = new Vector2(0, 0);
+
+    /**
+     * Framerate-independent movement controller shared by the TargetCamera family
+     * (FreeCamera/FlyCamera/FollowCamera). Provides inertial physics and the configurable
+     * input map. Subclasses may replace it with a specialized {@link CameraMovement}
+     * (for example ArcRotateCamera uses ArcRotateCameraMovement).
+     */
+    public movement: CameraMovement;
 
     /**
      * When set, the up vector of the camera will be updated by the rotation of the camera
@@ -130,6 +140,8 @@ export class TargetCamera extends Camera {
 
         // Set the y component of the rotation to Math.PI in right-handed system for backwards compatibility.
         this.rotation = new Vector3(0, this.getScene().useRightHandedSystem ? Math.PI : 0, 0);
+
+        this.movement = new TargetCameraMovement(this.getScene(), this.position);
     }
 
     /**
@@ -339,9 +351,24 @@ export class TargetCamera extends Camera {
 
     /** @internal */
     public override _checkInputs(): void {
+        // Fold this frame's raw input — written to `cameraDirection`/`cameraRotation` by the input
+        // classes (and honored from direct external writes) — into the movement system, then let it
+        // produce framerate-independent per-frame deltas (input plus inertial glide). The applied
+        // delta is written back into `cameraDirection`/`cameraRotation` so the existing collision,
+        // gravity, and rotation-constraint logic below (and external polling) keep working unchanged.
+        const movement = this.movement;
+        movement.panAccumulatedPixels.addInPlace(this.cameraDirection);
+        movement.rotationAccumulatedPixels.x += this.cameraRotation.x;
+        movement.rotationAccumulatedPixels.y += this.cameraRotation.y;
+        movement.panInertia = this.inertia;
+        movement.rotationInertia = this.inertia;
+        movement.computeCurrentFrameDeltas();
+        this.cameraDirection.copyFrom(movement.panDeltaCurrentFrame);
+        this.cameraRotation.set(movement.rotationDeltaCurrentFrame.x, movement.rotationDeltaCurrentFrame.y);
+
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
-        const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
+        const needToRotate = !!(this.cameraRotation.x || this.cameraRotation.y);
 
         this._deferredUpdated = false;
         this._deferredRotationUpdate.copyFrom(this.rotation);
@@ -402,34 +429,12 @@ export class TargetCamera extends Camera {
             }
         }
 
-        const inertialPanningLimit = this.speed * this._panningEpsilon;
-        const inertialRotationLimit = this.speed * this._rotationEpsilon;
-        // Inertia
-        if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < inertialPanningLimit) {
-                this.cameraDirection.x = 0;
-            }
-
-            if (Math.abs(this.cameraDirection.y) < inertialPanningLimit) {
-                this.cameraDirection.y = 0;
-            }
-
-            if (Math.abs(this.cameraDirection.z) < inertialPanningLimit) {
-                this.cameraDirection.z = 0;
-            }
-
-            this.cameraDirection.scaleInPlace(this.inertia);
-        }
-        if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < inertialRotationLimit) {
-                this.cameraRotation.x = 0;
-            }
-
-            if (Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
-                this.cameraRotation.y = 0;
-            }
-            this.cameraRotation.scaleInPlace(this.inertia);
-        }
+        // The movement system now owns inertial decay (framerate-independent), so reset the
+        // per-frame delta surfaces. Glide persists inside the movement velocity and is re-emitted
+        // next frame via `computeCurrentFrameDeltas`; zeroing here prevents the just-applied delta
+        // from being re-folded into the accumulators on the next frame.
+        this.cameraDirection.setAll(0);
+        this.cameraRotation.set(0, 0);
 
         super._checkInputs();
     }

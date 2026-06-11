@@ -23,5 +23,6 @@ export * from "./RigModes/pure";
 export * from "./geospatialCamera.pure";
 export * from "./inputMapper";
 export * from "./cameraMovement";
+export * from "./targetCameraMovement";
 export * from "./geospatialCameraMovement";
 export * from "./arcRotateCameraMovement";
