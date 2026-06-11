@@ -3,7 +3,7 @@
 /* eslint-disable jsdoc/require-returns-check */
 import { type Observer, Observable } from "../Misc/observable.pure";
 import { AsyncLoop } from "../Misc/tools.pure";
-import { LoadFile, LoadImage } from "../Misc/fileTools.pure";
+import { LoadImage } from "../Misc/fileTools.pure";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
@@ -3098,9 +3098,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
 
-        LoadFile(
-            this.delayLoadingFile,
-            (data) => {
+        void (async () => {
+            try {
+                const data = await scene._loadDelayedFileAsync(this.delayLoadingFile, getBinaryData, true);
                 if (data instanceof ArrayBuffer) {
                     this._delayLoadingFunction(data, this);
                 } else {
@@ -3114,11 +3114,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene.removePendingData(this);
-            },
-            () => {},
-            scene.offlineProvider,
-            getBinaryData
-        );
+            } catch (error) {
+                // Remove the pending data so the scene can still become ready, and surface the failure for debugging.
+                // The state is intentionally left as LOADING so a persistently failing file is not re-fetched every frame.
+                scene.removePendingData(this);
+                Logger.Error(`Unable to delay load geometry data for mesh "${this.name}" from "${this.delayLoadingFile}": ${error}`);
+            }
+        })();
+
         return this;
     }
 
