@@ -61,7 +61,17 @@ export interface INativeEngine {
     getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 
     createTexture(): NativeTexture;
-    initializeTexture(texture: NativeTexture, width: number, height: number, hasMips: boolean, format: number, renderTarget: boolean, srgb: boolean, samples: number): void;
+    initializeTexture(
+        texture: NativeTexture,
+        width: number,
+        height: number,
+        hasMips: boolean,
+        format: number,
+        renderTarget: boolean,
+        srgb: boolean,
+        samples: number,
+        isCube?: boolean
+    ): void;
     loadTexture(texture: NativeTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadRawTexture2DArray(
@@ -100,7 +110,8 @@ export interface INativeEngine {
         height: number,
         generateStencilBuffer: boolean,
         generateDepthBuffer: boolean,
-        samples: number
+        samples: number,
+        layer?: number
     ): NativeFramebuffer;
 
     getRenderWidth(): number;
