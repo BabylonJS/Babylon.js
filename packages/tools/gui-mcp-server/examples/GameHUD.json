@@ -1,0 +1,89 @@
+{
+  "root": {
+    "name": "root",
+    "className": "Container",
+    "children": [
+      {
+        "name": "topBar",
+        "className": "Rectangle",
+        "width": "1",
+        "height": "60px",
+        "verticalAlignment": 0,
+        "background": "rgba(0,0,0,0.6)",
+        "thickness": 0,
+        "children": [
+          {
+            "name": "topStack",
+            "className": "StackPanel",
+            "isVertical": false,
+            "width": "1",
+            "height": "1",
+            "children": [
+              {
+                "name": "scoreLabel",
+                "className": "TextBlock",
+                "text": "Score: 12500",
+                "color": "gold",
+                "fontSize": "28px",
+                "width": "200px"
+              },
+              {
+                "name": "levelLabel",
+                "className": "TextBlock",
+                "text": "Level 7",
+                "color": "white",
+                "fontSize": "22px",
+                "width": "100px"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "healthFrame",
+        "className": "Rectangle",
+        "width": "300px",
+        "height": "30px",
+        "left": "20px",
+        "top": "-20px",
+        "verticalAlignment": 1,
+        "horizontalAlignment": 0,
+        "background": "#333",
+        "cornerRadius": 5,
+        "children": [
+          {
+            "name": "healthFill",
+            "className": "Rectangle",
+            "width": "0.75",
+            "height": "1",
+            "horizontalAlignment": 0,
+            "background": "linear-gradient(#4CAF50, #66BB6A)",
+            "thickness": 0
+          },
+          {
+            "name": "healthText",
+            "className": "TextBlock",
+            "text": "75/100",
+            "color": "white",
+            "fontSize": "14px"
+          }
+        ]
+      },
+      {
+        "name": "minimapFrame",
+        "className": "Rectangle",
+        "width": "200px",
+        "height": "200px",
+        "left": "-20px",
+        "top": "-20px",
+        "verticalAlignment": 1,
+        "horizontalAlignment": 1,
+        "background": "rgba(0,0,0,0.5)",
+        "thickness": 2,
+        "color": "#888"
+      }
+    ]
+  },
+  "width": 1920,
+  "height": 1080
+}

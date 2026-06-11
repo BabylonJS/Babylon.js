@@ -1,5 +1,5 @@
 import { serialize, serializeAsColor4, serializeAsCameraReference } from "../Misc/decorators";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { Observable } from "../Misc/observable";
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";
@@ -14,8 +14,8 @@ import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
 import { type PostProcess } from "../PostProcesses/postProcess";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Effect } from "../Materials/effect";
 import { type Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";

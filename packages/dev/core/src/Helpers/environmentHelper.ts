@@ -1,22 +1,22 @@
 import { Observable } from "../Misc/observable";
 import { type Nullable } from "../types";
-import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
+import { ArcRotateCamera } from "../Cameras/arcRotateCamera.pure";
 import { type Scene } from "../scene";
-import { Vector3 } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
+import { Vector3 } from "../Maths/math.vector.pure";
+import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
-import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
-import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
+import { Mesh } from "../Meshes/mesh.pure";
+import { BaseTexture } from "../Materials/Textures/baseTexture.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { MirrorTexture } from "../Materials/Textures/mirrorTexture.pure";
+import { CubeTexture } from "../Materials/Textures/cubeTexture.pure";
+import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial.pure";
 import { Constants } from "../Engines/constants";
 
-import { CreatePlane } from "../Meshes/Builders/planeBuilder";
-import { CreateBox } from "../Meshes/Builders/boxBuilder";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder.pure";
+import { CreateBox } from "../Meshes/Builders/boxBuilder.pure";
 import { Plane } from "../Maths/math.plane";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 /**
  * Represents the different options available during the creation of

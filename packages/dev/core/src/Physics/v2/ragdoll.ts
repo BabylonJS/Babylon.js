@@ -1,5 +1,5 @@
 import { type Skeleton } from "../../Bones/skeleton";
-import { Vector3, Matrix, TmpVectors, Quaternion } from "../../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, Quaternion } from "../../Maths/math.vector.pure";
 import { type Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
@@ -9,7 +9,7 @@ import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IP
 import { type Nullable } from "../../types";
 import { type Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
-import { TransformNode } from "../../Meshes/transformNode";
+import { TransformNode } from "../../Meshes/transformNode.pure";
 import { type Observer } from "../../Misc/observable";
 
 /**

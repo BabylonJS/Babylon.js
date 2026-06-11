@@ -1,8 +1,8 @@
 import { type Nullable, type FloatArray } from "../types";
-import { Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type TransformNode } from "../Meshes/transformNode";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type Sprite } from "../Sprites/sprite";
 import { type Mesh } from "../Meshes/mesh";
 

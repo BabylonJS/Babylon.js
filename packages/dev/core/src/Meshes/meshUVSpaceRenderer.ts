@@ -1,2 +1,2 @@
 export * from "./meshUVSpaceRenderer.pure";
-export * from "./meshUVSpaceRenderer.types";
+export type * from "./meshUVSpaceRenderer.types";

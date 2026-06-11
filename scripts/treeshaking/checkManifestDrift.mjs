@@ -27,11 +27,16 @@ const REPO_ROOT = resolve(__dirname, "../..");
 const COMMITTED_MANIFEST = resolve(__dirname, "side-effects-manifest/core");
 const TMP_MANIFEST_ROOT = resolve(__dirname, ".tmp-manifest-check");
 const TMP_MANIFEST = resolve(TMP_MANIFEST_ROOT, "core");
+const MANIFEST_ANNOTATION_FILE = "scripts/treeshaking/side-effects-manifest/core/_root.json";
 const IS_ADO = !!process.env.TF_BUILD;
 
-function adoError(msg) {
+function escapeAdo(value) {
+    return String(value).replace(/%/g, "%AZP25").replace(/\r/g, "%0D").replace(/\n/g, "%0A").replace(/]/g, "%5D").replace(/;/g, "%3B");
+}
+
+function adoError(msg, sourcePath = MANIFEST_ANNOTATION_FILE) {
     if (IS_ADO) {
-        console.log(`##vso[task.logissue type=error]${msg}`);
+        console.log(`##vso[task.logissue type=error;sourcepath=${escapeAdo(sourcePath)};linenumber=1]${escapeAdo(msg)}`);
     }
 }
 

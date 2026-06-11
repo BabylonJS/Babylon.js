@@ -2,7 +2,7 @@
 import { Constants } from "../../Engines/constants";
 import { serialize, expandToProperty } from "../../Misc/decorators";
 import { MaterialDefines } from "../materialDefines";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { type PBRBaseMaterial } from "./pbrBaseMaterial";
 
 /**
@@ -187,6 +187,10 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         this._enable(true);
     }
 
+    /**
+     * Updates the material defines for BRDF settings.
+     * @param defines defines the material defines to update
+     */
     public override prepareDefines(defines: MaterialBRDFDefines): void {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;

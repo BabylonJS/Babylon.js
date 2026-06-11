@@ -16,7 +16,7 @@ import {
     type IStencilStateProperties,
 } from "core/index";
 import { Constants } from "../Engines/constants";
-import { EffectRenderer } from "../Materials/effectRenderer";
+import { EffectRenderer } from "../Materials/effectRenderer.pure";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import { FrameGraphContext } from "./frameGraphContext";
 import { IsDepthTexture } from "../Materials/Textures/textureHelper.functions";

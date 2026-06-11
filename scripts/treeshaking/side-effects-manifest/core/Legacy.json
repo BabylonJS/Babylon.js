@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "Legacy/legacy.ts": ["top-level-call"]
+    }
+}

@@ -9,9 +9,9 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type TransformNode } from "../../Meshes/transformNode";
-import { Vector3 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector.pure";
 import { type Animatable } from "../../Animations/animatable.core";
-import { Animation } from "../../Animations/animation";
+import { Animation } from "../../Animations/animation.pure";
 
 /**
  * The framing behavior (FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.

@@ -9,10 +9,10 @@ import {
     type BaseTexture,
     type Color4,
 } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration.pure";
 
 /**
  * Options used to create a ThinImageProcessingPostProcessOptions.

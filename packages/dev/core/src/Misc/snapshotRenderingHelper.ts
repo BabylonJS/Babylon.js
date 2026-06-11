@@ -20,8 +20,8 @@ import {
 
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
-import { ScenePerformancePriority } from "core/scene";
-import { TmpVectors } from "core/Maths/math.vector";
+import { ScenePerformancePriority } from "core/scene.pure";
+import { TmpVectors } from "core/Maths/math.vector.pure";
 import { Logger } from "core/Misc/logger";
 import { FrameGraphBaseLayerTask } from "../FrameGraph/Tasks/Layers/baseLayerTask";
 import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";

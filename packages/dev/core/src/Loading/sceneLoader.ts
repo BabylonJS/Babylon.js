@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { Observable } from "../Misc/observable";
 import { type DeepImmutable, type Nullable } from "../types";
-import { Scene } from "../scene";
+import { Scene } from "../scene.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type AnimationGroup } from "../Animations/animationGroup";
@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { type IFileRequest } from "../Misc/fileRequest";
 import { type WebRequest } from "../Misc/webRequest";
-import { type LoadFileError, IsBase64DataUrl } from "../Misc/fileTools";
+import { type LoadFileError, IsBase64DataUrl } from "../Misc/fileTools.pure";
 import { type TransformNode } from "../Meshes/transformNode";
 import { type Geometry } from "../Meshes/geometry";
 import { type Light } from "../Lights/light";

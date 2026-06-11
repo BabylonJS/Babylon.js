@@ -1,14 +1,14 @@
 import { Observable } from "../Misc/observable";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Vector3 } from "../Maths/math.vector.pure";
 import { type Ray } from "../Culling/ray";
 import { type Scene } from "../scene";
 import { type WebXRAbstractMotionController } from "./motionController/webXRAbstractMotionController";
-import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
-import { Tools } from "../Misc/tools";
+import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager.pure";
+import { Tools } from "../Misc/tools.pure";
 import { type WebXRCamera } from "./webXRCamera";
 import { type WebXRSessionManager } from "./webXRSessionManager";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 
 let IdCount = 0;
 

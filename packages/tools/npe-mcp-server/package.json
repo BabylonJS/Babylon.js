@@ -1,0 +1,30 @@
+{
+    "name": "@tools/npe-mcp-server",
+    "version": "1.0.0",
+    "private": true,
+    "description": "MCP server for AI-driven Node Particle Editor operations in Babylon.js",
+    "type": "module",
+    "main": "dist/index.js",
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "rollup -c",
+        "start": "node dist/index.js",
+        "dev": "tsc --watch"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.12.1",
+        "@tools/mcp-server-core": "1.0.0",
+        "@tools/snippet-loader": "1.0.0",
+        "zod": "^4.3.6"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^26.0.1",
+        "@rollup/plugin-json": "^6.1.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "@types/node": "^20.11.0",
+        "esbuild": "^0.25.0",
+        "rollup": "^4.59.0",
+        "typescript": "^5.3.3"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "@tools/mcp-server-core",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist",
+        "compile": "tsc -b tsconfig.build.json"
+    },
+    "sideEffects": false
+}

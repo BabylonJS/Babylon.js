@@ -5,7 +5,7 @@ import { type Scene } from "../../scene";
 import { type GeospatialCamera } from "../geospatialCamera";
 import { type ICameraInput, CameraInputTypes } from "../cameraInputsManager";
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type KeyboardConditions } from "../inputMapper";
 

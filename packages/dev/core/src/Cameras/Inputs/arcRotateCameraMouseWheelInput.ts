@@ -5,11 +5,11 @@ import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Plane } from "../../Maths/math.plane";
-import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector.pure";
 import { Epsilon } from "../../Maths/math.constants";
 import { type IWheelEvent, EventConstants } from "../../Events/deviceInputEvents";
 import { Clamp } from "../../Maths/math.scalar.functions";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 
 /**
  * Firefox uses a different scheme to report scroll distances to other

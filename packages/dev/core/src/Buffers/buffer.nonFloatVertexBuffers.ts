@@ -33,6 +33,7 @@ function IsSignedType(type: number): boolean {
         case VertexBuffer.SHORT:
         case VertexBuffer.INT:
         case VertexBuffer.FLOAT:
+        case VertexBuffer.HALF_FLOAT:
             return true;
         case VertexBuffer.UNSIGNED_BYTE:
         case VertexBuffer.UNSIGNED_SHORT:
@@ -67,7 +68,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
             continue;
         }
 
-        const currentVertexBufferType = currentVertexBuffer.normalized ? VertexBuffer.FLOAT : currentVertexBuffer.type;
+        const currentVertexBufferType = currentVertexBuffer.normalized || currentVertexBuffer.type === VertexBuffer.HALF_FLOAT ? VertexBuffer.FLOAT : currentVertexBuffer.type;
         const vertexBufferType = pipelineContext.vertexBufferKindToType[kind];
 
         if (

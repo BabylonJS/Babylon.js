@@ -1,0 +1,127 @@
+{
+  "root": {
+    "name": "root",
+    "className": "Container",
+    "children": [
+      {
+        "name": "bg",
+        "className": "Rectangle",
+        "width": "1",
+        "height": "1",
+        "background": "#1A1A2E",
+        "thickness": 0,
+        "children": [
+          {
+            "name": "card",
+            "className": "Rectangle",
+            "width": "400px",
+            "height": "450px",
+            "background": "#16213E",
+            "cornerRadius": 20,
+            "thickness": 1,
+            "color": "#333",
+            "children": [
+              {
+                "name": "formStack",
+                "className": "StackPanel",
+                "isVertical": true,
+                "width": "320px",
+                "children": [
+                  {
+                    "name": "logo",
+                    "className": "TextBlock",
+                    "text": "🔐 Welcome Back",
+                    "color": "#E94560",
+                    "fontSize": "28px",
+                    "height": "60px"
+                  },
+                  {
+                    "name": "userLabel",
+                    "className": "TextBlock",
+                    "text": "Username",
+                    "color": "#AAA",
+                    "fontSize": "14px",
+                    "height": "25px",
+                    "horizontalAlignment": 0
+                  },
+                  {
+                    "name": "userInput",
+                    "className": "InputText",
+                    "placeholderText": "Enter username...",
+                    "placeholderColor": "#555",
+                    "color": "white",
+                    "background": "#0F3460",
+                    "height": "40px",
+                    "width": "1"
+                  },
+                  {
+                    "name": "passLabel",
+                    "className": "TextBlock",
+                    "text": "Password",
+                    "color": "#AAA",
+                    "fontSize": "14px",
+                    "height": "25px",
+                    "horizontalAlignment": 0
+                  },
+                  {
+                    "name": "passInput",
+                    "className": "InputPassword",
+                    "placeholderText": "Enter password...",
+                    "placeholderColor": "#555",
+                    "color": "white",
+                    "background": "#0F3460",
+                    "height": "40px",
+                    "width": "1"
+                  },
+                  {
+                    "name": "rememberRow",
+                    "className": "StackPanel",
+                    "isVertical": false,
+                    "height": "30px",
+                    "children": [
+                      {
+                        "name": "rememberCb",
+                        "className": "Checkbox",
+                        "isChecked": false,
+                        "width": "20px",
+                        "height": "20px",
+                        "color": "#E94560"
+                      },
+                      {
+                        "name": "rememberLabel",
+                        "className": "TextBlock",
+                        "text": "Remember me",
+                        "color": "#AAA",
+                        "fontSize": "14px",
+                        "width": "120px"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "loginBtn",
+                    "className": "Button",
+                    "width": "1",
+                    "height": "45px",
+                    "background": "#E94560",
+                    "color": "white",
+                    "cornerRadius": 8,
+                    "textBlockName": "loginBtn_text",
+                    "children": [
+                      {
+                        "name": "loginBtn_text",
+                        "className": "TextBlock",
+                        "text": "Log In"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "width": 1920,
+  "height": 1080
+}

@@ -1,9 +1,9 @@
 import { type IndicesArray } from "../types";
-import { Vector3 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Buffers/buffer";
+import { Vector3 } from "../Maths/math.vector.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { SubMesh } from "../Meshes/subMesh";
-import { Mesh } from "../Meshes/mesh";
-import { AsyncLoop } from "../Misc/tools";
+import { Mesh } from "../Meshes/mesh.pure";
+import { AsyncLoop } from "../Misc/tools.pure";
 import { Epsilon } from "../Maths/math.constants";
 import { RegisterMeshSimplificationSceneComponent } from "./meshSimplificationSceneComponent.pure";
 import { type ISimplificationSettings, SimplificationType } from "./meshSimplification.common";

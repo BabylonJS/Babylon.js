@@ -1,0 +1,260 @@
+{
+  "customType": "BABYLON.NodeGeometry",
+  "outputNodeId": 7,
+  "blocks": [
+    {
+      "customType": "BABYLON.BoxBlock",
+      "id": 1,
+      "name": "baseMesh",
+      "inputs": [
+        {
+          "name": "size",
+          "displayName": "size"
+        },
+        {
+          "name": "width",
+          "displayName": "width"
+        },
+        {
+          "name": "height",
+          "displayName": "height"
+        },
+        {
+          "name": "depth",
+          "displayName": "depth"
+        },
+        {
+          "name": "subdivisions",
+          "displayName": "subdivisions"
+        },
+        {
+          "name": "subdivisionsX",
+          "displayName": "subdivisionsX"
+        },
+        {
+          "name": "subdivisionsY",
+          "displayName": "subdivisionsY"
+        },
+        {
+          "name": "subdivisionsZ",
+          "displayName": "subdivisionsZ"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry"
+        }
+      ],
+      "evaluateContext": false
+    },
+    {
+      "customType": "BABYLON.SphereBlock",
+      "id": 2,
+      "name": "instanceMesh",
+      "inputs": [
+        {
+          "name": "segments",
+          "displayName": "segments"
+        },
+        {
+          "name": "diameter",
+          "displayName": "diameter"
+        },
+        {
+          "name": "diameterX",
+          "displayName": "diameterX"
+        },
+        {
+          "name": "diameterY",
+          "displayName": "diameterY"
+        },
+        {
+          "name": "diameterZ",
+          "displayName": "diameterZ"
+        },
+        {
+          "name": "arc",
+          "displayName": "arc"
+        },
+        {
+          "name": "slice",
+          "displayName": "slice"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry"
+        }
+      ],
+      "evaluateContext": false
+    },
+    {
+      "customType": "BABYLON.GeometryInputBlock",
+      "id": 3,
+      "name": "scaleFactor",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 2,
+      "contextualValue": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true,
+      "value": 0.05,
+      "valueType": "number"
+    },
+    {
+      "customType": "BABYLON.ScalingBlock",
+      "id": 4,
+      "name": "scale",
+      "inputs": [
+        {
+          "name": "scale",
+          "displayName": "scale"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "matrix",
+          "displayName": "matrix"
+        }
+      ]
+    },
+    {
+      "customType": "BABYLON.GeometryInputBlock",
+      "id": 5,
+      "name": "count",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "type": 1,
+      "contextualValue": 0,
+      "min": 0,
+      "max": 0,
+      "groupInInspector": "",
+      "displayInInspector": true,
+      "value": 200,
+      "valueType": "number"
+    },
+    {
+      "customType": "BABYLON.InstantiateOnFacesBlock",
+      "id": 6,
+      "name": "scatter",
+      "inputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry",
+          "inputName": "geometry",
+          "targetBlockId": 1,
+          "targetConnectionName": "geometry"
+        },
+        {
+          "name": "instance",
+          "displayName": "instance",
+          "inputName": "instance",
+          "targetBlockId": 2,
+          "targetConnectionName": "geometry"
+        },
+        {
+          "name": "count",
+          "displayName": "count",
+          "inputName": "count",
+          "targetBlockId": 5,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "matrix",
+          "displayName": "matrix",
+          "inputName": "matrix",
+          "targetBlockId": 4,
+          "targetConnectionName": "matrix"
+        },
+        {
+          "name": "offset",
+          "displayName": "offset"
+        },
+        {
+          "name": "rotation",
+          "displayName": "rotation"
+        },
+        {
+          "name": "scaling",
+          "displayName": "scaling"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "evaluateContext": true
+    },
+    {
+      "customType": "BABYLON.GeometryOutputBlock",
+      "id": 7,
+      "name": "output",
+      "inputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry",
+          "inputName": "geometry",
+          "targetBlockId": 6,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "comment": "Scatter small spheres across a box's faces.",
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 340,
+        "y": 0
+      },
+      {
+        "blockId": 2,
+        "x": 340,
+        "y": 180
+      },
+      {
+        "blockId": 3,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "blockId": 4,
+        "x": 340,
+        "y": 360
+      },
+      {
+        "blockId": 5,
+        "x": 340,
+        "y": 540
+      },
+      {
+        "blockId": 6,
+        "x": 680,
+        "y": 0
+      },
+      {
+        "blockId": 7,
+        "x": 1020,
+        "y": 0
+      }
+    ]
+  }
+}

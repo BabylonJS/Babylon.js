@@ -3,7 +3,7 @@ import { WebGLHardwareTexture } from "../Engines/WebGL/webGLHardwareTexture";
 import { type WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { MultiviewRenderTarget } from "../Materials/Textures/MultiviewRenderTarget";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Viewport } from "../Maths/math.viewport";
 import { type IDisposable, type Scene } from "../scene";
 import { type Nullable } from "../types";

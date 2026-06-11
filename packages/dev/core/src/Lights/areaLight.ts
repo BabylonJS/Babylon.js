@@ -1,2 +1,2 @@
 export * from "./areaLight.pure";
-export * from "./areaLight.types";
+export type * from "./areaLight.types";

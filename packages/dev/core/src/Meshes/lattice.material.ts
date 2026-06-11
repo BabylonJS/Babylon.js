@@ -1,6 +1,6 @@
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { type Material } from "core/Materials/material";
-import { MaterialPluginBase } from "core/Materials/materialPluginBase";
+import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
 import { type Lattice } from "./lattice";
 import { type Nullable } from "core/types";
 import { Constants } from "core/Engines/constants";

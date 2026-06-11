@@ -1,12 +1,12 @@
 import { Logger } from "../Misc/logger";
 import { type EventState, type Observer, Observable } from "../Misc/observable";
 import { type Nullable } from "../types";
-import { Vector3, type Quaternion } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Vector3, type Quaternion } from "../Maths/math.vector.pure";
+import { Color3 } from "../Maths/math.color.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
 import { type GizmoAnchorPoint, type GizmoCoordinatesMode, type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
-import { type IPlaneRotationGizmo, PlaneRotationGizmo } from "./planeRotationGizmo";
+import { type IPlaneRotationGizmo, PlaneRotationGizmo } from "./planeRotationGizmo.pure";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { type Node } from "../node";
 import { type PointerInfo } from "../Events/pointerEvents";

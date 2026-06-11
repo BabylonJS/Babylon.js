@@ -1,31 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";
 import { AtmospherePerCameraVariables } from "./atmospherePerCameraVariables";
 import { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
-import { type BaseTexture } from "core/Materials/Textures/baseTexture";
-import { type Camera } from "core/Cameras/camera";
-import { Color3 } from "core/Maths/math.color";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture.pure";
+import { type Camera } from "core/Cameras/camera.pure";
+import { Color3 } from "core/Maths/math.color.pure";
 import { Constants } from "core/Engines/constants";
 import { type DeepImmutable, type Nullable } from "core/types";
 import { DiffuseSkyIrradianceLut } from "./diffuseSkyIrradianceLut";
-import { type DirectionalLight } from "core/Lights/directionalLight";
-import { type Effect } from "core/Materials/effect";
-import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
+import { type DirectionalLight } from "core/Lights/directionalLight.pure";
+import { type Effect } from "core/Materials/effect.pure";
+import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { type IAtmosphereOptions } from "./atmosphereOptions";
 import { type IColor3Like, type IVector3Like } from "core/Maths/math.like";
-import { type IDisposable, type Scene } from "core/scene";
-import { Observable, type Observer } from "core/Misc/observable";
-import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
+import { type IDisposable, type Scene } from "core/scene.pure";
+import { Observable, type Observer } from "core/Misc/observable.pure";
+import { RegisterEnginesExtensionsEngineRenderTarget } from "core/Engines/Extensions/engine.renderTarget.pure";
+import { RegisterEngineUniformBuffer } from "core/Engines/Extensions/engine.uniformBuffer.pure";
+import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager.pure";
 import { type RenderingGroupInfo } from "core/Rendering/renderingManager";
-import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture.pure";
 import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 
 const MaterialPlugin = "atmo-pbr";
 
@@ -667,6 +669,9 @@ export class Atmosphere implements IDisposable {
         lights: DirectionalLight[],
         options?: IAtmosphereOptions
     ) {
+        RegisterEngineUniformBuffer();
+        RegisterEnginesExtensionsEngineRenderTarget();
+
         const engine = (this._engine = scene.getEngine());
 
         if (!engine.isWebGPU && engine.version < 2) {

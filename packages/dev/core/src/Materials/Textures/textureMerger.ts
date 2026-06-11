@@ -1,6 +1,6 @@
 import { type Scene } from "../../scene";
 import { type IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { ProceduralTexture } from "./Procedurals/proceduralTexture";
+import { ProceduralTexture } from "./Procedurals/proceduralTexture.pure";
 import { type BaseTexture } from "./baseTexture";
 import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

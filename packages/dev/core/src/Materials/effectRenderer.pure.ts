@@ -519,6 +519,9 @@ export class EffectWrapper {
         const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
 
         this._gatherImports(useWebGPU, this._importPromises);
+        if (this.options.useShaderStore && this._shaderPath.vertex === "postprocess") {
+            this._importPromises.push(useWebGPU && this._webGPUReady ? import("../ShadersWGSL/postprocess.vertex") : import("../Shaders/postprocess.vertex"));
+        }
         if (extraInitializations !== undefined) {
             extraInitializations(useWebGPU, this._importPromises);
         }
@@ -579,8 +582,7 @@ export class EffectWrapper {
         let extraInitializationsAsync: (() => Promise<void>) | undefined;
         if (this.options.extraInitializationsAsync) {
             extraInitializationsAsync = async () => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                waitImportsLoaded?.();
+                await waitImportsLoaded?.();
                 await this.options.extraInitializationsAsync();
             };
         } else {

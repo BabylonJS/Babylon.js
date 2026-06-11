@@ -1,6 +1,6 @@
 import { type SpriteManagerOptions, SpriteManager } from "./spriteManager";
 import { type Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 
 /**
  * Class used to manage multiple sprites of different sizes on the same spritesheet

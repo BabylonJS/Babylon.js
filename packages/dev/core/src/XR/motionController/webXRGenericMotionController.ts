@@ -6,8 +6,8 @@ import {
 } from "./webXRAbstractMotionController";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type Scene } from "../../scene";
-import { Mesh } from "../../Meshes/mesh";
-import { Quaternion } from "../../Maths/math.vector";
+import { Mesh } from "../../Meshes/mesh.pure";
+import { Quaternion } from "../../Maths/math.vector.pure";
 
 /**
  * A generic trigger-only motion controller for WebXR

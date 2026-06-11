@@ -1,0 +1,68 @@
+{
+  "format": "smartFilter",
+  "formatVersion": 1,
+  "name": "BlackAndWhite",
+  "namespace": null,
+  "comments": null,
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 680,
+        "y": 0
+      },
+      {
+        "blockId": 2,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "blockId": 3,
+        "x": 340,
+        "y": 0
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "name": "outputBlock",
+      "namespace": null,
+      "uniqueId": 1,
+      "blockType": "OutputBlock",
+      "comments": null,
+      "data": {}
+    },
+    {
+      "name": "source",
+      "namespace": "Inputs",
+      "uniqueId": 2,
+      "blockType": "Texture",
+      "comments": null,
+      "data": {
+        "value": null
+      }
+    },
+    {
+      "name": "bwEffect",
+      "namespace": "Babylon.Demo.Effects",
+      "uniqueId": 3,
+      "blockType": "BlackAndWhiteBlock",
+      "comments": null,
+      "data": {}
+    }
+  ],
+  "connections": [
+    {
+      "outputBlock": 2,
+      "outputConnectionPoint": "output",
+      "inputBlock": 3,
+      "inputConnectionPoint": "input"
+    },
+    {
+      "outputBlock": 3,
+      "outputConnectionPoint": "output",
+      "inputBlock": 1,
+      "inputConnectionPoint": "input"
+    }
+  ]
+}

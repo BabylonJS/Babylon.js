@@ -41,6 +41,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { SetToDefaultGaussianSplatting, SetToDefaultSFE } from "core/Materials/Node/nodeMaterialDefault";
 import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -656,6 +657,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                 )}
                 {GetInputProperties({ lockObject: this.props.lockObject, globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() })}
+                <McpSessionComponent globalState={this.props.globalState} />
             </PropertyTabComponentBase>
         );
     }

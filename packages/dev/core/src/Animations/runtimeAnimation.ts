@@ -1,5 +1,5 @@
 import { type Nullable } from "../types";
-import { Matrix } from "../Maths/math.vector";
+import { Matrix } from "../Maths/math.vector.pure";
 import {
     type _IAnimationState,
     Animation,
@@ -9,7 +9,7 @@ import {
     _StaticOffsetValueSize,
     _StaticOffsetValueVector2,
     _StaticOffsetValueVector3,
-} from "./animation";
+} from "./animation.pure";
 import { type AnimationEvent } from "./animationEvent";
 import { type Animatable } from "./animatable";
 import { type Scene } from "../scene";

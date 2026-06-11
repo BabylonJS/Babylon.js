@@ -16,7 +16,7 @@ import { Attractor } from "./attractor";
 import { Logger } from "../Misc/logger";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { type IDisposable, Scene } from "../scene.pure";
-import { type Effect } from "../Materials/effect.pure";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect.pure";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
@@ -27,6 +27,7 @@ import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
@@ -96,6 +97,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _actualFrame = 0;
     private _drawWrappers: { [blendMode: number]: DrawWrapper };
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
+    private _renderShadersLoaded = false;
 
     private readonly _rawTextureWidth = 256;
 
@@ -1498,7 +1500,30 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             this.fillUniformsAttributesAndSamplerNames(uniforms, attributes, samplers);
 
-            drawWrapper.setEffect(this._engine.createEffect("gpuRenderParticles", attributes, uniforms, samplers, join), join);
+            const shaderLanguage = this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            drawWrapper.setEffect(
+                this._engine.createEffect(
+                    "gpuRenderParticles",
+                    <IEffectCreationOptions>{
+                        attributes,
+                        uniformsNames: uniforms,
+                        samplers,
+                        defines: join,
+                        shaderLanguage,
+                        extraInitializationsAsync: this._renderShadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("../ShadersWGSL/gpuRenderParticles.vertex"), import("../ShadersWGSL/gpuRenderParticles.fragment")]);
+                                  }
+
+                                  this._renderShadersLoaded = true;
+                              },
+                    },
+                    this._engine
+                ),
+                join
+            );
         }
 
         return drawWrapper;

@@ -2,7 +2,7 @@
 import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
 import { type EventState, type Observer } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type Camera } from "../../Cameras/camera";
 import { type ICameraInput } from "../../Cameras/cameraInputsManager";
 import { type PointerInfo, type PointerTouch, PointerEventTypes } from "../../Events/pointerEvents";

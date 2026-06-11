@@ -3,7 +3,7 @@ import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type BoundingBox } from "../../Culling/boundingBox";
 import { PhysicsShapeType, type IPhysicsEnginePluginV2, type PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import { type PhysicsMaterial } from "./physicsMaterial";
-import { Matrix, Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
+import { Matrix, Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector.pure";
 import { type GroundMesh } from "../../Meshes/groundMesh";
 import { type Mesh } from "../../Meshes/mesh";
 import { type Scene } from "../../scene";
