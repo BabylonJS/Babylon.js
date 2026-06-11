@@ -82,6 +82,8 @@ export interface IWebGPURenderPassCommandRecorderProvider {
     /**
      * Returns the host handle id for a backend resource (pipeline, buffer or bind group), or 0 when
      * the resource has no host handle (which makes the draw fall back to direct encoder calls).
+     * Ids must be positive safe integers (at most Number.MAX_SAFE_INTEGER) so they encode losslessly
+     * into 64-bit command words; out-of-range ids are treated as missing.
      * @param resource the backend resource to identify
      */
     getResourceId(resource: Nullable<object>): number;
@@ -244,6 +246,10 @@ export class WebGPURenderPassCommandStream {
         this.reset();
 
         if (!success) {
+            // The encoded words cannot be replayed (commands are consumed as they are encoded, which is
+            // what keeps the draw path allocation-free), so the draws in this batch are dropped from the
+            // current frame. A recording failure past the protocol-version handshake indicates a broken
+            // host decoder, so log once and fall back permanently to direct encoder calls.
             const lastError = this._options.getProvider()?.getLastError?.();
             const detail = lastError && lastError.length > 0 ? `: ${lastError}` : "";
             this._disable(`WebGPU render pass command stream recording failed${detail}. The draws batched for this flush were dropped.`);
@@ -287,13 +293,13 @@ export class WebGPURenderPassCommandStream {
             return false;
         }
 
-        const pipelineId = provider.getResourceId(command.pipeline);
+        const pipelineId = this._getValidResourceId(provider, command.pipeline);
         if (pipelineId === 0) {
             return false;
         }
 
         const isIndexedDraw = command.drawKind === WebGPURenderPassDrawKind.INDEXED;
-        const indexBufferId = isIndexedDraw ? provider.getResourceId(command.indexBuffer.underlyingResource) : 0;
+        const indexBufferId = isIndexedDraw ? this._getValidResourceId(provider, command.indexBuffer.underlyingResource) : 0;
         if (isIndexedDraw && indexBufferId === 0) {
             return false;
         }
@@ -309,7 +315,7 @@ export class WebGPURenderPassCommandStream {
                 continue;
             }
 
-            const bufferId = provider.getResourceId(buffer.underlyingResource);
+            const bufferId = this._getValidResourceId(provider, buffer.underlyingResource);
             if (bufferId === 0) {
                 return false;
             }
@@ -319,14 +325,14 @@ export class WebGPURenderPassCommandStream {
 
         const bindGroupIds = this._scratchBindGroupIds;
         for (let i = 0; i < command.bindGroups.length; i++) {
-            const bindGroupId = provider.getResourceId(command.bindGroups[i]);
+            const bindGroupId = this._getValidResourceId(provider, command.bindGroups[i]);
             if (bindGroupId === 0) {
                 return false;
             }
             bindGroupIds[i] = bindGroupId;
         }
 
-        const indirectDrawBufferId = command.indirectDrawBuffer ? provider.getResourceId(command.indirectDrawBuffer) : 0;
+        const indirectDrawBufferId = command.indirectDrawBuffer ? this._getValidResourceId(provider, command.indirectDrawBuffer) : 0;
         if (command.indirectDrawBuffer && indirectDrawBufferId === 0) {
             return false;
         }
@@ -407,6 +413,12 @@ export class WebGPURenderPassCommandStream {
 
         this._drawCount++;
         return true;
+    }
+
+    private _getValidResourceId(provider: IWebGPURenderPassCommandRecorderProvider, resource: Nullable<object>): number {
+        const id = provider.getResourceId(resource);
+        // Ids are encoded into u64 command words from a JS number: reject ids that cannot round-trip exactly.
+        return id > 0 && Number.isSafeInteger(id) ? id : 0;
     }
 
     private _disable(message: string): void {

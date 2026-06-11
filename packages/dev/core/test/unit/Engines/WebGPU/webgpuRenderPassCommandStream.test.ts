@@ -323,6 +323,20 @@ describe("WebGPURenderPassCommandStream", () => {
         expect(records).toHaveLength(0);
     });
 
+    it("does not lower a draw whose resource id exceeds the safe-integer range", () => {
+        const { renderPass, records, calls } = createRecordingRenderPass();
+        const stream = createStream();
+        const command = createCommand({ renderPass, pipeline: createResource<GPURenderPipeline>(2 ** 53) });
+
+        expect(stream.tryAppend(command)).toBe(false);
+        expect(stream.flush()).toBe(false);
+        expect(records).toHaveLength(0);
+
+        // The draw still renders through direct encoder replay.
+        ApplyWebGPURenderPassDrawCommand(command);
+        expect(calls.map((call) => call[0])).toContain("drawIndexed");
+    });
+
     it("flushes an existing stream before appending to another render pass", () => {
         const first = createRecordingRenderPass();
         const second = createRecordingRenderPass();
