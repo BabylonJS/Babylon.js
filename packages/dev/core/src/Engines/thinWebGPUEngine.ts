@@ -94,12 +94,24 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         return this._currentRenderTarget === null;
     }
 
+    /**
+     * Submits any render-pass commands that were batched for deferred recording. This must be called
+     * before mutating the current render pass directly (occlusion queries, debug markers, dynamic
+     * state, pass end) so that batched draws keep their position relative to those commands.
+     * No-op for engines that do not batch render-pass commands.
+     * @internal
+     */
+    public _flushRenderPassCommands(): void {
+        // Overridden by engines that batch render-pass command submission.
+    }
+
     /** @internal */
     public _endCurrentRenderPass(): number {
         if (!this._currentRenderPass) {
             return 0;
         }
 
+        this._flushRenderPassCommands();
         this._debugPopBeforeEndOfEncoder();
 
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;

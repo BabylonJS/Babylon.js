@@ -51,6 +51,8 @@ export function RegisterEnginesWebGPUExtensionsEngineQuery(): void {
     ThinWebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, query: OcclusionQuery): boolean {
         if (this.compatibilityMode) {
             if (this._occlusionQuery.canBeginQuery(query as number)) {
+                // Batched draws issued before the query must not be counted by it.
+                this._flushRenderPassCommands();
                 this._currentRenderPass?.beginOcclusionQuery(query as number);
                 return true;
             }
@@ -64,6 +66,9 @@ export function RegisterEnginesWebGPUExtensionsEngineQuery(): void {
 
     ThinWebGPUEngine.prototype.endOcclusionQuery = function (): ThinWebGPUEngine {
         if (this.compatibilityMode) {
+            // Batched draws issued while the query was open must be recorded inside it, otherwise the
+            // query reports zero samples and the mesh is wrongly considered occluded.
+            this._flushRenderPassCommands();
             this._currentRenderPass?.endOcclusionQuery();
         } else {
             this._bundleList.addItem(new WebGPURenderItemEndOcclusionQuery());
