@@ -183,10 +183,17 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
+            // Movement keys are gated on the keyboard→translate mapping and rotation keys on
+            // keyboard→rotate. Removing the corresponding entry disables that family of keys.
+            // An entry's optional `sensitivity` acts as a gain (default 1) over the legacy scaling.
+            const input = camera.movement.input;
+            const translateEntry = input.getEntry("keyboard", "translate");
+            const rotateEntry = input.getEntry("keyboard", "rotate");
+            const rotateGain = rotateEntry?.sensitivity ?? 1;
             // Keyboard
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
-                const speed = camera._computeLocalCameraSpeed();
+                const speed = camera._computeLocalCameraSpeed() * (translateEntry?.sensitivity ?? 1);
 
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(-speed, 0, 0);
@@ -202,16 +209,30 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     camera._localDirection.copyFromFloats(0, -speed, 0);
                 } else if (this.keysRotateLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.y -= this._getLocalRotation();
+                    if (rotateEntry) {
+                        camera.cameraRotation.y -= this._getLocalRotation() * rotateGain;
+                    }
                 } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.y += this._getLocalRotation();
+                    if (rotateEntry) {
+                        camera.cameraRotation.y += this._getLocalRotation() * rotateGain;
+                    }
                 } else if (this.keysRotateUp.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.x -= this._getLocalRotation();
+                    if (rotateEntry) {
+                        camera.cameraRotation.x -= this._getLocalRotation() * rotateGain;
+                    }
                 } else if (this.keysRotateDown.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.x += this._getLocalRotation();
+                    if (rotateEntry) {
+                        camera.cameraRotation.x += this._getLocalRotation() * rotateGain;
+                    }
+                }
+
+                // Suppress accumulated translation when the keyboard→translate mapping is removed.
+                // Rotation keys already zeroed `_localDirection`, so this is a no-op for them.
+                if (!translateEntry) {
+                    camera._localDirection.copyFromFloats(0, 0, 0);
                 }
 
                 if (camera.getScene().useRightHandedSystem) {

@@ -79,16 +79,22 @@ export class TargetCameraMovement extends CameraMovement {
 
     private _createDefaultInputMap(): InputMapEntry<TargetCameraInteraction>[] {
         // Default entries leave `sensitivity` unset so each input class falls back to its legacy
-        // sensibility properties (`angularSensibility`, `rotationSpeed`, etc.) for backward
-        // compatibility. Setting `sensitivity` on an entry overrides those properties.
+        // sensibility properties (`angularSensibility`, `rotationSpeed`, `touchAngularSensibility`,
+        // etc.) for backward compatibility. Setting `sensitivity` on an entry overrides those.
         //
-        // Keyboard direction (translate vs rotate, and which axis) is resolved inside
-        // FreeCameraKeyboardMoveInput from its per-direction key lists (keysUp, keysRotateLeft, ...),
-        // and mouse-wheel axis mapping lives on FreeCameraMouseWheelInput, so only the pointer-drag
-        // mapping is declared here.
+        // These entries declare which interactions each source is allowed to drive; the input
+        // classes still decide *direction* from their own configuration (keyboard key lists,
+        // touch single/multi-finger mode, mouse-wheel per-axis actions). Removing an entry
+        // disables that source→interaction pairing without otherwise changing the input class.
         return [
             // Mouse drag → look (any button; FreeCameraMouseInput gates on its own `buttons` list).
             { source: "pointer", interaction: "rotate" },
+            // Keyboard movement keys → translate, rotation keys → look.
+            { source: "keyboard", interaction: "translate" },
+            { source: "keyboard", interaction: "rotate" },
+            // Touch drag → look or move depending on the input's single/multi-finger mode.
+            { source: "touch", interaction: "rotate" },
+            { source: "touch", interaction: "translate" },
         ];
     }
 }
