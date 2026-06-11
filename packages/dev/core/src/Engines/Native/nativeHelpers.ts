@@ -315,6 +315,10 @@ export function getNativeAlphaMode(mode: number): number {
             return _native.Engine.ALPHA_MAXIMIZED;
         case Constants.ALPHA_ONEONE:
             return _native.Engine.ALPHA_ONEONE;
+        case Constants.ALPHA_ONEONE_ONEONE:
+            return _native.Engine.ALPHA_ONEONE_ONEONE;
+        case Constants.ALPHA_LAYER_ACCUMULATE:
+            return _native.Engine.ALPHA_LAYER_ACCUMULATE;
         case Constants.ALPHA_PREMULTIPLIED:
             return _native.Engine.ALPHA_PREMULTIPLIED;
         case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
