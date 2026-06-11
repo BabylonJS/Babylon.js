@@ -10,6 +10,7 @@ import {
 } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingStream } from "./gaussianSplattingStream";
 import { AssetContainer } from "core/assetContainer";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
@@ -99,6 +100,20 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         _onProgress?: (event: ISceneLoaderProgressEvent) => void,
         _fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
+        const lodStream = this._tryCreateLODStream(scene, data, rootUrl);
+        if (lodStream) {
+            return {
+                meshes: [lodStream],
+                particleSystems: [],
+                skeletons: [],
+                animationGroups: [],
+                transformNodes: [],
+                geometries: [],
+                lights: [],
+                spriteManagers: [],
+            };
+        }
+
         // eslint-disable-next-line github/no-then
         return await this._parseAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
@@ -112,6 +127,37 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 spriteManagers: [],
             };
         });
+    }
+
+    /**
+     * Detects a PlayCanvas-style `lod-meta.json` payload and, if found, creates a streaming mesh for it.
+     * @param scene hosting scene
+     * @param data loaded file data
+     * @param rootUrl root url the metadata's relative paths resolve against
+     * @returns the streaming mesh, or null when the data is not SOG LOD metadata
+     */
+    private _tryCreateLODStream(scene: Scene, data: any, rootUrl: string): Nullable<GaussianSplattingStream> {
+        if (typeof data !== "string") {
+            return null;
+        }
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(data);
+        } catch {
+            return null;
+        }
+        if (!GaussianSplattingStream.IsLODMetadata(parsed)) {
+            return null;
+        }
+
+        scene._blockEntityCollection = !!this._assetContainer;
+        const stream = new GaussianSplattingStream("GaussianSplattingStream", parsed, rootUrl, scene, {
+            deflateURL: this._loadingOptions.deflateURL,
+            fflate: this._loadingOptions.fflate,
+        });
+        stream._parentContainer = this._assetContainer;
+        scene._blockEntityCollection = false;
+        return stream;
     }
 
     private static _BuildPointCloud(pointcloud: PointsCloudSystem, data: ArrayBuffer): boolean {
