@@ -716,6 +716,43 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
+     * Initializes this mesh to render from an externally-provided, GPU-decoded work buffer, bypassing the
+     * CPU `updateData` path. The four textures must hold the standard decoded GS layout addressed by linear
+     * splat index over a square texture: centers (x,y,z,1), covariance A (Sigma00,01,02,11) and B
+     * (Sigma12,22,*,*) as full covariance (so `center.w` is 1), and RGBA color. `splatPositions` are the
+     * stride-4 CPU centers consumed by the depth-sort worker.
+     * @param centers centers texture
+     * @param covariancesA covariance A texture
+     * @param covariancesB covariance B texture
+     * @param colors color texture
+     * @param splatPositions stride-4 CPU centers for depth sorting (length vertexCount*4)
+     * @param vertexCount number of splats addressable in the work buffer
+     */
+    protected _setExternalWorkBuffer(
+        centers: BaseTexture,
+        covariancesA: BaseTexture,
+        covariancesB: BaseTexture,
+        colors: BaseTexture,
+        splatPositions: Float32Array,
+        vertexCount: number
+    ): void {
+        this._covariancesATexture = covariancesA;
+        this._covariancesBTexture = covariancesB;
+        this._centersTexture = centers;
+        this._colorsTexture = colors;
+        this._splatPositions = splatPositions;
+        this._vertexCount = vertexCount;
+        this._activeSplatRanges = null;
+        this._activeSplatRangeKey = "";
+        this._activeSplatRenderCount = 0;
+        this._readyToDisplay = false;
+        // Sizes _splatIndex/_depthMix, starts the sort worker, and posts positions + intervals.
+        this._instantiateWorker();
+        // updateData (bypassed here) normally enables the mesh; do it explicitly for the work-buffer path.
+        this.setEnabled(true);
+    }
+
+    /**
      * returns the splats data array buffer that contains in order : postions (3 floats), size (3 floats), color (4 bytes), orientation quaternion (4 bytes)
      * Only available if the mesh was created with keepInRam: true
      */

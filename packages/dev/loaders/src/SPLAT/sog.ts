@@ -88,6 +88,7 @@ export interface SOGRootData {
 interface IWebPImage {
     bits: Uint8Array;
     width: number;
+    height: number;
 }
 const SH_C0 = 0.28209479177387814;
 
@@ -112,7 +113,7 @@ async function LoadWebpImageData(rootUrlOrData: string | Uint8Array, filename: s
 
                 // Extract pixel data (RGBA per pixel)
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                resolve({ bits: new Uint8Array(imageData.data.buffer), width: imageData.width });
+                resolve({ bits: new Uint8Array(imageData.data.buffer), width: imageData.width, height: imageData.height });
             } catch (error) {
                 // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(`Error loading image ${image.src} with exception: ${error}`);
@@ -419,6 +420,10 @@ function CreateSogTexture(scene: Scene, bits: Uint8Array, width: number, height:
     return tex;
 }
 
+function CreateSogTextureFromImage(scene: Scene, image: IWebPImage): RawTexture {
+    return CreateSogTexture(scene, image.bits, image.width, image.height);
+}
+
 function DecodeSogPositions(data: SOGRootData, meansl: Uint8Array, meansu: Uint8Array, splatCount: number): Float32Array {
     const unlog = (n: number) => Math.sign(n) * (Math.exp(Math.abs(n)) - 1);
     if (!Array.isArray(data.means.mins) || !Array.isArray(data.means.maxs)) {
@@ -477,16 +482,19 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
     );
 
     const splatCount = data.count ?? data.means.shape[0];
-    const engine = scene.getEngine();
-    const splatTextureWidth = Math.min(splatCount, engine.getCaps().maxTextureSize);
-    const splatTextureHeight = Math.ceil(splatCount / splatTextureWidth);
+    const splatTexelCount = images[0].width * images[0].height;
+    if (splatTexelCount < splatCount) {
+        throw new Error(`SOG texture contains ${splatTexelCount} texels, but metadata references ${splatCount} splats.`);
+    }
 
-    // means_l, means_u, scales, quats, sh0 share the same (w,h)
-    const meansL = CreateSogTexture(scene, images[0].bits, splatTextureWidth, splatTextureHeight);
-    const meansU = CreateSogTexture(scene, images[1].bits, splatTextureWidth, splatTextureHeight);
-    const scales = CreateSogTexture(scene, images[2].bits, splatTextureWidth, splatTextureHeight);
-    const quats = CreateSogTexture(scene, images[3].bits, splatTextureWidth, splatTextureHeight);
-    const sh0 = CreateSogTexture(scene, images[4].bits, splatTextureWidth, splatTextureHeight);
+    // means_l, means_u, scales, quats, sh0 share the same (w,h) — size each texture from its image so
+    // the uploaded data size matches the texture exactly (multi-row webp images otherwise produce a
+    // mis-sized, empty texture).
+    const meansL = CreateSogTextureFromImage(scene, images[0]);
+    const meansU = CreateSogTextureFromImage(scene, images[1]);
+    const scales = CreateSogTextureFromImage(scene, images[2]);
+    const quats = CreateSogTextureFromImage(scene, images[3]);
+    const sh0 = CreateSogTextureFromImage(scene, images[4]);
 
     let shCentroids: RawTexture | undefined;
     let shLabels: RawTexture | undefined;
@@ -494,12 +502,8 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
     let shDegree = 0;
 
     if (data.shN && images.length >= 7) {
-        const centroidsImage = images[5];
-        const labelsImage = images[6];
-        const centroidsHeight = centroidsImage.bits.length / 4 / centroidsImage.width;
-        shCentroids = CreateSogTexture(scene, centroidsImage.bits, centroidsImage.width, centroidsHeight);
-        const labelsHeight = labelsImage.bits.length / 4 / labelsImage.width;
-        shLabels = CreateSogTexture(scene, labelsImage.bits, labelsImage.width, labelsHeight);
+        shCentroids = CreateSogTextureFromImage(scene, images[5]);
+        shLabels = CreateSogTextureFromImage(scene, images[6]);
 
         shCoeffCount = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : data.shN.shape[1] / 3;
         shDegree = data.shN.bands ?? Math.round(Math.sqrt(shCoeffCount + 1) - 1);

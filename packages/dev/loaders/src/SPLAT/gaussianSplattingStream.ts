@@ -4,7 +4,30 @@ import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import { ParseSogMeta, type SOGRootData } from "./sog";
+import { Vector3 } from "core/Maths/math.vector";
+import { BoundingInfo } from "core/Culling/boundingInfo";
+import { ParseSogMetaAsTextures, type SOGRootData } from "./sog";
+import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
+import { type ISogTexturePack } from "./splatDefs";
+
+/**
+ * Internal descriptor for one resource to stream (environment bundle or a LOD source file).
+ */
+interface ILoadDescriptor {
+    kind: "env" | "file";
+    /** Number of splats in this resource. */
+    count: number;
+    /** First splat index (pixel offset) assigned in the work buffer. */
+    offset: number;
+    /** Index into `filenames` (kind "file"). */
+    fileId: number;
+    /** Parsed SOG metadata (kind "file"). */
+    sogData?: SOGRootData;
+    /** Base URL for the file's webp images (kind "file"). */
+    subRootUrl?: string;
+    /** Unzipped bundle contents (kind "env"). */
+    files?: Map<string, Uint8Array>;
+}
 
 /**
  * A single LOD variant of a tree node: a contiguous splat range inside one streamed SOG file.
@@ -54,10 +77,10 @@ export interface IGaussianSplattingStreamOptions {
 /**
  * Streams a PlayCanvas-style SOG LOD scene (`lod-meta.json`) into a single Gaussian Splatting mesh.
  *
- * The implementation is intentionally simple: it streams only the least-detail (coarsest) SOG files
- * plus the environment, merges each decoded SOG (including its spherical harmonics) into the shared
- * splat texture as it arrives (without blocking rendering), and renders/sorts only the selected-LOD
- * splats via the mesh's interval filter. There is no distance-based LOD selection or refinement.
+ * Each selected SOG file (plus the environment) is loaded directly as GPU textures and decoded on the
+ * GPU into one unified, PlayCanvas-style square work buffer (no CPU splat decode or `updateData`). Only
+ * the selected-LOD splats are rendered/sorted via the mesh's interval filter. There is no distance-based
+ * LOD selection or refinement.
  *
  * @experimental
  */
@@ -69,26 +92,19 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Selected-LOD entries grouped by source file index.
     private readonly _entriesByFile = new Map<number, ISOGLODEntry[]>();
 
-    // Merged splat buffer (32 bytes/splat) grown as files stream in.
-    private _mergedSplats: Uint8Array = new Uint8Array(0);
-    private _mergedSplatCount = 0;
+    // GPU work buffer holding all decoded splats; created once the total capacity is known.
+    private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
 
-    // Merged spherical-harmonics textures (splat-major, 16 bytes/splat per texture), or null when no
-    // SH is available/compatible. `_shDisabled` latches once an incompatible SH layout is seen.
-    private _mergedSh: Nullable<Uint8Array[]> = null;
-    private _shTextureCount = 0;
-    private _mergedShDegree = 0;
-    private _shDisabled = false;
-
-    // Global splat offset where each loaded source file begins in the merged buffer.
+    // Global splat offset where each loaded source file begins in the work buffer.
     private readonly _fileBaseSplat = new Map<number, number>();
     // Global range covered by the environment file (always rendered), or null until it loads.
     private _environmentRange: Nullable<{ offset: number; count: number }> = null;
 
-    private _disposed = false;
+    // Running local-space bounds of all decoded splat centers (for frustum culling / picking).
+    private readonly _boundsMin = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    private readonly _boundsMax = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-    private static readonly _RowLength = 32; // bytes per splat in the .splat layout fed to updateData
-    private static readonly _ShBytesPerSplat = 16; // RGBA32F texel per splat in each SH texture
+    private _disposed = false;
 
     /**
      * Returns true when the parsed JSON looks like a PlayCanvas-style `lod-meta.json` payload.
@@ -137,6 +153,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     public override dispose(doNotRecurse?: boolean): void {
         this._disposed = true;
+        this._workBuffer?.dispose();
+        this._workBuffer = null;
         super.dispose(doNotRecurse);
     }
 
@@ -183,143 +201,167 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Streams the environment (if any) and every selected-LOD source file, merging each as it arrives.
+     * Streams the environment (if any) and every selected-LOD source file: first learns each splat
+     * count, allocates the unified GPU work buffer, then GPU-decodes each resource into its block.
      */
     private async _streamAllAsync(): Promise<void> {
-        if (this._metadata.environment) {
-            await this._streamEnvironmentAsync(this._metadata.environment);
+        // Phase 1: fetch metadata to learn splat counts (cheap; no webp decode yet).
+        const descriptors = await this._gatherLoadDescriptorsAsync();
+        if (this._disposed || descriptors.length === 0) {
+            return;
         }
 
-        for (const fileId of Array.from(this._entriesByFile.keys())) {
+        // Allocate the unified work buffer sized to the total splat count (PlayCanvas-style square).
+        let capacity = 0;
+        for (const descriptor of descriptors) {
+            descriptor.offset = capacity;
+            if (descriptor.kind === "env") {
+                this._environmentRange = { offset: capacity, count: descriptor.count };
+            } else {
+                this._fileBaseSplat.set(descriptor.fileId, capacity);
+            }
+            capacity += descriptor.count;
+        }
+
+        this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
+        const splatPositions = new Float32Array(capacity * 4);
+        const textures = this._workBuffer.textures;
+        this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity);
+        // Nothing is active until at least one resource has been decoded.
+        this.setSplatIndexRanges([]);
+        this.setEnabled(true);
+
+        // Phase 2: GPU-decode each resource into its block, activating its splats as it arrives.
+        for (const descriptor of descriptors) {
             if (this._disposed) {
                 return;
             }
             // eslint-disable-next-line no-await-in-loop
-            await this._streamFileAsync(fileId);
+            await this._decodeDescriptorAsync(descriptor);
         }
     }
 
     /**
-     * Loads and merges the always-on environment `.sog` bundle.
-     * @param relativePath environment path relative to the metadata root
+     * Fetches the environment bundle and each selected file's metadata to determine splat counts.
+     * @returns descriptors for every resource to decode
      */
-    private async _streamEnvironmentAsync(relativePath: string): Promise<void> {
+    private async _gatherLoadDescriptorsAsync(): Promise<ILoadDescriptor[]> {
+        const descriptors: ILoadDescriptor[] = [];
+
+        if (this._metadata.environment) {
+            try {
+                const url = this._rootUrl + this._metadata.environment;
+                const buffer = (await Tools.LoadFileAsync(url, true)) as ArrayBuffer;
+                const files = await this._unzipAsync(new Uint8Array(buffer));
+                const metaBytes = files.get("meta.json");
+                if (metaBytes) {
+                    const meta = JSON.parse(new TextDecoder().decode(metaBytes)) as SOGRootData;
+                    descriptors.push({ kind: "env", count: GaussianSplattingStream._GetSplatCount(meta), offset: 0, fileId: -1, files });
+                }
+            } catch (e: any) {
+                // The environment is non-essential — keep streaming the LOD tree even if it fails.
+                Logger.Warn("GaussianSplattingStream: failed to load environment: " + (e?.message ?? e));
+            }
+        }
+
+        for (const fileId of Array.from(this._entriesByFile.keys())) {
+            const relativePath = this._metadata.filenames[fileId];
+            if (!relativePath) {
+                Logger.Warn(`GaussianSplattingStream: missing filename for file index ${fileId}.`);
+                continue;
+            }
+            try {
+                const metaUrl = this._rootUrl + relativePath;
+                const subRootUrl = metaUrl.substring(0, metaUrl.lastIndexOf("/") + 1);
+                // eslint-disable-next-line no-await-in-loop
+                const metaText = (await Tools.LoadFileAsync(metaUrl, false)) as string;
+                const sogData = JSON.parse(metaText) as SOGRootData;
+                descriptors.push({ kind: "file", count: GaussianSplattingStream._GetSplatCount(sogData), offset: 0, fileId, sogData, subRootUrl });
+            } catch (e: any) {
+                Logger.Warn(`GaussianSplattingStream: failed to load metadata for ${relativePath}: ${e?.message ?? e}`);
+            }
+        }
+
+        return descriptors;
+    }
+
+    /**
+     * Loads one resource as GPU textures, decodes it into the work buffer, records its CPU centers for
+     * sorting, frees the source textures, and activates its splat ranges.
+     * @param descriptor the resource to decode
+     */
+    private async _decodeDescriptorAsync(descriptor: ILoadDescriptor): Promise<void> {
         try {
-            const url = this._rootUrl + relativePath;
-            const buffer = (await Tools.LoadFileAsync(url, true)) as ArrayBuffer;
-            const files = await this._unzipAsync(new Uint8Array(buffer));
-            const parsed = await ParseSogMeta(files, "", this._scene);
-            if (this._disposed) {
+            const parsed =
+                descriptor.kind === "env"
+                    ? await ParseSogMetaAsTextures(descriptor.files!, "", this._scene)
+                    : await ParseSogMetaAsTextures(descriptor.sogData!, descriptor.subRootUrl!, this._scene);
+            if (this._disposed || !this._workBuffer) {
                 return;
             }
-            const count = parsed.data.byteLength / GaussianSplattingStream._RowLength;
-            const base = this._mergeSplatBuffer(parsed.data, parsed.sh, parsed.shDegree);
-            this._environmentRange = { offset: base, count };
-            this._refreshActiveRanges();
-        } catch (e: any) {
-            // The environment is non-essential — keep streaming the LOD tree even if it fails.
-            Logger.Warn("GaussianSplattingStream: failed to load environment: " + (e?.message ?? e));
-        }
-    }
-
-    /**
-     * Loads, decodes, and merges one selected-LOD source file, then activates its splat ranges.
-     * @param fileId index into the metadata `filenames` array
-     */
-    private async _streamFileAsync(fileId: number): Promise<void> {
-        const relativePath = this._metadata.filenames[fileId];
-        if (!relativePath) {
-            Logger.Warn(`GaussianSplattingStream: missing filename for file index ${fileId}.`);
-            return;
-        }
-
-        try {
-            const metaUrl = this._rootUrl + relativePath;
-            const subRootUrl = metaUrl.substring(0, metaUrl.lastIndexOf("/") + 1);
-            const metaText = (await Tools.LoadFileAsync(metaUrl, false)) as string;
-            const sogData = JSON.parse(metaText) as SOGRootData;
-            const parsed = await ParseSogMeta(sogData, subRootUrl, this._scene);
-            if (this._disposed) {
+            const pack = parsed.sogTextures;
+            if (!pack) {
                 return;
             }
-            const base = this._mergeSplatBuffer(parsed.data, parsed.sh, parsed.shDegree);
-            this._fileBaseSplat.set(fileId, base);
+
+            await this._workBuffer.decodeAsync(pack, descriptor.offset);
+            if (this._disposed) {
+                GaussianSplattingStream._DisposePack(pack);
+                return;
+            }
+            // Copy CPU centers for the depth-sort worker, then free the GPU source textures.
+            this._splatPositions!.set(pack.positions.subarray(0, descriptor.count * 4), descriptor.offset * 4);
+            GaussianSplattingStream._DisposePack(pack);
+
+            this._updateBounds(pack.positions, descriptor.count);
+            this._notifyWorkerNewData();
             this._refreshActiveRanges();
         } catch (e: any) {
-            Logger.Warn(`GaussianSplattingStream: failed to load file ${relativePath}: ${e?.message ?? e}`);
+            Logger.Warn("GaussianSplattingStream: failed to decode SOG resource: " + (e?.message ?? e));
         }
     }
 
     /**
-     * Appends a decoded SOG `.splat` buffer (and its spherical harmonics) to the merged buffers and
-     * uploads the new splats.
-     * @param data decoded `.splat` bytes for the new file
-     * @param sh optional per-texture SH bytes for the new file (splat-major, 16 bytes/splat)
-     * @param shDegree SH degree of the new file
-     * @returns the global splat offset where the appended data starts
+     * Reads the splat count from SOG metadata.
+     * @param data SOG metadata
+     * @returns the splat count
      */
-    private _mergeSplatBuffer(data: ArrayBuffer, sh?: Uint8Array[], shDegree?: number): number {
-        const previousVertexCount = this._mergedSplatCount;
-        const addedBytes = new Uint8Array(data);
-        const addedCount = addedBytes.byteLength / GaussianSplattingStream._RowLength;
-
-        const merged = new Uint8Array(this._mergedSplats.byteLength + addedBytes.byteLength);
-        merged.set(this._mergedSplats, 0);
-        merged.set(addedBytes, this._mergedSplats.byteLength);
-
-        this._mergedSplats = merged;
-        this._mergedSplatCount += addedCount;
-
-        this._mergeSh(previousVertexCount, addedCount, sh, shDegree);
-
-        this.updateData(merged.buffer, this._mergedSh ?? undefined, { flipY: false, previousVertexCount }, undefined, this._mergedSh ? this._mergedShDegree : undefined);
-
-        return previousVertexCount;
+    private static _GetSplatCount(data: SOGRootData): number {
+        return data.count ?? (Array.isArray(data.means.shape) ? data.means.shape[0] : 0);
     }
 
     /**
-     * Merges the new file's spherical-harmonics textures into the growing merged SH buffers.
-     * SH is established from the first SH-bearing file (earlier splats are zero-padded). Files
-     * without SH contribute zeros; an incompatible SH layout permanently disables SH.
-     * @param previousVertexCount splat count before this file
-     * @param addedCount number of splats added by this file
-     * @param sh optional per-texture SH bytes for the new file
-     * @param shDegree SH degree of the new file
+     * Disposes all GPU source textures of a SOG pack (they are only needed for the one decode pass).
+     * @param pack the SOG texture pack
      */
-    private _mergeSh(previousVertexCount: number, addedCount: number, sh?: Uint8Array[], shDegree?: number): void {
-        if (this._shDisabled) {
-            return;
-        }
+    private static _DisposePack(pack: ISogTexturePack): void {
+        pack.meansTextureL.dispose();
+        pack.meansTextureU.dispose();
+        pack.scalesTexture.dispose();
+        pack.quatsTexture.dispose();
+        pack.sh0Texture.dispose();
+        pack.shCentroidsTexture?.dispose();
+        pack.shLabelsTexture?.dispose();
+        pack.codebookTexture?.dispose();
+    }
 
-        if (this._mergedSh === null) {
-            if (!sh || sh.length === 0) {
-                return; // no SH established yet and this file has none
-            }
-            this._shTextureCount = sh.length;
-            this._mergedShDegree = shDegree ?? 0;
-            this._mergedSh = [];
-            for (let t = 0; t < this._shTextureCount; t++) {
-                this._mergedSh.push(new Uint8Array(0));
-            }
-        } else if (sh && sh.length !== this._shTextureCount) {
-            // Incompatible SH layout across files: drop SH entirely rather than render corrupt data.
-            Logger.Warn("GaussianSplattingStream: incompatible SH layout across files; disabling SH.");
-            this._mergedSh = null;
-            this._shDisabled = true;
-            return;
+    /**
+     * Expands the running splat-center bounds with a newly decoded file's centers and updates the
+     * mesh bounding info so the GS is correctly frustum-culled and pickable.
+     * @param positions stride-4 splat centers for the new file
+     * @param count number of splats
+     */
+    private _updateBounds(positions: Float32Array, count: number): void {
+        const min = this._boundsMin;
+        const max = this._boundsMax;
+        for (let i = 0; i < count; i++) {
+            const x = positions[i * 4 + 0];
+            const y = positions[i * 4 + 1];
+            const z = positions[i * 4 + 2];
+            min.minimizeInPlaceFromFloats(x, y, z);
+            max.maximizeInPlaceFromFloats(x, y, z);
         }
-
-        const stride = GaussianSplattingStream._ShBytesPerSplat;
-        const total = this._mergedSplatCount;
-        for (let t = 0; t < this._shTextureCount; t++) {
-            const grown = new Uint8Array(total * stride);
-            const old = this._mergedSh[t];
-            grown.set(old.subarray(0, Math.min(old.byteLength, previousVertexCount * stride)), 0);
-            if (sh) {
-                grown.set(sh[t].subarray(0, addedCount * stride), previousVertexCount * stride);
-            }
-            this._mergedSh[t] = grown;
-        }
+        this.setBoundingInfo(new BoundingInfo(min, max));
     }
 
     /**
