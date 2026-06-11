@@ -2487,6 +2487,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             const vertexCount = this._vertexCount;
             if (this._worker) {
                 this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
+                // Re-sync the active interval set in case the source splat count changed.
+                this._postIntervalsToWorker();
             }
 
             // Handle SH textures in update path - create if they don't exist
@@ -2575,6 +2577,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                     const positions = Float32Array.from(this._splatPositions!);
                     const vertexCount = this._vertexCount;
                     this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
+                    // Re-sync the active interval set in case the source splat count changed.
+                    this._postIntervalsToWorker();
                 }
                 this._postToWorker(true);
             }
@@ -2614,6 +2618,9 @@ export class GaussianSplattingMeshBase extends Mesh {
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
+            // The source splat count may have changed (e.g. addPart): re-sync the worker's active
+            // interval set so it covers the current splats instead of a stale (smaller) range.
+            this._postIntervalsToWorker();
         }
         this._sortIsDirty = true;
     }
