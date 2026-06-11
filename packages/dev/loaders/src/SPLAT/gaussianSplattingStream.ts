@@ -4,11 +4,14 @@ import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3, Matrix } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
+import { Camera } from "core/Cameras/camera";
+import { type Observer } from "core/Misc/observable";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { type LinesMesh } from "core/Meshes/linesMesh";
+import { VertexBuffer } from "core/Buffers/buffer";
 import { ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
 import { type ISogTexturePack } from "./splatDefs";
@@ -51,8 +54,10 @@ interface ISOGLODNode {
     bound: { min: number[]; max: number[] };
     children?: ISOGLODNode[];
     lods?: { [level: string]: ISOGLODEntry };
-    /** LOD level currently selected for this node (set during the tree walk). */
+    /** LOD level currently streamed/rendered for this node (set during the tree walk). */
     activeLod?: number;
+    /** Distance-based ideal LOD level for this node, recomputed per frame (diagnostics only). */
+    optimalLod?: number;
 }
 
 /**
@@ -70,6 +75,11 @@ export interface ISOGLODMetadata {
 }
 
 /**
+ * Selects which LOD value drives the {@link GaussianSplattingStream} debug wireframe colors.
+ */
+export type GaussianSplattingStreamDebugLodSource = "optimal" | "current";
+
+/**
  * Options for {@link GaussianSplattingStream}.
  */
 export interface IGaussianSplattingStreamOptions {
@@ -77,9 +87,50 @@ export interface IGaussianSplattingStreamOptions {
     deflateURL?: string;
     /** Pre-loaded fflate module. */
     fflate?: any;
-    /** When true, renders a wireframe box per LOD node, colored by the node's active LOD. */
+    /** When true, renders a wireframe box per LOD node, colored by the node's LOD level. */
     debugDisplay?: boolean;
+    /** Which LOD value drives the debug wireframe colors. Defaults to `"optimal"`. */
+    debugLodSource?: GaussianSplattingStreamDebugLodSource;
+    /** Distance (in local units) of the first LOD transition. PlayCanvas default `5`. */
+    lodBaseDistance?: number;
+    /** Geometric ratio between successive LOD transition distances. PlayCanvas default `3`. */
+    lodMultiplier?: number;
+    /** Distance multiplier applied to nodes behind the camera (`1` = no penalty). PlayCanvas default `1`. */
+    lodBehindPenalty?: number;
+    /** Lowest LOD index the optimal-LOD heuristic may select. Defaults to `0`. */
+    lodRangeMin?: number;
+    /** Highest LOD index the optimal-LOD heuristic may select. Defaults to `lodLevels - 1`. */
+    lodRangeMax?: number;
 }
+
+// tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
+const RefTanHalfFov = Math.tan((22.5 * Math.PI) / 180);
+
+// Scratch objects reused by the per-frame optimal-LOD evaluation (avoids per-call allocations).
+const TmpInvWorld = new Matrix();
+const TmpLocalCamera = new Vector3();
+const TmpLocalForward = new Vector3();
+const TmpWorldForward = new Vector3();
+// Camera-local forward axis (+Z) used to derive the world-space view direction.
+const LocalForwardAxis = new Vector3(0, 0, 1);
+
+// The 12 edges of a box, as index pairs into its 8 corners. 12 edges x 2 endpoints = 24 vertices per box.
+const BoxEdges = [
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 0],
+    [4, 5],
+    [5, 6],
+    [6, 7],
+    [7, 4],
+    [0, 4],
+    [1, 5],
+    [2, 6],
+    [3, 7],
+];
+// Vertices generated per leaf box (BoxEdges.length * 2).
+const VerticesPerBox = BoxEdges.length * 2;
 
 /**
  * Wireframe colors per LOD level (cycled by `node.activeLod`).
@@ -100,8 +151,10 @@ const GsLodDebugColors = [
  *
  * Each selected SOG file (plus the environment) is loaded directly as GPU textures and decoded on the
  * GPU into one unified, PlayCanvas-style square work buffer (no CPU splat decode or `updateData`). Only
- * the selected-LOD splats are rendered/sorted via the mesh's interval filter. There is no distance-based
- * LOD selection or refinement.
+ * the selected-LOD splats are rendered/sorted via the mesh's interval filter.
+ *
+ * A distance-based "optimal" LOD is computed per node (see {@link evaluateOptimalLods}) for diagnostics
+ * and the debug wireframe display; rendering itself still streams and shows the least-detail LOD.
  *
  * @experimental
  */
@@ -112,6 +165,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // Selected-LOD entries grouped by source file index.
     private readonly _entriesByFile = new Map<number, ISOGLODEntry[]>();
+
+    // Flat list of leaf nodes that carry a renderable LOD entry (used by the optimal-LOD heuristic and debug).
+    private readonly _leafNodes: ISOGLODNode[] = [];
+
+    // LOD heuristic parameters (PlayCanvas-aligned defaults).
+    private _lodBaseDistance = 5;
+    private _lodMultiplier = 3;
+    private _lodBehindPenalty = 1;
+    private _lodRangeMin = 0;
+    private _lodRangeMax: number;
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
@@ -127,7 +190,13 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // Debug LOD-node wireframe display.
     private _debugDisplay = false;
+    private _debugLodSource: GaussianSplattingStreamDebugLodSource = "optimal";
     private _debugMesh: Nullable<LinesMesh> = null;
+    private _debugObserver: Nullable<Observer<Scene>> = null;
+    // Per-vertex RGBA color buffer mirror, updated in place when LOD colors change (avoids mesh rebuild flicker).
+    private _debugColorData: Nullable<Float32Array> = null;
+    // Signature of the per-leaf displayed LOD levels, used to skip rebuilding unchanged debug geometry.
+    private _debugSignature = "";
 
     private _disposed = false;
 
@@ -158,6 +227,28 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._rootUrl = rootUrl;
         this._streamOptions = options;
 
+        // LOD heuristic parameters: take the provided values, otherwise keep the PlayCanvas-aligned defaults.
+        const maxLod = Math.max(0, metadata.lodLevels - 1);
+        this._lodRangeMax = maxLod;
+        if (options.lodBaseDistance !== undefined) {
+            this._lodBaseDistance = Math.max(0.1, options.lodBaseDistance);
+        }
+        if (options.lodMultiplier !== undefined) {
+            this._lodMultiplier = Math.max(1.2, options.lodMultiplier);
+        }
+        if (options.lodBehindPenalty !== undefined) {
+            this._lodBehindPenalty = Math.max(1, options.lodBehindPenalty);
+        }
+        if (options.lodRangeMin !== undefined) {
+            this._lodRangeMin = Math.max(0, Math.min(options.lodRangeMin, maxLod));
+        }
+        if (options.lodRangeMax !== undefined) {
+            this._lodRangeMax = Math.max(this._lodRangeMin, Math.min(options.lodRangeMax, maxLod));
+        }
+        if (options.debugLodSource) {
+            this._debugLodSource = options.debugLodSource;
+        }
+
         // PlayCanvas SOG data is authored with a flipped Y; match the standard SOG loader.
         this.scaling.y *= -1;
         // PlayCanvas SOG LOD scenes are authored Z-up; rotate into Babylon's Y-up convention.
@@ -181,7 +272,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * When true, renders a wireframe box per LOD node, colored by the node's active LOD level.
+     * When true, renders a wireframe box per LOD node, colored by the LOD level selected by {@link debugLodSource}.
      */
     public get debugDisplay(): boolean {
         return this._debugDisplay;
@@ -193,9 +284,27 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         this._debugDisplay = value;
         if (value) {
-            this._buildDebugDisplay();
+            this._refreshDebugDisplay();
         } else {
             this._clearDebugDisplay();
+        }
+    }
+
+    /**
+     * Selects which LOD value drives the debug wireframe colors: the distance-based `"optimal"` LOD
+     * (default, recomputed as the camera moves) or the `"current"` streamed/rendered LOD.
+     */
+    public get debugLodSource(): GaussianSplattingStreamDebugLodSource {
+        return this._debugLodSource;
+    }
+
+    public set debugLodSource(value: GaussianSplattingStreamDebugLodSource) {
+        if (this._debugLodSource === value) {
+            return;
+        }
+        this._debugLodSource = value;
+        if (this._debugDisplay) {
+            this._refreshDebugDisplay();
         }
     }
 
@@ -208,82 +317,232 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Builds the LOD-node wireframe boxes (one box per leaf node, colored by its active LOD).
+     * Re-evaluates the optimal LOD for every node based on the camera position. The result is stored in
+     * each node's `optimalLod`. Rendering is unaffected; this currently drives only diagnostics and the
+     * debug wireframe display.
+     * @param camera camera to evaluate against (defaults to the scene's active camera)
      */
-    private _buildDebugDisplay(): void {
-        this._clearDebugDisplay();
+    public evaluateOptimalLods(camera: Nullable<Camera> = this._scene.activeCamera): void {
+        if (!camera || this._leafNodes.length === 0) {
+            return;
+        }
+
+        const maxLod = Math.max(0, this._metadata.lodLevels - 1);
+        const base = this._lodBaseDistance;
+        const mult = this._lodMultiplier;
+        const behindPenalty = this._lodBehindPenalty;
+        const rangeMin = this._lodRangeMin;
+        const rangeMax = this._lodRangeMax;
+
+        // FOV compensation: use min(tanHalfV, tanHalfH) so transitions stay perceptually uniform (matches PlayCanvas).
+        const aspect = this._scene.getEngine().getAspectRatio(camera) || 1;
+        let tanHalfV = Math.tan(camera.fov * 0.5);
+        if (camera.fovMode === Camera.FOVMODE_HORIZONTAL_FIXED) {
+            tanHalfV /= aspect;
+        }
+        const tanHalfH = tanHalfV * aspect;
+        const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
+
+        // Transform the camera into the mesh's local space (where the node bounds live).
+        this.computeWorldMatrix(true).invertToRef(TmpInvWorld);
+        const localCamera = Vector3.TransformCoordinatesToRef(camera.globalPosition, TmpInvWorld, TmpLocalCamera);
+        const px = localCamera.x;
+        const py = localCamera.y;
+        const pz = localCamera.z;
+
+        let fwx = 0;
+        let fwy = 0;
+        let fwz = 0;
+        if (behindPenalty > 1) {
+            camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
+            const localForward = Vector3.TransformNormalToRef(TmpWorldForward, TmpInvWorld, TmpLocalForward);
+            localForward.normalize();
+            fwx = localForward.x;
+            fwy = localForward.y;
+            fwz = localForward.z;
+        }
+
+        for (const node of this._leafNodes) {
+            const mn = node.bound.min;
+            const mx = node.bound.max;
+
+            // Distance from the camera to the closest point on this node's AABB (local space).
+            const qx = px < mn[0] ? mn[0] : px > mx[0] ? mx[0] : px;
+            const qy = py < mn[1] ? mn[1] : py > mx[1] ? mx[1] : py;
+            const qz = pz < mn[2] ? mn[2] : pz > mx[2] ? mx[2] : pz;
+            const dx = qx - px;
+            const dy = qy - py;
+            const dz = qz - pz;
+            const actualDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            // Push nodes behind the camera toward coarser LODs when a penalty is configured.
+            let penalizedDistance = actualDistance;
+            if (behindPenalty > 1 && actualDistance > 0.01) {
+                const dotOverDistance = (fwx * dx + fwy * dy + fwz * dz) / actualDistance;
+                if (dotOverDistance < 0) {
+                    penalizedDistance = actualDistance * (1 + -dotOverDistance * (behindPenalty - 1));
+                }
+            }
+
+            // Geometric LOD bands: threshold[k] = base * mult^(k-1).
+            const fovAdjustedDistance = penalizedDistance * fovScale;
+            let optimalLod: number;
+            if (maxLod === 0 || fovAdjustedDistance < base) {
+                optimalLod = 0;
+            } else {
+                optimalLod = maxLod;
+                while (optimalLod > 1 && fovAdjustedDistance < base * Math.pow(mult, optimalLod - 1)) {
+                    optimalLod--;
+                }
+            }
+
+            if (optimalLod < rangeMin) {
+                optimalLod = rangeMin;
+            } else if (optimalLod > rangeMax) {
+                optimalLod = rangeMax;
+            }
+            node.optimalLod = optimalLod;
+        }
+    }
+
+    /**
+     * The LOD level used to color a node's debug box, per {@link debugLodSource}.
+     * @param node leaf node
+     * @returns the displayed LOD level
+     */
+    private _displayedLodLevel(node: ISOGLODNode): number {
+        if (this._debugLodSource === "optimal") {
+            return node.optimalLod ?? node.activeLod ?? 0;
+        }
+        return node.activeLod ?? 0;
+    }
+
+    /**
+     * Rebuilds the debug wireframe (evaluating the optimal LOD first) and wires up live updates when the
+     * "optimal" source is selected, since those colors track the camera.
+     */
+    private _refreshDebugDisplay(): void {
+        if (this._debugLodSource === "optimal") {
+            this.evaluateOptimalLods();
+        }
+        this._buildDebugMesh();
+
+        const needsObserver = this._debugDisplay && this._debugLodSource === "optimal";
+        if (needsObserver && !this._debugObserver) {
+            this._debugObserver = this._scene.onBeforeRenderObservable.add(() => this._onDebugFrame());
+        } else if (!needsObserver && this._debugObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._debugObserver);
+            this._debugObserver = null;
+        }
+    }
+
+    /**
+     * Per-frame debug update: recomputes the optimal LOD and, only when the set of displayed LOD levels
+     * actually changes (e.g. the camera crosses a LOD boundary), recolors the existing wireframe in place.
+     * The geometry is never rebuilt here, which avoids the dispose/recreate flicker while the camera moves.
+     */
+    private _onDebugFrame(): void {
+        this.evaluateOptimalLods();
+        if (this._computeDebugSignature() !== this._debugSignature) {
+            this._updateDebugColors();
+        }
+    }
+
+    /**
+     * Builds the LOD-node wireframe boxes once (one box per leaf node), colored by the displayed LOD level.
+     * The color vertex buffer is created updatable so subsequent recolors can happen in place.
+     */
+    private _buildDebugMesh(): void {
+        if (this._debugMesh) {
+            this._debugMesh.dispose();
+            this._debugMesh = null;
+        }
+        this._debugColorData = null;
+
         const lines: Vector3[][] = [];
         const colors: Color4[][] = [];
-        this._collectDebugBoxes(this._metadata.tree, lines, colors);
+        for (const node of this._leafNodes) {
+            const color = GsLodDebugColors[this._displayedLodLevel(node) % GsLodDebugColors.length];
+            const mn = node.bound.min;
+            const mx = node.bound.max;
+            const corners = [
+                new Vector3(mn[0], mn[1], mn[2]),
+                new Vector3(mx[0], mn[1], mn[2]),
+                new Vector3(mx[0], mx[1], mn[2]),
+                new Vector3(mn[0], mx[1], mn[2]),
+                new Vector3(mn[0], mn[1], mx[2]),
+                new Vector3(mx[0], mn[1], mx[2]),
+                new Vector3(mx[0], mx[1], mx[2]),
+                new Vector3(mn[0], mx[1], mx[2]),
+            ];
+            for (const edge of BoxEdges) {
+                lines.push([corners[edge[0]], corners[edge[1]]]);
+                colors.push([color, color]);
+            }
+        }
+
+        this._debugSignature = this._computeDebugSignature();
         if (lines.length === 0) {
             return;
         }
-        const mesh = CreateLineSystem(this.name + "_lodDebug", { lines, colors, useVertexAlpha: false }, this._scene);
+
+        const mesh = CreateLineSystem(this.name + "_lodDebug", { lines, colors, updatable: true, useVertexAlpha: false }, this._scene);
         mesh.parent = this;
         mesh.isPickable = false;
         mesh.doNotSerialize = true;
         mesh.reservedDataStore = { hidden: true };
         this._debugMesh = mesh;
+        this._debugColorData = new Float32Array(this._leafNodes.length * VerticesPerBox * 4);
     }
 
     /**
-     * Disposes the LOD-node wireframe boxes.
+     * Recolors the existing wireframe in place from the current displayed LOD levels, without rebuilding geometry.
+     */
+    private _updateDebugColors(): void {
+        if (!this._debugMesh || !this._debugColorData) {
+            return;
+        }
+        const data = this._debugColorData;
+        let offset = 0;
+        for (const node of this._leafNodes) {
+            const color = GsLodDebugColors[this._displayedLodLevel(node) % GsLodDebugColors.length];
+            for (let v = 0; v < VerticesPerBox; v++) {
+                data[offset++] = color.r;
+                data[offset++] = color.g;
+                data[offset++] = color.b;
+                data[offset++] = color.a;
+            }
+        }
+        this._debugMesh.updateVerticesData(VertexBuffer.ColorKind, data);
+        this._debugSignature = this._computeDebugSignature();
+    }
+
+    /**
+     * Concatenates the displayed LOD level of every leaf into a compact signature used for change detection.
+     * @returns a signature string for the current displayed LOD levels
+     */
+    private _computeDebugSignature(): string {
+        let signature = "";
+        for (const node of this._leafNodes) {
+            signature += this._displayedLodLevel(node) + ",";
+        }
+        return signature;
+    }
+
+    /**
+     * Disposes the LOD-node wireframe boxes and stops live debug updates.
      */
     private _clearDebugDisplay(): void {
+        if (this._debugObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._debugObserver);
+            this._debugObserver = null;
+        }
         if (this._debugMesh) {
             this._debugMesh.dispose();
             this._debugMesh = null;
         }
-    }
-
-    /**
-     * Recursively appends a wireframe box (12 edges) for each leaf node, colored by its active LOD.
-     * @param node current tree node
-     * @param lines accumulated line segments (local space)
-     * @param colors accumulated per-segment colors
-     */
-    private _collectDebugBoxes(node: ISOGLODNode, lines: Vector3[][], colors: Color4[][]): void {
-        if (node.children) {
-            for (const child of node.children) {
-                this._collectDebugBoxes(child, lines, colors);
-            }
-            return;
-        }
-        if (node.activeLod === undefined) {
-            return;
-        }
-
-        const color = GsLodDebugColors[node.activeLod % GsLodDebugColors.length];
-        const mn = node.bound.min;
-        const mx = node.bound.max;
-        const corners = [
-            new Vector3(mn[0], mn[1], mn[2]),
-            new Vector3(mx[0], mn[1], mn[2]),
-            new Vector3(mx[0], mx[1], mn[2]),
-            new Vector3(mn[0], mx[1], mn[2]),
-            new Vector3(mn[0], mn[1], mx[2]),
-            new Vector3(mx[0], mn[1], mx[2]),
-            new Vector3(mx[0], mx[1], mx[2]),
-            new Vector3(mn[0], mx[1], mx[2]),
-        ];
-        const edges = [
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [3, 0],
-            [4, 5],
-            [5, 6],
-            [6, 7],
-            [7, 4],
-            [0, 4],
-            [1, 5],
-            [2, 6],
-            [3, 7],
-        ];
-        for (const edge of edges) {
-            lines.push([corners[edge[0]], corners[edge[1]]]);
-            colors.push([color, color]);
-        }
+        this._debugColorData = null;
+        this._debugSignature = "";
     }
 
     /**
@@ -321,6 +580,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         node.activeLod = bestLevel;
+        this._leafNodes.push(node);
 
         let entries = this._entriesByFile.get(entry.file);
         if (!entries) {
