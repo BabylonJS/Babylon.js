@@ -698,7 +698,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._activeSplatRangeKey = rangeData.key;
         this._activeSplatRenderCount = rangeData.count;
         // Resize the sort/index buffers to the new active count and refresh the worker's interval set.
-        this._updateSplatIndexBuffer(this._vertexCount);
+        // Preserve the previous sorted order (don't reset to identity) so the range change doesn't render
+        // a one-frame unsorted flash; the forced re-sort below refreshes it within a frame.
+        this._updateSplatIndexBuffer(this._vertexCount, true);
         this._postIntervalsToWorker();
         this._postToWorker(true);
     }
@@ -2821,11 +2823,22 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     // in case size is different
-    protected _updateSplatIndexBuffer(vertexCount: number): void {
+    protected _updateSplatIndexBuffer(vertexCount: number, preserveOrder = false): void {
         const renderedSplatCount = this._activeSplatRanges ? this._activeSplatRenderCount : vertexCount;
         const paddedVertexCount = Math.max((renderedSplatCount + 15) & ~0xf, 16);
-        if (!this._splatIndex || paddedVertexCount !== this._splatIndex.length) {
+
+        // When preserving order (e.g. an active-range/LOD change), keep the previous depth-sorted indices
+        // instead of resetting to identity (source) order. Rendering the slightly-stale sorted order for the
+        // one frame until the worker re-sorts avoids a visible unsorted "flash" on every range change.
+        const previousIndex = this._splatIndex;
+        const preserve = preserveOrder && !!previousIndex;
+
+        if (!previousIndex || paddedVertexCount !== previousIndex.length) {
             this._splatIndex = new Float32Array(paddedVertexCount);
+            if (preserve) {
+                // Carry over as much of the previous (sorted) order as fits the new buffer.
+                this._splatIndex.set(previousIndex.subarray(0, Math.min(previousIndex.length, paddedVertexCount)));
+            }
 
             // update meshes for knowns cameras
             this._cameraViewInfos.forEach((cameraViewInfos) => {
@@ -2834,21 +2847,24 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         // Initialize the splat index buffer with the active source indices (identity when unfiltered).
-        if (this._activeSplatRanges) {
-            let index = 0;
-            for (let rangeIndex = 0; rangeIndex < this._activeSplatRanges.length; rangeIndex += 2) {
-                const start = this._activeSplatRanges[rangeIndex];
-                const count = this._activeSplatRanges[rangeIndex + 1];
-                for (let sourceIndex = start; sourceIndex < start + count; sourceIndex++) {
-                    this._splatIndex[index++] = sourceIndex;
+        // Skipped when preserving order: the previous sorted contents are kept until the next sort completes.
+        if (!preserve) {
+            if (this._activeSplatRanges) {
+                let index = 0;
+                for (let rangeIndex = 0; rangeIndex < this._activeSplatRanges.length; rangeIndex += 2) {
+                    const start = this._activeSplatRanges[rangeIndex];
+                    const count = this._activeSplatRanges[rangeIndex + 1];
+                    for (let sourceIndex = start; sourceIndex < start + count; sourceIndex++) {
+                        this._splatIndex[index++] = sourceIndex;
+                    }
                 }
-            }
-            for (; index < paddedVertexCount; index++) {
-                this._splatIndex[index] = 0;
-            }
-        } else {
-            for (let i = 0; i < paddedVertexCount; i++) {
-                this._splatIndex[i] = i;
+                for (; index < paddedVertexCount; index++) {
+                    this._splatIndex[index] = 0;
+                }
+            } else {
+                for (let i = 0; i < paddedVertexCount; i++) {
+                    this._splatIndex[i] = i;
+                }
             }
         }
 

@@ -17,25 +17,6 @@ import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
 import { type ISogTexturePack } from "./splatDefs";
 
 /**
- * Internal descriptor for one resource to stream (environment bundle or a LOD source file).
- */
-interface ILoadDescriptor {
-    kind: "env" | "file";
-    /** Number of splats in this resource. */
-    count: number;
-    /** First splat index (pixel offset) assigned in the work buffer. */
-    offset: number;
-    /** Index into `filenames` (kind "file"). */
-    fileId: number;
-    /** Parsed SOG metadata (kind "file"). */
-    sogData?: SOGRootData;
-    /** Base URL for the file's webp images (kind "file"). */
-    subRootUrl?: string;
-    /** Unzipped bundle contents (kind "env"). */
-    files?: Map<string, Uint8Array>;
-}
-
-/**
  * A single LOD variant of a tree node: a contiguous splat range inside one streamed SOG file.
  */
 interface ISOGLODEntry {
@@ -54,10 +35,16 @@ interface ISOGLODNode {
     bound: { min: number[]; max: number[] };
     children?: ISOGLODNode[];
     lods?: { [level: string]: ISOGLODEntry };
-    /** LOD level currently streamed/rendered for this node (set during the tree walk). */
+    /** LOD level currently streamed/rendered for this node, or undefined until its base LOD is ready. */
     activeLod?: number;
-    /** Distance-based ideal LOD level for this node, recomputed per frame (diagnostics only). */
+    /** Distance-based ideal LOD level for this node, recomputed per frame. */
     optimalLod?: number;
+    /** Available LOD levels for this leaf, sorted ascending (0 = finest). Set during the tree walk. */
+    availableLevels?: number[];
+    /** Coarsest available level (= max key), always streamed as the permanent base layer. */
+    baseLod?: number;
+    /** Frames remaining before this node may switch LOD again (oscillation damping). */
+    lodCooldown?: number;
 }
 
 /**
@@ -101,6 +88,14 @@ export interface IGaussianSplattingStreamOptions {
     lodRangeMin?: number;
     /** Highest LOD index the optimal-LOD heuristic may select. Defaults to `lodLevels - 1`. */
     lodRangeMax?: number;
+    /** Maximum number of LOD source files to GPU-decode per frame (spreads work to avoid hitches). Defaults to `1`. */
+    maxDecodesPerFrame?: number;
+    /** Frames a node must wait after switching LOD before it may switch again (oscillation damping). Defaults to `10`. */
+    lodCooldownFrames?: number;
+    /** Minimum number of frames between LOD re-evaluations (throttles per-frame work during motion). Defaults to `4`. */
+    lodUpdateInterval?: number;
+    /** Minimum camera movement (world units) required to re-evaluate LODs. Defaults to `0.5`. */
+    lodUpdateDistance?: number;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -151,10 +146,12 @@ const GsLodDebugColors = [
  *
  * Each selected SOG file (plus the environment) is loaded directly as GPU textures and decoded on the
  * GPU into one unified, PlayCanvas-style square work buffer (no CPU splat decode or `updateData`). Only
- * the selected-LOD splats are rendered/sorted via the mesh's interval filter.
+ * the splats of each node's currently-selected LOD are rendered/sorted via the mesh's interval filter.
  *
- * A distance-based "optimal" LOD is computed per node (see {@link evaluateOptimalLods}) for diagnostics
- * and the debug wireframe display; rendering itself still streams and shows the least-detail LOD.
+ * The coarsest (least-detail) LOD of every node is streamed first as a permanent base layer so the whole
+ * scene is visible quickly with no holes. A distance-based "optimal" LOD is then computed per node (see
+ * {@link evaluateOptimalLods}); finer LOD source files are streamed on demand and a node only switches to
+ * a finer LOD once that file is decoded, so transitions never flash or leave gaps.
  *
  * @experimental
  */
@@ -163,10 +160,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private readonly _rootUrl: string;
     private readonly _streamOptions: IGaussianSplattingStreamOptions;
 
-    // Selected-LOD entries grouped by source file index.
-    private readonly _entriesByFile = new Map<number, ISOGLODEntry[]>();
-
-    // Flat list of leaf nodes that carry a renderable LOD entry (used by the optimal-LOD heuristic and debug).
+    // Flat list of leaf nodes that carry renderable LOD entries (used by the LOD heuristic and debug).
     private readonly _leafNodes: ISOGLODNode[] = [];
 
     // LOD heuristic parameters (PlayCanvas-aligned defaults).
@@ -175,14 +169,39 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private _lodBehindPenalty = 1;
     private _lodRangeMin = 0;
     private _lodRangeMax: number;
+    private _maxDecodesPerFrame = 1;
+    private _lodCooldownFrames = 10;
+    // Minimum frames between LOD re-evaluations, and minimum camera movement (world units) to re-evaluate.
+    private _lodUpdateInterval = 4;
+    private _lodUpdateDistance = 0.5;
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
 
-    // Global splat offset where each loaded source file begins in the work buffer.
+    // Global splat offset where each source file begins in the work buffer (fixed for all files up front).
     private readonly _fileBaseSplat = new Map<number, number>();
+    // Splat count of each source file (learned from its metadata before allocation).
+    private readonly _fileCounts = new Map<number, number>();
+    // Cached SOG metadata per file so on-demand decodes don't refetch the meta.json.
+    private readonly _fileMeta = new Map<number, { sogData: SOGRootData; subRootUrl: string }>();
+    // Files whose splats have been GPU-decoded into the work buffer.
+    private readonly _decodedFiles = new Set<number>();
+    // Files whose decode is currently in flight (dedupes concurrent requests).
+    private readonly _loadingFiles = new Set<number>();
+    // FIFO of file ids waiting to be decoded (drained under a per-frame budget).
+    private readonly _decodeQueue: number[] = [];
+
     // Global range covered by the environment file (always rendered), or null until it loads.
     private _environmentRange: Nullable<{ offset: number; count: number }> = null;
+    // Unzipped environment bundle contents, retained between count-gathering and decode.
+    private _environmentFiles: Nullable<Map<string, Uint8Array>> = null;
+
+    // Per-frame LOD streaming loop; installed once the base layer is ready.
+    private _lodObserver: Nullable<Observer<Scene>> = null;
+    private _baseLayerReady = false;
+    // Throttling state for the per-frame LOD loop.
+    private _framesSinceLodUpdate = 0;
+    private readonly _lastLodCamPos = new Vector3(Infinity, Infinity, Infinity);
 
     // Running local-space bounds of all decoded splat centers (for frustum culling / picking).
     private readonly _boundsMin = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -244,6 +263,18 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         if (options.lodRangeMax !== undefined) {
             this._lodRangeMax = Math.max(this._lodRangeMin, Math.min(options.lodRangeMax, maxLod));
+        }
+        if (options.maxDecodesPerFrame !== undefined) {
+            this._maxDecodesPerFrame = Math.max(1, options.maxDecodesPerFrame);
+        }
+        if (options.lodCooldownFrames !== undefined) {
+            this._lodCooldownFrames = Math.max(0, options.lodCooldownFrames);
+        }
+        if (options.lodUpdateInterval !== undefined) {
+            this._lodUpdateInterval = Math.max(1, options.lodUpdateInterval);
+        }
+        if (options.lodUpdateDistance !== undefined) {
+            this._lodUpdateDistance = Math.max(0, options.lodUpdateDistance);
         }
         if (options.debugLodSource) {
             this._debugLodSource = options.debugLodSource;
@@ -310,6 +341,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     public override dispose(doNotRecurse?: boolean): void {
         this._disposed = true;
+        if (this._lodObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._lodObserver);
+            this._lodObserver = null;
+        }
         this._clearDebugDisplay();
         this._workBuffer?.dispose();
         this._workBuffer = null;
@@ -546,8 +581,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Walks the LOD tree and records each leaf's least-detail (highest-numbered) LOD entry,
-     * grouped by the source file it lives in.
+     * Walks the LOD tree and records every leaf that carries renderable LOD entries, capturing the set of
+     * available levels and the coarsest (base) level for each.
      * @param node current tree node
      */
     private _collectLodEntries(node: ISOGLODNode): void {
@@ -562,55 +597,56 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             return;
         }
 
-        // Least detail == highest LOD key (PlayCanvas convention: level 0 is the finest).
-        let bestLevel = Number.NEGATIVE_INFINITY;
+        // Collect all levels that hold splats (PlayCanvas convention: level 0 is the finest, higher = coarser).
+        const levels: number[] = [];
         for (const key of Object.keys(node.lods)) {
             const level = Number(key);
-            if (level > bestLevel) {
-                bestLevel = level;
+            const entry = node.lods[key];
+            if (Number.isFinite(level) && entry && entry.count > 0) {
+                levels.push(level);
             }
         }
-        if (!Number.isFinite(bestLevel)) {
+        if (levels.length === 0) {
             return;
         }
+        levels.sort((a, b) => a - b);
 
-        const entry = node.lods[String(bestLevel)];
-        if (!entry || entry.count <= 0) {
-            return;
-        }
-
-        node.activeLod = bestLevel;
+        node.availableLevels = levels;
+        node.baseLod = levels[levels.length - 1];
+        node.activeLod = undefined;
+        node.lodCooldown = 0;
         this._leafNodes.push(node);
-
-        let entries = this._entriesByFile.get(entry.file);
-        if (!entries) {
-            entries = [];
-            this._entriesByFile.set(entry.file, entries);
-        }
-        entries.push(entry);
     }
 
     /**
-     * Streams the environment (if any) and every selected-LOD source file: first learns each splat
-     * count, allocates the unified GPU work buffer, then GPU-decodes each resource into its block.
+     * Streams the scene: learns every source file's splat count, allocates one unified GPU work buffer
+     * sized for all LOD files, decodes the environment and the coarsest LOD of every node as a permanent
+     * base layer, then installs the per-frame loop that streams finer LODs on demand.
      */
     private async _streamAllAsync(): Promise<void> {
-        // Phase 1: fetch metadata to learn splat counts (cheap; no webp decode yet).
-        const descriptors = await this._gatherLoadDescriptorsAsync();
-        if (this._disposed || descriptors.length === 0) {
+        // Phase 1: learn splat counts for the environment and every referenced LOD file (cheap meta only).
+        const fileIds = this._collectAllFileIds();
+        const envCount = await this._gatherCountsAsync(fileIds);
+        if (this._disposed) {
             return;
         }
 
-        // Allocate the unified work buffer sized to the total splat count (PlayCanvas-style square).
+        // Phase 2: assign fixed work-buffer offsets (environment first, then every file) and allocate.
         let capacity = 0;
-        for (const descriptor of descriptors) {
-            descriptor.offset = capacity;
-            if (descriptor.kind === "env") {
-                this._environmentRange = { offset: capacity, count: descriptor.count };
-            } else {
-                this._fileBaseSplat.set(descriptor.fileId, capacity);
+        if (envCount > 0) {
+            this._environmentRange = { offset: 0, count: envCount };
+            capacity += envCount;
+        }
+        for (const fileId of fileIds) {
+            const count = this._fileCounts.get(fileId);
+            if (count === undefined || count <= 0) {
+                continue;
             }
-            capacity += descriptor.count;
+            this._fileBaseSplat.set(fileId, capacity);
+            capacity += count;
+        }
+        if (capacity === 0) {
+            return;
         }
 
         this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
@@ -621,23 +657,62 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this.setSplatIndexRanges([]);
         this.setEnabled(true);
 
-        // Phase 2: GPU-decode each resource into its block, activating its splats as it arrives.
-        for (const descriptor of descriptors) {
+        // Phase 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
+        if (this._environmentRange && this._environmentFiles) {
+            await this._decodeEnvironmentAsync();
+        }
+        this._environmentFiles = null;
+
+        const baseFiles = new Set<number>();
+        for (const node of this._leafNodes) {
+            const entry = node.lods![String(node.baseLod)];
+            if (entry && this._fileBaseSplat.has(entry.file)) {
+                baseFiles.add(entry.file);
+            }
+        }
+        for (const fileId of Array.from(baseFiles)) {
             if (this._disposed) {
                 return;
             }
             // eslint-disable-next-line no-await-in-loop
-            await this._decodeDescriptorAsync(descriptor);
+            await this._decodeFileAsync(fileId);
+        }
+
+        if (this._disposed) {
+            return;
+        }
+        // Phase 4: hand off to the per-frame LOD streaming loop.
+        this._baseLayerReady = true;
+        if (!this._lodObserver) {
+            this._lodObserver = this._scene.onBeforeRenderObservable.add(() => this._onLodFrame());
         }
     }
 
     /**
-     * Fetches the environment bundle and each selected file's metadata to determine splat counts.
-     * @returns descriptors for every resource to decode
+     * Collects the unique set of source file indices referenced by any LOD of any leaf, sorted ascending.
+     * @returns sorted unique file indices
      */
-    private async _gatherLoadDescriptorsAsync(): Promise<ILoadDescriptor[]> {
-        const descriptors: ILoadDescriptor[] = [];
+    private _collectAllFileIds(): number[] {
+        const ids = new Set<number>();
+        for (const node of this._leafNodes) {
+            for (const level of node.availableLevels!) {
+                const entry = node.lods![String(level)];
+                if (entry) {
+                    ids.add(entry.file);
+                }
+            }
+        }
+        return Array.from(ids).sort((a, b) => a - b);
+    }
 
+    /**
+     * Fetches the environment bundle and every referenced file's metadata to learn splat counts, caching
+     * each file's parsed metadata for the later on-demand decode. Metadata fetches run in parallel.
+     * @param fileIds file indices to fetch metadata for
+     * @returns the environment splat count (0 when there is no environment)
+     */
+    private async _gatherCountsAsync(fileIds: number[]): Promise<number> {
+        let envCount = 0;
         if (this._metadata.environment) {
             try {
                 const url = this._rootUrl + this._metadata.environment;
@@ -646,7 +721,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 const metaBytes = files.get("meta.json");
                 if (metaBytes) {
                     const meta = JSON.parse(new TextDecoder().decode(metaBytes)) as SOGRootData;
-                    descriptors.push({ kind: "env", count: GaussianSplattingStream._GetSplatCount(meta), offset: 0, fileId: -1, files });
+                    envCount = GaussianSplattingStream._GetSplatCount(meta);
+                    this._environmentFiles = files;
                 }
             } catch (e: any) {
                 // The environment is non-essential — keep streaming the LOD tree even if it fails.
@@ -654,38 +730,70 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             }
         }
 
-        for (const fileId of Array.from(this._entriesByFile.keys())) {
-            const relativePath = this._metadata.filenames[fileId];
-            if (!relativePath) {
-                Logger.Warn(`GaussianSplattingStream: missing filename for file index ${fileId}.`);
-                continue;
-            }
-            try {
-                const metaUrl = this._rootUrl + relativePath;
-                const subRootUrl = metaUrl.substring(0, metaUrl.lastIndexOf("/") + 1);
-                // eslint-disable-next-line no-await-in-loop
-                const metaText = (await Tools.LoadFileAsync(metaUrl, false)) as string;
-                const sogData = JSON.parse(metaText) as SOGRootData;
-                descriptors.push({ kind: "file", count: GaussianSplattingStream._GetSplatCount(sogData), offset: 0, fileId, sogData, subRootUrl });
-            } catch (e: any) {
-                Logger.Warn(`GaussianSplattingStream: failed to load metadata for ${relativePath}: ${e?.message ?? e}`);
-            }
-        }
+        await Promise.all(
+            fileIds.map(async (fileId) => {
+                const relativePath = this._metadata.filenames[fileId];
+                if (!relativePath) {
+                    Logger.Warn(`GaussianSplattingStream: missing filename for file index ${fileId}.`);
+                    return;
+                }
+                try {
+                    const metaUrl = this._rootUrl + relativePath;
+                    const subRootUrl = metaUrl.substring(0, metaUrl.lastIndexOf("/") + 1);
+                    const metaText = (await Tools.LoadFileAsync(metaUrl, false)) as string;
+                    const sogData = JSON.parse(metaText) as SOGRootData;
+                    this._fileCounts.set(fileId, GaussianSplattingStream._GetSplatCount(sogData));
+                    this._fileMeta.set(fileId, { sogData, subRootUrl });
+                } catch (e: any) {
+                    Logger.Warn(`GaussianSplattingStream: failed to load metadata for ${relativePath}: ${e?.message ?? e}`);
+                }
+            })
+        );
 
-        return descriptors;
+        return envCount;
     }
 
     /**
-     * Loads one resource as GPU textures, decodes it into the work buffer, records its CPU centers for
-     * sorting, frees the source textures, and activates its splat ranges.
-     * @param descriptor the resource to decode
+     * Queues a file for on-demand decode if it isn't already decoded, in flight, or already queued.
+     * @param fileId file index to decode
      */
-    private async _decodeDescriptorAsync(descriptor: ILoadDescriptor): Promise<void> {
+    private _enqueueDecode(fileId: number): void {
+        if (this._decodedFiles.has(fileId) || this._loadingFiles.has(fileId) || !this._fileMeta.has(fileId)) {
+            return;
+        }
+        if (this._decodeQueue.indexOf(fileId) === -1) {
+            this._decodeQueue.push(fileId);
+        }
+    }
+
+    /**
+     * Starts up to {@link _maxDecodesPerFrame} queued decodes for this frame. Decodes run asynchronously
+     * and promote any waiting nodes once they complete.
+     */
+    private _pumpDecodeQueue(): void {
+        let started = 0;
+        while (this._decodeQueue.length > 0 && started < this._maxDecodesPerFrame) {
+            const fileId = this._decodeQueue.shift()!;
+            if (this._decodedFiles.has(fileId) || this._loadingFiles.has(fileId)) {
+                continue;
+            }
+            started++;
+            // eslint-disable-next-line github/no-then
+            this._decodeFileAsync(fileId).catch((e) => {
+                Logger.Warn("GaussianSplattingStream: decode failed: " + (e?.message ?? e));
+            });
+        }
+    }
+
+    /**
+     * Decodes the always-on environment bundle into its work-buffer block and activates its range.
+     */
+    private async _decodeEnvironmentAsync(): Promise<void> {
+        if (!this._environmentRange || !this._environmentFiles || !this._workBuffer) {
+            return;
+        }
         try {
-            const parsed =
-                descriptor.kind === "env"
-                    ? await ParseSogMetaAsTextures(descriptor.files!, "", this._scene)
-                    : await ParseSogMetaAsTextures(descriptor.sogData!, descriptor.subRootUrl!, this._scene);
+            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene);
             if (this._disposed || !this._workBuffer) {
                 return;
             }
@@ -693,21 +801,157 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             if (!pack) {
                 return;
             }
-
-            await this._workBuffer.decodeAsync(pack, descriptor.offset);
+            await this._workBuffer.decodeAsync(pack, this._environmentRange.offset);
             if (this._disposed) {
                 GaussianSplattingStream._DisposePack(pack);
                 return;
             }
-            // Copy CPU centers for the depth-sort worker, then free the GPU source textures.
-            this._splatPositions!.set(pack.positions.subarray(0, descriptor.count * 4), descriptor.offset * 4);
+            this._splatPositions!.set(pack.positions.subarray(0, this._environmentRange.count * 4), this._environmentRange.offset * 4);
             GaussianSplattingStream._DisposePack(pack);
-
-            this._updateBounds(pack.positions, descriptor.count);
+            this._updateBounds(pack.positions, this._environmentRange.count);
             this._notifyWorkerNewData();
             this._refreshActiveRanges();
         } catch (e: any) {
-            Logger.Warn("GaussianSplattingStream: failed to decode SOG resource: " + (e?.message ?? e));
+            Logger.Warn("GaussianSplattingStream: failed to decode environment: " + (e?.message ?? e));
+        }
+    }
+
+    /**
+     * Loads one LOD source file as GPU textures, decodes it into its fixed work-buffer block, records its
+     * CPU centers for sorting, frees the source textures, then promotes any nodes that were waiting for it.
+     * Concurrent or repeat requests for the same file are ignored.
+     * @param fileId file index to decode
+     */
+    private async _decodeFileAsync(fileId: number): Promise<void> {
+        if (this._decodedFiles.has(fileId) || this._loadingFiles.has(fileId)) {
+            return;
+        }
+        const meta = this._fileMeta.get(fileId);
+        const base = this._fileBaseSplat.get(fileId);
+        const count = this._fileCounts.get(fileId);
+        if (!meta || base === undefined || count === undefined) {
+            return;
+        }
+        this._loadingFiles.add(fileId);
+        try {
+            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene);
+            if (this._disposed || !this._workBuffer) {
+                return;
+            }
+            const pack = parsed.sogTextures;
+            if (!pack) {
+                return;
+            }
+            await this._workBuffer.decodeAsync(pack, base);
+            if (this._disposed) {
+                GaussianSplattingStream._DisposePack(pack);
+                return;
+            }
+            this._splatPositions!.set(pack.positions.subarray(0, count * 4), base * 4);
+            GaussianSplattingStream._DisposePack(pack);
+
+            this._updateBounds(pack.positions, count);
+            this._decodedFiles.add(fileId);
+            this._notifyWorkerNewData();
+            // Promote any nodes that can now reach their desired LOD via this newly decoded file.
+            if (this._applyDesiredLods()) {
+                this._refreshActiveRanges();
+            }
+        } finally {
+            this._loadingFiles.delete(fileId);
+        }
+    }
+
+    /**
+     * Resolves the LOD level a node should display: its distance-based optimal level snapped to the
+     * nearest level the node actually provides (ties prefer the finer level). Falls back to the base level
+     * until an optimal LOD has been evaluated.
+     * @param node leaf node
+     * @returns the level the node should display
+     */
+    private _desiredLevelForNode(node: ISOGLODNode): number {
+        const levels = node.availableLevels!;
+        const desired = node.optimalLod;
+        if (desired === undefined) {
+            return node.baseLod!;
+        }
+        let best = levels[0];
+        let bestDiff = Math.abs(levels[0] - desired);
+        for (let i = 1; i < levels.length; i++) {
+            const diff = Math.abs(levels[i] - desired);
+            if (diff < bestDiff) {
+                best = levels[i];
+                bestDiff = diff;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Applies each node's desired LOD: switches a node to its desired level when that level's file is
+     * already decoded, otherwise queues the file and leaves the node on its current LOD (so nothing ever
+     * disappears). Nodes within their post-switch cooldown are left untouched to damp oscillation.
+     * @returns true when at least one node changed LOD (callers should refresh the active ranges)
+     */
+    private _applyDesiredLods(): boolean {
+        let dirty = false;
+        for (const node of this._leafNodes) {
+            if (node.lodCooldown && node.lodCooldown > 0) {
+                continue;
+            }
+            const desired = this._desiredLevelForNode(node);
+            if (desired === node.activeLod) {
+                continue;
+            }
+            const entry = node.lods![String(desired)];
+            if (!entry) {
+                continue;
+            }
+            if (this._decodedFiles.has(entry.file)) {
+                node.activeLod = desired;
+                node.lodCooldown = this._lodCooldownFrames;
+                dirty = true;
+            } else {
+                this._enqueueDecode(entry.file);
+            }
+        }
+        return dirty;
+    }
+
+    /**
+     * Per-frame LOD streaming loop. Ticks cooldowns and pumps the decode queue every frame, but throttles
+     * the expensive LOD re-evaluation (optimal-LOD computation, desired-LOD application and interval
+     * rebuild) to run at most every {@link _lodUpdateInterval} frames and only after the camera has moved
+     * far enough, so continuous camera motion no longer rebuilds the interval set every frame.
+     */
+    private _onLodFrame(): void {
+        if (this._disposed || !this._baseLayerReady) {
+            return;
+        }
+        for (const node of this._leafNodes) {
+            if (node.lodCooldown && node.lodCooldown > 0) {
+                node.lodCooldown--;
+            }
+        }
+        // In-flight/queued decodes still progress every frame.
+        this._pumpDecodeQueue();
+
+        if (++this._framesSinceLodUpdate < this._lodUpdateInterval) {
+            return;
+        }
+        const camera = this._scene.activeCamera;
+        if (camera) {
+            const threshold = this._lodUpdateDistance;
+            if (Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) < threshold * threshold) {
+                return;
+            }
+            this._lastLodCamPos.copyFrom(camera.globalPosition);
+        }
+        this._framesSinceLodUpdate = 0;
+
+        this.evaluateOptimalLods(camera);
+        if (this._applyDesiredLods()) {
+            this._refreshActiveRanges();
         }
     }
 
@@ -755,8 +999,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Rebuilds the active (selected-LOD) interval set from every loaded file plus the environment,
-     * coalesces adjacent ranges, and pushes it to the sort worker.
+     * Rebuilds the active interval set from the environment plus each node's currently-selected LOD entry,
+     * coalesces adjacent ranges, and pushes the result to the sort worker.
      */
     private _refreshActiveRanges(): void {
         const ranges: IGaussianSplattingSplatRange[] = [];
@@ -765,14 +1009,19 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             ranges.push({ offset: this._environmentRange.offset, count: this._environmentRange.count });
         }
 
-        for (const [fileId, entries] of Array.from(this._entriesByFile)) {
-            const base = this._fileBaseSplat.get(fileId);
+        for (const node of this._leafNodes) {
+            if (node.activeLod === undefined) {
+                continue;
+            }
+            const entry = node.lods![String(node.activeLod)];
+            if (!entry) {
+                continue;
+            }
+            const base = this._fileBaseSplat.get(entry.file);
             if (base === undefined) {
-                continue; // file not streamed yet
+                continue;
             }
-            for (const entry of entries) {
-                ranges.push({ offset: base + entry.offset, count: entry.count });
-            }
+            ranges.push({ offset: base + entry.offset, count: entry.count });
         }
 
         this.setSplatIndexRanges(GaussianSplattingStream._CoalesceRanges(ranges));
