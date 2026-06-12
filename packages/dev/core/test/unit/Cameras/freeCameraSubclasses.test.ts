@@ -19,7 +19,7 @@ import { type Nullable } from "core/types";
  * These subclasses all derive from FreeCamera (directly or via TouchCamera/UniversalCamera)
  * and therefore inherit the TargetCamera movement wiring without any per-class changes.
  * The tests below assert the port-by-inheritance contract: every subclass exposes a
- * TargetCameraMovement, the default pointer->rotate map, and the framerate-independent
+ * TargetCameraMovement, the default pointer-to-rotate map, and the framerate-independent
  * translate/rotate fold applied by TargetCamera._checkInputs.
  */
 describe("FreeCamera subclasses inherit TargetCameraMovement", () => {
