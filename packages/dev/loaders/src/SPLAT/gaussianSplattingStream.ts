@@ -672,9 +672,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         // Phase 2: assign fixed work-buffer offsets (environment first, then every file) and allocate.
-        let capacity = 0;
+        // Index 0 is reserved as a never-decoded padding splat: the sort worker and index buffer pad unused
+        // slots with index 0, and leaving that slot zeroed (center.w = 0 => zero covariance, alpha 0) makes
+        // the padding invisible instead of ghosting a copy of the first real splat.
+        let capacity = 1;
         if (envCount > 0) {
-            this._environmentRange = { offset: 0, count: envCount };
+            this._environmentRange = { offset: capacity, count: envCount };
             capacity += envCount;
         }
         for (const fileId of fileIds) {
@@ -685,7 +688,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this._fileBaseSplat.set(fileId, capacity);
             capacity += count;
         }
-        if (capacity === 0) {
+        if (capacity <= 1) {
             return;
         }
 
