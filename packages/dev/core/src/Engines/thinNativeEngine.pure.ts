@@ -4,6 +4,7 @@
 import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
 import { type VertexBuffer } from "../Buffers/buffer.pure";
+import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
@@ -251,6 +252,13 @@ export class ThinNativeEngine extends ThinEngine {
      * @internal
      */
     protected _initializeNativeEngine(adaptToDeviceRatio: boolean): void {
+        // ThinNativeEngine relies on VertexBuffer.effective{Buffer,ByteOffset,ByteStride}
+        // (defined in Buffers/buffer.align.pure) to bind vertex attributes through
+        // recordVertexBuffer. Register the side effect here so the engine is usable
+        // on its own without callers having to remember to import the wrapper module.
+        // The registration is idempotent.
+        RegisterBufferAlign();
+
         this._engine = new _native.Engine({
             version: AbstractEngine.Version,
             nonFloatVertexBuffers: true,

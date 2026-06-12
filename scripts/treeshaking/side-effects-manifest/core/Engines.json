@@ -98,9 +98,8 @@
         "Engines/WebGPU/webgpuClearQuad.ts": ["bare-import"],
         "Engines/WebGPU/webgpuShaderProcessorsWGSL.ts": ["bare-import"],
         "Engines/engine.ts": ["bare-import"],
-        "Engines/nativeEngine.ts": ["bare-import", "top-level-call"],
+        "Engines/nativeEngine.ts": ["top-level-call"],
         "Engines/nullEngine.ts": ["bare-import"],
-        "Engines/thinNativeEngine.ts": ["bare-import"],
         "Engines/thinNativeEngine.types.ts": ["declare-module"],
         "Engines/webgpuEngine.ts": ["bare-import"]
     }
