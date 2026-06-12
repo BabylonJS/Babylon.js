@@ -2849,21 +2849,22 @@ export class GaussianSplattingMeshBase extends Mesh {
         // Initialize the splat index buffer with the active source indices (identity when unfiltered).
         // Skipped when preserving order: the previous sorted contents are kept until the next sort completes.
         if (!preserve) {
+            const splatIndex = this._splatIndex!;
             if (this._activeSplatRanges) {
                 let index = 0;
                 for (let rangeIndex = 0; rangeIndex < this._activeSplatRanges.length; rangeIndex += 2) {
                     const start = this._activeSplatRanges[rangeIndex];
                     const count = this._activeSplatRanges[rangeIndex + 1];
                     for (let sourceIndex = start; sourceIndex < start + count; sourceIndex++) {
-                        this._splatIndex[index++] = sourceIndex;
+                        splatIndex[index++] = sourceIndex;
                     }
                 }
                 for (; index < paddedVertexCount; index++) {
-                    this._splatIndex[index] = 0;
+                    splatIndex[index] = 0;
                 }
             } else {
                 for (let i = 0; i < paddedVertexCount; i++) {
-                    this._splatIndex[i] = i;
+                    splatIndex[i] = i;
                 }
             }
         }

@@ -43,6 +43,8 @@ interface ISOGLODNode {
     availableLevels?: number[];
     /** Coarsest available level (= max key), always streamed as the permanent base layer. */
     baseLod?: number;
+    /** Final LOD level the node should stream/render (distance optimal, capped by maxDetailLod). */
+    targetLevel?: number;
     /** Frames remaining before this node may switch LOD again (oscillation damping). */
     lodCooldown?: number;
 }
@@ -96,6 +98,11 @@ export interface IGaussianSplattingStreamOptions {
     lodUpdateInterval?: number;
     /** Minimum camera movement (world units) required to re-evaluate LODs. Defaults to `0.5`. */
     lodUpdateDistance?: number;
+    /**
+     * Finest (most detailed) LOD level any node is allowed to render. `0` allows full detail (level 0);
+     * `1` caps detail at the next-coarser level, and so on. Higher values force a coarser maximum detail.
+     */
+    maxDetailLod?: number;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -174,6 +181,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Minimum frames between LOD re-evaluations, and minimum camera movement (world units) to re-evaluate.
     private _lodUpdateInterval = 4;
     private _lodUpdateDistance = 0.5;
+    private _maxDetailLod = 0;
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
@@ -202,6 +210,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Throttling state for the per-frame LOD loop.
     private _framesSinceLodUpdate = 0;
     private readonly _lastLodCamPos = new Vector3(Infinity, Infinity, Infinity);
+    // Forces the next LOD update to run regardless of the throttle (e.g. after a budget change).
+    private _forceLodUpdate = false;
 
     // Running local-space bounds of all decoded splat centers (for frustum culling / picking).
     private readonly _boundsMin = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -276,6 +286,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.lodUpdateDistance !== undefined) {
             this._lodUpdateDistance = Math.max(0, options.lodUpdateDistance);
         }
+        if (options.maxDetailLod !== undefined) {
+            this._maxDetailLod = Math.max(0, Math.floor(options.maxDetailLod));
+        }
         if (options.debugLodSource) {
             this._debugLodSource = options.debugLodSource;
         }
@@ -300,6 +313,33 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     public override getClassName(): string {
         return "GaussianSplattingStream";
+    }
+
+    /**
+     * Finest (most detailed) LOD level any node is allowed to render. `0` allows full detail (level 0);
+     * `1` caps detail at the next-coarser level, and so on. Nodes already coarser than this cap (by
+     * distance) are unaffected. Changes take effect in real time.
+     */
+    public get maxDetailLod(): number {
+        return this._maxDetailLod;
+    }
+
+    public set maxDetailLod(value: number) {
+        const level = Math.max(0, Math.floor(value));
+        if (this._maxDetailLod === level) {
+            return;
+        }
+        this._maxDetailLod = level;
+        // Re-evaluate LODs on the next frame regardless of the movement throttle so the change is immediate.
+        this._forceLodUpdate = true;
+    }
+
+    /**
+     * Coarsest LOD level index in the scene (number of LOD levels minus one). Useful as the upper bound
+     * for {@link maxDetailLod}.
+     */
+    public get maxLodLevel(): number {
+        return Math.max(0, this._metadata.lodLevels - 1);
     }
 
     /**
@@ -863,34 +903,47 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Resolves the LOD level a node should display: its distance-based optimal level snapped to the
-     * nearest level the node actually provides (ties prefer the finer level). Falls back to the base level
-     * until an optimal LOD has been evaluated.
+     * Snaps a desired LOD level to the nearest level the node provides, while never selecting a level finer
+     * than {@link maxDetailLod} (i.e. with an index below the cap). Ties prefer the finer allowed level. If
+     * the node has no level at or coarser than the cap, its coarsest available level is used.
      * @param node leaf node
-     * @returns the level the node should display
+     * @param desired desired LOD level
+     * @returns the chosen available level
      */
-    private _desiredLevelForNode(node: ISOGLODNode): number {
+    private _cappedLevelForNode(node: ISOGLODNode, desired: number): number {
         const levels = node.availableLevels!;
-        const desired = node.optimalLod;
-        if (desired === undefined) {
-            return node.baseLod!;
-        }
-        let best = levels[0];
-        let bestDiff = Math.abs(levels[0] - desired);
-        for (let i = 1; i < levels.length; i++) {
-            const diff = Math.abs(levels[i] - desired);
+        const floor = this._maxDetailLod;
+        let best = -1;
+        let bestDiff = Number.POSITIVE_INFINITY;
+        for (const level of levels) {
+            if (level < floor) {
+                continue;
+            }
+            const diff = Math.abs(level - desired);
             if (diff < bestDiff) {
-                best = levels[i];
+                best = level;
                 bestDiff = diff;
             }
         }
-        return best;
+        // No level is coarse enough to satisfy the cap: fall back to the coarsest the node has.
+        return best < 0 ? node.baseLod! : best;
     }
 
     /**
-     * Applies each node's desired LOD: switches a node to its desired level when that level's file is
-     * already decoded, otherwise queues the file and leaves the node on its current LOD (so nothing ever
-     * disappears). Nodes within their post-switch cooldown are left untouched to damp oscillation.
+     * Computes each node's {@link ISOGLODNode.targetLevel}: the distance-based optimal level snapped to an
+     * available level, capped so no node renders finer (more detailed) than {@link maxDetailLod}.
+     */
+    private _computeTargetLevels(): void {
+        for (const node of this._leafNodes) {
+            const desired = node.optimalLod ?? node.baseLod!;
+            node.targetLevel = this._cappedLevelForNode(node, desired);
+        }
+    }
+
+    /**
+     * Applies each node's {@link ISOGLODNode.targetLevel}: switches a node to its target level when that
+     * level's file is already decoded, otherwise queues the file and leaves the node on its current LOD (so
+     * nothing ever disappears). Nodes within their post-switch cooldown are left untouched to damp oscillation.
      * @returns true when at least one node changed LOD (callers should refresh the active ranges)
      */
     private _applyDesiredLods(): boolean {
@@ -899,7 +952,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             if (node.lodCooldown && node.lodCooldown > 0) {
                 continue;
             }
-            const desired = this._desiredLevelForNode(node);
+            const desired = node.targetLevel ?? node.baseLod!;
             if (desired === node.activeLod) {
                 continue;
             }
@@ -920,9 +973,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     /**
      * Per-frame LOD streaming loop. Ticks cooldowns and pumps the decode queue every frame, but throttles
-     * the expensive LOD re-evaluation (optimal-LOD computation, desired-LOD application and interval
-     * rebuild) to run at most every {@link _lodUpdateInterval} frames and only after the camera has moved
-     * far enough, so continuous camera motion no longer rebuilds the interval set every frame.
+     * the expensive LOD re-evaluation (optimal-LOD computation, budget balancing, desired-LOD application
+     * and interval rebuild) to run at most every {@link _lodUpdateInterval} frames and only after the camera
+     * has moved far enough, so continuous camera motion no longer rebuilds the interval set every frame. A
+     * budget change forces a single immediate update regardless of the throttle.
      */
     private _onLodFrame(): void {
         if (this._disposed || !this._baseLayerReady) {
@@ -936,20 +990,25 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // In-flight/queued decodes still progress every frame.
         this._pumpDecodeQueue();
 
-        if (++this._framesSinceLodUpdate < this._lodUpdateInterval) {
-            return;
-        }
-        const camera = this._scene.activeCamera;
-        if (camera) {
-            const threshold = this._lodUpdateDistance;
-            if (Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) < threshold * threshold) {
+        const forced = this._forceLodUpdate;
+        if (!forced) {
+            if (++this._framesSinceLodUpdate < this._lodUpdateInterval) {
                 return;
             }
-            this._lastLodCamPos.copyFrom(camera.globalPosition);
+            const camera = this._scene.activeCamera;
+            if (camera) {
+                const threshold = this._lodUpdateDistance;
+                if (Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) < threshold * threshold) {
+                    return;
+                }
+                this._lastLodCamPos.copyFrom(camera.globalPosition);
+            }
         }
+        this._forceLodUpdate = false;
         this._framesSinceLodUpdate = 0;
 
-        this.evaluateOptimalLods(camera);
+        this.evaluateOptimalLods(this._scene.activeCamera);
+        this._computeTargetLevels();
         if (this._applyDesiredLods()) {
             this._refreshActiveRanges();
         }
