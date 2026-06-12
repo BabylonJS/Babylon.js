@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.11.0",
+    "version": "9.12.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -136,6 +136,7 @@
         "Engines/AbstractEngine/abstractEngine.loadFile.js",
         "Engines/AbstractEngine/abstractEngine.query.js",
         "Engines/AbstractEngine/abstractEngine.renderPass.js",
+        "Engines/AbstractEngine/abstractEngine.scissor.js",
         "Engines/AbstractEngine/abstractEngine.states.js",
         "Engines/AbstractEngine/abstractEngine.stencil.js",
         "Engines/AbstractEngine/abstractEngine.texture.js",
@@ -154,6 +155,7 @@
         "Engines/engine.js",
         "Engines/nativeEngine.js",
         "Engines/nullEngine.js",
+        "Engines/thinEngine.scissor.js",
         "Engines/thinNativeEngine.js",
         "Engines/thinNativeEngine.types.js",
         "Engines/webgpuEngine.js",
