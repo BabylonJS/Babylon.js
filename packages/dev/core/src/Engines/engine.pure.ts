@@ -499,30 +499,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
-     * @param y defines the y-coordinate of the corner of the clear rectangle
-     * @param width defines the width of the clear rectangle
-     * @param height defines the height of the clear rectangle
-     */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
-        const gl = this._gl;
-
-        // Change state
-        gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(x, y, width, height);
-    }
-
-    /**
-     * Disable previously set scissor test rectangle
-     */
-    public disableScissor() {
-        const gl = this._gl;
-
-        gl.disable(gl.SCISSOR_TEST);
-    }
-
-    /**
      * Gets the source code of the vertex shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the vertex shader associated with the program
