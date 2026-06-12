@@ -156,4 +156,43 @@ describe("TargetCameraMovement", () => {
             expect(camera.movement.rotationInertia).toBe(0.2);
         });
     });
+
+    describe("legacy epsilon glide cutoff", () => {
+        it("stops rotational glide once the per-frame delta falls below speed * _rotationEpsilon", () => {
+            camera.inertia = 0.9;
+            camera.cameraRotation.x = 0.1;
+            camera._checkInputs();
+            const afterFirst = camera.rotation.x;
+
+            // Raise the rotation epsilon so the next decayed glide delta is below speed * _rotationEpsilon.
+            camera._rotationEpsilon = 10;
+            camera._checkInputs();
+            const afterSecond = camera.rotation.x;
+
+            // Glide is cut off at the legacy threshold: rotation does not advance further.
+            expect(afterSecond).toBe(afterFirst);
+
+            // The cutoff also resets the velocity, so a subsequent frame produces no movement either.
+            camera._checkInputs();
+            expect(camera.rotation.x).toBe(afterFirst);
+        });
+
+        it("stops translational glide once the per-frame delta falls below speed * _panningEpsilon", () => {
+            camera.inertia = 0.9;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.cameraDirection.copyFromFloats(0, 0, 1);
+            camera._checkInputs();
+            const afterFirst = camera.position.z;
+
+            // Raise the panning epsilon so the next decayed glide delta is below speed * _panningEpsilon.
+            camera._panningEpsilon = 10;
+            camera._checkInputs();
+
+            // Glide is cut off at the legacy threshold: position does not advance further.
+            expect(camera.position.z).toBe(afterFirst);
+            // The cutoff also resets the velocity, so a subsequent frame produces no movement either.
+            camera._checkInputs();
+            expect(camera.position.z).toBe(afterFirst);
+        });
+    });
 });

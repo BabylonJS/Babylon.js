@@ -380,8 +380,11 @@ export class TargetCamera extends Camera {
         // Fold this frame's raw input — written to `cameraDirection`/`cameraRotation` by the input
         // classes (and honored from direct external writes) — into the movement system, then let it
         // produce framerate-independent per-frame deltas (input plus inertial glide). The applied
-        // delta is written back into `cameraDirection`/`cameraRotation` so the existing collision,
-        // gravity, and rotation-constraint logic below (and external polling) keep working unchanged.
+        // delta is written back into `cameraDirection`/`cameraRotation` purely as a within-frame
+        // hand-off so the collision, gravity, and rotation-constraint logic below reads it unchanged.
+        // Both fields are reset to 0 at the end of this method (the inertial glide now lives in the
+        // movement system's velocity, not in these fields), so external code polling them *after*
+        // `_checkInputs()` reads 0 rather than the legacy residual glide value.
         const movement = this.movement;
         movement.panAccumulatedPixels.addInPlace(this.cameraDirection);
         movement.rotationAccumulatedPixels.x += this.cameraRotation.x;
@@ -389,6 +392,29 @@ export class TargetCamera extends Camera {
         movement.computeCurrentFrameDeltas();
         this.cameraDirection.copyFrom(movement.panDeltaCurrentFrame);
         this.cameraRotation.set(movement.rotationDeltaCurrentFrame.x, movement.rotationDeltaCurrentFrame.y);
+
+        // Backward-compat glide cutoff: honor the legacy `_panningEpsilon` / `_rotationEpsilon` knobs.
+        // Legacy `_checkInputs` snapped `cameraDirection`/`cameraRotation` to 0 once a component fell
+        // below `speed * _panningEpsilon` / `speed * _rotationEpsilon`, ending inertial glide at that
+        // threshold. The framerate-independent port moved glide into the movement system's velocity, so
+        // we mirror that cutoff here: when this frame's emitted glide delta is below the legacy limit,
+        // zero the delta AND reset the movement velocity so glide terminates at the same point (and the
+        // public knobs stay meaningful). Active drags produce deltas well above the limit, so this only
+        // triggers on the decaying tail.
+        const inertialPanningLimit = this.speed * this._panningEpsilon;
+        if (
+            Math.abs(this.cameraDirection.x) < inertialPanningLimit &&
+            Math.abs(this.cameraDirection.y) < inertialPanningLimit &&
+            Math.abs(this.cameraDirection.z) < inertialPanningLimit
+        ) {
+            this.cameraDirection.setAll(0);
+            movement.resetPanVelocity();
+        }
+        const inertialRotationLimit = this.speed * this._rotationEpsilon;
+        if (Math.abs(this.cameraRotation.x) < inertialRotationLimit && Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
+            this.cameraRotation.set(0, 0);
+            movement.resetRotationVelocity();
+        }
 
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
