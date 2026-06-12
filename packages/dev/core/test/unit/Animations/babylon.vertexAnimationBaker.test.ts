@@ -9,6 +9,7 @@ import { ImportMeshAsync } from "core/Loading";
 import { type Mesh } from "core/Meshes";
 import "core/Animations/animatable";
 import "core/Materials/standardMaterial";
+import "core/Materials/Textures/texture";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths";
 

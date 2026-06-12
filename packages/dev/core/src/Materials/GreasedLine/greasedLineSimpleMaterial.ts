@@ -1,9 +1,9 @@
 import { type Scene } from "../../scene";
 import { RawTexture } from "../Textures/rawTexture";
-import { ShaderMaterial } from "../shaderMaterial";
+import { ShaderMaterial } from "../shaderMaterial.pure";
 import { type Nullable } from "../../types";
-import { Color3 } from "../../Maths/math.color";
-import { Vector2 } from "../../Maths/math.vector";
+import { Color3 } from "../../Maths/math.color.pure";
+import { Vector2 } from "../../Maths/math.vector.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { TextureSampler } from "../Textures/textureSampler";
 

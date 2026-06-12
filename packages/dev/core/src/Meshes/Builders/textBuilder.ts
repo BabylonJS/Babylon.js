@@ -1,11 +1,11 @@
 import { type Color4 } from "../../Maths/math.color";
 import { Path2 } from "../../Maths/math.path";
-import { Vector3, type Vector4 } from "../../Maths/math.vector";
+import { Vector3, type Vector4 } from "../../Maths/math.vector.pure";
 import { type Scene } from "../../scene";
 import { type Nullable } from "../../types";
-import { Mesh } from "../mesh";
-import { TransformNode } from "../transformNode";
-import { ExtrudePolygon } from "./polygonBuilder";
+import { Mesh } from "../mesh.pure";
+import { TransformNode } from "../transformNode.pure";
+import { ExtrudePolygon } from "./polygonBuilder.pure";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let earcut: any;

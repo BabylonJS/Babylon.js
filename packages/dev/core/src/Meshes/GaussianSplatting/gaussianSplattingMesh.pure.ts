@@ -2,18 +2,19 @@
 
 import { type Nullable } from "core/types";
 import { type Scene } from "core/scene.pure";
-import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
-import { type Matrix, type Vector2 } from "core/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
+import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
-import { GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase.pure";
+import { GaussianSplattingMeshBase, AllocateShBuffers } from "./gaussianSplattingMeshBase.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 import { Mesh } from "core/Meshes/mesh.pure";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
-import { type BoundingInfo } from "../../Culling/boundingInfo";
+import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 
 const _GaussianSplattingBytesPerSplat = 32;
 const _GaussianSplattingBytesPerShTexel = 16;
@@ -90,6 +91,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     private _partProxies: GaussianSplattingPartProxyMesh[] = [];
 
+    /** Part 0 local-space AABB when owned directly (not proxied). Set on first addPart, cleared on dispose/reset. */
+    private _part0LocalMin: Nullable<Vector3> = null;
+    private _part0LocalMax: Nullable<Vector3> = null;
+
     /**
      * World matrices for each part, indexed by part index.
      */
@@ -158,6 +163,109 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
+     * Recomputes compound local-space bounds from part 0's stored AABB (if unproxied) plus all
+     * proxy world AABBs inverse-transformed to compound-local space. All 8 corners of each proxy
+     * AABB are transformed so the result is correct under non-identity compound rotation/scale.
+     */
+    private _updateBoundingInfoFromProxies(): void {
+        const compoundWorld = this.getWorldMatrix();
+        const invCompoundWorld = Matrix.Invert(compoundWorld);
+
+        const localMin = this._part0LocalMin ? this._part0LocalMin.clone() : new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const localMax = this._part0LocalMax ? this._part0LocalMax.clone() : new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+        const corner = new Vector3();
+        for (const proxy of this._partProxies) {
+            if (!proxy) {
+                continue;
+            }
+            // Proxies have no geometry — getHierarchyBoundingVectors returns sentinels. Use boundingBox directly.
+            proxy.computeWorldMatrix(false);
+            const bb = proxy.getBoundingInfo().boundingBox;
+            const wMin = bb.minimumWorld;
+            const wMax = bb.maximumWorld;
+            for (let b = 0; b < 8; b++) {
+                corner.set(b & 1 ? wMax.x : wMin.x, b & 2 ? wMax.y : wMin.y, b & 4 ? wMax.z : wMin.z);
+                Vector3.TransformCoordinatesToRef(corner, invCompoundWorld, corner);
+                localMin.minimizeInPlace(corner);
+                localMax.maximizeInPlace(corner);
+            }
+        }
+
+        if (localMin.x <= localMax.x) {
+            // Direct access avoids getBoundingInfo() → _updateBoundingInfo() recursion.
+            if (this._boundingInfo) {
+                this._boundingInfo.reConstruct(localMin, localMax, compoundWorld);
+            } else {
+                this._boundingInfo = new BoundingInfo(localMin, localMax, compoundWorld);
+            }
+            this._cachedBoundingMin = localMin.clone();
+            this._cachedBoundingMax = localMax.clone();
+        }
+    }
+
+    /**
+     * Override for compound meshes: recomputes bounds from proxy world extents instead of
+     * local bounds × world matrix, which is wrong for proxied parts with independent transforms.
+     * @returns this mesh
+     */
+    public override _updateBoundingInfo(): AbstractMesh {
+        if (this.isCompound) {
+            this._updateBoundingInfoFromProxies();
+            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+            return this;
+        }
+        return super._updateBoundingInfo();
+    }
+
+    /**
+     * Replaces the base hierarchy bounds computation for compound meshes: computes world bounds
+     * from scratch by iterating part 0's local AABB and all proxy meshes, rather than delegating
+     * to the base _children traversal which never reaches proxies (they are not parented to the
+     * compound). Visibility per-part is respected; invisible parts are excluded.
+     * @param includeDescendants when true, includes descendants (default: true)
+     * @param predicate optional filter predicate
+     * @returns world-space min/max of the hierarchy bounding box
+     */
+    public override getHierarchyBoundingVectors(
+        includeDescendants: boolean = true,
+        predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
+    ): { min: Vector3; max: Vector3 } {
+        if (!this.isCompound) {
+            return super.getHierarchyBoundingVectors(includeDescendants, predicate);
+        }
+        // For compound meshes, compute visible-only world bounds from scratch so that
+        // invisible parts don't inflate the result (e.g. for voxelization scene bounds).
+        const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        // Unproxied part 0: the compound mesh owns this geometry directly (no proxy node).
+        // Transform its local AABB to world space if visible.
+        if (this._part0LocalMin && (this._partVisibility[0] ?? 1.0) > 0) {
+            const wm = this.getWorldMatrix();
+            const lMin = this._part0LocalMin;
+            const lMax = this._part0LocalMax!;
+            const corner = new Vector3();
+            for (let b = 0; b < 8; b++) {
+                corner.set(b & 1 ? lMax.x : lMin.x, b & 2 ? lMax.y : lMin.y, b & 4 ? lMax.z : lMin.z);
+                Vector3.TransformCoordinatesToRef(corner, wm, corner);
+                min.minimizeInPlace(corner);
+                max.maximizeInPlace(corner);
+            }
+        }
+        for (let i = 0; i < this._partProxies.length; i++) {
+            const proxy = this._partProxies[i];
+            if (!proxy || (this._partVisibility[i] ?? 1.0) === 0) {
+                continue;
+            }
+            proxy.computeWorldMatrix(false);
+            const bb = proxy.getBoundingInfo().boundingBox;
+            min.minimizeInPlace(bb.minimumWorld);
+            max.maximizeInPlace(bb.maximumWorld);
+        }
+        return { min, max };
+    }
+
+    /**
      * Disposes proxy meshes and clears part data in addition to the base class GPU resources.
      * @param doNotRecurse Set to true to not recurse into each children
      */
@@ -170,6 +278,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partMatrices = [];
         this._partVisibility = [];
         this._partIndicesTexture = null;
+        this._part0LocalMin = null;
+        this._part0LocalMax = null;
         super.dispose(doNotRecurse);
     }
 
@@ -471,7 +581,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             _vertexCount: proxy._vertexCount,
             _splatsData: splatBytes.subarray(splatByteOffset, splatByteOffset + splatByteLength),
             _shData: this._shData?.map((texture) => texture.subarray(shByteOffset, shByteOffset + shByteLength)) ?? null,
-            _shDegree: this._shData?.length ?? 0,
+            _shDegree: this._shData ? this._shDegree : 0,
             isCompound: false,
             getWorldMatrix: () => proxy.getWorldMatrix(),
             getBoundingInfo: () => proxy.getBoundingInfo(),
@@ -514,10 +624,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
 
-        const mergedShData: Uint8Array[] = [];
-        for (let textureIndex = 0; textureIndex < shDegree; textureIndex++) {
-            mergedShData.push(new Uint8Array(totalCount * _GaussianSplattingBytesPerShTexel));
-        }
+        // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
+        // bytes with one byte per scalar, so it carries that many scalars. Degree d has
+        // ((d+1)^2 - 1) higher-order coefficients × 3 RGB = total scalars per splat; divide by texel capacity.
+        const shTextureCount = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
+        const mergedShData = AllocateShBuffers(shTextureCount, totalCount * _GaussianSplattingBytesPerShTexel);
 
         let shByteOffset = 0;
         if (this._shData && existingVertexCount > 0) {
@@ -582,16 +693,23 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const covB = new Uint16Array(covBSItemSize * textureLength);
         const colorArray = new Uint8Array(textureLength * 4);
 
-        // Determine merged SH degree
-        const hasSH = (splatCountA === 0 || this._shData !== null) && others.every((o) => o._shData !== null);
+        // Determine merged SH degree.
+        // hasSH is true when the merged result will carry SH:
+        //   - Existing compound already has SH (_shDegree>0): preserve it even if new parts
+        //     have no SH — their texel region is pre-filled with 128 (neutral) by AllocateShBuffers.
+        //   - At least one new part carries SH: enable SH for the whole compound; existing
+        //     parts that had no SH also get neutral fill.
+        // Deliberately excludes the case where the existing compound has no SH and no new part
+        // has SH either (shDegreeNew stays 0, no SH textures allocated).
+        const hasSH = this._shDegree > 0 || others.some((o) => o._shData !== null);
         const shDegreeNew = hasSH ? Math.max(this._shDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
         if (hasSH && shDegreeNew > 0) {
-            const bytesPerTexel = 16;
-            sh = [];
-            for (let i = 0; i < shDegreeNew; i++) {
-                sh.push(new Uint8Array(textureLength * bytesPerTexel));
-            }
+            // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
+            // bytes with one byte per scalar, so it carries that many scalars. Degree d has
+            // ((d+1)^2 - 1) higher-order coefficients × 3 RGB = total scalars per splat; divide by texel capacity.
+            const shTextureCount = Math.ceil((((shDegreeNew + 1) * (shDegreeNew + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
+            sh = AllocateShBuffers(shTextureCount, textureLength * _GaussianSplattingBytesPerShTexel);
         }
 
         // --- Incremental path: can we reuse the already-committed GPU region? ---
@@ -673,10 +791,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                                 this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                             }
                             if (sh && this._shData) {
-                                const bytesPerTexel = 16;
                                 for (let texIdx = 0; texIdx < sh.length; texIdx++) {
                                     if (texIdx < this._shData.length) {
-                                        sh[texIdx].set(this._shData[texIdx].subarray(0, part0Count * bytesPerTexel), 0);
+                                        sh[texIdx].set(this._shData[texIdx].subarray(0, part0Count * _GaussianSplattingBytesPerShTexel), 0);
                                     }
                                 }
                             }
@@ -711,10 +828,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                             this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                         }
                         if (sh && this._shData) {
-                            const bytesPerTexel = 16;
                             for (let texIdx = 0; texIdx < sh.length; texIdx++) {
                                 if (texIdx < this._shData.length) {
-                                    sh[texIdx].set(this._shData[texIdx].subarray(0, splatCountA * bytesPerTexel), 0);
+                                    sh[texIdx].set(this._shData[texIdx].subarray(0, splatCountA * _GaussianSplattingBytesPerShTexel), 0);
                                 }
                             }
                         }
@@ -727,6 +843,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // so _updateSubTextures does not upload stale zeros over those already-committed texels.
         // The base-class _updateData always re-processes from firstNewTexel for the same reason;
         // the compound path must do the same.
+        // Boundary-row SH is restored after _retainMergedPartData (see below), where _shData is ready.
         if (incremental) {
             const firstNewTexel = firstNewLine * textureSize.x;
             if (firstNewTexel < splatCountA) {
@@ -823,6 +940,51 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         try {
             // --- Upload to GPU ---
             if (incremental) {
+                // Create missing SH GPU textures: either the compound just gained SH for the first
+                // time (_shTextures===null) or the degree increased (sh.length > _shTextures.length).
+                // Use _shData when available (contains correct merged values for all rows);
+                // fall back to sh[idx] (pre-filled with 128) when _shData is absent (keepInRam=false).
+                // _updateSubTextures will re-upload from firstNewLine, which is redundant but harmless.
+                if (sh && (!this._shTextures || sh.length > this._shTextures.length)) {
+                    if (!this._shTextures) {
+                        this._shTextures = [];
+                    }
+                    while (this._shTextures.length < sh.length) {
+                        const idx = this._shTextures.length;
+                        const shTexture = new RawTexture(
+                            null,
+                            textureSize.x,
+                            textureSize.y,
+                            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+                            this._scene,
+                            false,
+                            false,
+                            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+                        );
+                        shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        this._shTextures.push(shTexture);
+                        const src = this._shData && idx < this._shData.length ? this._shData[idx] : sh[idx];
+                        this._updateShTextureData(shTexture, src, textureSize.x, 0, textureSize.y);
+                    }
+                }
+
+                // Restore boundary-row SH: sh is freshly filled with 128, and _updateSubTextures
+                // starts at firstNewLine — existing splats on that row need their values from _shData.
+                if (sh && this._shData) {
+                    const firstNewTexel = firstNewLine * textureSize.x;
+                    if (firstNewTexel < splatCountA) {
+                        const byteStart = firstNewTexel * _GaussianSplattingBytesPerShTexel;
+                        const byteEnd = splatCountA * _GaussianSplattingBytesPerShTexel;
+                        for (let texIdx = 0; texIdx < sh.length; texIdx++) {
+                            if (texIdx < this._shData.length) {
+                                sh[texIdx].set(this._shData[texIdx].subarray(byteStart, byteEnd), byteStart);
+                            }
+                        }
+                    }
+                }
+
                 // Update the part-indices texture (handles both create and update-in-place).
                 // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
                 // second+ addPart the partIndices would be stale without this call.
@@ -832,11 +994,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._updateTextures(covA, covB, colorArray, sh);
             }
 
-            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
-            this._cachedBoundingMin = minimum.clone();
-            this._cachedBoundingMax = maximum.clone();
             this._notifyWorkerNewData();
+
+            // Bounding info is updated via _updateBoundingInfoFromProxies (called below, after proxy
+            // world matrices are known), which needs part 0's local-space AABB as an input:
+            //   • For unproxied part 0 (legacy layout A: compound loaded its own splat data before
+            //     any addPart call, so no _partProxies[0]), capture the local-space AABB from the
+            //     compound mesh's existing _boundingInfo — set when the mesh loaded its own data via
+            //     URL/updateData — so _updateBoundingInfoFromProxies can include part 0's geometry.
+            //   • For proxied part 0, skip — its bounds are already on the proxy's getBoundingInfo()
+            //     and _updateBoundingInfoFromProxies picks it up there.
+            // Guard splatCountA > 0 avoids reading a stale bounding box on a fresh empty mesh.
+            // Guard !this._part0LocalMin ensures we only store once; subsequent addPart calls must
+            // not overwrite it, because by then _boundingInfo reflects the full merged dataset.
+            if (!this._partProxies[0] && splatCountA > 0 && !this._part0LocalMin) {
+                this._part0LocalMin = this.getBoundingInfo().minimum.clone();
+                this._part0LocalMax = this.getBoundingInfo().maximum.clone();
+            }
 
             // --- Create proxy meshes ---
             const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
@@ -871,6 +1046,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 proxyMeshes.push(proxyMesh);
             }
 
+            // Update compound bounds now that all proxy world matrices are known.
+            this._updateBoundingInfoFromProxies();
+
             // Restore the rebuild gate and post the now-complete partMatrices in one message, then trigger a single sort pass.
             // This ensures the worker sees a consistent partMatrices array that matches the partIndices for every splat.
             if (needsWorkerGate) {
@@ -882,6 +1060,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._postToWorker(true);
             }
 
+            this.onPartCountChangedObservable.notifyObservers(this.partCount);
             return { proxyMeshes, assignedPartIndices };
         } catch (e) {
             // Ensure the gates are always restored so sorting is not permanently frozen.
@@ -948,6 +1127,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             }
         }
 
+        // Notify listeners before mutation so they can record state keyed on the original index.
+        this.onPartRemovedObservable.notifyObservers(index);
+
         // --- Reset this mesh to an empty state ---
         // Terminate the sort worker before zeroing _vertexCount. The worker's onmessage handler
         // compares depthMix.length against (_vertexCount + 15) & ~0xf; with _vertexCount = 0 that
@@ -991,6 +1173,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partVisibility = [];
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
+        this._part0LocalMin = null;
+        this._part0LocalMax = null;
         this._splatsData = null;
         this._shData = null;
         this._shDegree = 0;
@@ -1007,6 +1191,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (survivors.length === 0) {
             // Nothing left — leave the mesh empty.
             this.setEnabled(false);
+            this.onPartCountChangedObservable.notifyObservers(0);
             return;
         }
 
@@ -1083,6 +1268,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
         if (this._shData) {
             serializationObject.shData = encoding === "base64" ? this._shData.map(EncodeArrayBufferToBase64) : this._shData;
+            serializationObject.shDegree = this._shDegree;
         }
         if (this._partIndices) {
             const compressedIndices = CompressPartIndices(this._partIndices.subarray(0, this._vertexCount));
@@ -1144,7 +1330,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         if (splatsData) {
             const flipY = parsedMesh._flipY ?? false;
-            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices, parsedMesh.shDegree);
         }
 
         if (parsedMesh.partProxies) {

@@ -352,17 +352,20 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
         // from a string-keyed loop. The runtime check is harmless: irrelevant-for-this-source
         // fields are undefined on both entry and conditions and skip the early return.
         const e = entry as any;
-        for (const field of ["button", "key", "touchCount"] as const) {
-            if (conditions[field] !== undefined && e[field] === undefined) {
-                return false;
+        for (const key of Object.keys(conditions) as (keyof InputConditions)[]) {
+            const condValue = conditions[key];
+            if (condValue === undefined) {
+                continue;
             }
-        }
-        if (conditions.modifiers) {
-            const entryMods = e.modifiers ?? {};
-            for (const key of Object.keys(conditions.modifiers) as (keyof InputModifiers)[]) {
-                if (conditions.modifiers[key] !== undefined && entryMods[key] === undefined) {
-                    return false;
+            if (key === "modifiers") {
+                const entryMods = (e.modifiers ?? {}) as InputModifiers;
+                for (const modKey of Object.keys(condValue) as (keyof InputModifiers)[]) {
+                    if ((condValue as InputModifiers)[modKey] !== undefined && entryMods[modKey] === undefined) {
+                        return false;
+                    }
                 }
+            } else if (e[key] === undefined) {
+                return false;
             }
         }
         return true;

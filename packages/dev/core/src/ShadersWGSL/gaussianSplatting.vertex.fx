@@ -31,16 +31,38 @@ var covariancesATexture: texture_2d<f32>;
 var covariancesBTexture: texture_2d<f32>;
 var centersTexture: texture_2d<f32>;
 var colorsTexture: texture_2d<f32>;
+
+#ifdef USE_SOG
+var sogQuatsTexture: texture_2d<f32>;
+uniform sogMeansMin: vec3f;
+uniform sogMeansMax: vec3f;
+#ifdef USE_SOG_V2
+var sogCodebookTexture: texture_2d<f32>;
+#else
+uniform sogScalesMin: vec3f;
+uniform sogScalesMax: vec3f;
+uniform sogSh0Min: vec4f;
+uniform sogSh0Max: vec4f;
+uniform sogShnMin: f32;
+uniform sogShnMax: f32;
+#endif
 #if SH_DEGREE > 0
+var sogShNCentroidsTexture: texture_2d<f32>;
+var sogShNLabelsTexture: texture_2d<f32>;
+uniform sogShCoeffCount: f32;
+#endif
+#endif
+
+#if SH_DEGREE > 0 && !defined(USE_SOG)
 var shTexture0: texture_2d<u32>;
 #endif
-#if SH_DEGREE > 1
+#if SH_DEGREE > 1 && !defined(USE_SOG)
 var shTexture1: texture_2d<u32>;
 #endif
-#if SH_DEGREE > 2
+#if SH_DEGREE > 2 && !defined(USE_SOG)
 var shTexture2: texture_2d<u32>;
 #endif
-#if SH_DEGREE > 3
+#if SH_DEGREE > 3 && !defined(USE_SOG)
 var shTexture3: texture_2d<u32>;
 var shTexture4: texture_2d<u32>;
 #endif
@@ -81,9 +103,32 @@ fn main(input : VertexInputs) -> FragmentInputs {
     let normWorldRot: mat3x3f = inverseMat3(worldRot);
 
     var eyeToSplatLocalSpace: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
-    vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    {
+        let _row3 = textureLoad(dbgPartData, vec2i(i32(splat.partIndex), 3), 0);
+        #if SH_DEGREE > 3
+            let _so4 = textureLoad(dbgPartData, vec2i(i32(splat.partIndex), 4), 0).x;
+        #else
+            let _so4: f32 = 1.0;
+        #endif
+        vertexOutputs.vColor = vec4f(_row3.x * splat.color.xyz + computeSHWeighted(splat, eyeToSplatLocalSpace, _row3.y, _row3.z, _row3.w, _so4), splat.color.w * uniforms.alpha);
+    }
+    #elif defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
+        vertexOutputs.vColor = vec4f(computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
+    #else
+        vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
+    #endif
 #else
-    vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);
+    #if defined(GS_DBG_ENABLED) && IS_COMPOUND
+    {
+        let _shDc = textureLoad(dbgPartData, vec2i(i32(splat.partIndex), 3), 0).x;
+        vertexOutputs.vColor = vec4f(_shDc * splat.color.xyz, splat.color.w * uniforms.alpha);
+    }
+    #elif defined(GS_DBG_ENABLED) && GS_DBG_SH_DC == 0
+        vertexOutputs.vColor = vec4f(0.0, 0.0, 0.0, splat.color.w * uniforms.alpha);
+    #else
+        vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);
+    #endif
 #endif
 
 #if IS_COMPOUND
@@ -91,7 +136,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
-    let scale: vec2f = vec2f(1., 1.);
+    var scale: vec2f = vec2f(1., 1.);
 
 #define CUSTOM_VERTEX_UPDATE
 

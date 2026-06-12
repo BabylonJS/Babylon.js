@@ -2,7 +2,6 @@ import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interf
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
-import * as styles from "./blockNodeData.module.scss";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { FlowGraphBlockDisplayName } from "./blockDisplayUtils";
@@ -126,7 +125,7 @@ export class BlockNodeData implements INodeData {
      * @param _img - the image element (unused)
      */
     public prepareHeaderIcon(iconDiv: HTMLDivElement, _img: HTMLImageElement) {
-        iconDiv.classList.add(styles.hidden);
+        iconDiv.style.display = "none";
     }
 
     /** Gets the invisible endpoints (not applicable) */

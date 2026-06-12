@@ -1488,7 +1488,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param width defines width of the rectangle
      * @param height defines height of the rectangle
      */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
+    public override enableScissor(x: number, y: number, width: number, height: number): void {
         this._scissorCached.x = x;
         this._scissorCached.y = y;
         this._scissorCached.z = width;
@@ -1498,7 +1498,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * Disable previously set scissor test rectangle
      */
-    public disableScissor() {
+    public override disableScissor() {
         this._scissorCached.x = this._scissorCached.y = this._scissorCached.z = this._scissorCached.w = 0;
         this._scissorsCurrent.x = this._scissorsCurrent.y = this._scissorsCurrent.w = this._scissorsCurrent.h = 0;
     }
@@ -2575,10 +2575,63 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
         const hardwareTexture = new WebGPUHardwareTexture(this, texture);
-        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.baseWidth = texture.width;
+        internalTexture.baseHeight = texture.height;
+        internalTexture.width = texture.width;
+        internalTexture.height = texture.height;
         internalTexture.isReady = true;
         return internalTexture;
+    }
+
+    /**
+     * Replaces the underlying GPUTexture of a texture previously created via {@link wrapWebGPUTexture}, preserving the
+     * InternalTexture identity.
+     *
+     * Intended for the device-loss / device-restored flow: when the host recreates its external resource on the new
+     * GPU device, it calls this method to repoint Babylon's wrapper at the new handle without losing references held
+     * by materials, render-target wrappers, particle systems, etc.
+     *
+     * The new GPUTexture must have the same dimensions as the original. To change dimensions, dispose the wrapped
+     * texture and call {@link wrapWebGPUTexture} again.
+     *
+     * Throws if the target was not produced by {@link wrapWebGPUTexture}, or if the new GPUTexture's dimensions don't
+     * match.
+     * @param internalTexture defines the wrapped InternalTexture to repoint
+     * @param texture defines the new GPUTexture to wrap
+     */
+    public updateWrappedWebGPUTexture(internalTexture: InternalTexture, texture: GPUTexture): void {
+        if (internalTexture.source !== InternalTextureSource.External) {
+            throw new Error("updateWrappedWebGPUTexture: target InternalTexture was not produced by wrapWebGPUTexture.");
+        }
+        if (texture.width !== internalTexture.baseWidth || texture.height !== internalTexture.baseHeight) {
+            throw new Error(
+                `updateWrappedWebGPUTexture: new GPUTexture dimensions (${texture.width}x${texture.height}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
+            );
+        }
+
+        // Reuse the existing WebGPUHardwareTexture rather than replacing it. The wrapper carries `textureUsages`,
+        // `format`, and the `view` / `viewForWriting` set up the first time the texture was bound; the views point
+        // at the old (now-destroyed) GPUTexture, so we swap the underlying resource and re-issue views via setUsage,
+        // which uses the InternalTexture's flags + dimensions to pick the right view dimension and recreate the views.
+        const hardwareTexture = internalTexture._hardwareTexture as WebGPUHardwareTexture;
+        hardwareTexture.set(texture);
+        hardwareTexture.setUsage(
+            InternalTextureSource.External,
+            internalTexture.generateMipMaps,
+            internalTexture.is2DArray,
+            internalTexture.isCube,
+            internalTexture.is3D,
+            texture.width,
+            texture.height,
+            internalTexture.depth
+        );
+        internalTexture.isReady = true;
+
+        // WebGPUMaterialContext and WebGPUCacheBindGroups key on InternalTexture.uniqueId; bump it so caches detect
+        // the new resource and re-resolve bind groups against the new GPUTexture / GPUTextureView.
+        internalTexture._setUniqueId(InternalTexture._Counter++);
     }
 
     // eslint-disable-next-line jsdoc/require-returns-check
@@ -2588,6 +2641,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public wrapWebGLTexture(): InternalTexture {
         throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
+    }
+
+    /**
+     * Throws because the engine is WebGPU. Use {@link updateWrappedWebGPUTexture} instead.
+     */
+    public updateWrappedWebGLTexture(): void {
+        throw new Error("updateWrappedWebGLTexture is not supported, use updateWrappedWebGPUTexture instead.");
     }
 
     /**

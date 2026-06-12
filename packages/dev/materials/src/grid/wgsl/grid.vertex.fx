@@ -16,6 +16,9 @@ attribute uv2: vec2f;
 // Varying
 varying vPosition: vec3f;
 varying vNormal: vec3f;
+#if defined(HORIZON_FADE) || defined(BELOW_LINE_COLOR) || defined(ORIGIN_MARKER)
+varying vWorldPos: vec3f;
+#endif
 
 #include<logDepthDeclaration>
 #include<fogVertexDeclaration>
@@ -72,6 +75,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     vertexOutputs.vPosition = vertexInputs.position;
     vertexOutputs.vNormal = vertexInputs.normal;
+#if defined(HORIZON_FADE) || defined(BELOW_LINE_COLOR) || defined(ORIGIN_MARKER)
+    vertexOutputs.vWorldPos = worldPos.xyz;
+#endif
 
 #define CUSTOM_VERTEX_MAIN_END
 }

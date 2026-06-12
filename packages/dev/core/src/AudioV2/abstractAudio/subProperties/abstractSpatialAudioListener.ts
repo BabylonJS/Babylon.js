@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../Maths/math.vector.pure";
 import { type Node } from "../../../node";
 import { type Nullable } from "../../../types";
 import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
@@ -64,6 +64,11 @@ export abstract class AbstractSpatialAudioListener {
      * Whether the listener is attached to a camera, mesh or transform node.
      */
     public abstract isAttached: boolean;
+
+    /**
+     * The scene node this listener is currently attached to, or `null` if not attached.
+     */
+    public abstract attachedNode: Nullable<Node>;
 
     /**
      * The minimum update time in seconds of the listener if it is attached to a mesh, scene or transform node. Defaults to `0`.

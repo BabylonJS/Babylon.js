@@ -2,7 +2,7 @@ import { type Behavior } from "../behavior";
 import { CubicEase, EasingFunction } from "../../Animations/easing";
 import { type Nullable } from "../../types";
 import { type Animatable } from "../../Animations/animatable.core";
-import { Animation } from "../../Animations/animation";
+import { Animation } from "../../Animations/animation.pure";
 import { type Camera } from "../../Cameras/camera";
 import { type IColor3Like, type IColor4Like, type IMatrixLike, type IQuaternionLike, type IVector2Like, type IVector3Like } from "../../Maths/math.like";
 
@@ -96,6 +96,10 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
         this._promiseResolve = undefined;
     }
 
+    /**
+     * Updates the target properties of currently running animations.
+     * @param properties defines the property values to update
+     */
     public updateProperties<K extends keyof C>(properties: Map<K, AllowedAnimValue>): void {
         properties.forEach((value, key) => {
             if (value !== undefined) {
@@ -105,6 +109,14 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
         });
     }
 
+    /**
+     * Animates camera properties to new values.
+     * @param properties defines the property values to animate to
+     * @param transitionDuration defines the transition duration in milliseconds
+     * @param easingFn defines the easing function to use
+     * @param updateAnimation defines an optional callback used to update each generated animation
+     * @returns a promise that resolves when the animation completes
+     */
     public async animatePropertiesAsync<K extends keyof C>(
         properties: Map<K, AllowedAnimValue>,
         transitionDuration: number = this.transitionDuration,

@@ -6,14 +6,24 @@ import { EngineStore } from "../../../Engines/engineStore";
 import { type Texture } from "../../../Materials/Textures/texture.pure";
 import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 
-let _NoiseProceduralTextureShaderPromise: Promise<void> | undefined;
+let _NoiseProceduralTextureGlslShaderPromise: Promise<void> | undefined;
+let _NoiseProceduralTextureWgslShaderPromise: Promise<void> | undefined;
 
-async function _EnsureNoiseProceduralTextureShaderAsync(): Promise<void> {
-    _NoiseProceduralTextureShaderPromise ??= (async () => {
+async function _EnsureNoiseProceduralTextureShaderAsync(shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL): Promise<void> {
+    if (shaderLanguage === ShaderLanguage.WGSL) {
+        _NoiseProceduralTextureWgslShaderPromise ??= (async () => {
+            await import("../../../ShadersWGSL/noise.fragment");
+        })();
+        await _NoiseProceduralTextureWgslShaderPromise;
+        return;
+    }
+
+    _NoiseProceduralTextureGlslShaderPromise ??= (async () => {
         await import("../../../Shaders/noise.fragment");
     })();
-    await _NoiseProceduralTextureShaderPromise;
+    await _NoiseProceduralTextureGlslShaderPromise;
 }
 
 /**
@@ -44,9 +54,13 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * @param generateMipMaps defines if mipmaps must be generated (true by default)
      */
     constructor(name: string, size: number = 256, scene: Nullable<Scene> = EngineStore.LastCreatedScene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+        const shaderLanguage = scene?.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
         const creationOptions: IProceduralTextureCreationOptions = {
             fallbackTexture,
-            extraInitializationsAsync: _EnsureNoiseProceduralTextureShaderAsync,
+            shaderLanguage,
+            extraInitializationsAsync: async () => {
+                await _EnsureNoiseProceduralTextureShaderAsync(shaderLanguage);
+            },
         };
 
         super(name, size, "noise", scene, creationOptions, generateMipMaps);

@@ -1,5 +1,5 @@
 import { type Nullable } from "../../types";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type Camera } from "../../Cameras/camera";
 import { type PostProcess } from "../../PostProcesses/postProcess";
 import { type AbstractEngine } from "../../Engines/abstractEngine";

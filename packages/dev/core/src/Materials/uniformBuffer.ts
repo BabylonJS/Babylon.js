@@ -5,7 +5,7 @@ import { type Effect } from "./effect";
 import { type ThinTexture } from "../Materials/Textures/thinTexture";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { type InternalTexture } from "./Textures/internalTexture";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 
 /**

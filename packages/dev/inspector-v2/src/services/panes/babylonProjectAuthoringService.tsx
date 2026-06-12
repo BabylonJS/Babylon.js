@@ -1,0 +1,617 @@
+import { useCallback, useRef, useState, useContext, useMemo, type FunctionComponent } from "react";
+
+import { type Scene } from "core/scene";
+import {
+    FindSmartAssetKeyForObject,
+    GetAllSmartAssets,
+    GetSmartAssetManager,
+    GetSmartAssetTextureExtensions,
+    LoadSmartAssetAsync,
+    LoadSmartAssetTextureAsync,
+    ReloadSmartAssetAsync,
+    RemoveSmartAssetAsync,
+    UnloadSmartAssetAsync,
+} from "core/SmartAssets/smartAssetManager.pure";
+import { Tools } from "core/Misc/tools";
+
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
+import { type ISelectionService, SelectionServiceIdentity } from "../selectionService";
+
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { Link } from "shared-ui-components/fluent/primitives/link";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
+import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, SaveRegular } from "@fluentui/react-icons";
+
+import { ProjectLocalsKey, LoadProjectFileAsync, SaveProjectFileAsync } from "../../projects/projectFile";
+import { ApplyAllOverrides, GetOverrideManager, GetOverrides } from "../../projects/overrideManager";
+
+const ProjectAuthoringPaneKey = "Project Authoring";
+
+const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
+const TextureFileAccept = Array.from(GetSmartAssetTextureExtensions());
+const AllAcceptString = [...SceneFileAccept, ...TextureFileAccept].join(",");
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _isTextureExtension(ext: string): boolean {
+    return GetSmartAssetTextureExtensions().has(ext);
+}
+
+/**
+ * Inspector pane service that hosts the Project Authoring pane. Combines
+ * smart-asset management (assets list, asset map I/O) with override-driven
+ * scene authoring (material assignment, override summary).
+ */
+export const BabylonProjectAuthoringServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
+    friendlyName: "Project Authoring",
+    consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
+    factory: (shellService, sceneContext, selectionService) => {
+        const paneRegistration = shellService.addSidePane({
+            key: ProjectAuthoringPaneKey,
+            title: ProjectAuthoringPaneKey,
+            icon: CubeRegular,
+            horizontalLocation: "right",
+            verticalLocation: "top",
+            order: 395,
+            teachingMoment: false,
+            content: () => {
+                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                return scene ? <BabylonProjectAuthoringPane scene={scene} selectionService={selectionService} /> : null;
+            },
+        });
+
+        return {
+            dispose: () => {
+                paneRegistration.dispose();
+            },
+        };
+    },
+};
+
+// ── Styles ──
+
+const useStyles = makeStyles({
+    assetRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        fontSize: tokens.fontSizeBase100,
+        borderBottom: `1px solid ${tokens.colorNeutralStroke3}`,
+    },
+    assetKey: {
+        fontWeight: tokens.fontWeightSemibold,
+        minWidth: 0,
+        flex: 1,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+    },
+    assetUrl: {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        minWidth: 0,
+        flex: 1,
+        opacity: 0.7,
+    },
+    assetActions: {
+        display: "flex",
+        gap: tokens.spacingHorizontalXXS,
+        flexShrink: 0,
+    },
+    emptyMessage: {
+        padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+        fontSize: tokens.fontSizeBase100,
+        opacity: 0.5,
+        fontStyle: "italic",
+    },
+    statusMessage: {
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+        fontSize: tokens.fontSizeBase100,
+        opacity: 0.7,
+    },
+    hiddenInput: {
+        display: "none",
+    },
+    overrideRow: {
+        display: "flex",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+        fontSize: "10px",
+        fontFamily: "monospace",
+    },
+    dimSeparator: {
+        opacity: 0.5,
+    },
+    overrideValue: {
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    busyMessage: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+    },
+});
+
+// ── Project Authoring Pane ──
+
+const BabylonProjectAuthoringPane: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = (props) => {
+    const { scene, selectionService } = props;
+
+    return (
+        <Accordion uniqueId="ProjectAuthoring" enablePinnedItems enableHiddenItems enableSearchItems>
+            <AccordionSection title="Project File">
+                <ProjectFileTools scene={scene} />
+            </AccordionSection>
+            <AccordionSection title="Assets">
+                <SmartAssetList scene={scene} selectionService={selectionService} />
+            </AccordionSection>
+            <AccordionSection title="Override Summary">
+                <OverrideSummary scene={scene} />
+            </AccordionSection>
+        </Accordion>
+    );
+};
+
+// ── Project File ──
+
+/**
+ * Save/load controls for the `.babylonproj` zip bundle that captures the
+ * scene's smart assets and overrides as a single project file.
+ * @param props - Component props.
+ * @returns The project file controls.
+ */
+const ProjectFileTools: FunctionComponent<{ scene: Scene }> = (props) => {
+    const { scene } = props;
+    const styles = useStyles();
+    const [status, setStatus] = useState("");
+    const [busy, setBusy] = useState("");
+    const isBusy = busy !== "";
+
+    const onSaveProject = useCallback(async () => {
+        if (isBusy) {
+            return;
+        }
+        setBusy("Saving project...");
+        setStatus("");
+        try {
+            const blob = await SaveProjectFileAsync(scene);
+            Tools.Download(blob, "scene.babylonproj");
+            setStatus("Saved scene.babylonproj");
+        } catch (err) {
+            setStatus(`Save error: ${err}`);
+        } finally {
+            setBusy("");
+        }
+    }, [scene, isBusy]);
+
+    const onLoadProject = useCallback(
+        async (files: FileList) => {
+            const file = files[0];
+            if (!file || isBusy) {
+                return;
+            }
+            setBusy("Loading project...");
+            setStatus("");
+            try {
+                await LoadProjectFileAsync(scene, file);
+                setStatus(`Loaded ${file.name}`);
+            } catch (err) {
+                setStatus(`Load error: ${err}`);
+            } finally {
+                setBusy("");
+            }
+        },
+        [scene, isBusy]
+    );
+
+    return (
+        <>
+            <ButtonLine label="Save Project (.babylonproj)" icon={SaveRegular} onClick={onSaveProject} disabled={isBusy} />
+            <FileUploadLine label="Load Project (.babylonproj)" accept=".babylonproj" onClick={onLoadProject} disabled={isBusy} />
+            {isBusy && (
+                <div className={styles.busyMessage}>
+                    <Spinner size="extra-small" />
+                    <Caption1>{busy}</Caption1>
+                </div>
+            )}
+            {status && <div className={styles.statusMessage}>{status}</div>}
+        </>
+    );
+};
+
+// ── Smart Asset List ──
+
+const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = (props) => {
+    const { scene, selectionService } = props;
+    const styles = useStyles();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [status, setStatus] = useState("");
+
+    // Force the icon-only row action buttons to render in compact ("small") size
+    // even when the inspector's global ToolContext is "medium". They live in a
+    // tight row and the medium-size buttons crowd the layout.
+    const toolContext = useContext(ToolContext);
+    const compactToolContext = useMemo(() => ({ ...toolContext, size: "small" as const }), [toolContext]);
+
+    // Subscribe reactively to changes — re-renders the asset list whenever
+    // RegisterSmartAsset / Load / Remove / Reload fire onChangedObservable.
+    // Filter out the reserved companion key so it does not appear as a user
+    // asset alongside dragged-in textures/models.
+    const sam = GetSmartAssetManager(scene);
+    const assets = useObservableState(
+        useCallback(() => Array.from(GetAllSmartAssets(scene), ([key, url]) => ({ key, url })).filter((a) => a.key !== ProjectLocalsKey), [scene]),
+        sam.onChangedObservable
+    );
+
+    const onAddAsset = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const onFileSelected = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) {
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const key = file.name.replace(/\.[^/.]+$/, "");
+                const ext = _getExtension(file.name).toLowerCase();
+                const isTexture = _isTextureExtension(ext);
+
+                const blobUrl = URL.createObjectURL(file);
+                const options = { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) };
+
+                try {
+                    if (isTexture) {
+                        // eslint-disable-next-line no-await-in-loop
+                        await LoadSmartAssetTextureAsync(scene, key, blobUrl, options);
+                    } else {
+                        // Temporarily set onAssetNotFound to return the File so SAM's
+                        // retry path can use the extension hint and track loaded objects.
+                        const samForOverride = GetSmartAssetManager(scene);
+                        const savedHandler = samForOverride.onAssetNotFound;
+                        samForOverride.onAssetNotFound = async () => file;
+                        try {
+                            // eslint-disable-next-line no-await-in-loop
+                            await LoadSmartAssetAsync(scene, key, blobUrl, options);
+                        } finally {
+                            samForOverride.onAssetNotFound = savedHandler;
+                        }
+                    }
+                    setStatus(`Added: ${key}`);
+                } catch {
+                    setStatus(`Failed to load: ${key}`);
+                }
+            }
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        },
+        [scene]
+    );
+
+    const onRemoveAsset = useCallback(
+        async (key: string) => {
+            await RemoveSmartAssetAsync(scene, key);
+            setStatus(`Removed: ${key}`);
+        },
+        [scene]
+    );
+
+    const onReloadAsset = useCallback(
+        async (key: string) => {
+            await ReloadSmartAssetAsync(scene, key);
+            // ReloadSmartAssetAsync disposes the old asset and loads fresh
+            // instances — those new objects have no knowledge of previously
+            // applied overrides, so we must re-apply them. (The swap path
+            // does the same.) Without this, overrides on a smart asset
+            // appear to silently revert whenever the user hits Reload.
+            ApplyAllOverrides(scene);
+            setStatus(`Reloaded: ${key}`);
+        },
+        [scene]
+    );
+
+    const onSwapAsset = useCallback(
+        (key: string) => {
+            const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
+                const sam = GetSmartAssetManager(scene);
+                const blobUrl = URL.createObjectURL(file);
+                const ext = _getExtension(file.name).toLowerCase();
+                const isTexture = _isTextureExtension(ext);
+
+                if (isTexture) {
+                    // Find the old texture tracked by this key
+                    let oldTex: BaseTexture | undefined;
+                    for (const tex of scene.textures) {
+                        if (FindSmartAssetKeyForObject(scene, tex) === key) {
+                            oldTex = tex;
+                            break;
+                        }
+                    }
+
+                    // Load the new texture via SAM so it stays tracked by key.
+                    // Pass reloadSource so Reload can re-read the file from disk.
+                    const newTex = await LoadSmartAssetTextureAsync(scene, key, blobUrl, {
+                        ...(ext ? { extension: ext } : {}),
+                        type: "texture",
+                        reloadSource: fileHandle ? async () => await fileHandle.getFile() : undefined,
+                    });
+
+                    // Replace references on all materials that used the old texture.
+                    // Only Standard/PBR-style slot names are rewritten here; NodeMaterial,
+                    // ShaderMaterial, BackgroundMaterial, and other custom materials with
+                    // non-standard texture slots will need to be updated manually.
+                    if (oldTex) {
+                        const texSlots = ["albedoTexture", "bumpTexture", "metallicTexture", "emissiveTexture", "ambientTexture", "reflectivityTexture", "opacityTexture"] as const;
+                        for (const mat of scene.materials) {
+                            for (const slot of texSlots) {
+                                if ((mat as any)[slot] === oldTex) {
+                                    (mat as any)[slot] = newTex;
+                                }
+                            }
+                        }
+                        oldTex.dispose();
+                    }
+                } else {
+                    // Scene file swap (GLB, glTF, etc.)
+                    await UnloadSmartAssetAsync(scene, key);
+
+                    // Use onAssetNotFound to provide the File so SAM tracks loaded objects.
+                    const savedHandler = sam.onAssetNotFound;
+                    sam.onAssetNotFound = async () => file;
+                    try {
+                        // Pass reloadSource so Reload can re-read the file from disk.
+                        await LoadSmartAssetAsync(scene, key, blobUrl, {
+                            ...(ext ? { extension: ext } : {}),
+                            reloadSource: fileHandle ? async () => await fileHandle.getFile() : undefined,
+                        });
+                    } finally {
+                        sam.onAssetNotFound = savedHandler;
+                    }
+                }
+
+                // Notify after everything is loaded and tracked so the UI re-renders
+                // with the correct provEntity links
+                sam.onChangedObservable.notifyObservers();
+
+                setStatus(`Swapped: ${key}`);
+            };
+
+            // Prefer showOpenFilePicker (File System Access API) so we get a
+            // FileSystemFileHandle that lets Reload re-read fresh contents from disk.
+            const windowWithPicker = window as Window & { showOpenFilePicker?: (options?: any) => Promise<FileSystemFileHandle[]> };
+            if (typeof windowWithPicker.showOpenFilePicker === "function") {
+                const pickerAsync = async () => {
+                    let handle: FileSystemFileHandle;
+                    try {
+                        [handle] = await windowWithPicker.showOpenFilePicker!({
+                            types: [
+                                {
+                                    description: "Assets",
+                                    accept: {
+                                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                                        "model/*": SceneFileAccept,
+                                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                                        "image/*": TextureFileAccept,
+                                    },
+                                },
+                            ],
+                        });
+                    } catch (err) {
+                        // User cancelled the picker (AbortError) — silently ignore.
+                        if ((err as { name?: string })?.name !== "AbortError") {
+                            setStatus(`Swap cancelled: ${err}`);
+                        }
+                        return;
+                    }
+                    try {
+                        const file = await handle.getFile();
+                        await doSwapAsync(file, handle);
+                    } catch (err) {
+                        setStatus(`Failed to swap ${key}: ${err}`);
+                    }
+                };
+                void pickerAsync();
+            } else {
+                // Fallback for browsers without File System Access API
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = AllAcceptString;
+                input.onchange = async () => {
+                    const file = input.files?.[0];
+                    if (!file) {
+                        return;
+                    }
+                    try {
+                        await doSwapAsync(file);
+                    } catch (err) {
+                        setStatus(`Failed to swap ${key}: ${err}`);
+                    }
+                };
+                input.click();
+            }
+        },
+        [scene]
+    );
+
+    return (
+        <>
+            {assets.length === 0 && <Caption1 className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</Caption1>}
+            {assets.map((a) => {
+                // Find the first mesh produced by this key for click-to-select
+                const provEntity = _findFirstEntityForKey(a.key, scene);
+
+                return (
+                    <div key={a.key} className={styles.assetRow}>
+                        <CubeRegular fontSize={14} />
+                        {provEntity ? (
+                            <Caption1 className={styles.assetKey} title={a.key}>
+                                <Link value={a.key} size="small" onLink={() => (selectionService.selectedEntity = provEntity)} />
+                            </Caption1>
+                        ) : (
+                            <Caption1 className={styles.assetKey} title={a.key}>
+                                {a.key}
+                            </Caption1>
+                        )}
+                        <Caption1 className={styles.assetUrl} title={a.url}>
+                            {_shortenUrl(a.url)}
+                        </Caption1>
+                        <ToolContext.Provider value={compactToolContext}>
+                            <div className={styles.assetActions}>
+                                <Button appearance="subtle" icon={LinkRegular} title={`Swap URL for ${a.key}`} onClick={() => onSwapAsset(a.key)} />
+                                <Button appearance="subtle" icon={ArrowSyncRegular} title={`Reload ${a.key}`} onClick={async () => await onReloadAsset(a.key)} />
+                                <Button appearance="subtle" icon={DeleteRegular} title={`Remove ${a.key}`} onClick={async () => await onRemoveAsset(a.key)} />
+                            </div>
+                        </ToolContext.Provider>
+                    </div>
+                );
+            })}
+            <ButtonLine label="Add Asset" icon={AddRegular} onClick={onAddAsset} />
+            <input ref={fileInputRef} type="file" accept={AllAcceptString} multiple className={styles.hiddenInput} onChange={onFileSelected} />
+            {status && <Caption1 className={styles.statusMessage}>{status}</Caption1>}
+        </>
+    );
+};
+
+// ── Utilities ──
+
+// ── Override Summary ──
+
+/**
+ * Pane content that lists all registered overrides for the scene. Subscribes
+ * directly to the manager's change observable so loads, deletes, and
+ * Inspector-driven edits update the view instantly.
+ * @param props - Component props.
+ * @returns The override list view.
+ */
+const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props) => {
+    const { scene } = props;
+    const styles = useStyles();
+    const overrideManager = GetOverrideManager(scene);
+
+    const overrideList = useObservableState(
+        useCallback(() => {
+            return GetOverrides(scene).map((o) => {
+                const nameLabel = o.targetName === "" ? "(scene)" : o.targetIndex > 0 ? `${o.targetName}[${o.targetIndex}]` : o.targetName;
+                return {
+                    target: `${o.targetType}.${nameLabel}`,
+                    prop: o.propertyPath,
+                    value: String(o.value),
+                };
+            });
+        }, [scene]),
+        overrideManager.onChangedObservable
+    );
+
+    if (overrideList.length === 0) {
+        return <div className={styles.emptyMessage}>No overrides tracked. Edit properties in Inspector to create overrides.</div>;
+    }
+
+    return (
+        <>
+            {overrideList.map((o, i) => (
+                <div key={i} className={styles.overrideRow}>
+                    <span>{o.target}</span>
+                    <span className={styles.dimSeparator}>.</span>
+                    <span>{o.prop}</span>
+                    <span className={styles.dimSeparator}>=</span>
+                    <span className={styles.overrideValue}>{ShortenValue(o.value)}</span>
+                </div>
+            ))}
+        </>
+    );
+};
+
+// ── Utilities ──
+
+/**
+ * Finds the first scene entity produced by a smart asset key, for click-to-select.
+ * Prefers non-root meshes, then materials, then textures.
+ * @param key - The smart asset key.
+ * @param scene - The scene to search.
+ * @returns The first matching entity, or null if not found.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _findFirstEntityForKey(key: string, scene: Scene): AbstractMesh | Material | BaseTexture | null {
+    for (const mesh of scene.meshes) {
+        if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(scene, mesh) === key) {
+            return mesh;
+        }
+    }
+
+    for (const mat of scene.materials) {
+        if (FindSmartAssetKeyForObject(scene, mat) === key) {
+            return mat;
+        }
+    }
+
+    for (const tex of scene.textures) {
+        if (FindSmartAssetKeyForObject(scene, tex) === key) {
+            return tex;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Shortens a URL for display, collapsing blob/data URLs and long paths.
+ * @param url - The URL to shorten.
+ * @returns A shortened display string.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _shortenUrl(url: string): string {
+    if (url.startsWith("blob:")) {
+        return "(local file — blob)";
+    }
+    if (url.startsWith("data:")) {
+        const mimeEnd = url.indexOf(";");
+        const mime = mimeEnd > 5 ? url.substring(5, mimeEnd) : "binary";
+        return `(embedded ${mime})`;
+    }
+    const parts = url.split("/");
+    return parts.length > 3 ? "…/" + parts.slice(-2).join("/") : url;
+}
+
+/**
+ * Returns the file extension from a filename or URL, including the leading dot.
+ * @param url - The URL or filename to extract the extension from.
+ * @returns The extension string (e.g. ".glb"), or empty string if none found.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _getExtension(url: string): string {
+    const clean = url.split("?")[0].split("#")[0];
+    const lastDot = clean.lastIndexOf(".");
+    const lastSlash = Math.max(clean.lastIndexOf("/"), clean.lastIndexOf("\\"));
+    if (lastDot > lastSlash && lastDot >= 0) {
+        return clean.substring(lastDot);
+    }
+    return "";
+}
+
+/**
+ * Truncates a value string to a maximum display length.
+ * @param value - The value string to shorten.
+ * @returns The truncated string, with an ellipsis if it was shortened.
+ */
+function ShortenValue(value: string): string {
+    return value.length > 30 ? value.substring(0, 27) + "…" : value;
+}

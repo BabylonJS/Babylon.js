@@ -7,8 +7,8 @@ import { WebXRCamera } from "./webXRCamera";
 import { type WebXRRenderTarget, WebXRState } from "./webXRTypes";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
-import { UniversalCamera } from "../Cameras/universalCamera";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { UniversalCamera } from "../Cameras/universalCamera.pure";
+import { Quaternion, Vector3 } from "../Maths/math.vector.pure";
 import { type ThinEngine } from "../Engines/thinEngine";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 

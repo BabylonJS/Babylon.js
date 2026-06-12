@@ -5,8 +5,8 @@ import { Logger } from "../../Misc/logger";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type Nullable } from "../../types";
-import { Quaternion, Vector3 } from "../../Maths/math.vector";
-import { Mesh } from "../../Meshes/mesh";
+import { Quaternion, Vector3 } from "../../Maths/math.vector.pure";
+import { Mesh } from "../../Meshes/mesh.pure";
 
 /**
  * Handedness type in xrInput profiles. These can be used to define layouts in the Layout Map.

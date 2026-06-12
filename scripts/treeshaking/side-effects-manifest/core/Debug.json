@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "files": {
+        "Debug/debugLayer.ts": ["top-level-call"],
+        "Debug/debugLayer.types.ts": ["declare-module"],
+        "Debug/physicsViewer.ts": ["bare-import"]
+    }
+}

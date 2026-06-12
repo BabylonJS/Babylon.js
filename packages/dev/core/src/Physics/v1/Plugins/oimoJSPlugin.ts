@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IPhysicsEnabledObject, PhysicsImpostor } from "../physicsImpostor";
+import { type IPhysicsEnabledObject, PhysicsImpostor } from "../physicsImpostor.pure";
 import { type IMotorEnabledJoint, type DistanceJointData, type SpringJointData, PhysicsJoint } from "../physicsJoint";
 import { type AbstractMesh } from "../../../Meshes/abstractMesh";
-import { Vector3, Quaternion } from "../../../Maths/math.vector";
+import { Vector3, Quaternion } from "../../../Maths/math.vector.pure";
 import { type Nullable } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";

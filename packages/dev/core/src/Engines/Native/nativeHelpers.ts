@@ -2,7 +2,7 @@
 import { ErrorCodes, RuntimeError } from "core/Misc/error";
 import { Constants } from "../constants";
 import { type INative } from "./nativeInterfaces";
-import { VertexBuffer } from "core/Buffers/buffer";
+import { VertexBuffer } from "core/Buffers/buffer.pure";
 
 declare const _native: INative;
 
@@ -340,6 +340,9 @@ export function getNativeAttribType(type: number): number {
             return _native.Engine.ATTRIB_TYPE_UINT16;
         case VertexBuffer.FLOAT:
             return _native.Engine.ATTRIB_TYPE_FLOAT;
+        // HALF_FLOAT (as well as INT and UNSIGNED_INT) has no equivalent in the native bindings, which only
+        // expose ATTRIB_TYPE_INT8/UINT8/INT16/UINT16/FLOAT. Those vertex attribute types are therefore
+        // WebGL/WebGPU only and intentionally fall through to the throw below on the Babylon Native engine.
         default:
             throw new Error(`Unsupported attribute type: ${type}.`);
     }

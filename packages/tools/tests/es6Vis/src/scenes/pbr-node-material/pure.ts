@@ -19,15 +19,25 @@ import {
     RegisterAbstractEngineCubeTexture,
     RegisterEnginePrefilteredCubeTexture,
     RegisterEnginesExtensionsEngineCubeTexture,
+    RegisterEnginesExtensionsEngineRenderTargetCube,
+    RegisterCubeTexture,
+    RegisterNodeMaterial,
+    RegisterPbrMaterial,
+    RegisterStandardMaterial,
     RegisterSceneHelpers,
     RegisterStandardEngineExtensions,
 } from "@babylonjs/core/pure";
-import "@babylonjs/core/Helpers/sceneHelpers.types";
+import type {} from "@babylonjs/core/Helpers/sceneHelpers.types";
 
 RegisterStandardEngineExtensions();
 RegisterAbstractEngineCubeTexture();
 RegisterEnginesExtensionsEngineCubeTexture();
+RegisterEnginesExtensionsEngineRenderTargetCube();
 RegisterEnginePrefilteredCubeTexture();
+RegisterCubeTexture();
+RegisterNodeMaterial();
+RegisterPbrMaterial();
+RegisterStandardMaterial();
 RegisterSceneHelpers();
 
 export function run(canvas: HTMLCanvasElement): void {

@@ -1,4 +1,4 @@
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { type Particle } from "./particle";
 import { type ThinParticleSystem } from "./thinParticleSystem";
 

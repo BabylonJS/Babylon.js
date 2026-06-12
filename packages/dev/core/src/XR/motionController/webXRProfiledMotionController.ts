@@ -2,12 +2,12 @@ import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type IMotionControllerProfile, type IMotionControllerMeshMap, WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import { type Scene } from "../../scene";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh.pure";
 import { Axis, Space } from "../../Maths/math.axis";
-import { Color3 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color.pure";
 import { WebXRControllerComponent } from "./webXRControllerComponent";
-import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
-import { StandardMaterial } from "../../Materials/standardMaterial";
+import { CreateSphere } from "../../Meshes/Builders/sphereBuilder.pure";
+import { StandardMaterial } from "../../Materials/standardMaterial.pure";
 import { Logger } from "../../Misc/logger";
 
 /**

@@ -15,6 +15,7 @@ import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/prop
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { Constants } from "core/Engines/constants";
 import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { MaterialTextureDebugPropertyLine } from "./materialTextureDebugPropertyLine";
 import { type ISelectionService } from "../../../services/selectionService";
 import { Color3 } from "core/Maths/math.color";
 
@@ -163,43 +164,47 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
     return (
         <>
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Albedo"
                 target={material}
                 propertyKey="_albedoTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Base Weight"
                 target={material}
                 propertyKey="_baseWeightTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Base Diffuse Roughness"
                 target={material}
                 propertyKey="_baseDiffuseRoughnessTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Metallic Roughness"
                 target={material}
                 propertyKey="_metallicTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 uniqueId="PBRBaseMaterialChannels_Reflection"
                 label="Reflection"
                 target={material}
@@ -208,9 +213,10 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
                 cubeOnly
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Refraction"
                 target={material.subSurface}
                 propertyKey="refractionTexture"
@@ -218,72 +224,80 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Reflectivity"
                 target={material}
                 propertyKey="_reflectivityTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Micro Surface"
                 target={material}
                 propertyKey="_microSurfaceTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Bump"
                 target={material}
                 propertyKey="_bumpTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Emissive"
                 target={material}
                 propertyKey="_emissiveTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Opacity"
                 target={material}
                 propertyKey="_opacityTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Ambient"
                 target={material}
                 propertyKey="_ambientTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Lightmap"
                 target={material}
                 propertyKey="_lightmapTexture"
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Detailmap"
                 target={material.detailMap}
                 propertyKey="texture"
@@ -291,6 +305,7 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
+                material={material}
             />
             <BoundProperty component={SwitchPropertyLine} label="Use Lightmap as Shadowmap" target={material} propertyKey="_useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use Detailmap" target={material.detailMap} propertyKey="isEnabled" propertyPath="detailMap.isEnabled" />
@@ -367,19 +382,21 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
                 propertyKey="_useOnlyMetallicFromMetallicReflectanceTexture"
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Metallic Reflectance"
                 target={material}
                 propertyKey="_metallicReflectanceTexture"
+                material={material}
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}
             />
             <BoundProperty
-                component={TextureSelectorPropertyLine}
+                component={MaterialTextureDebugPropertyLine}
                 label="Reflectance"
                 target={material}
                 propertyKey="_reflectanceTexture"
+                material={material}
                 scene={scene}
                 onLink={selectEntity}
                 defaultValue={null}

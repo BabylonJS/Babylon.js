@@ -14,7 +14,7 @@ import {
     type IFrameGraphPass,
 } from "core/index";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import { Constants } from "../Engines/constants";
 import { InternalTextureSource } from "../Materials/Textures/internalTexture";

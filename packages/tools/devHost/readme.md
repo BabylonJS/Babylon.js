@@ -23,7 +23,8 @@ This experience allows you to test the Babylon lottie-player. It supports the fo
 
 - `file=string` Renders this file from the Babylon assets repo. For example, `file=triangles.json` uses `https://assets.babylonjs.com/lottie/triangles.json`.
 - `useWorker=boolean` Whether to use the webworker for rendering or not. Defaults to true if not used.
-- `legacyTextPosition=boolean` Whether text layers should use Babylon.js 8.x placement compatibility. Defaults to false if not used.
+- `textLayerPlacement=spec|babylon8` Optional override for text layer placement compatibility.
+- `solidLayerRendering=spec|babylon8` Optional override for solid layer rendering compatibility.
 
 To change lottie variables or more detailed configuration options, edit `src/lottie/main.ts` directly.
 

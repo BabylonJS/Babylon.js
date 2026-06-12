@@ -5,7 +5,7 @@ import { type Scene } from "../../scene";
 import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type KeyboardConditions } from "../inputMapper";
 

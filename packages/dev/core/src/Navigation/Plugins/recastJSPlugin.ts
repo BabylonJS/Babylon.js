@@ -1,13 +1,13 @@
 import { type INavigationEnginePlugin, type ICrowd, type IAgentParameters, type INavMeshParameters, type IObstacle } from "../../Navigation/INavigationEngine";
 import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
-import { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh.pure";
 import { type Scene } from "../../scene";
 import { Epsilon, Vector3, Matrix } from "../../Maths/math";
 import { type TransformNode } from "../../Meshes/transformNode";
 import { type Observer, Observable } from "../../Misc/observable";
 import { type Nullable } from "../../types";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Recast: any;

@@ -7,7 +7,6 @@ import { type ILoadingScreen } from "../Loading/loadingScreen.pure";
 import { EngineStore } from "./engineStore";
 import { type WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import { type IPipelineContext } from "./IPipelineContext";
-import { type ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
 import { type EngineOptions, ThinEngine } from "./thinEngine.pure";
 import { Constants } from "./constants";
 import { type IViewportLike, type IColor4Like } from "../Maths/math.like";
@@ -17,6 +16,7 @@ import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
 import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
+import { type WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
 
 import { type PostProcess } from "../PostProcesses/postProcess.pure";
 import { AbstractEngine } from "./abstractEngine.pure";
@@ -320,11 +320,6 @@ export class Engine extends ThinEngine {
 
     // Members
 
-    /**
-     * If set, will be used to request the next animation frame for the render loop
-     */
-    public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
-
     private _rescalePostProcess: Nullable<PostProcess>;
 
     protected override get _supportsHardwareTextureRescaling() {
@@ -504,30 +499,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
-     * @param y defines the y-coordinate of the corner of the clear rectangle
-     * @param width defines the width of the clear rectangle
-     * @param height defines the height of the clear rectangle
-     */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
-        const gl = this._gl;
-
-        // Change state
-        gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(x, y, width, height);
-    }
-
-    /**
-     * Disable previously set scissor test rectangle
-     */
-    public disableScissor() {
-        const gl = this._gl;
-
-        gl.disable(gl.SCISSOR_TEST);
-    }
-
-    /**
      * Gets the source code of the vertex shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the vertex shader associated with the program
@@ -591,39 +562,6 @@ export class Engine extends ThinEngine {
      */
     public override getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         return GetFontOffset(font);
-    }
-
-    protected override _cancelFrame() {
-        if (this.customAnimationFrameRequester) {
-            if (this._frameHandler !== 0) {
-                this._frameHandler = 0;
-                const { cancelAnimationFrame } = this.customAnimationFrameRequester;
-                if (cancelAnimationFrame) {
-                    cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
-                }
-            }
-        } else {
-            super._cancelFrame();
-        }
-    }
-
-    public override _renderLoop(timestamp?: number): void {
-        this._processFrame(timestamp);
-
-        // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
-        // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
-        // already been queued (e.g., if `stopRenderLoop` and `runRenderLoop` is called mid frame).
-        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
-            if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(
-                    this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
-                    this.customAnimationFrameRequester
-                );
-                this._frameHandler = this.customAnimationFrameRequester.requestID;
-            } else {
-                this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
-            }
-        }
     }
 
     /**
@@ -838,7 +776,7 @@ export class Engine extends ThinEngine {
         height: number = 0
     ): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
-        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = width;
         internalTexture.baseHeight = height;
@@ -848,6 +786,115 @@ export class Engine extends ThinEngine {
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
+    }
+
+    /**
+     * Replaces the underlying WebGL handle of a texture previously created via {@link wrapWebGLTexture}, preserving
+     * the InternalTexture identity.
+     *
+     * Intended for the context-loss / context-restored flow: when the host application recreates its external resource
+     * on the new WebGL context, it calls this method to repoint Babylon's wrapper at the new handle without losing
+     * references held by materials, render-target wrappers, particle systems, etc.
+     *
+     * The new handle must describe a texture with the same dimensions the wrapped texture was created with. A WebGL
+     * handle is opaque (the dimensions can't be introspected), so we can't validate this -- passing a mismatched
+     * handle is undefined behaviour. Sampling mode and mip-map flag are properties of the logical wrapped texture and
+     * are re-applied to the new resource. Any render-target wrapper holding this texture as its color attachment has
+     * its framebuffer rebuilt with the new handle (including a fresh depth/stencil renderbuffer, since the old one
+     * came from the dead context). If the wrapper is multisampled, the MSAA framebuffer + color renderbuffer + MSAA
+     * depth/stencil buffer are rebuilt too.
+     *
+     * Throws if the target was not produced by {@link wrapWebGLTexture}, if the wrapped texture is part of a multi
+     * render-target wrapper, or if the wrapper has a depth/stencil texture (these are not supported in this version;
+     * dispose and re-wrap).
+     * @param internalTexture defines the wrapped InternalTexture to repoint
+     * @param texture defines the new WebGL handle to wrap
+     */
+    public updateWrappedWebGLTexture(internalTexture: InternalTexture, texture: WebGLTexture): void {
+        if (internalTexture.source !== InternalTextureSource.External) {
+            throw new Error("updateWrappedWebGLTexture: target InternalTexture was not produced by wrapWebGLTexture.");
+        }
+
+        // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
+        // Note: rtWrapper.texture only returns _textures[0]; walk every attachment to catch the multi-RT case where
+        // the wrapped texture is at index > 0.
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (!rtWrapper.textures?.includes(internalTexture)) {
+                continue;
+            }
+            if (rtWrapper.isMulti) {
+                throw new Error("updateWrappedWebGLTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
+            }
+            if (rtWrapper._depthStencilTexture) {
+                // The depth/stencil texture's GL handle was also lost on context restore. Rebuilding it from the
+                // wrapper's stored depth settings + re-attaching is feasible but non-trivial; v1 rejects and asks
+                // the caller to dispose + re-wrap (which also recreates the depth/stencil texture via the public API).
+                throw new Error("updateWrappedWebGLTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap.");
+            }
+        }
+
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        internalTexture.isReady = true;
+
+        // The new GL texture has default sampler state; clear the per-InternalTexture cached sampler params so the
+        // next _setTexture re-applies them, then drop any binding-cache slot pointing at this InternalTexture so the
+        // identity short-circuit (this._boundTexturesCache[channel] === internalTexture) doesn't skip the rebind.
+        internalTexture._cachedCoordinatesMode = null;
+        internalTexture._cachedWrapU = null;
+        internalTexture._cachedWrapV = null;
+        internalTexture._cachedWrapR = null;
+        internalTexture._cachedAnisotropicFilteringLevel = null;
+        for (const key in this._boundTexturesCache) {
+            if (this._boundTexturesCache[key] === internalTexture) {
+                this._boundTexturesCache[key] = null;
+            }
+        }
+
+        this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
+
+        // Rebuild the framebuffer of any render-target wrapper holding this wrapped texture as its color attachment.
+        // After a context-loss / restore cycle the GL framebuffer + depth/stencil renderbuffer came from the dead
+        // context; the consumer-supplied new texture is the moment we have a fresh handle to rebuild against.
+        const gl = this._gl;
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (rtWrapper.texture !== internalTexture) {
+                continue;
+            }
+            const webGLRtWrapper = rtWrapper as WebGLRenderTargetWrapper;
+            const savedSamples = rtWrapper.samples;
+            const isMSAA = savedSamples > 1;
+
+            if (webGLRtWrapper._framebuffer) {
+                gl.deleteFramebuffer(webGLRtWrapper._framebuffer);
+            }
+            if (!isMSAA && webGLRtWrapper._depthStencilBuffer) {
+                gl.deleteRenderbuffer(webGLRtWrapper._depthStencilBuffer);
+                webGLRtWrapper._depthStencilBuffer = null;
+            }
+
+            const previousFramebuffer = this._currentFramebuffer;
+            const framebuffer = gl.createFramebuffer();
+            this._bindUnboundFramebuffer(framebuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            if (!isMSAA) {
+                webGLRtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
+                    rtWrapper._generateStencilBuffer,
+                    rtWrapper._generateDepthBuffer,
+                    rtWrapper.width,
+                    rtWrapper.height
+                );
+            }
+            this._bindUnboundFramebuffer(previousFramebuffer);
+            webGLRtWrapper._framebuffer = framebuffer;
+
+            if (isMSAA) {
+                // Defer MSAA framebuffer + color renderbuffer + multisampled depth/stencil rebuild to the existing
+                // helper. The helper early-returns when samples matches the cached value, so zero the cache first
+                // to force the work; updateRenderTargetTextureSampleCount restores _samples to savedSamples.
+                rtWrapper._samples = 1;
+                this.updateRenderTargetTextureSampleCount(webGLRtWrapper, savedSamples);
+            }
+        }
     }
 
     /**

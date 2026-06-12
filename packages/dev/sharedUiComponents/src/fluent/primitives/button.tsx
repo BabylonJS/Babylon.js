@@ -16,17 +16,23 @@ const useButtonStyles = makeStyles({
 });
 
 export type ButtonProps = BasePrimitiveProps & {
+    /** Callback invoked when the button is clicked. */
     onClick?: (e?: MouseEvent<HTMLButtonElement>) => unknown | Promise<unknown>;
+    /** Optional icon rendered inside the button. */
     icon?: FluentIcon;
+    /** Fluent button appearance. */
     appearance?: "subtle" | "transparent" | "primary" | "secondary";
+    /** Optional visible button label. */
     label?: string;
+    /** Optional accessible label when the visible label is absent or insufficient. */
+    ariaLabel?: string;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
     const { size } = useContext(ToolContext);
     const classes = useButtonStyles();
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { icon: Icon, label, onClick, disabled, className, title, ...buttonProps } = props;
+    const { icon: Icon, label, onClick, disabled, className, title, ariaLabel, ...buttonProps } = props;
 
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
@@ -54,6 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
                 {...buttonProps}
                 className={className}
                 size={size}
+                aria-label={ariaLabel ?? (!label ? title : undefined)}
                 icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
                 onClick={handleOnClick}
                 disabled={disabled || isOnClickBusy}

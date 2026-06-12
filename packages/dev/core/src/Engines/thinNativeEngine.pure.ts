@@ -280,12 +280,18 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${ThinNativeEngine.PROTOCOL_VERSION} (JS)`);
         }
 
-        if (this._engine.setDeviceLostCallback) {
-            this._engine.setDeviceLostCallback(() => {
-                this.onContextLostObservable.notifyObservers(this);
-                this._contextWasLost = true;
-                this._restoreEngineAfterContextLost();
-            });
+        // Prefer setRenderResetCallback (accurate name -- fires when bgfx is (re)initialized,
+        // i.e. on device restore). Fall back to the legacy setDeviceLostCallback for backward
+        // compatibility with older BabylonNative builds. See BabylonNative #1722.
+        const renderResetCallback = () => {
+            this.onContextLostObservable.notifyObservers(this);
+            this._contextWasLost = true;
+            this._restoreEngineAfterContextLost();
+        };
+        if (this._engine.setRenderResetCallback) {
+            this._engine.setRenderResetCallback(renderResetCallback);
+        } else if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(renderResetCallback);
         }
 
         this._webGLVersion = 2;
@@ -472,7 +478,7 @@ export class ThinNativeEngine extends ThinEngine {
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
      */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
+    public override enableScissor(x: number, y: number, width: number, height: number): void {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
@@ -484,7 +490,7 @@ export class ThinNativeEngine extends ThinEngine {
     /**
      * Disable previously set scissor test rectangle
      */
-    public disableScissor() {
+    public override disableScissor() {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
@@ -499,8 +505,8 @@ export class ThinNativeEngine extends ThinEngine {
      */
     protected override _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
         // Use the provided requestAnimationFrame, unless the requester is the window. In that case, we will default to the Babylon Native version of requestAnimationFrame.
-        if (requester.requestAnimationFrame && requester !== window) {
-            requester.requestAnimationFrame(bindedRenderFunction);
+        if (requester?.requestAnimationFrame && requester !== this.getHostWindow()) {
+            return requester.requestAnimationFrame(bindedRenderFunction);
         } else {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
@@ -1987,7 +1993,7 @@ export class ThinNativeEngine extends ThinEngine {
      */
     public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
-        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = this._engine.getTextureWidth(texture);
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
@@ -1997,6 +2003,82 @@ export class ThinNativeEngine extends ThinEngine {
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
+    }
+
+    /**
+     * Replaces the underlying native texture handle of a texture previously created via {@link wrapNativeTexture},
+     * preserving the InternalTexture identity.
+     *
+     * Intended for the device-loss / device-restored flow (a DisableRendering / EnableRendering cycle from the host
+     * application): when the host recreates its external resource on the new graphics device, it calls this method to
+     * repoint Babylon's wrapper at the new handle without losing references held by materials, render-target wrappers,
+     * particle systems, etc.
+     *
+     * The new handle must match the wrapped texture's recorded dimensions. To change dimensions, dispose the wrapped
+     * texture and call {@link wrapNativeTexture} again. Sampling mode and mip-map flag are properties of the logical
+     * wrapped texture and are re-applied to the new resource. Any render-target wrapper holding this texture as its
+     * color attachment has its framebuffer rebuilt with the new handle.
+     *
+     * Throws if the target was not produced by {@link wrapNativeTexture}, if the new handle's dimensions don't match,
+     * if the wrapped texture is part of a multi render-target, or if the wrapper has a depth/stencil texture (these
+     * are not supported in this version; dispose and re-wrap).
+     * @param internalTexture defines the wrapped InternalTexture to repoint
+     * @param texture defines the new native texture handle to wrap
+     */
+    public updateWrappedNativeTexture(internalTexture: InternalTexture, texture: NativeTexture): void {
+        if (internalTexture.source !== InternalTextureSource.External) {
+            throw new Error("updateWrappedNativeTexture: target InternalTexture was not produced by wrapNativeTexture.");
+        }
+
+        const newWidth = this._engine.getTextureWidth(texture);
+        const newHeight = this._engine.getTextureHeight(texture);
+        if (newWidth !== internalTexture.baseWidth || newHeight !== internalTexture.baseHeight) {
+            throw new Error(
+                `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
+            );
+        }
+
+        // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
+        // Note: rtWrapper.texture only returns _textures[0]; walk every attachment to catch the multi-RT case where
+        // the wrapped texture is at index > 0.
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (!rtWrapper.textures?.includes(internalTexture)) {
+                continue;
+            }
+            if (rtWrapper.isMulti) {
+                throw new Error("updateWrappedNativeTexture: wrapped texture is part of a multi render-target; not supported. Dispose and re-wrap.");
+            }
+            if (rtWrapper._depthStencilTexture) {
+                // After a DisableRendering / EnableRendering cycle the bgfx framebuffer + the depth/stencil texture's
+                // bgfx handle are both stale. Rebuilding the depth/stencil texture from the wrapper's stored settings
+                // is feasible but non-trivial; v1 rejects and asks the caller to dispose + re-wrap.
+                throw new Error("updateWrappedNativeTexture: wrapped texture's render-target wrapper has a depth/stencil texture; not supported. Dispose and re-wrap.");
+            }
+        }
+
+        internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this._engine);
+        internalTexture.isReady = true;
+        this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
+
+        // Rebuild the framebuffer of any render-target wrapper holding this wrapped texture as its color attachment.
+        // After a DisableRendering / EnableRendering cycle the bgfx framebuffer handle is stale; the consumer-supplied
+        // new texture is the moment we have a fresh handle to rebuild against.
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            if (rtWrapper.texture !== internalTexture) {
+                continue;
+            }
+            const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+            // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
+            // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
+            nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+                texture,
+                rtWrapper.width,
+                rtWrapper.height,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                rtWrapper.samples ?? 1
+            );
+        }
     }
 
     public override _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
@@ -2152,8 +2234,18 @@ export class ThinNativeEngine extends ThinEngine {
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
+        // TODO(bgfx-msaa-mips): stopgap workaround for a bgfx bug -- D3D11/D3D12/Vulkan backends share one
+        // texture descriptor between the MSAA render target and the non-MSAA resolve target, so requesting
+        // both mips > 1 and samples > 1 makes the API (D3D11 E_INVALIDARG, Vulkan VUID-02257, ...) reject the
+        // MSAA texture creation. Force hasMips = false here to keep the combo from reaching bgfx. The fix
+        // belongs in bgfx (separate descs per target, like OpenGL/WebGL do with a non-mipped renderbuffer);
+        // this guard should be removed once a fixed bgfx ships in a stable BabylonNative npm release. Tracked
+        // in BabylonNative#1714. Cost: MSAA RTs on Native lose post-resolve auto-mipgen and diverge from
+        // WebGL/WebGPU semantics -- texture.generateMipMaps stays true on the InternalTexture but the
+        // underlying bgfx resource has 1 mip.
+        const hasMips = samples > 1 ? false : generateMipMaps;
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
-        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer, samples);
+        this._engine.initializeTexture(nativeTexture, width, height, hasMips, nativeTextureFormat, true, useSRGBBuffer, samples);
         this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -2218,8 +2310,66 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        Logger.Warn("Updating render target sample count is not currently supported");
-        return rtWrapper.samples;
+        if (rtWrapper.samples === samples) {
+            return samples;
+        }
+
+        const texture = rtWrapper.texture;
+        if (!texture?._hardwareTexture) {
+            return rtWrapper.samples;
+        }
+
+        // Wrapped (External-source) textures carry an opaque external handle with unknown format/type.
+        // Recreating the underlying bgfx texture here would destroy the wrapped handle, breaking the
+        // consumer's ownership contract, and getNativeTextureFormat would throw on format=-1 anyway.
+        // Reject the request explicitly with a targeted error rather than failing deeper in the stack.
+        if (texture.source === InternalTextureSource.External) {
+            throw new Error(
+                "updateRenderTargetTextureSampleCount: changing MSAA samples is not supported on wrapped (External-source) textures. Dispose and re-wrap with the desired samples."
+            );
+        }
+
+        const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+        const nativeTexture = texture._hardwareTexture.underlyingResource;
+
+        // bgfx couples MSAA to the texture creation flags, so changing samples after the fact requires
+        // recreating the underlying bgfx texture handle with the new MSAA flag. initializeTexture on the
+        // Native side calls Graphics::Texture::Create2D, which disposes the existing bgfx handle and
+        // allocates a fresh one. The Graphics::Texture / InternalTexture wrapper identity is preserved --
+        // only the internal bgfx handle rotates. After the texture is reissued we also recreate the
+        // framebuffer so its attachment list refers to the new handle.
+        //
+        // TODO(bgfx-msaa-mips): stopgap workaround for a bgfx bug. D3D11 forbids MipLevels > 1 on
+        // multisampled textures (E_INVALIDARG on CreateTexture2D); D3D12/Vulkan have equivalent rules. bgfx's
+        // D3D11 backend uses one D3D11_TEXTURE2D_DESC for both the MSAA render texture (m_rt2d) and the
+        // non-MSAA sample target (m_texture2d) and doesn't reset desc.MipLevels between them -- so requesting
+        // samples > 1 with hasMips = true crashes at m_rt2d creation. The trigger in practice is the glTF
+        // transmission helper, which creates an `opaqueSceneTexture` RTT with generateMipmaps: true and
+        // immediately sets samples = 4. WebGL2 sidesteps this with a separate non-mipped multisample
+        // renderbuffer; bgfx D3D11 conflates the two-stage pattern. The proper fix lives in bgfx (per-backend
+        // patches reset MipLevels=1 for the MSAA target). Tracked in BabylonNative#1714. Until that ships
+        // through bgfx -> bgfx.cmake -> BabylonNative -> stable npm, force hasMips = false here so the bad
+        // combo never reaches bgfx. Cost: MSAA RTs on Native lose post-resolve auto-mipgen and diverge from
+        // WebGL/WebGPU semantics -- texture.generateMipMaps still reads true on the JS side, but the
+        // underlying bgfx resource has 1 mip level. Remove this guard once a fixed bgfx is in stable BN npm.
+        const hasMips = samples > 1 ? false : texture.generateMipMaps;
+        const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
+        this._engine.initializeTexture(nativeTexture, texture.baseWidth, texture.baseHeight, hasMips, nativeTextureFormat, /*renderTarget*/ true, texture._useSRGBBuffer, samples);
+
+        // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
+        // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
+        nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+            nativeTexture,
+            texture.baseWidth,
+            texture.baseHeight,
+            rtWrapper._generateStencilBuffer,
+            rtWrapper._generateDepthBuffer,
+            samples
+        );
+
+        rtWrapper._samples = samples;
+        texture.samples = samples;
+        return samples;
     }
 
     public override updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {

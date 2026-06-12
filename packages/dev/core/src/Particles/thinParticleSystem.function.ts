@@ -1,9 +1,9 @@
-import { Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color.pure";
 import { type ColorGradient, type FactorGradient, GradientHelper } from "core/Misc/gradients";
 import { type Particle } from "./particle";
 import { type ThinParticleSystem } from "./thinParticleSystem";
 import { Clamp, Lerp, RandomRange } from "core/Maths/math.scalar.functions";
-import { TmpVectors, Vector3, Vector4 } from "core/Maths/math.vector";
+import { TmpVectors, Vector3, Vector4 } from "core/Maths/math.vector.pure";
 
 /** Color */
 

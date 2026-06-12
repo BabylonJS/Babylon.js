@@ -1,6 +1,6 @@
 import { type DeepImmutable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
-import { type Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
+import { type Matrix, TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";

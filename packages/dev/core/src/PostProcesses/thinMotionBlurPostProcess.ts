@@ -1,6 +1,6 @@
 import { type EffectWrapperCreationOptions, type Scene } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
-import { Matrix, TmpVectors } from "../Maths/math.vector";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
+import { Matrix, TmpVectors } from "../Maths/math.vector.pure";
 
 /**
  * Post process used to apply a motion blur post process

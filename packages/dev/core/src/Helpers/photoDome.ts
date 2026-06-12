@@ -1,5 +1,5 @@
 import { type Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { TextureDome } from "./textureDome";
 
 /**

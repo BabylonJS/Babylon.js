@@ -1,18 +1,18 @@
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
+import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type Scene } from "../scene";
 import { type Nullable } from "../types";
 import { type Bone } from "../Bones/bone";
 import { type Skeleton } from "../Bones/skeleton";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 import { type LinesMesh } from "../Meshes/linesMesh";
-import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
+import { CreateLineSystem } from "../Meshes/Builders/linesBuilder.pure";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Material } from "../Materials/material";
-import { ShaderMaterial } from "../Materials/shaderMaterial";
-import { DynamicTexture } from "../Materials/Textures/dynamicTexture";
-import { VertexBuffer } from "../Buffers/buffer";
+import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
+import { DynamicTexture } from "../Materials/Textures/dynamicTexture.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Effect } from "../Materials/effect";
 
 import {
@@ -24,9 +24,9 @@ import {
 } from "./ISkeletonViewer";
 import { type Observer } from "../Misc/observable";
 
-import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";
-import { TransformNode } from "../Meshes/transformNode";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
+import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder.pure";
+import { TransformNode } from "../Meshes/transformNode.pure";
 import { Logger } from "core/Misc/logger";
 
 /**

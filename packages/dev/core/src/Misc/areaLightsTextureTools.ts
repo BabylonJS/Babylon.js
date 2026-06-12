@@ -1,12 +1,12 @@
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
-import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
+import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { type ThinTexture } from "core/Materials/Textures/thinTexture";
 import { type Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
 import { Constants } from "core/Engines/constants";
 
 type KernelData = {

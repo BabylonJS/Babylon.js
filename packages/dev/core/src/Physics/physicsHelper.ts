@@ -1,11 +1,11 @@
 import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
-import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
-import { Ray } from "../Culling/ray";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder.pure";
+import { Ray } from "../Culling/ray.pure";
 import { type Scene } from "../scene";
 import { type PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
 import { type PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";

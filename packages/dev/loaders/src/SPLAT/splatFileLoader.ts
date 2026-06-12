@@ -24,7 +24,7 @@ import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { ParseSogMeta, type SOGRootData } from "./sog";
+import { ParseSogMeta, ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
 import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
@@ -73,7 +73,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         keepInRam: false,
         flipY: false,
         needsRotationScaleTextures: false,
-        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
+        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.2/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
@@ -215,26 +215,38 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            if (parsedSOG.sogTextures) {
+                gaussianSplatting.setSogTextureData(parsedSOG.sogTextures);
+            } else {
+                gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            }
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
         };
 
+        const engine = scene.getEngine();
+        let useSogTextures = this._loadingOptions.useSogTextures;
+        if (useSogTextures && !engine.isWebGPU && engine.version < 2) {
+            Logger.Warn("SPLATFileLoader: useSogTextures requires WebGL2 or WebGPU. Falling back to CPU path.");
+            useSogTextures = false;
+        }
+        const sogParser = useSogTextures ? ParseSogMetaAsTextures : ParseSogMeta;
+
         // check if data is json string
         if (typeof data === "string") {
             const dataSOG = JSON.parse(data) as SOGRootData;
             if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
-                return new Promise((resolve) => {
-                    ParseSogMeta(dataSOG, rootUrl, scene)
+                return new Promise((resolve, reject) => {
+                    sogParser(dataSOG, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         })
                         // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG data.", { cause: e }));
                         });
                 });
             }
@@ -243,17 +255,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const u8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
         // ZIP signature check for SOG
         if (u8[0] === 0x50 && u8[1] === 0x4b) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._unzipWithFFlateAsync(u8).then((files) => {
-                    ParseSogMeta(files, rootUrl, scene)
+                    sogParser(files, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         }) // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG zip data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG zip data.", { cause: e }));
                         });
                 });
             });
@@ -323,8 +335,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         };
 
-        // Check for gzip magic bytes to detect SPZ format
-        if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
+        // Check for gzip (before SPZ V4) and NGSP (SPZ V4+) magic bytes to detect SPZ format
+        const isGZipped = u8[0] === 0x1f && u8[1] === 0x8b;
+        const isNGSP = u8[0] === 0x4e && u8[1] === 0x47 && u8[2] === 0x53 && u8[3] === 0x50;
+        if (!isGZipped && !isNGSP) {
             return new Promise((resolve) => {
                 handlePLY(resolve);
             });
@@ -364,6 +378,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     });
                 });
             });
+        }
+
+        // NGSP (SPZ V4+) requires WASM — the native fallback only handles legacy gzip formats
+        if (isNGSP) {
+            return Promise.reject(
+                new Error(
+                    "SPZ V4+ files (NGSP format) are not supported by the native fallback loader. " +
+                        "Please provide a valid 'spzLibraryUrl' in the loading options to use the WASM-based SPZ library, " +
+                        "or ensure WebAssembly is available in your environment."
+                )
+            );
         }
 
         // Manual path: decompress gzip, then parse with the built-in SPZ parser

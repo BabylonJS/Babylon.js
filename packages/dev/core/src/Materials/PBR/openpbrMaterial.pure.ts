@@ -5,7 +5,7 @@ import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "..
 import { GetEnvironmentFuzzBRDFTexture, GetOpenPBREnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
-import { type Color4, Color3 } from "../../Maths/math.color.pure";
+import { Color3, Color4 } from "../../Maths/math.color.pure";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
@@ -61,7 +61,7 @@ import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
 import { EnvironmentLightingDefinesMixin } from "../environmentLighting.defines";
-import { Vector2, Vector4, TmpVectors, type Vector3, type Matrix } from "core/Maths/math.vector.pure";
+import { Vector2, Vector3, Vector4, TmpVectors, type Matrix } from "core/Maths/math.vector.pure";
 import { type Mesh } from "../../Meshes/mesh.pure";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
@@ -74,6 +74,23 @@ import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer.pu
 import { RegisterClass } from "../../Misc/typeStore";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+
+function _GetComponentCount(value: PropertyType): number {
+    if (typeof value === "number") {
+        return 1;
+    }
+    if (value instanceof Vector2) {
+        return 2;
+    }
+    if (value instanceof Vector3 || value instanceof Color3) {
+        return 3;
+    }
+    if (value instanceof Vector4 || value instanceof Color4) {
+        return 4;
+    }
+
+    throw new Error("Unsupported OpenPBR property type.");
+}
 
 class Uniform {
     public name: string;
@@ -95,7 +112,7 @@ class Uniform {
      */
     public requiredDefine?: string;
     public populateVectorFromLinkedProperties(vector: Vector4 | Vector3 | Vector2): void {
-        const destinationSize = vector.dimension[0];
+        const destinationSize = _GetComponentCount(vector);
         for (const propKey in this.linkedProperties) {
             const prop = this.linkedProperties[propKey];
             const sourceSize = prop.numComponents;
@@ -177,7 +194,7 @@ class Property<T extends PropertyType> {
         if (typeof this.defaultValue === "number") {
             return 1;
         }
-        return this.defaultValue.dimension[0];
+        return _GetComponentCount(this.defaultValue);
     }
 }
 
@@ -2148,6 +2165,25 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     protected _hasAlphaChannel(): boolean {
         return (this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromBaseColorTexture) || this.geometryOpacityTexture != null;
+    }
+
+    /**
+     * @returns true when the material needs alpha blending — i.e. when geometry_opacity < 1
+     * or a geometry opacity texture is present.
+     */
+    public override needAlphaBlending(): boolean {
+        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null;
+    }
+
+    /**
+     * Specifies if the mesh will require alpha blending.
+     * Overridden to check geometry_opacity before the _hasTransparencyMode short-circuit in the
+     * base class, which would otherwise always return false when _transparencyMode is MATERIAL_OPAQUE.
+     * @param mesh The mesh to check
+     * @returns true if alpha blending is needed for the mesh
+     */
+    public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null || super.needAlphaBlendingForMesh(mesh);
     }
 
     /**

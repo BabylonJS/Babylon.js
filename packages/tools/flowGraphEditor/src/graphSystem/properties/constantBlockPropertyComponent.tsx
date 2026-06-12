@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
-import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { TextInputPropertyLine, NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { StringDropdownPropertyLine, NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { Vector2PropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+
+import { RenderGeneralSection, MatrixEditor } from "./genericNodePropertyComponent";
 import { type FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
 import { getRichTypeFromValue, RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
@@ -21,7 +21,7 @@ import { type GlobalState } from "../../globalState";
 import { type SceneContext, SceneContextCategory } from "../../sceneContext";
 import { type Observer } from "core/Misc/observable";
 
-const ValueTypeOptions = [
+const ValueTypeOptions: DropdownOption<string>[] = [
     { label: "Number", value: "number" },
     { label: "Integer", value: "FlowGraphInteger" },
     { label: "Boolean", value: "boolean" },
@@ -40,6 +40,14 @@ const ValueTypeOptions = [
     { label: "Animation Group", value: "AnimationGroup" },
     { label: "Animation", value: "Animation" },
 ];
+
+const useStyles = makeStyles({
+    helpText: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
 
 /** Scene object type names that require a scene picker instead of an inline editor. */
 const SceneObjectTypes = new Set(["Mesh", "Light", "Camera", "Material", "AnimationGroup", "Animation"]);
@@ -226,72 +234,51 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
     }
 
     private _renderValueEditor(value: any): JSX.Element | null {
-        const lock = this.props.stateManager.lockObject;
         const block = this._getBlock();
-        const notify = () => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
 
         if (typeof value === "boolean") {
-            return <CheckBoxLineComponent label="Value" isSelected={() => block.config.value === true} onSelect={(v) => this._updateValue(v)} />;
+            return <SwitchPropertyLine label="Value" value={block.config.value === true} onChange={(v) => this._updateValue(v)} />;
         }
 
         if (value instanceof FlowGraphInteger) {
-            const proxy = { v: value.value };
-            return (
-                <FloatLineComponent
-                    label="Value"
-                    lockObject={lock}
-                    digits={0}
-                    step={"1"}
-                    isInteger={true}
-                    target={proxy}
-                    propertyName="v"
-                    onChange={(v) => this._updateValue(new FlowGraphInteger(v))}
-                />
-            );
+            return <NumberInputPropertyLine label="Value" value={value.value} step={1} onChange={(v) => this._updateValue(new FlowGraphInteger(Math.trunc(v)))} />;
         }
 
         if (typeof value === "number") {
-            const proxy = { v: value };
-            return <FloatLineComponent label="Value" lockObject={lock} target={proxy} propertyName="v" onChange={(v) => this._updateValue(v)} />;
+            return <NumberInputPropertyLine label="Value" value={value} onChange={(v) => this._updateValue(v)} />;
         }
 
         if (typeof value === "string") {
-            const proxy = { v: value };
-            return (
-                <TextInputLineComponent
-                    label="Value"
-                    lockObject={lock}
-                    target={proxy}
-                    propertyName="v"
-                    throttlePropertyChangedNotification={true}
-                    onChange={(v) => this._updateValue(v)}
-                />
-            );
+            return <TextInputPropertyLine label="Value" value={value} onChange={(v) => this._updateValue(v)} />;
         }
 
         if (value instanceof Vector2) {
-            return <Vector2LineComponent label="Value" lockObject={lock} target={block.config} propertyName="value" onChange={notify} />;
-        }
-
-        if (value instanceof Vector3 && !(value instanceof Vector4) && !(value instanceof Quaternion)) {
-            return <Vector3LineComponent label="Value" lockObject={lock} target={block.config} propertyName="value" onChange={notify} />;
+            return <Vector2PropertyLine label="Value" value={value} onChange={(v) => this._updateValue(v.clone())} />;
         }
 
         // Color3 before Vector3 subclasses since Color3/4 have dedicated editors
         if (value instanceof Color4) {
-            return <Color4LineComponent label="Value" lockObject={lock} target={block.config} propertyName="value" onChange={notify} />;
+            return <Color4PropertyLine label="Value" value={value} onChange={(v) => this._updateValue(v.clone())} />;
         }
 
         if (value instanceof Color3) {
-            return <Color3LineComponent label="Value" lockObject={lock} target={block.config} propertyName="value" onChange={notify} />;
+            return <Color3PropertyLine label="Value" value={value} onChange={(v) => this._updateValue(v.clone())} />;
+        }
+
+        if (value instanceof Vector3 && !(value instanceof Vector4) && !(value instanceof Quaternion)) {
+            return <Vector3PropertyLine label="Value" value={value} onChange={(v) => this._updateValue(v.clone())} />;
         }
 
         if (value instanceof Matrix) {
-            return <MatrixLineComponent label="Value" lockObject={lock} target={block.config} propertyName="value" onChange={notify} />;
+            return (
+                <PropertyLine label="Value">
+                    <MatrixEditor value={value} onChange={(v) => this._updateValue(v)} />
+                </PropertyLine>
+            );
         }
 
         // Fallback: show the type name for uneditable types (Vector4, Quaternion)
-        return <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>Cannot edit {DetectValueType(value, block.config)} inline.</div>;
+        return <HelpText>Cannot edit {DetectValueType(value, block.config)} inline.</HelpText>;
     }
 
     private _renderSceneObjectPicker(typeName: string): JSX.Element {
@@ -300,7 +287,7 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
         const category = SceneObjectCategoryMap[typeName];
 
         if (!sceneContext || !category) {
-            return <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene in the Preview panel to pick {typeName.toLowerCase()}s.</div>;
+            return <HelpText>Load a scene in the Preview panel to pick {typeName.toLowerCase()}s.</HelpText>;
         }
 
         const entries = sceneContext.getByCategory(category);
@@ -309,16 +296,12 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
 
         return (
             <>
-                <OptionsLine
+                <NumberDropdownPropertyLine
                     key={`asset-${block.uniqueId}-${sceneContext.scene?.uid ?? "no-scene"}`}
                     label={typeName}
-                    options={[{ label: "(none)", value: -1 }, ...entries.map((e) => ({ label: e.name || `(id ${e.uniqueId})`, value: e.uniqueId }))]}
-                    target={{}}
-                    propertyName="_unused"
-                    noDirectUpdate={true}
-                    extractValue={() => currentId}
-                    onSelect={(value) => {
-                        const uid = value as number;
+                    options={[{ label: "(none)", value: -1 }, ...entries.map((e) => ({ label: e.name || `(id ${e.uniqueId})`, value: e.uniqueId }))] as DropdownOption<number>[]}
+                    value={currentId}
+                    onChange={(uid) => {
                         if (uid === -1) {
                             this._updateValue(null);
                         } else {
@@ -329,37 +312,31 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
                         }
                     }}
                 />
-                {entries.length === 0 && <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No {typeName.toLowerCase()}s found in the scene.</div>}
+                {entries.length === 0 && <HelpText>No {typeName.toLowerCase()}s found in the scene.</HelpText>}
             </>
         );
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
         const block = this._getBlock();
         const value = block.config.value;
         const currentType = DetectValueType(value, block.config);
         const isSceneObject = SceneObjectTypes.has(currentType);
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphConstantProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
 
-                <LineContainerComponent title="CONSTANT VALUE">
-                    <OptionsLine
-                        key={`type-${block.uniqueId}`}
-                        label="Type"
-                        options={ValueTypeOptions}
-                        target={{}}
-                        propertyName="_unused"
-                        valuesAreStrings={true}
-                        noDirectUpdate={true}
-                        extractValue={() => currentType}
-                        onSelect={(v) => this._changeType(v as string)}
-                    />
+                <AccordionSection title="Constant Value" collapseByDefault={false}>
+                    <StringDropdownPropertyLine key={`type-${block.uniqueId}`} label="Type" options={ValueTypeOptions} value={currentType} onChange={(v) => this._changeType(v)} />
                     {isSceneObject ? this._renderSceneObjectPicker(currentType) : this._renderValueEditor(value)}
-                </LineContainerComponent>
-            </>
+                </AccordionSection>
+            </Accordion>
         );
     }
 }
+
+const HelpText: React.FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
+    const classes = useStyles();
+    return <Body1 className={classes.helpText}>{children}</Body1>;
+};

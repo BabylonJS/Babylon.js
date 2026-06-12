@@ -1,5 +1,5 @@
 import { Epsilon } from "core/Maths/math.constants";
-import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { BuildArray } from "core/Misc/arrayTools";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { type BoundingInfo } from "./boundingInfo";

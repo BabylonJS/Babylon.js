@@ -144,7 +144,7 @@ jobs:
 
           - script: |
                 npx playwright install --with-deps
-                npx playwright test --project=graphTools
+                npx playwright test --project=graphTools --project=flowGraphEditor
             displayName: "Test tools"
             env:
                 CI: "true"

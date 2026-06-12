@@ -101,6 +101,8 @@ export function RegisterBufferAlign(): void {
             alignedData = new Int16Array(totalLength);
         } else if (this.type === VertexBuffer.UNSIGNED_SHORT) {
             alignedData = new Uint16Array(totalLength);
+        } else if (this.type === VertexBuffer.HALF_FLOAT) {
+            alignedData = new Uint16Array(totalLength);
         } else if (this.type === VertexBuffer.INT) {
             alignedData = new Int32Array(totalLength);
         } else if (this.type === VertexBuffer.UNSIGNED_INT) {
@@ -126,6 +128,9 @@ export function RegisterBufferAlign(): void {
                         alignedData[i * alignedSize + j] = sourceData.getInt16(sourceOffset + j * 2, IsLittleEndian);
                         break;
                     case VertexBuffer.UNSIGNED_SHORT:
+                        alignedData[i * alignedSize + j] = sourceData.getUint16(sourceOffset + j * 2, IsLittleEndian);
+                        break;
+                    case VertexBuffer.HALF_FLOAT:
                         alignedData[i * alignedSize + j] = sourceData.getUint16(sourceOffset + j * 2, IsLittleEndian);
                         break;
                     case VertexBuffer.INT:

@@ -4,7 +4,7 @@ import { type Nullable } from "../../types";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type IMouseEvent, type IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.

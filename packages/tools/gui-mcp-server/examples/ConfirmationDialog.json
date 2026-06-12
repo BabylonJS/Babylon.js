@@ -1,0 +1,99 @@
+{
+  "root": {
+    "name": "root",
+    "className": "Container",
+    "children": [
+      {
+        "name": "overlay",
+        "className": "Rectangle",
+        "width": "1",
+        "height": "1",
+        "background": "rgba(0,0,0,0.5)",
+        "thickness": 0,
+        "children": [
+          {
+            "name": "box",
+            "className": "Rectangle",
+            "width": "450px",
+            "height": "250px",
+            "background": "white",
+            "cornerRadius": 12,
+            "thickness": 0,
+            "children": [
+              {
+                "name": "icon",
+                "className": "TextBlock",
+                "text": "⚠️",
+                "fontSize": "48px",
+                "top": "-60px"
+              },
+              {
+                "name": "title",
+                "className": "TextBlock",
+                "text": "Delete Item?",
+                "color": "#333",
+                "fontSize": "22px",
+                "top": "-10px"
+              },
+              {
+                "name": "message",
+                "className": "TextBlock",
+                "text": "This action cannot be undone. Are you sure you want to delete this item?",
+                "color": "#666",
+                "fontSize": "14px",
+                "textWrapping": 1,
+                "width": "380px",
+                "top": "30px"
+              },
+              {
+                "name": "btnRow",
+                "className": "StackPanel",
+                "isVertical": false,
+                "top": "80px",
+                "height": "45px",
+                "children": [
+                  {
+                    "name": "deleteBtn",
+                    "className": "Button",
+                    "width": "120px",
+                    "height": "40px",
+                    "background": "#F44336",
+                    "color": "white",
+                    "cornerRadius": 6,
+                    "textBlockName": "deleteBtn_text",
+                    "children": [
+                      {
+                        "name": "deleteBtn_text",
+                        "className": "TextBlock",
+                        "text": "Delete"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "cancelBtn",
+                    "className": "Button",
+                    "width": "120px",
+                    "height": "40px",
+                    "background": "#E0E0E0",
+                    "color": "#333",
+                    "cornerRadius": 6,
+                    "textBlockName": "cancelBtn_text",
+                    "children": [
+                      {
+                        "name": "cancelBtn_text",
+                        "className": "TextBlock",
+                        "text": "Cancel"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "width": 1920,
+  "height": 1080
+}

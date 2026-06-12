@@ -14,6 +14,9 @@ const useStyles = makeStyles({
         padding: TokenMap.px20,
         backgroundColor: tokens.colorNeutralBackground1,
         color: tokens.colorNeutralForeground1,
+        // Claim the full row of the flex parent (e.g. shellService's central-content row)
+        // so the centered children sit in the middle of the available area, not at the left edge.
+        flex: 1,
         height: "100%",
         minHeight: "100px",
     },

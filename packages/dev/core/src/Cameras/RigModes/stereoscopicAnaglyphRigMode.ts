@@ -1,6 +1,6 @@
 import { type Camera } from "../camera";
-import { PassPostProcess } from "../../PostProcesses/passPostProcess";
-import { AnaglyphPostProcess } from "../../PostProcesses/anaglyphPostProcess";
+import { PassPostProcess } from "../../PostProcesses/passPostProcess.pure";
+import { AnaglyphPostProcess } from "../../PostProcesses/anaglyphPostProcess.pure";
 
 /**
  * @internal

@@ -2,6 +2,14 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "MSAA RTT samples=4 (magnified)",
+            "playgroundId": "#DY1H5P#0",
+            "referenceImage": "msaa-rtt-samples4-magnified.png",
+            "errorRatio": 5,
+            "excludeFromPerformance": true,
+            "dependsOn": ["Rendering", "Textures"]
+        },
+        {
             "title": "Merge Meshes with submeshes",
             "playgroundId": "#ZHPFRQ",
             "referenceImage": "mergemeshes-sub.png",
@@ -64,6 +72,12 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting SPZ V4 Extensions",
+            "playgroundId": "#XSNFXP#25",
+            "referenceImage": "gsplat-spz-v4-extensions.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "Gaussian Splatting SPZ SH Order 4",
             "playgroundId": "#XSNFXP#5",
             "referenceImage": "gsplat-spz-sh-order-4.png",
@@ -116,10 +130,96 @@
             "dependsOn": ["GaussianSplatting", "Lights", "Loaders", "SPLATLoader", "Shadows"]
         },
         {
+            "title": "Gaussian Splatting Debug Opacity Scale",
+            "playgroundId": "#XSNFXP#16",
+            "referenceImage": "gsplat-debug-opacity-scale.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Opacity Saturate",
+            "playgroundId": "#XSNFXP#17",
+            "referenceImage": "gsplat-debug-opacity-saturate.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Size Culling",
+            "playgroundId": "#XSNFXP#19",
+            "referenceImage": "gsplat-debug-size-culling.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Opacity Culling",
+            "playgroundId": "#XSNFXP#20",
+            "referenceImage": "gsplat-debug-opacity-culling.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Clipping Box",
+            "playgroundId": "#XSNFXP#21",
+            "referenceImage": "gsplat-debug-clipping-box.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug Diffuse Only",
+            "playgroundId": "#XSNFXP#22",
+            "referenceImage": "gsplat-debug-diffuse-only.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Debug SH4 Only",
+            "playgroundId": "#XSNFXP#24",
+            "referenceImage": "gsplat-debug-sh4-only.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Compound Incremental Update",
+            "playgroundId": "#DAID4Q#7",
+            "referenceImage": "gsplat-compound-incremental-update.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
+            "title": "Gaussian Splatting Compound No SH then Full SH",
+            "playgroundId": "#DAID4Q#8",
+            "referenceImage": "gsplat-compound-no-sh-then-full-sh.png",
+            "dependsOn": ["GaussianSplatting"]
+        },
+        {
             "title": "Gaussian Splatting IBL Shadows",
-            "playgroundId": "#DAID4Q",
+            "playgroundId": "#DAID4Q#2",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting IBL Shadows Camera Switch",
+            "playgroundId": "#DAID4Q#10",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadows-camera-switch.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Single Part",
+            "playgroundId": "#DAID4Q#4",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-single-part.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts",
+            "playgroundId": "#DAID4Q#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Compound IBL Shadows Multiple Parts Mixed Visibility",
+            "playgroundId": "#DAID4Q#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compound-ibl-shadows-multiple-parts-mixed-visibility.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
             "excludeFromPerformance": true
         },
@@ -146,10 +246,36 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "SOGS with SH no texture lookup",
+            "playgroundId": "#QA2662#24",
+            "errorRatio": 5,
+            "referenceImage": "gsplat-sogs-sh-nolookup.png",
+            "dependsOn": ["Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Part Test",
             "playgroundId": "#BTS11N#0",
             "errorRatio": 5,
             "referenceImage": "gsplat-part-test.png",
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Debug Part Test",
+            "playgroundId": "#BTS11N#2",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-debug-part-test.png",
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Debug Part Auto Tracking Test",
+            "playgroundId": "#BTS11N#3",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-debug-part-auto-tracking-test.png",
             "dependsOn": ["GaussianSplatting", "Loaders"],
             "excludeFromPerformance": true
         },
@@ -2773,6 +2899,18 @@
             "dependsOn": ["Lights", "Materials"]
         },
         {
+            "title": "Grid Material",
+            "playgroundId": "#RKGF05",
+            "referenceImage": "grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Multi Scale Grid Material",
+            "playgroundId": "#RKGF05#5",
+            "referenceImage": "multi-scale-grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
             "title": "water-material",
             "playgroundId": "#EUH2VL#1",
             "dependsOn": ["LibMaterials", "Materials", "Textures"],
@@ -4230,6 +4368,12 @@
             "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
         },
         {
+            "title": "OpenPBR Geometry Opacity",
+            "playgroundId": "#GRQHVV#327",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Materials", "PBR", "glTF"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458",
             "dependsOn": ["Materials", "Textures"]
@@ -5161,6 +5305,121 @@
             "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
+        },
+        {
+            "title": "FBX loader - cube + Phong material",
+            "playgroundId": "#DZBTQU#0",
+            "referenceImage": "fbx-m01-cube-phong.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
+            "title": "FBX loader - n-gons + vertex colors",
+            "playgroundId": "#DZBTQU#1",
+            "referenceImage": "fbx-m02-ngons.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - smooth vs flat normals",
+            "playgroundId": "#DZBTQU#2",
+            "referenceImage": "fbx-m03-normals.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - material properties",
+            "playgroundId": "#DZBTQU#3",
+            "referenceImage": "fbx-m04-materials.png",
+            "dependsOn": ["Loaders", "Materials"]
+        },
+        {
+            "title": "FBX loader - texture slots",
+            "playgroundId": "#DZBTQU#4",
+            "referenceImage": "fbx-m05-textures.png",
+            "dependsOn": ["Loaders", "Materials", "Textures"]
+        },
+        {
+            "title": "FBX loader - UV transform",
+            "playgroundId": "#DZBTQU#5",
+            "referenceImage": "fbx-m06-uv-transform.png",
+            "dependsOn": ["Loaders", "Materials", "Textures"]
+        },
+        {
+            "title": "FBX loader - multi-material submeshes",
+            "playgroundId": "#DZBTQU#6",
+            "referenceImage": "fbx-m07-multimaterial.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
+            "title": "FBX loader - transform chains",
+            "playgroundId": "#DZBTQU#7",
+            "referenceImage": "fbx-m08-transforms.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - skinning",
+            "playgroundId": "#DZBTQU#8",
+            "referenceImage": "fbx-m09-skinning.png",
+            "dependsOn": ["Loaders", "Bones", "Meshes"]
+        },
+        {
+            "title": "FBX loader - morph targets",
+            "playgroundId": "#DZBTQU#9",
+            "referenceImage": "fbx-m10-morph.png",
+            "dependsOn": ["Loaders", "Morph"]
+        },
+        {
+            "title": "FBX loader - node animation",
+            "playgroundId": "#DZBTQU#10",
+            "referenceImage": "fbx-m11-node-anim.png",
+            "dependsOn": ["Loaders", "Animations"]
+        },
+        {
+            "title": "FBX loader - skeletal animation",
+            "playgroundId": "#DZBTQU#11",
+            "referenceImage": "fbx-m12-skeletal-anim.png",
+            "dependsOn": ["Loaders", "Bones", "Animations"]
+        },
+        {
+            "title": "FBX loader - morph animation",
+            "playgroundId": "#DZBTQU#12",
+            "referenceImage": "fbx-m13-morph-anim.png",
+            "dependsOn": ["Loaders", "Morph", "Animations"]
+        },
+        {
+            "title": "FBX loader - multiple animation clips",
+            "playgroundId": "#DZBTQU#13",
+            "referenceImage": "fbx-m14-multiclip.png",
+            "dependsOn": ["Loaders", "Animations"]
+        },
+        {
+            "title": "FBX loader - cameras and lights",
+            "playgroundId": "#DZBTQU#14",
+            "referenceImage": "fbx-m15-camera-lights.png",
+            "dependsOn": ["Loaders", "Cameras", "Lights"]
+        },
+        {
+            "title": "FBX loader - axis Y-up",
+            "playgroundId": "#DZBTQU#15",
+            "referenceImage": "fbx-m16-axis-yup.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - axis Z-up conversion",
+            "playgroundId": "#DZBTQU#16",
+            "referenceImage": "fbx-m16-axis-zup.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - unit scale",
+            "playgroundId": "#DZBTQU#17",
+            "referenceImage": "fbx-m16-units.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "CSG2 Right-Handed glTF winding",
+            "playgroundId": "#1HYT9N#0",
+            "referenceImage": "csg2-righthanded-gltf-winding.png",
+            "errorRatio": 1.5,
+            "dependsOn": ["CSG", "Meshes"]
         }
     ]
 }

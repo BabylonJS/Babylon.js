@@ -1,11 +1,11 @@
 import * as React from "react";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { RenderGeneralSection } from "./genericNodePropertyComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { type Observer } from "core/Misc/observable";
 import { type Nullable } from "core/types";
 import { type FlowGraphDebugBlock } from "core/FlowGraph/Blocks/Data/flowGraphDebugBlock";
-import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 
 export class DebugPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;
@@ -28,15 +28,15 @@ export class DebugPropertyTabComponent extends React.Component<IPropertyComponen
         const debugBlock = this.props.nodeData.data as FlowGraphDebugBlock;
 
         return (
-            <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-                <LineContainerComponent title="DEBUG VALUES">
+            <Accordion uniqueId="FlowGraphDebugProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
+                <AccordionSection title="Debug Values" collapseByDefault={false}>
                     {debugBlock.log.map((entry, i) => {
-                        return <TextLineComponent key={i} label={`${i} >`} value={entry[0]} tooltip={entry[1]} />;
+                        return <TextPropertyLine key={i} label={`${i} >`} value={entry[0]} description={entry[1]} />;
                     })}
-                    {debugBlock.log.length === 0 && <TextLineComponent label="" value="No values recorded yet" />}
-                </LineContainerComponent>
-            </div>
+                    {debugBlock.log.length === 0 && <TextPropertyLine label="" value="No values recorded yet" />}
+                </AccordionSection>
+            </Accordion>
         );
     }
 }

@@ -1,14 +1,15 @@
-import { Mesh } from "./mesh";
+import { Mesh } from "./mesh.pure";
 import { type IDisposable, type Scene } from "core/scene";
 import { type IVertexDataLike, VertexData } from "./mesh.vertexData";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Logger } from "core/Misc/logger";
-import { MultiMaterial } from "core/Materials/multiMaterial";
+import { Constants } from "core/Engines/constants";
+import { MultiMaterial } from "core/Materials/multiMaterial.pure";
 import { SubMesh } from "./subMesh";
 import { type Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type FloatArray, type Nullable } from "core/types";
-import { type Matrix, Vector3 } from "core/Maths/math.vector";
+import { type Matrix, Vector3 } from "core/Maths/math.vector.pure";
 
 /**
  * Main manifold library
@@ -322,15 +323,22 @@ export class CSG2 implements IDisposable {
         return returnValue;
     }
 
-    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
+    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array, invertWinding = false) {
         // Create the MeshGL for I/O with Manifold library.
         const triVerts = new Uint32Array(data.indices!.length);
 
-        // Revert order
-        for (let i = 0; i < data.indices!.length; i += 3) {
-            triVerts[i] = data.indices![i + 2];
-            triVerts[i + 1] = data.indices![i + 1];
-            triVerts[i + 2] = data.indices![i];
+        if (invertWinding) {
+            // The mesh winding is reflected relative to Babylon's default winding for the
+            // current handedness (e.g. a glTF mesh in a right-handed scene). Keep the
+            // original order so Manifold always receives consistently outward-wound input.
+            triVerts.set(data.indices!);
+        } else {
+            // Revert order to match Manifold's expected winding for Babylon-default meshes
+            for (let i = 0; i < data.indices!.length; i += 3) {
+                triVerts[i] = data.indices![i + 2];
+                triVerts[i + 1] = data.indices![i + 1];
+                triVerts[i + 2] = data.indices![i];
+            }
         }
 
         const tempVector3 = new Vector3();
@@ -456,7 +464,26 @@ export class CSG2 implements IDisposable {
             uvs5: mesh.getVerticesData(VertexBuffer.UV5Kind),
             uvs6: mesh.getVerticesData(VertexBuffer.UV6Kind),
         };
-        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalID);
+        // Manifold requires consistently outward-wound (positive volume) input. Babylon
+        // meshes can be wound either way depending on their source: a default mesh uses the
+        // engine's winding for the current handedness, while an imported mesh (e.g. glTF)
+        // keeps its own winding and compensates through sideOrientation. Detect when the
+        // effective world-space winding is reflected relative to the default so Manifold's
+        // input orientation stays consistent across all sources. This fixes CSG operations
+        // in right-handed scenes and with negative-determinant (mirrored) world matrices.
+        // Use the same effective material the renderer binds (mesh.material falling back to
+        // the scene default) so an explicit sideOrientation override is honored, and reuse
+        // the cached world-matrix determinant.
+        let effectiveOrientation = sourceMaterial.sideOrientation !== null ? sourceMaterial.sideOrientation : mesh.sideOrientation;
+        if (!ignoreWorldMatrix && mesh._getWorldMatrixDeterminant() < 0) {
+            effectiveOrientation =
+                effectiveOrientation === Constants.MATERIAL_ClockWiseSideOrientation
+                    ? Constants.MATERIAL_CounterClockWiseSideOrientation
+                    : Constants.MATERIAL_ClockWiseSideOrientation;
+        }
+        const invertWinding = (effectiveOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation) === mesh.getScene().useRightHandedSystem;
+
+        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalID, invertWinding);
     }
 }
 

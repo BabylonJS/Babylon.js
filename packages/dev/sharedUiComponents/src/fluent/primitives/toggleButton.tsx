@@ -1,4 +1,4 @@
-import { ToggleButton as FluentToggleButton, makeStyles } from "@fluentui/react-components";
+import { ToggleButton as FluentToggleButton, makeStyles, type TooltipProps } from "@fluentui/react-components";
 import { type ButtonProps } from "./button";
 import { useCallback, useContext, useEffect, useState, type FunctionComponent } from "react";
 import { type FluentIcon } from "@fluentui/react-icons";
@@ -18,6 +18,7 @@ type ToggleButtonProps = Omit<ButtonProps, "icon" | "onClick"> & {
     checkedIcon: FluentIcon;
     uncheckedIcon?: FluentIcon;
     onChange: (checked: boolean) => void;
+    titlePositioning?: TooltipProps["positioning"];
 };
 
 /**
@@ -29,7 +30,7 @@ type ToggleButtonProps = Omit<ButtonProps, "icon" | "onClick"> & {
  */
 export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     ToggleButton.displayName = "ToggleButton";
-    const { value, onChange, title, appearance = "subtle" } = props;
+    const { value, onChange, title, appearance = "subtle", ariaLabel } = props;
     const { size } = useContext(ToolContext);
     const classes = useStyles();
     const [checked, setChecked] = useState(value);
@@ -46,10 +47,11 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     }, [props.value]);
 
     return (
-        <Tooltip content={title ?? ""}>
+        <Tooltip content={title ?? ""} positioning={props.titlePositioning}>
             <FluentToggleButton
                 className={classes.button}
                 size={size}
+                aria-label={ariaLabel ?? title}
                 icon={checked ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
                 appearance={appearance}
                 checked={checked}

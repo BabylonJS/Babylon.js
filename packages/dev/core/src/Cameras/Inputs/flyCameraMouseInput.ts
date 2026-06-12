@@ -5,9 +5,9 @@ import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsM
 import { type FlyCamera } from "../../Cameras/flyCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { type Scene } from "../../scene";
-import { Quaternion } from "../../Maths/math.vector";
+import { Quaternion } from "../../Maths/math.vector.pure";
 import { Axis } from "../../Maths/math.axis";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
