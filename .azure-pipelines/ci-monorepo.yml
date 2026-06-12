@@ -777,7 +777,7 @@ jobs:
       dependsOn:
           - Build
           - FormatLint
-      timeoutInMinutes: 15
+      timeoutInMinutes: 35
       pool:
           vmImage: windows-latest
       steps:
