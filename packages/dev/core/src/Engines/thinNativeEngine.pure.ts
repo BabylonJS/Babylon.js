@@ -486,7 +486,7 @@ export class ThinNativeEngine extends ThinEngine {
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
      */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
+    public override enableScissor(x: number, y: number, width: number, height: number): void {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
@@ -498,7 +498,7 @@ export class ThinNativeEngine extends ThinEngine {
     /**
      * Disable previously set scissor test rectangle
      */
-    public disableScissor() {
+    public override disableScissor() {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
