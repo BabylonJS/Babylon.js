@@ -65,6 +65,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
         } else if (command === "sort") {
             const cameraId = e.data.cameraId;
             const sortRequestId = e.data.sortRequestId;
+            const rangeVersion = e.data.rangeVersion;
             const globalWorldMatrix = e.data.worldMatrix;
             const cameraForward = e.data.cameraForward;
             const cameraPosition = e.data.cameraPosition;
@@ -73,7 +74,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
 
             if (!positions || !cameraForward) {
                 // Sort request arrived before positions were initialized — return the buffer unchanged so the main thread can unlock _canPostToWorker.
-                self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
+                self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId, rangeVersion }, [depthMix.buffer]);
                 return;
             }
 
@@ -161,7 +162,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                 console.error("Gaussian splat sort worker encountered an error (will retry next frame):", sortError);
             }
 
-            self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
+            self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId, rangeVersion }, [depthMix.buffer]);
         }
     };
 };

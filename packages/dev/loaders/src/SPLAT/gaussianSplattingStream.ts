@@ -225,7 +225,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Per-vertex RGBA color buffer mirror, updated in place when LOD colors change (avoids mesh rebuild flicker).
     private _debugColorData: Nullable<Float32Array> = null;
     // Signature of the per-leaf displayed LOD levels, used to skip rebuilding unchanged debug geometry.
-    private _debugSignature = "";
+    private _debugSignature = 0;
 
     private _disposed = false;
 
@@ -493,8 +493,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Rebuilds the debug wireframe (evaluating the optimal LOD first) and wires up live updates when the
-     * "optimal" source is selected, since those colors track the camera.
+     * Rebuilds the debug wireframe (evaluating the optimal LOD first when needed) and wires up the per-frame
+     * recolor observer. The observer runs for both LOD sources: "optimal" colors track the camera, and
+     * "current" colors track LOD levels as they stream in/out.
      */
     private _refreshDebugDisplay(): void {
         if (this._debugLodSource === "optimal") {
@@ -502,7 +503,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         this._buildDebugMesh();
 
-        const needsObserver = this._debugDisplay && this._debugLodSource === "optimal";
+        const needsObserver = this._debugDisplay;
         if (needsObserver && !this._debugObserver) {
             this._debugObserver = this._scene.onBeforeRenderObservable.add(() => this._onDebugFrame());
         } else if (!needsObserver && this._debugObserver) {
@@ -512,12 +513,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Per-frame debug update: recomputes the optimal LOD and, only when the set of displayed LOD levels
-     * actually changes (e.g. the camera crosses a LOD boundary), recolors the existing wireframe in place.
-     * The geometry is never rebuilt here, which avoids the dispose/recreate flicker while the camera moves.
+     * Per-frame debug update: recolors the existing wireframe in place whenever the displayed LOD levels
+     * change. For the "optimal" source the optimal LOD is recomputed first (it tracks the camera); for the
+     * "current" source the levels are driven by the streaming loop, so no recomputation is needed here. The
+     * geometry is never rebuilt, which avoids the dispose/recreate flicker while the camera moves.
      */
     private _onDebugFrame(): void {
-        this.evaluateOptimalLods();
+        if (this._debugLodSource === "optimal") {
+            this.evaluateOptimalLods();
+        }
         if (this._computeDebugSignature() !== this._debugSignature) {
             this._updateDebugColors();
         }
@@ -593,15 +597,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Concatenates the displayed LOD level of every leaf into a compact signature used for change detection.
-     * @returns a signature string for the current displayed LOD levels
+     * Computes a cheap 32-bit rolling hash of every leaf's displayed LOD level, used to detect when the
+     * debug wireframe needs recoloring. Avoids per-frame string allocation in the render loop.
+     * @returns a numeric signature of the current displayed LOD levels
      */
-    private _computeDebugSignature(): string {
-        let signature = "";
+    private _computeDebugSignature(): number {
+        let hash = 0;
         for (const node of this._leafNodes) {
-            signature += this._displayedLodLevel(node) + ",";
+            hash = (hash * 31 + this._displayedLodLevel(node)) | 0;
         }
-        return signature;
+        return hash;
     }
 
     /**
@@ -617,7 +622,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this._debugMesh = null;
         }
         this._debugColorData = null;
-        this._debugSignature = "";
+        this._debugSignature = 0;
     }
 
     /**
@@ -835,25 +840,29 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (!this._environmentRange || !this._environmentFiles || !this._workBuffer) {
             return;
         }
+        const range = this._environmentRange;
         try {
             const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene);
-            if (this._disposed || !this._workBuffer) {
-                return;
-            }
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
             }
-            await this._workBuffer.decodeAsync(pack, this._environmentRange.offset);
-            if (this._disposed) {
+            try {
+                if (this._disposed || !this._workBuffer) {
+                    return;
+                }
+                await this._workBuffer.decodeAsync(pack, range.offset);
+                if (this._disposed) {
+                    return;
+                }
+                this._splatPositions!.set(pack.positions.subarray(0, range.count * 4), range.offset * 4);
+                this._updateBounds(pack.positions, range.count);
+                this._notifyWorkerNewData();
+                this._refreshActiveRanges();
+            } finally {
+                // Always release the GPU source textures (the decode pass is the only consumer).
                 GaussianSplattingStream._DisposePack(pack);
-                return;
             }
-            this._splatPositions!.set(pack.positions.subarray(0, this._environmentRange.count * 4), this._environmentRange.offset * 4);
-            GaussianSplattingStream._DisposePack(pack);
-            this._updateBounds(pack.positions, this._environmentRange.count);
-            this._notifyWorkerNewData();
-            this._refreshActiveRanges();
         } catch (e: any) {
             Logger.Warn("GaussianSplattingStream: failed to decode environment: " + (e?.message ?? e));
         }
@@ -878,27 +887,29 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._loadingFiles.add(fileId);
         try {
             const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene);
-            if (this._disposed || !this._workBuffer) {
-                return;
-            }
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
             }
-            await this._workBuffer.decodeAsync(pack, base);
-            if (this._disposed) {
+            try {
+                if (this._disposed || !this._workBuffer) {
+                    return;
+                }
+                await this._workBuffer.decodeAsync(pack, base);
+                if (this._disposed) {
+                    return;
+                }
+                this._splatPositions!.set(pack.positions.subarray(0, count * 4), base * 4);
+                this._updateBounds(pack.positions, count);
+                this._decodedFiles.add(fileId);
+                this._notifyWorkerNewData();
+                // Promote any nodes that can now reach their desired LOD via this newly decoded file.
+                if (this._applyDesiredLods()) {
+                    this._refreshActiveRanges();
+                }
+            } finally {
+                // Always release the GPU source textures (the decode pass is the only consumer).
                 GaussianSplattingStream._DisposePack(pack);
-                return;
-            }
-            this._splatPositions!.set(pack.positions.subarray(0, count * 4), base * 4);
-            GaussianSplattingStream._DisposePack(pack);
-
-            this._updateBounds(pack.positions, count);
-            this._decodedFiles.add(fileId);
-            this._notifyWorkerNewData();
-            // Promote any nodes that can now reach their desired LOD via this newly decoded file.
-            if (this._applyDesiredLods()) {
-                this._refreshActiveRanges();
             }
         } finally {
             this._loadingFiles.delete(fileId);

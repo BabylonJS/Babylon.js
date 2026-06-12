@@ -150,14 +150,18 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             return null;
         }
 
+        const previousBlockEntityCollection = scene._blockEntityCollection;
         scene._blockEntityCollection = !!this._assetContainer;
-        const stream = new GaussianSplattingStream("GaussianSplattingStream", parsed, rootUrl, scene, {
-            deflateURL: this._loadingOptions.deflateURL,
-            fflate: this._loadingOptions.fflate,
-        });
-        stream._parentContainer = this._assetContainer;
-        scene._blockEntityCollection = false;
-        return stream;
+        try {
+            const stream = new GaussianSplattingStream("GaussianSplattingStream", parsed, rootUrl, scene, {
+                deflateURL: this._loadingOptions.deflateURL,
+                fflate: this._loadingOptions.fflate,
+            });
+            stream._parentContainer = this._assetContainer;
+            return stream;
+        } finally {
+            scene._blockEntityCollection = previousBlockEntityCollection;
+        }
     }
 
     private static _BuildPointCloud(pointcloud: PointsCloudSystem, data: ArrayBuffer): boolean {
