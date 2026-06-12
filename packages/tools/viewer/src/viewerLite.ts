@@ -10,9 +10,9 @@ import {
     createDirectionalLight,
     createDisc,
     createEngine,
+    createEsmDirectionalShadowGenerator,
     createPbrMaterial,
     createSceneContext,
-    createShadowGenerator,
     disposeEngine,
     disposeScene,
     getVariantNames,
@@ -27,6 +27,7 @@ import {
     registerScene,
     resetVariant,
     selectVariant,
+    setShadowTaskCasterMeshes,
     startEngine,
     stopEngine,
     unregisterScene,
@@ -214,7 +215,7 @@ export class Viewer extends ViewerBase implements IViewer {
         this._camera = createArcRotateCamera(alpha, beta, radius, this._defaultTarget);
         this._scene.camera = this._camera;
 
-        this._detachControl = attachControl(this._camera, this._engine.canvas, this._scene);
+        this._detachControl = attachControl(this._camera, this._engine.canvas as HTMLCanvasElement, this._scene);
 
         // Track pointer activity for auto-orbit idle detection
         const onPointerActivity = () => {
@@ -769,21 +770,10 @@ export class Viewer extends ViewerBase implements IViewer {
 
         // Shadow generator. Lite drives shadow rendering from `light.shadowGenerator`, not from a
         // separate scene-level list — so attaching to the light is the load-bearing step here.
-        // Pass only the model meshes as casters: including the ground disc would cause the disc
-        // to occlude itself in the shadow map.
+        // Casters are registered separately via `setShadowTaskCasterMeshes`: pass only the model
+        // meshes, since including the ground disc would cause the disc to occlude itself in the
+        // shadow map.
         //
-        // `frustumSize` controls the world-space extent the shadow camera covers. The blur kernel
-        // is fixed in pixel-space, so a larger frustum makes the blur spread the silhouette over
-        // more world units (= bigger, fuzzier "soft" shadow that looks like a close point light),
-        // while a smaller frustum keeps the silhouette tight (= sun-like directional shadow).
-        //
-        // We size to `radius * 5` as a compromise between a tight sun-like silhouette (which
-        // wants a small frustum) and not clipping the shadow at the frustum boundary when the
-        // model's skeleton animates beyond the bind-pose AABB (which wants a large frustum).
-        // Translation-heavy animations on glTF assets typically displace the mesh by a few
-        // unit-radii via root-bone motion; 5x the model radius covers most without making the
-        // shadow excessively soft.
-        const shadowFrustumSize = radius * 5;
         // ESM (exponential shadow map) FP16 precision and scale invariance both pivot on the
         // caster's NDC-depth fraction. The shader stores `exp(-depthScale * NDC_depth)` per
         // texel; with depthScale=50 (Lite default), values for NDC > ~0.2 underflow to zero in
@@ -801,14 +791,12 @@ export class Viewer extends ViewerBase implements IViewer {
         // 5 m UFO.
         const orthoMinZ = 0;
         const orthoMaxZ = positionFactor * 100;
-        this._shadowGenerator = createShadowGenerator(this._engine, light, casterMeshes, {
-            // TODO: This was based on the babylon lite shadow-only branch.
-            //       Revisit when we have settled on a shadow approach.
-            // frustumSize: shadowFrustumSize,
+        this._shadowGenerator = createEsmDirectionalShadowGenerator(this._engine, light, {
             orthoMinZ,
             orthoMaxZ,
         });
-        light.shadowGenerator = this._shadowGenerator;
+        setShadowTaskCasterMeshes(this._shadowGenerator, casterMeshes);
+        light.shadowGenerator = this._shadowGenerator ?? undefined;
     }
 
     // ── Model Loading ──
@@ -1257,10 +1245,10 @@ export class Viewer extends ViewerBase implements IViewer {
         }
         if (this._renderLoopRunning) {
             stopEngine(this._engine);
-            unregisterScene(this._engine, this._scene);
+            unregisterScene(this._scene);
             this._renderLoopRunning = false;
         }
-        await registerScene(this._engine, this._scene);
+        await registerScene(this._scene);
         await startEngine(this._engine);
         this._renderLoopRunning = true;
     }
@@ -1284,7 +1272,7 @@ export class Viewer extends ViewerBase implements IViewer {
 
         // Stop and dispose engine/scene
         stopEngine(this._engine);
-        unregisterScene(this._engine, this._scene);
+        unregisterScene(this._scene);
         disposeScene(this._scene);
         disposeEngine(this._engine);
 
