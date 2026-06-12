@@ -2,6 +2,7 @@ import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Constants } from "core/Engines/constants";
 import { Mesh } from "core/Meshes/mesh";
+import { Geometry } from "core/Meshes/geometry";
 import { Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -155,5 +156,21 @@ describe("Scene delay-loaded file coalescing", () => {
         await flushAsync();
 
         expect(errorSpy).not.toHaveBeenCalled();
+    });
+
+    it("removes pending data when a delay-loaded geometry has no delay-loading function (e.g. disposed mid-load)", async () => {
+        vi.spyOn(scene, "_loadFileAsync").mockResolvedValue("{}");
+
+        const geometry = new Geometry("g", scene);
+        geometry.delayLoadingFile = "scene/shared.babylonmeshdata";
+        geometry.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+        // Simulate the geometry being disposed while the load was in flight: no delay-loading function remains.
+        geometry._delayLoadingFunction = null;
+
+        geometry.load(scene);
+        await flushAsync();
+
+        // The early bail-out must still release the pending data so the scene can become ready.
+        expect(scene.getWaitingItemsCount()).toBe(0);
     });
 });

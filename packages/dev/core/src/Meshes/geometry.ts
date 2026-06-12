@@ -866,6 +866,8 @@ export class Geometry implements IGetSetVerticesData {
                 const data = await scene._loadDelayedFileAsync(this.delayLoadingFile!, false, true);
 
                 if (!this._delayLoadingFunction) {
+                    // The geometry was disposed while the load was in flight; still release the pending data so the scene can become ready.
+                    scene.removePendingData(this);
                     return;
                 }
 
