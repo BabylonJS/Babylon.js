@@ -262,7 +262,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._boundBuffersVertexArray = null;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
         this._depthTestEnabled = true;
-        this._stencilTest;
+        this._stencilTest = false;
         this._stencilMask = 255;
         this._stencilFunc = Constants.ALWAYS;
         this._stencilFuncRef = 0;
@@ -1150,9 +1150,13 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
-        this._commandBufferEncoder.finishEncodingCommand();
+        // Route through _encodeDepthTest so the tracked _depthTestEnabled state stays in
+        // sync with the encoded command. Because COMMAND_SETDEPTHTEST conflates the
+        // compare function and the enable bit (DEPTH_TEST_ALWAYS == disabled), encoding
+        // the new function directly here would silently re-enable depth testing while
+        // depth testing is logically disabled; _encodeDepthTest honors the current
+        // depthCullingState.depthTest and only emits the new function when enabled.
+        this._encodeDepthTest(this._depthCullingState.depthTest);
     }
 
     /**
