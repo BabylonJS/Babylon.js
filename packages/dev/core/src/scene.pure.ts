@@ -1751,7 +1751,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _viewUpdateFlag = -1;
     private _projectionUpdateFlag = -1;
-    private _transformMatrixIsFromActiveCamera = false;
 
     /** @internal */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
@@ -2833,22 +2832,21 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._transformMatrix;
     }
 
-    /** @internal */
-    private _setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR: Matrix | undefined, projectionR: Matrix | undefined, transformMatrixIsFromActiveCamera: boolean): void {
+    /**
+     * Sets the current transform matrix
+     * @param viewL defines the View matrix to use
+     * @param projectionL defines the Projection matrix to use
+     * @param viewR defines the right View matrix to use (if provided)
+     * @param projectionR defines the right Projection matrix to use (if provided)
+     */
+    public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
         // Toggle the multiview flag based on whether stereo matrices are provided.
         // The multiview UBO itself is kept alive for the XR session lifetime to avoid per-frame GPU alloc/dealloc.
-        const multiviewSceneUboIsActive = !!(viewR && projectionR && this._multiviewSceneUbo);
-        if (
-            this._transformMatrixIsFromActiveCamera === transformMatrixIsFromActiveCamera &&
-            this._multiviewSceneUboIsActive === multiviewSceneUboIsActive &&
-            this._viewUpdateFlag === viewL.updateFlag &&
-            this._projectionUpdateFlag === projectionL.updateFlag
-        ) {
+        this._multiviewSceneUboIsActive = !!(viewR && projectionR && this._multiviewSceneUbo);
+        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
-        this._transformMatrixIsFromActiveCamera = transformMatrixIsFromActiveCamera;
-        this._multiviewSceneUboIsActive = multiviewSceneUboIsActive;
         this._viewUpdateFlag = viewL.updateFlag;
         this._projectionUpdateFlag = projectionL.updateFlag;
         this._viewMatrix = viewL;
@@ -2875,17 +2873,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
             this._sceneUbo.updateMatrix("inverseProjection", this._inverseProjectionMatrix);
         }
-    }
-
-    /**
-     * Sets the current transform matrix
-     * @param viewL defines the View matrix to use
-     * @param projectionL defines the Projection matrix to use
-     * @param viewR defines the right View matrix to use (if provided)
-     * @param projectionR defines the right Projection matrix to use (if provided)
-     */
-    public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        this._setTransformMatrix(viewL, projectionL, viewR, projectionR, false);
     }
 
     /**
@@ -2929,7 +2916,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._sceneUbo = ubo;
         this._viewUpdateFlag = -1;
         this._projectionUpdateFlag = -1;
-        this._transformMatrixIsFromActiveCamera = false;
     }
 
     private _floatingOriginScene: Scene | undefined = undefined;
@@ -4963,9 +4949,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (activeCamera._renderingMultiview) {
             const leftCamera = activeCamera._rigCameras[0];
             const rightCamera = activeCamera._rigCameras[1];
-            this._setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force), true);
+            this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
         } else {
-            this._setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force), undefined, undefined, true);
+            this.setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force));
         }
     }
 
