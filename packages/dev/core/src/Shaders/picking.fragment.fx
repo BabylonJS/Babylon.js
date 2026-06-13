@@ -9,7 +9,6 @@ precision highp int;
 
 #ifdef GPUPICKER_DEPTH
 layout(location = 0) out highp vec4 glFragData[2];
-highp vec4 gl_FragColor;
 #endif
 
 #ifdef GPUPICKER_PACK_DEPTH

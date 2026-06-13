@@ -132,6 +132,16 @@ export class GPUPicker {
     private static readonly _DepthPixelRadius = 1;
     private static readonly _MaxMultiPickIndividualReadbackCount = 32;
     private static readonly _MultiPickIndividualReadbackAreaRatio = 16;
+    private static readonly _DepthNeighborOffsets = [
+        [-1, 1],
+        [0, 1],
+        [1, 1],
+        [1, 0],
+        [1, -1],
+        [0, -1],
+        [-1, -1],
+        [-1, 0],
+    ] as const;
 
     private _pickingTexture: Nullable<RenderTargetTexture | MultiRenderTarget> = null;
 
@@ -286,10 +296,10 @@ export class GPUPicker {
                 return;
             }
 
-            if (engine.getCaps().textureHalfFloatRender) {
-                this._depthTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
-            } else if (engine.getCaps().textureFloatRender) {
+            if (engine.getCaps().textureFloatRender) {
                 this._depthTextureType = Constants.TEXTURETYPE_FLOAT;
+            } else if (engine.getCaps().textureHalfFloatRender) {
+                this._depthTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else {
                 this._depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             }
@@ -1619,19 +1629,10 @@ export class GPUPicker {
             projection,
             new Vector3()
         );
-        let bestOffsetA: Nullable<number[]> = null;
-        let bestOffsetB: Nullable<number[]> = null;
+        let bestOffsetA: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
+        let bestOffsetB: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
         let bestDepthDelta = Infinity;
-        const offsets = [
-            [-1, 1],
-            [0, 1],
-            [1, 1],
-            [1, 0],
-            [1, -1],
-            [0, -1],
-            [-1, -1],
-            [-1, 0],
-        ];
+        const offsets = GPUPicker._DepthNeighborOffsets;
 
         for (let i = 0; i < offsets.length; i++) {
             const offsetA = offsets[i];
