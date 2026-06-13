@@ -2603,7 +2603,7 @@
         },
         {
             "title": "Serialize scene without materials",
-            "playgroundId": "#PH4DEZ#1",
+            "playgroundId": "#PH4DEZ#4",
             "referenceImage": "serializeWithoutMaterials.png",
             "dependsOn": ["Meshes", "Serializers"]
         },
