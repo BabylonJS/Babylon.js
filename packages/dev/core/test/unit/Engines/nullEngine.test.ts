@@ -26,6 +26,32 @@ function configureOrthographicCamera(camera: FreeCamera, x: number): void {
     camera.getProjectionMatrix(true);
 }
 
+// Centralizes the multiview rig wiring WebXRCamera assigns from a live XRSession (XR/webXRCamera.ts).
+// These fields are public-but-@internal (declared on the engine.multiview augmented Camera interface),
+// so no @ts-expect-error is needed; the helper exists so the one place that knows "what WebXR pokes"
+// is named, not so it hides a type suppression.
+function setMultiviewRigForTest(parent: FreeCamera, left: FreeCamera, right: FreeCamera, renderTarget: MultiviewRenderTarget): void {
+    parent._rigCameras = [left, right];
+    parent._renderingMultiview = true;
+    parent.outputRenderTarget = renderTarget;
+}
+
+// Reads the multiview render-state Scene produces during render as one inspectable bag, so each
+// assertion doesn't restate the @internal field paths.
+function getMultiviewRenderStateForTest(scene: Scene): {
+    ubo: ReturnType<Scene["getSceneUniformBuffer"]> | null;
+    uboIsActive: boolean;
+    transformMatrixL: Matrix;
+    transformMatrixR: Matrix;
+} {
+    return {
+        ubo: scene._multiviewSceneUbo,
+        uboIsActive: scene._multiviewSceneUboIsActive,
+        transformMatrixL: scene.getTransformMatrix(),
+        transformMatrixR: scene._transformMatrixR,
+    };
+}
+
 function createMultiviewScene(): {
     engine: NullEngine;
     scene: Scene;
@@ -50,11 +76,7 @@ function createMultiviewScene(): {
     configureOrthographicCamera(leftCamera, -0.5);
     configureOrthographicCamera(rightCamera, 0.5);
 
-    // WebXR sets this internal multiview state from XR view/render-target data. There is no public
-    // NullEngine setup API that reaches this exact branch without a live XRSession.
-    parentCamera._rigCameras = [leftCamera, rightCamera];
-    parentCamera._renderingMultiview = true;
-    parentCamera.outputRenderTarget = renderTarget;
+    setMultiviewRigForTest(parentCamera, leftCamera, rightCamera, renderTarget);
     scene.activeCamera = parentCamera;
 
     return { engine, scene, parentCamera, leftCamera, rightCamera, renderTarget };
@@ -168,8 +190,9 @@ describe("NullEngine", () => {
                 expect(renderTarget.renderTarget?.texture?.source).toBe(InternalTextureSource.RenderTarget);
                 expect(renderTarget.renderTarget?.depthStencilTexture).toBeNull();
                 expect(() => renderTarget._bindFrameBuffer()).not.toThrow();
-                expect((engine as any)._currentRenderTarget).toBe(renderTarget.renderTarget);
+                expect(engine._currentRenderTarget).toBe(renderTarget.renderTarget);
             } finally {
+                renderTarget.dispose();
                 scene.dispose();
                 engine.dispose();
             }
@@ -183,16 +206,16 @@ describe("NullEngine", () => {
 
                 const leftViewProjection = leftCamera.getViewMatrix().multiply(leftCamera.getProjectionMatrix());
                 const rightViewProjection = rightCamera.getViewMatrix().multiply(rightCamera.getProjectionMatrix());
-                const multiviewSceneUbo = scene._multiviewSceneUbo;
+                const state = getMultiviewRenderStateForTest(scene);
 
                 expect(parentCamera.outputRenderTarget).toBe(renderTarget);
-                expect(scene._multiviewSceneUboIsActive).toBe(true);
-                expect(multiviewSceneUbo).not.toBeNull();
-                expect(scene.getSceneUniformBuffer()).toBe(multiviewSceneUbo);
-                expect(multiviewSceneUbo!.useUbo).toBe(true);
-                expect(multiviewSceneUbo!.getUniformNames()).toContain("viewProjectionR");
-                expectMatrixToBeCloseTo(scene.getTransformMatrix(), leftViewProjection);
-                expectMatrixToBeCloseTo(scene._transformMatrixR, rightViewProjection);
+                expect(state.uboIsActive).toBe(true);
+                expect(state.ubo).not.toBeNull();
+                expect(scene.getSceneUniformBuffer()).toBe(state.ubo);
+                expect(state.ubo!.useUbo).toBe(true);
+                expect(state.ubo!.getUniformNames()).toContain("viewProjectionR");
+                expectMatrixToBeCloseTo(state.transformMatrixL, leftViewProjection);
+                expectMatrixToBeCloseTo(state.transformMatrixR, rightViewProjection);
             } finally {
                 scene.dispose();
                 engine.dispose();

@@ -66,8 +66,15 @@ export class NullEngineOptions {
     renderingCanvas?: HTMLCanvasElement;
 
     /**
-     * Enables headless multiview render target support for CPU-side render-state tests.
-     * This does not emulate GPU multiview rendering.
+     * Enables headless multiview render-target support for CPU-side render-state tests. Does NOT
+     * emulate GPU multiview rendering.
+     *
+     * Enabling this also makes {@link NullEngine.supportsUniformBuffers} report true. The coupling is
+     * intentional and intrinsic, not an incidental side effect: the per-eye `viewProjectionR` matrix
+     * is carried ONLY by the multiview scene UBO, and `Scene` writes it only while that UBO is active
+     * (`useUbo`, which requires uniform-buffer support). It also mirrors real engines — multiview is
+     * an OVR_multiview2 / WebGL2 feature and WebGL2 always provides uniform buffers — so
+     * `enableMultiview` without uniform-buffer support is not a coherent state.
      */
     enableMultiview?: boolean;
 }
@@ -108,7 +115,11 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets a boolean indicating that the engine supports uniform buffers
+     * Gets a boolean indicating that the engine supports uniform buffers.
+     * Reports true when {@link NullEngineOptions.enableMultiview} is set: the multiview scene UBO is
+     * the only path that uploads the per-eye `viewProjectionR` matrix, so multiview is meaningless
+     * without uniform-buffer support. This mirrors real engines, where multiview (OVR_multiview2)
+     * implies WebGL2, which always supports uniform buffers.
      */
     public override get supportsUniformBuffers(): boolean {
         return !!this._options?.enableMultiview || super.supportsUniformBuffers;
@@ -333,6 +344,15 @@ export class NullEngine extends Engine {
         return this.createUniformBuffer(elements);
     }
 
+    // NullEngine is headless: GPU-side uniform-buffer storage is intentionally not emulated, and that
+    // is correct rather than a contract gap. Babylon's UniformBuffer is write-only toward the engine —
+    // the source of truth is the JS-side Float32Array (UniformBuffer._bufferData, read via getData())
+    // plus Scene matrices (e.g. _transformMatrixR). Values reach the engine only through
+    // updateUniformBuffer() as a one-way push to the GPU; no Babylon codepath reads bytes back out of
+    // the engine's DataBuffer, so these no-ops cannot diverge from real-engine behavior for any
+    // CPU-observable state. supportsUniformBuffers must stay true (see the getter above) so
+    // UniformBuffer.useUbo remains on and updateMatrix() routes through _bufferData instead of the
+    // per-uniform Effect fallback.
     /**
      * Updates a uniform buffer.
      * @param _uniformBuffer defines the target uniform buffer
