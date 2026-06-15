@@ -169,10 +169,18 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
+            // All fly-keyboard keys move the camera, so they are gated on the keyboard→translate
+            // mapping. Removing that entry disables keyboard movement; an entry `sensitivity`
+            // acts as a gain (default 1) over the legacy local-camera speed.
+            const translateEntry = camera.movement.input.getEntry("keyboard", "translate");
+            if (!translateEntry) {
+                return;
+            }
+            const translateGain = translateEntry.sensitivity ?? 1;
             // Keyboard
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
-                const speed = camera._computeLocalCameraSpeed();
+                const speed = camera._computeLocalCameraSpeed() * translateGain;
 
                 if (this.keysForward.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, speed);

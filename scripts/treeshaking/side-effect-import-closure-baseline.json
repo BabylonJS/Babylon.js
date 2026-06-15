@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "description": "Known direct static imports/re-exports from manifest side-effect-free core files to manifest side-effectful core files.",
+    "violations": [
+        {
+            "importer": "Engines/thinNativeEngine.ts",
+            "kind": "exports",
+            "source": "./thinNativeEngine.types",
+            "target": "Engines/thinNativeEngine.types.ts"
+        }
+    ]
+}
