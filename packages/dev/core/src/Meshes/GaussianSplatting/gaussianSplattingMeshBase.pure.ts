@@ -472,6 +472,19 @@ function _ReleaseGsInterFrameYield(engine: AbstractEngine): void {
  * @internal Use GaussianSplattingMesh instead; this class is an internal implementation detail.
  */
 export class GaussianSplattingMeshBase extends Mesh {
+    /**
+     * When true (default), the depth-sort worker uses the fast O(n) counting (radix) sort. Set to false to
+     * fall back to the legacy comparison sort (useful for A/B comparison or as a safety fallback). The change
+     * takes effect on the next sort.
+     */
+    public static UseCountingSort = true;
+
+    /**
+     * When true, the depth-sort worker logs each sort's duration (ms) and active splat count to the console.
+     * Off by default; intended for performance investigation only.
+     */
+    public static LogSortPerformance = false;
+
     /** @internal */
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
@@ -1393,6 +1406,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                                 cameraId: camera.uniqueId,
                                 sortRequestId: cameraViewInfos.sortRequestId,
                                 rangeVersion: this._activeRangeVersion,
+                                useCountingSort: GaussianSplattingMeshBase.UseCountingSort,
+                                logSortPerformance: GaussianSplattingMeshBase.LogSortPerformance,
                             },
                             [this._depthMix.buffer]
                         );

@@ -41,13 +41,16 @@ export const GaussianSplattingSortWorkerCommand = {
 export const GaussianSplattingSortWorker = function (self: Worker) {
     let positions: Float32Array;
     let depthMix: BigInt64Array;
-    let indices: Uint32Array;
-    let floatMix: Float32Array;
     let partIndices: Uint8Array;
     let partMatrices: Float32Array[];
     // Active source-splat intervals as flat [start0, count0, start1, count1, ...]. Persisted between
     // sort requests and refreshed by the main thread via the `intervals` message.
     let intervals: Nullable<Uint32Array> = null;
+    // Reusable counting-sort scratch buffers (grown on demand, never per-sort allocations).
+    let sortSourceIndices: Uint32Array; // active source splat index for each compact slot
+    let sortDepths: Float32Array; // view-space depth for each compact slot
+    let sortKeys: Uint32Array; // depth-derived integer bucket key for each compact slot
+    let sortCounts: Uint32Array; // counting-sort histogram (one entry per bucket)
 
     self.onmessage = (e: any) => {
         // The intended work is selected explicitly via the message `command` field. These string
@@ -78,10 +81,17 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                 return;
             }
 
+            // Feature flags are forwarded by the main thread on each sort request (the worker body is
+            // serialized in isolation and cannot read shared statics directly). useCountingSort defaults to
+            // true; set it false to fall back to the legacy comparison sort.
+            const useCountingSort = e.data.useCountingSort !== false;
+            const logSortPerformance = !!e.data.logSortPerformance;
+
             // Resolve the active interval set. The main thread always sends an `intervals` message,
             // but fall back to "all source splats" if a sort somehow arrives before it.
             const activeIntervals = intervals;
-            let renderSplatCount = positions.length / 4;
+            const totalSplats = positions.length / 4;
+            let renderSplatCount = totalSplats;
             if (activeIntervals) {
                 renderSplatCount = 0;
                 for (let rangeIndex = 1; rangeIndex < activeIntervals.length; rangeIndex += 2) {
@@ -89,29 +99,6 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                 }
             }
             const vertexCountPadded = Math.max((renderSplatCount + 15) & ~0xf, 16);
-
-            indices = new Uint32Array(depthMix.buffer);
-            floatMix = new Float32Array(depthMix.buffer);
-
-            // Build the compact list of source-splat indices to sort.
-            if (activeIntervals) {
-                let writeIndex = 0;
-                for (let rangeIndex = 0; rangeIndex < activeIntervals.length; rangeIndex += 2) {
-                    const start = activeIntervals[rangeIndex];
-                    const count = activeIntervals[rangeIndex + 1];
-                    for (let sourceIndex = start; sourceIndex < start + count; sourceIndex++) {
-                        indices[2 * writeIndex++] = sourceIndex;
-                    }
-                }
-                // Pad up to a multiple of 16 with an existing (back-to-front-harmless) source index.
-                for (; writeIndex < vertexCountPadded; writeIndex++) {
-                    indices[2 * writeIndex] = 0;
-                }
-            } else {
-                for (let j = 0; j < vertexCountPadded; j++) {
-                    indices[2 * j] = j;
-                }
-            }
 
             // depth = dot(cameraForward, worldPos - cameraPos)
             const camDot = cameraForward[0] * cameraPosition[0] + cameraForward[1] * cameraPosition[1] + cameraForward[2] * cameraPosition[2];
@@ -125,41 +112,191 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                 ];
             };
 
-            try {
-                if (partMatrices && partIndices) {
-                    // Precompute depth coefficients for each rig node
-                    const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
+            // Optional, flag-gated sort timing (a simple wall-clock delta logged to the worker console).
+            const perf = (globalThis as { performance?: { now(): number } }).performance;
+            const sortStart = logSortPerformance && perf ? perf.now() : 0;
 
-                    // NB: For performance reasons, we assume that part indices are valid
-                    const length = partIndices.length;
-                    for (let j = 0; j < vertexCountPadded; j++) {
-                        const sourceIndex = indices[2 * j];
-                        // NB: We need this 'min' because vertex array is padded, not partIndices
-                        const partIndex = partIndices[Math.min(sourceIndex, length - 1)];
-                        const coeff = depthCoeffs[partIndex];
-                        floatMix[2 * j + 1] =
-                            coeff[0] * positions[4 * sourceIndex + 0] + coeff[1] * positions[4 * sourceIndex + 1] + coeff[2] * positions[4 * sourceIndex + 2] + coeff[3];
-                        // instead of using minus to sort back to front, we use bitwise not operator to invert the order of indices
-                        // might not be faster but a minus sign implies a reference value that may not be enough and will decrease floatting precision
-                        indices[2 * j + 1] = ~indices[2 * j + 1];
+            try {
+                if (useCountingSort) {
+                    // ===== Fast O(n) counting (radix) sort =====
+                    // Output view: the even 32-bit words of the depthMix buffer hold the sorted source indices
+                    // (the main thread reads indexMix[2*j]); the odd words are left unused.
+                    const outIndices = new Uint32Array(depthMix.buffer);
+
+                    // Grow the reusable scratch buffers when the active count increases (kept across sorts).
+                    if (!sortSourceIndices || sortSourceIndices.length < renderSplatCount) {
+                        const capacity = Math.max(renderSplatCount, 16);
+                        sortSourceIndices = new Uint32Array(capacity);
+                        sortDepths = new Float32Array(capacity);
+                        sortKeys = new Uint32Array(capacity);
+                    }
+
+                    // Compound (rig) meshes give each splat its own world transform via its part: depth uses the
+                    // splat's part coefficients. Single meshes use the one global world matrix. Both produce
+                    // depths in the same camera-forward space, so all active splats sort together correctly.
+                    const compound = !!(partMatrices && partIndices);
+                    let depthCoeffs: number[][] = [];
+                    let partLen = 0;
+                    let a = 0;
+                    let b = 0;
+                    let c = 0;
+                    let d = 0;
+                    if (compound) {
+                        depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
+                        partLen = partIndices.length;
+                    } else {
+                        const coeff = computeDepthCoeffs(globalWorldMatrix);
+                        a = coeff[0];
+                        b = coeff[1];
+                        c = coeff[2];
+                        d = coeff[3];
+                    }
+
+                    // Pass 1: gather the active source indices, compute each splat's view-space depth (signed
+                    // distance from the camera along the forward axis), and track the depth range. The compound
+                    // branch is hoisted out of the inner loop so the hot path stays straight-line.
+                    let writeIndex = 0;
+                    let minDepth = Infinity;
+                    let maxDepth = -Infinity;
+                    const rangeWords = activeIntervals ? activeIntervals.length : 2;
+                    for (let r = 0; r < rangeWords; r += 2) {
+                        const start = activeIntervals ? activeIntervals[r] : 0;
+                        const end = start + (activeIntervals ? activeIntervals[r + 1] : totalSplats);
+                        if (compound) {
+                            for (let sourceIndex = start; sourceIndex < end; sourceIndex++) {
+                                const o = 4 * sourceIndex;
+                                const coeff = depthCoeffs[partIndices[sourceIndex < partLen ? sourceIndex : partLen - 1]];
+                                const depth = coeff[0] * positions[o] + coeff[1] * positions[o + 1] + coeff[2] * positions[o + 2] + coeff[3];
+                                sortSourceIndices[writeIndex] = sourceIndex;
+                                sortDepths[writeIndex] = depth;
+                                writeIndex++;
+                                if (depth < minDepth) {
+                                    minDepth = depth;
+                                }
+                                if (depth > maxDepth) {
+                                    maxDepth = depth;
+                                }
+                            }
+                        } else {
+                            for (let sourceIndex = start; sourceIndex < end; sourceIndex++) {
+                                const o = 4 * sourceIndex;
+                                const depth = a * positions[o] + b * positions[o + 1] + c * positions[o + 2] + d;
+                                sortSourceIndices[writeIndex] = sourceIndex;
+                                sortDepths[writeIndex] = depth;
+                                writeIndex++;
+                                if (depth < minDepth) {
+                                    minDepth = depth;
+                                }
+                                if (depth > maxDepth) {
+                                    maxDepth = depth;
+                                }
+                            }
+                        }
+                    }
+
+                    // Counting (radix) sort by a depth-derived integer key — O(n) vs the legacy comparison sort.
+                    // Bucket bit depth follows PlayCanvas: round(log2(n/4)) clamped to [10, 20]. The farthest splat
+                    // gets key 0 so the ascending counting sort yields back-to-front order for alpha blending.
+                    const compareBits = Math.max(10, Math.min(20, Math.round(Math.log2(Math.max(1, renderSplatCount) / 4))));
+                    const bucketCount = 2 ** compareBits + 1;
+                    if (!sortCounts || sortCounts.length !== bucketCount) {
+                        sortCounts = new Uint32Array(bucketCount);
+                    } else {
+                        sortCounts.fill(0);
+                    }
+
+                    const range = maxDepth - minDepth;
+                    if (!(range > 1e-12)) {
+                        // All active splats share a depth (or none are active): identity order, single bucket.
+                        for (let k = 0; k < renderSplatCount; k++) {
+                            sortKeys[k] = 0;
+                        }
+                        sortCounts[0] = renderSplatCount;
+                    } else {
+                        const scale = (bucketCount - 1) / range;
+                        for (let k = 0; k < renderSplatCount; k++) {
+                            // maxDepth -> 0 (rendered first), minDepth -> bucketCount-1 (rendered last).
+                            const key = ((maxDepth - sortDepths[k]) * scale) >>> 0;
+                            sortKeys[k] = key;
+                            sortCounts[key]++;
+                        }
+                    }
+
+                    // Prefix-sum the histogram into bucket end offsets, then scatter source indices into place.
+                    for (let i = 1; i < bucketCount; i++) {
+                        sortCounts[i] += sortCounts[i - 1];
+                    }
+                    for (let k = 0; k < renderSplatCount; k++) {
+                        const dest = --sortCounts[sortKeys[k]];
+                        outIndices[2 * dest] = sortSourceIndices[k];
+                    }
+
+                    // Pad the remainder up to the 16-multiple with the reserved (invisible) splat index 0.
+                    for (let dest = renderSplatCount; dest < vertexCountPadded; dest++) {
+                        outIndices[2 * dest] = 0;
                     }
                 } else {
-                    // Compute depth coefficients from global world matrix
-                    const [a, b, c, d] = computeDepthCoeffs(globalWorldMatrix);
-                    for (let j = 0; j < vertexCountPadded; j++) {
-                        const sourceIndex = indices[2 * j];
-                        floatMix[2 * j + 1] = a * positions[4 * sourceIndex + 0] + b * positions[4 * sourceIndex + 1] + c * positions[4 * sourceIndex + 2] + d;
-                        indices[2 * j + 1] = ~indices[2 * j + 1];
-                    }
-                }
+                    // ===== Legacy comparison sort: pack (index, ~depthBits) into each 64-bit lane and sort it =====
+                    const indices = new Uint32Array(depthMix.buffer);
+                    const floatMix = new Float32Array(depthMix.buffer);
 
-                depthMix.sort();
+                    // Build the compact list of source-splat indices to sort.
+                    if (activeIntervals) {
+                        let writeIndex = 0;
+                        for (let rangeIndex = 0; rangeIndex < activeIntervals.length; rangeIndex += 2) {
+                            const start = activeIntervals[rangeIndex];
+                            const count = activeIntervals[rangeIndex + 1];
+                            for (let sourceIndex = start; sourceIndex < start + count; sourceIndex++) {
+                                indices[2 * writeIndex++] = sourceIndex;
+                            }
+                        }
+                        // Pad up to a multiple of 16 with the reserved (invisible) splat index 0.
+                        for (; writeIndex < vertexCountPadded; writeIndex++) {
+                            indices[2 * writeIndex] = 0;
+                        }
+                    } else {
+                        for (let j = 0; j < vertexCountPadded; j++) {
+                            indices[2 * j] = j;
+                        }
+                    }
+
+                    if (partMatrices && partIndices) {
+                        // Precompute depth coefficients for each rig node.
+                        const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
+                        // NB: For performance reasons, we assume that part indices are valid.
+                        const length = partIndices.length;
+                        for (let j = 0; j < vertexCountPadded; j++) {
+                            const sourceIndex = indices[2 * j];
+                            // NB: We need this 'min' because the vertex array is padded, not partIndices.
+                            const partIndex = partIndices[Math.min(sourceIndex, length - 1)];
+                            const coeff = depthCoeffs[partIndex];
+                            floatMix[2 * j + 1] =
+                                coeff[0] * positions[4 * sourceIndex + 0] + coeff[1] * positions[4 * sourceIndex + 1] + coeff[2] * positions[4 * sourceIndex + 2] + coeff[3];
+                            // Invert the depth bits (bitwise not) so the ascending sort renders back to front.
+                            indices[2 * j + 1] = ~indices[2 * j + 1];
+                        }
+                    } else {
+                        const [a, b, c, d] = computeDepthCoeffs(globalWorldMatrix);
+                        for (let j = 0; j < vertexCountPadded; j++) {
+                            const sourceIndex = indices[2 * j];
+                            floatMix[2 * j + 1] = a * positions[4 * sourceIndex + 0] + b * positions[4 * sourceIndex + 1] + c * positions[4 * sourceIndex + 2] + d;
+                            indices[2 * j + 1] = ~indices[2 * j + 1];
+                        }
+                    }
+
+                    depthMix.sort();
+                }
             } catch (sortError) {
                 // Transient data inconsistency (e.g. partIndices/partMatrices mismatch during addPart/removePart rebuild).
                 // Return the buffer unsorted so the main thread can unlock _canPostToWorker and retry next frame.
                 // Logger is unavailable inside the worker — console is the only option.
                 // eslint-disable-next-line no-console
                 console.error("Gaussian splat sort worker encountered an error (will retry next frame):", sortError);
+            }
+
+            if (logSortPerformance && perf) {
+                // eslint-disable-next-line no-console
+                console.log(`[GaussianSplatting] ${useCountingSort ? "counting" : "legacy"} sort: ${renderSplatCount} splats in ${(perf.now() - sortStart).toFixed(2)}ms`);
             }
 
             self.postMessage({ command: "sorted", depthMix, cameraId, sortRequestId, rangeVersion }, [depthMix.buffer]);
