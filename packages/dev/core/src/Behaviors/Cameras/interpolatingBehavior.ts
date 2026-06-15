@@ -138,6 +138,20 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
     }
 
     /**
+     * Redirects any in-flight transition toward the given property values, reusing the time remaining in the
+     * current transition. No-op when nothing is currently animating.
+     * @deprecated Prefer `animatePropertiesAsync(properties, remainingDurationMs)`, which makes the duration
+     * explicit. This method is retained for backward compatibility.
+     * @param properties defines the property values to redirect toward
+     */
+    public updateProperties<K extends keyof C>(properties: Map<K, AllowedAnimValue>): void {
+        if (!this.isInterpolating) {
+            return;
+        }
+        void this.animatePropertiesAsync(properties, this.remainingDurationMs);
+    }
+
+    /**
      * Animates camera properties to new values.
      * @param properties defines the property values to animate to
      * @param transitionDuration defines the transition duration in milliseconds

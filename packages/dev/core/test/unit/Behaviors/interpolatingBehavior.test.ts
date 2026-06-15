@@ -142,4 +142,29 @@ describe("InterpolatingBehavior", () => {
             expect(camera.fov).toBeCloseTo(5, 1);
         });
     });
+
+    describe("updateProperties (deprecated)", () => {
+        it("redirects an in-flight transition toward the new values from the current pose", () => {
+            void behavior.animatePropertiesAsync(new Map<keyof FreeCamera, number>([["fov", 10]]), 1000);
+
+            const animatable = behavior["_animatables"].get("fov");
+            expect(animatable).toBeDefined();
+            const endFrame = animatable!.getAnimations()[0].animation.getKeys().slice(-1)[0].frame;
+            animatable!.goToFrame(endFrame / 2);
+            const valueAtRedirect = camera.fov;
+
+            behavior.updateProperties(new Map<keyof FreeCamera, number>([["fov", 20]]));
+
+            const newAnimatable = behavior["_animatables"].get("fov");
+            expect(newAnimatable).toBeDefined();
+            const newKeys = newAnimatable!.getAnimations()[0].animation.getKeys();
+            expect(newKeys[0].value).toBeCloseTo(valueAtRedirect, 5);
+            expect(newKeys[newKeys.length - 1].value).toBe(20);
+        });
+
+        it("is a no-op when nothing is in flight", () => {
+            behavior.updateProperties(new Map<keyof FreeCamera, number>([["fov", 20]]));
+            expect(behavior.isInterpolating).toBe(false);
+        });
+    });
 });
