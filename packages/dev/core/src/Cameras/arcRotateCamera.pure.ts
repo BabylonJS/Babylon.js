@@ -702,7 +702,7 @@ export class ArcRotateCamera extends TargetCamera {
      *
      * See {@link InputMapper} for the full inputMap API (e.g. `setInteraction`, `getEntry`, `addEntry`).
      */
-    public movement: ArcRotateCameraMovement;
+    public override movement: ArcRotateCameraMovement;
 
     /**
      * Gets or sets whether ctrl+keyboard triggers panning.

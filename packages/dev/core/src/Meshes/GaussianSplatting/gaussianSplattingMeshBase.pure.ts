@@ -26,6 +26,7 @@ import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
+import { GaussianSplattingSortWorker, GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -68,6 +69,20 @@ interface IUpdateOptions {
     flipY?: boolean;
     /** @internal When set, skips reprocessing splats [0, previousVertexCount) and copies from cached arrays instead. */
     previousVertexCount?: number;
+}
+
+/**
+ * Defines a contiguous source-splat range to render from a GaussianSplattingMesh.
+ */
+export interface IGaussianSplattingSplatRange {
+    /**
+     * First source splat index to render.
+     */
+    offset: number;
+    /**
+     * Number of source splats to render.
+     */
+    count: number;
 }
 
 interface ITextureDataUpdateCapableEngine {
@@ -465,6 +480,9 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
     private _sortRequestId = 0;
+    // Incremented on every active-range change. A worker sort result is only applied when it was computed
+    // for the current range version (and size), so a sort for stale ranges is never rendered.
+    private _activeRangeVersion = 0;
     private _hasRenderedOnce = false;
     protected _covariancesATexture: Nullable<BaseTexture> = null;
     protected _covariancesBTexture: Nullable<BaseTexture> = null;
@@ -499,6 +517,9 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _splatSizeMin: number = Infinity;
     private _splatSizeMax: number = -Infinity;
     private _sortIsDirty = false;
+    private _activeSplatRanges: Nullable<Uint32Array> = null;
+    private _activeSplatRangeKey = "";
+    private _activeSplatRenderCount = 0;
 
     // Cached bounding box for incremental addPart updates (O(1) vs O(N) scan of positions)
     protected _cachedBoundingMin: Nullable<Vector3> = null;
@@ -558,6 +579,34 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         return new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / floatSize);
+    }
+
+    private static _BuildSplatRangeData(
+        ranges: Nullable<readonly IGaussianSplattingSplatRange[]>,
+        vertexCount: number
+    ): { ranges: Nullable<Uint32Array>; count: number; key: string } {
+        if (ranges === null) {
+            return { ranges: null, count: vertexCount, key: "" };
+        }
+
+        const rangePairs: number[] = [];
+        let totalCount = 0;
+        let key = "";
+        for (const range of ranges) {
+            const start = Math.max(0, Math.floor(range.offset));
+            const count = Math.max(0, Math.floor(range.count));
+            const end = Math.min(vertexCount, start + count);
+            const rangeCount = Math.max(0, end - start);
+            if (rangeCount === 0) {
+                continue;
+            }
+
+            rangePairs.push(start, rangeCount);
+            totalCount += rangeCount;
+            key += `${start}:${rangeCount};`;
+        }
+
+        return { ranges: new Uint32Array(rangePairs), count: totalCount, key };
     }
 
     /**
@@ -622,6 +671,113 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public get splatCount() {
         return this._splatIndex?.length;
+    }
+
+    /**
+     * Number of source splats currently selected for rendering.
+     * When no range filter is active, this is the mesh's full source splat count.
+     */
+    public get renderedSplatCount(): number {
+        return this._activeSplatRanges ? this._activeSplatRenderCount : this._vertexCount;
+    }
+
+    /**
+     * Restricts rendering to the provided source splat ranges.
+     * Passing `null` clears the range filter and renders the full source splat set.
+     * @param ranges contiguous source ranges to render, or null to render all splats
+     */
+    public setSplatIndexRanges(ranges: Nullable<readonly IGaussianSplattingSplatRange[]>): void {
+        this._setSplatIndexRanges(ranges);
+    }
+
+    private _setSplatIndexRanges(ranges: Nullable<readonly IGaussianSplattingSplatRange[]>): void {
+        const rangeData = GaussianSplattingMeshBase._BuildSplatRangeData(ranges, this._vertexCount);
+        const isSameRangeSet = this._activeSplatRanges === null ? rangeData.ranges === null : rangeData.ranges !== null && this._activeSplatRangeKey === rangeData.key;
+        if (isSameRangeSet) {
+            return;
+        }
+
+        this._activeSplatRanges = rangeData.ranges;
+        this._activeSplatRangeKey = rangeData.key;
+        this._activeSplatRenderCount = rangeData.count;
+        this._activeRangeVersion++;
+        this._postIntervalsToWorker();
+        if (this._worker) {
+            // Defer swapping the rendered index buffer until the worker returns a depth sort computed for
+            // this exact range set (see the worker `onmessage` handler). Until then we keep rendering the
+            // previous fully-sorted state, so a range/LOD change never shows an unsorted flash nor a stale
+            // index buffer (rendering indices that belong to a different active set, which caused the
+            // disappear/reappear flicker). Only the worker's depth buffer is resized here so the next sort
+            // produces the right number of entries.
+            this._ensureDepthMixSize(Math.max((this._activeSplatRenderCount + 15) & ~0xf, 16));
+            this._sortIsDirty = true;
+            this._postToWorker(true);
+        } else {
+            // Synchronous sort paths (disabled depth sort / Native): swap the index buffer immediately.
+            this._updateSplatIndexBuffer(this._vertexCount);
+            this._postToWorker(true);
+        }
+    }
+
+    // (Re)allocates the worker depth buffer to the given padded size. A fresh array is allocated when the
+    // size differs or the current buffer is detached (in-flight in the worker), so a queued sort can be
+    // re-posted with a correctly-sized buffer without disturbing the in-flight one.
+    private _ensureDepthMixSize(paddedCount: number): void {
+        if (IsNative) {
+            return;
+        }
+        if (!this._depthMix || this._depthMix.length !== paddedCount || this._depthMix.buffer.byteLength === 0) {
+            this._depthMix = new BigInt64Array(paddedCount);
+        }
+    }
+
+    /**
+     * Sends the active source-splat intervals to the sort worker. When no range filter is active,
+     * a single interval covering all source splats is sent so the worker never assumes the full set.
+     */
+    private _postIntervalsToWorker(): void {
+        if (!this._worker) {
+            return;
+        }
+        const intervals = this._activeSplatRanges ? new Uint32Array(this._activeSplatRanges) : new Uint32Array([0, this._vertexCount]);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.INTERVALS, intervals }, [intervals.buffer]);
+    }
+
+    /**
+     * Initializes this mesh to render from an externally-provided, GPU-decoded work buffer, bypassing the
+     * CPU `updateData` path. The four textures must hold the standard decoded GS layout addressed by linear
+     * splat index over a square texture: centers (x,y,z,1), covariance A (Sigma00,01,02,11) and B
+     * (Sigma12,22,*,*) as full covariance (so `center.w` is 1), and RGBA color. `splatPositions` are the
+     * stride-4 CPU centers consumed by the depth-sort worker.
+     * @param centers centers texture
+     * @param covariancesA covariance A texture
+     * @param covariancesB covariance B texture
+     * @param colors color texture
+     * @param splatPositions stride-4 CPU centers for depth sorting (length vertexCount*4)
+     * @param vertexCount number of splats addressable in the work buffer
+     */
+    protected _setExternalWorkBuffer(
+        centers: BaseTexture,
+        covariancesA: BaseTexture,
+        covariancesB: BaseTexture,
+        colors: BaseTexture,
+        splatPositions: Float32Array,
+        vertexCount: number
+    ): void {
+        this._covariancesATexture = covariancesA;
+        this._covariancesBTexture = covariancesB;
+        this._centersTexture = centers;
+        this._colorsTexture = colors;
+        this._splatPositions = splatPositions;
+        this._vertexCount = vertexCount;
+        this._activeSplatRanges = null;
+        this._activeSplatRangeKey = "";
+        this._activeSplatRenderCount = 0;
+        this._readyToDisplay = false;
+        // Sizes _splatIndex/_depthMix, starts the sort worker, and posts positions + intervals.
+        this._instantiateWorker();
+        // updateData (bypassed here) normally enables the mesh; do it explicitly for the work-buffer path.
+        this.setEnabled(true);
     }
 
     /**
@@ -1215,17 +1371,24 @@ export class GaussianSplattingMeshBase extends Mesh {
                     if (this._worker) {
                         this._worker.postMessage(
                             {
+                                command: GaussianSplattingSortWorkerCommand.SORT,
                                 worldMatrix: worldMatrix.m,
                                 cameraForward: [cameraViewMatrix.m[2], cameraViewMatrix.m[6], cameraViewMatrix.m[10]],
                                 cameraPosition: [camera.globalPosition.x, camera.globalPosition.y, camera.globalPosition.z],
                                 depthMix: this._depthMix,
                                 cameraId: camera.uniqueId,
                                 sortRequestId: cameraViewInfos.sortRequestId,
+                                rangeVersion: this._activeRangeVersion,
                             },
                             [this._depthMix.buffer]
                         );
                     } else if (Native?.sortSplats) {
-                        Native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                        if (this._activeSplatRanges) {
+                            // Native sort can't filter ranges: fall back to the (already range-filtered) identity index buffer.
+                            this._updateSplatIndexBuffer(this._vertexCount);
+                        } else {
+                            Native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                        }
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
                         } else {
@@ -2148,104 +2311,6 @@ export class GaussianSplattingMeshBase extends Mesh {
         return newGS;
     }
 
-    private static _CreateWorker = function (self: Worker) {
-        let positions: Float32Array;
-        let depthMix: BigInt64Array;
-        let indices: Uint32Array;
-        let floatMix: Float32Array;
-        let partIndices: Uint8Array;
-        let partMatrices: Float32Array[];
-
-        self.onmessage = (e: any) => {
-            // updated on init
-            if (e.data.positions) {
-                positions = e.data.positions;
-            }
-            // update on rig node changed
-            else if (e.data.partMatrices) {
-                partMatrices = e.data.partMatrices;
-            }
-            // update on rig node indices changed
-            else if (e.data.partIndices !== undefined) {
-                partIndices = e.data.partIndices;
-            }
-            // update on view changed
-            else {
-                const cameraId = e.data.cameraId;
-                const sortRequestId = e.data.sortRequestId;
-                const globalWorldMatrix = e.data.worldMatrix;
-                const cameraForward = e.data.cameraForward;
-                const cameraPosition = e.data.cameraPosition;
-
-                depthMix = e.data.depthMix;
-
-                if (!positions || !cameraForward) {
-                    // Sort request arrived before positions were initialized — return the buffer unchanged so the main thread can unlock _canPostToWorker.
-                    self.postMessage({ depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
-                    return;
-                }
-
-                const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
-
-                indices = new Uint32Array(depthMix.buffer);
-                floatMix = new Float32Array(depthMix.buffer);
-
-                // Sort
-                for (let j = 0; j < vertexCountPadded; j++) {
-                    indices[2 * j] = j;
-                }
-
-                // depth = dot(cameraForward, worldPos - cameraPos)
-                const camDot = cameraForward[0] * cameraPosition[0] + cameraForward[1] * cameraPosition[1] + cameraForward[2] * cameraPosition[2];
-
-                const computeDepthCoeffs = (m: Float32Array): number[] => {
-                    return [
-                        cameraForward[0] * m[0] + cameraForward[1] * m[1] + cameraForward[2] * m[2],
-                        cameraForward[0] * m[4] + cameraForward[1] * m[5] + cameraForward[2] * m[6],
-                        cameraForward[0] * m[8] + cameraForward[1] * m[9] + cameraForward[2] * m[10],
-                        cameraForward[0] * m[12] + cameraForward[1] * m[13] + cameraForward[2] * m[14] - camDot,
-                    ];
-                };
-
-                try {
-                    if (partMatrices && partIndices) {
-                        // Precompute depth coefficients for each rig node
-                        const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
-
-                        // NB: For performance reasons, we assume that part indices are valid
-                        const length = partIndices.length;
-                        for (let j = 0; j < vertexCountPadded; j++) {
-                            // NB: We need this 'min' because vertex array is padded, not partIndices
-                            const partIndex = partIndices[Math.min(j, length - 1)];
-                            const coeff = depthCoeffs[partIndex];
-                            floatMix[2 * j + 1] = coeff[0] * positions[4 * j + 0] + coeff[1] * positions[4 * j + 1] + coeff[2] * positions[4 * j + 2] + coeff[3];
-                            // instead of using minus to sort back to front, we use bitwise not operator to invert the order of indices
-                            // might not be faster but a minus sign implies a reference value that may not be enough and will decrease floatting precision
-                            indices[2 * j + 1] = ~indices[2 * j + 1];
-                        }
-                    } else {
-                        // Compute depth coefficients from global world matrix
-                        const [a, b, c, d] = computeDepthCoeffs(globalWorldMatrix);
-                        for (let j = 0; j < vertexCountPadded; j++) {
-                            floatMix[2 * j + 1] = a * positions[4 * j + 0] + b * positions[4 * j + 1] + c * positions[4 * j + 2] + d;
-                            indices[2 * j + 1] = ~indices[2 * j + 1];
-                        }
-                    }
-
-                    depthMix.sort();
-                } catch (sortError) {
-                    // Transient data inconsistency (e.g. partIndices/partMatrices mismatch during addPart/removePart rebuild).
-                    // Return the buffer unsorted so the main thread can unlock _canPostToWorker and retry next frame.
-                    // Logger is unavailable inside the worker — console is the only option.
-                    // eslint-disable-next-line no-console
-                    console.error("Gaussian splat sort worker encountered an error (will retry next frame):", sortError);
-                }
-
-                self.postMessage({ depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
-            }
-        };
-    };
-
     protected _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
         this._splatPositions![4 * index + 0] = 0;
@@ -2450,7 +2515,9 @@ export class GaussianSplattingMeshBase extends Mesh {
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             if (this._worker) {
-                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+                this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
+                // Re-sync the active interval set in case the source splat count changed.
+                this._postIntervalsToWorker();
             }
 
             // Handle SH textures in update path - create if they don't exist
@@ -2538,7 +2605,9 @@ export class GaussianSplattingMeshBase extends Mesh {
                 if (this._worker) {
                     const positions = Float32Array.from(this._splatPositions!);
                     const vertexCount = this._vertexCount;
-                    this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+                    this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
+                    // Re-sync the active interval set in case the source splat count changed.
+                    this._postIntervalsToWorker();
                 }
                 this._postToWorker(true);
             }
@@ -2577,7 +2646,10 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._worker) {
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
+            // The source splat count may have changed (e.g. addPart): re-sync the worker's active
+            // interval set so it covers the current splats instead of a stale (smaller) range.
+            this._postIntervalsToWorker();
         }
         this._sortIsDirty = true;
     }
@@ -2612,6 +2684,11 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const vertexCount = uBuffer.length / GaussianSplattingMeshBase._RowOutputLength;
         if (vertexCount != this._vertexCount) {
+            // The source set changed: drop any active range filter so the buffers resize to the full
+            // set. Callers (e.g. streaming LOD) re-apply their ranges after the data is committed.
+            this._activeSplatRanges = null;
+            this._activeSplatRangeKey = "";
+            this._activeSplatRenderCount = 0;
             this._updateSplatIndexBuffer(vertexCount);
         }
         this._vertexCount = vertexCount;
@@ -2774,12 +2851,13 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     // in case size is different
     protected _updateSplatIndexBuffer(vertexCount: number): void {
-        const paddedVertexCount = (vertexCount + 15) & ~0xf;
-        if (!this._splatIndex || vertexCount != this._splatIndex.length) {
+        const renderedSplatCount = this._activeSplatRanges ? this._activeSplatRenderCount : vertexCount;
+        const paddedVertexCount = Math.max((renderedSplatCount + 15) & ~0xf, 16);
+
+        const previousIndex = this._splatIndex;
+
+        if (!previousIndex || paddedVertexCount !== previousIndex.length) {
             this._splatIndex = new Float32Array(paddedVertexCount);
-            for (let i = 0; i < paddedVertexCount; i++) {
-                this._splatIndex[i] = i;
-            }
 
             // update meshes for knowns cameras
             this._cameraViewInfos.forEach((cameraViewInfos) => {
@@ -2787,8 +2865,31 @@ export class GaussianSplattingMeshBase extends Mesh {
             });
         }
 
+        const splatIndex = this._splatIndex!;
+
+        // Populate the buffer with the current active source indices (identity when unfiltered) so every
+        // rendered slot points at a valid splat. This is the synchronous (no async sort worker) path; the
+        // worker path instead defers the index-buffer swap until a matching sort lands (see _onWorkerCreated).
+        if (this._activeSplatRanges) {
+            let index = 0;
+            for (let rangeIndex = 0; rangeIndex < this._activeSplatRanges.length; rangeIndex += 2) {
+                const start = this._activeSplatRanges[rangeIndex];
+                const count = this._activeSplatRanges[rangeIndex + 1];
+                for (let sourceIndex = start; sourceIndex < start + count; sourceIndex++) {
+                    splatIndex[index++] = sourceIndex;
+                }
+            }
+            for (; index < paddedVertexCount; index++) {
+                splatIndex[index] = 0;
+            }
+        } else {
+            for (let i = 0; i < paddedVertexCount; i++) {
+                splatIndex[i] = i;
+            }
+        }
+
         // Update depthMix
-        if ((!this._depthMix || vertexCount != this._depthMix.length) && !IsNative) {
+        if ((!this._depthMix || paddedVertexCount !== this._depthMix.length) && !IsNative) {
             this._depthMix = new BigInt64Array(paddedVertexCount);
         }
 
@@ -2909,7 +3010,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._canPostToWorker = true;
         this._worker = new Worker(
             URL.createObjectURL(
-                new Blob(["(", GaussianSplattingMeshBase._CreateWorker.toString(), ")(self)"], {
+                new Blob(["(", GaussianSplattingSortWorker.toString(), ")(self)"], {
                     type: "application/javascript",
                 })
             )
@@ -2917,7 +3018,10 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const positions = Float32Array.from(this._splatPositions!);
 
-        this._worker.postMessage({ positions }, [positions.buffer]);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions }, [positions.buffer]);
+        // The main thread owns the active interval set: send it explicitly (covering all indices when
+        // no LOD filter is active) rather than letting the worker assume the full source set.
+        this._postIntervalsToWorker();
         this._onWorkerCreated(this._worker!);
 
         this._worker.onerror = () => {
@@ -2926,11 +3030,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         };
 
         this._worker.onmessage = (e) => {
-            // Recompute vertexCountPadded in case _vertexCount has changed since the last update
-            const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
+            // Size the result against the active (rendered) splat count, which may be a subset of the
+            // full source set when an interval/LOD filter is active.
+            const renderedPadded = Math.max((this.renderedSplatCount + 15) & ~0xf, 16);
 
-            // If the vertex count changed, we discard this result and trigger a new sort
-            if (e.data.depthMix.length != vertexCountPadded) {
+            // Discard the result and trigger a fresh sort if it no longer matches the current active set:
+            // either the active count changed since it was posted, or it was computed for a stale range
+            // version (the active ranges changed while it was in flight). Applying it would render indices
+            // that belong to a different active set.
+            if (e.data.depthMix.length != renderedPadded || e.data.rangeVersion !== this._activeRangeVersion) {
                 // Only re-enable posting and trigger a re-sort if the buffer is available.
                 // If byteLength === 0 the buffer is already in-flight for a newer sort;
                 // that sort's onmessage will handle things when it returns.
@@ -2946,13 +3054,26 @@ export class GaussianSplattingMeshBase extends Mesh {
             const cameraId = e.data.cameraId;
             const sortRequestId = e.data.sortRequestId;
 
+            // The index buffer swap is deferred to here so the previous fully-sorted state stays on screen
+            // until this matching sort lands. Resize it now (the active count may have grown/shrunk since the
+            // last applied sort) and rebind it for every known camera.
+            if (!this._splatIndex || this._splatIndex.length !== renderedPadded) {
+                this._splatIndex = new Float32Array(renderedPadded);
+                this._cameraViewInfos.forEach((info) => {
+                    info.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                    info.splatIndexBufferSet = true;
+                });
+            }
+
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             if (this._splatIndex) {
-                for (let j = 0; j < vertexCountPadded; j++) {
+                for (let j = 0; j < renderedPadded; j++) {
                     this._splatIndex[j] = indexMix[2 * j];
                 }
             }
+            this.forcedInstanceCount = Math.max(renderedPadded >> 4, 1);
             if (this._delayedTextureUpdate) {
+                const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
                 const textureSize = this._getTextureSize(vertexCountPadded);
                 this._updateSubTextures(
                     this._delayedTextureUpdate.centers,
