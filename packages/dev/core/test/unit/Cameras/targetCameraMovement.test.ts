@@ -194,5 +194,36 @@ describe("TargetCameraMovement", () => {
             camera._checkInputs();
             expect(camera.position.z).toBe(afterFirst);
         });
+
+        // Regression: the cutoff must only end the decaying inertial tail, never an active-input
+        // frame. A small rotation input (typical of ordinary mouse-look) below the epsilon limit
+        // must still be applied; gating the cutoff before the apply used to discard it, making the
+        // camera feel unresponsive.
+        it("still applies an active rotation input even when it is below speed * _rotationEpsilon", () => {
+            camera.inertia = 0;
+            const before = camera.rotation.x;
+
+            // Raise the epsilon so any plausible per-frame mouse-look delta is below the limit,
+            // then feed a tiny active rotation input on this frame.
+            camera._rotationEpsilon = 10;
+            camera.cameraRotation.x = 1e-4;
+            camera._checkInputs();
+
+            expect(camera.rotation.x).not.toBe(before);
+            expect(camera.rotation.x).toBeCloseTo(before + 1e-4, 6);
+        });
+
+        it("still applies an active translation input even when it is below speed * _panningEpsilon", () => {
+            camera.inertia = 0;
+            camera.position.copyFromFloats(0, 0, 0);
+
+            // Raise the epsilon so the active translation delta is below the limit.
+            camera._panningEpsilon = 10;
+            camera.cameraDirection.copyFromFloats(0, 0, 1e-4);
+            camera._checkInputs();
+
+            expect(camera.position.z).not.toBe(0);
+            expect(camera.position.z).toBeCloseTo(1e-4, 6);
+        });
     });
 });
