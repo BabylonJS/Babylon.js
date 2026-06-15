@@ -138,6 +138,23 @@ describe("TargetCameraMovement", () => {
             expect(camera.movement.rotationInertia).toBe(0.9);
         });
 
+        it("produces finite, advancing rotation during a default-inertia glide (no NaN)", () => {
+            // Regression: a fresh camera must glide on its default inertia (0.9). If the inertia
+            // accessor ever yields undefined, the movement decay becomes NaN and the camera freezes.
+            // (The shipped UMD bundle previously mis-compiled `super.inertia` to undefined here.)
+            camera.cameraRotation.x = 0.1;
+            camera._checkInputs();
+            const afterFirst = camera.rotation.x;
+            expect(Number.isFinite(afterFirst)).toBe(true);
+            expect(afterFirst).toBeCloseTo(0.1, 5);
+
+            // No new input: the default-inertia glide must still advance by a finite, decayed amount.
+            camera._checkInputs();
+            const afterSecond = camera.rotation.x;
+            expect(Number.isFinite(afterSecond)).toBe(true);
+            expect(afterSecond).toBeGreaterThan(afterFirst);
+        });
+
         it("writes through to the movement system immediately when set", () => {
             camera.inertia = 0.5;
             expect(camera.movement.panInertia).toBe(0.5);
