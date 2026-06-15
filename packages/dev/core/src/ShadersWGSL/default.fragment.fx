@@ -148,6 +148,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #include<depthPrePass>
 
+#ifndef DEPTHPREPASS
+
 #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	baseColor = vec4f(baseColor.rgb * fragmentInputs.vColor.rgb, baseColor.a);
 #endif
@@ -536,6 +538,8 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 	} else {
 		fragmentOutputs.backColor += color;
 	}
+#endif
+
 #endif
 
 #define CUSTOM_FRAGMENT_MAIN_END
