@@ -713,6 +713,65 @@ const plugin: IPlugin = {
                 };
             },
         },
+        "no-super-in-accessor": {
+            meta: {
+                type: "problem",
+                docs: {
+                    description:
+                        "Disallow super.<member> property access inside a get/set accessor. The UMD build is compiled with TypeScript at `target: ES5`, and ES5 downleveling of `super` access inside a (decorated) accessor mis-compiles to `undefined`, even though it works in native-ESM dev. Same ES5-target UMD hazard family as `no-downlevel-iteration`. Use a private backing field instead.",
+                },
+                messages: {
+                    superInAccessor:
+                        "super.{{member}} inside a get/set accessor mis-compiles to `undefined` in the UMD build (ES5 target downleveling of `super` inside a decorated accessor), even though it works in dev/ESM. Use a private backing field instead (see TargetCamera._targetInertia).",
+                },
+            },
+            create(context: eslint.Rule.RuleContext) {
+                const sourceCode = context.sourceCode;
+
+                function isAccessorValue(fnNode: ESTree.Node, parent: ESTree.Node | undefined): boolean {
+                    return (
+                        !!parent &&
+                        (parent.type === "MethodDefinition" || parent.type === "Property") &&
+                        ((parent as any).kind === "get" || (parent as any).kind === "set") &&
+                        (parent as any).value === fnNode
+                    );
+                }
+
+                return {
+                    MemberExpression(node: ESTree.MemberExpression & eslint.Rule.NodeParentExtension) {
+                        if (node.object.type !== "Super") {
+                            return;
+                        }
+                        // Allow super method calls: `super.foo(...)` are emitted differently and are not affected.
+                        const parent = (node as any).parent as ESTree.Node | undefined;
+                        if (parent && parent.type === "CallExpression" && (parent as ESTree.CallExpression).callee === (node as ESTree.Node)) {
+                            return;
+                        }
+
+                        const ancestors = sourceCode.getAncestors ? sourceCode.getAncestors(node) : (context as any).getAncestors();
+                        // Walk nearest -> farthest. Arrow functions are transparent to `super`, so skip them
+                        // and stop at the first `super`-binding (non-arrow) function: if that function is the
+                        // value of a get/set accessor, this `super` access is the risky pattern.
+                        for (let i = ancestors.length - 1; i >= 0; i--) {
+                            const a = ancestors[i] as ESTree.Node;
+                            if (a.type === "ArrowFunctionExpression") {
+                                continue;
+                            }
+                            if (a.type === "FunctionExpression" || a.type === "FunctionDeclaration") {
+                                if (isAccessorValue(a, ancestors[i - 1] as ESTree.Node | undefined)) {
+                                    context.report({
+                                        node,
+                                        messageId: "superInAccessor",
+                                        data: { member: node.computed ? "[…]" : ((node.property as ESTree.Identifier).name ?? "<member>") },
+                                    });
+                                }
+                                return;
+                            }
+                        }
+                    },
+                };
+            },
+        },
         "require-context-save-before-apply-states": {
             meta: {
                 type: "problem",

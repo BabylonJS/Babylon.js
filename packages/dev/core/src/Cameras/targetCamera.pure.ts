@@ -43,6 +43,8 @@ export class TargetCamera extends Camera {
      */
     public movement: CameraMovement;
 
+    private _targetInertia = 0.9;
+
     /**
      * Defines the inertia (decay coefficient applied per reference frame at 60fps) of the camera.
      * This helps giving a smooth feeling to the camera movement.
@@ -50,13 +52,19 @@ export class TargetCamera extends Camera {
      * Override of {@link Camera.inertia} that writes through to the {@link movement} system so the
      * framerate-independent pan/rotation glide stays in sync. Setting this updates the movement
      * system immediately (matching the accessor convergence used by {@link ArcRotateCamera}).
+     *
+     * Backed by a local field rather than `super.inertia`: the shipped UMD bundle is compiled with
+     * TypeScript at `target: ES5`, and ES5 downleveling of `super` access inside a decorated accessor
+     * (the base {@link Camera.inertia} carries `@serialize()`) mis-compiles to `undefined`. That would
+     * feed `NaN` into the movement decay and freeze the camera. It only breaks in the ES5 UMD bundle;
+     * native-ESM dev keeps real `super`. See the `babylonjs/no-super-in-accessor` lint rule.
      */
     public override get inertia(): number {
-        return super.inertia;
+        return this._targetInertia;
     }
 
     public override set inertia(value: number) {
-        super.inertia = value;
+        this._targetInertia = value;
         // `movement` is constructed in this class' constructor; guard for the base-constructor
         // assignment that runs before it exists.
         if (this.movement) {

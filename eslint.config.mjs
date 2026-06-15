@@ -752,6 +752,7 @@ export default tseslint.config(
         ],
         rules: {
             "babylonjs/no-downlevel-iteration": "error",
+            "babylonjs/no-super-in-accessor": "error",
         },
     }
 );
