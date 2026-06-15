@@ -1755,6 +1755,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
     private _activeRequests = new Array<IFileRequest>();
+    private _delayedFileRequests: Nullable<Map<string, Promise<string | ArrayBuffer>>> = null;
 
     /** @internal */
     public _pendingData = [] as any[];
@@ -6464,6 +6465,46 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 onOpened
             );
         });
+    }
+
+    /**
+     * Loads a delay-loading file (e.g. a `.babylonbinarymeshdata` geometry file), coalescing concurrent
+     * requests for the same url so the file is only fetched once even when many meshes or geometries share it.
+     * The same loaded data is resolved to every caller that requested it while the request was in flight.
+     * @param url defines the url of the file to load
+     * @param useArrayBuffer defines whether the file must be loaded as an ArrayBuffer (binary) or a string
+     * @param useOfflineSupport defines whether the offline provider should be used when available
+     * @returns a promise that resolves with the loaded data (shared across coalesced callers)
+     * @internal
+     */
+    public async _loadDelayedFileAsync(url: string, useArrayBuffer: boolean, useOfflineSupport: boolean): Promise<string | ArrayBuffer> {
+        if (!this._delayedFileRequests) {
+            this._delayedFileRequests = new Map<string, Promise<string | ArrayBuffer>>();
+        }
+
+        // The same url can be requested both as binary and as string, so the cache key must include the data type.
+        const key = `${url}|${useArrayBuffer ? "binary" : "string"}`;
+
+        let request = this._delayedFileRequests.get(key);
+        if (!request) {
+            // Branch on the literal type so the correct _loadFileAsync overload is selected without an unsafe cast.
+            request = useArrayBuffer ? this._loadFileAsync(url, undefined, useOfflineSupport, true) : this._loadFileAsync(url, undefined, useOfflineSupport, false);
+
+            // Only coalesce while the request is in flight: remove it once settled so later loads can re-fetch.
+            const requestToClear = request;
+            void (async () => {
+                try {
+                    await requestToClear;
+                } catch {
+                    // The failure is surfaced to the awaiting callers; here we only need to clear the in-flight entry.
+                }
+                this._delayedFileRequests?.delete(key);
+            })();
+
+            this._delayedFileRequests.set(key, request);
+        }
+
+        return await request;
     }
 
     /**
