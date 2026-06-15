@@ -1012,6 +1012,20 @@ export class GaussianSplattingMeshBase extends Mesh {
         return this._material instanceof GaussianSplattingMaterial ? this._material.compensation : false;
     }
 
+    /**
+     * Minimum projected splat size, in pixels, below which a splat is discarded (0 = disabled).
+     * Applied in real time; no rebuild required.
+     */
+    public get minPixelSize(): number {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.minPixelSize : 0;
+    }
+
+    public set minPixelSize(value: number) {
+        if (this._material instanceof GaussianSplattingMaterial) {
+            this._material.minPixelSize = Math.max(0, value);
+        }
+    }
+
     private _loadingPromise: Promise<void> | null = null;
 
     /**

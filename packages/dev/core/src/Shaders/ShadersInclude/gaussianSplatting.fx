@@ -488,6 +488,16 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
         return vec4(0.0, 0.0, 2.0, 1.0);
     }
 
+    // Discard splats whose projected footprint is smaller than minPixelSize pixels (0.0 = disabled).
+    // l1/l2 are the major/minor axis diameters in pixels (2 * sqrt(2 * lambda)); matches PlayCanvas semantics.
+    if (minPixelSize > 0.0) {
+        float l1 = 2.0 * min(sqrt(2.0 * lambda1), 1024.0);
+        float l2 = 2.0 * min(sqrt(2.0 * lambda2), 1024.0);
+        if (max(l1, l2) < minPixelSize) {
+            return vec4(0.0, 0.0, 2.0, 1.0);
+        }
+    }
+
     vec2 diagonalVector = normalize(vec2(cov2d[0][1], lambda1 - cov2d[0][0]));
     vec2 majorAxis = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);

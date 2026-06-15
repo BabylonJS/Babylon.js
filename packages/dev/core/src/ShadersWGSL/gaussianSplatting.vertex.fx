@@ -18,6 +18,7 @@ uniform invViewport: vec2f;
 uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
 uniform kernelSize: f32;
+uniform minPixelSize: f32;
 uniform eyePosition: vec3f;
 uniform alpha: f32;
 
@@ -140,7 +141,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #define CUSTOM_VERTEX_UPDATE
 
-    vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, scale, covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, scale, covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize, uniforms.minPixelSize);
 
 #include<clipPlaneVertex>
 #include<fogVertex>
