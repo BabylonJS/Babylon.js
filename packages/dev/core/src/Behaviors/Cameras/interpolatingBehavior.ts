@@ -46,6 +46,10 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
     private _animatables: Map<string, Animatable> = new Map<string, Animatable>();
     private _promiseResolve?: () => void;
 
+    // Frame rate used for all generated transition animations. Kept as a single constant so the duration
+    // math in remainingDurationMs stays consistent with the animations created in animatePropertiesAsync.
+    private static readonly _FrameRate = 60;
+
     /**
      * Initializes the behavior
      */
@@ -85,6 +89,19 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
     }
 
     /**
+     * Gets the longest remaining duration (in milliseconds) across all in-flight property animations.
+     * Returns 0 when nothing is currently animating.
+     */
+    public get remainingDurationMs(): number {
+        let remaining = 0;
+        this._animatables.forEach((animatable) => {
+            const remainingFrames = Math.max(animatable.toFrame - animatable.masterFrame, 0);
+            remaining = Math.max(remaining, (remainingFrames / InterpolatingBehavior._FrameRate) * 1000);
+        });
+        return remaining;
+    }
+
+    /**
      * Stops and removes all animations
      */
     public stopAllAnimations(): void {
@@ -97,16 +114,27 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
     }
 
     /**
-     * Updates the target properties of currently running animations.
-     * @param properties defines the property values to update
+     * Called when a single property's transition completes (or is applied instantly). Cleans up the
+     * spent animation and resolves the in-flight promise once every property has reached its target.
+     * @param propertyName name of the property whose animation has finished
      */
-    public updateProperties<K extends keyof C>(properties: Map<K, AllowedAnimValue>): void {
-        properties.forEach((value, key) => {
-            if (value !== undefined) {
-                const animatable = this._animatables.get(String(key));
-                animatable && (animatable.target = value as unknown as any);
+    private _onPropertyAnimationEnd(propertyName: string): void {
+        const camera = this._attachedCamera;
+        if (camera) {
+            // Remove the associated animation from camera once the transition to target is complete so that property animations don't accumulate
+            for (let i = camera.animations.length - 1; i >= 0; --i) {
+                if (camera.animations[i].name === propertyName + "Animation") {
+                    camera.animations.splice(i, 1);
+                }
             }
-        });
+        }
+
+        this._animatables.delete(propertyName);
+        if (this._animatables.size === 0) {
+            const resolve = this._promiseResolve;
+            this._promiseResolve = undefined;
+            resolve?.();
+        }
     }
 
     /**
@@ -134,35 +162,36 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
             const camera = this._attachedCamera;
             const scene = camera.getScene();
 
-            const checkClear = (propertyName: string) => {
-                // Remove the associated animation from camera once the transition to target is complete so that property animations don't accumulate
-                for (let i = camera.animations.length - 1; i >= 0; --i) {
-                    if (camera.animations[i].name === propertyName + "Animation") {
-                        camera.animations.splice(i, 1);
-                    }
-                }
-
-                this._animatables.delete(propertyName);
-                if (this._animatables.size === 0) {
-                    this._promiseResolve = undefined;
-                    resolve();
-                }
-            };
-
             properties.forEach((value, key) => {
                 if (value !== undefined && camera[key] !== value) {
                     const propertyName = String(key);
-                    const animation = Animation.CreateAnimation(propertyName, GetAnimationType(value), 60, easingFn);
+                    const animation = Animation.CreateAnimation(propertyName, GetAnimationType(value), InterpolatingBehavior._FrameRate, easingFn);
                     // Optionally allow caller to further customize the animation
                     updateAnimation?.(propertyName, animation);
 
                     // Pass false for stopCurrent so that we can interpolate multiple properties at once
-                    const animatable = Animation.TransitionTo(propertyName, value, camera, scene, 60, animation, transitionDuration, () => checkClear(propertyName), false);
+                    const animatable = Animation.TransitionTo(
+                        propertyName,
+                        value,
+                        camera,
+                        scene,
+                        InterpolatingBehavior._FrameRate,
+                        animation,
+                        transitionDuration,
+                        () => this._onPropertyAnimationEnd(propertyName),
+                        false
+                    );
                     if (animatable) {
                         this._animatables.set(propertyName, animatable);
                     }
                 }
             });
+
+            // Nothing needed animating (already at target): resolve immediately rather than hang.
+            if (this._animatables.size === 0) {
+                this._promiseResolve = undefined;
+                resolve();
+            }
         });
         return await promise;
     }
