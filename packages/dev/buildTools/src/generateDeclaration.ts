@@ -365,9 +365,13 @@ function GetPackageDeclaration(
 
         //Exclude import statements
         excludeLine = excludeLine || /^import[ (]/.test(line);
-        excludeLine = excludeLine || /export \{/.test(line);
+        // The optional "type " modifier covers type-only re-exports (e.g. `export type { Foo } from "..."`,
+        // `export type * from "..."`). These must be stripped from the namespace output: an `export ... from`
+        // statement left inside `declare namespace BABYLON` turns it into an export context, which breaks the
+        // declaration merging of augmented classes/interfaces (TS2395) and corrupts the public namespace types.
+        excludeLine = excludeLine || /export (?:type )?\{/.test(line);
         excludeLine = excludeLine || /export default/.test(line);
-        excludeLine = excludeLine || /export \* from "/.test(line);
+        excludeLine = excludeLine || /export (?:type )?\* from "/.test(line);
         excludeLine = excludeLine || /^declare type (.*) import/.test(line);
 
         const match = line.match(/(\s*)declare module "(.*)" \{/);

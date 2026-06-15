@@ -6,6 +6,7 @@ import { Vector3, Vector2 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Scene } from "../scene.pure";
 import { TargetCamera } from "./targetCamera.pure";
+import { type TargetCameraMovement } from "./targetCameraMovement";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager.pure";
 import { type FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { type FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
@@ -53,6 +54,14 @@ export class FreeCamera extends TargetCamera {
      * Define the input manager associated to the camera.
      */
     public override inputs: FreeCameraInputsManager;
+
+    /**
+     * Framerate-independent movement controller for the free camera, exposing the configurable
+     * {@link InputMapper} (`movement.input`) consulted by the free-camera input classes. Narrows
+     * the inherited {@link TargetCamera.movement} to {@link TargetCameraMovement}; the instance is
+     * created by the {@link TargetCamera} constructor.
+     */
+    public override movement: TargetCameraMovement;
 
     /**
      * Gets the input sensibility for a mouse input. (default is 2000.0)

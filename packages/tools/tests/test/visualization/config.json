@@ -2603,7 +2603,7 @@
         },
         {
             "title": "Serialize scene without materials",
-            "playgroundId": "#PH4DEZ#1",
+            "playgroundId": "#PH4DEZ#4",
             "referenceImage": "serializeWithoutMaterials.png",
             "dependsOn": ["Meshes", "Serializers"]
         },
@@ -5420,6 +5420,20 @@
             "referenceImage": "csg2-righthanded-gltf-winding.png",
             "errorRatio": 1.5,
             "dependsOn": ["CSG", "Meshes"]
+        },
+        {
+            "title": "FreeCamera framerate-independent movement",
+            "playgroundId": "#Y3PG6K#0",
+            "referenceImage": "freecamera-framerate-independent-movement.png",
+            "renderCount": 1,
+            "dependsOn": ["Cameras", "Materials", "Meshes"]
+        },
+        {
+            "title": "FlyCamera framerate-independent movement",
+            "playgroundId": "#PX1JQY#0",
+            "referenceImage": "flycamera-framerate-independent-movement.png",
+            "renderCount": 1,
+            "dependsOn": ["Cameras", "Materials", "Meshes"]
         }
     ]
 }
