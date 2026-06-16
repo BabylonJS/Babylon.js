@@ -46,7 +46,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
     vertexOutputs.position = uniforms.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);
 
-#if defined(ALPHATEST) || defined(BASIC_RENDER)
+#if defined(ALPHATEST) || defined(NEED_UV)
 #ifdef UV1
     vertexOutputs.vUV = (uniforms.diffuseMatrix * vec4f(uvUpdated, 1.0, 0.0)).xy;
 #endif
