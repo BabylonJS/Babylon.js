@@ -102,6 +102,14 @@ export interface INativeEngine {
         generateDepthBuffer: boolean,
         samples: number
     ): NativeFramebuffer;
+    createMultiFrameBuffer(
+        textures: NativeTexture[],
+        width: number,
+        height: number,
+        generateStencilBuffer: boolean,
+        generateDepthBuffer: boolean,
+        samples: number
+    ): NativeFramebuffer;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -270,6 +278,8 @@ interface INativeEngineConstructor {
     readonly ALPHA_MULTIPLY: number;
     readonly ALPHA_MAXIMIZED: number;
     readonly ALPHA_ONEONE: number;
+    readonly ALPHA_ONEONE_ONEONE: number;
+    readonly ALPHA_LAYER_ACCUMULATE: number;
     readonly ALPHA_PREMULTIPLIED: number;
     readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
     readonly ALPHA_INTERPOLATE: number;
