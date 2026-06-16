@@ -122,7 +122,11 @@ export class NullEngine extends Engine {
      * implies WebGL2, which always supports uniform buffers.
      */
     public override get supportsUniformBuffers(): boolean {
-        return !!this._options?.enableMultiview || super.supportsUniformBuffers;
+        // Inlined from the base ThinEngine getter (`this.webGLVersion > 1 && !this.disableUniformBuffers`)
+        // instead of reading `super.supportsUniformBuffers`: `super` inside a decorated accessor
+        // mis-compiles to `undefined` in the ES5 UMD bundle (it works in dev/ESM). See the
+        // `babylonjs/no-super-in-accessor` lint rule.
+        return !!this._options?.enableMultiview || (this.webGLVersion > 1 && !this.disableUniformBuffers);
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
