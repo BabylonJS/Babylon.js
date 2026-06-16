@@ -227,6 +227,7 @@ export class ThinNativeEngine extends ThinEngine {
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _currentDepthTest: number;
+    private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
     private _stencilMask: number;
     private _stencilFunc: number;
@@ -268,7 +269,8 @@ export class ThinNativeEngine extends ThinEngine {
         this._frameStats = { gpuTimeNs: Number.NaN };
         this._boundBuffersVertexArray = null;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
-        this._stencilTest;
+        this._depthTestEnabled = true;
+        this._stencilTest = false;
         this._stencilMask = 255;
         this._stencilFunc = Constants.ALWAYS;
         this._stencilFuncRef = 0;
@@ -735,6 +737,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -765,6 +768,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -1069,9 +1073,29 @@ export class ThinNativeEngine extends ThinEngine {
      * @param enable defines the state to set
      */
     public override setDepthBuffer(enable: boolean): void {
+        // Keep the shared depth-culling state in sync so that code paths which toggle
+        // depth testing through engine.depthCullingState.depthTest (for example
+        // EffectRenderer.applyEffectWrapper) are also honored on the native side. The
+        // native draw path does not go through the WebGL applyStates() flush, so the
+        // value is reconciled in _flushDepthTestState() right before each draw.
+        this._depthCullingState.depthTest = enable;
+        this._encodeDepthTest(enable);
+    }
+
+    private _encodeDepthTest(enable: boolean): void {
+        this._depthTestEnabled = enable;
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : _native.Engine.DEPTH_TEST_ALWAYS);
         this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _flushDepthTestState(): void {
+        // Unlike the WebGL engine, the native engine does not call applyStates() before
+        // a draw, so depth-test toggles made directly on engine.depthCullingState are
+        // flushed here to match the cross-engine contract.
+        if (this._depthCullingState.depthTest !== this._depthTestEnabled) {
+            this._encodeDepthTest(this._depthCullingState.depthTest);
+        }
     }
 
     /**
@@ -1134,9 +1158,13 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
-        this._commandBufferEncoder.finishEncodingCommand();
+        // Route through _encodeDepthTest so the tracked _depthTestEnabled state stays in
+        // sync with the encoded command. Because COMMAND_SETDEPTHTEST conflates the
+        // compare function and the enable bit (DEPTH_TEST_ALWAYS == disabled), encoding
+        // the new function directly here would silently re-enable depth testing while
+        // depth testing is logically disabled; _encodeDepthTest honors the current
+        // depthCullingState.depthTest and only emits the new function when enabled.
+        this._encodeDepthTest(this._depthCullingState.depthTest);
     }
 
     /**
