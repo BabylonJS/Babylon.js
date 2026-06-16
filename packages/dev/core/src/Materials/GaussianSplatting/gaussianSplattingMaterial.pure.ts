@@ -130,9 +130,20 @@ export class GaussianSplattingMaterial extends PushMaterial {
     public static Compensation: boolean = false;
 
     /**
+     * Minimum projected splat size, in pixels, below which a splat is discarded (default 0 = disabled).
+     * Matches PlayCanvas `minPixelSize`. Applies to all Gaussian Splatting meshes using this material.
+     */
+    public static MinPixelSize: number = 0;
+
+    /**
      * Point spread function (default 0.3). Can be overriden per GS material, otherwise, using default static `KernelSize` value
      */
     public kernelSize = GaussianSplattingMaterial.KernelSize;
+
+    /**
+     * Minimum projected splat size, in pixels, below which a splat is discarded (default 0 = disabled).
+     */
+    public minPixelSize = GaussianSplattingMaterial.MinPixelSize;
     private _compensation = GaussianSplattingMaterial.Compensation;
 
     // set to true when material defines are dirty
@@ -220,6 +231,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "focal",
         "eyePosition",
         "kernelSize",
+        "minPixelSize",
         "alpha",
         "depthValues",
         "partWorld",
@@ -468,6 +480,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("minPixelSize", gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize);
         effect.setFloat("alpha", gsMaterial.alpha);
         scene.bindEyePosition(effect, "eyePosition", true);
 
@@ -613,6 +626,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("minPixelSize", gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize);
         effect.setFloat("alpha", gsMaterial.alpha);
 
         let minZ: number, maxZ: number;

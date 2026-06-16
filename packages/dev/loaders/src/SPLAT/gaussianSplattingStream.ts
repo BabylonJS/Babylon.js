@@ -6,6 +6,8 @@ import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
 import { Vector3, Matrix } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
+import { Frustum } from "core/Maths/math.frustum";
+import { Plane } from "core/Maths/math.plane";
 import { Camera } from "core/Cameras/camera";
 import { type Observer } from "core/Misc/observable";
 import { BoundingInfo } from "core/Culling/boundingInfo";
@@ -47,6 +49,11 @@ interface ISOGLODNode {
     targetLevel?: number;
     /** Frames remaining before this node may switch LOD again (oscillation damping). */
     lodCooldown?: number;
+    /** True when the node's bounding box currently intersects the camera frustum. Drives the LOD bias that
+     * pushes off-screen nodes to the coarsest level (they stay rendered, not hidden). */
+    inFrustum?: boolean;
+    /** Cached local-space bounding info used for the per-node frustum test (created once per leaf). */
+    cullBounds?: BoundingInfo;
 }
 
 /**
@@ -103,6 +110,12 @@ export interface IGaussianSplattingStreamOptions {
      * `1` caps detail at the next-coarser level, and so on. Higher values force a coarser maximum detail.
      */
     maxDetailLod?: number;
+    /**
+     * When true (default), LOD nodes outside the camera frustum are biased to their coarsest LOD rather than
+     * rendered at full detail. They stay in the sort/render set so they appear instantly (at low detail) when
+     * the camera turns toward them, then refine. Set to `false` to render every node at its distance LOD.
+     */
+    frustumCulling?: boolean;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -183,8 +196,29 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private _lodUpdateDistance = 0.5;
     private _maxDetailLod = 0;
 
+    // Frustum LOD bias: when enabled, nodes outside the camera frustum are rendered at their coarsest LOD.
+    private _frustumCulling = true;
+    // Reused world-space frustum planes and view-projection scratch matrix (avoids per-frame allocation).
+    private readonly _frustumPlanes: Plane[] = [
+        new Plane(0, 0, 0, 0),
+        new Plane(0, 0, 0, 0),
+        new Plane(0, 0, 0, 0),
+        new Plane(0, 0, 0, 0),
+        new Plane(0, 0, 0, 0),
+        new Plane(0, 0, 0, 0),
+    ];
+    private readonly _cullViewProj = new Matrix();
+
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
+    // True once GPU position readback has been validated against a CPU decode (see _probeReadbackAsync). While
+    // false, positions are decoded on the CPU from the means images; once validated, every SOG image uses the
+    // fast direct upload and positions are read back from the work buffer (non-blocking).
+    private _useGpuPositionReadback = false;
+    // Whether the engine reports GPU readback support (candidate to validate on the first decode).
+    private _readbackCandidate = false;
+    // Set once the one-time readback validation has run (success or failure).
+    private _readbackProbed = false;
 
     // Global splat offset where each source file begins in the work buffer (fixed for all files up front).
     private readonly _fileBaseSplat = new Map<number, number>();
@@ -289,6 +323,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.maxDetailLod !== undefined) {
             this._maxDetailLod = Math.max(0, Math.floor(options.maxDetailLod));
         }
+        if (options.frustumCulling !== undefined) {
+            this._frustumCulling = options.frustumCulling;
+        }
         if (options.debugLodSource) {
             this._debugLodSource = options.debugLodSource;
         }
@@ -340,6 +377,25 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      */
     public get maxLodLevel(): number {
         return Math.max(0, this._metadata.lodLevels - 1);
+    }
+
+    /**
+     * When true (default), nodes whose bounding box is outside the camera frustum are biased to the coarsest
+     * LOD instead of being hidden. They stay in the sort/render set (their off-screen splats are clipped), so
+     * turning the camera toward them shows low detail immediately with no invisible frames, then refines.
+     * Changes take effect in real time.
+     */
+    public get frustumCulling(): boolean {
+        return this._frustumCulling;
+    }
+
+    public set frustumCulling(value: boolean) {
+        if (this._frustumCulling === value) {
+            return;
+        }
+        this._frustumCulling = value;
+        // Re-evaluate LODs next frame so the off-screen bias is applied/removed immediately.
+        this._forceLodUpdate = true;
     }
 
     /**
@@ -419,7 +475,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
 
         // Transform the camera into the mesh's local space (where the node bounds live).
-        this.computeWorldMatrix(true).invertToRef(TmpInvWorld);
+        this.computeWorldMatrix(false).invertToRef(TmpInvWorld);
         const localCamera = Vector3.TransformCoordinatesToRef(camera.globalPosition, TmpInvWorld, TmpLocalCamera);
         const px = localCamera.x;
         const py = localCamera.y;
@@ -476,6 +532,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             } else if (optimalLod > rangeMax) {
                 optimalLod = rangeMax;
             }
+
+            // Frustum-based LOD bias: nodes outside the camera frustum are pushed to the coarsest allowed
+            // level instead of being hidden. They stay in the render/sort set (their splats are off-screen
+            // and clipped anyway), so when the camera turns to include them they are already present at low
+            // detail with no invisible frames, then refine to the distance-optimal level.
+            if (this._frustumCulling && node.inFrustum === false) {
+                optimalLod = rangeMax;
+            }
+
             node.optimalLod = optimalLod;
         }
     }
@@ -660,6 +725,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         node.baseLod = levels[levels.length - 1];
         node.activeLod = undefined;
         node.lodCooldown = 0;
+        node.inFrustum = true;
+        // Local-space bounds for the per-node frustum test; the mesh world matrix is applied per evaluation.
+        node.cullBounds = new BoundingInfo(Vector3.FromArray(node.bound.min), Vector3.FromArray(node.bound.max));
         this._leafNodes.push(node);
     }
 
@@ -698,6 +766,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
+        // GPU readback is only enabled after it is validated against a CPU decode on the first file (see
+        // _probeReadbackAsync); until then positions are decoded on the CPU so there is always a correct result.
+        this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
         const splatPositions = new Float32Array(capacity * 4);
         const textures = this._workBuffer.textures;
         this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity);
@@ -834,6 +905,100 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
+     * Writes a decoded splat range's positions into the shared buffer, expands the bounds, and incrementally
+     * patches the sort worker.
+     * @param positions stride-4 positions for the range
+     * @param base first splat index of the range in the work buffer
+     * @param count number of splats in the range
+     */
+    private _applyPositions(positions: Float32Array, base: number, count: number): void {
+        this._splatPositions!.set(positions, base * 4);
+        this._updateBounds(positions, count);
+        // Incrementally patch only this range in the sort worker (avoids the full position-buffer re-copy).
+        this._postWorkerPositionsRange(base, count);
+    }
+
+    /**
+     * One-time validation of GPU position readback: reads a sample of the just-decoded range back from the work
+     * buffer and compares it to the CPU-decoded positions. Enables {@link _useGpuPositionReadback} only on an
+     * exact (within float tolerance) match, so an unsupported or incorrect readback (e.g. a backend without the
+     * required texture usage, or an orientation mismatch) safely keeps the CPU decode path.
+     * @param base first splat index of the validated range
+     * @param count number of splats in the range
+     * @param cpuPositions the CPU-decoded stride-4 positions for the range (ground truth)
+     */
+    private async _probeReadbackAsync(base: number, count: number, cpuPositions: Float32Array): Promise<void> {
+        this._readbackProbed = true;
+        if (!this._workBuffer) {
+            return;
+        }
+        const sampleCount = Math.min(count, 1024);
+        let ok = false;
+        try {
+            const gpu = await this._workBuffer.readCentersRangeAsync(base, sampleCount);
+            if (this._disposed) {
+                return;
+            }
+            if (gpu && gpu.length >= sampleCount * 4) {
+                ok = true;
+                for (let i = 0; i < sampleCount && ok; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        const a = gpu[i * 4 + j];
+                        const b = cpuPositions[i * 4 + j];
+                        if (Math.abs(a - b) > 1e-2 * (1 + Math.abs(b))) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch {
+            ok = false;
+        }
+        this._useGpuPositionReadback = ok;
+        Logger.Log(
+            ok
+                ? "GaussianSplattingStream: GPU position readback validated; streamed LOD positions are read back from the GPU."
+                : "GaussianSplattingStream: GPU position readback unavailable; decoding LOD positions on the CPU."
+        );
+    }
+
+    /**
+     * Resolves the decoded positions for a splat range and applies them. Once GPU readback has been validated,
+     * positions are read back from the work buffer (non-blocking) and `pack.positions` is empty; otherwise the
+     * CPU-decoded `pack.positions` are used, and — on the first such decode — the GPU readback is validated
+     * against them so subsequent decodes can use the fast path.
+     * @param pack the parsed SOG pack (its `positions` is populated only on the CPU path)
+     * @param base first splat index of the range in the work buffer
+     * @param count number of splats in the range
+     * @returns whether positions were applied
+     */
+    private async _applyDecodedPositionsAsync(pack: ISogTexturePack, base: number, count: number): Promise<boolean> {
+        if (this._useGpuPositionReadback && this._workBuffer) {
+            const positions = await this._workBuffer.readCentersRangeAsync(base, count);
+            if (this._disposed) {
+                return false;
+            }
+            if (positions && this._splatPositions) {
+                this._applyPositions(positions, base, count);
+                return true;
+            }
+            // Validated readback unexpectedly returned nothing; fall through to the (likely empty) CPU positions.
+        }
+
+        const cpu = pack.positions.length >= count * 4 ? (pack.positions.subarray(0, count * 4) as Float32Array) : null;
+        if (!cpu || !this._splatPositions) {
+            return false;
+        }
+        this._applyPositions(cpu, base, count);
+        // First CPU decode while readback is a candidate: validate it so later decodes can use the fast path.
+        if (!this._readbackProbed && this._readbackCandidate) {
+            await this._probeReadbackAsync(base, count, cpu);
+        }
+        return true;
+    }
+
+    /**
      * Decodes the always-on environment bundle into its work-buffer block and activates its range.
      */
     private async _decodeEnvironmentAsync(): Promise<void> {
@@ -842,7 +1007,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         const range = this._environmentRange;
         try {
-            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene);
+            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
@@ -855,9 +1020,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (this._disposed) {
                     return;
                 }
-                this._splatPositions!.set(pack.positions.subarray(0, range.count * 4), range.offset * 4);
-                this._updateBounds(pack.positions, range.count);
-                this._notifyWorkerNewData();
+                await this._applyDecodedPositionsAsync(pack, range.offset, range.count);
+                if (this._disposed) {
+                    return;
+                }
                 this._refreshActiveRanges();
             } finally {
                 // Always release the GPU source textures (the decode pass is the only consumer).
@@ -886,7 +1052,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         this._loadingFiles.add(fileId);
         try {
-            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene);
+            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
@@ -899,10 +1065,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (this._disposed) {
                     return;
                 }
-                this._splatPositions!.set(pack.positions.subarray(0, count * 4), base * 4);
-                this._updateBounds(pack.positions, count);
+                await this._applyDecodedPositionsAsync(pack, base, count);
+                if (this._disposed) {
+                    return;
+                }
                 this._decodedFiles.add(fileId);
-                this._notifyWorkerNewData();
                 // Promote any nodes that can now reach their desired LOD via this newly decoded file.
                 if (this._applyDesiredLods()) {
                     this._refreshActiveRanges();
@@ -986,11 +1153,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Per-frame LOD streaming loop. Ticks cooldowns and pumps the decode queue every frame, but throttles
-     * the expensive LOD re-evaluation (optimal-LOD computation, budget balancing, desired-LOD application
-     * and interval rebuild) to run at most every {@link _lodUpdateInterval} frames and only after the camera
-     * has moved far enough, so continuous camera motion no longer rebuilds the interval set every frame. A
-     * budget change forces a single immediate update regardless of the throttle.
+     * Per-frame LOD streaming loop. Ticks cooldowns and pumps the decode queue every frame, and runs the
+     * cheap per-node frustum test every frame so the off-screen LOD bias tracks camera rotation. The LOD
+     * re-evaluation is throttled to at most every {@link _lodUpdateInterval} frames once the camera has
+     * translated far enough, but also runs immediately whenever a node enters/leaves the frustum (so its
+     * detail upgrades/downgrades promptly) or a cap change forces it. Active ranges rebuild on any LOD change.
      */
     private _onLodFrame(): void {
         if (this._disposed || !this._baseLayerReady) {
@@ -1004,28 +1171,70 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // In-flight/queued decodes still progress every frame.
         this._pumpDecodeQueue();
 
-        const forced = this._forceLodUpdate;
-        if (!forced) {
-            if (++this._framesSinceLodUpdate < this._lodUpdateInterval) {
-                return;
-            }
-            const camera = this._scene.activeCamera;
-            if (camera) {
-                const threshold = this._lodUpdateDistance;
-                if (Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) < threshold * threshold) {
-                    return;
-                }
-                this._lastLodCamPos.copyFrom(camera.globalPosition);
-            }
-        }
-        this._forceLodUpdate = false;
-        this._framesSinceLodUpdate = 0;
+        // Per-node frustum test runs every frame (cheap) so the off-screen LOD bias tracks camera rotation,
+        // not just the translation that gates the throttled LOD re-evaluation below.
+        const frustumChanged = this._updateNodeFrustum();
 
-        this.evaluateOptimalLods(this._scene.activeCamera);
-        this._computeTargetLevels();
-        if (this._applyDesiredLods()) {
-            this._refreshActiveRanges();
+        let runLodEval = this._forceLodUpdate || frustumChanged;
+        if (!runLodEval && ++this._framesSinceLodUpdate >= this._lodUpdateInterval) {
+            const camera = this._scene.activeCamera;
+            const threshold = this._lodUpdateDistance;
+            if (!camera || Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) >= threshold * threshold) {
+                if (camera) {
+                    this._lastLodCamPos.copyFrom(camera.globalPosition);
+                }
+                runLodEval = true;
+            }
         }
+
+        if (runLodEval) {
+            this._forceLodUpdate = false;
+            this._framesSinceLodUpdate = 0;
+            this.evaluateOptimalLods(this._scene.activeCamera);
+            this._computeTargetLevels();
+            if (this._applyDesiredLods()) {
+                this._refreshActiveRanges();
+            }
+        }
+    }
+
+    /**
+     * Updates each leaf node's {@link ISOGLODNode.inFrustum} flag from a per-node frustum test against the
+     * active camera. When {@link frustumCulling} is disabled (or there is no camera) every node is marked
+     * in-frustum. Bounds are static (from the LOD tree), so flags are valid for all nodes regardless of
+     * decode state. Returns true when any node's in-frustum state changed (so the LOD bias must be re-applied).
+     * @returns whether any node's in-frustum state changed
+     */
+    private _updateNodeFrustum(): boolean {
+        const camera = this._scene.activeCamera;
+        let changed = false;
+
+        if (!this._frustumCulling || !camera) {
+            for (const node of this._leafNodes) {
+                if (node.inFrustum === false) {
+                    node.inFrustum = true;
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+
+        // World-space frustum planes from the current view-projection, tested against each node's world AABB.
+        // force=false uses the renderId/sync fast-path (still recomputes when the transform actually changed),
+        // avoiding a full world-matrix recompute every frame for the per-node frustum test.
+        const world = this.computeWorldMatrix(false);
+        camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._cullViewProj);
+        Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
+
+        for (const node of this._leafNodes) {
+            node.cullBounds!.update(world);
+            const inFrustum = node.cullBounds!.isInFrustum(this._frustumPlanes);
+            if (inFrustum !== node.inFrustum) {
+                node.inFrustum = inFrustum;
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /**
