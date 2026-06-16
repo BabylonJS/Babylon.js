@@ -85,6 +85,7 @@ export class NullEngineOptions {
  */
 export class NullEngine extends Engine {
     private _options: NullEngineOptions;
+    private _supportsUniformBuffers = false;
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
@@ -122,7 +123,7 @@ export class NullEngine extends Engine {
      * implies WebGL2, which always supports uniform buffers.
      */
     public override get supportsUniformBuffers(): boolean {
-        return !!this._options?.enableMultiview || super.supportsUniformBuffers;
+        return !!this._options?.enableMultiview || this._supportsUniformBuffers;
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
