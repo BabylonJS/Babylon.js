@@ -138,6 +138,23 @@ describe("TargetCameraMovement", () => {
             expect(camera.movement.rotationInertia).toBe(0.9);
         });
 
+        it("produces finite, advancing rotation during a default-inertia glide (no NaN)", () => {
+            // Regression: a fresh camera must glide on its default inertia (0.9). If the inertia
+            // accessor ever yields undefined, the movement decay becomes NaN and the camera freezes.
+            // (The shipped UMD bundle previously mis-compiled `super.inertia` to undefined here.)
+            camera.cameraRotation.x = 0.1;
+            camera._checkInputs();
+            const afterFirst = camera.rotation.x;
+            expect(Number.isFinite(afterFirst)).toBe(true);
+            expect(afterFirst).toBeCloseTo(0.1, 5);
+
+            // No new input: the default-inertia glide must still advance by a finite, decayed amount.
+            camera._checkInputs();
+            const afterSecond = camera.rotation.x;
+            expect(Number.isFinite(afterSecond)).toBe(true);
+            expect(afterSecond).toBeGreaterThan(afterFirst);
+        });
+
         it("writes through to the movement system immediately when set", () => {
             camera.inertia = 0.5;
             expect(camera.movement.panInertia).toBe(0.5);
@@ -193,6 +210,37 @@ describe("TargetCameraMovement", () => {
             // The cutoff also resets the velocity, so a subsequent frame produces no movement either.
             camera._checkInputs();
             expect(camera.position.z).toBe(afterFirst);
+        });
+
+        // Regression: the cutoff must only end the decaying inertial tail, never an active-input
+        // frame. A small rotation input (typical of ordinary mouse-look) below the epsilon limit
+        // must still be applied; gating the cutoff before the apply used to discard it, making the
+        // camera feel unresponsive.
+        it("still applies an active rotation input even when it is below speed * _rotationEpsilon", () => {
+            camera.inertia = 0;
+            const before = camera.rotation.x;
+
+            // Raise the epsilon so any plausible per-frame mouse-look delta is below the limit,
+            // then feed a tiny active rotation input on this frame.
+            camera._rotationEpsilon = 10;
+            camera.cameraRotation.x = 1e-4;
+            camera._checkInputs();
+
+            expect(camera.rotation.x).not.toBe(before);
+            expect(camera.rotation.x).toBeCloseTo(before + 1e-4, 6);
+        });
+
+        it("still applies an active translation input even when it is below speed * _panningEpsilon", () => {
+            camera.inertia = 0;
+            camera.position.copyFromFloats(0, 0, 0);
+
+            // Raise the epsilon so the active translation delta is below the limit.
+            camera._panningEpsilon = 10;
+            camera.cameraDirection.copyFromFloats(0, 0, 1e-4);
+            camera._checkInputs();
+
+            expect(camera.position.z).not.toBe(0);
+            expect(camera.position.z).toBeCloseTo(1e-4, 6);
         });
     });
 });
