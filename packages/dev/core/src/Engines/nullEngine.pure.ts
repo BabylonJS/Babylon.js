@@ -122,7 +122,11 @@ export class NullEngine extends Engine {
      * implies WebGL2, which always supports uniform buffers.
      */
     public override get supportsUniformBuffers(): boolean {
-        return !!this._options?.enableMultiview || super.supportsUniformBuffers;
+        // The base computation (`this.webGLVersion > 1 && !this.disableUniformBuffers`) is inlined rather
+        // than read through `super.supportsUniformBuffers`: ES5 downleveling of `super` inside a decorated
+        // accessor mis-compiles to `undefined` in the shipped UMD bundle. See the `babylonjs/no-super-in-accessor`
+        // lint rule.
+        return !!this._options?.enableMultiview || (this.webGLVersion > 1 && !this.disableUniformBuffers);
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
