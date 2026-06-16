@@ -12,7 +12,7 @@ import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/Gaussi
 import { Color4 } from "core/Maths/math.color.pure";
 import { Epsilon } from "core/Maths/math.constants";
 import { type IVector2Like } from "core/Maths/math.like";
-import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import { type Mesh } from "core/Meshes/mesh";
