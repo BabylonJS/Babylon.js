@@ -64,6 +64,19 @@ export class NullEngineOptions {
      * If supplied, the HTMLCanvasElement to use (e.g. as the inputElement)
      */
     renderingCanvas?: HTMLCanvasElement;
+
+    /**
+     * Enables headless multiview render-target support for CPU-side render-state tests. Does NOT
+     * emulate GPU multiview rendering.
+     *
+     * Enabling this also makes {@link NullEngine.supportsUniformBuffers} report true. The coupling is
+     * intentional and intrinsic, not an incidental side effect: the per-eye `viewProjectionR` matrix
+     * is carried ONLY by the multiview scene UBO, and `Scene` writes it only while that UBO is active
+     * (`useUbo`, which requires uniform-buffer support). It also mirrors real engines — multiview is
+     * an OVR_multiview2 / WebGL2 feature and WebGL2 always provides uniform buffers — so
+     * `enableMultiview` without uniform-buffer support is not a coherent state.
+     */
+    enableMultiview?: boolean;
 }
 
 /**
@@ -99,6 +112,17 @@ export class NullEngine extends Engine {
      */
     public override getHardwareScalingLevel(): number {
         return 1.0;
+    }
+
+    /**
+     * Gets a boolean indicating that the engine supports uniform buffers.
+     * Reports true when {@link NullEngineOptions.enableMultiview} is set: the multiview scene UBO is
+     * the only path that uploads the per-eye `viewProjectionR` matrix, so multiview is meaningless
+     * without uniform-buffer support. This mirrors real engines, where multiview (OVR_multiview2)
+     * implies WebGL2, which always supports uniform buffers.
+     */
+    public override get supportsUniformBuffers(): boolean {
+        return !!this._options?.enableMultiview || super.supportsUniformBuffers;
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
@@ -179,6 +203,10 @@ export class NullEngine extends Engine {
             dualSourceBlending: false,
             supportReadWriteStorageTextures: false,
         };
+
+        if (options.enableMultiview) {
+            this._caps.multiview = { framebufferTextureMultiviewOVR: () => {} };
+        }
 
         this._features = {
             forceBitmapOverHTMLImageElement: false,
@@ -294,6 +322,61 @@ export class NullEngine extends Engine {
     public override setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
     }
+
+    /**
+     * Creates a uniform buffer.
+     * @param elements defines the content of the uniform buffer
+     * @returns a new data buffer
+     */
+    public override createUniformBuffer(elements: FloatArray): DataBuffer {
+        const buffer = new DataBuffer();
+        buffer.references = 1;
+        buffer.capacity = elements instanceof Array ? elements.length * Float32Array.BYTES_PER_ELEMENT : elements.byteLength;
+        return buffer;
+    }
+
+    /**
+     * Creates a dynamic uniform buffer.
+     * @param elements defines the content of the dynamic uniform buffer
+     * @returns a new data buffer
+     */
+    public override createDynamicUniformBuffer(elements: FloatArray): DataBuffer {
+        return this.createUniformBuffer(elements);
+    }
+
+    // NullEngine is headless: GPU-side uniform-buffer storage is intentionally not emulated, and that
+    // is correct rather than a contract gap. Babylon's UniformBuffer is write-only toward the engine —
+    // the source of truth is the JS-side Float32Array (UniformBuffer._bufferData, read via getData())
+    // plus Scene matrices (e.g. _transformMatrixR). Values reach the engine only through
+    // updateUniformBuffer() as a one-way push to the GPU; no Babylon codepath reads bytes back out of
+    // the engine's DataBuffer, so these no-ops cannot diverge from real-engine behavior for any
+    // CPU-observable state. supportsUniformBuffers must stay true (see the getter above) so
+    // UniformBuffer.useUbo remains on and updateMatrix() routes through _bufferData instead of the
+    // per-uniform Effect fallback.
+    /**
+     * Updates a uniform buffer.
+     * @param _uniformBuffer defines the target uniform buffer
+     * @param _elements defines the content to update
+     * @param _offset defines the offset in the uniform buffer where update should start
+     * @param _count defines the size of the data to update
+     */
+    public override updateUniformBuffer(_uniformBuffer: DataBuffer, _elements: FloatArray, _offset?: number, _count?: number): void {}
+
+    /**
+     * Binds a uniform buffer to the current draw context.
+     * @param _buffer defines the buffer to bind
+     * @param _location not used in NullEngine
+     * @param _name name of the uniform variable to bind
+     */
+    public override bindUniformBufferBase(_buffer: DataBuffer, _location: number, _name: string): void {}
+
+    /**
+     * Binds a uniform block to a specific index.
+     * @param _pipelineContext defines the pipeline context to use
+     * @param _blockName defines the block name
+     * @param _index defines the index where to bind the block
+     */
+    public override bindUniformBlock(_pipelineContext: IPipelineContext, _blockName: string, _index: number): void {}
 
     public override createShaderProgram(
         pipelineContext: IPipelineContext,
@@ -799,6 +882,42 @@ export class NullEngine extends Engine {
         this._internalTexturesCache.push(texture);
 
         return rtWrapper;
+    }
+
+    /**
+     * Creates a new multiview render target wrapper for headless render-state tests.
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @returns a new multiview render target wrapper
+     */
+    public override createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper {
+        if (!this.getCaps().multiview) {
+            throw new Error("Multiview is not supported");
+        }
+
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height });
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget, true);
+
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.isMultiview = true;
+        texture.isReady = true;
+        texture.format = Constants.TEXTUREFORMAT_RGBA;
+        texture.samples = 1;
+
+        rtWrapper.setTextures(texture);
+
+        return rtWrapper;
+    }
+
+    /**
+     * Binds a multiview framebuffer for headless render-state tests.
+     * @param multiviewTexture render target wrapper to bind
+     */
+    public override bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void {
+        this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
     }
 
     /**
