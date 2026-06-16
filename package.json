@@ -22,7 +22,7 @@
         "chokidar": "~3.6.0",
         "dotenv": "~16.0.0",
         "es-check": "^7.1.1",
-        "esbuild": "^0.25.0",
+        "esbuild": "^0.28.1",
         "eslint": "^10.0.2",
         "eslint-config-prettier": "^10.1.8",
         "eslint-formatter-azure-devops": "^1.2.0",
@@ -46,7 +46,7 @@
         "typedoc": "^0.28.16",
         "typescript": "~6.0.2",
         "typescript-eslint": "^8.58.2",
-        "vite": "6.4.2",
+        "vite": "6.4.3",
         "vitest": "^4.1.3"
     },
     "workspaces": [
