@@ -2683,6 +2683,26 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._sortIsDirty = true;
     }
 
+    /**
+     * Patches only a contiguous range of source-splat centers in the sort worker, instead of re-copying and
+     * transferring the entire position buffer (which is hundreds of MB for large streamed datasets and caused
+     * a multi-frame freeze on every LOD decode). The worker must already hold a full-size position buffer (from
+     * the initial {@link GaussianSplattingSortWorkerCommand.POSITIONS} message at worker creation). Marks the
+     * sort dirty so the new splats are sorted in; the caller is responsible for any interval/range refresh.
+     * @param splatOffset first splat index of the updated range
+     * @param splatCount number of splats in the updated range
+     */
+    protected _postWorkerPositionsRange(splatOffset: number, splatCount: number): void {
+        if (!this._worker || !this._splatPositions || splatCount <= 0) {
+            return;
+        }
+        const floatOffset = splatOffset * 4;
+        // Copy just the changed region (stride 4) so the main thread keeps its own _splatPositions intact.
+        const data = this._splatPositions.slice(floatOffset, floatOffset + splatCount * 4);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS_UPDATE, offset: floatOffset, data }, [data.buffer]);
+        this._sortIsDirty = true;
+    }
+
     private *_updateData(
         data: ArrayBuffer,
         isAsync: boolean,

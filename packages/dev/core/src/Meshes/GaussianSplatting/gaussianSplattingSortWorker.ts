@@ -9,6 +9,8 @@ import { type Nullable } from "core/types";
 export const GaussianSplattingSortWorkerCommand = {
     /** Main -> worker: set the source splat centers (stride 4: xyz + 1). */
     POSITIONS: "positions",
+    /** Main -> worker: patch a contiguous sub-range of the existing source splat centers in place. */
+    POSITIONS_UPDATE: "positionsUpdate",
     /** Main -> worker: set the compound-mesh rig node matrices. */
     PART_MATRICES: "partMatrices",
     /** Main -> worker: set the compound-mesh per-splat rig node indices. */
@@ -59,6 +61,12 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
         const command = e.data.command;
         if (command === "positions") {
             positions = e.data.positions;
+        } else if (command === "positionsUpdate") {
+            // Patch only the changed sub-range in place, avoiding a full re-copy/transfer of the entire
+            // (potentially hundreds-of-MB) position buffer on every streamed LOD decode.
+            if (positions && e.data.data) {
+                positions.set(e.data.data, e.data.offset);
+            }
         } else if (command === "partMatrices") {
             partMatrices = e.data.partMatrices;
         } else if (command === "partIndices") {

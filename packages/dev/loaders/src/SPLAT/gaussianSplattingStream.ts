@@ -917,7 +917,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 }
                 this._splatPositions!.set(pack.positions.subarray(0, range.count * 4), range.offset * 4);
                 this._updateBounds(pack.positions, range.count);
-                this._notifyWorkerNewData();
+                // Incrementally patch only the environment's splat range in the sort worker.
+                this._postWorkerPositionsRange(range.offset, range.count);
                 this._refreshActiveRanges();
             } finally {
                 // Always release the GPU source textures (the decode pass is the only consumer).
@@ -962,7 +963,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 this._splatPositions!.set(pack.positions.subarray(0, count * 4), base * 4);
                 this._updateBounds(pack.positions, count);
                 this._decodedFiles.add(fileId);
-                this._notifyWorkerNewData();
+                // Incrementally patch only this file's splat range in the sort worker (avoids the full
+                // position-buffer re-copy that froze the frame on every decode).
+                this._postWorkerPositionsRange(base, count);
                 // Promote any nodes that can now reach their desired LOD via this newly decoded file.
                 if (this._applyDesiredLods()) {
                     this._refreshActiveRanges();
