@@ -1172,6 +1172,34 @@ test.describe("Babylon Scene Loader", function () {
             expect(assertionData).toBe(true);
         });
 
+        test("File object bypasses offline provider", async () => {
+            const assertionData = await page.evaluate(async () => {
+                const glb = await BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/BoomBox.glb", true);
+                const engine = window.engine!;
+                const oldEnableOfflineSupport = engine.enableOfflineSupport;
+                const oldOfflineProviderFactory = BABYLON.AbstractEngine.OfflineProviderFactory;
+                let offlineProviderFactoryCalls = 0;
+                let loadedScene: BABYLON.Scene | undefined;
+
+                BABYLON.AbstractEngine.OfflineProviderFactory = (() => {
+                    offlineProviderFactoryCalls++;
+                    throw new Error("Offline provider should not be used for File sources.");
+                }) as typeof BABYLON.AbstractEngine.OfflineProviderFactory;
+                engine.enableOfflineSupport = true;
+
+                try {
+                    loadedScene = await BABYLON.SceneLoader.LoadAsync("", new File([glb], "BoomBox.glb"), engine);
+                    return { loaded: !!loadedScene, offlineProviderFactoryCalls };
+                } finally {
+                    loadedScene?.dispose();
+                    BABYLON.AbstractEngine.OfflineProviderFactory = oldOfflineProviderFactory;
+                    engine.enableOfflineSupport = oldEnableOfflineSupport;
+                }
+            });
+            expect(assertionData.loaded).toBe(true);
+            expect(assertionData.offlineProviderFactoryCalls).toBe(0);
+        });
+
         test("File url (Babylon Native)", async () => {
             const assertionData = await page.evaluate(() => {
                 const urlRedirects = {

@@ -715,7 +715,7 @@ async function loadDataAsync(
         };
 
         const engine = scene.getEngine();
-        let canUseOfflineSupport = engine.enableOfflineSupport;
+        let canUseOfflineSupport = !fileInfo.file && !fileInfo.rawData && engine.enableOfflineSupport;
         if (canUseOfflineSupport) {
             // Also check for exceptions
             let exceptionFound = false;
@@ -1079,23 +1079,28 @@ async function loadSceneSharedAsync(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return await new Promise((resolve, reject) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        loadSceneImplAsync(
-            rootUrl,
-            sceneFilename,
-            engine,
-            (scene) => {
-                resolve(scene);
-            },
-            onProgress,
-            (scene, message, exception) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                reject(exception || new Error(message));
-            },
-            pluginExtension,
-            name,
-            pluginOptions
-        );
+        try {
+            loadSceneImplAsync(
+                rootUrl,
+                sceneFilename,
+                engine,
+                (scene) => {
+                    resolve(scene);
+                },
+                onProgress,
+                (scene, message, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject(exception || new Error(message));
+                },
+                pluginExtension,
+                name,
+                pluginOptions
+                // eslint-disable-next-line github/no-then
+            ).catch(reject);
+        } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            reject(error);
+        }
     });
 }
 
