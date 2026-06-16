@@ -1997,7 +1997,7 @@ export class ThinNativeEngine extends ThinEngine {
             const layerCount = this._engine.getTextureLayerCount(texture);
             if (layerCount > 1) {
                 internalTexture.is2DArray = true;
-                internalTexture.depth = layerCount;
+                internalTexture.baseDepth = internalTexture.depth = layerCount;
             }
         }
         internalTexture.isReady = true;
@@ -2042,9 +2042,7 @@ export class ThinNativeEngine extends ThinEngine {
             const newLayerCount = this._engine.getTextureLayerCount(texture);
             const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
             if (newLayerCount !== oldLayerCount) {
-                throw new Error(
-                    `updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`
-                );
+                throw new Error(`updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`);
             }
         }
 
