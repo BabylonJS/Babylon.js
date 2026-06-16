@@ -3,9 +3,14 @@ import { type IParsedSplat, type ISogTexturePack, Mode } from "./splatDefs";
 import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { Scalar } from "core/Maths/math.scalar";
 import { type AbstractEngine } from "core/Engines";
+import { type Nullable } from "core/types";
+import { type Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
+// updateDynamicTexture is a prototype-augmented engine extension; import its side effect so the ImageBitmap
+// fast path in LoadSogTextureDirectAsync doesn't hit an undefined method under tree-shaken/pure engine builds.
+import "core/Engines/Extensions/engine.dynamicTexture";
 
 /**
  * Definition of a SOG data file
@@ -441,12 +446,15 @@ async function LoadSogTextureDirectAsync(rootUrlOrData: string | Uint8Array, fil
     const engine = scene.getEngine();
     if (typeof createImageBitmap === "function") {
         try {
+            // A typed blob is required: createImageBitmap can fail to decode a typeless blob (and the
+            // content-type is lost when loading via LoadFileAsync), which would force the slow canvas fallback.
+            const mimeType = filename.toLowerCase().endsWith(".png") ? "image/png" : "image/webp";
             let blob: Blob;
             if (typeof rootUrlOrData === "string") {
                 const buffer = (await Tools.LoadFileAsync(rootUrlOrData + filename, true)) as ArrayBuffer;
-                blob = new Blob([buffer]);
+                blob = new Blob([buffer], { type: mimeType });
             } else {
-                blob = new Blob([rootUrlOrData as any]);
+                blob = new Blob([rootUrlOrData as any], { type: mimeType });
             }
             const bitmap = await createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
             try {

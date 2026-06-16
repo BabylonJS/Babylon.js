@@ -222,9 +222,15 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                         sortCounts[0] = renderSplatCount;
                     } else {
                         const scale = (bucketCount - 1) / range;
+                        const maxKey = bucketCount - 1;
                         for (let k = 0; k < renderSplatCount; k++) {
-                            // maxDepth -> 0 (rendered first), minDepth -> bucketCount-1 (rendered last).
-                            const key = ((maxDepth - sortDepths[k]) * scale) >>> 0;
+                            // maxDepth -> 0 (rendered first), minDepth -> bucketCount-1 (rendered last). Clamp
+                            // against float rounding (a tiny `range` makes `scale` huge), which could otherwise
+                            // produce key >= bucketCount and corrupt the histogram with out-of-bounds writes.
+                            let key = ((maxDepth - sortDepths[k]) * scale) >>> 0;
+                            if (key > maxKey) {
+                                key = maxKey;
+                            }
                             sortKeys[k] = key;
                             sortCounts[key]++;
                         }

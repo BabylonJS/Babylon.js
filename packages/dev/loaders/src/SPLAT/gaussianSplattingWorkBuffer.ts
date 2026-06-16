@@ -206,6 +206,12 @@ export class GaussianSplattingWorkBuffer {
         // signals — so the framebuffer can be restored immediately while the transfer completes off-thread.
         const promise = glEngine._readPixelsAsync(0, rowStart, width, rowCount, gl.RGBA, gl.FLOAT, buffer);
         gl.bindFramebuffer(gl.FRAMEBUFFER, previousFbo);
+        // gl.readBuffer is global state: restore the default-framebuffer read source (BACK) so later
+        // readPixels on the default framebuffer aren't left pointing at COLOR_ATTACHMENT0. When restoring to
+        // another FBO, COLOR_ATTACHMENT0 is the correct default read buffer, so only reset for the default one.
+        if (!previousFbo) {
+            gl.readBuffer(gl.BACK);
+        }
         if (!promise) {
             return null;
         }

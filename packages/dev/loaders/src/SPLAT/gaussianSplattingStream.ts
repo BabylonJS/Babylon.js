@@ -475,7 +475,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
 
         // Transform the camera into the mesh's local space (where the node bounds live).
-        this.computeWorldMatrix(true).invertToRef(TmpInvWorld);
+        this.computeWorldMatrix(false).invertToRef(TmpInvWorld);
         const localCamera = Vector3.TransformCoordinatesToRef(camera.globalPosition, TmpInvWorld, TmpLocalCamera);
         const px = localCamera.x;
         const py = localCamera.y;
@@ -1220,7 +1220,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         // World-space frustum planes from the current view-projection, tested against each node's world AABB.
-        const world = this.computeWorldMatrix(true);
+        // force=false uses the renderId/sync fast-path (still recomputes when the transform actually changed),
+        // avoiding a full world-matrix recompute every frame for the per-node frustum test.
+        const world = this.computeWorldMatrix(false);
         camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._cullViewProj);
         Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
 
