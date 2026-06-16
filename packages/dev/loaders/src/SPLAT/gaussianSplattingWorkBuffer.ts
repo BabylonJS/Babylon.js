@@ -8,6 +8,7 @@ import { Color4 } from "core/Maths/math.color";
 import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { type Texture } from "core/Materials/Textures/texture";
 import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { type ISogTexturePack } from "./splatDefs";
 import {
     GaussianSplattingWorkBufferVertexShaderGLSL,
@@ -34,6 +35,22 @@ export class GaussianSplattingWorkBuffer {
     private readonly _material: ShaderMaterial;
     private readonly _quad: Mesh;
     private _disposed = false;
+    // Reused WebGL framebuffer for the async centers readback (created lazily, freed in dispose).
+    private _readFbo: Nullable<WebGLFramebuffer> = null;
+
+    /**
+     * True when the engine supports the non-blocking GPU readback used by {@link readCentersRangeAsync}:
+     * WebGL2 (PBO + fence) or WebGPU (copyTextureToBuffer + mapAsync). When false (e.g. WebGL1), callers must
+     * decode positions on the CPU instead.
+     */
+    public get supportsAsyncCentersReadback(): boolean {
+        const engine = this._scene.getEngine();
+        if (engine.isWebGPU) {
+            return true;
+        }
+        const glEngine = engine as unknown as { _gl?: WebGL2RenderingContext; _readPixelsAsync?: unknown; webGLVersion?: number };
+        return !!glEngine._gl && typeof glEngine._readPixelsAsync === "function" && (glEngine.webGLVersion ?? 0) >= 2;
+    }
 
     /**
      * Square edge length (in pixels) of the work-buffer textures.
@@ -125,10 +142,89 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * Asynchronously reads back the decoded splat centers (stride-4 xyzw, w=1) for a contiguous splat range
+     * from the work buffer's centers texture, using a non-blocking GPU readback (WebGL2 PBO + fence, or WebGPU
+     * copyTextureToBuffer + mapAsync) so it never stalls the frame the way a CPU image decode does. The centers
+     * texture already holds the GPU-decoded positions (identical to the CPU decode), so this replaces decoding
+     * positions on the CPU from the means images. Returns null when async readback is unsupported (caller should
+     * fall back to CPU decoding).
+     * @param splatOffset first splat index of the range
+     * @param splatCount number of splats in the range
+     * @returns a stride-4 Float32Array of length `splatCount * 4`, or null when unsupported/failed
+     */
+    public async readCentersRangeAsync(splatOffset: number, splatCount: number): Promise<Nullable<Float32Array>> {
+        if (this._disposed || splatCount <= 0 || !this.supportsAsyncCentersReadback) {
+            return null;
+        }
+
+        const width = this._textureSize;
+        // The range maps to whole texel rows [rowStart, rowEnd); read that rectangle and slice the exact range.
+        // Splat i lives at texel (i % width, floor(i / width)) in both decode and draw, so the readback (which
+        // indexes the same texture storage directly, with no UV/flip) yields splat i at buffer position
+        // i - rowStart * width on every backend.
+        const rowStart = Math.floor(splatOffset / width);
+        const rowEnd = Math.ceil((splatOffset + splatCount) / width);
+        const rowCount = rowEnd - rowStart;
+        const startInBuffer = (splatOffset - rowStart * width) * 4;
+        const sliceEnd = startInBuffer + splatCount * 4;
+        const centers = this._mrt.textures[0];
+
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU) {
+            // WebGPU: copyTextureToBuffer of the row span + mapAsync (genuinely non-blocking). noDataConversion
+            // returns the raw RGBA32F floats tightly packed (the 256-byte row alignment is removed internally).
+            const result = await centers.readPixels(0, 0, null, true, true, 0, rowStart, width, rowCount);
+            if (this._disposed || !result) {
+                return null;
+            }
+            const floats = result instanceof Float32Array ? result : new Float32Array(result.buffer, result.byteOffset, result.byteLength / 4);
+            return floats.length >= sliceEnd ? (floats.subarray(startInBuffer, sliceEnd) as Float32Array) : null;
+        }
+
+        // WebGL2: read directly from the centers texture via a reused FBO + async PBO readback.
+        const glEngine = engine as unknown as {
+            _gl: WebGL2RenderingContext;
+            _currentFramebuffer: Nullable<WebGLFramebuffer>;
+            _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, o: ArrayBufferView): Nullable<Promise<ArrayBufferView>>;
+        };
+        const gl = glEngine._gl;
+        const hardware = centers.getInternalTexture()?._hardwareTexture?.underlyingResource as Nullable<WebGLTexture>;
+        if (!hardware) {
+            return null;
+        }
+        const buffer = new Float32Array(width * rowCount * 4);
+        if (!this._readFbo) {
+            this._readFbo = gl.createFramebuffer();
+        }
+        const previousFbo = glEngine._currentFramebuffer;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this._readFbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, hardware, 0);
+        gl.readBuffer(gl.COLOR_ATTACHMENT0);
+
+        // _readPixelsAsync issues the readPixels into a PBO synchronously, then resolves once the GPU fence
+        // signals — so the framebuffer can be restored immediately while the transfer completes off-thread.
+        const promise = glEngine._readPixelsAsync(0, rowStart, width, rowCount, gl.RGBA, gl.FLOAT, buffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, previousFbo);
+        if (!promise) {
+            return null;
+        }
+        await promise;
+        if (this._disposed || buffer.length < sliceEnd) {
+            return null;
+        }
+        return buffer.subarray(startInBuffer, sliceEnd) as Float32Array;
+    }
+
+    /**
      * Disposes the work buffer and its decode resources.
      */
     public dispose(): void {
         this._disposed = true;
+        if (this._readFbo) {
+            (this._scene.getEngine() as unknown as { _gl?: WebGL2RenderingContext })._gl?.deleteFramebuffer(this._readFbo);
+            this._readFbo = null;
+        }
         this._quad.dispose();
         this._material.dispose(true, false);
         this._mrt.dispose();

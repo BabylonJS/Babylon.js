@@ -505,10 +505,14 @@ function DecodeSogPositions(data: SOGRootData, meansl: Uint8Array, meansu: Uint8
  * @param dataOrFiles Either the SOGRootData or a Map of filenames to Uint8Array file data (including meta.json)
  * @param rootUrl Base URL to load webp files from (if dataOrFiles is SOGRootData)
  * @param scene The Babylon.js scene
+ * @param computeCpuPositions When true (default), means_l/means_u are read back on the CPU and `pack.positions`
+ *   is decoded for the sort worker / bounding box. Pass false when the caller will instead read the decoded
+ *   centers back from the GPU work buffer — then every attribute (including means) uses the fast direct
+ *   ImageBitmap upload (no `getImageData` readback) and `pack.positions` is left empty.
  * @returns Parsed splat info with `sogTextures` populated.
  */
 // eslint-disable-next-line @typescript-eslint/no-restricted-types
-export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene): Promise<IParsedSplat> {
+export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene, computeCpuPositions = true): Promise<IParsedSplat> {
     let data: SOGRootData;
     let files: Map<string, Uint8Array> | undefined;
 
@@ -523,9 +527,10 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
         data = dataOrFiles;
     }
 
-    // means_l/means_u are read back on the CPU (DecodeSogPositions needs their bytes to feed the sort worker),
-    // so they use the <img>+canvas path. Every other attribute texture is only sampled on the GPU, so it is
-    // uploaded straight from a decoded ImageBitmap with no getImageData readback. Both sets load in parallel.
+    // Attribute textures (scales/quats/sh0/shN) are only sampled on the GPU, so they always upload straight
+    // from a decoded ImageBitmap (no getImageData readback). means_l/means_u additionally need their CPU bytes
+    // when computeCpuPositions is set (to decode positions for the sort worker) — those go through the
+    // <img>+canvas path; otherwise means also use the fast direct upload. All loads run in parallel.
     const loadMeansImageAsync = async (fileName: string): Promise<IWebPImage> => {
         if (files && files.has(fileName)) {
             return await LoadWebpImageData(files.get(fileName)!, fileName, scene.getEngine());
@@ -540,17 +545,38 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
     };
 
     const gpuFiles = [...data.scales.files, ...data.quats.files, ...data.sh0.files, ...(data.shN?.files ?? [])];
-    const [meansImages, gpuTextures] = await Promise.all([Promise.all(data.means.files.map(loadMeansImageAsync)), Promise.all(gpuFiles.map(loadGpuTextureAsync))]);
+
+    let meansL: RawTexture;
+    let meansU: RawTexture;
+    let meansWidth: number;
+    let meansHeight: number;
+    let meansImages: Nullable<[IWebPImage, IWebPImage]> = null;
+    let gpuTextures: RawTexture[];
+
+    if (computeCpuPositions) {
+        const [images, gpu] = await Promise.all([Promise.all(data.means.files.map(loadMeansImageAsync)), Promise.all(gpuFiles.map(loadGpuTextureAsync))]);
+        meansImages = [images[0], images[1]];
+        gpuTextures = gpu;
+        meansL = CreateSogTextureFromImage(scene, images[0]);
+        meansU = CreateSogTextureFromImage(scene, images[1]);
+        meansWidth = images[0].width;
+        meansHeight = images[0].height;
+    } else {
+        const [meansTex, gpu] = await Promise.all([Promise.all(data.means.files.map(loadGpuTextureAsync)), Promise.all(gpuFiles.map(loadGpuTextureAsync))]);
+        gpuTextures = gpu;
+        meansL = meansTex[0];
+        meansU = meansTex[1];
+        const size = (meansL as Texture).getSize();
+        meansWidth = size.width;
+        meansHeight = size.height;
+    }
 
     const splatCount = data.count ?? data.means.shape[0];
-    const splatTexelCount = meansImages[0].width * meansImages[0].height;
+    const splatTexelCount = meansWidth * meansHeight;
     if (splatTexelCount < splatCount) {
         throw new Error(`SOG texture contains ${splatTexelCount} texels, but metadata references ${splatCount} splats.`);
     }
 
-    // means_l, means_u share the same (w,h) as the GPU-only textures — each texture is sized from its own image.
-    const meansL = CreateSogTextureFromImage(scene, meansImages[0]);
-    const meansU = CreateSogTextureFromImage(scene, meansImages[1]);
     const scales = gpuTextures[0];
     const quats = gpuTextures[1];
     const sh0 = gpuTextures[2];
@@ -621,7 +647,7 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
         shnMin: typeof data.shN?.mins === "number" ? data.shN.mins : undefined,
         shnMax: typeof data.shN?.maxs === "number" ? data.shN.maxs : undefined,
         shCoeffCount,
-        positions: DecodeSogPositions(data, meansImages[0].bits, meansImages[1].bits, splatCount),
+        positions: meansImages ? DecodeSogPositions(data, meansImages[0].bits, meansImages[1].bits, splatCount) : new Float32Array(0),
     };
 
     return { mode: Mode.Splat, data: new ArrayBuffer(0), hasVertexColors: false, shDegree, sogTextures: pack };

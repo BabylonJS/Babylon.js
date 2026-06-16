@@ -211,6 +211,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
+    // True once GPU position readback has been validated against a CPU decode (see _probeReadbackAsync). While
+    // false, positions are decoded on the CPU from the means images; once validated, every SOG image uses the
+    // fast direct upload and positions are read back from the work buffer (non-blocking).
+    private _useGpuPositionReadback = false;
+    // Whether the engine reports GPU readback support (candidate to validate on the first decode).
+    private _readbackCandidate = false;
+    // Set once the one-time readback validation has run (success or failure).
+    private _readbackProbed = false;
 
     // Global splat offset where each source file begins in the work buffer (fixed for all files up front).
     private readonly _fileBaseSplat = new Map<number, number>();
@@ -758,6 +766,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
+        // GPU readback is only enabled after it is validated against a CPU decode on the first file (see
+        // _probeReadbackAsync); until then positions are decoded on the CPU so there is always a correct result.
+        this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
         const splatPositions = new Float32Array(capacity * 4);
         const textures = this._workBuffer.textures;
         this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity);
@@ -894,6 +905,100 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
+     * Writes a decoded splat range's positions into the shared buffer, expands the bounds, and incrementally
+     * patches the sort worker.
+     * @param positions stride-4 positions for the range
+     * @param base first splat index of the range in the work buffer
+     * @param count number of splats in the range
+     */
+    private _applyPositions(positions: Float32Array, base: number, count: number): void {
+        this._splatPositions!.set(positions, base * 4);
+        this._updateBounds(positions, count);
+        // Incrementally patch only this range in the sort worker (avoids the full position-buffer re-copy).
+        this._postWorkerPositionsRange(base, count);
+    }
+
+    /**
+     * One-time validation of GPU position readback: reads a sample of the just-decoded range back from the work
+     * buffer and compares it to the CPU-decoded positions. Enables {@link _useGpuPositionReadback} only on an
+     * exact (within float tolerance) match, so an unsupported or incorrect readback (e.g. a backend without the
+     * required texture usage, or an orientation mismatch) safely keeps the CPU decode path.
+     * @param base first splat index of the validated range
+     * @param count number of splats in the range
+     * @param cpuPositions the CPU-decoded stride-4 positions for the range (ground truth)
+     */
+    private async _probeReadbackAsync(base: number, count: number, cpuPositions: Float32Array): Promise<void> {
+        this._readbackProbed = true;
+        if (!this._workBuffer) {
+            return;
+        }
+        const sampleCount = Math.min(count, 1024);
+        let ok = false;
+        try {
+            const gpu = await this._workBuffer.readCentersRangeAsync(base, sampleCount);
+            if (this._disposed) {
+                return;
+            }
+            if (gpu && gpu.length >= sampleCount * 4) {
+                ok = true;
+                for (let i = 0; i < sampleCount && ok; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        const a = gpu[i * 4 + j];
+                        const b = cpuPositions[i * 4 + j];
+                        if (Math.abs(a - b) > 1e-2 * (1 + Math.abs(b))) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch {
+            ok = false;
+        }
+        this._useGpuPositionReadback = ok;
+        Logger.Log(
+            ok
+                ? "GaussianSplattingStream: GPU position readback validated; streamed LOD positions are read back from the GPU."
+                : "GaussianSplattingStream: GPU position readback unavailable; decoding LOD positions on the CPU."
+        );
+    }
+
+    /**
+     * Resolves the decoded positions for a splat range and applies them. Once GPU readback has been validated,
+     * positions are read back from the work buffer (non-blocking) and `pack.positions` is empty; otherwise the
+     * CPU-decoded `pack.positions` are used, and — on the first such decode — the GPU readback is validated
+     * against them so subsequent decodes can use the fast path.
+     * @param pack the parsed SOG pack (its `positions` is populated only on the CPU path)
+     * @param base first splat index of the range in the work buffer
+     * @param count number of splats in the range
+     * @returns whether positions were applied
+     */
+    private async _applyDecodedPositionsAsync(pack: ISogTexturePack, base: number, count: number): Promise<boolean> {
+        if (this._useGpuPositionReadback && this._workBuffer) {
+            const positions = await this._workBuffer.readCentersRangeAsync(base, count);
+            if (this._disposed) {
+                return false;
+            }
+            if (positions && this._splatPositions) {
+                this._applyPositions(positions, base, count);
+                return true;
+            }
+            // Validated readback unexpectedly returned nothing; fall through to the (likely empty) CPU positions.
+        }
+
+        const cpu = pack.positions.length >= count * 4 ? (pack.positions.subarray(0, count * 4) as Float32Array) : null;
+        if (!cpu || !this._splatPositions) {
+            return false;
+        }
+        this._applyPositions(cpu, base, count);
+        // First CPU decode while readback is a candidate: validate it so later decodes can use the fast path.
+        if (!this._readbackProbed && this._readbackCandidate) {
+            await this._probeReadbackAsync(base, count, cpu);
+        }
+        return true;
+    }
+
+    /**
      * Decodes the always-on environment bundle into its work-buffer block and activates its range.
      */
     private async _decodeEnvironmentAsync(): Promise<void> {
@@ -902,7 +1007,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         const range = this._environmentRange;
         try {
-            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene);
+            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
@@ -915,10 +1020,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (this._disposed) {
                     return;
                 }
-                this._splatPositions!.set(pack.positions.subarray(0, range.count * 4), range.offset * 4);
-                this._updateBounds(pack.positions, range.count);
-                // Incrementally patch only the environment's splat range in the sort worker.
-                this._postWorkerPositionsRange(range.offset, range.count);
+                await this._applyDecodedPositionsAsync(pack, range.offset, range.count);
+                if (this._disposed) {
+                    return;
+                }
                 this._refreshActiveRanges();
             } finally {
                 // Always release the GPU source textures (the decode pass is the only consumer).
@@ -947,7 +1052,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         this._loadingFiles.add(fileId);
         try {
-            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene);
+            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
@@ -960,12 +1065,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (this._disposed) {
                     return;
                 }
-                this._splatPositions!.set(pack.positions.subarray(0, count * 4), base * 4);
-                this._updateBounds(pack.positions, count);
+                await this._applyDecodedPositionsAsync(pack, base, count);
+                if (this._disposed) {
+                    return;
+                }
                 this._decodedFiles.add(fileId);
-                // Incrementally patch only this file's splat range in the sort worker (avoids the full
-                // position-buffer re-copy that froze the frame on every decode).
-                this._postWorkerPositionsRange(base, count);
                 // Promote any nodes that can now reach their desired LOD via this newly decoded file.
                 if (this._applyDesiredLods()) {
                     this._refreshActiveRanges();
