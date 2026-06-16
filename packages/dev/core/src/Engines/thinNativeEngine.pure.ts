@@ -227,6 +227,7 @@ export class ThinNativeEngine extends ThinEngine {
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _currentDepthTest: number;
+    private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
     private _stencilMask: number;
     private _stencilFunc: number;
@@ -268,6 +269,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._frameStats = { gpuTimeNs: Number.NaN };
         this._boundBuffersVertexArray = null;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
+        this._depthTestEnabled = true;
         this._stencilTest;
         this._stencilMask = 255;
         this._stencilFunc = Constants.ALWAYS;
@@ -305,6 +307,10 @@ export class ThinNativeEngine extends ThinEngine {
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
         this._shaderPlatformName = "NATIVE";
+        // Babylon Native is not WebGL and has no _gl context. Report a distinct engine name (like
+        // WebGPU reports "WebGPU") so application/feature code that branches on engine.name === "WebGL"
+        // to touch the WebGL-only _gl context skips the native engine instead of dereferencing null.
+        this._name = "Native";
 
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
@@ -735,6 +741,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -765,6 +772,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -1069,9 +1077,29 @@ export class ThinNativeEngine extends ThinEngine {
      * @param enable defines the state to set
      */
     public override setDepthBuffer(enable: boolean): void {
+        // Keep the shared depth-culling state in sync so that code paths which toggle
+        // depth testing through engine.depthCullingState.depthTest (for example
+        // EffectRenderer.applyEffectWrapper) are also honored on the native side. The
+        // native draw path does not go through the WebGL applyStates() flush, so the
+        // value is reconciled in _flushDepthTestState() right before each draw.
+        this._depthCullingState.depthTest = enable;
+        this._encodeDepthTest(enable);
+    }
+
+    private _encodeDepthTest(enable: boolean): void {
+        this._depthTestEnabled = enable;
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : _native.Engine.DEPTH_TEST_ALWAYS);
         this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _flushDepthTestState(): void {
+        // Unlike the WebGL engine, the native engine does not call applyStates() before
+        // a draw, so depth-test toggles made directly on engine.depthCullingState are
+        // flushed here to match the cross-engine contract.
+        if (this._depthCullingState.depthTest !== this._depthTestEnabled) {
+            this._encodeDepthTest(this._depthCullingState.depthTest);
+        }
     }
 
     /**
@@ -2317,6 +2345,76 @@ export class ThinNativeEngine extends ThinEngine {
         return rtWrapper;
     }
 
+    public override createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as NativeRenderTargetWrapper;
+
+        let generateDepthBuffer = true;
+        let generateStencilBuffer = false;
+        let generateMipMaps = false;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        let format = Constants.TEXTUREFORMAT_RGBA;
+        let samples = 1;
+        if (options !== undefined && typeof options === "object") {
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
+            generateStencilBuffer = !!options.generateStencilBuffer;
+            generateMipMaps = !!options.generateMipMaps;
+            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
+            samples = options.samples ?? 1;
+        }
+
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        texture.isCube = true;
+        texture.baseWidth = size;
+        texture.baseHeight = size;
+        texture.width = size;
+        texture.height = size;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.type = type;
+        texture.format = format;
+
+        const nativeTexture = texture._hardwareTexture!.underlyingResource;
+        const nativeTextureFormat = getNativeTextureFormat(format, type);
+        // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
+        const hasMips = samples > 1 ? false : generateMipMaps;
+        this._engine.initializeTexture(nativeTexture, size, size, hasMips, nativeTextureFormat, /*renderTarget*/ true, /*srgb*/ false, samples, /*isCube*/ true);
+        this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
+
+        // The native engine cannot render to all six faces through one framebuffer, so create one
+        // framebuffer per face (the C++ side binds the matching cube layer); bindFramebuffer(faceIndex)
+        // then selects the right one.
+        const framebuffers: NativeFramebuffer[] = [];
+        for (let face = 0; face < 6; face++) {
+            framebuffers.push(this._engine.createFrameBuffer(nativeTexture, size, size, generateStencilBuffer, generateDepthBuffer, samples, face));
+        }
+
+        rtWrapper._framebuffers = framebuffers;
+        rtWrapper._generateDepthBuffer = generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = generateStencilBuffer;
+        rtWrapper._samples = samples;
+
+        rtWrapper.setTextures(texture);
+
+        return rtWrapper;
+    }
+
+    public override generateMipMapsForCubemap(_texture: InternalTexture, _unbind = true): void {
+        // The WebGL path rebinds gl.TEXTURE_CUBE_MAP and calls gl.generateMipmap; both deref _gl, which is
+        // null on Native. bgfx auto-generates the mip chain when a render target texture created with mips is
+        // resolved (the same way 2D RTTs get their mips here -- unBindFramebuffer issues no explicit mipgen),
+        // so this is a no-op on Native.
+    }
+
     public override updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
         if (rtWrapper.samples === samples) {
             return samples;
@@ -2398,15 +2496,16 @@ export class ThinNativeEngine extends ThinEngine {
 
         this._currentRenderTarget = texture;
 
-        if (faceIndex) {
-            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
-        }
-
         if (requiredWidth || requiredHeight) {
             throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
         }
 
-        if (nativeRTWrapper._framebufferDepthStencil) {
+        if (nativeRTWrapper._framebuffers) {
+            // Cube render target: bind the framebuffer for the requested face.
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffers[faceIndex ?? 0]);
+        } else if (faceIndex) {
+            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
+        } else if (nativeRTWrapper._framebufferDepthStencil) {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebufferDepthStencil);
         } else {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
@@ -2662,7 +2761,15 @@ export class ThinNativeEngine extends ThinEngine {
         lod: number = 0,
         generateMipMaps = false
     ): void {
-        throw new Error("updateTextureData not implemented.");
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
+        // bgfx updates the requested sub-rectangle of the existing texture (faceIndex selects the cube
+        // face / array layer, lod selects the mip level). invertY is forwarded so the native side can match
+        // the vertical orientation the base texture upload uses. Mip regeneration after a partial update is
+        // not supported on Native, so generateMipMaps is ignored (consistent with the other raw-texture paths).
+        this._engine.updateTextureData(texture._hardwareTexture.underlyingResource, imageData, xOffset, yOffset, width, height, faceIndex, lod, texture.invertY);
     }
 
     /**

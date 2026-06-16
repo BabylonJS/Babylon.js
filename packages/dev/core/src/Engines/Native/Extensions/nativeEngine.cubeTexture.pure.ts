@@ -4,6 +4,7 @@ import { InternalTextureSource, InternalTexture } from "../../../Materials/Textu
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../../../Misc/environmentTextureTools.pure";
 import { type IWebRequest } from "../../../Misc/interfaces/iWebRequest";
+import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial";
 import { type Scene } from "../../../scene.pure";
 import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
@@ -118,34 +119,102 @@ export function RegisterNativeEngineCubeTexture(): void {
                 );
             }
         } else {
-            if (!files || files.length !== 6) {
+            if (files && files.length === 6) {
+                // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
+                const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
+                // eslint-disable-next-line github/no-then
+                Promise.all(reorderedFiles.map(async (file) => await this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
+                    // eslint-disable-next-line github/no-then
+                    .then(async (data) => {
+                        return await new Promise<void>((resolve, reject) => {
+                            this._engine.loadCubeTexture(
+                                texture._hardwareTexture!.underlyingResource,
+                                data,
+                                !noMipmap,
+                                true,
+                                texture._useSRGBBuffer,
+                                () => resolve(),
+                                () => reject(new Error("Failed to load native cubemap"))
+                            );
+                        });
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .then(
+                        () => {
+                            texture.isReady = true;
+                            if (onLoad) {
+                                onLoad();
+                            }
+                        },
+                        (error) => {
+                            if (onError) {
+                                onError(`Failed to load cubemap: ${error.message}`, error);
+                            }
+                        }
+                    );
+            } else if (files) {
                 throw new Error("Cannot load cubemap because 6 files were not defined");
-            }
+            } else {
+                // Single self-contained cubemap container (.dds / .ktx / .ktx2) holding all six
+                // faces and their mip chain. The native engine decodes it with bimg and, when
+                // polynomials are requested, returns the spherical harmonics it computed from the
+                // top mip (native cannot read cube faces back from the GPU to derive them lazily).
+                const onContainerLoaded = (data: ArrayBufferView) => {
+                    this._engine.loadCubeTexture(
+                        texture._hardwareTexture!.underlyingResource,
+                        [data],
+                        !noMipmap,
+                        true,
+                        texture._useSRGBBuffer,
+                        (sphericalPolynomialCoefficients?: Float32Array) => {
+                            if (createPolynomials && sphericalPolynomialCoefficients && sphericalPolynomialCoefficients.length === 27) {
+                                const c = sphericalPolynomialCoefficients;
+                                texture._sphericalPolynomial = SphericalPolynomial.FromArray([
+                                    [c[0], c[1], c[2]],
+                                    [c[3], c[4], c[5]],
+                                    [c[6], c[7], c[8]],
+                                    [c[9], c[10], c[11]],
+                                    [c[12], c[13], c[14]],
+                                    [c[15], c[16], c[17]],
+                                    [c[18], c[19], c[20]],
+                                    [c[21], c[22], c[23]],
+                                    [c[24], c[25], c[26]],
+                                ]);
+                            }
+                            texture.isReady = true;
+                            if (onLoad) {
+                                onLoad();
+                            }
+                        },
+                        () => {
+                            if (onError) {
+                                onError("Could not load a native cube texture.");
+                            }
+                        }
+                    );
+                };
 
-            // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
-            const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
-            // eslint-disable-next-line github/no-then
-            Promise.all(reorderedFiles.map(async (file) => await this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
-                // eslint-disable-next-line github/no-then
-                .then(async (data) => {
-                    return await new Promise<void>((resolve, reject) => {
-                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
-                    });
-                })
-                // eslint-disable-next-line github/no-then
-                .then(
-                    () => {
-                        texture.isReady = true;
-                        if (onLoad) {
-                            onLoad();
+                if (buffer) {
+                    onContainerLoaded(buffer);
+                } else {
+                    const onInternalError = (request?: IWebRequest, exception?: any) => {
+                        if (onError && request) {
+                            onError(request.status + " " + request.statusText, exception);
                         }
-                    },
-                    (error) => {
-                        if (onError) {
-                            onError(`Failed to load cubemap: ${error.message}`, error);
-                        }
-                    }
-                );
+                    };
+
+                    this._loadFile(
+                        rootUrl,
+                        (data) => {
+                            onContainerLoaded(new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength));
+                        },
+                        undefined,
+                        undefined,
+                        true,
+                        onInternalError
+                    );
+                }
+            }
         }
 
         this._internalTexturesCache.push(texture);
