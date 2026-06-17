@@ -40,6 +40,9 @@ export class GaussianSplattingWorkBuffer {
     private readonly _quad: Mesh;
     // Relayout (defrag) copy material, created lazily on first relayout.
     private _copyMaterial: Nullable<ShaderMaterial> = null;
+    // Reusable destination->source index map for the relayout pass (created lazily, sized to the work buffer).
+    private _relayoutMapData: Nullable<Float32Array> = null;
+    private _relayoutMapTexture: Nullable<RawTexture> = null;
     private _disposed = false;
     // Reused WebGL framebuffer for the async centers readback (created lazily, freed in dispose).
     private _readFbo: Nullable<WebGLFramebuffer> = null;
@@ -189,20 +192,31 @@ export class GaussianSplattingWorkBuffer {
             return;
         }
         const size = this._textureSize;
-        const mapData = new Float32Array(size * size);
+        // Reuse the map buffer and its GPU texture across relayouts (the work-buffer size is fixed).
+        if (!this._relayoutMapData) {
+            this._relayoutMapData = new Float32Array(size * size);
+        }
+        const mapData = this._relayoutMapData;
         mapData.fill(-1);
         mapData.set(srcIndexByDst.subarray(0, Math.min(srcIndexByDst.length, mapData.length)));
-        const mapTexture = new RawTexture(
-            mapData,
-            size,
-            size,
-            Constants.TEXTUREFORMAT_R,
-            this._scene,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
+        if (!this._relayoutMapTexture) {
+            this._relayoutMapTexture = new RawTexture(
+                mapData,
+                size,
+                size,
+                Constants.TEXTUREFORMAT_R,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
+        } else {
+            this._relayoutMapTexture.update(mapData);
+        }
+        const mapTexture = this._relayoutMapTexture;
+        // The temporary ping-pong MRT is (re)created per relayout rather than kept resident: it is the same size
+        // as the work buffer, so a persistent copy would double GPU memory and defeat the streaming memory budget.
         const temp = this._createMrt("gsRelayoutTemp", false);
         try {
             // Pass 1: old -> temp using the map (temp gets the new layout; gaps stay zeroed by the clear).
@@ -211,7 +225,6 @@ export class GaussianSplattingWorkBuffer {
             this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0);
         } finally {
             temp.dispose();
-            mapTexture.dispose();
             this._quad.material = this._material;
         }
     }
@@ -352,6 +365,7 @@ export class GaussianSplattingWorkBuffer {
         this._quad.dispose();
         this._material.dispose(true, false);
         this._copyMaterial?.dispose(true, false);
+        this._relayoutMapTexture?.dispose();
         this._mrt.dispose();
     }
 

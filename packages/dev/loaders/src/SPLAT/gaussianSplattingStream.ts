@@ -281,6 +281,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Serializes the allocate -> decode -> readback critical section so a defrag relayout (which runs inside it)
     // never overlaps another file's decode writing the work buffer, which would corrupt the moved data.
     private _decodeGate: Promise<void> = Promise.resolve();
+    // Reusable scratch for the (rare) defrag relayout, to avoid per-relayout allocations during streaming.
+    private readonly _relayoutOldOffsets = new Map<number, number>();
+    private _relayoutSrcIndex: Nullable<Float32Array> = null;
 
     // Throttles and retries the SOG file/image downloads (PlayCanvas-style download manager).
     private readonly _downloadManager: GaussianSplattingDownloadManager;
@@ -1215,7 +1218,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 }
                 if (base === null) {
                     // No room even after evicting and compacting: refuse and keep nodes on their current LOD.
-                    Logger.Warn(`GaussianSplattingStream: resident memory budget full; skipping LOD file ${fileId}.`);
+                    // A file cancelled mid-flight isn't a budget problem, so don't warn for it.
+                    if (!this._cancelledDecodes.has(fileId)) {
+                        Logger.Warn(`GaussianSplattingStream: resident memory budget full; skipping LOD file ${fileId}.`);
+                    }
                     return;
                 }
                 allocated = true;
@@ -1288,7 +1294,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         return await new Promise<Nullable<number>>((resolve) => {
             const attempt = () => {
-                if (this._disposed || !this._residency || !this._workBuffer) {
+                // Bail out (no relayout) if the file was cancelled while we waited for the shader to be ready,
+                // so rapidly-changing targets don't trigger an expensive compaction for a file no longer needed.
+                if (this._disposed || !this._residency || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
                     resolve(null);
                     return;
                 }
@@ -1311,7 +1319,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (!this._residency || !this._workBuffer || !this._splatPositions) {
             return;
         }
-        const oldOffsets = new Map<number, number>();
+        const oldOffsets = this._relayoutOldOffsets;
+        oldOffsets.clear();
         for (const block of this._residency.getResidentBlocks()) {
             oldOffsets.set(block.file, block.offset);
         }
@@ -1321,24 +1330,36 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         const capacity = this._residency.capacity;
-        const positions = this._splatPositions;
-        // Build the destination->source index map (for the GPU pass) and the relaid-out CPU positions together.
-        const srcIndexByDst = new Float32Array(capacity);
+        if (!this._relayoutSrcIndex || this._relayoutSrcIndex.length !== capacity) {
+            this._relayoutSrcIndex = new Float32Array(capacity);
+        }
+        const srcIndexByDst = this._relayoutSrcIndex;
         srcIndexByDst.fill(-1);
-        const newPositions = new Float32Array(capacity * 4);
-        for (const block of this._residency.getResidentBlocks()) {
+
+        const resident = this._residency.getResidentBlocks();
+        // Destination->source splat index map for the GPU relayout pass.
+        for (const block of resident) {
             const oldOffset = oldOffsets.get(block.file)!;
             for (let k = 0; k < block.count; k++) {
                 srcIndexByDst[block.offset + k] = oldOffset + k;
             }
-            newPositions.set(positions.subarray(oldOffset * 4, (oldOffset + block.count) * 4), block.offset * 4);
         }
-
         // GPU: relocate the decoded textures in place (same texture instances).
         this._workBuffer.relayoutSync(srcIndexByDst);
 
-        // CPU: commit the new positions, update the environment offset, re-post to the sort worker, refresh ranges.
-        positions.set(newPositions);
+        // CPU positions: compaction only ever moves a block to a lower offset, so copying in place in ascending
+        // new-offset order is safe (a block's source is never overwritten by an earlier move). This avoids a
+        // full capacity*4 scratch buffer.
+        const positions = this._splatPositions;
+        resident.sort((a, b) => a.offset - b.offset);
+        for (const block of resident) {
+            const oldOffset = oldOffsets.get(block.file)!;
+            if (oldOffset !== block.offset) {
+                positions.copyWithin(block.offset * 4, oldOffset * 4, (oldOffset + block.count) * 4);
+            }
+        }
+
+        // Update the environment offset (it may have moved), re-post to the sort worker, and refresh ranges.
         if (this._environmentRange) {
             const envOffset = this._residency.offset(EnvironmentFileId);
             if (envOffset !== undefined) {
