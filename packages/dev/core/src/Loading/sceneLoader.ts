@@ -635,6 +635,18 @@ function toAsyncPlugin(plugin: SceneLoaderPlugin, fileInfo: IFileInfo): ISceneLo
     };
 }
 
+// Reports a load failure to the legacy onError callback. The onError signature requires a Scene, but a scene
+// may not be available (e.g. the error occurred before any scene was created). In that case, fall back to
+// logging so the error handler does not throw a secondary error and mask the original failure.
+function reportLegacyLoadError(onError: Nullable<(scene: Scene, message: string, exception?: any) => void> | undefined, reportScene: Nullable<Scene>, error: unknown): void {
+    const message = getErrorMessage(error);
+    if (onError && reportScene) {
+        onError(reportScene, message, error);
+    } else {
+        Logger.Error(message);
+    }
+}
+
 // Wraps a user supplied progress callback so that an exception thrown by it is logged rather than
 // aborting the entire loading operation.
 function wrapProgress(onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined): ((event: ISceneLoaderProgressEvent) => void) | undefined {
@@ -744,7 +756,8 @@ async function loadDataAsync(
     return await new Promise<LoadedPluginData>((resolve, reject) => {
         let request: Nullable<IFileRequest> = null;
         let pluginDisposed = false;
-        plugin.onDisposeObservable?.add(() => {
+
+        const onDisposeObserver = plugin.onDisposeObservable?.add(() => {
             pluginDisposed = true;
 
             if (request) {
@@ -752,16 +765,31 @@ async function loadDataAsync(
                 request = null;
             }
 
-            reject(createLoadError(fileInfo, "Loading was aborted because the plugin was disposed."));
+            rejectAndCleanup(createLoadError(fileInfo, "Loading was aborted because the plugin was disposed."));
         });
+
+        // Ensure the onDispose observer is removed once the promise settles, so observers do not accumulate across loads.
+        const cleanup = () => {
+            if (onDisposeObserver) {
+                plugin.onDisposeObservable?.remove(onDisposeObserver);
+            }
+        };
+        const resolveAndCleanup = (value: LoadedPluginData) => {
+            cleanup();
+            resolve(value);
+        };
+        const rejectAndCleanup = (error: Error) => {
+            cleanup();
+            reject(error);
+        };
 
         const dataCallback = (data: unknown, responseURL?: string) => {
             if (scene.isDisposed) {
-                reject(createLoadError(fileInfo, "Scene has been disposed"));
+                rejectAndCleanup(createLoadError(fileInfo, "Scene has been disposed"));
                 return;
             }
 
-            resolve({ plugin, data, responseURL });
+            resolveAndCleanup({ plugin, data, responseURL });
         };
 
         const manifestChecked = () => {
@@ -770,11 +798,11 @@ async function loadDataAsync(
             }
 
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-                reject(createLoadError(fileInfo, request?.statusText, exception));
+                rejectAndCleanup(createLoadError(fileInfo, request?.statusText, exception));
             };
 
             if (!plugin.loadFile && fileInfo.rawData) {
-                reject(createLoadError(fileInfo, "Plugin does not support loading ArrayBufferView."));
+                rejectAndCleanup(createLoadError(fileInfo, "Plugin does not support loading ArrayBufferView."));
                 return;
             }
 
@@ -783,7 +811,7 @@ async function loadDataAsync(
                     ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
                     : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
             } catch (error) {
-                reject(createLoadError(fileInfo, undefined, error));
+                rejectAndCleanup(createLoadError(fileInfo, undefined, error));
             }
         };
 
@@ -809,7 +837,7 @@ async function loadDataAsync(
             try {
                 scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
             } catch (error) {
-                reject(createLoadError(fileInfo, undefined, error));
+                rejectAndCleanup(createLoadError(fileInfo, undefined, error));
             }
         } else {
             manifestChecked();
@@ -1001,7 +1029,13 @@ async function loadSceneCoreAsync(
     }
 
     const scene = new Scene(engine);
-    await appendSceneCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name, pluginOptions);
+    try {
+        await appendSceneCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name, pluginOptions);
+    } catch (error) {
+        // The scene was created here, so dispose it on failure to avoid leaking the partially loaded scene.
+        scene.dispose();
+        throw error;
+    }
     return scene;
 }
 
@@ -1427,11 +1461,7 @@ export class SceneLoader {
                     result.spriteManagers
                 );
             } catch (error) {
-                if (onError) {
-                    onError(reportScene!, getErrorMessage(error), error);
-                } else {
-                    Logger.Error(getErrorMessage(error));
-                }
+                reportLegacyLoadError(onError, reportScene, error);
             }
         })();
     }
@@ -1487,11 +1517,7 @@ export class SceneLoader {
                 const scene = await loadSceneCoreAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
                 onSuccess?.(scene);
             } catch (error) {
-                if (onError) {
-                    onError(EngineStore.LastCreatedScene!, getErrorMessage(error), error);
-                } else {
-                    Logger.Error(getErrorMessage(error));
-                }
+                reportLegacyLoadError(onError, EngineStore.LastCreatedScene, error);
             }
         })();
     }
@@ -1546,11 +1572,7 @@ export class SceneLoader {
                 const appendedScene = await appendSceneCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
                 onSuccess?.(appendedScene);
             } catch (error) {
-                if (onError) {
-                    onError(reportScene!, getErrorMessage(error), error);
-                } else {
-                    Logger.Error(getErrorMessage(error));
-                }
+                reportLegacyLoadError(onError, reportScene, error);
             }
         })();
     }
@@ -1605,11 +1627,7 @@ export class SceneLoader {
                 const assets = await loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
                 onSuccess?.(assets);
             } catch (error) {
-                if (onError) {
-                    onError(reportScene!, getErrorMessage(error), error);
-                } else {
-                    Logger.Error(getErrorMessage(error));
-                }
+                reportLegacyLoadError(onError, reportScene, error);
             }
         })();
     }
@@ -1670,11 +1688,7 @@ export class SceneLoader {
                 await importAnimationsCoreAsync(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
                 onSuccess?.(reportScene!);
             } catch (error) {
-                if (onError) {
-                    onError(reportScene!, getErrorMessage(error), error);
-                } else {
-                    Logger.Error(getErrorMessage(error));
-                }
+                reportLegacyLoadError(onError, reportScene, error);
             }
         })();
     }

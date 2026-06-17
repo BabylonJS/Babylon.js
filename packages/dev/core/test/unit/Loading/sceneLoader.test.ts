@@ -441,6 +441,32 @@ describe("SceneLoader", () => {
             await promise.catch(() => {});
         });
 
+        // The scene created internally by LoadSceneAsync must be disposed when the load fails so that a
+        // partially loaded scene is not leaked.
+        it("disposes the newly created scene when the load fails", async () => {
+            const { name, extension } = nextPluginIdentity("loadscenedispose");
+            let createdScene: Scene | null = null;
+            const plugin: ISceneLoaderPluginAsync = {
+                name,
+                extensions: extension,
+                importMeshAsync: () => Promise.resolve(createEmptyAsyncResult()),
+                loadAsync: (s) => {
+                    createdScene = s;
+                    return Promise.reject(new Error("load scene boom"));
+                },
+                loadAssetContainerAsync: (s) => Promise.resolve(new AssetContainer(s)),
+            };
+            RegisterSceneLoaderPlugin(plugin);
+
+            const promise = LoadSceneAsync("data:dummy", engine, { pluginExtension: extension });
+            expect(await classifySettlement(promise)).toBe("rejected");
+            await promise.catch(() => {});
+
+            expect(createdScene).not.toBeNull();
+            expect(createdScene!).not.toBe(scene);
+            expect(createdScene!.isDisposed).toBe(true);
+        });
+
         // Regression for https://github.com/BabylonJS/Babylon.js/pull/18584:
         // a disabled plugin causes loadDataAsync to throw, which loadSceneImplAsync rejects with.
         // loadSceneSharedAsync used a floating promise without a catch, so that rejection was swallowed
@@ -695,9 +721,8 @@ describe("SceneLoader", () => {
     });
 
     // A synchronous plugin can signal failure either by calling its onError argument or by returning false.
-    // When it returns false WITHOUT calling onError, the loading operation should still settle (reject) and
-    // must not leak pending data on the scene. These tests currently fail because the operation hangs forever
-    // and the pending data is never removed; they should pass once the loader is reworked.
+    // When it returns false WITHOUT calling onError, the loading operation still settles (reject) and must not
+    // leak pending data on the scene.
     describe("Sync plugin returns false without calling onError", () => {
         it("ImportMeshAsync rejects and clears pending data", async () => {
             const { name, extension } = nextPluginIdentity("importsilentfalse");
@@ -757,9 +782,7 @@ describe("SceneLoader", () => {
     });
 
     // When GetFileInfo returns null (for example, a rootUrl is set and the filename starts with "/"),
-    // the internal loader functions return early without ever invoking the success callback, so the
-    // promise-based public APIs never settle. They should reject on invalid input. These tests currently
-    // fail because the operation hangs forever; they should pass once the loader is reworked. Note that
+    // the operation rejects on the invalid input rather than leaving the promise unsettled. Note that
     // Tools.Error logs an error in this path, so it is silenced to keep the test output clean.
     describe("Invalid input (GetFileInfo returns null)", () => {
         beforeEach(() => {
@@ -791,9 +814,8 @@ describe("SceneLoader", () => {
         });
     });
 
-    // When a plugin is disposed mid-load (via its onDisposeObservable), the in-flight request is aborted and
-    // pending data is removed, but the loading promise is never settled. It should reject so callers are not
-    // left awaiting forever. This test currently fails because the operation hangs; it should pass once reworked.
+    // When a plugin is disposed mid-load (via its onDisposeObservable), the in-flight request is aborted,
+    // pending data is removed, and the loading promise rejects so callers are not left awaiting forever.
     describe("Plugin disposed mid-load", () => {
         it("AppendSceneAsync rejects and clears pending data when the plugin is disposed", async () => {
             const { name, extension } = nextPluginIdentity("appenddispose");
@@ -824,9 +846,8 @@ describe("SceneLoader", () => {
         });
     });
 
-    // An exception thrown by a user-supplied onProgress callback should not abort the whole load. Today the
-    // loader routes the exception to its error handler, which rejects the operation. The load should instead
-    // still succeed. This test currently fails (the operation rejects); it should pass once reworked.
+    // An exception thrown by a user-supplied onProgress callback does not abort the whole load. The loader
+    // (via wrapProgress) logs the exception and the load still succeeds.
     describe("Throwing onProgress callback", () => {
         it("ImportMeshAsync still resolves when onProgress throws", async () => {
             const { name, extension } = nextPluginIdentity("importprogressthrow");
@@ -876,9 +897,7 @@ describe("SceneLoader", () => {
             expect(onImported).toHaveBeenCalledWith(scene, expect.anything());
         });
 
-        // importAnimationsImplAsync returns early on an unrecognized animationGroupLoadingMode without ever
-        // calling onSuccess or onError, so the promise never settles. It should reject instead. This test
-        // currently fails (the operation hangs); it should pass once the loader is reworked.
+        // An unrecognized animationGroupLoadingMode rejects the operation instead of leaving the promise unsettled.
         it("rejects on an unknown animationGroupLoadingMode", async () => {
             vi.spyOn(console, "error").mockImplementation(() => {});
             const { name, extension } = nextPluginIdentity("animationsbadmode");
@@ -902,10 +921,9 @@ describe("SceneLoader", () => {
         });
     });
 
-    // Every internal loader function returns early (without settling) when no scene is available. Since scene
-    // defaults to EngineStore.LastCreatedScene, a null scene is a real runtime possibility. The operation
-    // should reject rather than hang. These tests currently fail (the operations hang); they should pass once
-    // the loader is reworked.
+    // Every internal loader function rejects when no scene is available. Since scene defaults to
+    // EngineStore.LastCreatedScene, a null scene is a real runtime possibility and the operation rejects
+    // rather than leaving the promise unsettled.
     describe("No scene available", () => {
         beforeEach(() => {
             vi.spyOn(console, "error").mockImplementation(() => {});
@@ -1089,10 +1107,8 @@ describe("SceneLoader", () => {
     });
 
     // The directLoad path can fail either by returning a rejected Promise or by throwing synchronously.
-    // Both should reject the operation AND clear pending data. Today the async rejection is routed through
-    // the loader's error handler (cleans up), but a synchronous throw propagates out of loadDataAsync
-    // bypassing the error handler, so pending data leaks. These two tests document that asymmetry: the
-    // async case passes today, the sync case fails until the loader is reworked.
+    // Both reject the operation AND clear pending data. These two tests cover both the asynchronous
+    // rejection and the synchronous throw, which are now handled consistently by loadDataAsync.
     describe("directLoad error timing", () => {
         it("rejects and clears pending data when directLoad rejects asynchronously", async () => {
             const { name, extension } = nextPluginIdentity("directloadasyncreject");
@@ -1131,7 +1147,7 @@ describe("SceneLoader", () => {
 
             const promise = AppendSceneAsync("data:payload", scene, { pluginExtension: extension });
             expect(await classifySettlement(promise)).toBe("rejected");
-            // Currently fails: the synchronous throw bypasses the error handler so pending data is leaked.
+            // The synchronous throw is handled by loadDataAsync, so pending data is cleared.
             expect(scene.getWaitingItemsCount()).toBe(0);
 
             await promise.catch(() => {});
