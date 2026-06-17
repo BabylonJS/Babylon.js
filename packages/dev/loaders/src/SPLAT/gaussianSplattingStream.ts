@@ -16,6 +16,7 @@ import { type LinesMesh } from "core/Meshes/linesMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
+import { GaussianSplattingDownloadManager } from "./gaussianSplattingDownloadManager";
 import { type ISogTexturePack } from "./splatDefs";
 
 /**
@@ -54,6 +55,9 @@ interface ISOGLODNode {
     inFrustum?: boolean;
     /** Cached local-space bounding info used for the per-node frustum test (created once per leaf). */
     cullBounds?: BoundingInfo;
+    /** File index this node currently has an in-flight/queued decode request for (its not-yet-decoded target),
+     * or undefined when the node's target is already decoded. Drives pending-download reference counting. */
+    pendingFile?: number;
 }
 
 /**
@@ -116,6 +120,10 @@ export interface IGaussianSplattingStreamOptions {
      * the camera turns toward them, then refine. Set to `false` to render every node at its distance LOD.
      */
     frustumCulling?: boolean;
+    /** Maximum number of LOD file downloads allowed to run concurrently. PlayCanvas default `2`. */
+    maxConcurrentDownloads?: number;
+    /** Number of times a failed file download is retried before giving up. PlayCanvas default `2`. */
+    maxDownloadRetries?: number;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -232,6 +240,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private readonly _loadingFiles = new Set<number>();
     // FIFO of file ids waiting to be decoded (drained under a per-frame budget).
     private readonly _decodeQueue: number[] = [];
+    // Number of leaf nodes whose not-yet-decoded target LOD points to each file. When a file's count drops to
+    // zero (every node that wanted it retargeted), its queued/in-flight download is cancelled.
+    private readonly _filePendingRefs = new Map<number, number>();
+    // Files whose in-flight decode was cancelled; checked at decode checkpoints to bail out cooperatively.
+    private readonly _cancelledDecodes = new Set<number>();
+
+    // Throttles and retries the SOG file/image downloads (PlayCanvas-style download manager).
+    private readonly _downloadManager: GaussianSplattingDownloadManager;
 
     // Global range covered by the environment file (always rendered), or null until it loads.
     private _environmentRange: Nullable<{ offset: number; count: number }> = null;
@@ -329,6 +345,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.debugLodSource) {
             this._debugLodSource = options.debugLodSource;
         }
+
+        this._downloadManager = new GaussianSplattingDownloadManager({
+            maxConcurrent: options.maxConcurrentDownloads,
+            maxRetries: options.maxDownloadRetries,
+        });
 
         // PlayCanvas SOG data is authored with a flipped Y; match the standard SOG loader.
         this.scaling.y *= -1;
@@ -442,6 +463,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this._lodObserver = null;
         }
         this._clearDebugDisplay();
+        this._downloadManager.dispose();
         this._workBuffer?.dispose();
         this._workBuffer = null;
         super.dispose(doNotRecurse);
@@ -835,7 +857,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (this._metadata.environment) {
             try {
                 const url = this._rootUrl + this._metadata.environment;
-                const buffer = (await Tools.LoadFileAsync(url, true)) as ArrayBuffer;
+                const buffer = await this._downloadManager.loadFileAsync(url);
                 const files = await this._unzipAsync(new Uint8Array(buffer));
                 const metaBytes = files.get("meta.json");
                 if (metaBytes) {
@@ -859,8 +881,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 try {
                     const metaUrl = this._rootUrl + relativePath;
                     const subRootUrl = metaUrl.substring(0, metaUrl.lastIndexOf("/") + 1);
-                    const metaText = (await Tools.LoadFileAsync(metaUrl, false)) as string;
-                    const sogData = JSON.parse(metaText) as SOGRootData;
+                    const metaBuffer = await this._downloadManager.loadFileAsync(metaUrl);
+                    const sogData = JSON.parse(new TextDecoder().decode(new Uint8Array(metaBuffer))) as SOGRootData;
                     this._fileCounts.set(fileId, GaussianSplattingStream._GetSplatCount(sogData));
                     this._fileMeta.set(fileId, { sogData, subRootUrl });
                 } catch (e: any) {
@@ -1007,7 +1029,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         const range = this._environmentRange;
         try {
-            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback);
+            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback, this._downloadManager);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
@@ -1037,7 +1059,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     /**
      * Loads one LOD source file as GPU textures, decodes it into its fixed work-buffer block, records its
      * CPU centers for sorting, frees the source textures, then promotes any nodes that were waiting for it.
-     * Concurrent or repeat requests for the same file are ignored.
+     * Concurrent or repeat requests for the same file are ignored. If the file is cancelled mid-flight
+     * (because every node that wanted it retargeted), the decode bails cooperatively at the next checkpoint.
      * @param fileId file index to decode
      */
     private async _decodeFileAsync(fileId: number): Promise<void> {
@@ -1051,18 +1074,19 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             return;
         }
         this._loadingFiles.add(fileId);
+        this._cancelledDecodes.delete(fileId);
         try {
-            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback);
+            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback, this._downloadManager, fileId);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
             }
             try {
-                if (this._disposed || !this._workBuffer) {
+                if (this._disposed || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
                     return;
                 }
                 await this._workBuffer.decodeAsync(pack, base);
-                if (this._disposed) {
+                if (this._disposed || this._cancelledDecodes.has(fileId)) {
                     return;
                 }
                 await this._applyDecodedPositionsAsync(pack, base, count);
@@ -1070,6 +1094,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                     return;
                 }
                 this._decodedFiles.add(fileId);
+                this._filePendingRefs.delete(fileId);
                 // Promote any nodes that can now reach their desired LOD via this newly decoded file.
                 if (this._applyDesiredLods()) {
                     this._refreshActiveRanges();
@@ -1078,8 +1103,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 // Always release the GPU source textures (the decode pass is the only consumer).
                 GaussianSplattingStream._DisposePack(pack);
             }
+        } catch (e) {
+            // A cancelled file rejects its downloads on purpose — swallow that; re-throw genuine failures.
+            if (!this._cancelledDecodes.has(fileId)) {
+                throw e;
+            }
         } finally {
             this._loadingFiles.delete(fileId);
+            this._cancelledDecodes.delete(fileId);
         }
     }
 
@@ -1123,33 +1154,84 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     /**
      * Applies each node's {@link ISOGLODNode.targetLevel}: switches a node to its target level when that
-     * level's file is already decoded, otherwise queues the file and leaves the node on its current LOD (so
-     * nothing ever disappears). Nodes within their post-switch cooldown are left untouched to damp oscillation.
+     * level's file is already decoded, otherwise records a pending download request for the file and leaves
+     * the node on its current LOD (so nothing ever disappears). Nodes within their post-switch cooldown are
+     * left untouched to damp oscillation (and keep their existing pending request).
+     *
+     * Each node tracks the single file it currently needs but lacks ({@link ISOGLODNode.pendingFile}). When a
+     * node's target changes before that file finished downloading, the old file's reference is released; if no
+     * other node still needs it, its queued/in-flight download is cancelled (see {@link _releasePendingFile}).
      * @returns true when at least one node changed LOD (callers should refresh the active ranges)
      */
     private _applyDesiredLods(): boolean {
         let dirty = false;
         for (const node of this._leafNodes) {
+            // Nodes in cooldown keep their current LOD and their existing pending request untouched.
             if (node.lodCooldown && node.lodCooldown > 0) {
                 continue;
             }
             const desired = node.targetLevel ?? node.baseLod!;
-            if (desired === node.activeLod) {
-                continue;
+            let newPending: number | undefined;
+            if (desired !== node.activeLod) {
+                const entry = node.lods![String(desired)];
+                if (entry) {
+                    if (this._decodedFiles.has(entry.file)) {
+                        node.activeLod = desired;
+                        node.lodCooldown = this._lodCooldownFrames;
+                        dirty = true;
+                    } else {
+                        newPending = entry.file;
+                    }
+                }
             }
-            const entry = node.lods![String(desired)];
-            if (!entry) {
-                continue;
-            }
-            if (this._decodedFiles.has(entry.file)) {
-                node.activeLod = desired;
-                node.lodCooldown = this._lodCooldownFrames;
-                dirty = true;
-            } else {
-                this._enqueueDecode(entry.file);
+            // Reconcile this node's pending-download reference against its (possibly changed) target.
+            if (node.pendingFile !== newPending) {
+                if (node.pendingFile !== undefined) {
+                    this._releasePendingFile(node.pendingFile);
+                }
+                if (newPending !== undefined) {
+                    this._acquirePendingFile(newPending);
+                }
+                node.pendingFile = newPending;
             }
         }
         return dirty;
+    }
+
+    /**
+     * Records that a node needs a not-yet-decoded file, bumping its reference count and queueing the decode.
+     * @param fileId file index the node now targets
+     */
+    private _acquirePendingFile(fileId: number): void {
+        this._filePendingRefs.set(fileId, (this._filePendingRefs.get(fileId) ?? 0) + 1);
+        this._enqueueDecode(fileId);
+    }
+
+    /**
+     * Releases a node's reference to a pending file. When the last node stops needing it (and it has not been
+     * decoded), its queued decode is dropped and any in-flight download is cancelled.
+     * @param fileId file index the node no longer targets
+     */
+    private _releasePendingFile(fileId: number): void {
+        const refs = (this._filePendingRefs.get(fileId) ?? 0) - 1;
+        if (refs > 0) {
+            this._filePendingRefs.set(fileId, refs);
+            return;
+        }
+        this._filePendingRefs.delete(fileId);
+        // The decode may have completed between target changes — a decoded file has nothing to cancel.
+        if (this._decodedFiles.has(fileId)) {
+            return;
+        }
+        const queueIndex = this._decodeQueue.indexOf(fileId);
+        if (queueIndex !== -1) {
+            this._decodeQueue.splice(queueIndex, 1);
+        }
+        if (this._loadingFiles.has(fileId)) {
+            // Flag the in-flight decode to bail at its next checkpoint and cancel its image downloads.
+            this._cancelledDecodes.add(fileId);
+            this._downloadManager.cancelGroup(fileId);
+        }
     }
 
     /**
