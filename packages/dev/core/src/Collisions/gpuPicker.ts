@@ -1525,7 +1525,9 @@ export class GPUPicker {
         gsPickingMaterial.backFaceCulling = false;
 
         // Attach the GPU picking plugin
-        new GaussianSplattingGpuPickingMaterialPlugin(gsPickingMaterial);
+        const plugin = new GaussianSplattingGpuPickingMaterialPlugin(gsPickingMaterial);
+        plugin.enableDepthPicking = this._useDepthPicking;
+        plugin.enablePackedDepthPicking = this._isDepthTexturePacked;
 
         return gsPickingMaterial;
     }

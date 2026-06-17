@@ -25,9 +25,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifdef GPUPICKER_DEPTH
     fragmentOutputs.fragData0 = vec4f(color, 1.0);
     #ifdef GPUPICKER_PACK_DEPTH
-        fragmentOutputs.fragData1 = pack(input.position.z);
+        fragmentOutputs.fragData1 = pack(fragmentInputs.position.z);
     #else
-    fragmentOutputs.fragData1 = vec4f(input.position.z, 0.0, 0.0, 1.0);
+    fragmentOutputs.fragData1 = vec4f(fragmentInputs.position.z, 0.0, 0.0, 1.0);
     #endif
 #else
     fragmentOutputs.color = vec4f(color, 1.0);
