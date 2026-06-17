@@ -74,7 +74,7 @@ export interface INativeEngine {
     ): void;
     loadTexture(texture: NativeTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
-    updateTextureData(
+    updateTextureData?(
         texture: NativeTexture,
         data: ArrayBufferView,
         xOffset: number,
