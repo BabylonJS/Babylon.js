@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { GPUMultiPickReadbackStrategy, GPUPicker, type IGPUMultiPickOptions } from "core/Collisions/gpuPicker";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { pickingPixelShader } from "core/Shaders/picking.fragment";
 import { type Nullable } from "core/types";
 
@@ -20,8 +21,33 @@ type GPUPickerInternals = GPUPicker & {
     _isDepthTexturePacked: boolean;
     _useDepthPicking: boolean;
     _getDepthFromBuffer: (pixels: ArrayBufferView, x: number, y: number, width: number, height: number) => Nullable<number>;
+    _getDepthPickingInfoFromBuffer: (
+        pixels: ArrayBufferView,
+        x: number,
+        y: number,
+        bufferLeft: number,
+        bufferBottom: number,
+        bufferWidth: number,
+        bufferHeight: number,
+        renderHeight: number,
+        view: Matrix,
+        projection: Matrix,
+        cameraPosition: Vector3,
+        viewport: { x: number; y: number; width: number; height: number }
+    ) => Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }>;
+    _getDepthPickingInfoAsync: (
+        x: number,
+        y: number,
+        renderWidth: number,
+        renderHeight: number,
+        view: Matrix,
+        projection: Matrix,
+        cameraPosition: Vector3,
+        viewport: { x: number; y: number; width: number; height: number }
+    ) => Promise<Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }>>;
     _getRenderInfo: () => { rttSizeW: number; rttSizeH: number; scaleX: number; scaleY: number };
     _prepareForPicking: (x: number, y: number, scaleX: number, scaleY: number) => { x: number; y: number };
+    _readDepthTexturePixelsAsync: (x: number, y: number, w: number, h: number) => Promise<Nullable<ArrayBufferView>>;
     _shouldUseIndividualMultiPickReadback: (inBoundsPointCount: number, readArea: number, options?: IGPUMultiPickOptions) => boolean;
 };
 
@@ -56,6 +82,43 @@ describe("GPUPicker", () => {
         expect(picker._getDepthFromBuffer(new Float32Array([0, 0, 0, 1]), 0, 0, 1, 1)).toBeNull();
         expect(picker._getDepthFromBuffer(new Float32Array([1, 0, 0, 1]), 0, 0, 1, 1)).toBeNull();
         expect(picker._getDepthFromBuffer(new Float32Array([0.5, 0, 0, 1]), 1, 0, 1, 1)).toBeNull();
+    });
+
+    it("reads WebGPU depth neighbors from the same center pixel with radius one", async () => {
+        const picker = createPicker();
+        picker._cachedScene = {
+            getEngine: () => ({
+                isWebGPU: true,
+            }),
+        } as any;
+        picker._readDepthTexturePixelsAsync = vi.fn().mockResolvedValue(null);
+
+        await picker._getDepthPickingInfoAsync(10, 20, 100, 100, Matrix.IdentityReadOnly, Matrix.IdentityReadOnly, Vector3.Zero(), {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+        });
+
+        expect(picker._readDepthTexturePixelsAsync).toHaveBeenCalledWith(9, 19, 3, 3);
+    });
+
+    it("uses a camera-facing normal when depth neighbors cannot form a surface", () => {
+        const picker = createPicker();
+        picker._isDepthTexturePacked = false;
+
+        const pixels = new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 1, 0.5, 0, 0, 1, 0.5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+        const info = picker._getDepthPickingInfoFromBuffer(pixels, 1, 1, 0, 0, 3, 3, 3, Matrix.IdentityReadOnly, Matrix.IdentityReadOnly, new Vector3(0, 0, -1), {
+            x: 0,
+            y: 0,
+            width: 3,
+            height: 3,
+        });
+
+        expect(info?.pickedPoint).toBeDefined();
+        expect(info?.normal).toBeDefined();
+        expect(info!.normal!.z).toBeLessThan(0);
     });
 
     it("selects the multi-pick readback strategy from explicit options", () => {

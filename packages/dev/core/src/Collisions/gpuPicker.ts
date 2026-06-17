@@ -133,13 +133,9 @@ export class GPUPicker {
     private static readonly _MaxMultiPickIndividualReadbackCount = 32;
     private static readonly _MultiPickIndividualReadbackAreaRatio = 16;
     private static readonly _DepthNeighborOffsets = [
-        [-1, 1],
         [0, 1],
-        [1, 1],
         [1, 0],
-        [1, -1],
         [0, -1],
-        [-1, -1],
         [-1, 0],
     ] as const;
 
@@ -169,6 +165,7 @@ export class GPUPicker {
     private _renderPickingTexture = false;
 
     private _sceneBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _pickingTextureClearObserver: Nullable<Observer<AbstractEngine>> = null;
     private _pickingTextureAfterRenderObserver: Nullable<Observer<number>> = null;
 
     private _nextFreeId = 1;
@@ -263,6 +260,11 @@ export class GPUPicker {
         const g = this._readbuffer![offset + 1];
         const b = this._readbuffer![offset + 2];
         return (r << 16) + (g << 8) + b;
+    }
+
+    private _getReadBufferOffset(x: number, y: number, width: number, height: number): number {
+        const bufferY = this._cachedScene?.getEngine().isWebGPU ? height - y - 1 : y;
+        return (bufferY * width + x) * 4;
     }
 
     private _createColorPickingRenderTarget(scene: Scene, width: number, height: number): RenderTargetTexture {
@@ -766,6 +768,7 @@ export class GPUPicker {
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, pickingRegion.x, pickingRegion.y, pickingRegion.width, pickingRegion.height);
 
         await this._waitForPickingMaterialsReadyAsync();
+        this._addPickingTextureToRenderTargets();
 
         return await this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
     }
@@ -859,6 +862,7 @@ export class GPUPicker {
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, regionLeft, partialCutH, w, h, useIndividualReadback ? 1 : w, useIndividualReadback ? 1 : h);
 
         await this._waitForPickingMaterialsReadyAsync();
+        this._addPickingTextureToRenderTargets();
 
         return await this._executeMultiPickingAsync(processedXY, regionLeft, partialCutH, rttSizeW, rttSizeH, w, h, useIndividualReadback, disposeWhenDone);
     }
@@ -910,6 +914,7 @@ export class GPUPicker {
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, regionLeft, partialCutH, w, h);
 
         await this._waitForPickingMaterialsReadyAsync();
+        this._addPickingTextureToRenderTargets();
 
         return await this._executeBoxPickingAsync(
             minX,
@@ -1016,6 +1021,17 @@ export class GPUPicker {
 
         this._pickingTexture!.clearColor = new Color4(0, 0, 0, 0);
 
+        this._pickingTextureClearObserver?.remove();
+        this._pickingTextureClearObserver = this._pickingTexture!.onClearObservable.add((engine) => {
+            if (this._isUsingDepthPickingRenderTarget) {
+                engine.bindAttachments(engine.buildTextureLayout([true, false]));
+            }
+            engine.clear(this._pickingTexture!.clearColor, true, true, true);
+            if (this._isUsingDepthPickingRenderTarget) {
+                engine.bindAttachments(engine.buildTextureLayout([true, true]));
+            }
+        });
+
         this._pickingTexture!.onBeforeRender = (): void => {
             this._enableScissor(x, y, w, h);
         };
@@ -1024,7 +1040,10 @@ export class GPUPicker {
         this._pickingTextureAfterRenderObserver = this._pickingTexture!.onAfterRenderObservable.add(() => {
             this._disableScissor();
         });
+    }
 
+    private _addPickingTextureToRenderTargets(): void {
+        this._removePickingTextureFromRenderTargets();
         this._cachedScene!.customRenderTargets.push(this._pickingTexture!);
         this._renderPickingTexture = true;
     }
@@ -1088,7 +1107,6 @@ export class GPUPicker {
                                 depthPickingInfo = await this._getDepthPickingInfoAsync(x, y, rttSizeW, rttSizeH, view, projection, cameraPosition, viewport);
                             }
                         }
-
                         if (disposeWhenDone) {
                             this.dispose();
                         }
@@ -1284,7 +1302,7 @@ export class GPUPicker {
                                         continue;
                                     }
 
-                                    const colorId = this._getColorIdFromReadBuffer((bufferY * readW + bufferX) * 4);
+                                    const colorId = this._getColorIdFromReadBuffer(this._getReadBufferOffset(bufferX, bufferY, readW, readH));
                                     if (colorId > 0) {
                                         // Thin?
                                         if (this._thinIdMap[colorId]) {
@@ -1361,7 +1379,8 @@ export class GPUPicker {
 
     private _enableScissor(x: number, y: number, w = 1, h = 1): void {
         if ((this._engine as WebGPUEngine | Engine).enableScissor) {
-            (this._engine as WebGPUEngine | Engine).enableScissor(x, y, w, h);
+            const scissorY = this._engine?.isWebGPU && this._pickingTexture ? this._pickingTexture.getSize().height - y - h : y;
+            (this._engine as WebGPUEngine | Engine).enableScissor(x, scissorY, w, h);
         }
     }
     private _disableScissor(): void {
@@ -1458,7 +1477,7 @@ export class GPUPicker {
             return { pickedMesh, thinInstanceIndex };
         }
 
-        const colorId = this._getColorIdFromReadBuffer((bufferY * readWidth + bufferX) * 4);
+        const colorId = this._getColorIdFromReadBuffer(this._getReadBufferOffset(bufferX, bufferY, readWidth, readHeight));
 
         if (colorId > 0) {
             if (this._thinIdMap[colorId]) {
@@ -1542,7 +1561,8 @@ export class GPUPicker {
             return false;
         }
 
-        await engine._readTexturePixels(texture, w, h, -1, 0, this._readbuffer, true, true, x, y);
+        const readY = engine.isWebGPU ? texture.height - y - h : y;
+        await engine._readTexturePixels(texture, w, h, -1, 0, this._readbuffer, true, true, x, readY);
 
         return true;
     }
@@ -1563,7 +1583,8 @@ export class GPUPicker {
             this._depthReadbuffer = this._depthTextureType === Constants.TEXTURETYPE_UNSIGNED_BYTE ? new Uint8Array(requiredByteLength) : new Float32Array(requiredByteLength / 4);
         }
 
-        return await engine._readTexturePixels(texture, w, h, -1, 0, this._depthReadbuffer, true, false, x, y);
+        const readY = engine.isWebGPU ? texture.height - y - h : y;
+        return await engine._readTexturePixels(texture, w, h, -1, 0, this._depthReadbuffer, true, false, x, readY);
     }
 
     private async _getDepthPickingInfoAsync(
@@ -1606,12 +1627,36 @@ export class GPUPicker {
         cameraPosition: Vector3,
         viewport: { x: number; y: number; width: number; height: number }
     ): Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }> {
-        const centerBufferX = x - bufferLeft;
-        const centerBufferY = y - bufferBottom;
-        const centerDepth = this._getDepthFromBuffer(pixels, centerBufferX, centerBufferY, bufferWidth, bufferHeight);
+        let centerBufferX = x - bufferLeft;
+        let centerBufferY = y - bufferBottom;
+        let centerDepth = this._getDepthFromBuffer(pixels, centerBufferX, centerBufferY, bufferWidth, bufferHeight);
+        if (centerDepth === null) {
+            let closestDistanceSquared = Infinity;
+            for (let yy = 0; yy < bufferHeight; yy++) {
+                for (let xx = 0; xx < bufferWidth; xx++) {
+                    const depth = this._getDepthFromBuffer(pixels, xx, yy, bufferWidth, bufferHeight);
+                    if (depth === null) {
+                        continue;
+                    }
+
+                    const dx = xx - centerBufferX;
+                    const dy = yy - centerBufferY;
+                    const distanceSquared = dx * dx + dy * dy;
+                    if (distanceSquared < closestDistanceSquared) {
+                        closestDistanceSquared = distanceSquared;
+                        centerBufferX = xx;
+                        centerBufferY = yy;
+                        centerDepth = depth;
+                    }
+                }
+            }
+        }
         if (centerDepth === null) {
             return null;
         }
+
+        x = bufferLeft + centerBufferX;
+        y = bufferBottom + centerBufferY;
 
         const viewportTop = renderHeight - viewport.y - viewport.height;
         const centerViewportX = x - viewport.x;
@@ -1631,6 +1676,7 @@ export class GPUPicker {
             projection,
             new Vector3()
         );
+        const fallbackNormal = (): Vector3 => cameraPosition.subtractToRef(pickedPoint, new Vector3()).normalize();
         let bestOffsetA: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
         let bestOffsetB: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
         let bestDepthDelta = Infinity;
@@ -1691,7 +1737,7 @@ export class GPUPicker {
         }
 
         if (!bestOffsetA || !bestOffsetB) {
-            return { pickedPoint };
+            return { pickedPoint, normal: fallbackNormal() };
         }
 
         this._getDepthPointFromBufferToRef(
@@ -1731,7 +1777,7 @@ export class GPUPicker {
         const toB = TmpVectors.Vector3[4].subtractToRef(pickedPoint, TmpVectors.Vector3[1]);
         const epsilonSquared = Epsilon * Epsilon;
         if (toA.lengthSquared() < epsilonSquared || toB.lengthSquared() < epsilonSquared) {
-            return { pickedPoint };
+            return { pickedPoint, normal: fallbackNormal() };
         }
 
         toA.normalize();
@@ -1739,7 +1785,7 @@ export class GPUPicker {
 
         const normal = Vector3.CrossToRef(toB, toA, new Vector3());
         if (normal.lengthSquared() < epsilonSquared) {
-            return { pickedPoint };
+            return { pickedPoint, normal: fallbackNormal() };
         }
 
         normal.normalize();
@@ -1790,7 +1836,7 @@ export class GPUPicker {
             return null;
         }
 
-        const index = (y * width + x) * 4;
+        const index = this._getReadBufferOffset(x, y, width, height);
         let depth: number;
         if (pixels instanceof Uint8Array || pixels instanceof Uint8ClampedArray) {
             if (this._isDepthTexturePacked) {
@@ -1820,5 +1866,9 @@ export class GPUPicker {
         this._clearPickingMaterials();
         this._sceneBeforeRenderObserver?.remove();
         this._sceneBeforeRenderObserver = null;
+        this._pickingTextureClearObserver?.remove();
+        this._pickingTextureClearObserver = null;
+        this._pickingTextureAfterRenderObserver?.remove();
+        this._pickingTextureAfterRenderObserver = null;
     }
 }
