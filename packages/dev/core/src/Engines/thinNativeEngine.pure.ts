@@ -2829,6 +2829,10 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
+        if (!this._engine.updateTextureData) {
+            throw new Error("updateTextureData not implemented.");
+        }
+
         // bgfx updates the requested sub-rectangle of the existing texture (faceIndex selects the cube
         // face / array layer, lod selects the mip level). invertY is forwarded so the native side can match
         // the vertical orientation the base texture upload uses. Mip regeneration after a partial update is
