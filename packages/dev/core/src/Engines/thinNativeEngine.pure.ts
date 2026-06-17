@@ -2035,6 +2035,13 @@ export class ThinNativeEngine extends ThinEngine {
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
         internalTexture.width = internalTexture.baseWidth;
         internalTexture.height = internalTexture.baseHeight;
+        if (this._engine.getTextureLayerCount) {
+            const layerCount = this._engine.getTextureLayerCount(texture);
+            if (layerCount > 1) {
+                internalTexture.is2DArray = true;
+                internalTexture.baseDepth = internalTexture.depth = layerCount;
+            }
+        }
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -2072,6 +2079,13 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(
                 `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
             );
+        }
+        if (this._engine.getTextureLayerCount) {
+            const newLayerCount = this._engine.getTextureLayerCount(texture);
+            const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
+            if (newLayerCount !== oldLayerCount) {
+                throw new Error(`updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`);
+            }
         }
 
         // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
