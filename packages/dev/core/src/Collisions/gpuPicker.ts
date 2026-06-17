@@ -133,9 +133,13 @@ export class GPUPicker {
     private static readonly _MaxMultiPickIndividualReadbackCount = 32;
     private static readonly _MultiPickIndividualReadbackAreaRatio = 16;
     private static readonly _DepthNeighborOffsets = [
+        [-1, 1],
         [0, 1],
+        [1, 1],
         [1, 0],
+        [1, -1],
         [0, -1],
+        [-1, -1],
         [-1, 0],
     ] as const;
 
@@ -1681,17 +1685,20 @@ export class GPUPicker {
         let bestOffsetB: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
         let bestDepthDelta = Infinity;
         const offsets = GPUPicker._DepthNeighborOffsets;
+        const depthNeighbors: { offset: (typeof GPUPicker._DepthNeighborOffsets)[number]; depth: number; depthDelta: number }[] = [];
 
+        const epsilonSquared = Epsilon * Epsilon;
         for (let i = 0; i < offsets.length; i++) {
-            const offsetA = offsets[i];
-            const offsetB = offsets[(i + 1) % offsets.length];
+            const offset = offsets[i];
+            const depth = this._getDepthFromBuffer(pixels, centerBufferX + offset[0], centerBufferY + offset[1], bufferWidth, bufferHeight);
             if (
+                depth === null ||
                 !this._getDepthPointFromBufferToRef(
                     pixels,
                     x,
                     y,
-                    offsetA[0],
-                    offsetA[1],
+                    offset[0],
+                    offset[1],
                     bufferLeft,
                     bufferBottom,
                     bufferWidth,
@@ -1701,13 +1708,43 @@ export class GPUPicker {
                     projection,
                     viewport,
                     TmpVectors.Vector3[3]
-                ) ||
-                !this._getDepthPointFromBufferToRef(
+                )
+            ) {
+                continue;
+            }
+
+            depthNeighbors.push({ offset, depth, depthDelta: Math.abs(centerDepth - depth) });
+        }
+
+        depthNeighbors.sort((a, b) => a.depthDelta - b.depthDelta);
+
+        for (let i = 0; i < depthNeighbors.length; i++) {
+            const neighborA = depthNeighbors[i];
+            this._getDepthPointFromBufferToRef(
+                pixels,
+                x,
+                y,
+                neighborA.offset[0],
+                neighborA.offset[1],
+                bufferLeft,
+                bufferBottom,
+                bufferWidth,
+                bufferHeight,
+                renderHeight,
+                view,
+                projection,
+                viewport,
+                TmpVectors.Vector3[3]
+            );
+
+            for (let j = i + 1; j < depthNeighbors.length; j++) {
+                const neighborB = depthNeighbors[j];
+                this._getDepthPointFromBufferToRef(
                     pixels,
                     x,
                     y,
-                    offsetB[0],
-                    offsetB[1],
+                    neighborB.offset[0],
+                    neighborB.offset[1],
                     bufferLeft,
                     bufferBottom,
                     bufferWidth,
@@ -1717,22 +1754,25 @@ export class GPUPicker {
                     projection,
                     viewport,
                     TmpVectors.Vector3[4]
-                )
-            ) {
-                continue;
-            }
+                );
 
-            const depthA = this._getDepthFromBuffer(pixels, centerBufferX + offsetA[0], centerBufferY + offsetA[1], bufferWidth, bufferHeight);
-            const depthB = this._getDepthFromBuffer(pixels, centerBufferX + offsetB[0], centerBufferY + offsetB[1], bufferWidth, bufferHeight);
-            if (depthA === null || depthB === null) {
-                continue;
-            }
+                const toA = TmpVectors.Vector3[3].subtractToRef(pickedPoint, TmpVectors.Vector3[0]);
+                const toB = TmpVectors.Vector3[4].subtractToRef(pickedPoint, TmpVectors.Vector3[1]);
+                if (toA.lengthSquared() < epsilonSquared || toB.lengthSquared() < epsilonSquared) {
+                    continue;
+                }
 
-            const depthDelta = Math.abs(centerDepth - depthA) + Math.abs(centerDepth - depthB) + Math.abs(depthA - depthB);
-            if (depthDelta < bestDepthDelta) {
-                bestDepthDelta = depthDelta;
-                bestOffsetA = offsetA;
-                bestOffsetB = offsetB;
+                Vector3.CrossToRef(toB, toA, TmpVectors.Vector3[5]);
+                if (TmpVectors.Vector3[5].lengthSquared() < epsilonSquared) {
+                    continue;
+                }
+
+                const depthDelta = neighborA.depthDelta + neighborB.depthDelta + Math.abs(neighborA.depth - neighborB.depth);
+                if (depthDelta < bestDepthDelta) {
+                    bestDepthDelta = depthDelta;
+                    bestOffsetA = neighborA.offset;
+                    bestOffsetB = neighborB.offset;
+                }
             }
         }
 
@@ -1775,7 +1815,6 @@ export class GPUPicker {
 
         const toA = TmpVectors.Vector3[3].subtractToRef(pickedPoint, TmpVectors.Vector3[0]);
         const toB = TmpVectors.Vector3[4].subtractToRef(pickedPoint, TmpVectors.Vector3[1]);
-        const epsilonSquared = Epsilon * Epsilon;
         if (toA.lengthSquared() < epsilonSquared || toB.lengthSquared() < epsilonSquared) {
             return { pickedPoint, normal: fallbackNormal() };
         }

@@ -121,6 +121,23 @@ describe("GPUPicker", () => {
         expect(info!.normal!.z).toBeLessThan(0);
     });
 
+    it("reconstructs a normal from the closest valid depth-neighbor pair", () => {
+        const picker = createPicker();
+        picker._isDepthTexturePacked = false;
+
+        const pixels = new Float32Array([0.45, 0, 0, 1, 0, 0, 0, 0, 0.55, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+        const info = picker._getDepthPickingInfoFromBuffer(pixels, 1, 1, 0, 0, 3, 3, 3, Matrix.IdentityReadOnly, Matrix.IdentityReadOnly, new Vector3(0, 0, -1), {
+            x: 0,
+            y: 0,
+            width: 3,
+            height: 3,
+        });
+
+        expect(info?.normal).toBeDefined();
+        expect(Math.abs(info!.normal!.x) + Math.abs(info!.normal!.y)).toBeGreaterThan(0.001);
+    });
+
     it("selects the multi-pick readback strategy from explicit options", () => {
         const picker = createPicker();
 
