@@ -2355,6 +2355,7 @@ export class ThinNativeEngine extends ThinEngine {
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = Constants.TEXTUREFORMAT_RGBA;
         let samples = 1;
+        let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
@@ -2363,8 +2364,16 @@ export class ThinNativeEngine extends ThinEngine {
             samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
             samples = options.samples ?? 1;
+            label = options.label;
         }
 
+        // Match _createInternalTexture: float/half-float RTTs that the platform can't linearly filter fall
+        // back to NEAREST so the cube RTT never carries an unsupported sampling mode.
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
             type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
@@ -2382,6 +2391,7 @@ export class ThinNativeEngine extends ThinEngine {
         texture.samplingMode = samplingMode;
         texture.type = type;
         texture.format = format;
+        texture.label = label;
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
@@ -2404,6 +2414,10 @@ export class ThinNativeEngine extends ThinEngine {
         rtWrapper._samples = samples;
 
         rtWrapper.setTextures(texture);
+
+        // Track the hand-built cube RTT texture the same way _createInternalTexture tracks 2D textures so it
+        // participates in engine-wide lifecycle management (dispose iteration, context rebuild, stats).
+        this._internalTexturesCache.push(texture);
 
         return rtWrapper;
     }
@@ -2460,18 +2474,50 @@ export class ThinNativeEngine extends ThinEngine {
         // underlying bgfx resource has 1 mip level. Remove this guard once a fixed bgfx is in stable BN npm.
         const hasMips = samples > 1 ? false : texture.generateMipMaps;
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
-        this._engine.initializeTexture(nativeTexture, texture.baseWidth, texture.baseHeight, hasMips, nativeTextureFormat, /*renderTarget*/ true, texture._useSRGBBuffer, samples);
-
-        // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
-        // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
-        nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+        const isCube = texture.isCube;
+        this._engine.initializeTexture(
             nativeTexture,
             texture.baseWidth,
             texture.baseHeight,
-            rtWrapper._generateStencilBuffer,
-            rtWrapper._generateDepthBuffer,
-            samples
+            hasMips,
+            nativeTextureFormat,
+            /*renderTarget*/ true,
+            texture._useSRGBBuffer,
+            samples,
+            isCube
         );
+
+        if (isCube) {
+            // Cube RTTs render through one framebuffer per face (see createRenderTargetCubeTexture). The
+            // underlying bgfx handle was just rotated, so recreate all six attachments; the _framebuffers
+            // setter releases the stale ones and keeps _framebuffer aliased to face 0 for single-target paths.
+            const framebuffers: NativeFramebuffer[] = [];
+            for (let face = 0; face < 6; face++) {
+                framebuffers.push(
+                    this._engine.createFrameBuffer(
+                        nativeTexture,
+                        texture.baseWidth,
+                        texture.baseHeight,
+                        rtWrapper._generateStencilBuffer,
+                        rtWrapper._generateDepthBuffer,
+                        samples,
+                        face
+                    )
+                );
+            }
+            nativeRTWrapper._framebuffers = framebuffers;
+        } else {
+            // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
+            // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
+            nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+                nativeTexture,
+                texture.baseWidth,
+                texture.baseHeight,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                samples
+            );
+        }
 
         rtWrapper._samples = samples;
         texture.samples = samples;
