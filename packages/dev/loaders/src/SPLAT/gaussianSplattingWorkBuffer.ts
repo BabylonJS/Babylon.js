@@ -15,7 +15,11 @@ import {
     GaussianSplattingWorkBufferFragmentShaderGLSL,
     GaussianSplattingWorkBufferVertexShaderWGSL,
     GaussianSplattingWorkBufferFragmentShaderWGSL,
+    GaussianSplattingWorkBufferRelayoutFragmentShaderGLSL,
+    GaussianSplattingWorkBufferRelayoutFragmentShaderWGSL,
+    GaussianSplattingWorkBufferRelayoutShaderName,
 } from "./gaussianSplattingWorkBufferShaders";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
 
 /**
  * A unified, GPU-decoded Gaussian Splatting work buffer.
@@ -34,6 +38,8 @@ export class GaussianSplattingWorkBuffer {
     private readonly _shaderLanguage: ShaderLanguage;
     private readonly _material: ShaderMaterial;
     private readonly _quad: Mesh;
+    // Relayout (defrag) copy material, created lazily on first relayout.
+    private _copyMaterial: Nullable<ShaderMaterial> = null;
     private _disposed = false;
     // Reused WebGL framebuffer for the async centers readback (created lazily, freed in dispose).
     private _readFbo: Nullable<WebGLFramebuffer> = null;
@@ -76,11 +82,29 @@ export class GaussianSplattingWorkBuffer {
         this._shaderLanguage = scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
         this._textureSize = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, capacity))));
 
-        this._mrt = new MultiRenderTarget(
-            "gsWorkBuffer",
+        // The decode buffer accumulates (clear disabled) so each decode preserves previously-decoded files.
+        this._mrt = this._createMrt("gsWorkBuffer", true);
+
+        // One persistent decode material + fullscreen-triangle quad, reused (with per-file uniforms)
+        // for every decode so the shader is compiled only once.
+        this._material = this._createMaterial();
+        this._quad = this._createQuad();
+        this._quad.material = this._material;
+    }
+
+    /**
+     * Creates a 4-attachment MRT (centers F32 / covA F32 / covB F32 / colors U8) sized to the work buffer.
+     * @param name MRT and attachment base name
+     * @param disableClear when true, clearing is suppressed so renders accumulate (the decode buffer); when
+     *   false the MRT clears to zero on each render (the temporary relayout buffer, so gaps stay zeroed)
+     * @returns the created MRT
+     */
+    private _createMrt(name: string, disableClear: boolean): MultiRenderTarget {
+        const mrt = new MultiRenderTarget(
+            name,
             { width: this._textureSize, height: this._textureSize },
             4,
-            scene,
+            this._scene,
             {
                 types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_BYTE],
                 samplingModes: [
@@ -94,19 +118,14 @@ export class GaussianSplattingWorkBuffer {
                 generateDepthTexture: false,
                 generateMipMaps: false,
             },
-            ["gsWorkCenters", "gsWorkCovA", "gsWorkCovB", "gsWorkColors"]
+            [`${name}Centers`, `${name}CovA`, `${name}CovB`, `${name}Colors`]
         );
-        this._mrt.clearColor = new Color4(0, 0, 0, 0);
-        this._mrt.renderList = [];
-        // Take over clearing (no-op) so each decode accumulates into the buffer instead of wiping
-        // previously-decoded files. Undecoded regions are never sampled (only active intervals render).
-        this._mrt.onClearObservable.add(() => {});
-
-        // One persistent decode material + fullscreen-triangle quad, reused (with per-file uniforms)
-        // for every decode so the shader is compiled only once.
-        this._material = this._createMaterial();
-        this._quad = this._createQuad();
-        this._quad.material = this._material;
+        mrt.clearColor = new Color4(0, 0, 0, 0);
+        mrt.renderList = [];
+        if (disableClear) {
+            mrt.onClearObservable.add(() => {});
+        }
+        return mrt;
     }
 
     /**
@@ -139,6 +158,105 @@ export class GaussianSplattingWorkBuffer {
             };
             this._scene.onBeforeRenderObservable.addOnce(attempt);
         });
+    }
+
+    /**
+     * Whether the relayout copy shader is compiled and ready. Lazily creates the copy material on first call.
+     * Callers should poll this before {@link relayoutSync} (which must only run when ready).
+     * @returns true when {@link relayoutSync} can run this frame
+     */
+    public isRelayoutReady(): boolean {
+        if (this._disposed) {
+            return false;
+        }
+        if (!this._copyMaterial) {
+            this._copyMaterial = this._createCopyMaterial();
+        }
+        return this._copyMaterial.isReady(this._quad);
+    }
+
+    /**
+     * Relayouts the decoded work-buffer textures to a new (defragmented) splat layout, keeping the same
+     * texture instances so the consuming mesh does not need to re-bind. `srcIndexByDst[d]` is the source splat
+     * index whose decoded data should end up at destination index `d`, or a negative value for a gap (left
+     * zeroed). Uses a temporary MRT ping-pong (old -> temp via the map, then temp -> old identity) so
+     * overlapping moves stay correct. Must be called at a frame-safe point (inside `onBeforeRender`) and only
+     * when {@link isRelayoutReady} returns true.
+     * @param srcIndexByDst per-destination source splat index (negative = gap)
+     */
+    public relayoutSync(srcIndexByDst: Float32Array): void {
+        if (this._disposed || !this._copyMaterial) {
+            return;
+        }
+        const size = this._textureSize;
+        const mapData = new Float32Array(size * size);
+        mapData.fill(-1);
+        mapData.set(srcIndexByDst.subarray(0, Math.min(srcIndexByDst.length, mapData.length)));
+        const mapTexture = new RawTexture(
+            mapData,
+            size,
+            size,
+            Constants.TEXTUREFORMAT_R,
+            this._scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_FLOAT
+        );
+        const temp = this._createMrt("gsRelayoutTemp", false);
+        try {
+            // Pass 1: old -> temp using the map (temp gets the new layout; gaps stay zeroed by the clear).
+            this._renderRelayoutPass(temp, this._mrt.textures, mapTexture, 1);
+            // Pass 2: temp -> old, identity (old textures get the new layout, full overwrite).
+            this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0);
+        } finally {
+            temp.dispose();
+            mapTexture.dispose();
+            this._quad.material = this._material;
+        }
+    }
+
+    /**
+     * Renders one relayout copy pass into the target MRT, sampling the given source textures.
+     * @param target destination MRT
+     * @param sources the four source work-buffer textures
+     * @param mapTexture the R32F destination-to-source index map
+     * @param useMap 1 to read source indices from the map (gaps discarded), 0 for an identity copy
+     */
+    private _renderRelayoutPass(target: MultiRenderTarget, sources: Texture[], mapTexture: RawTexture, useMap: number): void {
+        const material = this._copyMaterial!;
+        material.setTexture("uMapTex", mapTexture);
+        material.setTexture("uSrc0", sources[0]);
+        material.setTexture("uSrc1", sources[1]);
+        material.setTexture("uSrc2", sources[2]);
+        material.setTexture("uSrc3", sources[3]);
+        material.setInt("uDstWidth", this._textureSize);
+        material.setInt("uSrcWidth", this._textureSize);
+        material.setInt("uUseMap", useMap);
+        this._quad.material = material;
+        target.renderList = [this._quad];
+        target.render();
+    }
+
+    private _createCopyMaterial(): ShaderMaterial {
+        const isWGSL = this._shaderLanguage === ShaderLanguage.WGSL;
+        const material = new ShaderMaterial(
+            GaussianSplattingWorkBufferRelayoutShaderName,
+            this._scene,
+            {
+                vertexSource: isWGSL ? GaussianSplattingWorkBufferVertexShaderWGSL : GaussianSplattingWorkBufferVertexShaderGLSL,
+                fragmentSource: isWGSL ? GaussianSplattingWorkBufferRelayoutFragmentShaderWGSL : GaussianSplattingWorkBufferRelayoutFragmentShaderGLSL,
+            },
+            {
+                attributes: ["position"],
+                uniforms: ["uDstWidth", "uSrcWidth", "uUseMap"],
+                samplers: ["uMapTex", "uSrc0", "uSrc1", "uSrc2", "uSrc3"],
+                shaderLanguage: this._shaderLanguage,
+            }
+        );
+        material.backFaceCulling = false;
+        material.disableDepthWrite = true;
+        return material;
     }
 
     /**
@@ -233,6 +351,7 @@ export class GaussianSplattingWorkBuffer {
         }
         this._quad.dispose();
         this._material.dispose(true, false);
+        this._copyMaterial?.dispose(true, false);
         this._mrt.dispose();
     }
 
