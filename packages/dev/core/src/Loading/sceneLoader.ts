@@ -707,7 +707,10 @@ async function loadDataAsync(
     if (IsFactory(registeredPlugin.plugin)) {
         const pluginFactory = registeredPlugin.plugin;
         try {
-            plugin = await pluginFactory.createPlugin((pluginOptions ?? {}) as SceneLoaderPluginOptions);
+            // Only await when the factory is actually asynchronous, so that for synchronous factories the plugin is
+            // instantiated (and onPluginActivatedObservable is notified) synchronously within the calling load operation.
+            const createdPlugin = pluginFactory.createPlugin((pluginOptions ?? {}) as SceneLoaderPluginOptions);
+            plugin = createdPlugin instanceof Promise ? await createdPlugin : createdPlugin;
         } catch (error) {
             throw createLoadError(fileInfo, "Error instantiating plugin.", error);
         }

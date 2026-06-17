@@ -250,9 +250,12 @@ test.describe("Babylon Scene Loader", function () {
                 });
 
                 // promises.push(
-                BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then(() => {
-                    ready = true;
-                });
+                BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene)
+                    .then(() => {
+                        ready = true;
+                    })
+                    // Disposing the loader mid-load rejects the load promise; swallow it so it does not surface as an unhandled rejection.
+                    .catch(() => {});
                 // );
 
                 return Promise.all(promises);
