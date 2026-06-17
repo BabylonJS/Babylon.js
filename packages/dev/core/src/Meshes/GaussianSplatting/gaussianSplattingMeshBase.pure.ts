@@ -732,6 +732,16 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
     }
 
+    /**
+     * Whether the depth sort is settled: a sort computed for the current active ranges and camera has been
+     * applied to the rendered index buffer, and no further sort is pending or in flight. For a static camera
+     * and a fixed active set this becomes true once the final sort completes. Used by streaming subclasses to
+     * detect when rendering is fully up to date (e.g. for deterministic screenshots).
+     */
+    protected get _isDepthSortSettled(): boolean {
+        return this._readyToDisplay && !this._sortIsDirty && this._canPostToWorker;
+    }
+
     // (Re)allocates the worker depth buffer to the given padded size. A fresh array is allocated when the
     // size differs or the current buffer is detached (in-flight in the worker), so a queued sort can be
     // re-posted with a correctly-sized buffer without disturbing the in-flight one.

@@ -423,6 +423,60 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
+     * Resolves once the scene is fully streamed and displayed for the current camera: a LOD re-evaluation has
+     * run for the current point of view, every reachable LOD file has finished downloading and decoding (no
+     * downloads, decodes, or queued work remain), and the depth sort for the resulting splats has been applied
+     * and rendered. Intended for deterministic automated testing and screenshot/image comparison.
+     *
+     * Note: the promise only resolves while the camera is still — if the camera keeps moving, the target LODs
+     * (and the depth sort) keep changing and the stream never settles. Position the camera, then await this.
+     * @param stableFrames number of consecutive settled frames to require before resolving (defaults to 3), so
+     *   the final sorted frame is actually on screen
+     * @returns a promise that resolves when loading and rendering are complete for the current view
+     */
+    public async whenSettledAsync(stableFrames = 3): Promise<void> {
+        if (this._disposed) {
+            return;
+        }
+        // Re-evaluate LODs immediately so the target levels reflect the current camera before we wait.
+        this._forceLodUpdate = true;
+        const required = Math.max(1, stableFrames);
+        await new Promise<void>((resolve) => {
+            let stable = 0;
+            let observer: Nullable<Observer<Scene>> = null;
+            const finish = () => {
+                if (observer) {
+                    this._scene.onAfterRenderObservable.remove(observer);
+                    observer = null;
+                }
+                resolve();
+            };
+            observer = this._scene.onAfterRenderObservable.add(() => {
+                if (this._disposed) {
+                    finish();
+                    return;
+                }
+                if (this._isLoadingIdle() && this._isDepthSortSettled) {
+                    if (++stable >= required) {
+                        finish();
+                    }
+                } else {
+                    stable = 0;
+                }
+            });
+        });
+    }
+
+    /**
+     * Whether the base layer is ready and there is no streaming work in flight (nothing queued for decode, no
+     * decode running, and no downloads pending).
+     * @returns true when no loading work remains
+     */
+    private _isLoadingIdle(): boolean {
+        return this._baseLayerReady && this._decodeQueue.length === 0 && this._loadingFiles.size === 0 && this._downloadManager.isIdle;
+    }
+
+    /**
      * Finest (most detailed) LOD level any node is allowed to render. `0` allows full detail (level 0);
      * `1` caps detail at the next-coarser level, and so on. Nodes already coarser than this cap (by
      * distance) are unaffected. Changes take effect in real time.

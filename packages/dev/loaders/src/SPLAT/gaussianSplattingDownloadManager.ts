@@ -81,6 +81,13 @@ export class GaussianSplattingDownloadManager {
     }
 
     /**
+     * Whether there are no downloads queued or in flight.
+     */
+    public get isIdle(): boolean {
+        return this._pending.size === 0;
+    }
+
+    /**
      * Downloads a file as an `ArrayBuffer`, queued behind the concurrency cap and retried on failure.
      * Concurrent requests for the same URL resolve from a single shared download.
      * @param url the file URL to download
