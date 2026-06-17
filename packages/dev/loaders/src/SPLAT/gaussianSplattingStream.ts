@@ -431,6 +431,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * downloads, decodes, or queued work remain), and the depth sort for the resulting splats has been applied
      * and rendered. Intended for deterministic automated testing and screenshot/image comparison.
      *
+     * Streaming and settling require rendered frames. If an external render loop is already running, this waits
+     * on it passively; otherwise (e.g. when awaited inside an async `createScene` before the host starts its
+     * render loop) it drives `scene.render()` itself until settled, so it never deadlocks.
+     *
      * Note: the promise only resolves while the camera is still — if the camera keeps moving, the target LODs
      * (and the depth sort) keep changing and the stream never settles. Position the camera, then await this.
      * @param stableFrames number of consecutive settled frames to require before resolving (defaults to 3), so
@@ -444,30 +448,50 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // Re-evaluate LODs immediately so the target levels reflect the current camera before we wait.
         this._forceLodUpdate = true;
         const required = Math.max(1, stableFrames);
-        await new Promise<void>((resolve) => {
-            let stable = 0;
-            let observer: Nullable<Observer<Scene>> = null;
-            const finish = () => {
-                if (observer) {
-                    this._scene.onAfterRenderObservable.remove(observer);
-                    observer = null;
-                }
-                resolve();
-            };
-            observer = this._scene.onAfterRenderObservable.add(() => {
-                if (this._disposed) {
-                    finish();
-                    return;
-                }
-                if (this._isLoadingIdle() && this._isDepthSortSettled) {
-                    if (++stable >= required) {
-                        finish();
+        const scene = this._scene;
+        let stable = 0;
+        const isSettled = (): boolean => {
+            if (this._isLoadingIdle() && this._isDepthSortSettled) {
+                return ++stable >= required;
+            }
+            stable = 0;
+            return false;
+        };
+
+        // An external render loop is already driving frames: observe it passively.
+        if (scene.getEngine().activeRenderLoops.length > 0) {
+            await new Promise<void>((resolve) => {
+                let observer: Nullable<Observer<Scene>> = null;
+                observer = scene.onAfterRenderObservable.add(() => {
+                    if (this._disposed || isSettled()) {
+                        if (observer) {
+                            scene.onAfterRenderObservable.remove(observer);
+                            observer = null;
+                        }
+                        resolve();
                     }
+                });
+            });
+            return;
+        }
+
+        // No render loop yet (e.g. awaited inside createScene): drive rendering ourselves so the streaming
+        // decodes and depth sort can progress, yielding between frames so async downloads/readbacks resolve.
+        const requestFrame = (globalThis as { requestAnimationFrame?: (cb: () => void) => void }).requestAnimationFrame;
+        while (!this._disposed) {
+            scene.render();
+            if (isSettled()) {
+                return;
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise<void>((resolve) => {
+                if (typeof requestFrame === "function") {
+                    requestFrame(() => resolve());
                 } else {
-                    stable = 0;
+                    setTimeout(resolve, 16);
                 }
             });
-        });
+        }
     }
 
     /**
