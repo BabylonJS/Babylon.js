@@ -100,6 +100,15 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
         super(externalProperties);
         this.rebuild();
     }
+
+    /**
+     * Checks if a define is part of the generated define list.
+     * @param name define name to check
+     * @returns true if the define exists
+     */
+    public hasDefine(name: string): boolean {
+        return this._keys.indexOf(name) !== -1;
+    }
 }
 
 /**
@@ -269,9 +278,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh.materialDefines || this.pluginManager) {
             this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-            defines = subMesh.materialDefines = new GaussianSplattingMaterialDefines(this._eventInfo.defineNames);
+            const defineNames = this._eventInfo.defineNames;
+            const needsNewDefines = !subMesh.materialDefines || (defineNames && Object.keys(defineNames).some((name) => !defines.hasDefine(name)));
+            if (needsNewDefines) {
+                defines = subMesh.materialDefines = new GaussianSplattingMaterialDefines(defineNames);
+            }
         }
 
         const scene = this.getScene();
