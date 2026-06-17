@@ -175,13 +175,13 @@ describe("TargetCameraMovement", () => {
     });
 
     describe("legacy epsilon glide cutoff", () => {
-        it("stops rotational glide once the per-frame delta falls below speed * _rotationEpsilon", () => {
+        it("stops rotational glide once the per-frame delta falls below _rotationEpsilon", () => {
             camera.inertia = 0.9;
             camera.cameraRotation.x = 0.1;
             camera._checkInputs();
             const afterFirst = camera.rotation.x;
 
-            // Raise the rotation epsilon so the next decayed glide delta is below speed * _rotationEpsilon.
+            // Raise the rotation epsilon so the next decayed glide delta is below _rotationEpsilon.
             camera._rotationEpsilon = 10;
             camera._checkInputs();
             const afterSecond = camera.rotation.x;
@@ -216,7 +216,7 @@ describe("TargetCameraMovement", () => {
         // frame. A small rotation input (typical of ordinary mouse-look) below the epsilon limit
         // must still be applied; gating the cutoff before the apply used to discard it, making the
         // camera feel unresponsive.
-        it("still applies an active rotation input even when it is below speed * _rotationEpsilon", () => {
+        it("still applies an active rotation input even when it is below _rotationEpsilon", () => {
             camera.inertia = 0;
             const before = camera.rotation.x;
 
@@ -241,6 +241,29 @@ describe("TargetCameraMovement", () => {
 
             expect(camera.position.z).not.toBe(0);
             expect(camera.position.z).toBeCloseTo(1e-4, 6);
+        });
+
+        // Regression (forum 61001): rotation magnitude does not scale with `camera.speed`
+        // (FreeCamera rotation uses `angularSensibility`), so the rotation glide cutoff must not be
+        // scaled by `speed`. Otherwise raising `speed` truncates the rotation inertia tail earlier
+        // without making rotation any faster. The glide must settle at the same total either way.
+        it("rotation glide settles at the same total regardless of camera.speed", () => {
+            const runGlide = (speed: number): number => {
+                const cam = new FreeCamera("t", new Vector3(0, 0, 0), scene!);
+                cam.speed = speed;
+                cam.inertia = 0.9;
+                cam.cameraRotation.x = 0.1;
+                for (let i = 0; i < 500; i++) {
+                    cam._checkInputs();
+                }
+                const total = cam.rotation.x;
+                cam.dispose();
+                return total;
+            };
+            const slow = runGlide(1);
+            const fast = runGlide(50);
+            expect(slow).toBeGreaterThan(0);
+            expect(fast).toBeCloseTo(slow, 6);
         });
     });
 });

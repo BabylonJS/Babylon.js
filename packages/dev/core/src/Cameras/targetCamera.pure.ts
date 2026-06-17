@@ -408,14 +408,19 @@ export class TargetCamera extends Camera {
 
         // Backward-compat glide cutoff: honor the legacy `_panningEpsilon` / `_rotationEpsilon` knobs.
         // Legacy `_checkInputs` snapped `cameraDirection`/`cameraRotation` to 0 once a glide component
-        // fell below `speed * _panningEpsilon` / `speed * _rotationEpsilon`, ending the inertial glide
-        // at that threshold. The framerate-independent port moved glide into the movement system's
-        // velocity, so we mirror that cutoff here and reset the velocity so the glide terminates at the
-        // same point (and the public knobs stay meaningful). This is gated on `!hasPanInput` /
-        // `!hasRotationInput` so it only fires on the decaying tail: on an active-input frame the
-        // emitted delta is always applied, even when it is below the limit. Without that gate, ordinary
-        // mouse-look (whose per-frame rotation is typically below `speed * _rotationEpsilon`) would be
-        // discarded and the camera would feel unresponsive.
+        // fell below the corresponding threshold, ending the inertial glide at that point. The
+        // framerate-independent port moved glide into the movement system's velocity, so we mirror that
+        // cutoff here and reset the velocity so the glide terminates at the same point (and the public
+        // knobs stay meaningful). This is gated on `!hasPanInput` / `!hasRotationInput` so it only fires
+        // on the decaying tail: on an active-input frame the emitted delta is always applied, even when
+        // it is below the limit. Without that gate, ordinary mouse-look (whose per-frame rotation is
+        // typically below the limit) would be discarded and the camera would feel unresponsive.
+        //
+        // Translation magnitude scales with `this.speed` (inputs use `_computeLocalCameraSpeed`), so the
+        // panning cutoff is scaled by `speed` too, keeping the glide *duration* independent of speed.
+        // Rotation magnitude does NOT scale with `speed` (inputs use `angularSensibility`), so the
+        // rotation cutoff must not be scaled by `speed` — otherwise a higher `speed` would truncate the
+        // rotation inertia tail earlier without making rotation any faster (forum 61001).
         const inertialPanningLimit = this.speed * this._panningEpsilon;
         if (
             !hasPanInput &&
@@ -426,7 +431,7 @@ export class TargetCamera extends Camera {
             this.cameraDirection.setAll(0);
             movement.resetPanVelocity();
         }
-        const inertialRotationLimit = this.speed * this._rotationEpsilon;
+        const inertialRotationLimit = this._rotationEpsilon;
         if (!hasRotationInput && Math.abs(this.cameraRotation.x) < inertialRotationLimit && Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
             this.cameraRotation.set(0, 0);
             movement.resetRotationVelocity();

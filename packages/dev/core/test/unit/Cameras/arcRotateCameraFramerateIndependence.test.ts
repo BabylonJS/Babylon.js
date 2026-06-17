@@ -457,3 +457,68 @@ describe("ArcRotateCamera legacy inertialOffset back-compat", () => {
         expect(camera.inertialPanningX).toBeCloseTo(0.405, 4);
     });
 });
+
+// =================================================================================================
+// D. Inertia cutoff is independent of camera.speed (regression for forum report #61001/19)
+// `camera.speed` does not scale ArcRotateCamera movement magnitude, so it must not scale the
+// inertial glide cutoff either. Previously the radius/panning cutoffs used `speed * epsilon`,
+// which truncated the inertia tail earlier at higher speeds (worst at high framerates). These
+// assert the glide-out lasts the same number of frames regardless of `speed`.
+// =================================================================================================
+
+describe("ArcRotateCamera inertia cutoff independent of camera.speed", () => {
+    let engine: Nullable<NullEngine> = null;
+    let scene: Nullable<Scene> = null;
+    let camera: ArcRotateCamera;
+
+    beforeEach(() => {
+        const setup = makeCamera();
+        engine = setup.engine;
+        scene = setup.scene;
+        camera = setup.camera;
+        setFrameRate(engine, 60);
+    });
+
+    afterEach(() => {
+        scene?.dispose();
+        engine?.dispose();
+    });
+
+    function framesUntilRadiusGlideStops(speed: number): number {
+        camera.speed = speed;
+        camera.inertia = 0.9;
+        camera.inertialRadiusOffset = 1;
+        let frames = 0;
+        while (camera.inertialRadiusOffset !== 0 && frames < 10000) {
+            camera._checkInputs();
+            frames++;
+        }
+        return frames;
+    }
+
+    function framesUntilPanningGlideStops(speed: number): number {
+        camera.speed = speed;
+        camera.panningInertia = 0.9;
+        camera.inertialPanningX = 1;
+        let frames = 0;
+        while (camera.inertialPanningX !== 0 && frames < 10000) {
+            camera._checkInputs();
+            frames++;
+        }
+        return frames;
+    }
+
+    it("radius glide stops after the same number of frames regardless of speed", () => {
+        const slow = framesUntilRadiusGlideStops(1);
+        const fast = framesUntilRadiusGlideStops(50);
+        expect(slow).toBeGreaterThan(1);
+        expect(fast).toBe(slow);
+    });
+
+    it("panning glide stops after the same number of frames regardless of speed", () => {
+        const slow = framesUntilPanningGlideStops(1);
+        const fast = framesUntilPanningGlideStops(50);
+        expect(slow).toBeGreaterThan(1);
+        expect(fast).toBe(slow);
+    });
+});
