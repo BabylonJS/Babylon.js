@@ -1,6 +1,6 @@
 import { type RawTexture } from "../Textures/rawTexture";
 import { type Nullable } from "../../types";
-import { Color3 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color.pure";
 
 /**
  * Default settings for GreasedLine materials

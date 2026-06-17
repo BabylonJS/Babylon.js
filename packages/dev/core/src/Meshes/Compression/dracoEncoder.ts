@@ -1,10 +1,10 @@
 import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
 import { type EncoderMessage, type IDracoAttributeData, type IDracoEncodedMeshData, type IDracoEncoderOptions, type DracoAttributeName } from "./dracoEncoder.types";
 import { EncodeMesh, EncoderWorkerFunction } from "./dracoCompressionWorker";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { VertexBuffer } from "../buffer";
 import { type Nullable } from "../../types";
-import { Mesh } from "../mesh";
+import { Mesh } from "../mesh.pure";
 import { type Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";

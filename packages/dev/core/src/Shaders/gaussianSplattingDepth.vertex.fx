@@ -4,6 +4,7 @@ uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
 uniform vec2 focal;
 uniform float kernelSize;
+uniform float minPixelSize;
 uniform float alpha;
 
 uniform sampler2D covariancesATexture;

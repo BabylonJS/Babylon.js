@@ -1,5 +1,8 @@
-import { Engine, ThinEngine } from "core/Engines";
+import { Engine } from "core/Engines/engine";
+import { ThinEngine } from "core/Engines/thinEngine";
 import { beforeEach, describe, expect, it } from "vitest";
+
+type RenderFrameCallback = (timestamp: number) => void;
 
 describe("Engine", () => {
     describe("constructor", () => {
@@ -16,6 +19,52 @@ describe("Engine", () => {
 });
 
 describe("ThinEngine", () => {
+    describe("render loop", () => {
+        it("uses the custom animation frame requester from AbstractEngine", () => {
+            const thinEngine = new ThinEngine(null);
+            const requestedCallbacks: RenderFrameCallback[] = [];
+            const canceledRequestIds: Array<number | undefined> = [];
+            let nextRequestId = 7;
+            let renderCount = 0;
+            const renderLoop = () => {
+                renderCount++;
+            };
+
+            thinEngine.customAnimationFrameRequester = {
+                requestAnimationFrame: (callback: RenderFrameCallback) => {
+                    requestedCallbacks.push(callback);
+                    return nextRequestId++;
+                },
+                cancelAnimationFrame: (requestId?: number) => {
+                    canceledRequestIds.push(requestId);
+                },
+            };
+
+            try {
+                thinEngine.runRenderLoop(renderLoop);
+
+                expect(requestedCallbacks).toHaveLength(1);
+                expect(thinEngine._frameHandler).toBe(7);
+                expect(thinEngine.customAnimationFrameRequester.requestID).toBe(7);
+
+                requestedCallbacks[0](1000);
+
+                expect(renderCount).toBe(1);
+                expect(requestedCallbacks).toHaveLength(2);
+                expect(thinEngine._frameHandler).toBe(8);
+                expect(thinEngine.customAnimationFrameRequester.requestID).toBe(8);
+
+                thinEngine.stopRenderLoop(renderLoop);
+
+                expect(canceledRequestIds).toEqual([8]);
+                expect(thinEngine._frameHandler).toBe(0);
+                expect(thinEngine.customAnimationFrameRequester.requestID).toBeUndefined();
+            } finally {
+                thinEngine.dispose();
+            }
+        });
+    });
+
     describe("getTexImageParametersForCreateTexture", () => {
         let thinEngine: ThinEngine;
 

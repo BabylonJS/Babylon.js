@@ -1,0 +1,93 @@
+{
+  "customType": "BABYLON.NodeRenderGraph",
+  "name": "ClearOnly",
+  "comment": "Minimal pipeline: clear a back-buffer and output.",
+  "blocks": [
+    {
+      "customType": "BABYLON.NodeRenderGraphInputBlock",
+      "id": 1,
+      "name": "BackBuffer Color",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output"
+        }
+      ],
+      "additionalConstructionParameters": [
+        2
+      ],
+      "isExternal": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphClearBlock",
+      "id": 2,
+      "name": "Clear",
+      "inputs": [
+        {
+          "name": "target",
+          "inputName": "target",
+          "targetBlockId": 1,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "depth"
+        },
+        {
+          "name": "dependencies"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output"
+        },
+        {
+          "name": "outputDepth"
+        }
+      ],
+      "color": {
+        "r": 0.4,
+        "g": 0.6,
+        "b": 0.9,
+        "a": 1
+      },
+      "clearColor": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphOutputBlock",
+      "id": 3,
+      "name": "Output",
+      "inputs": [
+        {
+          "name": "texture",
+          "inputName": "texture",
+          "targetBlockId": 2,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "dependencies"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 0,
+        "y": 100
+      },
+      {
+        "blockId": 2,
+        "x": 220,
+        "y": 100
+      },
+      {
+        "blockId": 3,
+        "x": 440,
+        "y": 100
+      }
+    ]
+  },
+  "outputNodeId": 3
+}

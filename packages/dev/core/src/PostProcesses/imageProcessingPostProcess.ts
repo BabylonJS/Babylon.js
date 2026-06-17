@@ -6,7 +6,7 @@ import { type Camera } from "../Cameras/camera";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type ColorCurves } from "../Materials/colorCurves";
 import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
-import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import { ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "core/types";
-import { Tools } from "./tools";
+import { Tools } from "./tools.pure";
 import { type BasisFileInfo, type BasisTranscodeConfiguration } from "./basis";
 
 // WorkerGlobalScope

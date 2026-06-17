@@ -60,6 +60,10 @@ export interface IComputeEffectCreationOptions {
      * If provided, will be called with the shader code so that this code can be updated before it is compiled by the GPU
      */
     processFinalCode?: Nullable<(code: string) => string>;
+    /**
+     * If true, the engine should create an explicit pipeline layout for the compute effect instead of using an automatic layout.
+     */
+    useExplicitComputePipelineLayout?: boolean;
 }
 
 /**
@@ -122,6 +126,8 @@ export class ComputeEffect {
     public _pipelineContext: Nullable<IComputePipelineContext> = null;
     /** @internal */
     public _computeSourceCode: string = "";
+    /** @internal */
+    public _useExplicitComputePipelineLayout = false;
     private _rawComputeSourceCode: string = "";
     private _entryPoint: string;
     private _shaderLanguage = ShaderLanguage.WGSL;
@@ -147,6 +153,7 @@ export class ComputeEffect {
         this.onError = options.onError;
         this.onCompiled = options.onCompiled;
         this._entryPoint = options.entryPoint ?? "main";
+        this._useExplicitComputePipelineLayout = !!options.useExplicitComputePipelineLayout;
 
         this._shaderStore = ShaderStore.GetShadersStore(this._shaderLanguage);
         this._shaderRepository = ShaderStore.GetShadersRepository(this._shaderLanguage);

@@ -24,7 +24,16 @@ export interface INativeEngine {
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
-    setDeviceLostCallback(callback: () => void): void;
+    /**
+     * Registers a callback fired after bgfx is (re)initialized on the graphics device, i.e. the
+     * device-restored edge. Preferred name; see BabylonNative #1722.
+     */
+    setRenderResetCallback?(callback: () => void): void;
+    /**
+     * @deprecated Use {@link setRenderResetCallback}. Kept for compatibility with older
+     * BabylonNative builds; despite the name, this fires on device restore, not loss.
+     */
+    setDeviceLostCallback?(callback: () => void): void;
 
     createVertexArray(): NativeData;
 

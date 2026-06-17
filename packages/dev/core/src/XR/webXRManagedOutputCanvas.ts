@@ -3,7 +3,7 @@ import { type AbstractEngine } from "../Engines/abstractEngine";
 import { type WebXRRenderTarget } from "./webXRTypes";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
-import { Color3 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color.pure";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { type Nullable } from "../../types";
@@ -9,7 +9,7 @@ import { type IAnimatable } from "../../Animations/animatable.interface";
 import { type EffectFallbacks } from "../effectFallbacks";
 import { type SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { MaterialDefines } from "../materialDefines";
 
 import { type Engine } from "../../Engines/engine";
@@ -137,6 +137,12 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    /**
+     * Checks whether the sheen textures are ready for the sub mesh.
+     * @param defines defines the material defines to inspect
+     * @param scene defines the scene to use for readiness checks
+     * @returns true if sheen is ready
+     */
     public override isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
@@ -161,6 +167,11 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates shader defines for sheen before attributes are processed.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture checks
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.SHEEN = true;
@@ -199,6 +210,13 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds sheen data for a sub mesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene to use for texture binding
+     * @param engine defines the engine to use for capability checks
+     * @param subMesh defines the sub mesh being rendered
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
@@ -245,6 +263,11 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether sheen uses a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by sheen
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -257,6 +280,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active sheen textures.
+     * @param activeTextures defines the list of active textures to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
@@ -267,6 +294,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Adds the animatable sheen textures.
+     * @param animatables defines the list of animatables to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
@@ -277,6 +308,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Disposes the sheen textures.
+     * @param forceDisposeTextures defines whether to dispose the textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -295,6 +330,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the sheen sampler names.
+     * @param samplers defines the list of sampler names to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("sheenSampler", "sheenRoughnessSampler");
     }

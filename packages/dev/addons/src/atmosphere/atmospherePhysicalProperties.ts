@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 import { type IAtmospherePhysicalPropertiesOptions } from "./atmospherePhysicalPropertiesOptions";
-import { Observable } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable.pure";
+import { Vector3 } from "core/Maths/math.vector.pure";
 
 const DefaultPlanetRadius = 6360.0;
 const DefaultPlanetRadiusOffset = 0.01;

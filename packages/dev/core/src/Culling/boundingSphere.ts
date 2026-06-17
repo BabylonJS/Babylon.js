@@ -1,6 +1,6 @@
 import { type DeepImmutable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type Plane } from "../Maths/math.plane";
 
 /**

@@ -1488,7 +1488,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param width defines width of the rectangle
      * @param height defines height of the rectangle
      */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
+    public override enableScissor(x: number, y: number, width: number, height: number): void {
         this._scissorCached.x = x;
         this._scissorCached.y = y;
         this._scissorCached.z = width;
@@ -1498,7 +1498,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * Disable previously set scissor test rectangle
      */
-    public disableScissor() {
+    public override disableScissor() {
         this._scissorCached.x = this._scissorCached.y = this._scissorCached.z = this._scissorCached.w = 0;
         this._scissorsCurrent.x = this._scissorsCurrent.y = this._scissorsCurrent.w = this._scissorsCurrent.h = 0;
     }

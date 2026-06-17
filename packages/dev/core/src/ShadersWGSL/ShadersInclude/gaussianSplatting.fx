@@ -463,7 +463,8 @@ fn gaussianSplatting(
     projectionMatrix: mat4x4<f32>,
     focal: vec2f,
     invViewport: vec2f,
-    kernelSize: f32
+    kernelSize: f32,
+    minPixelSize: f32
 ) -> vec4f {
     let modelView = viewMatrix * worldMatrix;
     let camspace = viewMatrix * vec4f(worldPos, 1.0);
@@ -531,6 +532,16 @@ fn gaussianSplatting(
 
     if (lambda2 < 0.0) {
         return vec4f(0.0, 0.0, 2.0, 1.0);
+    }
+
+    // Discard splats whose projected footprint is smaller than minPixelSize pixels (0.0 = disabled).
+    // l1/l2 are the major/minor axis diameters in pixels (2 * sqrt(2 * lambda)); matches PlayCanvas semantics.
+    if (minPixelSize > 0.0) {
+        let l1 = 2.0 * min(sqrt(2.0 * lambda1), 1024.0);
+        let l2 = 2.0 * min(sqrt(2.0 * lambda2), 1024.0);
+        if (max(l1, l2) < minPixelSize) {
+            return vec4f(0.0, 0.0, 2.0, 1.0);
+        }
     }
 
     let diagonalVector = normalize(vec2<f32>(cov2d[0][1], lambda1 - cov2d[0][0]));

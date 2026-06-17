@@ -4,7 +4,7 @@ import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import { type Scene } from "../../scene";
 import { type TransformNode } from "../../Meshes/transformNode";
-import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { WithinEpsilon } from "../../Maths/math.scalar.functions";
 import { PhysicsMotionType, PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import { type Mesh } from "../../Meshes/mesh";
@@ -106,6 +106,8 @@ export class PhysicsAggregate {
 
     private _nodeDisposeObserver: Nullable<Observer<Node>>;
 
+    private _options: PhysicsAggregateParameters;
+
     constructor(
         /**
          * The physics-enabled object used as the physics aggregate
@@ -115,9 +117,15 @@ export class PhysicsAggregate {
          * The type of the physics aggregate
          */
         public type: PhysicsShapeType | PhysicsShape,
-        private _options: PhysicsAggregateParameters = { mass: 0 },
+        options: PhysicsAggregateParameters = { mass: 0 },
         private _scene?: Scene
     ) {
+        // Shallow-clone the options so we never mutate the caller's object.
+        // _addSizeOptions assigns to fields like .mesh, .center, .radius, etc.,
+        // which would otherwise leak stale references (e.g. a disposed mesh)
+        // into subsequent PhysicsAggregate constructions sharing the same options.
+        this._options = { ...options };
+
         //sanity check!
         if (!this.transformNode) {
             Logger.Error("No object was provided. A physics object is obligatory");
@@ -140,9 +148,9 @@ export class PhysicsAggregate {
         }
 
         //default options params
-        this._options.mass = _options.mass === void 0 ? 0 : _options.mass;
-        this._options.friction = _options.friction === void 0 ? 0.2 : _options.friction;
-        this._options.restitution = _options.restitution === void 0 ? 0.2 : _options.restitution;
+        this._options.mass = this._options.mass === void 0 ? 0 : this._options.mass;
+        this._options.friction = this._options.friction === void 0 ? 0.2 : this._options.friction;
+        this._options.restitution = this._options.restitution === void 0 ? 0.2 : this._options.restitution;
 
         const motionType = this._options.mass === 0 ? PhysicsMotionType.STATIC : PhysicsMotionType.DYNAMIC;
         const startAsleep = this._options.startAsleep ?? false;

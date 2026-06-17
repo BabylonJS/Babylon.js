@@ -11,6 +11,7 @@ uniform invViewport: vec2f;
 uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
 uniform kernelSize: f32;
+uniform minPixelSize: f32;
 uniform alpha: f32;
 
 var covariancesATexture: texture_2d<f32>;
@@ -60,7 +61,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
-    vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize, uniforms.minPixelSize);
 #ifdef DEPTH_RENDER
     #ifdef USE_REVERSE_DEPTHBUFFER
         vertexOutputs.vDepthMetric = ((-vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));

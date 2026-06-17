@@ -271,5 +271,31 @@ describe("VertexBuffer", () => {
             const expected = new Uint8Array([102, 153, 204]);
             expect(result).toStrictEqual(expected);
         });
+        it("de-interleaves half-float data preserving exact bits", () => {
+            const source = new Uint16Array([10, 20, 30, 999, 40, 50, 60, 888]);
+            const vb = {
+                data: source,
+                size: 3,
+                type: Constants.HALF_FLOAT,
+                byteOffset: 0,
+                byteStride: 8,
+                totalVertices: 2,
+            };
+
+            const result = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
+
+            expect(result.constructor).toBe(source.constructor);
+            expect(result).toStrictEqual(new Uint16Array([10, 20, 30, 40, 50, 60]));
+            expect(result.buffer !== source.buffer).toBeTruthy();
+        });
+        it("returns a view for tightly packed half-float data", () => {
+            const source = new Uint16Array([10, 20, 30, 40, 50, 60]);
+
+            const result = GetTypedArrayData(source, 3, Constants.HALF_FLOAT, 0, 6, 2);
+
+            expect(result.constructor).toBe(source.constructor);
+            expect(result).toStrictEqual(source);
+            expect(result.buffer === source.buffer).toBeTruthy();
+        });
     });
 });

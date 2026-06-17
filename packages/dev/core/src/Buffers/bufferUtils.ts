@@ -1,5 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+import { FromHalfFloat, ToHalfFloat } from "../Misc/halfFloat";
 import { type DataArray, type FloatArray, type IndicesArray, type TypedArray, type TypedArrayConstructor } from "../types";
 
 /**
@@ -36,6 +37,9 @@ function GetFloatValue(dataView: DataView, type: number, byteOffset: number, nor
                 value = value / 65535;
             }
             return value;
+        }
+        case Constants.HALF_FLOAT: {
+            return FromHalfFloat(dataView.getUint16(byteOffset, true));
         }
         case Constants.INT: {
             return dataView.getInt32(byteOffset, true);
@@ -82,6 +86,10 @@ function SetFloatValue(dataView: DataView, type: number, byteOffset: number, nor
             dataView.setUint16(byteOffset, value, true);
             break;
         }
+        case Constants.HALF_FLOAT: {
+            dataView.setUint16(byteOffset, ToHalfFloat(value), true);
+            break;
+        }
         case Constants.INT: {
             dataView.setInt32(byteOffset, value, true);
             break;
@@ -112,6 +120,7 @@ export function GetTypeByteLength(type: number): number {
             return 1;
         case Constants.SHORT:
         case Constants.UNSIGNED_SHORT:
+        case Constants.HALF_FLOAT:
             return 2;
         case Constants.INT:
         case Constants.UNSIGNED_INT:
@@ -136,6 +145,8 @@ export function GetTypedArrayConstructor(componentType: number): TypedArrayConst
         case Constants.SHORT:
             return Int16Array;
         case Constants.UNSIGNED_SHORT:
+            return Uint16Array;
+        case Constants.HALF_FLOAT:
             return Uint16Array;
         case Constants.INT:
             return Int32Array;
@@ -351,11 +362,12 @@ export function GetTypedArrayData(
     }
     if (byteStride !== tightlyPackedByteStride) {
         const copy = new constructor(count);
-        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, false, (values, index) => {
-            for (let i = 0; i < size; i++) {
-                copy[index + i] = values[i];
-            }
-        });
+        const src = new Uint8Array(buffer, adjustedByteOffset);
+        const dst = new Uint8Array(copy.buffer);
+        const rowBytes = size * typeByteLength;
+        for (let v = 0, s = 0, d = 0; v < totalVertices; v++, s += byteStride, d += rowBytes) {
+            dst.set(src.subarray(s, s + rowBytes), d);
+        }
         return copy;
     }
 

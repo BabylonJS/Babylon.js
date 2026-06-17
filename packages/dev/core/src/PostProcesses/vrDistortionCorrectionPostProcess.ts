@@ -1,9 +1,9 @@
-import { Vector2 } from "../Maths/math.vector";
+import { Vector2 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
 import { type VRCameraMetrics } from "../Cameras/VR/vrCameraMetrics";
 import { type Effect } from "../Materials/effect";
-import { Texture } from "../Materials/Textures/texture";
-import { PostProcess } from "./postProcess";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { PostProcess } from "./postProcess.pure";
 
 import { type Nullable } from "../types";
 

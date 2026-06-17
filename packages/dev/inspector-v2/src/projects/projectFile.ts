@@ -378,7 +378,7 @@ export async function SaveProjectFileAsync(scene: Scene): Promise<Blob> {
 
     // Create the zip (async — runs in a Web Worker to avoid blocking the UI thread)
     const zipped = await new Promise<Uint8Array>((resolve, reject) => {
-        zip(files, { level: 6 }, (err, data) => (err ? reject(err) : resolve(data)));
+        zip(files, { level: 6 }, (err, data) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve(data)));
     });
     return new Blob([zipped as BlobPart], { type: "application/zip" });
 }
@@ -394,7 +394,7 @@ export async function LoadProjectFileAsync(scene: Scene, zipFile: File): Promise
     const arrayBuffer = await zipFile.arrayBuffer();
     const { unzip, strFromU8 } = await import("fflate");
     const extracted = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
-        unzip(new Uint8Array(arrayBuffer), (err, data) => (err ? reject(err) : resolve(data)));
+        unzip(new Uint8Array(arrayBuffer), (err, data) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve(data)));
     });
 
     // Parse project.json

@@ -45,6 +45,7 @@ import { type Button } from "gui/2D/controls/button";
 import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
 import { GUINodeTools } from "../../guiNodeTools";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent";
 
 import "./propertyTab.scss";
 import adtIcon from "../../imgs/adtIcon.svg";
@@ -565,6 +566,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return null;
         }
         const nodesToRender = this.props.globalState.selectedControls.length > 0 ? this.props.globalState.selectedControls : [this.props.globalState.workbench.trueRootContainer];
-        return <div id="ge-propertyTab">{this.renderNode(nodesToRender)}</div>;
+        return (
+            <div id="ge-propertyTab">
+                <McpSessionComponent globalState={this.props.globalState} />
+                {this.renderNode(nodesToRender)}
+            </div>
+        );
     }
 }

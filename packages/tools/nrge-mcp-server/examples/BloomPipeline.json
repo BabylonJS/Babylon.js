@@ -1,0 +1,254 @@
+{
+  "customType": "BABYLON.NodeRenderGraph",
+  "name": "BloomPipeline",
+  "comment": "Forward rendering with bloom post-process.",
+  "blocks": [
+    {
+      "customType": "BABYLON.NodeRenderGraphInputBlock",
+      "id": 1,
+      "name": "BackBuffer Color",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output"
+        }
+      ],
+      "additionalConstructionParameters": [
+        2
+      ],
+      "isExternal": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphInputBlock",
+      "id": 2,
+      "name": "BackBuffer Depth",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output"
+        }
+      ],
+      "additionalConstructionParameters": [
+        4
+      ],
+      "isExternal": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphInputBlock",
+      "id": 3,
+      "name": "Camera",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output"
+        }
+      ],
+      "additionalConstructionParameters": [
+        16777216
+      ],
+      "isExternal": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphInputBlock",
+      "id": 4,
+      "name": "Objects",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output"
+        }
+      ],
+      "additionalConstructionParameters": [
+        33554432
+      ],
+      "isExternal": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphClearBlock",
+      "id": 5,
+      "name": "Clear",
+      "inputs": [
+        {
+          "name": "target",
+          "inputName": "target",
+          "targetBlockId": 1,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "depth",
+          "inputName": "depth",
+          "targetBlockId": 2,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "dependencies"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output"
+        },
+        {
+          "name": "outputDepth"
+        }
+      ],
+      "color": {
+        "r": 0.1,
+        "g": 0.1,
+        "b": 0.15,
+        "a": 1
+      },
+      "clearColor": true,
+      "clearDepth": true
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphObjectRendererBlock",
+      "id": 6,
+      "name": "Renderer",
+      "inputs": [
+        {
+          "name": "target",
+          "inputName": "target",
+          "targetBlockId": 5,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "depth",
+          "inputName": "depth",
+          "targetBlockId": 5,
+          "targetConnectionName": "outputDepth"
+        },
+        {
+          "name": "camera",
+          "inputName": "camera",
+          "targetBlockId": 3,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "objects",
+          "inputName": "objects",
+          "targetBlockId": 4,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "dependencies"
+        },
+        {
+          "name": "shadowGenerators"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output"
+        },
+        {
+          "name": "outputDepth"
+        },
+        {
+          "name": "objectRenderer"
+        }
+      ],
+      "additionalConstructionParameters": [
+        true,
+        true
+      ]
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphBloomPostProcessBlock",
+      "id": 7,
+      "name": "Bloom",
+      "inputs": [
+        {
+          "name": "source",
+          "inputName": "source",
+          "targetBlockId": 6,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "target",
+          "inputName": "target",
+          "targetBlockId": 6,
+          "targetConnectionName": "outputDepth"
+        },
+        {
+          "name": "dependencies"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output"
+        }
+      ],
+      "additionalConstructionParameters": [
+        false,
+        0.5
+      ],
+      "threshold": 0.8,
+      "weight": 0.6,
+      "kernel": 64,
+      "scale": 0.5
+    },
+    {
+      "customType": "BABYLON.NodeRenderGraphOutputBlock",
+      "id": 8,
+      "name": "Output",
+      "inputs": [
+        {
+          "name": "texture",
+          "inputName": "texture",
+          "targetBlockId": 7,
+          "targetConnectionName": "output"
+        },
+        {
+          "name": "dependencies"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 0,
+        "y": 100
+      },
+      {
+        "blockId": 2,
+        "x": 220,
+        "y": 100
+      },
+      {
+        "blockId": 3,
+        "x": 440,
+        "y": 100
+      },
+      {
+        "blockId": 4,
+        "x": 660,
+        "y": 100
+      },
+      {
+        "blockId": 5,
+        "x": 880,
+        "y": 100
+      },
+      {
+        "blockId": 6,
+        "x": 1100,
+        "y": 100
+      },
+      {
+        "blockId": 7,
+        "x": 1320,
+        "y": 100
+      },
+      {
+        "blockId": 8,
+        "x": 1540,
+        "y": 100
+      }
+    ]
+  },
+  "outputNodeId": 8
+}

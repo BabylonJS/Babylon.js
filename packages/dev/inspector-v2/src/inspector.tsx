@@ -430,6 +430,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             sidePaneRemapper: options.sidePaneRemapper,
             leftPaneDefaultCollapsed: options.leftPaneDefaultCollapsed,
             rightPaneDefaultCollapsed: options.rightPaneDefaultCollapsed,
+            disableTeachingMoments: options.disableTeachingMoments,
         });
         disposeActions.push(async () => await modularTool.dispose());
 

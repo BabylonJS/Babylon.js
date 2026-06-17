@@ -1,6 +1,6 @@
-import { VertexBuffer } from "core/Buffers/buffer";
+import { VertexBuffer } from "core/Buffers/buffer.pure";
 import { Constants } from "core/Engines/constants";
-import { EffectWrapper } from "core/Materials/effectRenderer";
+import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { type Scene } from "core/scene";
 import { type FloatArray, type Nullable } from "core/types";
 

@@ -1,5 +1,5 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Vector2, type Effect } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { EngineStore } from "../Engines/engineStore";
 

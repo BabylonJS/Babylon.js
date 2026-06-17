@@ -1,0 +1,164 @@
+{
+  "customType": "BABYLON.NodeGeometry",
+  "outputNodeId": 4,
+  "blocks": [
+    {
+      "customType": "BABYLON.BoxBlock",
+      "id": 1,
+      "name": "box",
+      "inputs": [
+        {
+          "name": "size",
+          "displayName": "size"
+        },
+        {
+          "name": "width",
+          "displayName": "width"
+        },
+        {
+          "name": "height",
+          "displayName": "height"
+        },
+        {
+          "name": "depth",
+          "displayName": "depth"
+        },
+        {
+          "name": "subdivisions",
+          "displayName": "subdivisions"
+        },
+        {
+          "name": "subdivisionsX",
+          "displayName": "subdivisionsX"
+        },
+        {
+          "name": "subdivisionsY",
+          "displayName": "subdivisionsY"
+        },
+        {
+          "name": "subdivisionsZ",
+          "displayName": "subdivisionsZ"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry"
+        }
+      ],
+      "evaluateContext": false
+    },
+    {
+      "customType": "BABYLON.SphereBlock",
+      "id": 2,
+      "name": "sphere",
+      "inputs": [
+        {
+          "name": "segments",
+          "displayName": "segments"
+        },
+        {
+          "name": "diameter",
+          "displayName": "diameter"
+        },
+        {
+          "name": "diameterX",
+          "displayName": "diameterX"
+        },
+        {
+          "name": "diameterY",
+          "displayName": "diameterY"
+        },
+        {
+          "name": "diameterZ",
+          "displayName": "diameterZ"
+        },
+        {
+          "name": "arc",
+          "displayName": "arc"
+        },
+        {
+          "name": "slice",
+          "displayName": "slice"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry"
+        }
+      ],
+      "evaluateContext": false
+    },
+    {
+      "customType": "BABYLON.BooleanGeometryBlock",
+      "id": 3,
+      "name": "csg",
+      "inputs": [
+        {
+          "name": "geometry0",
+          "displayName": "geometry0",
+          "inputName": "geometry0",
+          "targetBlockId": 1,
+          "targetConnectionName": "geometry"
+        },
+        {
+          "name": "geometry1",
+          "displayName": "geometry1",
+          "inputName": "geometry1",
+          "targetBlockId": 2,
+          "targetConnectionName": "geometry"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "displayName": "output"
+        }
+      ],
+      "evaluateContext": false,
+      "operation": 1,
+      "useOldCSGEngine": false
+    },
+    {
+      "customType": "BABYLON.GeometryOutputBlock",
+      "id": 4,
+      "name": "output",
+      "inputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry",
+          "inputName": "geometry",
+          "targetBlockId": 3,
+          "targetConnectionName": "output"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "comment": "Subtract a sphere from a box (CSG operation).",
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "blockId": 2,
+        "x": 0,
+        "y": 180
+      },
+      {
+        "blockId": 3,
+        "x": 340,
+        "y": 0
+      },
+      {
+        "blockId": 4,
+        "x": 680,
+        "y": 0
+      }
+    ]
+  }
+}

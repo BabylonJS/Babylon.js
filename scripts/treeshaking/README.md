@@ -11,7 +11,7 @@ The one-off migration helpers used to create the split live in [migration/](migr
 | Command                              | Writes files | Purpose                                                                                                    |
 | ------------------------------------ | ------------ | ---------------------------------------------------------------------------------------------------------- |
 | `npm run check:treeshaking-all`      | No           | Runs the full supported verification set: generated invariants, side-effects sync, and bundle smoke tests. |
-| `npm run check:treeshaking`          | No           | Runs manifest drift, pure barrel, and side-effect stub checks.                                             |
+| `npm run check:treeshaking`          | No           | Runs manifest drift, side-effect import closure, pure barrel, and side-effect stub checks.                 |
 | `npm run test:treeshaking`           | No           | Bundles representative entry points with Rollup and Webpack and checks expected bundle sizes.              |
 | `npm run update:manifest`            | Yes          | Regenerates sharded files under `side-effects-manifest/core/` from source analysis.                        |
 | `npm run generate:pure-barrels`      | Yes          | Regenerates generated `pure.ts` barrels under `packages/dev/core/src`.                                     |
@@ -102,6 +102,19 @@ node scripts/treeshaking/syncSideEffects.mjs --dry-run --verbose
 
 Normal mode writes `packages/public/@babylonjs/core/package.json`. `--check` mode validates the package file without writing.
 
+### `checkSideEffectImportClosure.mjs`
+
+Checks that files omitted from the side-effects manifest do not statically value-import or value-re-export files included in the manifest. This protects the side-effect-free import surface used by pure barrels and public package metadata.
+
+Historical violations can be tracked in `side-effect-import-closure-baseline.json` during migrations so the check can reject new violations while an existing backlog is migrated incrementally. The baseline file is not needed when there are no known violations.
+
+Common commands:
+
+```sh
+node scripts/treeshaking/checkSideEffectImportClosure.mjs
+node scripts/treeshaking/checkSideEffectImportClosure.mjs --update-baseline
+```
+
 ### `generatePureBarrels.mjs`
 
 Generates `pure.ts` barrels beside `index.ts` files under `packages/dev/core/src`. Each generated barrel starts with the standard generated header and re-exports only side-effect-free modules.
@@ -158,8 +171,9 @@ stale generated regions that should be removed.
 Runs the core generated-invariant checks in sequence:
 
 1. Manifest drift.
-2. Pure barrels.
-3. Side-effect stubs.
+2. Side-effect import closure.
+3. Pure barrels.
+4. Side-effect stubs.
 
 Common command:
 

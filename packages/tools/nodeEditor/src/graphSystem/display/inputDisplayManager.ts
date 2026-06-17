@@ -4,7 +4,7 @@ import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterial
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
 import { type Vector2, type Vector3, type Vector4 } from "core/Maths/math.vector";
-import { type Color3, type Color4 } from "core/Maths/math.color";
+import { type Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
 import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
@@ -67,16 +67,10 @@ export class InputDisplayManager implements IDisplayManager {
         const inputBlock = nodeData.data as InputBlock;
 
         switch (inputBlock.type) {
-            case NodeMaterialBlockConnectionPointTypes.Color3: {
-                if (inputBlock.value) {
-                    color = (inputBlock.value as Color3).toHexString();
-                    break;
-                }
-            }
-            // eslint-disable-next-line no-fallthrough
+            case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
-                    color = (inputBlock.value as Color4).toHexString(true);
+                    color = (inputBlock.value as Color3).toHexString();
                     break;
                 }
             }
@@ -145,17 +139,17 @@ export class InputDisplayManager implements IDisplayManager {
                     if (inputBlock.animationType !== AnimatedInputBlockTypes.None) {
                         value = AnimatedInputBlockTypes[inputBlock.animationType];
                     } else {
-                        value = inputBlock.value.toFixed(4);
+                        value = inputBlock.value != null ? inputBlock.value.toFixed(4) : "0";
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2: {
                     const vec2Value = inputBlock.value as Vector2;
-                    value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
+                    value = vec2Value ? `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})` : "(0, 0)";
                     break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Vector3: {
                     const vec3Value = inputBlock.value as Vector3;
-                    value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
+                    value = vec3Value ? `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})` : "(0, 0, 0)";
                     break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Vector4: {
@@ -163,7 +157,7 @@ export class InputDisplayManager implements IDisplayManager {
                         value = AnimatedInputBlockTypes[inputBlock.animationType];
                     } else {
                         const vec4Value = inputBlock.value as Vector4;
-                        value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                        value = vec4Value ? `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})` : "(0, 0, 0, 0)";
                     }
                     break;
                 }

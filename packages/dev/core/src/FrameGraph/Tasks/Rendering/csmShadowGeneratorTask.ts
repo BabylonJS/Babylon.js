@@ -1,7 +1,7 @@
 import { type FrameGraphTextureHandle, type FrameGraph } from "core/index";
-import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
+import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator.pure";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";
-import { DirectionalLight } from "../../../Lights/directionalLight";
+import { DirectionalLight } from "../../../Lights/directionalLight.pure";
 import { DepthTextureType, ThinMinMaxReducer } from "../../../Misc/thinMinMaxReducer";
 import { FrameGraphPostProcessTask } from "../PostProcesses/postProcessTask";
 import { Constants } from "../../../Engines/constants";

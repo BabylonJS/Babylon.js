@@ -3,6 +3,7 @@
 import { type ISceneLoaderPluginFactory, type SceneLoaderPluginOptions, RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 import { BVHFileLoaderMetadata } from "./BVH/bvhFileLoader.metadata";
+import { FBXFileLoaderMetadata } from "./FBX/fbxFileLoader.metadata";
 import { GLTFFileLoaderMetadata } from "./glTF/glTFFileLoader.metadata";
 import { OBJFileLoaderMetadata } from "./OBJ/objFileLoader.metadata";
 import { SPLATFileLoaderMetadata } from "./SPLAT/splatFileLoader.metadata";
@@ -21,6 +22,15 @@ export function registerBuiltInLoaders() {
         createPlugin: async (options: SceneLoaderPluginOptions) => {
             const { BVHFileLoader } = await import("./BVH/bvhFileLoader");
             return new BVHFileLoader(options[BVHFileLoaderMetadata.name]);
+        },
+    } satisfies ISceneLoaderPluginFactory);
+
+    // Register the FBX loader.
+    RegisterSceneLoaderPlugin({
+        ...FBXFileLoaderMetadata,
+        createPlugin: async (options: SceneLoaderPluginOptions) => {
+            const { FBXFileLoader } = await import("./FBX/fbxFileLoader");
+            return new FBXFileLoader(options[FBXFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
 

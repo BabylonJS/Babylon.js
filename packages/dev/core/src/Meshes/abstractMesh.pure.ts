@@ -26,6 +26,7 @@ import { type AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport, _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
+import { FromHalfFloat } from "../Misc/halfFloat";
 import { type RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color.pure";
@@ -131,20 +132,6 @@ function BakedVertexAnimationModulo(value: number, divisor: number): number {
     return value - Math.floor(value / divisor) * divisor;
 }
 
-function BakedVertexAnimationHalfFloatToNumber(value: number): number {
-    const sign = value & 0x8000 ? -1 : 1;
-    const exponent = (value & 0x7c00) >> 10;
-    const fraction = value & 0x03ff;
-
-    if (exponent === 0) {
-        return sign * Math.pow(2, -14) * (fraction / Math.pow(2, 10));
-    } else if (exponent === 0x1f) {
-        return fraction ? NaN : sign * Infinity;
-    }
-
-    return sign * Math.pow(2, exponent - 15) * (1 + fraction / Math.pow(2, 10));
-}
-
 function GetBakedVertexAnimationFrame(animationSettings: DeepImmutable<Vector4>, time: number): number {
     const totalFrames = animationSettings.y - animationSettings.x + 1;
     const normalizedTime = (time * animationSettings.w) / totalFrames;
@@ -163,22 +150,22 @@ function ReadBakedVertexAnimationMatrixToRef(data: Float32Array | Uint16Array, o
     }
 
     matrix.copyFromFloats(
-        BakedVertexAnimationHalfFloatToNumber(data[offset]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 1]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 2]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 3]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 4]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 5]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 6]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 7]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 8]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 9]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 10]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 11]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 12]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 13]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 14]),
-        BakedVertexAnimationHalfFloatToNumber(data[offset + 15])
+        FromHalfFloat(data[offset]),
+        FromHalfFloat(data[offset + 1]),
+        FromHalfFloat(data[offset + 2]),
+        FromHalfFloat(data[offset + 3]),
+        FromHalfFloat(data[offset + 4]),
+        FromHalfFloat(data[offset + 5]),
+        FromHalfFloat(data[offset + 6]),
+        FromHalfFloat(data[offset + 7]),
+        FromHalfFloat(data[offset + 8]),
+        FromHalfFloat(data[offset + 9]),
+        FromHalfFloat(data[offset + 10]),
+        FromHalfFloat(data[offset + 11]),
+        FromHalfFloat(data[offset + 12]),
+        FromHalfFloat(data[offset + 13]),
+        FromHalfFloat(data[offset + 14]),
+        FromHalfFloat(data[offset + 15])
     );
 }
 

@@ -47,6 +47,11 @@ export class GlobalState {
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
     onExportToGLBRequired = new Observable<void>();
 
+    mcpSessionUrl: string | null = null;
+    mcpSessionConnected: boolean = false;
+    mcpEventSource: EventSource | null = null;
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
     resyncHandler?: () => void;

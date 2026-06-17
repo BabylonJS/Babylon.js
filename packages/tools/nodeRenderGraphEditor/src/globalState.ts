@@ -56,6 +56,11 @@ export class GlobalState {
     noAutoFillExternalInputs: boolean;
     _engine: number;
 
+    mcpSessionUrl: string | null = null;
+    mcpSessionConnected: boolean = false;
+    mcpEventSource: EventSource | null = null;
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customBlockDescriptions?: INodeRenderGraphCustomBlockDescription[];
 

@@ -15,6 +15,7 @@ uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
 uniform vec2 focal;
 uniform float kernelSize;
+uniform float minPixelSize;
 uniform vec3 eyePosition;
 uniform float alpha;
 

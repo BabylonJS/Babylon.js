@@ -1,5 +1,5 @@
 import { Effect } from "../Materials/effect";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { type IMatrixLike, type IVector3Like } from "../Maths/math.like";
 import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
 import { type Scene } from "../scene";

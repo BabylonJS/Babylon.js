@@ -3,7 +3,7 @@ import { serialize } from "../../Misc/decorators";
 import { type FreeCamera } from "../../Cameras/freeCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraMouseWheelInput } from "../../Cameras/Inputs/BaseCameraMouseWheelInput";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, Vector3 } from "../../Maths/math.vector.pure";
 import { Coordinate } from "../../Maths/math.axis";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
