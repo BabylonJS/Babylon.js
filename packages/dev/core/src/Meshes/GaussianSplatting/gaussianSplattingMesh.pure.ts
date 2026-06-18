@@ -7,6 +7,7 @@ import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingMeshBase, AllocateShBuffers } from "./gaussianSplattingMeshBase.pure";
+import { GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
@@ -294,8 +295,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @param worker the newly created sort worker
      */
     protected override _onWorkerCreated(worker: Worker): void {
-        worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
-        worker.postMessage({ partIndices: this._partIndices ? new Uint8Array(this._partIndices) : null });
+        worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_MATRICES, partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+        worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: this._partIndices ? new Uint8Array(this._partIndices) : null });
     }
 
     /**
@@ -354,7 +355,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     protected override _notifyWorkerNewData(): void {
         super._notifyWorkerNewData();
         if (this._worker) {
-            this._worker.postMessage({ partIndices: this._partIndices ?? null });
+            this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: this._partIndices ?? null });
         }
     }
 
@@ -426,7 +427,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // once the full rebuild completes (at the end of removePart).
         if (!this._rebuilding) {
             if (this._worker) {
-                this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+                this._worker.postMessage({
+                    command: GaussianSplattingSortWorkerCommand.PART_MATRICES,
+                    partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
+                });
             }
             this._postToWorker(true);
         }
@@ -514,7 +518,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._updateTextureFromData(this._partIndicesTexture, partIndicesView, textureSize.x, lineStart, lineCount);
 
             if (this._worker) {
-                this._worker.postMessage({ partIndices: partIndices });
+                this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: partIndices });
             }
         }
     }
@@ -548,7 +552,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         if (this._worker) {
-            this._worker.postMessage({ partIndices: partIndices ?? null });
+            this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: partIndices ?? null });
         }
     }
 
@@ -1054,7 +1058,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (needsWorkerGate) {
                 this._rebuilding = false;
                 if (this._worker) {
-                    this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+                    this._worker.postMessage({
+                        command: GaussianSplattingSortWorkerCommand.PART_MATRICES,
+                        partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
+                    });
                 }
                 this._canPostToWorker = true;
                 this._postToWorker(true);
@@ -1230,7 +1237,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._rebuilding = false;
             // Break TypeScript's flow narrowing — _addPartsInternal may have reinstantiated _worker.
             const workerAfterRebuild = this._worker as Worker | null;
-            workerAfterRebuild?.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+            workerAfterRebuild?.postMessage({
+                command: GaussianSplattingSortWorkerCommand.PART_MATRICES,
+                partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
+            });
             this._canPostToWorker = true;
             this._postToWorker(true);
         } catch (e) {

@@ -4,6 +4,7 @@
 import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
 import { type VertexBuffer } from "../Buffers/buffer.pure";
+import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
@@ -226,6 +227,7 @@ export class ThinNativeEngine extends ThinEngine {
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _currentDepthTest: number;
+    private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
     private _stencilMask: number;
     private _stencilFunc: number;
@@ -251,6 +253,13 @@ export class ThinNativeEngine extends ThinEngine {
      * @internal
      */
     protected _initializeNativeEngine(adaptToDeviceRatio: boolean): void {
+        // ThinNativeEngine relies on VertexBuffer.effective{Buffer,ByteOffset,ByteStride}
+        // (defined in Buffers/buffer.align.pure) to bind vertex attributes through
+        // recordVertexBuffer. Register the side effect here so the engine is usable
+        // on its own without callers having to remember to import the wrapper module.
+        // The registration is idempotent.
+        RegisterBufferAlign();
+
         this._engine = new _native.Engine({
             version: AbstractEngine.Version,
             nonFloatVertexBuffers: true,
@@ -260,7 +269,8 @@ export class ThinNativeEngine extends ThinEngine {
         this._frameStats = { gpuTimeNs: Number.NaN };
         this._boundBuffersVertexArray = null;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
-        this._stencilTest;
+        this._depthTestEnabled = true;
+        this._stencilTest = false;
         this._stencilMask = 255;
         this._stencilFunc = Constants.ALWAYS;
         this._stencilFuncRef = 0;
@@ -727,6 +737,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -757,6 +768,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -1061,9 +1073,29 @@ export class ThinNativeEngine extends ThinEngine {
      * @param enable defines the state to set
      */
     public override setDepthBuffer(enable: boolean): void {
+        // Keep the shared depth-culling state in sync so that code paths which toggle
+        // depth testing through engine.depthCullingState.depthTest (for example
+        // EffectRenderer.applyEffectWrapper) are also honored on the native side. The
+        // native draw path does not go through the WebGL applyStates() flush, so the
+        // value is reconciled in _flushDepthTestState() right before each draw.
+        this._depthCullingState.depthTest = enable;
+        this._encodeDepthTest(enable);
+    }
+
+    private _encodeDepthTest(enable: boolean): void {
+        this._depthTestEnabled = enable;
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : _native.Engine.DEPTH_TEST_ALWAYS);
         this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _flushDepthTestState(): void {
+        // Unlike the WebGL engine, the native engine does not call applyStates() before
+        // a draw, so depth-test toggles made directly on engine.depthCullingState are
+        // flushed here to match the cross-engine contract.
+        if (this._depthCullingState.depthTest !== this._depthTestEnabled) {
+            this._encodeDepthTest(this._depthCullingState.depthTest);
+        }
     }
 
     /**
@@ -1126,9 +1158,13 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
-        this._commandBufferEncoder.finishEncodingCommand();
+        // Route through _encodeDepthTest so the tracked _depthTestEnabled state stays in
+        // sync with the encoded command. Because COMMAND_SETDEPTHTEST conflates the
+        // compare function and the enable bit (DEPTH_TEST_ALWAYS == disabled), encoding
+        // the new function directly here would silently re-enable depth testing while
+        // depth testing is logically disabled; _encodeDepthTest honors the current
+        // depthCullingState.depthTest and only emits the new function when enabled.
+        this._encodeDepthTest(this._depthCullingState.depthTest);
     }
 
     /**
@@ -1999,6 +2035,13 @@ export class ThinNativeEngine extends ThinEngine {
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
         internalTexture.width = internalTexture.baseWidth;
         internalTexture.height = internalTexture.baseHeight;
+        if (this._engine.getTextureLayerCount) {
+            const layerCount = this._engine.getTextureLayerCount(texture);
+            if (layerCount > 1) {
+                internalTexture.is2DArray = true;
+                internalTexture.baseDepth = internalTexture.depth = layerCount;
+            }
+        }
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -2036,6 +2079,13 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(
                 `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
             );
+        }
+        if (this._engine.getTextureLayerCount) {
+            const newLayerCount = this._engine.getTextureLayerCount(texture);
+            const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
+            if (newLayerCount !== oldLayerCount) {
+                throw new Error(`updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`);
+            }
         }
 
         // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.

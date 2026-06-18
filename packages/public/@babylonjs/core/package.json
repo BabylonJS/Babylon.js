@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.12.0",
+    "version": "9.12.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -156,7 +156,6 @@
         "Engines/nativeEngine.js",
         "Engines/nullEngine.js",
         "Engines/thinEngine.scissor.js",
-        "Engines/thinNativeEngine.js",
         "Engines/thinNativeEngine.types.js",
         "Engines/webgpuEngine.js",
         "FlowGraph/Blocks/Data/Audio/flowGraphGetSoundVolumeBlock.js",
