@@ -3,10 +3,10 @@
     "tests": [
         {
             "title": "Gaussian Splatting LOD",
-            "playgroundId": "#418POI#11",
+            "playgroundId": "#418POI#12",
             "renderCount": 15,
             "referenceImage": "gsplat-lod.png",
-            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
             "excludeFromPerformance": true
         },
         {
