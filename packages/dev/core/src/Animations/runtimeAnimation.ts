@@ -487,6 +487,19 @@ export class RuntimeAnimation {
      */
     private _getCorrectLoopMode(): number | undefined {
         if (this._target && this._target.animationPropertiesOverride) {
+            // A morph target with no per-target override inherits the scene-level animationPropertiesOverride.
+            // That loop mode is meant for transform/bone animations: honoring it here would force the morph
+            // influence into (for example) RELATIVE mode and make it accumulate offset * repeatCount every loop.
+            // When the override is the inherited scene one, use the animation's own loop mode instead.
+            // An override set explicitly on the morph target is still respected.
+            if (
+                this._target.animationPropertiesOverride === this._scene.animationPropertiesOverride &&
+                this._target.getClassName &&
+                this._target.getClassName() === "MorphTarget"
+            ) {
+                return this._animation.loopMode;
+            }
+
             return this._target.animationPropertiesOverride.loopMode as number;
         }
 
