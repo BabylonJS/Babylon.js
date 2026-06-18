@@ -394,11 +394,10 @@ export class TargetCamera extends Camera {
         // movement system's velocity, not in these fields), so external code polling them *after*
         // `_checkInputs()` reads 0 rather than the legacy residual glide value.
         const movement = this.movement;
-        // Capture whether there is raw input on each channel THIS frame, before it is folded into the
-        // movement system. This gates the legacy glide cutoff below so it only ends a decaying inertial
+        // Capture whether there is raw input on the pan channel THIS frame, before it is folded into the
+        // movement system. This gates the legacy panning cutoff below so it only ends a decaying inertial
         // tail and never discards a small but legitimate active-input delta.
         const hasPanInput = this.cameraDirection.x !== 0 || this.cameraDirection.y !== 0 || this.cameraDirection.z !== 0;
-        const hasRotationInput = this.cameraRotation.x !== 0 || this.cameraRotation.y !== 0;
         movement.panAccumulatedPixels.addInPlace(this.cameraDirection);
         movement.rotationAccumulatedPixels.x += this.cameraRotation.x;
         movement.rotationAccumulatedPixels.y += this.cameraRotation.y;
@@ -406,16 +405,15 @@ export class TargetCamera extends Camera {
         this.cameraDirection.copyFrom(movement.panDeltaCurrentFrame);
         this.cameraRotation.set(movement.rotationDeltaCurrentFrame.x, movement.rotationDeltaCurrentFrame.y);
 
-        // Backward-compat glide cutoff: honor the legacy `_panningEpsilon` / `_rotationEpsilon` knobs.
-        // Legacy `_checkInputs` snapped `cameraDirection`/`cameraRotation` to 0 once a glide component
-        // fell below `speed * _panningEpsilon` / `speed * _rotationEpsilon`, ending the inertial glide
-        // at that threshold. The framerate-independent port moved glide into the movement system's
-        // velocity, so we mirror that cutoff here and reset the velocity so the glide terminates at the
-        // same point (and the public knobs stay meaningful). This is gated on `!hasPanInput` /
-        // `!hasRotationInput` so it only fires on the decaying tail: on an active-input frame the
-        // emitted delta is always applied, even when it is below the limit. Without that gate, ordinary
-        // mouse-look (whose per-frame rotation is typically below `speed * _rotationEpsilon`) would be
-        // discarded and the camera would feel unresponsive.
+        // Backward-compat glide cutoff: honor the legacy `_panningEpsilon` knob for translation.
+        // Legacy `_checkInputs` snapped `cameraDirection` to 0 once the glide fell below the threshold,
+        // ending the inertial glide at that point. The framerate-independent port moved glide into the
+        // movement system's velocity, so we mirror that cutoff here and reset the velocity so the glide
+        // terminates at the same point (and the public knob stays meaningful). This is gated on
+        // `!hasPanInput` so it only fires on the decaying tail: on an active-input frame the emitted
+        // delta is always applied, even when it is below the limit. Translation magnitude scales with
+        // `this.speed` (inputs use `_computeLocalCameraSpeed`), so the panning cutoff is scaled by
+        // `speed` too, keeping the glide *duration* independent of speed.
         const inertialPanningLimit = this.speed * this._panningEpsilon;
         if (
             !hasPanInput &&
@@ -426,11 +424,13 @@ export class TargetCamera extends Camera {
             this.cameraDirection.setAll(0);
             movement.resetPanVelocity();
         }
-        const inertialRotationLimit = this.speed * this._rotationEpsilon;
-        if (!hasRotationInput && Math.abs(this.cameraRotation.x) < inertialRotationLimit && Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
-            this.cameraRotation.set(0, 0);
-            movement.resetRotationVelocity();
-        }
+        // Rotation has no legacy per-frame-delta cutoff: the movement system already terminates the
+        // glide via its own framerate-independent velocity epsilon, so `cameraRotation` is naturally 0
+        // once the rotation velocity decays. Applying a coarse `_rotationEpsilon` snap on top truncated
+        // the inertia tail and reintroduced framerate dependence (the snap tests a per-frame delta, which
+        // shrinks at high refresh rates), producing a visible "cut" in the glide that was worst at high
+        // speeds and high frame rates (forum 61001). Deferring entirely to the velocity epsilon gives the
+        // same smooth ease-out at every `speed` and refresh rate.
 
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
