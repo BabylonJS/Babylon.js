@@ -32,6 +32,16 @@ export const GaussianSplattingDisplayProperties: FunctionComponent<{ mesh: Gauss
             <StringifiedPropertyLine label="Max SH Degree" value={mesh.maxShDegree} />
             <BooleanBadgePropertyLine label="Has Compensation" value={mesh.compensation} />
             <StringifiedPropertyLine label="Kernel Size" value={mesh.kernelSize} />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Min Pixel Size"
+                description="Discard splats projected smaller than this many pixels. 0 = disabled."
+                target={mesh}
+                propertyKey="minPixelSize"
+                min={0}
+                max={20}
+                step={0.5}
+            />
             {stream && (
                 <BoundProperty
                     component={SyncedSliderPropertyLine}

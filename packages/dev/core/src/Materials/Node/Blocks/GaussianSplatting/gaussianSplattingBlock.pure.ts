@@ -100,6 +100,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._excludeVariableName("focal");
         state._excludeVariableName("invViewport");
         state._excludeVariableName("kernelSize");
+        state._excludeVariableName("minPixelSize");
         state._excludeVariableName("eyePosition");
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
@@ -157,6 +158,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("kernelSize", NodeMaterialBlockConnectionPointTypes.Float);
+        state._emitUniformFromString("minPixelSize", NodeMaterialBlockConnectionPointTypes.Float);
         state._emitUniformFromString("eyePosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         state.attributes.push(VertexBuffer.PositionKind);
         state.attributes.push("splatIndex0");
@@ -183,7 +185,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         let uniforms = "";
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             input = "input.position";
-            uniforms = ", uniforms.focal, uniforms.invViewport, uniforms.kernelSize";
+            uniforms = ", uniforms.focal, uniforms.invViewport, uniforms.kernelSize, uniforms.minPixelSize";
         }
         if (this.SH.isConnected) {
             state.compilationString += `#if SH_DEGREE > 0\n`;

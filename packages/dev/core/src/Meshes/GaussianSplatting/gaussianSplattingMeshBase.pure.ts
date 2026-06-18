@@ -472,6 +472,19 @@ function _ReleaseGsInterFrameYield(engine: AbstractEngine): void {
  * @internal Use GaussianSplattingMesh instead; this class is an internal implementation detail.
  */
 export class GaussianSplattingMeshBase extends Mesh {
+    /**
+     * When true (default), the depth-sort worker uses the fast O(n) counting (radix) sort. Set to false to
+     * fall back to the legacy comparison sort (useful for A/B comparison or as a safety fallback). The change
+     * takes effect on the next sort.
+     */
+    public static UseCountingSort = true;
+
+    /**
+     * When true, the depth-sort worker logs each sort's duration (ms) and active splat count to the console.
+     * Off by default; intended for performance investigation only.
+     */
+    public static LogSortPerformance = false;
+
     /** @internal */
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
@@ -1012,6 +1025,20 @@ export class GaussianSplattingMeshBase extends Mesh {
         return this._material instanceof GaussianSplattingMaterial ? this._material.compensation : false;
     }
 
+    /**
+     * Minimum projected splat size, in pixels, below which a splat is discarded (0 = disabled).
+     * Applied in real time; no rebuild required.
+     */
+    public get minPixelSize(): number {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.minPixelSize : 0;
+    }
+
+    public set minPixelSize(value: number) {
+        if (this._material instanceof GaussianSplattingMaterial) {
+            this._material.minPixelSize = Math.max(0, value);
+        }
+    }
+
     private _loadingPromise: Promise<void> | null = null;
 
     /**
@@ -1379,6 +1406,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                                 cameraId: camera.uniqueId,
                                 sortRequestId: cameraViewInfos.sortRequestId,
                                 rangeVersion: this._activeRangeVersion,
+                                useCountingSort: GaussianSplattingMeshBase.UseCountingSort,
+                                logSortPerformance: GaussianSplattingMeshBase.LogSortPerformance,
                             },
                             [this._depthMix.buffer]
                         );
@@ -2651,6 +2680,26 @@ export class GaussianSplattingMeshBase extends Mesh {
             // interval set so it covers the current splats instead of a stale (smaller) range.
             this._postIntervalsToWorker();
         }
+        this._sortIsDirty = true;
+    }
+
+    /**
+     * Patches only a contiguous range of source-splat centers in the sort worker, instead of re-copying and
+     * transferring the entire position buffer (which is hundreds of MB for large streamed datasets and caused
+     * a multi-frame freeze on every LOD decode). The worker must already hold a full-size position buffer (from
+     * the initial {@link GaussianSplattingSortWorkerCommand.POSITIONS} message at worker creation). Marks the
+     * sort dirty so the new splats are sorted in; the caller is responsible for any interval/range refresh.
+     * @param splatOffset first splat index of the updated range
+     * @param splatCount number of splats in the updated range
+     */
+    protected _postWorkerPositionsRange(splatOffset: number, splatCount: number): void {
+        if (!this._worker || !this._splatPositions || splatCount <= 0) {
+            return;
+        }
+        const floatOffset = splatOffset * 4;
+        // Copy just the changed region (stride 4) so the main thread keeps its own _splatPositions intact.
+        const data = this._splatPositions.slice(floatOffset, floatOffset + splatCount * 4);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS_UPDATE, offset: floatOffset, data }, [data.buffer]);
         this._sortIsDirty = true;
     }
 

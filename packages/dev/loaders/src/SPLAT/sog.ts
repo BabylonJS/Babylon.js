@@ -3,8 +3,14 @@ import { type IParsedSplat, type ISogTexturePack, Mode } from "./splatDefs";
 import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { Scalar } from "core/Maths/math.scalar";
 import { type AbstractEngine } from "core/Engines";
+import { type Nullable } from "core/types";
+import { type Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
+import { Tools } from "core/Misc/tools";
+// updateDynamicTexture is a prototype-augmented engine extension; import its side effect so the ImageBitmap
+// fast path in LoadSogTextureDirectAsync doesn't hit an undefined method under tree-shaken/pure engine builds.
+import "core/Engines/Extensions/engine.dynamicTexture";
 
 /**
  * Definition of a SOG data file
@@ -424,6 +430,64 @@ function CreateSogTextureFromImage(scene: Scene, image: IWebPImage): RawTexture 
     return CreateSogTexture(scene, image.bits, image.width, image.height);
 }
 
+/**
+ * Loads a SOG attribute image straight onto a GPU texture using `createImageBitmap` (decoded off the main
+ * thread, with `premultiplyAlpha`/`colorSpaceConversion` set to "none" so the raw data bytes are preserved)
+ * and a direct `texImage2D` upload — avoiding the `<img>` + 2D-canvas `getImageData` readback that stalls the
+ * frame. Falls back to the canvas path when `createImageBitmap` is unavailable or fails. Use only for textures
+ * whose pixels are never read back on the CPU (scales, quats, sh0, shN); means_l/means_u still go through the
+ * readback path because their bytes are needed to decode positions for the sort worker.
+ * @param rootUrlOrData base URL (string) or the raw file bytes (Uint8Array)
+ * @param filename file name (used only with a URL)
+ * @param scene hosting scene
+ * @returns a GPU texture holding the raw image bytes
+ */
+async function LoadSogTextureDirectAsync(rootUrlOrData: string | Uint8Array, filename: string, scene: Scene): Promise<RawTexture> {
+    const engine = scene.getEngine();
+    if (typeof createImageBitmap === "function") {
+        try {
+            // A typed blob is required: createImageBitmap can fail to decode a typeless blob (and the
+            // content-type is lost when loading via LoadFileAsync), which would force the slow canvas fallback.
+            const mimeType = filename.toLowerCase().endsWith(".png") ? "image/png" : "image/webp";
+            let blob: Blob;
+            if (typeof rootUrlOrData === "string") {
+                const buffer = (await Tools.LoadFileAsync(rootUrlOrData + filename, true)) as ArrayBuffer;
+                blob = new Blob([buffer], { type: mimeType });
+            } else {
+                blob = new Blob([rootUrlOrData as any], { type: mimeType });
+            }
+            const bitmap = await createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+            try {
+                const tex = new RawTexture(
+                    null,
+                    bitmap.width,
+                    bitmap.height,
+                    Constants.TEXTUREFORMAT_RGBA,
+                    scene,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURETYPE_UNSIGNED_BYTE
+                );
+                tex.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                tex.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                const internal = tex.getInternalTexture();
+                if (internal) {
+                    // invertY=false / premulAlpha=false keep the byte layout identical to the canvas path.
+                    engine.updateDynamicTexture(internal, bitmap, false, false);
+                }
+                return tex;
+            } finally {
+                bitmap.close();
+            }
+        } catch {
+            // Fall through to the canvas readback path below.
+        }
+    }
+    const image = await LoadWebpImageData(rootUrlOrData, filename, engine);
+    return CreateSogTextureFromImage(scene, image);
+}
+
 function DecodeSogPositions(data: SOGRootData, meansl: Uint8Array, meansu: Uint8Array, splatCount: number): Float32Array {
     const unlog = (n: number) => Math.sign(n) * (Math.exp(Math.abs(n)) - 1);
     if (!Array.isArray(data.means.mins) || !Array.isArray(data.means.maxs)) {
@@ -449,10 +513,14 @@ function DecodeSogPositions(data: SOGRootData, meansl: Uint8Array, meansu: Uint8
  * @param dataOrFiles Either the SOGRootData or a Map of filenames to Uint8Array file data (including meta.json)
  * @param rootUrl Base URL to load webp files from (if dataOrFiles is SOGRootData)
  * @param scene The Babylon.js scene
+ * @param computeCpuPositions When true (default), means_l/means_u are read back on the CPU and `pack.positions`
+ *   is decoded for the sort worker / bounding box. Pass false when the caller will instead read the decoded
+ *   centers back from the GPU work buffer — then every attribute (including means) uses the fast direct
+ *   ImageBitmap upload (no `getImageData` readback) and `pack.positions` is left empty.
  * @returns Parsed splat info with `sogTextures` populated.
  */
 // eslint-disable-next-line @typescript-eslint/no-restricted-types
-export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene): Promise<IParsedSplat> {
+export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene, computeCpuPositions = true): Promise<IParsedSplat> {
     let data: SOGRootData;
     let files: Map<string, Uint8Array> | undefined;
 
@@ -467,43 +535,68 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
         data = dataOrFiles;
     }
 
-    const urls = [...data.means.files, ...data.scales.files, ...data.quats.files, ...data.sh0.files];
-    if (data.shN) {
-        urls.push(...data.shN.files);
+    // Attribute textures (scales/quats/sh0/shN) are only sampled on the GPU, so they always upload straight
+    // from a decoded ImageBitmap (no getImageData readback). means_l/means_u additionally need their CPU bytes
+    // when computeCpuPositions is set (to decode positions for the sort worker) — those go through the
+    // <img>+canvas path; otherwise means also use the fast direct upload. All loads run in parallel.
+    const loadMeansImageAsync = async (fileName: string): Promise<IWebPImage> => {
+        if (files && files.has(fileName)) {
+            return await LoadWebpImageData(files.get(fileName)!, fileName, scene.getEngine());
+        }
+        return await LoadWebpImageData(rootUrl, fileName, scene.getEngine());
+    };
+    const loadGpuTextureAsync = async (fileName: string): Promise<RawTexture> => {
+        if (files && files.has(fileName)) {
+            return await LoadSogTextureDirectAsync(files.get(fileName)!, fileName, scene);
+        }
+        return await LoadSogTextureDirectAsync(rootUrl, fileName, scene);
+    };
+
+    const gpuFiles = [...data.scales.files, ...data.quats.files, ...data.sh0.files, ...(data.shN?.files ?? [])];
+
+    let meansL: RawTexture;
+    let meansU: RawTexture;
+    let meansWidth: number;
+    let meansHeight: number;
+    let meansImages: Nullable<[IWebPImage, IWebPImage]> = null;
+    let gpuTextures: RawTexture[];
+
+    if (computeCpuPositions) {
+        const [images, gpu] = await Promise.all([Promise.all(data.means.files.map(loadMeansImageAsync)), Promise.all(gpuFiles.map(loadGpuTextureAsync))]);
+        meansImages = [images[0], images[1]];
+        gpuTextures = gpu;
+        meansL = CreateSogTextureFromImage(scene, images[0]);
+        meansU = CreateSogTextureFromImage(scene, images[1]);
+        meansWidth = images[0].width;
+        meansHeight = images[0].height;
+    } else {
+        const [meansTex, gpu] = await Promise.all([Promise.all(data.means.files.map(loadGpuTextureAsync)), Promise.all(gpuFiles.map(loadGpuTextureAsync))]);
+        gpuTextures = gpu;
+        meansL = meansTex[0];
+        meansU = meansTex[1];
+        const size = (meansL as Texture).getSize();
+        meansWidth = size.width;
+        meansHeight = size.height;
     }
 
-    const images: IWebPImage[] = await Promise.all(
-        urls.map(async (fileName) => {
-            if (files && files.has(fileName)) {
-                return await LoadWebpImageData(files.get(fileName)!, fileName, scene.getEngine());
-            }
-            return await LoadWebpImageData(rootUrl, fileName, scene.getEngine());
-        })
-    );
-
     const splatCount = data.count ?? data.means.shape[0];
-    const splatTexelCount = images[0].width * images[0].height;
+    const splatTexelCount = meansWidth * meansHeight;
     if (splatTexelCount < splatCount) {
         throw new Error(`SOG texture contains ${splatTexelCount} texels, but metadata references ${splatCount} splats.`);
     }
 
-    // means_l, means_u, scales, quats, sh0 share the same (w,h) — size each texture from its image so
-    // the uploaded data size matches the texture exactly (multi-row webp images otherwise produce a
-    // mis-sized, empty texture).
-    const meansL = CreateSogTextureFromImage(scene, images[0]);
-    const meansU = CreateSogTextureFromImage(scene, images[1]);
-    const scales = CreateSogTextureFromImage(scene, images[2]);
-    const quats = CreateSogTextureFromImage(scene, images[3]);
-    const sh0 = CreateSogTextureFromImage(scene, images[4]);
+    const scales = gpuTextures[0];
+    const quats = gpuTextures[1];
+    const sh0 = gpuTextures[2];
 
     let shCentroids: RawTexture | undefined;
     let shLabels: RawTexture | undefined;
     let shCoeffCount = 0;
     let shDegree = 0;
 
-    if (data.shN && images.length >= 7) {
-        shCentroids = CreateSogTextureFromImage(scene, images[5]);
-        shLabels = CreateSogTextureFromImage(scene, images[6]);
+    if (data.shN && gpuTextures.length >= 5) {
+        shCentroids = gpuTextures[3];
+        shLabels = gpuTextures[4];
 
         shCoeffCount = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : data.shN.shape[1] / 3;
         shDegree = data.shN.bands ?? Math.round(Math.sqrt(shCoeffCount + 1) - 1);
@@ -562,7 +655,7 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
         shnMin: typeof data.shN?.mins === "number" ? data.shN.mins : undefined,
         shnMax: typeof data.shN?.maxs === "number" ? data.shN.maxs : undefined,
         shCoeffCount,
-        positions: DecodeSogPositions(data, images[0].bits, images[1].bits, splatCount),
+        positions: meansImages ? DecodeSogPositions(data, meansImages[0].bits, meansImages[1].bits, splatCount) : new Float32Array(0),
     };
 
     return { mode: Mode.Splat, data: new ArrayBuffer(0), hasVertexColors: false, shDegree, sogTextures: pack };
