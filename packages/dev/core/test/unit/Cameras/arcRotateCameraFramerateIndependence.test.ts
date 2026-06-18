@@ -467,45 +467,49 @@ describe("ArcRotateCamera legacy inertialOffset back-compat", () => {
 // =================================================================================================
 
 describe("ArcRotateCamera inertia cutoff independent of camera.speed", () => {
-    let engine: Nullable<NullEngine> = null;
-    let scene: Nullable<Scene> = null;
-    let camera: ArcRotateCamera;
-
-    beforeEach(() => {
-        const setup = makeCamera();
-        engine = setup.engine;
-        scene = setup.scene;
-        camera = setup.camera;
-        setFrameRate(engine, 60);
-    });
-
-    afterEach(() => {
-        scene?.dispose();
-        engine?.dispose();
-    });
+    // Each run builds a fresh camera so the "slow" and "fast" measurements share no mutable state.
+    // The frame cap is a safety valve against an infinite loop; helpers assert the glide actually
+    // terminated below it, so a never-ending glide fails instead of silently returning the cap.
+    const frameCap = 10000;
 
     function framesUntilRadiusGlideStops(speed: number): number {
-        camera.speed = speed;
-        camera.inertia = 0.9;
-        camera.inertialRadiusOffset = 1;
-        let frames = 0;
-        while (camera.inertialRadiusOffset !== 0 && frames < 10000) {
-            camera._checkInputs();
-            frames++;
+        const { engine, scene, camera } = makeCamera();
+        try {
+            setFrameRate(engine, 60);
+            camera.speed = speed;
+            camera.inertia = 0.9;
+            camera.inertialRadiusOffset = 1;
+            let frames = 0;
+            while (camera.inertialRadiusOffset !== 0 && frames < frameCap) {
+                camera._checkInputs();
+                frames++;
+            }
+            expect(frames).toBeLessThan(frameCap);
+            return frames;
+        } finally {
+            scene.dispose();
+            engine.dispose();
         }
-        return frames;
     }
 
     function framesUntilPanningGlideStops(speed: number): number {
-        camera.speed = speed;
-        camera.panningInertia = 0.9;
-        camera.inertialPanningX = 1;
-        let frames = 0;
-        while (camera.inertialPanningX !== 0 && frames < 10000) {
-            camera._checkInputs();
-            frames++;
+        const { engine, scene, camera } = makeCamera();
+        try {
+            setFrameRate(engine, 60);
+            camera.speed = speed;
+            camera.panningInertia = 0.9;
+            camera.inertialPanningX = 1;
+            let frames = 0;
+            while (camera.inertialPanningX !== 0 && frames < frameCap) {
+                camera._checkInputs();
+                frames++;
+            }
+            expect(frames).toBeLessThan(frameCap);
+            return frames;
+        } finally {
+            scene.dispose();
+            engine.dispose();
         }
-        return frames;
     }
 
     it("radius glide stops after the same number of frames regardless of speed", () => {
