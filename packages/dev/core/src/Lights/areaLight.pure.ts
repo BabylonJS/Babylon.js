@@ -1,6 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Vector3 } from "core/Maths/math.vector.pure";
+import { serializeAsVector3 } from "core/Misc/decorators";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { Constants } from "core/Engines/constants";
@@ -62,6 +63,7 @@ export abstract class AreaLight extends Light {
     /**
      * Area Light position.
      */
+    @serializeAsVector3()
     public position: Vector3;
 
     /**

@@ -3,7 +3,7 @@
 import { Vector3 } from "core/Maths/math.vector.pure";
 import { Light } from "core/Lights/light";
 import { type Effect } from "core/Materials/effect.pure";
-import { serialize } from "core/Misc/decorators";
+import { serialize, serializeAsTexture } from "core/Misc/decorators";
 import { type Scene } from "core/scene.pure";
 import { AreaLight } from "core/Lights/areaLight.pure";
 import { type Nullable } from "core/types";
@@ -28,6 +28,7 @@ export class RectAreaLight extends AreaLight {
     /**
      * Gets Rect Area Light emission texture. (Note: This texture needs pre-processing! Use AreaLightTextureTools to pre-process the texture).
      */
+    @serializeAsTexture()
     public get emissionTexture(): Nullable<BaseTexture> {
         return this._emissionTextureTexture;
     }
