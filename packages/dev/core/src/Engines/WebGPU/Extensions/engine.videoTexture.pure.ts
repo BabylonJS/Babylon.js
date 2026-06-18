@@ -40,16 +40,19 @@ export function RegisterEnginesWebGPUExtensionsEngineVideoTexture(): void {
         if (IsExternalTexture(video)) {
             if (video.isReady()) {
                 try {
-                    this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
-                    if (texture.generateMipMaps) {
-                        if (this.snapshotRendering) {
-                            // The main render encoder is reserved for recording/replaying snapshot bundles, and
-                            // _generateMipmaps() calls _endCurrentRenderPass() when it targets that encoder, which
-                            // corrupts the bundle. Generate the mipmaps on a dedicated, immediately-submitted encoder.
-                            const commandEncoder = this._device.createCommandEncoder();
+                    if (this.snapshotRendering) {
+                        // Under snapshot rendering the main render encoder is reserved for recording/replaying
+                        // bundles, and _generateMipmaps()'s _endCurrentRenderPass() would corrupt the bundle. Run the
+                        // copy (and mipmap generation, if any) on a single dedicated, immediately-submitted encoder.
+                        const commandEncoder = this._device.createCommandEncoder();
+                        this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY, commandEncoder);
+                        if (texture.generateMipMaps) {
                             this._generateMipmaps(texture, commandEncoder);
-                            this._device.queue.submit([commandEncoder.finish()]);
-                        } else {
+                        }
+                        this._device.queue.submit([commandEncoder.finish()]);
+                    } else {
+                        this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
+                        if (texture.generateMipMaps) {
                             this._generateMipmaps(texture);
                         }
                     }
