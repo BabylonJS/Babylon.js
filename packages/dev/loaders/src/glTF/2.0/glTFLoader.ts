@@ -1342,6 +1342,16 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             morphTargetManager.areUpdatesFrozen = false;
+
+            if (this._parent.useMaxMorphTargetInfluencers) {
+                // Compile the morph shader once for all targets so it is not recompiled (causing a one-frame
+                // visual glitch) when an animated influence passes through zero and the active influencer count
+                // changes. optimizeInfluencers must be disabled too so the active influencer set - and thus the
+                // bound influences/attributes - always matches NUM_MORPH_INFLUENCERS, including in the
+                // vertex-attribute fallback path (which has no per-frame influencer-count guard).
+                morphTargetManager.optimizeInfluencers = false;
+                morphTargetManager.numMaxInfluencers = morphTargetManager.numTargets;
+            }
         });
     }
 

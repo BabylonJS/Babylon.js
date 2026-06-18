@@ -398,6 +398,46 @@ test.describe("Babylon Scene Loader", function () {
             expect(assertionData.positionAnimations, "positionAnimations").toBe(1);
         });
 
+        test("Load Alien with default morph target influencer pinning", async () => {
+            // By default the glTF loader pins numMaxInfluencers (and disables optimizeInfluencers) so the morph
+            // shader is compiled once and does not recompile when an animated influence passes through zero.
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/Alien/", "Alien.gltf", window.scene).then(() => {
+                    const manager = (window.scene!.getMeshByName("AlienHead") as any).morphTargetManager;
+                    return {
+                        numTargets: manager.numTargets,
+                        numMaxInfluencers: manager.numMaxInfluencers,
+                        optimizeInfluencers: manager.optimizeInfluencers,
+                    };
+                });
+            });
+            expect(assertionData.numTargets, "numTargets").toBe(2);
+            expect(assertionData.numMaxInfluencers, "numMaxInfluencers").toBe(2);
+            expect(assertionData.optimizeInfluencers, "optimizeInfluencers").toBe(false);
+        });
+
+        test("Load Alien with useMaxMorphTargetInfluencers disabled", async () => {
+            // Opting out restores the previous behavior: numMaxInfluencers stays 0 and only active influencers
+            // drive the shader.
+            const assertionData = await page.evaluate(() => {
+                const observer = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader) => {
+                    if (loader.name === "gltf") {
+                        (loader as any).useMaxMorphTargetInfluencers = false;
+                    }
+                });
+                return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/Alien/", "Alien.gltf", window.scene).then(() => {
+                    BABYLON.SceneLoader.OnPluginActivatedObservable.remove(observer);
+                    const manager = (window.scene!.getMeshByName("AlienHead") as any).morphTargetManager;
+                    return {
+                        numMaxInfluencers: manager.numMaxInfluencers,
+                        optimizeInfluencers: manager.optimizeInfluencers,
+                    };
+                });
+            });
+            expect(assertionData.numMaxInfluencers, "numMaxInfluencers").toBe(0);
+            expect(assertionData.optimizeInfluencers, "optimizeInfluencers").toBe(true);
+        });
+
         test("Load LevelOfDetail", async () => {
             const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<{ [key: string]: boolean }>>();
