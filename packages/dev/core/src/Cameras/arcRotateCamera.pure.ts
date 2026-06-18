@@ -257,7 +257,7 @@ export class ArcRotateCamera extends TargetCamera {
             return this.movement.zoomAccumulatedPixels;
         }
         const delta = this.movement.zoomDeltaCurrentFrame;
-        return Math.abs(delta) < this.speed * this._rotationEpsilon ? 0 : delta;
+        return Math.abs(delta) < this._rotationEpsilon ? 0 : delta;
     }
 
     public set inertialRadiusOffset(value: number) {
@@ -1286,6 +1286,12 @@ export class ArcRotateCamera extends TargetCamera {
         // We check the private fields here instead of the public getters because the getters fall back
         // to the movement system's current-frame deltas (for back-compat polling), which would cause
         // double-application of the rotation/zoom that movement.computeCurrentFrameDeltas just produced.
+        //
+        // Note: unlike TargetCamera, none of ArcRotateCamera's channels (rotate/zoom/pan) scale their
+        // magnitude by `this.speed` (movement.speed stays 1; inputs use angularSensibility / wheel
+        // precision / panningSensibility). So the glide cutoffs below must NOT be scaled by `speed` —
+        // doing so only truncated the inertia tail earlier at higher speeds without making the camera
+        // any faster (forum 61001).
         if (this._inertialAlphaOffset !== 0 || this._inertialBetaOffset !== 0 || this._inertialRadiusOffset !== 0) {
             this._applyRotationAndZoomDelta(this._inertialAlphaOffset, this._inertialBetaOffset, this._inertialRadiusOffset);
             this._inertialAlphaOffset *= this.inertia;
@@ -1297,7 +1303,7 @@ export class ArcRotateCamera extends TargetCamera {
             if (Math.abs(this._inertialBetaOffset) < this._rotationEpsilon) {
                 this._inertialBetaOffset = 0;
             }
-            if (Math.abs(this._inertialRadiusOffset) < this.speed * this._rotationEpsilon) {
+            if (Math.abs(this._inertialRadiusOffset) < this._rotationEpsilon) {
                 this._inertialRadiusOffset = 0;
             }
             hasUserInteractions = true;
@@ -1307,7 +1313,7 @@ export class ArcRotateCamera extends TargetCamera {
             this._applyPanDelta(this.inertialPanningX, this.inertialPanningY);
             this.inertialPanningX *= this.panningInertia;
             this.inertialPanningY *= this.panningInertia;
-            const inertialPanningLimit = this.speed * this._panningEpsilon;
+            const inertialPanningLimit = this._panningEpsilon;
             if (Math.abs(this.inertialPanningX) < inertialPanningLimit) {
                 this.inertialPanningX = 0;
             }

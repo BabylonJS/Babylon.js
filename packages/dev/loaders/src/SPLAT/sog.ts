@@ -8,6 +8,7 @@ import { type Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
+import { type GaussianSplattingDownloadManager, type DownloadGroupId } from "./gaussianSplattingDownloadManager";
 // updateDynamicTexture is a prototype-augmented engine extension; import its side effect so the ImageBitmap
 // fast path in LoadSogTextureDirectAsync doesn't hit an undefined method under tree-shaken/pure engine builds.
 import "core/Engines/Extensions/engine.dynamicTexture";
@@ -517,10 +518,21 @@ function DecodeSogPositions(data: SOGRootData, meansl: Uint8Array, meansu: Uint8
  *   is decoded for the sort worker / bounding box. Pass false when the caller will instead read the decoded
  *   centers back from the GPU work buffer — then every attribute (including means) uses the fast direct
  *   ImageBitmap upload (no `getImageData` readback) and `pack.positions` is left empty.
+ * @param downloadManager Optional download manager that throttles and retries the per-file image downloads
+ *   (used by the LOD streamer). When omitted, files are fetched directly. Only applies when loading from a URL.
+ * @param downloadGroupId Optional group tag passed to the download manager so this file's image downloads can
+ *   be cancelled together if the streamer no longer needs them.
  * @returns Parsed splat info with `sogTextures` populated.
  */
 // eslint-disable-next-line @typescript-eslint/no-restricted-types
-export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene, computeCpuPositions = true): Promise<IParsedSplat> {
+export async function ParseSogMetaAsTextures(
+    dataOrFiles: SOGRootData | Map<string, Uint8Array>,
+    rootUrl: string,
+    scene: Scene,
+    computeCpuPositions = true,
+    downloadManager?: GaussianSplattingDownloadManager,
+    downloadGroupId?: DownloadGroupId
+): Promise<IParsedSplat> {
     let data: SOGRootData;
     let files: Map<string, Uint8Array> | undefined;
 
@@ -543,11 +555,19 @@ export async function ParseSogMetaAsTextures(dataOrFiles: SOGRootData | Map<stri
         if (files && files.has(fileName)) {
             return await LoadWebpImageData(files.get(fileName)!, fileName, scene.getEngine());
         }
+        if (downloadManager) {
+            const bytes = new Uint8Array(await downloadManager.loadFileAsync(rootUrl + fileName, downloadGroupId));
+            return await LoadWebpImageData(bytes, fileName, scene.getEngine());
+        }
         return await LoadWebpImageData(rootUrl, fileName, scene.getEngine());
     };
     const loadGpuTextureAsync = async (fileName: string): Promise<RawTexture> => {
         if (files && files.has(fileName)) {
             return await LoadSogTextureDirectAsync(files.get(fileName)!, fileName, scene);
+        }
+        if (downloadManager) {
+            const bytes = new Uint8Array(await downloadManager.loadFileAsync(rootUrl + fileName, downloadGroupId));
+            return await LoadSogTextureDirectAsync(bytes, fileName, scene);
         }
         return await LoadSogTextureDirectAsync(rootUrl, fileName, scene);
     };
