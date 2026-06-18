@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { Observable } from "../../Misc/observable.pure";
+import { Observable, type Observer } from "../../Misc/observable.pure";
 import { Tools } from "../../Misc/tools.pure";
 import { IsExponentOfTwo } from "../../Misc/tools.functions";
 import { Logger } from "../../Misc/logger";
@@ -88,6 +88,7 @@ export class VideoTexture extends Texture {
     public readonly video: HTMLVideoElement;
 
     private _externalTexture: Nullable<ExternalTexture> = null;
+    private _snapshotRenderingObserver: Nullable<Observer<Scene>> = null;
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
@@ -202,6 +203,16 @@ export class VideoTexture extends Texture {
             this._externalTexture = createExternalTexture.call(engineWebGPU, this.video);
         }
 
+        if (this._externalTexture) {
+            // Under FAST snapshot rendering the active meshes are not re-evaluated each frame, so materials
+            // (and the video textures they bind) are never re-bound and VideoTexture.update() is never called.
+            // Drive the per-frame update from a scene hook so the video keeps playing while snapshot rendering is active.
+            const ownerScene = this.getScene();
+            if (ownerScene) {
+                this._snapshotRenderingObserver = ownerScene.onBeforeRenderObservable.add(this._updateWhileSnapshotRendering);
+            }
+        }
+
         if (!this._settings.independentVideoSource) {
             if (this._settings.poster) {
                 this.video.poster = this._settings.poster;
@@ -306,6 +317,10 @@ export class VideoTexture extends Texture {
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
         this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
 
+        // The internal texture (bound by materials) was just recreated. A recorded FAST snapshot bundle still
+        // references the previous GPU texture, so force a snapshot reset to re-record against the new texture.
+        this._resetSnapshotRenderingIfFast();
+
         // Reset the frame ID and update the new texture to ensure it pulls in the current video frame
         this._frameId = -1;
         this._updateInternalTexture();
@@ -392,6 +407,20 @@ export class VideoTexture extends Texture {
         this._updateInternalTexture();
     }
 
+    private _updateWhileSnapshotRendering = (): void => {
+        const engine = this._engine;
+        if (engine && engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            this.update();
+        }
+    };
+
+    private _resetSnapshotRenderingIfFast(): void {
+        const engine = this._engine as Nullable<WebGPUEngine>;
+        if (engine?.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            engine.snapshotRenderingReset();
+        }
+    }
+
     protected _updateInternalTexture = (): void => {
         if (this._texture == null) {
             return;
@@ -441,6 +470,12 @@ export class VideoTexture extends Texture {
      * Dispose the texture and release its associated resources.
      */
     public override dispose(): void {
+        if (this._snapshotRenderingObserver) {
+            // Remove the per-frame snapshot rendering hook before super.dispose() clears the scene reference.
+            this.getScene()?.onBeforeRenderObservable.remove(this._snapshotRenderingObserver);
+            this._snapshotRenderingObserver = null;
+        }
+
         super.dispose();
 
         this._currentSrc = null;
