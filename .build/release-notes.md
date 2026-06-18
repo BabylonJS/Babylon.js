@@ -1,17 +1,17 @@
 
 ### Core
 
-- Fix wrapped texture restore after context loss + Native MSAA-RTT support - by [bghgary](https://github.com/bghgary) ([#18469](https://github.com/BabylonJS/Babylon.js/pull/18469))
-- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+- Rework SceneLoader and add unit tests - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18590](https://github.com/BabylonJS/Babylon.js/pull/18590))
+- Auto-populate is2DArray/depth in wrapNativeTexture from native layer count - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18535](https://github.com/BabylonJS/Babylon.js/pull/18535))
+- Add GPU picker depth point and normal support - by [Celeste-twinkle](https://github.com/Celeste-twinkle) ([#18572](https://github.com/BabylonJS/Babylon.js/pull/18572))
+- Honor depthCullingState.depthTest on the native engine - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18558](https://github.com/BabylonJS/Babylon.js/pull/18558))
+- GS streaming/lod part2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18585](https://github.com/BabylonJS/Babylon.js/pull/18585))
 
 ### Inspector
 
-- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+- GS streaming/lod part2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18585](https://github.com/BabylonJS/Babylon.js/pull/18585))
 
-### Materials
+### Loaders
 
-- Fix PBRCustomMaterial cached effect cleanup - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18493](https://github.com/BabylonJS/Babylon.js/pull/18493))
-
-### Playground
-
-- Inspector v2: Project Authoring pane (SmartAssets + OverrideManager + .babylonproj) - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18479](https://github.com/BabylonJS/Babylon.js/pull/18479))
+- Rework SceneLoader and add unit tests - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18590](https://github.com/BabylonJS/Babylon.js/pull/18590))
+- GS streaming/lod part2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18585](https://github.com/BabylonJS/Babylon.js/pull/18585))

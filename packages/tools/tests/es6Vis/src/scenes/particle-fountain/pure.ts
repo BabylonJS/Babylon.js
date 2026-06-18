@@ -78,7 +78,7 @@ export function run(canvas: HTMLCanvasElement): void {
 
     // Create particle system (exercises the import) but don't start for determinism
     const ps = new ParticleSystem("fountain", 2000, scene);
-    ps.particleTexture = new Texture("https://cdn.babylonjs.com/textures/flare.png", scene);
+    ps.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
     ps.createPointEmitter(new Vector3(-0.2, 1, -0.2), new Vector3(0.2, 1, 0.2));
     ps.emitter = emitter;
     ps.color1 = new Color4(1, 0.6, 0.1, 1);

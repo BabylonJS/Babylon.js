@@ -1,16 +1,16 @@
 import { type Observer, Observable } from "../Misc/observable";
 import { type Nullable } from "../types";
 import { type PointerInfo } from "../Events/pointerEvents";
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
-import { TransformNode } from "../Meshes/transformNode";
+import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
+import { Color3 } from "../Maths/math.color.pure";
+import { TransformNode } from "../Meshes/transformNode.pure";
 import { type Node } from "../node";
 import { type Mesh } from "../Meshes/mesh";
-import { CreatePlane } from "../Meshes/Builders/planeBuilder";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder.pure";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "../Materials/standardMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type Scene } from "../scene";
 import { type PositionGizmo } from "./positionGizmo";
 

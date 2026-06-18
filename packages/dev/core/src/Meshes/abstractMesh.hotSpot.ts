@@ -1,6 +1,6 @@
 import { type AbstractMesh, type PickingInfo } from "core/index";
-import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
-import { VertexBuffer } from "../Buffers/buffer";
+import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Constants } from "core/Engines/constants";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 

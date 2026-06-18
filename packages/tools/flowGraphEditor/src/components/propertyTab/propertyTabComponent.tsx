@@ -19,6 +19,7 @@ import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { Constants } from "core/Engines/constants";
 import { ShowToast } from "../toast/toastComponent";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -348,6 +349,10 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
         return (
             <div className={classes.root}>
                 <Accordion uniqueId="FlowGraphPropertyTab" enablePinnedItems enableSearchItems>
+                    <AccordionSection title="MCP Session" collapseByDefault={true}>
+                        <McpSessionComponent globalState={this.props.globalState} />
+                    </AccordionSection>
+
                     <AccordionSection title="General" collapseByDefault={false}>
                         <TextPropertyLine label="Version" value={Engine.Version} />
                         <LinkPropertyLine label="Help" value="doc.babylonjs.com" url={docUrl} />

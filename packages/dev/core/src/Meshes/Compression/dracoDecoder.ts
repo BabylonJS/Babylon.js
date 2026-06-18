@@ -1,6 +1,6 @@
 import { DracoDecoderModule } from "draco3dgltf";
 import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
 import { Logger } from "../../Misc/logger";

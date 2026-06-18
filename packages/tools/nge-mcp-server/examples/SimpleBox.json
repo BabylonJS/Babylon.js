@@ -1,0 +1,82 @@
+{
+  "customType": "BABYLON.NodeGeometry",
+  "outputNodeId": 2,
+  "blocks": [
+    {
+      "customType": "BABYLON.BoxBlock",
+      "id": 1,
+      "name": "box",
+      "inputs": [
+        {
+          "name": "size",
+          "displayName": "size"
+        },
+        {
+          "name": "width",
+          "displayName": "width"
+        },
+        {
+          "name": "height",
+          "displayName": "height"
+        },
+        {
+          "name": "depth",
+          "displayName": "depth"
+        },
+        {
+          "name": "subdivisions",
+          "displayName": "subdivisions"
+        },
+        {
+          "name": "subdivisionsX",
+          "displayName": "subdivisionsX"
+        },
+        {
+          "name": "subdivisionsY",
+          "displayName": "subdivisionsY"
+        },
+        {
+          "name": "subdivisionsZ",
+          "displayName": "subdivisionsZ"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry"
+        }
+      ],
+      "evaluateContext": false
+    },
+    {
+      "customType": "BABYLON.GeometryOutputBlock",
+      "id": 2,
+      "name": "output",
+      "inputs": [
+        {
+          "name": "geometry",
+          "displayName": "geometry",
+          "inputName": "geometry",
+          "targetBlockId": 1,
+          "targetConnectionName": "geometry"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "comment": "Minimal box geometry – one BoxBlock piped to the output.",
+  "editorData": {
+    "locations": [
+      {
+        "blockId": 1,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "blockId": 2,
+        "x": 340,
+        "y": 0
+      }
+    ]
+  }
+}

@@ -12,7 +12,14 @@ import {
 } from "./messageTypes";
 import { type RawLottieAnimation } from "./parsing/rawTypes";
 import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
-import { BlobWorkerWrapper } from "./blobWorkerWrapper";
+// Keep this local alias named "Worker" so Webpack/Rspack statically detect the worker entry.
+// Their parsers match the NewExpression callee against a fixed identifier list ("Worker",
+// "SharedWorker", ...) - see webpack/lib/dependencies/WorkerPlugin.js DEFAULT_SYNTAX. If the
+// callee is renamed (e.g. BlobWorkerWrapper), the bundler stops bundling "./worker" as a worker
+// entry, emits the raw worker source, and its dynamic imports / importScripts fail at runtime.
+// This is still a BlobWorkerWrapper at runtime (classic worker via importScripts), not globalThis.Worker.
+// The Vite dev host matches on the new URL("./worker", import.meta.url) argument, so the alias is safe there too.
+import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -184,7 +191,7 @@ export class Player {
 
     private _getOrCreateWorker(): globalThis.Worker {
         if (!this._worker) {
-            const wrapperWorker = new BlobWorkerWrapper(new URL("./worker", import.meta.url));
+            const wrapperWorker = new Worker(new URL("./worker", import.meta.url));
             this._worker = wrapperWorker.getWorker();
             this._worker.onmessage = (evt: MessageEvent) => {
                 this._handleWorkerMessage(evt);

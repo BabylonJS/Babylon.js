@@ -1,12 +1,12 @@
 import { type Nullable, type Scene, type EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
-import { EffectWrapper } from "core/Materials/effectRenderer";
+import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { Camera } from "core/Cameras/camera";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector.pure";
+import { Camera } from "core/Cameras/camera.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import { Texture } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture.pure";
 
 /**
  * @internal
@@ -35,6 +35,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         "maxZ",
         "minZAspect",
         "depthProjection",
+        "normalWorldToView",
     ];
 
     public static readonly Samplers = ["randomSampler", "depthSampler", "normalSampler"];
@@ -99,6 +100,20 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     private _epsilon: number = 0.02;
 
+    private _normalsInWorldSpace = false;
+
+    public set normalsInWorldSpace(value: boolean) {
+        if (this._normalsInWorldSpace === value) {
+            return;
+        }
+        this._normalsInWorldSpace = value;
+        this.updateEffect();
+    }
+
+    public get normalsInWorldSpace(): boolean {
+        return this._normalsInWorldSpace;
+    }
+
     public set epsilon(n: number) {
         this._epsilon = n;
         this.updateEffect();
@@ -114,6 +129,8 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
     private _scene: Scene;
     private _randomTexture: Texture;
     private _sampleSphere: number[];
+    private readonly _normalWorldToViewMatrix = new Matrix();
+    private readonly _normalWorldToView = new Float32Array(9);
 
     constructor(name: string, scene: Scene, options?: EffectWrapperCreationOptions) {
         super({
@@ -180,6 +197,21 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
             effect.setFloat4("viewport", orthoLeft, orthoRight, orthoBottom, orthoTop);
         }
         effect.setMatrix("projection", projectionMatrix);
+        if (this._normalsInWorldSpace) {
+            camera.getViewMatrix().toNormalMatrix(this._normalWorldToViewMatrix);
+            const viewMatrix = this._normalWorldToViewMatrix.m;
+            const normalWorldToView = this._normalWorldToView;
+            normalWorldToView[0] = viewMatrix[0];
+            normalWorldToView[1] = viewMatrix[1];
+            normalWorldToView[2] = viewMatrix[2];
+            normalWorldToView[3] = viewMatrix[4];
+            normalWorldToView[4] = viewMatrix[5];
+            normalWorldToView[5] = viewMatrix[6];
+            normalWorldToView[6] = viewMatrix[8];
+            normalWorldToView[7] = viewMatrix[9];
+            normalWorldToView[8] = viewMatrix[10];
+            effect.setMatrix3x3("normalWorldToView", normalWorldToView);
+        }
 
         effect.setTexture("randomSampler", this._randomTexture);
     }
@@ -264,6 +296,9 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
         if (this.camera?.mode === Camera.ORTHOGRAPHIC_CAMERA) {
             defines += `\n#define ORTHOGRAPHIC_CAMERA`;
+        }
+        if (this._normalsInWorldSpace) {
+            defines += `\n#define NORMAL_WORLDSPACE`;
         }
 
         return defines;

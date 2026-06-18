@@ -1,4 +1,4 @@
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 
 /**
  * A serialized smart asset entry in the asset map JSON document.

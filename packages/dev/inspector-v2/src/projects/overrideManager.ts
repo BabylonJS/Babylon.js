@@ -1,7 +1,7 @@
 import { type Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
-import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager";
+import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager.pure";
 import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
 
 const OverrideManagerKey = Symbol("babylonjs:overrideManager");

@@ -14,7 +14,7 @@ import {
     RemoveSmartAssetAsync,
     SerializeSmartAssetManagerMap,
     UnloadSmartAssetAsync,
-} from "core/SmartAssets/smartAssetManager";
+} from "core/SmartAssets/smartAssetManager.pure";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock LoadAssetContainerAsync

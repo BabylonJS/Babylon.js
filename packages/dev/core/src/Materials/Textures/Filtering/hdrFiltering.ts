@@ -4,7 +4,7 @@ import { type BaseTexture } from "../baseTexture";
 import { type AbstractEngine } from "../../../Engines/abstractEngine";
 import { type Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
-import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
+import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer.pure";
 import { type Nullable } from "../../../types";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 

@@ -1,6 +1,6 @@
 import { type MaterialDefines, type Effect, type Mesh, type AbstractMesh, type Material } from "core/index";
 import { Constants } from "core/Engines/constants";
-import { Matrix } from "core/Maths/math.vector";
+import { Matrix } from "core/Maths/math.vector.pure";
 
 /**
  * Type of clear operation to perform on a geometry texture.

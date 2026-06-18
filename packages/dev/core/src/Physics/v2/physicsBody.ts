@@ -7,7 +7,7 @@ import {
     PhysicsPrestepType,
 } from "./IPhysicsEnginePlugin";
 import { type PhysicsShape } from "./physicsShape";
-import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector.pure";
 import { type Scene } from "../../scene";
 import { type PhysicsEngine } from "./physicsEngine";
 import { type Nullable } from "../../types";

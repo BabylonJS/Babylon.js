@@ -5,7 +5,7 @@ import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { type TextureSampler } from "../../Materials/Textures/textureSampler";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
-import { type ComputeBindingList, type ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader";
+import { type ComputeBindingList, type ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader.pure";
 import { type WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from "./webgpuConstants";
 import { type WebGPUHardwareTexture } from "./webgpuHardwareTexture";

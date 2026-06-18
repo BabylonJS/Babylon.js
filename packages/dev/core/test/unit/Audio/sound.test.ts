@@ -652,6 +652,51 @@ describe("Sound", () => {
         expect(spatialSubNode._attenuation.targetValue).toBeCloseTo(0.5);
     });
 
+    it("gets waveform data from analyzer in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                analyzerEnabled: true,
+                analyzerFFTSize: 32,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        const byteTimeDomainData = sound.analyzer.getByteTimeDomainData();
+        const floatTimeDomainData = sound.analyzer.getFloatTimeDomainData();
+
+        expect(byteTimeDomainData).toEqual(new Uint8Array(32));
+        expect(floatTimeDomainData).toEqual(new Float32Array(32));
+        expect(sound.analyzer.getByteTimeDomainData()).toBe(byteTimeDomainData);
+        expect(sound.analyzer.getFloatTimeDomainData()).toBe(floatTimeDomainData);
+    });
+
+    it("resizes cached waveform analyzer data when fftSize changes in audio engine v2", async () => {
+        const sound = await CreateSoundV2Async(
+            expect.getState().currentTestName!,
+            AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer as unknown as AudioBuffer,
+            {
+                analyzerEnabled: true,
+                analyzerFFTSize: 32,
+            },
+            (audioEngine as AudioEngine)._v2
+        );
+
+        const byteTimeDomainData = sound.analyzer.getByteTimeDomainData();
+        const floatTimeDomainData = sound.analyzer.getFloatTimeDomainData();
+
+        sound.analyzer.fftSize = 64;
+
+        const resizedByteTimeDomainData = sound.analyzer.getByteTimeDomainData();
+        const resizedFloatTimeDomainData = sound.analyzer.getFloatTimeDomainData();
+
+        expect(resizedByteTimeDomainData.length).toBe(64);
+        expect(resizedFloatTimeDomainData.length).toBe(64);
+        expect(resizedByteTimeDomainData).not.toBe(byteTimeDomainData);
+        expect(resizedFloatTimeDomainData).not.toBe(floatTimeDomainData);
+    });
+
     it("connects to panner node when spatialized via property", async () => {
         const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: false,

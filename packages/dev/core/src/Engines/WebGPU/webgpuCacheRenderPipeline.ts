@@ -5,7 +5,7 @@ import { Constants } from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
 import { type Effect } from "../../Materials/effect";
 import { type InternalTexture } from "../../Materials/Textures/internalTexture";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { type Nullable } from "../../types";
 import { type WebGPUHardwareTexture } from "./webgpuHardwareTexture";
@@ -701,6 +701,16 @@ export abstract class WebGPUCacheRenderPipeline {
                     case 3:
                     case 4:
                         return normalized ? WebGPUConstants.VertexFormat.Unorm16x4 : WebGPUConstants.VertexFormat.Uint16x4;
+                }
+                break;
+            case VertexBuffer.HALF_FLOAT:
+                switch (size) {
+                    case 1:
+                    case 2:
+                        return WebGPUConstants.VertexFormat.Float16x2;
+                    case 3:
+                    case 4:
+                        return WebGPUConstants.VertexFormat.Float16x4;
                 }
                 break;
             case VertexBuffer.INT:

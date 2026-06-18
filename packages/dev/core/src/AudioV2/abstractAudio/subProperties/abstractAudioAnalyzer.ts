@@ -8,6 +8,9 @@ export const _AudioAnalyzerDefaults = {
     smoothing: 0.8 as number,
 } as const;
 
+let EmptyByteTimeDomainData: Uint8Array | undefined;
+let EmptyFloatTimeDomainData: Float32Array | undefined;
+
 /**
  * Options for the AudioAnalyzer
  */
@@ -69,7 +72,7 @@ export abstract class AbstractAudioAnalyzer {
 
     /**
      * Whether the analyzer is enabled or not.
-     * - The `getByteFrequencyData` and `getFloatFrequencyData` functions return `null` if the analyzer is not enabled.
+     * - The data retrieval functions return an empty array if the analyzer is not enabled.
      * @see {@link enableAsync}
      */
     public abstract isEnabled: boolean;
@@ -101,13 +104,29 @@ export abstract class AbstractAudioAnalyzer {
 
     /**
      * Gets the current frequency data as a byte array
-     * @returns a Uint8Array if the analyzer is enabled, otherwise `null`
+     * @returns a Uint8Array if the analyzer is enabled, otherwise an empty array
      */
     public abstract getByteFrequencyData(): Uint8Array;
 
     /**
+     * Gets the current waveform data as a byte array
+     * @returns a Uint8Array with length `fftSize` if the analyzer is enabled, otherwise an empty array
+     */
+    public getByteTimeDomainData(): Uint8Array {
+        return (EmptyByteTimeDomainData ??= new Uint8Array());
+    }
+
+    /**
      * Gets the current frequency data as a float array
-     * @returns a Float32Array if the analyzer is enabled, otherwise `null`
+     * @returns a Float32Array if the analyzer is enabled, otherwise an empty array
      */
     public abstract getFloatFrequencyData(): Float32Array;
+
+    /**
+     * Gets the current waveform data as a float array
+     * @returns a Float32Array with length `fftSize` if the analyzer is enabled, otherwise an empty array
+     */
+    public getFloatTimeDomainData(): Float32Array {
+        return (EmptyFloatTimeDomainData ??= new Float32Array());
+    }
 }

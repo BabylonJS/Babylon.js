@@ -1,5 +1,5 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
-import { EffectWrapper } from "../Materials/effectRenderer";
+import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { ToGammaSpace } from "../Maths/math.constants";
 import { EngineStore } from "../Engines/engineStore";
 

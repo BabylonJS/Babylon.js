@@ -4,8 +4,9 @@ import { type Nullable } from "../../types";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type IMouseEvent, type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type InputConditions } from "../inputMapper";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
@@ -46,6 +47,32 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _currentActiveButton: number = -1;
     private _activePointerId: number = -1;
     private _contextMenuBind: (evt: MouseEvent) => void;
+
+    /** Reused conditions object for `resolveInteraction` to avoid per-move allocations. */
+    private readonly _pointerConditions: InputConditions = {};
+
+    /**
+     * Applies a pointer-drag delta as camera rotation, but only if the camera's configurable
+     * input map resolves the current pointer interaction to "rotate". The map is consulted with
+     * the currently active mouse button so consumers can remap or disable pointer-driven rotation.
+     * The applied scale comes from the resolved entry's `sensitivity`/`sensitivityX`/`sensitivityY`,
+     * falling back to the legacy `angularSensibility` for backward compatibility. The rotation is
+     * still written to `camera.cameraRotation` (not the movement accumulators) so existing code that
+     * reads `cameraRotation` immediately after a pointer event keeps working.
+     * @param offsetX Horizontal pointer delta (already handedness-adjusted).
+     * @param offsetY Vertical pointer delta (already handedness-adjusted).
+     */
+    private _applyPointerRotation(offsetX: number, offsetY: number): void {
+        this._pointerConditions.button = this._currentActiveButton;
+        const entry = this.camera.movement.input.resolveInteraction("pointer", this._pointerConditions);
+        if (!entry || entry.interaction !== "rotate") {
+            return;
+        }
+        const sensitivityX = entry.sensitivityX ?? entry.sensitivity ?? 1 / this.angularSensibility;
+        const sensitivityY = entry.sensitivityY ?? entry.sensitivity ?? 1 / this.angularSensibility;
+        this.camera.cameraRotation.y += offsetX * sensitivityX;
+        this.camera.cameraRotation.x += offsetY * sensitivityY;
+    }
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -144,8 +171,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         const offsetY = (evt.clientY - this._previousPosition.y) * handednessMultiplier;
 
                         if (this._allowCameraRotation) {
-                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                            this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                            this._applyPointerRotation(offsetX, offsetY);
                         }
                         this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
@@ -168,8 +194,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             }
 
             const handednessMultiplier = this.camera._calculateHandednessMultiplier();
-            this.camera.cameraRotation.y += (evt.movementX * handednessMultiplier) / this.angularSensibility;
-            this.camera.cameraRotation.x += (evt.movementY * handednessMultiplier) / this.angularSensibility;
+            this._applyPointerRotation(evt.movementX * handednessMultiplier, evt.movementY * handednessMultiplier);
 
             this._previousPosition = null;
 

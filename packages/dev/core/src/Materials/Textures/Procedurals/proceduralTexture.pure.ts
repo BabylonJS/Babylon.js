@@ -359,7 +359,10 @@ export class ProceduralTexture extends Texture {
         const engine = this._fullEngine;
 
         if (this.nodeMaterialSource) {
-            return this._drawWrapper.effect!.isReady();
+            // When sourced from a node material, the effect is created asynchronously once the material
+            // build completes (some node material blocks load their shader code asynchronously). Until
+            // then there is no effect yet, so the texture is simply not ready.
+            return this._drawWrapper.effect?.isReady() ?? false;
         }
 
         if (!this._fragment) {

@@ -6,6 +6,7 @@ import { type Scene } from "../scene.pure";
 import { type Quaternion, Vector3 } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { TargetCamera } from "./targetCamera.pure";
+import { type TargetCameraMovement } from "./targetCameraMovement";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import { type FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import { type FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
@@ -90,6 +91,14 @@ export class FlyCamera extends TargetCamera {
      * The inputs manager loads all the input sources, such as keyboard and mouse.
      */
     public override inputs: FlyCameraInputsManager;
+
+    /**
+     * Framerate-independent movement controller for the fly camera, exposing the configurable
+     * {@link InputMapper} (`movement.input`) consulted by {@link FlyCameraMouseInput}. Narrows the
+     * inherited {@link TargetCamera.movement} to {@link TargetCameraMovement}; the instance is
+     * created by the {@link TargetCamera} constructor.
+     */
+    public override movement: TargetCameraMovement;
 
     /**
      * Gets the input sensibility for mouse input.

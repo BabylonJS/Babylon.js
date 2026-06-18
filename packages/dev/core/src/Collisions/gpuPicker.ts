@@ -2,14 +2,17 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
 import { type Engine } from "core/Engines/engine";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine";
-import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pure";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { type Material } from "core/Materials/material";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type IShaderMaterialOptions, ShaderMaterial } from "core/Materials/shaderMaterial";
-import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
-import { Color4 } from "core/Maths/math.color";
+import { type IShaderMaterialOptions, ShaderMaterial } from "core/Materials/shaderMaterial.pure";
+import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
+import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.pure";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Epsilon } from "core/Maths/math.constants";
 import { type IVector2Like } from "core/Maths/math.like";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import { type Mesh } from "core/Meshes/mesh";
@@ -31,10 +34,24 @@ export interface IGPUPickingInfo {
      * Picked thin instance index
      */
     thinInstanceIndex?: number;
+    /**
+     * Picked point in world space.
+     *
+     * Only available when enableDepthPicking is true and a valid depth value can be read.
+     * Custom picking materials or special material plugins that do not write the depth attachment may return undefined.
+     */
+    pickedPoint?: Vector3;
+    /**
+     * Reconstructed normal in world space.
+     *
+     * Only available when enableDepthPicking is true and enough valid depth neighbors can be read.
+     * Custom picking materials or special material plugins that do not write the depth attachment may return undefined.
+     */
+    normal?: Vector3;
 }
 
 /**
- * Stores the result of a multi GPU piciking operation
+ * Stores the result of a multi GPU picking operation
  */
 export interface IGPUMultiPickingInfo {
     /**
@@ -45,17 +62,88 @@ export interface IGPUMultiPickingInfo {
      * Picked thin instance index
      */
     thinInstanceIndexes?: number[];
+    /**
+     * Picked points in world space.
+     *
+     * Only available when enableDepthPicking is true and a valid depth value can be read.
+     * Custom picking materials or special material plugins that do not write the depth attachment may return null.
+     */
+    pickedPoints?: Nullable<Vector3>[];
+    /**
+     * Reconstructed normals in world space.
+     *
+     * Only available when enableDepthPicking is true and enough valid depth neighbors can be read.
+     * Custom picking materials or special material plugins that do not write the depth attachment may return null.
+     */
+    normals?: Nullable<Vector3>[];
+}
+
+/**
+ * Defines how multi pick texture readbacks should be performed.
+ */
+export const enum GPUMultiPickReadbackStrategy {
+    /**
+     * Chooses between a single rectangle readback and small per-point readbacks using the thresholds in IGPUMultiPickOptions.
+     */
+    Auto = 0,
+    /**
+     * Always reads the full bounding rectangle of the picked points. This minimizes readback calls and is best for dense point sets.
+     */
+    Rectangle = 1,
+    /**
+     * Always reads each picked point independently. This minimizes transferred pixels for sparse point sets but can be slower when many points are picked.
+     */
+    Individual = 2,
+}
+
+/**
+ * Options used to tune multi GPU picking.
+ */
+export interface IGPUMultiPickOptions {
+    /**
+     * Defines how multi pick texture readbacks should be performed.
+     *
+     * Defaults to GPUMultiPickReadbackStrategy.Auto.
+     */
+    readbackStrategy?: GPUMultiPickReadbackStrategy;
+    /**
+     * Maximum number of in-bounds points allowed for the automatic individual readback path.
+     * This value is ignored when readbackStrategy is set to GPUMultiPickReadbackStrategy.Rectangle or GPUMultiPickReadbackStrategy.Individual.
+     *
+     * Defaults to 32.
+     */
+    maxIndividualReadbackCount?: number;
+    /**
+     * Minimum rectangle-area / individual-area ratio required before the automatic path uses individual readbacks.
+     * This value is ignored when readbackStrategy is set to GPUMultiPickReadbackStrategy.Rectangle or GPUMultiPickReadbackStrategy.Individual.
+     *
+     * Defaults to 16.
+     */
+    individualReadbackAreaRatio?: number;
 }
 
 /**
  * Class used to perform a picking operation using GPU
- * GPUPIcker can pick meshes, instances and thin instances
+ * GPUPicker can pick meshes, instances and thin instances
  */
 export class GPUPicker {
     private static readonly _AttributeName = "instanceMeshID";
     private static readonly _MaxPickingId = 0x00ffffff; // 24 bits unsigned integer max
+    private static readonly _DepthPixelRadius = 1;
+    private static readonly _MaxMultiPickIndividualReadbackCount = 32;
+    private static readonly _MultiPickIndividualReadbackAreaRatio = 16;
+    private static readonly _DepthNeighborOffsets = [
+        [-1, 1],
+        [0, 1],
+        [1, 1],
+        [1, 0],
+        [1, -1],
+        [0, -1],
+        [-1, -1],
+        [-1, 0],
+    ] as const;
 
-    private _pickingTexture: Nullable<RenderTargetTexture> = null;
+    private _pickingTexture: Nullable<RenderTargetTexture | MultiRenderTarget> = null;
 
     private readonly _idMap: Array<number> = [];
     private readonly _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
@@ -70,12 +158,18 @@ export class GPUPicker {
     private _pickableMeshes: Array<AbstractMesh> = [];
     private readonly _meshMaterialMap: Map<AbstractMesh, Material> = new Map();
     private _readbuffer: Nullable<Uint8Array> = null;
+    private _depthReadbuffer: Nullable<ArrayBufferView> = null;
+    private _depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    private _isDepthTexturePacked = false;
+    private _useDepthPicking = false;
+    private _isUsingDepthPickingRenderTarget = false;
 
     private _meshRenderingCount: number = 0;
     private _renderWarningIssued = false;
     private _renderPickingTexture = false;
 
     private _sceneBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _pickingTextureClearObserver: Nullable<Observer<AbstractEngine>> = null;
     private _pickingTextureAfterRenderObserver: Nullable<Observer<number>> = null;
 
     private _nextFreeId = 1;
@@ -111,11 +205,78 @@ export class GPUPicker {
         return this._pickingMaterialCache;
     }
 
+    /**
+     * Gets or sets a boolean indicating if depth-based pickedPoint and normal reconstruction should be enabled.
+     *
+     * When disabled, GPUPicker uses the original single-color render target and shader path. When enabled, GPUPicker
+     * switches to a MultiRenderTarget and compiles the default picking shader with GPUPICKER_DEPTH to output both the
+     * picking id and the depth required to reconstruct the picked point and normal.
+     *
+     * Custom picking materials and special picking material plugins should also write the depth attachment. If they do
+     * not, GPUPicker will still try to reconstruct pickedPoint and normal from the depth target, but the returned values
+     * may be missing or incorrect.
+     */
+    public get enableDepthPicking(): boolean {
+        return this._useDepthPicking;
+    }
+
+    public set enableDepthPicking(value: boolean) {
+        if (this._useDepthPicking === value) {
+            return;
+        }
+
+        this._useDepthPicking = value;
+        this._isUsingDepthPickingRenderTarget = false;
+        this._depthReadbuffer = null;
+
+        let pickableMeshes: Array<AbstractMesh | { mesh: AbstractMesh; material: ShaderMaterial }> = [];
+        if (this._cachedScene && this._pickingTexture) {
+            pickableMeshes = this._pickableMeshes.map((mesh) => {
+                const material = this._meshMaterialMap.get(mesh);
+                const className = mesh.getClassName();
+                if (
+                    material instanceof ShaderMaterial &&
+                    !this._pickingMaterialCache.includes(material) &&
+                    className !== "GaussianSplattingMesh" &&
+                    className !== "GaussianSplattingPartProxyMesh"
+                ) {
+                    return { mesh, material };
+                }
+
+                return mesh;
+            });
+        }
+
+        this._clearPickingMaterials();
+
+        if (this._cachedScene && this._pickingTexture) {
+            this.clearPickingList();
+            this._pickingTexture.dispose();
+            this._pickingTexture = null;
+            if (pickableMeshes.length > 0) {
+                this.addPickingList(pickableMeshes);
+            }
+        }
+    }
+
     private _getColorIdFromReadBuffer(offset: number): number {
         const r = this._readbuffer![offset];
         const g = this._readbuffer![offset + 1];
         const b = this._readbuffer![offset + 2];
         return (r << 16) + (g << 8) + b;
+    }
+
+    private _getReadBufferOffset(x: number, y: number, width: number, height: number): number {
+        const bufferY = this._cachedScene?.getEngine().isWebGPU ? height - y - 1 : y;
+        return (bufferY * width + x) * 4;
+    }
+
+    private _createColorPickingRenderTarget(scene: Scene, width: number, height: number): RenderTargetTexture {
+        return new RenderTargetTexture("pickingTexture", { width: width, height: height }, scene, {
+            generateMipMaps: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
+        });
     }
 
     private _createRenderTarget(scene: Scene, width: number, height: number): void {
@@ -129,11 +290,58 @@ export class GPUPicker {
         if (this._pickingTexture) {
             this._pickingTexture.dispose();
         }
-        this._pickingTexture = new RenderTargetTexture("pickingTexure", { width: width, height: height }, scene, {
-            generateMipMaps: false,
-            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
-        });
+        if (this._useDepthPicking) {
+            const engine = scene.getEngine();
+            const supportsDepthPickingRenderTarget = engine.isWebGPU || (engine as AbstractEngine & { webGLVersion?: number }).webGLVersion !== 1;
+            if (!supportsDepthPickingRenderTarget) {
+                Logger.Warn("GPUPicker depth picking requires WebGL2, WebGPU, or Native engine support. Falling back to color-only GPU picking.");
+                this._useDepthPicking = false;
+                this._isUsingDepthPickingRenderTarget = false;
+                this._isDepthTexturePacked = false;
+                this._pickingTexture = this._createColorPickingRenderTarget(scene, width, height);
+                return;
+            }
+
+            if (engine.getCaps().textureFloatRender) {
+                this._depthTextureType = Constants.TEXTURETYPE_FLOAT;
+            } else if (engine.getCaps().textureHalfFloatRender) {
+                this._depthTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            } else {
+                this._depthTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            }
+            this._isDepthTexturePacked = this._depthTextureType === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
+            const pickingTexture = new MultiRenderTarget(
+                "pickingTexture",
+                { width: width, height: height },
+                2,
+                scene,
+                {
+                    generateMipMaps: false,
+                    generateDepthBuffer: true,
+                    generateStencilBuffer: false,
+                    types: [Constants.TEXTURETYPE_UNSIGNED_BYTE, this._depthTextureType],
+                    samplingModes: [Constants.TEXTURE_NEAREST_NEAREST, Constants.TEXTURE_NEAREST_NEAREST],
+                    formats: [Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA],
+                },
+                ["pickingTexture_id", "pickingTexture_depth"]
+            );
+            if (pickingTexture.isSupported) {
+                this._pickingTexture = pickingTexture;
+                this._isUsingDepthPickingRenderTarget = true;
+            } else {
+                Logger.Warn("GPUPicker depth picking requires MultiRenderTarget support. Falling back to color-only GPU picking.");
+                this._useDepthPicking = false;
+                this._isUsingDepthPickingRenderTarget = false;
+                this._isDepthTexturePacked = false;
+                pickingTexture.dispose();
+                this._pickingTexture = this._createColorPickingRenderTarget(scene, width, height);
+            }
+        } else {
+            this._pickingTexture = this._createColorPickingRenderTarget(scene, width, height);
+            this._isUsingDepthPickingRenderTarget = false;
+            this._isDepthTexturePacked = false;
+        }
     }
 
     private _clearPickingMaterials(): void {
@@ -163,6 +371,12 @@ export class GPUPicker {
         }
 
         const defines: string[] = [];
+        if (this._useDepthPicking) {
+            defines.push("#define GPUPICKER_DEPTH");
+            if (this._isDepthTexturePacked) {
+                defines.push("#define GPUPICKER_PACK_DEPTH");
+            }
+        }
         const options: Partial<IShaderMaterialOptions> = {
             attributes: [VertexBuffer.PositionKind, GPUPicker._AttributeName],
             uniforms: ["world", "viewProjection", "meshID"],
@@ -543,9 +757,9 @@ export class GPUPicker {
             return null;
         }
 
-        const { rttSizeW, rttSizeH, devicePixelRatio } = this._getRenderInfo();
+        const { rttSizeW, rttSizeH, scaleX, scaleY } = this._getRenderInfo();
 
-        const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y, devicePixelRatio);
+        const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y, scaleX, scaleY);
         if (adjustedX < 0 || adjustedY < 0 || adjustedX >= rttSizeW || adjustedY >= rttSizeH) {
             return null;
         }
@@ -554,9 +768,11 @@ export class GPUPicker {
 
         // Invert Y
         const invertedY = rttSizeH - adjustedY - 1;
-        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
+        const pickingRegion = this._getPickingRenderRegion(adjustedX, invertedY, rttSizeW, rttSizeH);
+        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, pickingRegion.x, pickingRegion.y, pickingRegion.width, pickingRegion.height);
 
         await this._waitForPickingMaterialsReadyAsync();
+        this._addPickingTextureToRenderTargets();
 
         return await this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
     }
@@ -565,9 +781,10 @@ export class GPUPicker {
      * Execute a picking operation on multiple coordinates
      * @param xy defines the X,Y coordinates where to run the pick
      * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
+     * @param options defines options used to tune the multi pick readback strategy
      * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the index where no mesh was picked.
      */
-    public async multiPickAsync(xy: IVector2Like[], disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
+    public async multiPickAsync(xy: IVector2Like[], disposeWhenDone = false, options?: IGPUMultiPickOptions): Promise<Nullable<IGPUMultiPickingInfo>> {
         if (this._pickingInProgress) {
             return null;
         }
@@ -578,51 +795,80 @@ export class GPUPicker {
 
         if (xy.length === 1) {
             const pi = await this.pickAsync(xy[0].x, xy[0].y, disposeWhenDone);
-            return {
+            const result: IGPUMultiPickingInfo = {
                 meshes: [pi?.mesh ?? null],
-                thinInstanceIndexes: pi?.thinInstanceIndex ? [pi.thinInstanceIndex] : undefined,
+                thinInstanceIndexes: pi?.thinInstanceIndex !== undefined ? [pi.thinInstanceIndex] : undefined,
             };
+            if (this._useDepthPicking) {
+                result.pickedPoints = [pi?.pickedPoint ?? null];
+                result.normals = [pi?.normal ?? null];
+            }
+            return result;
         }
 
         this._pickingInProgress = true;
 
-        const processedXY = new Array(xy.length);
+        const processedXY = new Array<IVector2Like>(xy.length);
 
         let minX = Infinity;
         let maxX = -Infinity;
         let minY = Infinity;
         let maxY = -Infinity;
 
-        const { rttSizeW, rttSizeH, devicePixelRatio } = this._getRenderInfo();
+        const { rttSizeW, rttSizeH, scaleX, scaleY } = this._getRenderInfo();
+        let hasInBoundsPoint = false;
+        let inBoundsPointCount = 0;
 
         // Process screen coordinates adjust to dpr
         for (let i = 0; i < xy.length; i++) {
             const item = xy[i];
             const { x, y } = item;
-
-            const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y, devicePixelRatio);
-
+            const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y, scaleX, scaleY);
             processedXY[i] = {
                 ...item,
                 x: adjustedX,
                 y: adjustedY,
             };
 
+            if (adjustedX < 0 || adjustedY < 0 || adjustedX >= rttSizeW || adjustedY >= rttSizeH) {
+                continue;
+            }
+
+            hasInBoundsPoint = true;
+            inBoundsPointCount++;
             minX = Math.min(minX, adjustedX);
             maxX = Math.max(maxX, adjustedX);
             minY = Math.min(minY, adjustedY);
             maxY = Math.max(maxY, adjustedY);
         }
 
-        const w = Math.max(maxX - minX, 1);
-        const h = Math.max(maxY - minY, 1);
-        const partialCutH = rttSizeH - maxY - 1;
+        if (!hasInBoundsPoint) {
+            this._pickingInProgress = false;
+            return null;
+        }
 
-        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
+        const depthPadding = this._useDepthPicking ? GPUPicker._DepthPixelRadius : 0;
+        const regionLeft = Math.max(minX - depthPadding, 0);
+        const regionRight = Math.min(maxX + depthPadding, rttSizeW - 1);
+        const regionTop = Math.max(minY - depthPadding, 0);
+        const regionBottom = Math.min(maxY + depthPadding, rttSizeH - 1);
+
+        if (regionLeft >= rttSizeW || regionTop >= rttSizeH || regionRight < 0 || regionBottom < 0) {
+            this._pickingInProgress = false;
+            return null;
+        }
+
+        const w = regionRight - regionLeft + 1;
+        const h = regionBottom - regionTop + 1;
+        const partialCutH = rttSizeH - regionBottom - 1;
+        const useIndividualReadback = this._shouldUseIndividualMultiPickReadback(inBoundsPointCount, w * h, options);
+
+        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, regionLeft, partialCutH, w, h, useIndividualReadback ? 1 : w, useIndividualReadback ? 1 : h);
 
         await this._waitForPickingMaterialsReadyAsync();
+        this._addPickingTextureToRenderTargets();
 
-        return await this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
+        return await this._executeMultiPickingAsync(processedXY, regionLeft, partialCutH, rttSizeW, rttSizeH, w, h, useIndividualReadback, disposeWhenDone);
     }
 
     /**
@@ -632,7 +878,7 @@ export class GPUPicker {
      * @param x2 defines the X coordinate of the opposite corner of the box where to run the pick
      * @param y2 defines the Y coordinate of the opposite corner of the box where to run the pick
      * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
-     * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the index where no mesh was picked.
+     * @returns A promise with the picking results. Contains one entry for each picked pixel in the box.
      */
     public async boxPickAsync(x1: number, y1: number, x2: number, y2: number, disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
         if (this._pickingInProgress) {
@@ -645,10 +891,10 @@ export class GPUPicker {
 
         this._pickingInProgress = true;
 
-        const { rttSizeW, rttSizeH, devicePixelRatio } = this._getRenderInfo();
+        const { rttSizeW, rttSizeH, scaleX, scaleY } = this._getRenderInfo();
 
-        const { x: adjustedX1, y: adjustedY1 } = this._prepareForPicking(x1, y1, devicePixelRatio);
-        const { x: adjustedX2, y: adjustedY2 } = this._prepareForPicking(x2, y2, devicePixelRatio);
+        const { x: adjustedX1, y: adjustedY1 } = this._prepareForPicking(x1, y1, scaleX, scaleY);
+        const { x: adjustedX2, y: adjustedY2 } = this._prepareForPicking(x2, y2, scaleX, scaleY);
 
         const minX = Math.max(Math.min(adjustedX1, adjustedX2), 0);
         const maxX = Math.min(Math.max(adjustedX1, adjustedX2), rttSizeW - 1);
@@ -660,38 +906,112 @@ export class GPUPicker {
             return null;
         }
 
-        const w = Math.max(maxX - minX, 1);
-        const h = Math.max(maxY - minY, 1);
-        const partialCutH = rttSizeH - maxY - 1;
+        const depthPadding = this._useDepthPicking ? GPUPicker._DepthPixelRadius : 0;
+        const regionLeft = Math.max(minX - depthPadding, 0);
+        const regionRight = Math.min(maxX + depthPadding, rttSizeW - 1);
+        const regionTop = Math.max(minY - depthPadding, 0);
+        const regionBottom = Math.min(maxY + depthPadding, rttSizeH - 1);
+        const w = regionRight - regionLeft + 1;
+        const h = regionBottom - regionTop + 1;
+        const partialCutH = rttSizeH - regionBottom - 1;
 
-        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
+        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, regionLeft, partialCutH, w, h);
 
         await this._waitForPickingMaterialsReadyAsync();
+        this._addPickingTextureToRenderTargets();
 
-        return await this._executeBoxPickingAsync(minX, partialCutH, w, h, disposeWhenDone);
+        return await this._executeBoxPickingAsync(
+            minX,
+            maxY,
+            Math.max(maxX - minX, 1),
+            Math.max(maxY - minY, 1),
+            regionLeft,
+            partialCutH,
+            rttSizeW,
+            rttSizeH,
+            w,
+            h,
+            disposeWhenDone
+        );
     }
 
-    private _getRenderInfo(): { rttSizeW: number; rttSizeH: number; devicePixelRatio: number } {
+    private _getRenderInfo(): { rttSizeW: number; rttSizeH: number; scaleX: number; scaleY: number } {
         const engine = this._cachedScene!.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
-        const devicePixelRatio = 1 / engine._hardwareScalingLevel;
+        // Picking coordinates are expected in input/canvas CSS pixels, matching Babylon pointer coordinates.
+        // Use the actual client rect so CSS scaling/stretching is handled, and fall back to hardware scaling
+        // for engines without a DOM input element.
+        let inputElementClientRect: Nullable<ClientRect> = null;
+        try {
+            inputElementClientRect = engine.getInputElementClientRect();
+        } catch {
+            // Non-DOM or pure engine builds may not register the DOM side effect. Fall back below.
+        }
+        const scaleX = inputElementClientRect?.width ? rttSizeW / inputElementClientRect.width : 1 / engine._hardwareScalingLevel;
+        const scaleY = inputElementClientRect?.height ? rttSizeH / inputElementClientRect.height : 1 / engine._hardwareScalingLevel;
 
         return {
             rttSizeW,
             rttSizeH,
-            devicePixelRatio,
+            scaleX,
+            scaleY,
         };
     }
 
-    private _prepareForPicking(x: number, y: number, devicePixelRatio: number): IVector2Like {
-        return { x: (devicePixelRatio * x) >> 0, y: (devicePixelRatio * y) >> 0 };
+    private _prepareForPicking(x: number, y: number, scaleX: number, scaleY: number): IVector2Like {
+        return { x: (scaleX * x) >> 0, y: (scaleY * y) >> 0 };
     }
 
-    private _preparePickingBuffer(engine: AbstractEngine, rttSizeW: number, rttSizeH: number, x: number, y: number, w = 1, h = 1): void {
+    private _getPickingRenderRegion(x: number, y: number, renderWidth: number, renderHeight: number): { x: number; y: number; width: number; height: number } {
+        if (!this._useDepthPicking) {
+            return { x, y, width: 1, height: 1 };
+        }
+
+        const radius = GPUPicker._DepthPixelRadius;
+        const left = Math.max(x - radius, 0);
+        const bottom = Math.max(y - radius, 0);
+        const right = Math.min(x + radius, renderWidth - 1);
+        const top = Math.min(y + radius, renderHeight - 1);
+
+        return {
+            x: left,
+            y: bottom,
+            width: right - left + 1,
+            height: top - bottom + 1,
+        };
+    }
+
+    private _shouldUseIndividualMultiPickReadback(inBoundsPointCount: number, readArea: number, options?: IGPUMultiPickOptions): boolean {
+        const readbackStrategy = options?.readbackStrategy ?? GPUMultiPickReadbackStrategy.Auto;
+        if (inBoundsPointCount === 0 || readbackStrategy === GPUMultiPickReadbackStrategy.Rectangle) {
+            return false;
+        }
+
+        if (readbackStrategy === GPUMultiPickReadbackStrategy.Individual) {
+            return true;
+        }
+
+        const maxIndividualReadbackCount =
+            options?.maxIndividualReadbackCount !== undefined && Number.isFinite(options.maxIndividualReadbackCount) && options.maxIndividualReadbackCount >= 0
+                ? options.maxIndividualReadbackCount
+                : GPUPicker._MaxMultiPickIndividualReadbackCount;
+        if (inBoundsPointCount > maxIndividualReadbackCount) {
+            return false;
+        }
+
+        const individualReadbackAreaRatio =
+            options?.individualReadbackAreaRatio !== undefined && Number.isFinite(options.individualReadbackAreaRatio) && options.individualReadbackAreaRatio > 0
+                ? options.individualReadbackAreaRatio
+                : GPUPicker._MultiPickIndividualReadbackAreaRatio;
+        const pointReadArea = inBoundsPointCount * (this._useDepthPicking ? 1 + (GPUPicker._DepthPixelRadius * 2 + 1) ** 2 : 1);
+        return readArea > pointReadArea * individualReadbackAreaRatio;
+    }
+
+    private _preparePickingBuffer(engine: AbstractEngine, rttSizeW: number, rttSizeH: number, x: number, y: number, w = 1, h = 1, readBufferW = w, readBufferH = h): void {
         this._meshRenderingCount = 0;
 
-        const requiredBufferSize = engine.isWebGPU ? (4 * w * h + 255) & ~255 : 4 * w * h;
+        const requiredBufferSize = engine.isWebGPU ? (4 * readBufferW * readBufferH + 255) & ~255 : 4 * readBufferW * readBufferH;
         if (!this._readbuffer || this._readbuffer.length < requiredBufferSize) {
             this._readbuffer = new Uint8Array(requiredBufferSize);
         }
@@ -705,6 +1025,17 @@ export class GPUPicker {
 
         this._pickingTexture!.clearColor = new Color4(0, 0, 0, 0);
 
+        this._pickingTextureClearObserver?.remove();
+        this._pickingTextureClearObserver = this._pickingTexture!.onClearObservable.add((engine) => {
+            if (this._isUsingDepthPickingRenderTarget) {
+                engine.bindAttachments(engine.buildTextureLayout([true, false]));
+            }
+            engine.clear(this._pickingTexture!.clearColor, true, true, true);
+            if (this._isUsingDepthPickingRenderTarget) {
+                engine.bindAttachments(engine.buildTextureLayout([true, true]));
+            }
+        });
+
         this._pickingTexture!.onBeforeRender = (): void => {
             this._enableScissor(x, y, w, h);
         };
@@ -713,9 +1044,24 @@ export class GPUPicker {
         this._pickingTextureAfterRenderObserver = this._pickingTexture!.onAfterRenderObservable.add(() => {
             this._disableScissor();
         });
+    }
 
+    private _addPickingTextureToRenderTargets(): void {
+        this._removePickingTextureFromRenderTargets();
         this._cachedScene!.customRenderTargets.push(this._pickingTexture!);
         this._renderPickingTexture = true;
+    }
+
+    private _removePickingTextureFromRenderTargets(): void {
+        if (!this._cachedScene || !this._pickingTexture) {
+            return;
+        }
+
+        const index = this._cachedScene.customRenderTargets.indexOf(this._pickingTexture);
+        if (index > -1) {
+            this._cachedScene.customRenderTargets.splice(index, 1);
+            this._renderPickingTexture = false;
+        }
     }
 
     // pick one pixel
@@ -730,39 +1076,55 @@ export class GPUPicker {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async (): Promise<void> => {
                 if (this._checkRenderStatus()) {
-                    this._pickingTexture!.onAfterRender = null as any;
-                    let pickedMesh: Nullable<AbstractMesh> = null;
-                    let thinInstanceIndex: number | undefined = undefined;
+                    try {
+                        this._pickingTexture!.onAfterRender = null as any;
+                        let pickedMesh: Nullable<AbstractMesh> = null;
+                        let thinInstanceIndex: number | undefined = undefined;
 
-                    // Remove from the active RTTs
-                    const index = this._cachedScene!.customRenderTargets.indexOf(this._pickingTexture!);
-                    if (index > -1) {
-                        this._cachedScene!.customRenderTargets.splice(index, 1);
-                        this._renderPickingTexture = false;
-                    }
+                        this._removePickingTextureFromRenderTargets();
 
-                    // Do the actual picking
-                    if (await this._readTexturePixelsAsync(x, y)) {
-                        const colorId = this._getColorIdFromReadBuffer(0);
+                        // Do the actual picking
+                        if (await this._readTexturePixelsAsync(x, y)) {
+                            const colorId = this._getColorIdFromReadBuffer(0);
 
-                        // Thin?
-                        if (this._thinIdMap[colorId]) {
-                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
-                            thinInstanceIndex = this._thinIdMap[colorId].thinId;
-                        } else {
-                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                            // Thin?
+                            if (this._thinIdMap[colorId]) {
+                                pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                                thinInstanceIndex = this._thinIdMap[colorId].thinId;
+                            } else {
+                                pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                            }
                         }
-                    }
 
-                    if (disposeWhenDone) {
-                        this.dispose();
-                    }
+                        // Depth reconstruction is guaranteed for GPUPicker's default picking shader. Custom picking
+                        // materials and special material plugins can also work if they write the second MRT attachment;
+                        // otherwise the reconstructed pickedPoint/normal may be missing or incorrect.
+                        let depthPickingInfo: Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }> = null;
+                        if (this._useDepthPicking && pickedMesh) {
+                            const camera = this._cachedScene!.activeCamera;
+                            if (camera) {
+                                const { rttSizeW, rttSizeH } = this._getRenderInfo();
+                                const viewport = camera.viewport.toGlobal(rttSizeW, rttSizeH);
+                                const view = this._cachedScene!.getViewMatrix().clone();
+                                const projection = this._cachedScene!.getProjectionMatrix().clone();
+                                const cameraPosition = camera.globalPosition.clone();
+                                depthPickingInfo = await this._getDepthPickingInfoAsync(x, y, rttSizeW, rttSizeH, view, projection, cameraPosition, viewport);
+                            }
+                        }
+                        if (disposeWhenDone) {
+                            this.dispose();
+                        }
 
-                    this._pickingInProgress = false;
-                    if (pickedMesh) {
-                        resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
-                    } else {
-                        resolve(null);
+                        this._pickingInProgress = false;
+                        if (pickedMesh) {
+                            resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex, ...depthPickingInfo });
+                        } else {
+                            resolve(null);
+                        }
+                    } catch (error) {
+                        this._removePickingTextureFromRenderTargets();
+                        this._pickingInProgress = false;
+                        reject(error instanceof Error ? error : new Error(`${error}`));
                     }
                 }
             };
@@ -772,11 +1134,13 @@ export class GPUPicker {
     // pick multiple pixels
     private async _executeMultiPickingAsync(
         xy: IVector2Like[],
-        minX: number,
-        maxY: number,
+        readX: number,
+        readY: number,
+        rttSizeW: number,
         rttSizeH: number,
         w: number,
         h: number,
+        useIndividualReadback: boolean,
         disposeWhenDone: boolean
     ): Promise<Nullable<IGPUMultiPickingInfo>> {
         return await new Promise((resolve, reject) => {
@@ -789,31 +1153,132 @@ export class GPUPicker {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async (): Promise<void> => {
                 if (this._checkRenderStatus()) {
-                    this._pickingTexture!.onAfterRender = null as any;
-                    const pickedMeshes: Nullable<AbstractMesh>[] = [];
-                    const thinInstanceIndexes: number[] = [];
+                    try {
+                        this._pickingTexture!.onAfterRender = null as any;
+                        const pickedMeshes = new Array<Nullable<AbstractMesh>>(xy.length).fill(null);
+                        const thinInstanceIndexes = new Array<number>(xy.length).fill(0);
 
-                    if (await this._readTexturePixelsAsync(minX, rttSizeH - maxY - 1, w, h)) {
-                        for (let i = 0; i < xy.length; i++) {
-                            const { pickedMesh, thinInstanceIndex } = this._getMeshFromMultiplePoints(xy[i].x, xy[i].y, minX, maxY, w);
-                            pickedMeshes.push(pickedMesh);
-                            thinInstanceIndexes.push(thinInstanceIndex ?? 0);
+                        if (useIndividualReadback) {
+                            for (let i = 0; i < xy.length; i++) {
+                                const pointBottomY = rttSizeH - xy[i].y - 1;
+                                if (xy[i].x < 0 || pointBottomY < 0 || xy[i].x >= rttSizeW || pointBottomY >= rttSizeH) {
+                                    continue;
+                                }
+
+                                // eslint-disable-next-line no-await-in-loop
+                                if (await this._readTexturePixelsAsync(xy[i].x, pointBottomY, 1, 1)) {
+                                    const { pickedMesh, thinInstanceIndex } = this._getMeshFromReadBuffer(0);
+                                    pickedMeshes[i] = pickedMesh;
+                                    thinInstanceIndexes[i] = thinInstanceIndex ?? 0;
+                                }
+                            }
+                        } else {
+                            if (await this._readTexturePixelsAsync(readX, readY, w, h)) {
+                                for (let i = 0; i < xy.length; i++) {
+                                    const { pickedMesh, thinInstanceIndex } = this._getMeshFromMultiplePoints(xy[i].x, xy[i].y, readX, readY, rttSizeH, w, h);
+                                    pickedMeshes[i] = pickedMesh;
+                                    thinInstanceIndexes[i] = thinInstanceIndex ?? 0;
+                                }
+                            }
                         }
-                    }
 
-                    if (disposeWhenDone) {
-                        this.dispose();
-                    }
+                        let pickedPoints: Nullable<Vector3>[] | undefined;
+                        let normals: Nullable<Vector3>[] | undefined;
+                        if (this._useDepthPicking) {
+                            pickedPoints = new Array(xy.length).fill(null);
+                            normals = new Array(xy.length).fill(null);
+                        }
 
-                    this._pickingInProgress = false;
-                    resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes });
+                        if (pickedPoints && normals && pickedMeshes.some((mesh) => !!mesh)) {
+                            const camera = this._cachedScene!.activeCamera;
+                            if (camera) {
+                                const viewport = camera.viewport.toGlobal(rttSizeW, rttSizeH);
+                                const view = this._cachedScene!.getViewMatrix().clone();
+                                const projection = this._cachedScene!.getProjectionMatrix().clone();
+                                const cameraPosition = camera.globalPosition.clone();
+
+                                if (useIndividualReadback) {
+                                    for (let i = 0; i < xy.length; i++) {
+                                        if (!pickedMeshes[i]) {
+                                            continue;
+                                        }
+
+                                        const pointY = rttSizeH - xy[i].y - 1;
+                                        // eslint-disable-next-line no-await-in-loop
+                                        const depthPickingInfo = await this._getDepthPickingInfoAsync(
+                                            xy[i].x,
+                                            pointY,
+                                            rttSizeW,
+                                            rttSizeH,
+                                            view,
+                                            projection,
+                                            cameraPosition,
+                                            viewport
+                                        );
+                                        pickedPoints[i] = depthPickingInfo?.pickedPoint ?? null;
+                                        normals[i] = depthPickingInfo?.normal ?? null;
+                                    }
+                                } else {
+                                    const depthPixels = await this._readDepthTexturePixelsAsync(readX, readY, w, h);
+                                    if (depthPixels) {
+                                        for (let i = 0; i < xy.length; i++) {
+                                            if (!pickedMeshes[i]) {
+                                                continue;
+                                            }
+
+                                            const pointY = rttSizeH - xy[i].y - 1;
+                                            const depthPickingInfo = this._getDepthPickingInfoFromBuffer(
+                                                depthPixels,
+                                                xy[i].x,
+                                                pointY,
+                                                readX,
+                                                readY,
+                                                w,
+                                                h,
+                                                rttSizeH,
+                                                view,
+                                                projection,
+                                                cameraPosition,
+                                                viewport
+                                            );
+                                            pickedPoints[i] = depthPickingInfo?.pickedPoint ?? null;
+                                            normals[i] = depthPickingInfo?.normal ?? null;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (disposeWhenDone) {
+                            this.dispose();
+                        }
+
+                        this._pickingInProgress = false;
+                        resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes, pickedPoints, normals });
+                    } catch (error) {
+                        this._removePickingTextureFromRenderTargets();
+                        this._pickingInProgress = false;
+                        reject(error instanceof Error ? error : new Error(`${error}`));
+                    }
                 }
             };
         });
     }
 
     // pick box area
-    private async _executeBoxPickingAsync(x: number, y: number, w: number, h: number, disposeWhenDone: boolean): Promise<IGPUMultiPickingInfo> {
+    private async _executeBoxPickingAsync(
+        scanX: number,
+        scanMaxY: number,
+        scanW: number,
+        scanH: number,
+        readX: number,
+        readY: number,
+        rttSizeW: number,
+        rttSizeH: number,
+        readW: number,
+        readH: number,
+        disposeWhenDone: boolean
+    ): Promise<IGPUMultiPickingInfo> {
         return await new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
                 this._pickingInProgress = false;
@@ -824,37 +1289,93 @@ export class GPUPicker {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async (): Promise<void> => {
                 if (this._checkRenderStatus()) {
-                    this._pickingTexture!.onAfterRender = null as any;
-                    const pickedMeshes: Nullable<AbstractMesh>[] = [];
-                    const thinInstanceIndexes: number[] = [];
+                    try {
+                        this._pickingTexture!.onAfterRender = null as any;
+                        const pickedMeshes: Nullable<AbstractMesh>[] = [];
+                        const thinInstanceIndexes: number[] = [];
+                        const pickedPixelCoordinates: IVector2Like[] = [];
+                        const scanBufferX = scanX - readX;
+                        const scanBufferY = rttSizeH - scanMaxY - 1 - readY;
 
-                    if (await this._readTexturePixelsAsync(x, y, w, h)) {
-                        for (let offsetY = 0; offsetY < h; ++offsetY) {
-                            for (let offsetX = 0; offsetX < w; ++offsetX) {
-                                const colorId = this._getColorIdFromReadBuffer((offsetY * w + offsetX) * 4);
-                                if (colorId > 0) {
-                                    // Thin?
-                                    if (this._thinIdMap[colorId]) {
-                                        const pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
-                                        const thinInstanceIndex = this._thinIdMap[colorId].thinId;
-                                        pickedMeshes.push(pickedMesh);
-                                        thinInstanceIndexes.push(thinInstanceIndex);
-                                    } else {
-                                        const pickedMesh = this._pickableMeshes[this._idMap[colorId]];
-                                        pickedMeshes.push(pickedMesh);
-                                        thinInstanceIndexes.push(0);
+                        if (await this._readTexturePixelsAsync(readX, readY, readW, readH)) {
+                            for (let offsetY = 0; offsetY < scanH; ++offsetY) {
+                                for (let offsetX = 0; offsetX < scanW; ++offsetX) {
+                                    const bufferX = scanBufferX + offsetX;
+                                    const bufferY = scanBufferY + offsetY;
+                                    if (bufferX < 0 || bufferY < 0 || bufferX >= readW || bufferY >= readH) {
+                                        continue;
+                                    }
+
+                                    const colorId = this._getColorIdFromReadBuffer(this._getReadBufferOffset(bufferX, bufferY, readW, readH));
+                                    if (colorId > 0) {
+                                        // Thin?
+                                        if (this._thinIdMap[colorId]) {
+                                            const pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                                            const thinInstanceIndex = this._thinIdMap[colorId].thinId;
+                                            pickedMeshes.push(pickedMesh);
+                                            thinInstanceIndexes.push(thinInstanceIndex);
+                                            pickedPixelCoordinates.push({ x: scanX + offsetX, y: scanMaxY - offsetY });
+                                        } else {
+                                            const pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                                            pickedMeshes.push(pickedMesh);
+                                            thinInstanceIndexes.push(0);
+                                            pickedPixelCoordinates.push({ x: scanX + offsetX, y: scanMaxY - offsetY });
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    if (disposeWhenDone) {
-                        this.dispose();
-                    }
+                        let pickedPoints: Nullable<Vector3>[] | undefined;
+                        let normals: Nullable<Vector3>[] | undefined;
+                        if (this._useDepthPicking) {
+                            pickedPoints = new Array(pickedMeshes.length).fill(null);
+                            normals = new Array(pickedMeshes.length).fill(null);
+                        }
 
-                    this._pickingInProgress = false;
-                    resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes });
+                        if (pickedPoints && normals && pickedMeshes.length > 0) {
+                            const camera = this._cachedScene!.activeCamera;
+                            const depthPixels = await this._readDepthTexturePixelsAsync(readX, readY, readW, readH);
+                            if (camera && depthPixels) {
+                                const viewport = camera.viewport.toGlobal(rttSizeW, rttSizeH);
+                                const view = this._cachedScene!.getViewMatrix().clone();
+                                const projection = this._cachedScene!.getProjectionMatrix().clone();
+                                const cameraPosition = camera.globalPosition.clone();
+
+                                for (let i = 0; i < pickedPixelCoordinates.length; i++) {
+                                    const point = pickedPixelCoordinates[i];
+                                    const pointY = rttSizeH - point.y - 1;
+                                    const depthPickingInfo = this._getDepthPickingInfoFromBuffer(
+                                        depthPixels,
+                                        point.x,
+                                        pointY,
+                                        readX,
+                                        readY,
+                                        readW,
+                                        readH,
+                                        rttSizeH,
+                                        view,
+                                        projection,
+                                        cameraPosition,
+                                        viewport
+                                    );
+                                    pickedPoints[i] = depthPickingInfo?.pickedPoint ?? null;
+                                    normals[i] = depthPickingInfo?.normal ?? null;
+                                }
+                            }
+                        }
+
+                        if (disposeWhenDone) {
+                            this.dispose();
+                        }
+
+                        this._pickingInProgress = false;
+                        resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes, pickedPoints, normals });
+                    } catch (error) {
+                        this._removePickingTextureFromRenderTargets();
+                        this._pickingInProgress = false;
+                        reject(error instanceof Error ? error : new Error(`${error}`));
+                    }
                 }
             };
         });
@@ -862,7 +1383,8 @@ export class GPUPicker {
 
     private _enableScissor(x: number, y: number, w = 1, h = 1): void {
         if ((this._engine as WebGPUEngine | Engine).enableScissor) {
-            (this._engine as WebGPUEngine | Engine).enableScissor(x, y, w, h);
+            const scissorY = this._engine?.isWebGPU && this._pickingTexture ? this._pickingTexture.getSize().height - y - h : y;
+            (this._engine as WebGPUEngine | Engine).enableScissor(x, scissorY, w, h);
         }
     }
     private _disableScissor(): void {
@@ -941,15 +1463,40 @@ export class GPUPicker {
         Logger.Warn(`GPUPicker: gave up waiting for picking materials to compile after ${maxAttempts} attempts; picking results may be incorrect.`);
     }
 
-    private _getMeshFromMultiplePoints(x: number, y: number, minX: number, maxY: number, w: number): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {
-        let offsetX = (x - minX - 1) * 4;
-        let offsetY = (maxY - y - 1) * w * 4;
+    private _getMeshFromMultiplePoints(
+        x: number,
+        y: number,
+        readX: number,
+        readY: number,
+        renderHeight: number,
+        readWidth: number,
+        readHeight: number
+    ): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {
+        const bufferX = x - readX;
+        const bufferY = renderHeight - y - 1 - readY;
+        let pickedMesh: Nullable<AbstractMesh> = null;
+        let thinInstanceIndex: number | undefined;
 
-        offsetX = Math.max(offsetX, 0);
-        offsetY = Math.max(offsetY, 0);
+        if (bufferX < 0 || bufferY < 0 || bufferX >= readWidth || bufferY >= readHeight) {
+            return { pickedMesh, thinInstanceIndex };
+        }
 
-        const colorId = this._getColorIdFromReadBuffer(offsetX + offsetY);
+        const colorId = this._getColorIdFromReadBuffer(this._getReadBufferOffset(bufferX, bufferY, readWidth, readHeight));
 
+        if (colorId > 0) {
+            if (this._thinIdMap[colorId]) {
+                pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                thinInstanceIndex = this._thinIdMap[colorId].thinId;
+            } else {
+                pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+            }
+        }
+
+        return { pickedMesh, thinInstanceIndex };
+    }
+
+    private _getMeshFromReadBuffer(offset: number): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {
+        const colorId = this._getColorIdFromReadBuffer(offset);
         let pickedMesh: Nullable<AbstractMesh> = null;
         let thinInstanceIndex: number | undefined;
 
@@ -1001,19 +1548,350 @@ export class GPUPicker {
         gsPickingMaterial.backFaceCulling = false;
 
         // Attach the GPU picking plugin
-        new GaussianSplattingGpuPickingMaterialPlugin(gsPickingMaterial);
+        const plugin = new GaussianSplattingGpuPickingMaterialPlugin(gsPickingMaterial);
+        plugin.enableDepthPicking = this._useDepthPicking;
+        plugin.enablePackedDepthPicking = this._isDepthTexturePacked;
 
         return gsPickingMaterial;
     }
 
     private async _readTexturePixelsAsync(x: number, y: number, w = 1, h = 1): Promise<boolean> {
-        if (!this._cachedScene || !this._pickingTexture?._texture) {
+        if (!this._cachedScene || !this._pickingTexture) {
             return false;
         }
         const engine = this._cachedScene.getEngine();
-        await engine._readTexturePixels(this._pickingTexture._texture, w, h, -1, 0, this._readbuffer, true, true, x, y);
+        const texture = this._isUsingDepthPickingRenderTarget ? (this._pickingTexture as MultiRenderTarget).textures[0]._texture : this._pickingTexture._texture;
+        if (!texture) {
+            return false;
+        }
+
+        const readY = engine.isWebGPU ? texture.height - y - h : y;
+        await engine._readTexturePixels(texture, w, h, -1, 0, this._readbuffer, true, true, x, readY);
 
         return true;
+    }
+
+    private async _readDepthTexturePixelsAsync(x: number, y: number, w: number, h: number): Promise<Nullable<ArrayBufferView>> {
+        if (!this._cachedScene || !this._isUsingDepthPickingRenderTarget || !(this._pickingTexture instanceof MultiRenderTarget)) {
+            return null;
+        }
+
+        const texture = this._pickingTexture.textures[1]._texture;
+        if (!texture) {
+            return null;
+        }
+
+        const engine = this._cachedScene.getEngine();
+        const requiredByteLength = engine.isWebGPU ? (4 * 4 * w * h + 255) & ~255 : 4 * 4 * w * h;
+        if (!this._depthReadbuffer || this._depthReadbuffer.byteLength < requiredByteLength) {
+            this._depthReadbuffer = this._depthTextureType === Constants.TEXTURETYPE_UNSIGNED_BYTE ? new Uint8Array(requiredByteLength) : new Float32Array(requiredByteLength / 4);
+        }
+
+        const readY = engine.isWebGPU ? texture.height - y - h : y;
+        return await engine._readTexturePixels(texture, w, h, -1, 0, this._depthReadbuffer, true, false, x, readY);
+    }
+
+    private async _getDepthPickingInfoAsync(
+        x: number,
+        y: number,
+        renderWidth: number,
+        renderHeight: number,
+        view: Matrix,
+        projection: Matrix,
+        cameraPosition: Vector3,
+        viewport: { x: number; y: number; width: number; height: number }
+    ): Promise<Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }>> {
+        const radius = GPUPicker._DepthPixelRadius;
+        const left = Math.max(x - radius, 0);
+        const bottom = Math.max(y - radius, 0);
+        const right = Math.min(x + radius, renderWidth - 1);
+        const top = Math.min(y + radius, renderHeight - 1);
+        const width = right - left + 1;
+        const height = top - bottom + 1;
+
+        const pixels = await this._readDepthTexturePixelsAsync(left, bottom, width, height);
+        if (!pixels) {
+            return null;
+        }
+
+        return this._getDepthPickingInfoFromBuffer(pixels, x, y, left, bottom, width, height, renderHeight, view, projection, cameraPosition, viewport);
+    }
+
+    private _getDepthPickingInfoFromBuffer(
+        pixels: ArrayBufferView,
+        x: number,
+        y: number,
+        bufferLeft: number,
+        bufferBottom: number,
+        bufferWidth: number,
+        bufferHeight: number,
+        renderHeight: number,
+        view: Matrix,
+        projection: Matrix,
+        cameraPosition: Vector3,
+        viewport: { x: number; y: number; width: number; height: number }
+    ): Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }> {
+        let centerBufferX = x - bufferLeft;
+        let centerBufferY = y - bufferBottom;
+        let centerDepth = this._getDepthFromBuffer(pixels, centerBufferX, centerBufferY, bufferWidth, bufferHeight);
+        if (centerDepth === null) {
+            let closestDistanceSquared = Infinity;
+            for (let yy = 0; yy < bufferHeight; yy++) {
+                for (let xx = 0; xx < bufferWidth; xx++) {
+                    const depth = this._getDepthFromBuffer(pixels, xx, yy, bufferWidth, bufferHeight);
+                    if (depth === null) {
+                        continue;
+                    }
+
+                    const dx = xx - centerBufferX;
+                    const dy = yy - centerBufferY;
+                    const distanceSquared = dx * dx + dy * dy;
+                    if (distanceSquared < closestDistanceSquared) {
+                        closestDistanceSquared = distanceSquared;
+                        centerBufferX = xx;
+                        centerBufferY = yy;
+                        centerDepth = depth;
+                    }
+                }
+            }
+        }
+        if (centerDepth === null) {
+            return null;
+        }
+
+        x = bufferLeft + centerBufferX;
+        y = bufferBottom + centerBufferY;
+
+        const viewportTop = renderHeight - viewport.y - viewport.height;
+        const centerViewportX = x - viewport.x;
+        const centerViewportY = renderHeight - y - 1 - viewportTop;
+        if (centerViewportX < 0 || centerViewportY < 0 || centerViewportX >= viewport.width || centerViewportY >= viewport.height) {
+            return null;
+        }
+
+        const pickedPoint = Vector3.UnprojectFloatsToRef(
+            centerViewportX,
+            centerViewportY,
+            centerDepth,
+            viewport.width,
+            viewport.height,
+            Matrix.IdentityReadOnly,
+            view,
+            projection,
+            new Vector3()
+        );
+        const fallbackNormal = (): Vector3 => cameraPosition.subtractToRef(pickedPoint, new Vector3()).normalize();
+        let bestOffsetA: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
+        let bestOffsetB: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
+        let bestDepthDelta = Infinity;
+        const offsets = GPUPicker._DepthNeighborOffsets;
+        const depthNeighbors: { offset: (typeof GPUPicker._DepthNeighborOffsets)[number]; depth: number; depthDelta: number }[] = [];
+
+        const epsilonSquared = Epsilon * Epsilon;
+        for (let i = 0; i < offsets.length; i++) {
+            const offset = offsets[i];
+            const depth = this._getDepthFromBuffer(pixels, centerBufferX + offset[0], centerBufferY + offset[1], bufferWidth, bufferHeight);
+            if (
+                depth === null ||
+                !this._getDepthPointFromBufferToRef(
+                    pixels,
+                    x,
+                    y,
+                    offset[0],
+                    offset[1],
+                    bufferLeft,
+                    bufferBottom,
+                    bufferWidth,
+                    bufferHeight,
+                    renderHeight,
+                    view,
+                    projection,
+                    viewport,
+                    TmpVectors.Vector3[3]
+                )
+            ) {
+                continue;
+            }
+
+            depthNeighbors.push({ offset, depth, depthDelta: Math.abs(centerDepth - depth) });
+        }
+
+        depthNeighbors.sort((a, b) => a.depthDelta - b.depthDelta);
+
+        for (let i = 0; i < depthNeighbors.length; i++) {
+            const neighborA = depthNeighbors[i];
+            this._getDepthPointFromBufferToRef(
+                pixels,
+                x,
+                y,
+                neighborA.offset[0],
+                neighborA.offset[1],
+                bufferLeft,
+                bufferBottom,
+                bufferWidth,
+                bufferHeight,
+                renderHeight,
+                view,
+                projection,
+                viewport,
+                TmpVectors.Vector3[3]
+            );
+
+            for (let j = i + 1; j < depthNeighbors.length; j++) {
+                const neighborB = depthNeighbors[j];
+                this._getDepthPointFromBufferToRef(
+                    pixels,
+                    x,
+                    y,
+                    neighborB.offset[0],
+                    neighborB.offset[1],
+                    bufferLeft,
+                    bufferBottom,
+                    bufferWidth,
+                    bufferHeight,
+                    renderHeight,
+                    view,
+                    projection,
+                    viewport,
+                    TmpVectors.Vector3[4]
+                );
+
+                const toA = TmpVectors.Vector3[3].subtractToRef(pickedPoint, TmpVectors.Vector3[0]);
+                const toB = TmpVectors.Vector3[4].subtractToRef(pickedPoint, TmpVectors.Vector3[1]);
+                if (toA.lengthSquared() < epsilonSquared || toB.lengthSquared() < epsilonSquared) {
+                    continue;
+                }
+
+                Vector3.CrossToRef(toB, toA, TmpVectors.Vector3[5]);
+                if (TmpVectors.Vector3[5].lengthSquared() < epsilonSquared) {
+                    continue;
+                }
+
+                const depthDelta = neighborA.depthDelta + neighborB.depthDelta + Math.abs(neighborA.depth - neighborB.depth);
+                if (depthDelta < bestDepthDelta) {
+                    bestDepthDelta = depthDelta;
+                    bestOffsetA = neighborA.offset;
+                    bestOffsetB = neighborB.offset;
+                }
+            }
+        }
+
+        if (!bestOffsetA || !bestOffsetB) {
+            return { pickedPoint, normal: fallbackNormal() };
+        }
+
+        this._getDepthPointFromBufferToRef(
+            pixels,
+            x,
+            y,
+            bestOffsetA[0],
+            bestOffsetA[1],
+            bufferLeft,
+            bufferBottom,
+            bufferWidth,
+            bufferHeight,
+            renderHeight,
+            view,
+            projection,
+            viewport,
+            TmpVectors.Vector3[3]
+        );
+        this._getDepthPointFromBufferToRef(
+            pixels,
+            x,
+            y,
+            bestOffsetB[0],
+            bestOffsetB[1],
+            bufferLeft,
+            bufferBottom,
+            bufferWidth,
+            bufferHeight,
+            renderHeight,
+            view,
+            projection,
+            viewport,
+            TmpVectors.Vector3[4]
+        );
+
+        const toA = TmpVectors.Vector3[3].subtractToRef(pickedPoint, TmpVectors.Vector3[0]);
+        const toB = TmpVectors.Vector3[4].subtractToRef(pickedPoint, TmpVectors.Vector3[1]);
+        if (toA.lengthSquared() < epsilonSquared || toB.lengthSquared() < epsilonSquared) {
+            return { pickedPoint, normal: fallbackNormal() };
+        }
+
+        toA.normalize();
+        toB.normalize();
+
+        const normal = Vector3.CrossToRef(toB, toA, new Vector3());
+        if (normal.lengthSquared() < epsilonSquared) {
+            return { pickedPoint, normal: fallbackNormal() };
+        }
+
+        normal.normalize();
+        const cameraDirection = pickedPoint.subtractToRef(cameraPosition, TmpVectors.Vector3[2]).normalize();
+        if (Vector3.Dot(normal, cameraDirection) > 0) {
+            normal.negateInPlace();
+        }
+
+        return { pickedPoint, normal };
+    }
+
+    private _getDepthPointFromBufferToRef(
+        pixels: ArrayBufferView,
+        x: number,
+        y: number,
+        offsetX: number,
+        offsetY: number,
+        left: number,
+        bottom: number,
+        bufferWidth: number,
+        bufferHeight: number,
+        renderHeight: number,
+        view: Matrix,
+        projection: Matrix,
+        viewport: { x: number; y: number; width: number; height: number },
+        result: Vector3
+    ): boolean {
+        const bufferX = x + offsetX - left;
+        const bufferY = y + offsetY - bottom;
+        const depth = this._getDepthFromBuffer(pixels, bufferX, bufferY, bufferWidth, bufferHeight);
+        if (depth === null) {
+            return false;
+        }
+
+        const viewportTop = renderHeight - viewport.y - viewport.height;
+        const viewportX = x + offsetX - viewport.x;
+        const viewportY = renderHeight - (y + offsetY) - 1 - viewportTop;
+        if (viewportX < 0 || viewportY < 0 || viewportX >= viewport.width || viewportY >= viewport.height) {
+            return false;
+        }
+
+        Vector3.UnprojectFloatsToRef(viewportX, viewportY, depth, viewport.width, viewport.height, Matrix.IdentityReadOnly, view, projection, result);
+        return true;
+    }
+
+    private _getDepthFromBuffer(pixels: ArrayBufferView, x: number, y: number, width: number, height: number): Nullable<number> {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return null;
+        }
+
+        const index = this._getReadBufferOffset(x, y, width, height);
+        let depth: number;
+        if (pixels instanceof Uint8Array || pixels instanceof Uint8ClampedArray) {
+            if (this._isDepthTexturePacked) {
+                depth = pixels[index] / (255 * 255 * 255 * 255) + pixels[index + 1] / (255 * 255 * 255) + pixels[index + 2] / (255 * 255) + pixels[index + 3] / 255;
+            } else {
+                depth = pixels[index] / 255;
+            }
+        } else {
+            depth = (pixels as Float32Array)[index];
+        }
+
+        if (!Number.isFinite(depth) || depth <= 0 || depth >= 1) {
+            return null;
+        }
+
+        return depth;
     }
 
     /** Release the resources */
@@ -1027,5 +1905,9 @@ export class GPUPicker {
         this._clearPickingMaterials();
         this._sceneBeforeRenderObserver?.remove();
         this._sceneBeforeRenderObserver = null;
+        this._pickingTextureClearObserver?.remove();
+        this._pickingTextureClearObserver = null;
+        this._pickingTextureAfterRenderObserver?.remove();
+        this._pickingTextureAfterRenderObserver = null;
     }
 }

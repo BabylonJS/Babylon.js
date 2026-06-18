@@ -1,10 +1,10 @@
 import { type IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import { Vector3, Matrix } from "../../Maths/math.vector.pure";
 import { type TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 
 // the plugin is registered at the end of the file
 

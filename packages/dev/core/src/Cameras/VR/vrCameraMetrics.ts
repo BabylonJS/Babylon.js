@@ -1,4 +1,4 @@
-import { Matrix } from "../../Maths/math.vector";
+import { Matrix } from "../../Maths/math.vector.pure";
 /**
  * This represents all the required metrics to create a VR camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#device-orientation-camera

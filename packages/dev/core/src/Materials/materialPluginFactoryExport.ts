@@ -3,13 +3,13 @@ import { type Nullable } from "../types";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { type MaterialPluginBase } from "./materialPluginBase";
 import { PBRAnisotropicConfiguration } from "./PBR/pbrAnisotropicConfiguration";
-import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
+import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial.pure";
 import { PBRBRDFConfiguration } from "./PBR/pbrBRDFConfiguration";
 import { PBRClearCoatConfiguration } from "./PBR/pbrClearCoatConfiguration";
 import { PBRIridescenceConfiguration } from "./PBR/pbrIridescenceConfiguration";
 import { PBRSheenConfiguration } from "./PBR/pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./PBR/pbrSubSurfaceConfiguration";
-import { StandardMaterial } from "./standardMaterial";
+import { StandardMaterial } from "./standardMaterial.pure";
 
 import { type Material } from "./material";
 

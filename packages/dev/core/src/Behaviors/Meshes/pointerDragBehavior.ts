@@ -1,16 +1,16 @@
 import { type Behavior } from "../../Behaviors/behavior";
-import { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type TransformNode } from "../../Meshes/transformNode";
-import { Scene } from "../../scene";
+import { Scene } from "../../scene.pure";
 import { type Nullable } from "../../types";
 import { type Observer, Observable } from "../../Misc/observable";
-import { TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Ray } from "../../Culling/ray";
+import { Ray } from "../../Culling/ray.pure";
 import { PivotTools } from "../../Misc/pivotTools";
 import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
+import { CreatePlane } from "../../Meshes/Builders/planeBuilder.pure";
 
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { Epsilon } from "../../Maths/math.constants";

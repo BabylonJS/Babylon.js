@@ -3,6 +3,7 @@ import { FreeCamera } from "core/Cameras/freeCamera";
 import { type Engine, NullEngine } from "core/Engines";
 import { HemisphericLight } from "core/Lights";
 import { LoadAssetContainerFromSerializedScene } from "core/Loading/Plugins/babylonFileLoader";
+import "core/Materials/standardMaterial";
 import { Vector2, Vector3 } from "core/Maths";
 import { TransformNode } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes/meshBuilder";

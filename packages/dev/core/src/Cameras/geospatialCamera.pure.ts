@@ -216,25 +216,33 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
-     * If camera is actively in flight, will update the target properties and use up the remaining duration from original flyTo call
+     * If the camera is actively in flight, redirects it toward a new destination, using up the remaining
+     * duration from the original flyToAsync call. The redirect starts from the camera's current pose, so it
+     * stays smooth (no snap). If the camera is not currently in flight this is a no-op; start a new flight
+     * with flyToAsync instead.
      *
-     * To start a new flyTo curve entirely, call into flyToAsync again (it will stop the inflight animation)
-     * @param targetYaw - Target yaw in radians, or undefined to keep the current yaw.
-     * @param targetPitch - Target pitch in radians, or undefined to keep the current pitch.
-     * @param targetRadius - Target radius (distance from the look-at center), or undefined to keep the current radius.
-     * @param targetCenter - Target look-at center in scene coordinates, or undefined to keep the current center.
+     * Note: redirecting interrupts the in-flight animation, so the promise returned by the original
+     * flyToAsync call resolves early. Await the promise returned here to be notified when the redirected
+     * flight actually completes.
+     *
+     * Any property left undefined is frozen at its current value (matching flyToAsync), it does not continue
+     * toward the original flight's destination for that property.
+     * @param targetYaw - Target yaw in radians, or undefined to freeze yaw at its current value.
+     * @param targetPitch - Target pitch in radians, or undefined to freeze pitch at its current value.
+     * @param targetRadius - Target radius (distance from the look-at center), or undefined to freeze radius at its current value.
+     * @param targetCenter - Target look-at center in scene coordinates, or undefined to freeze the center at its current value.
+     * @returns Promise that resolves when the redirected flight completes (or is interrupted), or undefined if the camera was not in flight.
      */
-    public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
-        this._flyToTargets.clear();
+    public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): Promise<void> | undefined {
+        if (!this._flyingBehavior.isInterpolating) {
+            // Nothing in flight to redirect. Callers should use flyToAsync to start a new flight.
+            return undefined;
+        }
 
-        // For yaw, use shortest path to target.
-        const deltaYaw = targetYaw !== undefined ? NormalizeRadians(NormalizeRadians(targetYaw) - this._yaw) : 0;
-        this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
-        this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
-        this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter?.clone());
-
-        this._flyingBehavior.updateProperties(this._flyToTargets);
+        // Redirecting is just a fresh flight that starts from the camera's current pose and uses up the
+        // time left in the original flight. flyToAsync already eases from the current values, so this stays
+        // smooth (no snap).
+        return this._flyToAsync(targetYaw, targetPitch, targetRadius, targetCenter, this._flyingBehavior.remainingDurationMs);
     }
 
     /**
@@ -249,6 +257,31 @@ export class GeospatialCamera extends Camera {
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */
     public async flyToAsync(
+        targetYaw?: number,
+        targetPitch?: number,
+        targetRadius?: number,
+        targetCenter?: Vector3,
+        flightDurationMs: number = 1000,
+        easingFunction?: EasingFunction,
+        centerHopScale?: number
+    ): Promise<void> {
+        return await this._flyToAsync(targetYaw, targetPitch, targetRadius, targetCenter, flightDurationMs, easingFunction, centerHopScale);
+    }
+
+    /**
+     * Shared flight implementation used by both flyToAsync (new flight) and updateFlyToDestination (redirect).
+     * Builds the target property map (and the center SLERP/hop interpolation) and animates from the camera's
+     * current pose over the given duration.
+     * @param targetYaw - Target yaw in radians, or undefined to keep the current yaw.
+     * @param targetPitch - Target pitch in radians, or undefined to keep the current pitch.
+     * @param targetRadius - Target radius (distance from the look-at center), or undefined to keep the current radius.
+     * @param targetCenter - Target look-at center in scene coordinates, or undefined to keep the current center.
+     * @param flightDurationMs - Total duration of the animation in milliseconds. Defaults to 1000ms.
+     * @param easingFunction - Optional easing function applied to the animation curve.
+     * @param centerHopScale - If supplied, defines the parabolic hop height scale for the center animation to create a "bounce" effect.
+     * @returns Promise that resolves when the animation is complete (or interrupted).
+     */
+    private async _flyToAsync(
         targetYaw?: number,
         targetPitch?: number,
         targetRadius?: number,

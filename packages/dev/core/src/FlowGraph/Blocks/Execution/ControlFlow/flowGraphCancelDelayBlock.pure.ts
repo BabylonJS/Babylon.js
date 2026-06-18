@@ -28,7 +28,7 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const delayIndex = getNumericValue(this.delayIndex.getValue(context));
-        if (delayIndex <= 0 || isNaN(delayIndex) || !isFinite(delayIndex)) {
+        if (delayIndex < 0 || isNaN(delayIndex) || !isFinite(delayIndex)) {
             return this._reportError(context, "Invalid delay index");
         }
         const timers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);

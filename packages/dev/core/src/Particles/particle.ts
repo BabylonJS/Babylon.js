@@ -1,6 +1,6 @@
 import { type Nullable } from "../types";
-import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
-import { Color4 } from "../Maths/math.color";
+import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector.pure";
+import { Color4 } from "../Maths/math.color.pure";
 import { type SubEmitter } from "./subEmitter";
 import { type ColorGradient, type FactorGradient } from "../Misc/gradients";
 

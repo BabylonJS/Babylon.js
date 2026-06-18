@@ -5,13 +5,15 @@ import { type Atmosphere } from "./atmosphere";
 import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp, SmoothStep } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
-import { type DirectionalLight } from "core/Lights/directionalLight";
-import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
+import { type DirectionalLight } from "core/Lights/directionalLight.pure";
+import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer.pure";
+import { RegisterEnginesExtensionsEngineReadTexture } from "core/Engines/Extensions/engine.readTexture.pure";
+import { RegisterEnginesExtensionsEngineRenderTarget } from "core/Engines/Extensions/engine.renderTarget.pure";
 import { FromHalfFloat } from "core/Misc/textureTools";
 import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
 import { type Nullable } from "core/types";
-import { Observable } from "core/Misc/observable";
-import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { Observable } from "core/Misc/observable.pure";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { Sample2DRgbaToRef } from "./sampling";
 import { Vector3Dot } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -121,6 +123,9 @@ export class TransmittanceLut {
      * @param atmosphere - The atmosphere that owns this LUT.
      */
     constructor(atmosphere: Atmosphere) {
+        RegisterEnginesExtensionsEngineRenderTarget();
+        RegisterEnginesExtensionsEngineReadTexture();
+
         this._atmosphere = atmosphere;
 
         const scene = this._atmosphere.scene;

@@ -1,11 +1,11 @@
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "../Misc/logger";
-import { Color3, Color4 } from "../Maths/math.color";
-import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
+import { Color3, Color4 } from "../Maths/math.color.pure";
+import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector.pure";
 import { type Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
-import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
-import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
+import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger.pure";
+import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes.pure";
 import { type Node } from "core/node";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 

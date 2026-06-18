@@ -1,18 +1,18 @@
 import { type Observer, Observable } from "../Misc/observable";
 import { type Nullable } from "../types";
 import { type PointerInfo } from "../Events/pointerEvents";
-import { TransformNode } from "../Meshes/transformNode";
+import { TransformNode } from "../Meshes/transformNode.pure";
 import { type Node } from "../node";
-import { Mesh } from "../Meshes/mesh";
-import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
+import { Mesh } from "../Meshes/mesh.pure";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder.pure";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "../Materials/standardMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type Scene } from "../scene";
 import { type PositionGizmo } from "./positionGizmo";
-import { Color3 } from "../Maths/math.color";
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Color3 } from "../Maths/math.color.pure";
+import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 
 /**
  * Interface for axis drag gizmo

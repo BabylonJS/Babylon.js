@@ -7,7 +7,7 @@ import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { type IAnimatable } from "../../Animations/animatable.interface";
 import { type EffectFallbacks } from "../effectFallbacks";
 import { Constants } from "../../Engines/constants";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { MaterialDefines } from "../materialDefines";
 
 import { type Scene } from "../../scene";
@@ -123,6 +123,12 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    /**
+     * Checks whether the iridescence textures are ready for the sub mesh.
+     * @param defines defines the material defines to inspect
+     * @param scene defines the scene to use for readiness checks
+     * @returns true if iridescence is ready
+     */
     public override isReadyForSubMesh(defines: MaterialIridescenceDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
@@ -147,6 +153,11 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates shader defines for iridescence before attributes are processed.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture checks
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.IRIDESCENCE = true;
@@ -175,6 +186,11 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds iridescence data for a sub mesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene to use for texture binding
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
@@ -215,6 +231,11 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether iridescence uses a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by iridescence
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -227,6 +248,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active iridescence textures.
+     * @param activeTextures defines the list of active textures to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
@@ -237,6 +262,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Adds the animatable iridescence textures.
+     * @param animatables defines the list of animatables to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
@@ -247,6 +276,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Disposes the iridescence textures.
+     * @param forceDisposeTextures defines whether to dispose the textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -265,6 +298,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the iridescence sampler names.
+     * @param samplers defines the list of sampler names to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push("iridescenceSampler", "iridescenceThicknessSampler");
     }

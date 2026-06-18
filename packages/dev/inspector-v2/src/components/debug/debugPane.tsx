@@ -140,6 +140,20 @@ const SwitchNameViewerAsync = async function (scene: Scene) {
     }
 };
 
+const SwitchGsLodDebug = function (scene: Scene) {
+    const enabled = !scene.reservedDataStore.gsLodDebug;
+    scene.reservedDataStore.gsLodDebug = enabled;
+
+    for (const mesh of scene.meshes) {
+        if (mesh.getClassName() === "GaussianSplattingStream") {
+            const stream = mesh as unknown as { debugDisplay: boolean; debugLodSource: "optimal" | "current" };
+            // Color the boxes by the LOD each node is actually rendering (matches the toggle description).
+            stream.debugLodSource = "current";
+            stream.debugDisplay = enabled;
+        }
+    }
+};
+
 export const DebugPane: typeof ExtensibleAccordion<Scene> = (props) => {
     const scene = props.context;
 
@@ -178,6 +192,12 @@ export const DebugPane: typeof ExtensibleAccordion<Scene> = (props) => {
                     description="Display mesh names."
                     value={!!scene.reservedDataStore.textRenderersHook}
                     onChange={() => void SwitchNameViewerAsync(scene)}
+                />
+                <SwitchPropertyLine
+                    label="GS LoD"
+                    description="Display Gaussian Splatting streaming LOD node boxes, colored by the LOD each node is currently rendering."
+                    value={!!scene.reservedDataStore.gsLodDebug}
+                    onChange={() => SwitchGsLodDebug(scene)}
                 />
             </AccordionSection>
             <AccordionSection title="Texture Channels">

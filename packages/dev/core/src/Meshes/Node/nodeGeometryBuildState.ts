@@ -2,7 +2,7 @@ import { type Nullable } from "../../types";
 import { type VertexData } from "../mesh.vertexData";
 import { type NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPoint";
 import { NodeGeometryContextualSources } from "./Enums/nodeGeometryContextualSources";
-import { Matrix, Vector2, Vector3, Vector4 } from "../../Maths/math.vector";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../Maths/math.vector.pure";
 import { type INodeGeometryExecutionContext } from "./Interfaces/nodeGeometryExecutionContext";
 import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 import { type INodeGeometryInstancingContext } from "./Interfaces/nodeGeometryInstancingContext";

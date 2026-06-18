@@ -4,6 +4,7 @@
 import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
 import { type VertexBuffer } from "../Buffers/buffer.pure";
+import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
@@ -226,6 +227,7 @@ export class ThinNativeEngine extends ThinEngine {
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _currentDepthTest: number;
+    private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
     private _stencilMask: number;
     private _stencilFunc: number;
@@ -251,6 +253,13 @@ export class ThinNativeEngine extends ThinEngine {
      * @internal
      */
     protected _initializeNativeEngine(adaptToDeviceRatio: boolean): void {
+        // ThinNativeEngine relies on VertexBuffer.effective{Buffer,ByteOffset,ByteStride}
+        // (defined in Buffers/buffer.align.pure) to bind vertex attributes through
+        // recordVertexBuffer. Register the side effect here so the engine is usable
+        // on its own without callers having to remember to import the wrapper module.
+        // The registration is idempotent.
+        RegisterBufferAlign();
+
         this._engine = new _native.Engine({
             version: AbstractEngine.Version,
             nonFloatVertexBuffers: true,
@@ -260,7 +269,8 @@ export class ThinNativeEngine extends ThinEngine {
         this._frameStats = { gpuTimeNs: Number.NaN };
         this._boundBuffersVertexArray = null;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
-        this._stencilTest;
+        this._depthTestEnabled = true;
+        this._stencilTest = false;
         this._stencilMask = 255;
         this._stencilFunc = Constants.ALWAYS;
         this._stencilFuncRef = 0;
@@ -280,12 +290,18 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${ThinNativeEngine.PROTOCOL_VERSION} (JS)`);
         }
 
-        if (this._engine.setDeviceLostCallback) {
-            this._engine.setDeviceLostCallback(() => {
-                this.onContextLostObservable.notifyObservers(this);
-                this._contextWasLost = true;
-                this._restoreEngineAfterContextLost();
-            });
+        // Prefer setRenderResetCallback (accurate name -- fires when bgfx is (re)initialized,
+        // i.e. on device restore). Fall back to the legacy setDeviceLostCallback for backward
+        // compatibility with older BabylonNative builds. See BabylonNative #1722.
+        const renderResetCallback = () => {
+            this.onContextLostObservable.notifyObservers(this);
+            this._contextWasLost = true;
+            this._restoreEngineAfterContextLost();
+        };
+        if (this._engine.setRenderResetCallback) {
+            this._engine.setRenderResetCallback(renderResetCallback);
+        } else if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(renderResetCallback);
         }
 
         this._webGLVersion = 2;
@@ -472,7 +488,7 @@ export class ThinNativeEngine extends ThinEngine {
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
      */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
+    public override enableScissor(x: number, y: number, width: number, height: number): void {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
@@ -484,7 +500,7 @@ export class ThinNativeEngine extends ThinEngine {
     /**
      * Disable previously set scissor test rectangle
      */
-    public disableScissor() {
+    public override disableScissor() {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
@@ -499,8 +515,8 @@ export class ThinNativeEngine extends ThinEngine {
      */
     protected override _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
         // Use the provided requestAnimationFrame, unless the requester is the window. In that case, we will default to the Babylon Native version of requestAnimationFrame.
-        if (requester.requestAnimationFrame && requester !== window) {
-            requester.requestAnimationFrame(bindedRenderFunction);
+        if (requester?.requestAnimationFrame && requester !== this.getHostWindow()) {
+            return requester.requestAnimationFrame(bindedRenderFunction);
         } else {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
@@ -721,6 +737,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -751,6 +768,7 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
         // Apply states
+        this._flushDepthTestState();
         this._drawCalls.addCount(1, false);
 
         if (instancesCount) {
@@ -1055,9 +1073,29 @@ export class ThinNativeEngine extends ThinEngine {
      * @param enable defines the state to set
      */
     public override setDepthBuffer(enable: boolean): void {
+        // Keep the shared depth-culling state in sync so that code paths which toggle
+        // depth testing through engine.depthCullingState.depthTest (for example
+        // EffectRenderer.applyEffectWrapper) are also honored on the native side. The
+        // native draw path does not go through the WebGL applyStates() flush, so the
+        // value is reconciled in _flushDepthTestState() right before each draw.
+        this._depthCullingState.depthTest = enable;
+        this._encodeDepthTest(enable);
+    }
+
+    private _encodeDepthTest(enable: boolean): void {
+        this._depthTestEnabled = enable;
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : _native.Engine.DEPTH_TEST_ALWAYS);
         this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _flushDepthTestState(): void {
+        // Unlike the WebGL engine, the native engine does not call applyStates() before
+        // a draw, so depth-test toggles made directly on engine.depthCullingState are
+        // flushed here to match the cross-engine contract.
+        if (this._depthCullingState.depthTest !== this._depthTestEnabled) {
+            this._encodeDepthTest(this._depthCullingState.depthTest);
+        }
     }
 
     /**
@@ -1120,9 +1158,13 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentDepthTest = nativeDepthFunc;
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
-        this._commandBufferEncoder.finishEncodingCommand();
+        // Route through _encodeDepthTest so the tracked _depthTestEnabled state stays in
+        // sync with the encoded command. Because COMMAND_SETDEPTHTEST conflates the
+        // compare function and the enable bit (DEPTH_TEST_ALWAYS == disabled), encoding
+        // the new function directly here would silently re-enable depth testing while
+        // depth testing is logically disabled; _encodeDepthTest honors the current
+        // depthCullingState.depthTest and only emits the new function when enabled.
+        this._encodeDepthTest(this._depthCullingState.depthTest);
     }
 
     /**
@@ -1993,6 +2035,13 @@ export class ThinNativeEngine extends ThinEngine {
         internalTexture.baseHeight = this._engine.getTextureHeight(texture);
         internalTexture.width = internalTexture.baseWidth;
         internalTexture.height = internalTexture.baseHeight;
+        if (this._engine.getTextureLayerCount) {
+            const layerCount = this._engine.getTextureLayerCount(texture);
+            if (layerCount > 1) {
+                internalTexture.is2DArray = true;
+                internalTexture.baseDepth = internalTexture.depth = layerCount;
+            }
+        }
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -2030,6 +2079,13 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(
                 `updateWrappedNativeTexture: new handle dimensions (${newWidth}x${newHeight}) must match the wrapped texture's dimensions (${internalTexture.baseWidth}x${internalTexture.baseHeight}).`
             );
+        }
+        if (this._engine.getTextureLayerCount) {
+            const newLayerCount = this._engine.getTextureLayerCount(texture);
+            const oldLayerCount = internalTexture.is2DArray ? internalTexture.depth : 1;
+            if (newLayerCount !== oldLayerCount) {
+                throw new Error(`updateWrappedNativeTexture: new handle layer count (${newLayerCount}) must match the wrapped texture's layer count (${oldLayerCount}).`);
+            }
         }
 
         // Pre-validate before mutating any state so a thrown precondition leaves the InternalTexture untouched.
@@ -2303,6 +2359,90 @@ export class ThinNativeEngine extends ThinEngine {
         return rtWrapper;
     }
 
+    public override createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as NativeRenderTargetWrapper;
+
+        let generateDepthBuffer = true;
+        let generateStencilBuffer = false;
+        let generateMipMaps = false;
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        let format = Constants.TEXTUREFORMAT_RGBA;
+        let samples = 1;
+        let label: string | undefined;
+        if (options !== undefined && typeof options === "object") {
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
+            generateStencilBuffer = !!options.generateStencilBuffer;
+            generateMipMaps = !!options.generateMipMaps;
+            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
+            samples = options.samples ?? 1;
+            label = options.label;
+        }
+
+        // Match _createInternalTexture: float/half-float RTTs that the platform can't linearly filter fall
+        // back to NEAREST so the cube RTT never carries an unsupported sampling mode.
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        texture.isCube = true;
+        texture.baseWidth = size;
+        texture.baseHeight = size;
+        texture.width = size;
+        texture.height = size;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.type = type;
+        texture.format = format;
+        texture.label = label;
+
+        const nativeTexture = texture._hardwareTexture!.underlyingResource;
+        const nativeTextureFormat = getNativeTextureFormat(format, type);
+        // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
+        const hasMips = samples > 1 ? false : generateMipMaps;
+        this._engine.initializeTexture(nativeTexture, size, size, hasMips, nativeTextureFormat, /*renderTarget*/ true, /*srgb*/ false, samples, /*isCube*/ true);
+        this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
+
+        // The native engine cannot render to all six faces through one framebuffer, so create one
+        // framebuffer per face (the C++ side binds the matching cube layer); bindFramebuffer(faceIndex)
+        // then selects the right one.
+        const framebuffers: NativeFramebuffer[] = [];
+        for (let face = 0; face < 6; face++) {
+            framebuffers.push(this._engine.createFrameBuffer(nativeTexture, size, size, generateStencilBuffer, generateDepthBuffer, samples, face));
+        }
+
+        rtWrapper._framebuffers = framebuffers;
+        rtWrapper._generateDepthBuffer = generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = generateStencilBuffer;
+        rtWrapper._samples = samples;
+
+        rtWrapper.setTextures(texture);
+
+        // Track the hand-built cube RTT texture the same way _createInternalTexture tracks 2D textures so it
+        // participates in engine-wide lifecycle management (dispose iteration, context rebuild, stats).
+        this._internalTexturesCache.push(texture);
+
+        return rtWrapper;
+    }
+
+    public override generateMipMapsForCubemap(_texture: InternalTexture, _unbind = true): void {
+        // The WebGL path rebinds gl.TEXTURE_CUBE_MAP and calls gl.generateMipmap; both deref _gl, which is
+        // null on Native. bgfx auto-generates the mip chain when a render target texture created with mips is
+        // resolved (the same way 2D RTTs get their mips here -- unBindFramebuffer issues no explicit mipgen),
+        // so this is a no-op on Native.
+    }
+
     public override updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
         if (rtWrapper.samples === samples) {
             return samples;
@@ -2348,18 +2488,50 @@ export class ThinNativeEngine extends ThinEngine {
         // underlying bgfx resource has 1 mip level. Remove this guard once a fixed bgfx is in stable BN npm.
         const hasMips = samples > 1 ? false : texture.generateMipMaps;
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
-        this._engine.initializeTexture(nativeTexture, texture.baseWidth, texture.baseHeight, hasMips, nativeTextureFormat, /*renderTarget*/ true, texture._useSRGBBuffer, samples);
-
-        // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
-        // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
-        nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+        const isCube = texture.isCube;
+        this._engine.initializeTexture(
             nativeTexture,
             texture.baseWidth,
             texture.baseHeight,
-            rtWrapper._generateStencilBuffer,
-            rtWrapper._generateDepthBuffer,
-            samples
+            hasMips,
+            nativeTextureFormat,
+            /*renderTarget*/ true,
+            texture._useSRGBBuffer,
+            samples,
+            isCube
         );
+
+        if (isCube) {
+            // Cube RTTs render through one framebuffer per face (see createRenderTargetCubeTexture). The
+            // underlying bgfx handle was just rotated, so recreate all six attachments; the _framebuffers
+            // setter releases the stale ones and keeps _framebuffer aliased to face 0 for single-target paths.
+            const framebuffers: NativeFramebuffer[] = [];
+            for (let face = 0; face < 6; face++) {
+                framebuffers.push(
+                    this._engine.createFrameBuffer(
+                        nativeTexture,
+                        texture.baseWidth,
+                        texture.baseHeight,
+                        rtWrapper._generateStencilBuffer,
+                        rtWrapper._generateDepthBuffer,
+                        samples,
+                        face
+                    )
+                );
+            }
+            nativeRTWrapper._framebuffers = framebuffers;
+        } else {
+            // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
+            // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
+            nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
+                nativeTexture,
+                texture.baseWidth,
+                texture.baseHeight,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                samples
+            );
+        }
 
         rtWrapper._samples = samples;
         texture.samples = samples;
@@ -2384,15 +2556,16 @@ export class ThinNativeEngine extends ThinEngine {
 
         this._currentRenderTarget = texture;
 
-        if (faceIndex) {
-            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
-        }
-
         if (requiredWidth || requiredHeight) {
             throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
         }
 
-        if (nativeRTWrapper._framebufferDepthStencil) {
+        if (nativeRTWrapper._framebuffers) {
+            // Cube render target: bind the framebuffer for the requested face.
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffers[faceIndex ?? 0]);
+        } else if (faceIndex) {
+            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
+        } else if (nativeRTWrapper._framebufferDepthStencil) {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebufferDepthStencil);
         } else {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);

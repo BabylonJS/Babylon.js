@@ -1,6 +1,6 @@
 import { type Scene } from "../../scene";
 import { Plane } from "../../Maths/math.plane";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 /**
  * Creates a refraction texture used by refraction channel of the standard material.
  * It is like a mirror but to see through a material.
