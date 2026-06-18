@@ -42,7 +42,16 @@ export function RegisterEnginesWebGPUExtensionsEngineVideoTexture(): void {
                 try {
                     this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
                     if (texture.generateMipMaps) {
-                        this._generateMipmaps(texture);
+                        if (this.snapshotRendering) {
+                            // The main render encoder is reserved for recording/replaying snapshot bundles, and
+                            // _generateMipmaps() calls _endCurrentRenderPass() when it targets that encoder, which
+                            // corrupts the bundle. Generate the mipmaps on a dedicated, immediately-submitted encoder.
+                            const commandEncoder = this._device.createCommandEncoder();
+                            this._generateMipmaps(texture, commandEncoder);
+                            this._device.queue.submit([commandEncoder.finish()]);
+                        } else {
+                            this._generateMipmaps(texture);
+                        }
                     }
                 } catch (e) {
                     // WebGPU doesn't support video element who are not playing so far
