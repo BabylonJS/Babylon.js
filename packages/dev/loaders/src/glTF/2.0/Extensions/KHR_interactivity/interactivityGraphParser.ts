@@ -412,6 +412,17 @@ export class InteractivityGraphToFlowGraphParser {
                 Logger.Error(["No mapping found for node", gltfNode]);
                 throw new Error("Error parsing node connections");
             }
+            // KHR_interactivity spec section 3.2.4 "Unsupported Operations":
+            // nodes referring to unsupported operations are demoted to no-ops.
+            // Activations of their input flow sockets are ignored, their output
+            // flow sockets are never activated, and their output value sockets
+            // return constant type-default values. They have no backing
+            // FlowGraph blocks (blocks.length === 0), so there is nothing to
+            // wire for this node — skip all of its connections.
+            if (flowGraphBlocks.blocks.length === 0) {
+                Logger.Warn(`Skipping connections for no-op node #${i} (unsupported operation: ${flowGraphBlocks.fullOperationName})`);
+                continue;
+            }
             const flowsFromGLTF = gltfNode.flows || {};
             const flowsKeys = Object.keys(flowsFromGLTF).sort(); // sorting as some operations require sorted keys
             // connect the flows
@@ -419,10 +430,6 @@ export class InteractivityGraphToFlowGraphParser {
                 const flow = flowsFromGLTF[flowKey];
                 const flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
                 const socketOutName = flowMapping?.name || flowKey;
-                // create a serialized socket
-                const socketOut = this._createNewSocketConnection(socketOutName, true);
-                const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.signalOutputs.push(socketOut);
                 // get the input node of this block
                 const inputNodeId = flow.node;
                 const nodeIn = this._nodes[inputNodeId];
@@ -430,6 +437,17 @@ export class InteractivityGraphToFlowGraphParser {
                     Logger.Error(["No node found for input node id", inputNodeId]);
                     throw new Error("Error parsing node connections");
                 }
+                // Spec 3.2.4: input flow activations on no-op nodes are ignored,
+                // so a flow connection into a no-op target is itself a no-op.
+                // Drop it instead of crashing on the missing target block.
+                if (nodeIn.blocks.length === 0) {
+                    Logger.Warn(`Dropping flow connection from node #${i} "${flowKey}" to no-op node #${inputNodeId} (unsupported operation: ${nodeIn.fullOperationName})`);
+                    continue;
+                }
+                // create a serialized socket
+                const socketOut = this._createNewSocketConnection(socketOutName, true);
+                const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
+                block.signalOutputs.push(socketOut);
                 // get the mapper for the input node - in case it mapped to multiple blocks
                 const inputMapper = getMappingForFullOperationName(nodeIn.fullOperationName);
                 if (!inputMapper) {
@@ -489,6 +507,16 @@ export class InteractivityGraphToFlowGraphParser {
                     if (!nodeOut) {
                         Logger.Error(["No node found for output socket reference", value]);
                         throw new Error("Error parsing node connections");
+                    }
+                    // Spec 3.2.4: output value sockets of no-op nodes return
+                    // constant type-default values. Leave the consumer's
+                    // dataInput unconnected (no connectedPointIds) so the
+                    // FlowGraph runtime falls back to the RichType default.
+                    if (nodeOut.blocks.length === 0) {
+                        Logger.Warn(
+                            `Dropping value connection from no-op node #${nodeOutId} (unsupported operation: ${nodeOut.fullOperationName}) into node #${i} "${valueKey}"; consumer will use type-default value`
+                        );
+                        continue;
                     }
                     const outputMapper = getMappingForFullOperationName(nodeOut.fullOperationName);
                     if (!outputMapper) {
