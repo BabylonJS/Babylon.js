@@ -477,9 +477,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
         // No render loop yet (e.g. awaited inside createScene): drive rendering ourselves so the streaming
         // decodes and depth sort can progress, yielding between frames so async downloads/readbacks resolve.
+        // Wrap each render in beginFrame/endFrame exactly like the engine's own render loop: on WebGPU,
+        // endFrame submits the frame's command buffers and presents the swapchain, so a bare scene.render()
+        // would leave the acquired swapchain texture to be destroyed at the frame boundary before its command
+        // buffer is submitted ("destroyed texture used in a submit").
+        const engine = scene.getEngine();
         const requestFrame = (globalThis as { requestAnimationFrame?: (cb: () => void) => void }).requestAnimationFrame;
         while (!this._disposed) {
+            engine.beginFrame();
             scene.render();
+            engine.endFrame();
             if (isSettled()) {
                 return;
             }
