@@ -2046,6 +2046,12 @@
             "dependsOn": ["Loaders", "OBJ"]
         },
         {
+            "title": "OBJ empty normal",
+            "playgroundId": "#26R8NS#15",
+            "referenceImage": "objEmptyNormal.png",
+            "dependsOn": ["LibMaterials", "Loaders", "OBJ"]
+        },
+        {
             "title": "OBJ Stanford Bunny normals (LH)",
             "playgroundId": "#26R8NS#6",
             "referenceImage": "objStanfordBunnyNormalsLH.png",
