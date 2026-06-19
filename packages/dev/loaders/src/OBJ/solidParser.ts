@@ -1003,10 +1003,7 @@ export class SolidParser {
             //Set the data for the babylonMesh
             vertexData.indices = this._handledMesh.indices;
             vertexData.positions = this._handledMesh.positions;
-            // NB: check `.length`, not just truthiness. An empty array (e.g. an OBJ with no `vn`/`vt`/colors)
-            // is still truthy, so a truthy-only check would set an empty, zero-length vertex buffer. That buffer
-            // reports as "present" to materials, gets bound, and then `glDrawElements` references indices into a
-            // 0-length attribute -> "Vertex buffer is not big enough for the draw call".
+            // Empty arrays are truthy; binding a zero-length buffer causes "Vertex buffer is not big enough for the draw call".
             if (this._loadingOptions.computeNormals || !this._handledMesh.normals?.length) {
                 // Compute normals if requested or if normals are not defined
                 const normals: Array<number> = new Array<number>();
