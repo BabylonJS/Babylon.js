@@ -492,11 +492,10 @@ export class RuntimeAnimation {
             // influence into (for example) RELATIVE mode and make it accumulate offset * repeatCount every loop.
             // When the override is the inherited scene one, use the animation's own loop mode instead.
             // An override set explicitly on the morph target is still respected.
-            if (
-                this._target.animationPropertiesOverride === this._scene.animationPropertiesOverride &&
-                this._target.getClassName &&
-                this._target.getClassName() === "MorphTarget"
-            ) {
+            const isMorphTarget = this._target.getClassName?.() === "MorphTarget";
+            // MorphTarget.animationPropertiesOverride getter inherits from the scene when no per-target override is set.
+            // Only bypass the override when it is truly inherited (ie. the target has no local override).
+            if (isMorphTarget && (this._target as any)._animationPropertiesOverride == null) {
                 return this._animation.loopMode;
             }
 
