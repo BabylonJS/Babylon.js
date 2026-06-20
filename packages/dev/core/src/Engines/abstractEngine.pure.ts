@@ -179,6 +179,13 @@ export interface AbstractEngineOptions {
      * Otherwise, the default is to use a cheaper approximation.
      */
     useExactSrgbConversions?: boolean;
+
+    /**
+     * Defines the tab index to set on the rendering canvas (default: 1).
+     * 1 is the minimum value required to be able to capture keyboard events on the canvas.
+     * Set this to a custom value to control the canvas position in the document's tab order.
+     */
+    canvasTabIndex?: number;
 }
 
 /**
@@ -2133,6 +2140,7 @@ export abstract class AbstractEngine {
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;
         this._isStencilEnable = options.stencil ? true : false;
         this.useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+        this.canvasTabIndex = options.canvasTabIndex ?? this.canvasTabIndex;
 
         const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
 
