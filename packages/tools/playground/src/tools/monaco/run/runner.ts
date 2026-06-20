@@ -317,11 +317,18 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             } // skip non-static or unsupported cases
 
             const isRel = spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/");
+            // Absolute URL specifiers (e.g. import { x } from "https://cdn.example.com/mod.js"),
+            // protocol-relative URLs, and data:/blob: URLs are already resolvable by the browser /
+            // es-module-shims and must be passed through untouched. Without this, they would fall
+            // into the bare-import branch below and get wrapped with the CDN base (esm.sh/https://…).
+            const isAbsoluteUrl = /^(?:https?:)?\/\//i.test(spec) || spec.startsWith("data:") || spec.startsWith("blob:");
             let replacement = spec;
             const normalized = normalizeForCdn(spec);
 
             const localHit = resolveLocal(spec) ?? resolveLocal(normalized);
-            if (localHit) {
+            if (isAbsoluteUrl) {
+                replacement = spec;
+            } else if (localHit) {
                 replacement = localHit;
             } else if (/@local(?:\/|$)/.test(spec)) {
                 throw new Error(`Unresolved local import: ${spec}. Link the package and export types/entry in the editor.`);
