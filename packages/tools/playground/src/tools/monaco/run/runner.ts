@@ -321,7 +321,8 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             // protocol-relative URLs, and data:/blob: URLs are already resolvable by the browser /
             // es-module-shims and must be passed through untouched. Without this, they would fall
             // into the bare-import branch below and get wrapped with the CDN base (esm.sh/https://…).
-            const isAbsoluteUrl = /^(?:https?:)?\/\//i.test(spec) || spec.startsWith("data:") || spec.startsWith("blob:");
+            // URL schemes are case-insensitive, so match case-insensitively.
+            const isAbsoluteUrl = /^(?:https?:)?\/\//i.test(spec) || /^(?:data|blob):/i.test(spec);
             let replacement = spec;
             const normalized = normalizeForCdn(spec);
 

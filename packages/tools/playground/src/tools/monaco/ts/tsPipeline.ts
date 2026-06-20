@@ -94,13 +94,17 @@ declare module "*.fx"   { const content: string; export default content; }`;
         // Allow importing external resources directly by absolute URL (e.g.
         // `import { foo } from "https://cdn.example.com/mod.js"`). These specifiers are
         // resolved at runtime by es-module-shims / the browser, so we declare them as
-        // `any`-typed ambient modules to stop the TS worker from reporting "Cannot find
-        // module" (2307) and aborting the run.
+        // shorthand ambient modules to stop the TS worker from reporting "Cannot find
+        // module" (2307) and aborting the run. Shorthand ambient modules (no body) make
+        // every import shape — default, named and namespace — resolve to `any`, which a
+        // `export =`/`export default` body would not (named imports would still raise
+        // 2305/2614). The `//*` entry covers protocol-relative specifiers.
         const urlImportDts = `
-declare module "https://*" { const mod: any; export = mod; }
-declare module "http://*"  { const mod: any; export = mod; }
-declare module "data:*"    { const mod: any; export = mod; }
-declare module "blob:*"    { const mod: any; export = mod; }`;
+declare module "https://*";
+declare module "http://*";
+declare module "//*";
+declare module "data:*";
+declare module "blob:*";`;
         const urlTsDisposable = typescript.typescriptDefaults.addExtraLib(urlImportDts, "file:///external/urlImports.d.ts");
         const urlJsDisposable = typescript.javascriptDefaults.addExtraLib(urlImportDts, "file:///external/urlImports.d.ts");
         this._extraLibDisposables.push(urlTsDisposable, urlJsDisposable);
