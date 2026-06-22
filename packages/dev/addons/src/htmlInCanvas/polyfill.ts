@@ -81,11 +81,17 @@ export function UninstallHtmlInCanvasPolyfill(): void {
     _InstalledModule = null;
 }
 
+// Route the optional polyfill import through an indirectly-constructed function. A literal `import()` is
+// ES2020 syntax that the UMD `es-check es6` gate rejects, and static bundlers (webpack/vite/rollup) would try
+// to resolve the optional `three-html-render` package at build time. Hiding the `import` token inside a
+// Function body keeps the UMD bundle es6-compliant and leaves the dependency unbundled, while ESM consumers
+// still perform a genuine on-demand dynamic import at runtime. Apps under a strict CSP (no `unsafe-eval`) can
+// avoid this path entirely by passing `polyfillModule` to InstallHtmlInCanvasPolyfill.
+const _DynamicImport = new Function("specifier", "return import(specifier);") as (specifier: string) => Promise<IHtmlInCanvasPolyfillModule>;
+
 async function _ImportPolyfill(specifier: string): Promise<Nullable<IHtmlInCanvasPolyfillModule>> {
     try {
-        // The specifier is a variable so bundlers leave this as a runtime import and the optional package is
-        // not required to be installed at build time.
-        return (await import(/* @vite-ignore */ /* webpackIgnore: true */ specifier)) as IHtmlInCanvasPolyfillModule;
+        return await _DynamicImport(specifier);
     } catch {
         Logger.Warn(`HTML-in-Canvas: could not load polyfill module "${specifier}". Install three-html-render or pass a polyfillModule.`);
         return null;
