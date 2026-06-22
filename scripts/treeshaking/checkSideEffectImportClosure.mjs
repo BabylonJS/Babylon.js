@@ -9,13 +9,18 @@
  * pure barrels and public package metadata, so value imports from manifest-listed
  * files would reintroduce side effects through a supposedly pure path.
  *
+ * Files whose only manifest side effect is a `declare module` augmentation
+ * (`.types.ts` files) are excluded: a `declare module` block is a TypeScript
+ * type-level augmentation that erases to an empty module, so importing or
+ * re-exporting it carries no runtime cost and cannot reintroduce side effects.
+ *
  * Current historical violations are tracked in a baseline. New violations fail
  * the check, and resolved baseline entries must be removed with
  * `--update-baseline`.
  */
 
 import ts from "typescript";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { dirname, join, relative, resolve } from "path";
 import { fileURLToPath } from "url";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
@@ -93,7 +98,11 @@ function collectTsFiles(dir, results = []) {
 
 const allFiles = collectTsFiles(CORE_SRC).sort(compareCodePoint);
 const allRelFiles = new Set(allFiles.map((filePath) => toPosixPath(relative(CORE_SRC, filePath))));
-const manifestSideEffectFiles = readSideEffectsManifest(MANIFEST_PATH).manifest.map((entry) => toPosixPath(entry.file));
+// A `declare module` augmentation is type-only and erases at runtime, so files whose only
+// side effect is `declare-module` are not real side-effect targets for the closure check.
+const manifestSideEffectFiles = readSideEffectsManifest(MANIFEST_PATH)
+    .manifest.filter((entry) => entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module"))
+    .map((entry) => toPosixPath(entry.file));
 const sideEffectFiles = new Set(manifestSideEffectFiles);
 for (const file of allRelFiles) {
     if (file.endsWith("/index.ts") || file === "index.ts") {
@@ -211,6 +220,13 @@ function readBaseline() {
 }
 
 function writeBaseline(violations) {
+    if (violations.length === 0) {
+        // No known violations: the baseline file should not exist.
+        if (existsSync(BASELINE_PATH)) {
+            rmSync(BASELINE_PATH);
+        }
+        return;
+    }
     const baseline = {
         version: 1,
         description: "Known direct static imports/re-exports from manifest side-effect-free core files to manifest side-effectful core files.",
@@ -223,7 +239,11 @@ const actualViolations = allFiles.flatMap(findViolations).sort(compareViolations
 
 if (updateBaseline) {
     writeBaseline(actualViolations);
-    console.log(`Updated ${toPosixPath(relative(REPO_ROOT, BASELINE_PATH))} with ${actualViolations.length} violation(s).`);
+    if (actualViolations.length === 0) {
+        console.log(`No known violations; removed ${toPosixPath(relative(REPO_ROOT, BASELINE_PATH))} if present.`);
+    } else {
+        console.log(`Updated ${toPosixPath(relative(REPO_ROOT, BASELINE_PATH))} with ${actualViolations.length} violation(s).`);
+    }
     process.exit(0);
 }
 
