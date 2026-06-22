@@ -200,7 +200,7 @@ export abstract class StaticSound extends AbstractSound {
      */
     public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this.state === SoundState.Paused) {
-            this.resume();
+            this.resume(options);
             return;
         }
 
@@ -218,6 +218,15 @@ export abstract class StaticSound extends AbstractSound {
         this._afterPlay(instance);
 
         this._stopExcessInstances();
+    }
+
+    /**
+     * Resumes the sound.
+     * - Only options explicitly set here override the paused instance's current options; unset options keep their paused values so playback continues from where it was paused.
+     * @param options The options to use when resuming the sound.
+     */
+    public override resume(options?: Partial<IStaticSoundPlayOptions>): void {
+        super.resume(options);
     }
 
     /**
