@@ -37,13 +37,16 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, relative, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
+import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
-const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
-const PUBLIC_PKG_JSON = join(REPO_ROOT, "packages/public/@babylonjs/core/package.json");
-const MANIFEST_PATH = join(__dirname, "side-effects-manifest/core");
+const PACKAGE_CONFIG = getPackageConfig(resolvePackageFromArgv());
+const PUBLIC_PKG_NAME = `@babylonjs/${PACKAGE_CONFIG.package}`;
+const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
+const CORE_SRC = PACKAGE_CONFIG.srcRoot;
+const PUBLIC_PKG_JSON = PACKAGE_CONFIG.publicPkgJson;
+const MANIFEST_PATH = PACKAGE_CONFIG.manifestDir;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -416,7 +419,7 @@ function main() {
     }
 
     if (dryRun) {
-        console.log("\n=== @babylonjs/core sideEffects ===");
+        console.log(`\n=== ${PUBLIC_PKG_NAME} sideEffects ===`);
         console.log(JSON.stringify(entries, null, 2));
         return;
     }
@@ -428,20 +431,22 @@ function main() {
         const current = JSON.stringify(pkg.sideEffects ?? [], null, 2);
         const expected = JSON.stringify(entries, null, 2);
         if (current === expected) {
-            console.log("✅ @babylonjs/core package.json sideEffects is up-to-date.\n");
+            console.log(`✅ ${PUBLIC_PKG_NAME} package.json sideEffects is up-to-date.\n`);
             process.exit(0);
         } else {
-            console.error("❌ @babylonjs/core package.json sideEffects is out of date!");
-            console.error("To fix: node scripts/treeshaking/syncSideEffects.mjs\n");
+            console.error(`❌ ${PUBLIC_PKG_NAME} package.json sideEffects is out of date!`);
+            console.error(`To fix: node scripts/treeshaking/syncSideEffects.mjs${PACKAGE_CONFIG.package === "core" ? "" : ` --package ${PACKAGE_CONFIG.package}`}\n`);
             if (process.env.TF_BUILD) {
-                console.log("##vso[task.logissue type=error]@babylonjs/core package.json sideEffects is out of date. Run: node scripts/treeshaking/syncSideEffects.mjs");
+                console.log(
+                    `##vso[task.logissue type=error]${PUBLIC_PKG_NAME} package.json sideEffects is out of date. Run: node scripts/treeshaking/syncSideEffects.mjs${PACKAGE_CONFIG.package === "core" ? "" : ` --package ${PACKAGE_CONFIG.package}`}`
+                );
             }
             process.exit(1);
         }
     }
 
-    // Write to @babylonjs/core package.json only
-    // (@dev/core is private and never consumed by external bundlers)
+    // Write to the public @babylonjs/<pkg> package.json only
+    // (@dev/<pkg> is private and never consumed by external bundlers)
     updatePackageJson(PUBLIC_PKG_JSON, entries);
     console.log(`Updated ${PUBLIC_PKG_JSON} — ${entries.length} sideEffects entries`);
 }

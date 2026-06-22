@@ -20,10 +20,13 @@
 import { spawnSync } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { resolvePackageFromArgv, packageArgs } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
+const PACKAGE = resolvePackageFromArgv();
+const PACKAGE_ARGS = packageArgs(PACKAGE);
 const IS_ADO = !!process.env.TF_BUILD;
 const MAX_FAILURE_LINES = 80;
 
@@ -31,22 +34,22 @@ const checks = [
     {
         name: "Manifest drift",
         script: resolve(__dirname, "checkManifestDrift.mjs"),
-        args: [],
+        args: [...PACKAGE_ARGS],
     },
     {
         name: "Side-effect import closure",
         script: resolve(__dirname, "checkSideEffectImportClosure.mjs"),
-        args: [],
+        args: [...PACKAGE_ARGS],
     },
     {
         name: "Pure barrels",
         script: resolve(__dirname, "generatePureBarrels.mjs"),
-        args: ["--check"],
+        args: [...PACKAGE_ARGS, "--check"],
     },
     {
         name: "Side-effect stubs",
         script: resolve(__dirname, "generateSideEffectStubs.mjs"),
-        args: ["--check"],
+        args: [...PACKAGE_ARGS, "--check"],
     },
 ];
 

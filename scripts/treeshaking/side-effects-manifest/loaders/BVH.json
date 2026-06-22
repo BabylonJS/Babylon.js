@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "BVH/bvhFileLoader.ts": ["declare-module", "top-level-call"]
+    }
+}

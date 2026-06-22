@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "legacy/legacy.ts": ["bare-import"]
+    }
+}

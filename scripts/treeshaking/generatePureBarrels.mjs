@@ -25,11 +25,13 @@ import { resolve, dirname, relative, join, basename } from "path";
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
+import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = resolve(__dirname, "../..");
-const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest/core");
+const PACKAGE_CONFIG = getPackageConfig(resolvePackageFromArgv());
+const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
+const SRC_ROOT = PACKAGE_CONFIG.srcRoot;
+const MANIFEST_PATH = PACKAGE_CONFIG.manifestDir;
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");

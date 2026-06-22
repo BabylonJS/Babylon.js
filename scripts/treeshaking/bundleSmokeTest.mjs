@@ -19,10 +19,12 @@ import { writeFileSync, mkdirSync, readFileSync, rmSync, statSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
+import { resolvePackageFromArgv } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
+const PACKAGE = resolvePackageFromArgv();
 const TMP_DIR = join(REPO_ROOT, "scripts/treeshaking/.tmp");
 const CORE_DIST = join(REPO_ROOT, "packages/dev/core/dist");
 const IS_ADO = !!process.env.TF_BUILD;
@@ -382,6 +384,13 @@ async function testWithWebpack(testCase) {
 
 async function main() {
     console.log("\n=== Tree-Shaking Bundle Smoke Tests ===\n");
+
+    // The current bundle smoke tests are defined for @babylonjs/core only.
+    // Per-package cases are added during each package's migration phase.
+    if (PACKAGE !== "core") {
+        console.log(`No bundle smoke tests defined for ${PACKAGE} yet; skipping.\n`);
+        return;
+    }
 
     // Check that core is compiled
     try {

@@ -17,9 +17,12 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve, dirname, relative, posix } from "path";
 import { globSync } from "glob";
 import { execFileSync } from "child_process";
+import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
-const ROOT = resolve(import.meta.dirname, "../../packages/dev/core/src");
-const REPO_ROOT = resolve(import.meta.dirname, "../..");
+const PACKAGE = resolvePackageFromArgv();
+const PACKAGE_CONFIG = getPackageConfig(PACKAGE);
+const ROOT = PACKAGE_CONFIG.srcRoot;
+const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
@@ -346,10 +349,17 @@ const writtenFiles = [];
 let filesModified = 0;
 
 for (const [targetFile, classMap] of stubsByFile) {
-    // Compute relative import path from target to devTools.ts
+    // Compute the import specifier for the devTools warning helper. In core it is
+    // a relative path; in the other packages devTools lives in core, so use the
+    // `core/Misc/devTools` path alias these packages already import through.
     const targetDir = dirname(targetFile);
-    let relPath = posix.normalize(relative(targetDir, resolve(ROOT, "Misc/devTools")).split("\\").join("/"));
-    if (!relPath.startsWith(".")) relPath = "./" + relPath;
+    let relPath;
+    if (PACKAGE === "core") {
+        relPath = posix.normalize(relative(targetDir, resolve(ROOT, "Misc/devTools")).split("\\").join("/"));
+        if (!relPath.startsWith(".")) relPath = "./" + relPath;
+    } else {
+        relPath = "core/Misc/devTools";
+    }
 
     // Read target file first so we can detect its line endings
     let content = readFileSync(targetFile, "utf-8");

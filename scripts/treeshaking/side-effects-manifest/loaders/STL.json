@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "STL/stlFileLoader.ts": ["bare-import", "declare-module", "top-level-call"]
+    }
+}
