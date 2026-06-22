@@ -183,10 +183,11 @@ export class HtmlRaycastInteractionManager {
         // The browser synthesizes a "click" from a native down/up pair, but synthetic mouse events do not,
         // so we emit it ourselves: on pointerdown remember the target, then on pointerup dispatch a click
         // when the release lands on the same element (matching native click semantics closely enough).
+        // Native browsers only synthesize "click" for the primary button, so gate on button 0.
         if (domName === "pointerdown") {
             this._downTarget = target;
         } else if (domName === "pointerup") {
-            if (this._downTarget === target) {
+            if (this._downTarget === target && init.button === 0) {
                 target.dispatchEvent(new MouseEvent("click", init));
             }
             this._downTarget = null;

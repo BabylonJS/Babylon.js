@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 import { Observable } from "core/Misc/observable";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -14,8 +14,10 @@ import { GetElementPixelFromUv, HtmlRaycastInteractionManager } from "core/Mater
 import { ComputeOverlayCssTransform, HtmlInteractionManager } from "core/Materials/Textures/HTML/htmlInteractionManager";
 
 // jsdom historically does not implement PointerEvent; provide a minimal stand-in so the dispatch path runs.
+let _installedPointerEventShim = false;
 beforeAll(() => {
     if (typeof (globalThis as any).PointerEvent === "undefined") {
+        _installedPointerEventShim = true;
         (globalThis as any).PointerEvent = class extends MouseEvent {
             public pointerId: number;
             public pointerType: string;
@@ -25,6 +27,14 @@ beforeAll(() => {
                 this.pointerType = init.pointerType ?? "mouse";
             }
         };
+    }
+});
+
+// Remove the shim we installed so it does not leak global state into other tests in this jsdom environment.
+afterAll(() => {
+    if (_installedPointerEventShim) {
+        delete (globalThis as any).PointerEvent;
+        _installedPointerEventShim = false;
     }
 });
 
@@ -150,6 +160,38 @@ describe("HtmlRaycastInteractionManager", () => {
         manager.dispose();
     });
 
+    it("does not synthesize a click for non-primary mouse buttons", () => {
+        const { scene, element, mesh } = createMock();
+        const button = document.createElement("button");
+        button.getBoundingClientRect = () => ({ left: 150, top: 80, width: 100, height: 40, right: 250, bottom: 120, x: 150, y: 80, toJSON() {} }) as DOMRect;
+        element.appendChild(button);
+
+        const manager = new HtmlRaycastInteractionManager(scene, { element } as any, mesh);
+
+        let clicks = 0;
+        button.addEventListener("click", () => clicks++);
+
+        // A right-button (button 2) down/up pair on the same target must not synthesize a click.
+        const rightButtonInfo = (type: number) =>
+            ({
+                type,
+                event: { button: 2, buttons: 2, pointerId: 7, pointerType: "mouse" },
+                pickInfo: {
+                    hit: true,
+                    pickedMesh: mesh,
+                    pickedPoint: new Vector3(0, 0, 0),
+                    getTextureCoordinates: () => new Vector2(0.5, 0.5),
+                    getNormal: () => null,
+                },
+            }) as any;
+
+        scene.onPointerObservable.notifyObservers(rightButtonInfo(0x01));
+        scene.onPointerObservable.notifyObservers(rightButtonInfo(0x02));
+
+        expect(clicks).toBe(0);
+        manager.dispose();
+    });
+
     it("contains synthetic events so they do not bubble back to the host's ancestors", () => {
         const { scene, element, mesh } = createMock();
         const parent = document.createElement("div");
@@ -211,6 +253,19 @@ describe("HtmlInteractionManager", () => {
 
         manager.dispose();
         expect(scene.onAfterRenderObservable.hasObservers()).toBe(false);
+    });
+
+    it("clears a host-applied inert attribute so native interaction works, and restores it on dispose", () => {
+        const scene = { onAfterRenderObservable: new Observable<any>(), activeCamera: null } as any;
+        const element = document.createElement("div");
+        // HtmlTexture marks the element inert while hosting it inside the rendering canvas.
+        element.setAttribute("inert", "");
+
+        const manager = new HtmlInteractionManager(scene, { element } as any, {} as any, { enablePointerEvents: true });
+        expect(element.hasAttribute("inert")).toBe(false);
+
+        manager.dispose();
+        expect(element.hasAttribute("inert")).toBe(true);
     });
 
     it("projects the mesh and writes a transform during rendering", () => {

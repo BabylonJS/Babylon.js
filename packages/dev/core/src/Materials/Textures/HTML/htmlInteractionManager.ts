@@ -74,6 +74,8 @@ export class HtmlInteractionManager {
     private readonly _projectedCenter = new Vector3();
     private readonly _projectedX = new Vector3();
     private readonly _projectedY = new Vector3();
+    private readonly _corner = new Vector3();
+    private _restoreInertOnDispose: boolean = false;
 
     /**
      * Creates an overlay interaction manager.
@@ -93,6 +95,14 @@ export class HtmlInteractionManager {
         this._element.style.transformOrigin = "0 0";
         this._element.style.pointerEvents = (options.enablePointerEvents ?? true) ? "auto" : "none";
 
+        // This manager relies on native browser hit testing of the element. HtmlTexture marks the element
+        // `inert` while hosting it inside the rendering canvas (so it does not steal input from the canvas);
+        // clear that here so native interaction works, and restore it on dispose.
+        this._restoreInertOnDispose = this._element.hasAttribute("inert");
+        if (this._restoreInertOnDispose) {
+            this._element.removeAttribute("inert");
+        }
+
         this._observer = scene.onAfterRenderObservable.add(() => this._update());
     }
 
@@ -109,15 +119,17 @@ export class HtmlInteractionManager {
 
         this._center.copyFrom(boundingBox.centerWorld);
         // World-space half-axis directions of the mesh face.
-        Vector3.TransformNormalToRef(new Vector3(extend.x, 0, 0), world, this._xAxis);
-        Vector3.TransformNormalToRef(new Vector3(0, extend.y, 0), world, this._yAxis);
+        Vector3.TransformNormalFromFloatsToRef(extend.x, 0, 0, world, this._xAxis);
+        Vector3.TransformNormalFromFloatsToRef(0, extend.y, 0, world, this._yAxis);
 
         const transform = this._scene.getTransformMatrix();
         camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), this._viewport);
 
         Vector3.ProjectToRef(this._center, Matrix.IdentityReadOnly, transform, this._viewport, this._projectedCenter);
-        Vector3.ProjectToRef(this._center.add(this._xAxis), Matrix.IdentityReadOnly, transform, this._viewport, this._projectedX);
-        Vector3.ProjectToRef(this._center.add(this._yAxis), Matrix.IdentityReadOnly, transform, this._viewport, this._projectedY);
+        this._center.addToRef(this._xAxis, this._corner);
+        Vector3.ProjectToRef(this._corner, Matrix.IdentityReadOnly, transform, this._viewport, this._projectedX);
+        this._center.addToRef(this._yAxis, this._corner);
+        Vector3.ProjectToRef(this._corner, Matrix.IdentityReadOnly, transform, this._viewport, this._projectedY);
 
         // Hide the overlay when the face is behind the camera.
         if (this._projectedCenter.z < 0 || this._projectedCenter.z > 1) {
@@ -153,6 +165,10 @@ export class HtmlInteractionManager {
      * Detaches the manager and stops updating the overlay.
      */
     public dispose(): void {
+        if (this._restoreInertOnDispose) {
+            this._element.setAttribute("inert", "");
+            this._restoreInertOnDispose = false;
+        }
         if (this._observer) {
             this._scene.onAfterRenderObservable.remove(this._observer);
             this._observer = null;

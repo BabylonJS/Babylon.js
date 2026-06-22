@@ -275,6 +275,9 @@ export class HtmlTexture extends BaseTexture {
     private readonly _textureMatrix: Matrix;
     private _paintHandler: Nullable<() => void> = null;
     private _ownsHostCanvas: boolean = false;
+    private _originalParent: Nullable<Node & ParentNode> = null;
+    private _originalNextSibling: Nullable<ChildNode> = null;
+    private _addedInert: boolean = false;
     private _width: number;
     private _height: number;
 
@@ -339,6 +342,11 @@ export class HtmlTexture extends BaseTexture {
             return null;
         }
 
+        // Remember where the caller had the element so dispose() can put it back: we are about to re-parent it
+        // into the host canvas (the element must be a direct child of the host to be captured and laid out).
+        this._originalParent = this.element.parentNode;
+        this._originalNextSibling = this.element.nextSibling;
+
         // Per the WICG spec, the source element must be a *direct child* of the same canvas whose WebGL/WebGPU
         // context performs the upload, and that canvas must opt its subtree into layout via `layoutsubtree`.
         // The engine already owns our texture through its rendering canvas, so the element has to live inside
@@ -350,7 +358,8 @@ export class HtmlTexture extends BaseTexture {
             renderingCanvas.layoutSubtree = true;
             // `layoutsubtree` opts children into hit testing; mark ours inert so it never steals pointer events
             // from the canvas (e.g. camera controls). Synthetic event dispatch still reaches inert elements, so
-            // HtmlRaycastInteractionManager keeps working.
+            // HtmlRaycastInteractionManager keeps working; HtmlInteractionManager clears it to enable native input.
+            this._addedInert = !this.element.hasAttribute("inert");
             this.element.setAttribute("inert", "");
             renderingCanvas.appendChild(this.element);
             this._ownsHostCanvas = false;
@@ -513,11 +522,22 @@ export class HtmlTexture extends BaseTexture {
                 this.hostCanvas.removeEventListener("paint", this._paintHandler);
                 this._paintHandler = null;
             }
+            // Remove the `inert` attribute we added so the caller gets the element back as they passed it.
+            if (this._addedInert) {
+                this.element.removeAttribute("inert");
+                this._addedInert = false;
+            }
+            // Restore the element to where the caller had it before we re-parented it into the host canvas,
+            // rather than silently deleting their node from the document.
+            if (this._originalParent) {
+                const reference = this._originalNextSibling && this._originalNextSibling.parentNode === this._originalParent ? this._originalNextSibling : null;
+                this._originalParent.insertBefore(this.element, reference);
+            } else {
+                this.element.remove();
+            }
+            // Remove the helper canvas we created (never the engine's borrowed rendering canvas).
             if (this._ownsHostCanvas) {
                 this.hostCanvas.remove();
-            } else {
-                // We borrowed the engine's rendering canvas; only detach our element, never the canvas itself.
-                this.element.remove();
             }
         }
 
