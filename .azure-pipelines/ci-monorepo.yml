@@ -198,16 +198,19 @@ jobs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/smart-filters-editor"
 
-          # Build the ES6 libs only when the playground changed, so `prepare-snapshot`'s
+          # Build only the ES6 libs the Playground's ESM bundles consume (core + the 7
+          # secondary packages), and only when the playground changed, so `prepare-snapshot`'s
           # `build:esm` step can produce the self-hosted ESM bundles for this PR snapshot
-          # (testable via `?snapshot=<branch>`). On unrelated PRs this is skipped and
-          # `build:esm` no-ops; the publish pipeline always builds es6 so releases ship them.
+          # (testable via `?snapshot=<branch>`). Scoped (not full `build:es6:libs`) to avoid
+          # smart-filters-blocks, whose generated source isn't built on non-smart-filter PRs.
+          # On unrelated PRs this is skipped and `build:esm` no-ops; the publish pipeline
+          # builds es6 unconditionally so releases always ship the bundles.
           - task: Npm@1
             displayName: "npm build es6 libs (for ESM bundles)"
             condition: and(succeeded(), eq(variables['PLAYGROUNDCHANGED'], 'true'))
             inputs:
                 command: custom
-                customCommand: "run build:es6:libs"
+                customCommand: "run build:es6:playground-esm-libs"
 
           - task: Npm@1
             displayName: "Prepare snapshot"
