@@ -193,9 +193,7 @@ describe("HtmlTexture", () => {
                 },
                 generateMipmap: vi.fn(),
             },
-            _getInternalFormat: () => 0x1908,
             _getRGBABufferInternalSizedFormat: () => 0x8058,
-            _getWebGLTextureType: () => 0x1401,
             _bindTextureDirectly: vi.fn().mockReturnValue(false),
             _unpackFlipY: vi.fn(),
         } as unknown as Engine;

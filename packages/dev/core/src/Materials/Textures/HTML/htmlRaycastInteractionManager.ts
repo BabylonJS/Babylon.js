@@ -56,6 +56,11 @@ export class HtmlRaycastInteractionManager {
     private _observer: Nullable<Observer<PointerInfo>>;
     private _downTarget: Nullable<EventTarget>;
     private readonly _containHandler: (evt: Event) => void;
+    private readonly _rectCache = new Map<HTMLElement, DOMRect>();
+    private _rectCacheValid = false;
+    private readonly _invalidateRectCache: () => void;
+    private _resizeObserver: Nullable<ResizeObserver> = null;
+    private _mutationObserver: Nullable<MutationObserver> = null;
 
     /**
      * Creates a raycast interaction manager.
@@ -81,6 +86,26 @@ export class HtmlRaycastInteractionManager {
             this._element.addEventListener(type, this._containHandler);
         }
 
+        // Resolving the target reads layout (getBoundingClientRect) for the element and its descendants on
+        // every pointer event. Cache those rects and only re-read them when layout can actually change - on
+        // size changes, DOM mutations, or viewport scroll/resize - so high-frequency pointermove events stay
+        // pure arithmetic instead of forcing a synchronous reflow each time.
+        this._invalidateRectCache = () => {
+            this._rectCacheValid = false;
+        };
+        if (typeof ResizeObserver !== "undefined") {
+            this._resizeObserver = new ResizeObserver(this._invalidateRectCache);
+            this._resizeObserver.observe(this._element);
+        }
+        if (typeof MutationObserver !== "undefined") {
+            this._mutationObserver = new MutationObserver(this._invalidateRectCache);
+            this._mutationObserver.observe(this._element, { attributes: true, childList: true, characterData: true, subtree: true });
+        }
+        if (typeof window !== "undefined") {
+            window.addEventListener("resize", this._invalidateRectCache);
+            window.addEventListener("scroll", this._invalidateRectCache, true);
+        }
+
         this._observer = scene.onPointerObservable.add((pointerInfo) => this._onPointer(pointerInfo));
     }
 
@@ -104,7 +129,7 @@ export class HtmlRaycastInteractionManager {
             return;
         }
 
-        const rect = this._element.getBoundingClientRect();
+        const rect = this._getRect(this._element);
         const { x, y } = GetElementPixelFromUv(uv.x, uv.y, rect.width || this._element.offsetWidth, rect.height || this._element.offsetHeight, this._invertY);
 
         this._dispatch(domName, rect.left + x, rect.top + y, pointerInfo);
@@ -176,20 +201,40 @@ export class HtmlRaycastInteractionManager {
      */
     private _resolveTarget(clientX: number, clientY: number): HTMLElement {
         let target: HTMLElement = this._element;
-        for (let descended = true; descended; ) {
-            descended = false;
+        let advanced = true;
+        while (advanced) {
+            advanced = false;
             const children = target.children;
             for (let i = children.length - 1; i >= 0; i--) {
                 const child = children[i] as HTMLElement;
-                const rect = child.getBoundingClientRect();
+                const rect = this._getRect(child);
                 if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
                     target = child;
-                    descended = true;
+                    advanced = true;
                     break;
                 }
             }
         }
         return target;
+    }
+
+    /**
+     * Returns the client rect of an element, served from a cache that is rebuilt only when layout may have
+     * changed (see the constructor). This keeps pointer routing free of per-event layout reads.
+     * @param element the element whose bounding rect is needed
+     * @returns the element's cached {@link DOMRect}
+     */
+    private _getRect(element: HTMLElement): DOMRect {
+        if (!this._rectCacheValid) {
+            this._rectCache.clear();
+            this._rectCacheValid = true;
+        }
+        let rect = this._rectCache.get(element);
+        if (!rect) {
+            rect = element.getBoundingClientRect();
+            this._rectCache.set(element, rect);
+        }
+        return rect;
     }
 
     /**
@@ -199,6 +244,19 @@ export class HtmlRaycastInteractionManager {
         for (const type of _ContainedEventTypes) {
             this._element.removeEventListener(type, this._containHandler);
         }
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+        if (this._mutationObserver) {
+            this._mutationObserver.disconnect();
+            this._mutationObserver = null;
+        }
+        if (typeof window !== "undefined") {
+            window.removeEventListener("resize", this._invalidateRectCache);
+            window.removeEventListener("scroll", this._invalidateRectCache, true);
+        }
+        this._rectCache.clear();
         if (this._observer) {
             this._scene.onPointerObservable.remove(this._observer);
             this._observer = null;

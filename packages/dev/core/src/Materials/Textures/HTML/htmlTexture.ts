@@ -123,21 +123,7 @@ function _UploadHtmlElementToWebGLTexture(
     engine._unpackFlipY(invertY);
 
     try {
-        try {
-            // Current WICG signature: texElementImage2D(target, internalformat, element, config?).
-            gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
-        } catch (newSignatureError) {
-            // Some Chromium builds still ship the earlier signature, mirroring texImage2D:
-            // texElementImage2D(target, level, internalformat, format, type, element).
-            try {
-                const format = engine._getInternalFormat(texture.format);
-                const type = engine._getWebGLTextureType(texture.type);
-                (gl.texElementImage2D as (...args: any[]) => void)(gl.TEXTURE_2D, 0, internalFormat, format, type, element);
-            } catch {
-                // Re-throw the first (spec-compliant) error so the diagnostic reflects the expected signature.
-                throw newSignatureError;
-            }
-        }
+        gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
 
         if (texture.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D);
@@ -151,9 +137,10 @@ function _UploadHtmlElementToWebGLTexture(
         texture.isReady = true;
         return true;
     } catch (error) {
-        // The WICG API throws if called before the first paint snapshot has been recorded; this is a
-        // transient, expected condition (e.g. the very first update before any paint event), so we must
-        // not disable the texture - the next paint-driven update will succeed.
+        // Reaching here means the snapshot upload failed - usually a real misconfiguration (the element is
+        // not a child of the rendering canvas, or `layoutsubtree` is missing), though a stray call before
+        // the first paint snapshot can also throw. Either way we must NOT disable the texture, so a later
+        // paint-driven update can still succeed; we surface a one-time diagnostic to help debugging.
         _WarnUploadFailure(error);
         return false;
     }
@@ -180,30 +167,19 @@ function _UploadHtmlElementToWebGPUTexture(
     }
 
     try {
-        try {
-            // Current WICG signature: copyElementImageToTexture({ source, ... }, { destination, width, height }).
-            const source: GPUCopyElementImageSource = { source: element };
-            if (config) {
-                source.sx = config.sx;
-                source.sy = config.sy;
-                source.swidth = config.swidth;
-                source.sheight = config.sheight;
-            }
-
-            queue.copyElementImageToTexture(source, {
-                destination: { texture: gpuTexture },
-                width: config?.width ?? texture.width,
-                height: config?.height ?? texture.height,
-            });
-        } catch (newSignatureError) {
-            // Some Chromium builds still ship the earlier signature: copyElementImageToTexture(element, { texture }).
-            try {
-                (queue.copyElementImageToTexture as (...args: any[]) => void)(element, { texture: gpuTexture });
-            } catch {
-                // Re-throw the first (spec-compliant) error so the diagnostic reflects the expected signature.
-                throw newSignatureError;
-            }
+        const source: GPUCopyElementImageSource = { source: element };
+        if (config) {
+            source.sx = config.sx;
+            source.sy = config.sy;
+            source.swidth = config.swidth;
+            source.sheight = config.sheight;
         }
+
+        queue.copyElementImageToTexture(source, {
+            destination: { texture: gpuTexture },
+            width: config?.width ?? texture.width,
+            height: config?.height ?? texture.height,
+        });
 
         if (texture.generateMipMaps) {
             engine._generateMipmaps(texture);
@@ -215,9 +191,10 @@ function _UploadHtmlElementToWebGPUTexture(
         texture.isReady = true;
         return true;
     } catch (error) {
-        // The WICG API throws if called before the first paint snapshot has been recorded; this is a
-        // transient, expected condition (e.g. the very first update before any paint event), so we must
-        // not disable the texture - the next paint-driven update will succeed.
+        // Reaching here means the snapshot upload failed - usually a real misconfiguration (the element is
+        // not a child of the rendering canvas, or `layoutsubtree` is missing), though a stray call before
+        // the first paint snapshot can also throw. Either way we must NOT disable the texture, so a later
+        // paint-driven update can still succeed; we surface a one-time diagnostic to help debugging.
         _WarnUploadFailure(error);
         return false;
     }

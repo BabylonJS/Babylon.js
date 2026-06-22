@@ -166,6 +166,35 @@ describe("HtmlRaycastInteractionManager", () => {
         expect(bubbled).toBe(0);
         manager.dispose();
     });
+
+    it("caches layout rects so repeated pointer events do not re-read the DOM", () => {
+        const { scene, mesh } = createMock();
+        const element = document.createElement("div");
+        const button = document.createElement("button");
+        element.appendChild(button);
+
+        let elementReads = 0;
+        let buttonReads = 0;
+        element.getBoundingClientRect = () => {
+            elementReads++;
+            return { left: 100, top: 50, width: 200, height: 100, right: 300, bottom: 150, x: 100, y: 50, toJSON() {} } as DOMRect;
+        };
+        button.getBoundingClientRect = () => {
+            buttonReads++;
+            return { left: 150, top: 80, width: 100, height: 40, right: 250, bottom: 120, x: 150, y: 80, toJSON() {} } as DOMRect;
+        };
+
+        const manager = new HtmlRaycastInteractionManager(scene, { element } as any, mesh);
+
+        // Three identical moves should only trigger a single burst of layout reads thanks to the rect cache.
+        for (let i = 0; i < 3; i++) {
+            scene.onPointerObservable.notifyObservers(makePointerInfo(0x04, mesh, new Vector2(0.5, 0.5)));
+        }
+
+        expect(elementReads).toBe(1);
+        expect(buttonReads).toBe(1);
+        manager.dispose();
+    });
 });
 
 describe("HtmlInteractionManager", () => {
