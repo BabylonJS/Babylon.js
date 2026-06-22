@@ -37,12 +37,11 @@ describe("HtmlTexture", () => {
         texture.dispose();
     });
 
-    it("hosts the element inside a hidden layoutsubtree canvas attached to the document", () => {
+    it("hosts the element inside a hidden helper element attached to the document", () => {
         const texture = new HtmlTexture("html", element, { scene });
 
-        expect(texture.hostCanvas).not.toBeNull();
-        const host = texture.hostCanvas!;
-        expect(host.layoutSubtree).toBe(true);
+        expect(texture.host).not.toBeNull();
+        const host = texture.host!;
         expect(host.parentElement).toBe(document.body);
         expect(element.parentElement).toBe(host);
         expect(host.style.position).toBe("absolute");
@@ -52,15 +51,15 @@ describe("HtmlTexture", () => {
 
     it("uses the provided width and height", () => {
         const texture = new HtmlTexture("html", element, { scene, width: 128, height: 64 });
-        expect(texture.hostCanvas!.width).toBe(128);
-        expect(texture.hostCanvas!.height).toBe(64);
+        expect(texture.getSize().width).toBe(128);
+        expect(texture.getSize().height).toBe(64);
         texture.dispose();
     });
 
     it("falls back to a 256x256 size when no size is provided and the element has no layout", () => {
         const texture = new HtmlTexture("html", element, { scene });
-        expect(texture.hostCanvas!.width).toBe(256);
-        expect(texture.hostCanvas!.height).toBe(256);
+        expect(texture.getSize().width).toBe(256);
+        expect(texture.getSize().height).toBe(256);
         texture.dispose();
     });
 
@@ -74,7 +73,7 @@ describe("HtmlTexture", () => {
         const texture = new HtmlTexture("html", element, { scene, autoUpdate: true });
         const spy = vi.spyOn(texture, "update");
 
-        texture.hostCanvas!.dispatchEvent(new Event("paint"));
+        texture.host!.dispatchEvent(new Event("paint"));
 
         expect(spy).toHaveBeenCalled();
         texture.dispose();
@@ -84,17 +83,39 @@ describe("HtmlTexture", () => {
         const texture = new HtmlTexture("html", element, { scene, autoUpdate: false });
         const spy = vi.spyOn(texture, "update");
 
-        texture.hostCanvas!.dispatchEvent(new Event("paint"));
-        texture.hostCanvas!.dispatchEvent(new Event("paint"));
+        texture.host!.dispatchEvent(new Event("paint"));
+        texture.host!.dispatchEvent(new Event("paint"));
 
         // The first paint provides the initial snapshot (one-shot), the handler then detaches.
         expect(spy).toHaveBeenCalledTimes(1);
         texture.dispose();
     });
 
-    it("removes the host canvas from the document on dispose", () => {
+    it("only refreshes when its own element is among the paint event's changed elements", () => {
+        const texture = new HtmlTexture("html", element, { scene, autoUpdate: true });
+        const spy = vi.spyOn(texture, "update");
+
+        // A paint caused by an unrelated element on the shared canvas must not trigger an upload.
+        const otherElement = document.createElement("div");
+        const unrelatedPaint = new Event("paint") as Event & { changedElements: readonly Element[] };
+        unrelatedPaint.changedElements = [otherElement];
+        texture.host!.dispatchEvent(unrelatedPaint);
+        expect(spy).not.toHaveBeenCalled();
+
+        // A paint that lists this texture's element (or a descendant) does trigger an upload.
+        const child = document.createElement("span");
+        element.appendChild(child);
+        const relevantPaint = new Event("paint") as Event & { changedElements: readonly Element[] };
+        relevantPaint.changedElements = [child];
+        texture.host!.dispatchEvent(relevantPaint);
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        texture.dispose();
+    });
+
+    it("removes the helper host from the document on dispose", () => {
         const texture = new HtmlTexture("html", element, { scene });
-        const host = texture.hostCanvas!;
+        const host = texture.host!;
         expect(host.parentElement).toBe(document.body);
 
         texture.dispose();
@@ -104,7 +125,7 @@ describe("HtmlTexture", () => {
 
     it("returns gracefully when no engine or scene is provided", () => {
         const texture = new HtmlTexture("html", element, {});
-        expect(texture.hostCanvas).toBeNull();
+        expect(texture.host).toBeNull();
         expect(() => texture.update()).not.toThrow();
         texture.dispose();
     });

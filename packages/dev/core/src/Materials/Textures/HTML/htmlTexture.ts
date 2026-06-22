@@ -250,10 +250,11 @@ export class HtmlTexture extends BaseTexture {
     public readonly element: HTMLElement;
 
     /**
-     * The canvas that hosts the element and drives layout/paint events. This is the engine's rendering
-     * canvas when one is available (as required by the WICG API), or a hidden helper canvas otherwise.
+     * The element that hosts {@link element} in the document. This is the engine's rendering canvas when one
+     * is available (required by the WICG API, which can only capture the element from that canvas), or a
+     * hidden helper `<div>` otherwise - in which case only the SVG fallback can render.
      */
-    public readonly hostCanvas: Nullable<HTMLCanvasElement>;
+    public readonly host: Nullable<HTMLElement>;
 
     /**
      * Observable triggered once the texture has been rendered for the first time.
@@ -273,8 +274,8 @@ export class HtmlTexture extends BaseTexture {
     private readonly _samplingMode: number;
     private readonly _useSvgFallback: boolean;
     private readonly _textureMatrix: Matrix;
-    private _paintHandler: Nullable<() => void> = null;
-    private _ownsHostCanvas: boolean = false;
+    private _paintHandler: Nullable<(event: PaintEvent) => void> = null;
+    private _ownsHost: boolean = false;
     private _originalParent: Nullable<Node & ParentNode> = null;
     private _originalNextSibling: Nullable<ChildNode> = null;
     private _addedInert: boolean = false;
@@ -294,7 +295,7 @@ export class HtmlTexture extends BaseTexture {
         this._textureMatrix = Matrix.Identity();
 
         if (!element || (!options.engine && !options.scene)) {
-            this.hostCanvas = null;
+            this.host = null;
             this._width = 0;
             this._height = 0;
             this._format = HtmlTexture._DefaultOptions.format;
@@ -318,32 +319,39 @@ export class HtmlTexture extends BaseTexture {
         this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.anisotropicFilteringLevel = 1;
 
-        this.hostCanvas = this._createHostCanvas();
+        this.host = this._createHost();
 
         // The native WICG API has no content until the first paint snapshot is recorded, so the initial
-        // upload must happen from a paint event. Always listen for at least the first paint; when
-        // auto-update is disabled, detach after that first refresh.
-        if (this.hostCanvas) {
-            this._paintHandler = () => {
+        // upload must happen from a paint event. The rendering canvas emits `paint`; listen for at least the
+        // first one and, when auto-update is disabled, detach after that first refresh. A non-canvas helper
+        // host never emits `paint`, so this listener is simply never invoked there.
+        if (this.host) {
+            this._paintHandler = (event: PaintEvent) => {
+                // A single `paint` event covers every changed child of the shared rendering canvas. When the
+                // browser reports which elements changed, skip the upload unless ours is among them, so that
+                // multiple HTML textures hosted on the same canvas don't all re-upload on every unrelated change.
+                if (event.changedElements && !event.changedElements.some((changed) => this.element === changed || this.element.contains(changed))) {
+                    return;
+                }
                 this.update();
-                if (!autoUpdate && this._paintHandler && this.hostCanvas) {
-                    this.hostCanvas.removeEventListener("paint", this._paintHandler);
+                if (!autoUpdate && this._paintHandler && this.host) {
+                    this.host.removeEventListener("paint", this._paintHandler as EventListener);
                     this._paintHandler = null;
                 }
             };
-            this.hostCanvas.addEventListener("paint", this._paintHandler);
+            this.host.addEventListener("paint", this._paintHandler as EventListener);
         }
 
         this._createInternalTexture();
     }
 
-    private _createHostCanvas(): Nullable<HTMLCanvasElement> {
+    private _createHost(): Nullable<HTMLElement> {
         if (!IsWindowObjectExist() || typeof document === "undefined") {
             return null;
         }
 
         // Remember where the caller had the element so dispose() can put it back: we are about to re-parent it
-        // into the host canvas (the element must be a direct child of the host to be captured and laid out).
+        // into the host (the element must be a direct child of the host to be captured and laid out).
         this._originalParent = this.element.parentNode;
         this._originalNextSibling = this.element.nextSibling;
 
@@ -351,8 +359,8 @@ export class HtmlTexture extends BaseTexture {
         // context performs the upload, and that canvas must opt its subtree into layout via `layoutsubtree`.
         // The engine already owns our texture through its rendering canvas, so the element has to live inside
         // that canvas: it is the only one whose context can snapshot the element via texElementImage2D /
-        // copyElementImageToTexture. A separate off-screen canvas would lay the element out but could never be
-        // captured into the engine's texture (this is why nothing rendered on the native path before).
+        // copyElementImageToTexture. A separate canvas would lay the element out but could never be captured
+        // into the engine's texture (this is why nothing rendered on the native path before).
         const renderingCanvas = this._getEngine()?.getRenderingCanvas() ?? null;
         if (renderingCanvas) {
             renderingCanvas.layoutSubtree = true;
@@ -362,29 +370,27 @@ export class HtmlTexture extends BaseTexture {
             this._addedInert = !this.element.hasAttribute("inert");
             this.element.setAttribute("inert", "");
             renderingCanvas.appendChild(this.element);
-            this._ownsHostCanvas = false;
+            this._ownsHost = false;
             return renderingCanvas;
         }
 
-        // No rendering canvas (e.g. NullEngine / offscreen): create a hidden host so the element can still be
-        // laid out. Only the SVG fallback can render in this case - the native upload paths need a real canvas.
-        const hostCanvas = document.createElement("canvas");
-        hostCanvas.width = this._width;
-        hostCanvas.height = this._height;
-        // Keep the host canvas in the DOM (required for layout) but invisible to the user.
-        hostCanvas.style.position = "absolute";
-        hostCanvas.style.left = "-99999px";
-        hostCanvas.style.top = "0px";
-        hostCanvas.style.pointerEvents = "none";
-        hostCanvas.setAttribute("aria-hidden", "true");
-        // Opt the element subtree into layout and hit testing so it can be drawn into the canvas.
-        hostCanvas.layoutSubtree = true;
+        // No rendering canvas (e.g. NullEngine / offscreen): the native upload paths cannot run, because they
+        // capture from the engine's canvas and there is none. Only the SVG fallback renders here, and it builds
+        // from the element's serialized markup rather than from a canvas - so a host *canvas* would buy nothing.
+        // Host the element in a hidden, off-screen <div> purely so it is laid out in the document (giving
+        // correct measured sizes); there is no canvas to capture into on this path.
+        const host = document.createElement("div");
+        host.style.position = "absolute";
+        host.style.left = "-99999px";
+        host.style.top = "0px";
+        host.style.pointerEvents = "none";
+        host.setAttribute("aria-hidden", "true");
 
-        hostCanvas.appendChild(this.element);
-        document.body.appendChild(hostCanvas);
-        this._ownsHostCanvas = true;
+        host.appendChild(this.element);
+        document.body.appendChild(host);
+        this._ownsHost = true;
 
-        return hostCanvas;
+        return host;
     }
 
     private _createInternalTexture(): void {
@@ -415,8 +421,11 @@ export class HtmlTexture extends BaseTexture {
      * when the WICG API is not available.
      */
     public requestUpdate(): void {
-        if (this.hostCanvas && typeof this.hostCanvas.requestPaint === "function") {
-            this.hostCanvas.requestPaint();
+        // `requestPaint` only exists on a WICG-capable rendering canvas; the helper <div> host has no such
+        // method, so fall back to an immediate update there.
+        const canvasHost = this.host as Nullable<HTMLCanvasElement>;
+        if (canvasHost && typeof canvasHost.requestPaint === "function") {
+            canvasHost.requestPaint();
         } else {
             this.update();
         }
@@ -517,9 +526,9 @@ export class HtmlTexture extends BaseTexture {
      * Dispose the texture and release its associated resources.
      */
     public override dispose(): void {
-        if (this.hostCanvas) {
+        if (this.host) {
             if (this._paintHandler) {
-                this.hostCanvas.removeEventListener("paint", this._paintHandler);
+                this.host.removeEventListener("paint", this._paintHandler as EventListener);
                 this._paintHandler = null;
             }
             // Remove the `inert` attribute we added so the caller gets the element back as they passed it.
@@ -527,17 +536,17 @@ export class HtmlTexture extends BaseTexture {
                 this.element.removeAttribute("inert");
                 this._addedInert = false;
             }
-            // Restore the element to where the caller had it before we re-parented it into the host canvas,
-            // rather than silently deleting their node from the document.
+            // Restore the element to where the caller had it before we re-parented it into the host, rather
+            // than silently deleting their node from the document.
             if (this._originalParent) {
                 const reference = this._originalNextSibling && this._originalNextSibling.parentNode === this._originalParent ? this._originalNextSibling : null;
                 this._originalParent.insertBefore(this.element, reference);
             } else {
                 this.element.remove();
             }
-            // Remove the helper canvas we created (never the engine's borrowed rendering canvas).
-            if (this._ownsHostCanvas) {
-                this.hostCanvas.remove();
+            // Remove the helper host we created (never the engine's borrowed rendering canvas).
+            if (this._ownsHost) {
+                this.host.remove();
             }
         }
 
