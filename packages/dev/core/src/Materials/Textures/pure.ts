@@ -12,6 +12,7 @@ export * from "./envCubeTexture.pure";
 export * from "./hdrCubeTexture.pure";
 export * from "./exrCubeTexture.pure";
 export * from "./htmlElementTexture.pure";
+export * from "./htmlTexture";
 export * from "./internalTexture";
 export * from "./Loaders/pure";
 export * from "./mirrorTexture.pure";

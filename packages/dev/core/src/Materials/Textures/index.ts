@@ -12,6 +12,7 @@ export * from "./envCubeTexture";
 export * from "./hdrCubeTexture";
 export * from "./exrCubeTexture";
 export * from "./htmlElementTexture";
+export * from "./htmlTexture";
 export * from "./internalTexture";
 export * from "./Loaders/index";
 export * from "./mirrorTexture";
