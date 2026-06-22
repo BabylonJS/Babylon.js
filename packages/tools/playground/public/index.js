@@ -192,12 +192,57 @@ const esmBundles = [
     "babylonjs.proceduralTextures.esm.js",
 ];
 
+// Phase 4b: resolve the ESM bundle base + runtime ScriptBaseUrl from the same
+// version / snapshot / local signals the UMD path uses, so `?version=` / `?snapshot=`
+// load a matching self-hosted ESM bundle instead of a hardcoded `/esm/` path.
+//
+// Returns { esmBase, scriptBaseUrl, version }:
+//   - esmBase       : where the `*.esm.js` bundles are fetched from (always ends with `/esm/`).
+//   - scriptBaseUrl : value for `BABYLON.Tools.ScriptBaseUrl` (runtime-fetched assets: wasm,
+//                     textures). Empty string => leave Babylon's default untouched.
+//   - version       : the resolved version string (for Playground.Show), or "".
+//
+// NOTE: the versioned / snapshot `/esm/` bundles only exist once the build/publish pipeline
+// emits them (see "Remaining follow-ups" in the plan). Until then only the local/default
+// `/esm/` base is live; versioned bases will 404 and the core load will throw as designed.
+const resolveEsmTargets = function () {
+    const search = window.location.search;
+
+    let snapshot = "";
+    if (search.indexOf("snapshot=") !== -1) {
+        snapshot = search.split("snapshot=")[1].split("&")[0];
+    }
+
+    let version = "";
+    if (search.indexOf("version=") !== -1) {
+        version = search.split("version=")[1].split("&")[0];
+    }
+
+    const isLocal = (window.location.hostname === "localhost" && search.indexOf("dist") === -1) || search.indexOf("local") !== -1;
+
+    if (snapshot) {
+        const root = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
+        return { esmBase: root + "/esm/", scriptBaseUrl: root, version: "" };
+    }
+    if (version) {
+        const root = "https://cdn.babylonjs.com/v" + version;
+        return { esmBase: root + "/esm/", scriptBaseUrl: root, version };
+    }
+
+    // Local dev / default: self-hosted bundles served by the playground dev server.
+    const esmBase = (typeof globalThis !== "undefined" && globalThis.__BABYLON_ESM_BASE__) || "/esm/";
+    const scriptBaseUrl = isLocal ? window.location.protocol + `//${window.location.hostname}:${cdnPort}/` : "";
+    return { esmBase, scriptBaseUrl, version: "" };
+};
+
 let loadBabylonEsmAsync = async function () {
-    const base = (typeof globalThis !== "undefined" && globalThis.__BABYLON_ESM_BASE__) || "/esm/";
+    const { esmBase, scriptBaseUrl, version } = resolveEsmTargets();
+    const loaded = [];
     for (let i = 0; i < esmBundles.length; i++) {
-        const url = base + esmBundles[i];
+        const url = esmBase + esmBundles[i];
         try {
             await import(/* @vite-ignore */ url);
+            loaded.push(url);
         } catch (e) {
             // Core is required; the rest are optional (registered on demand).
             if (i === 0) {
@@ -209,7 +254,13 @@ let loadBabylonEsmAsync = async function () {
             console.warn("Optional ESM bundle not loaded: " + url, e);
         }
     }
-    return { version: "", bundles: [] };
+
+    // Mirror the UMD path: point runtime asset loading at the same base as the bundles.
+    if (scriptBaseUrl && globalThis.BABYLON && globalThis.BABYLON.Tools) {
+        globalThis.BABYLON.Tools.ScriptBaseUrl = scriptBaseUrl;
+    }
+
+    return { version, bundles: loaded };
 };
 
 let loadInSequenceAsync = async function (versions, index, resolve) {
