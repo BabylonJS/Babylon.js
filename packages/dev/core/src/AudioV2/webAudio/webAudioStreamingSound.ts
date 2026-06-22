@@ -308,11 +308,11 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     /** @internal */
-    public resume(): void {
+    public resume(options: Partial<IStreamingSoundPlayOptions> = {}): void {
         if (this._state === SoundState.Paused) {
-            this.play();
+            this.play(options);
         } else if (this._currentTimeChangedWhilePaused) {
-            this.play();
+            this.play(options);
         }
     }
 

@@ -97,7 +97,7 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public play(options: Partial<IStreamingSoundPlayOptions> = {}): void {
         if (this.state === SoundState.Paused) {
-            this.resume();
+            this.resume(options);
             return;
         }
 

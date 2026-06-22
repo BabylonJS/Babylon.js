@@ -200,7 +200,7 @@ export abstract class StaticSound extends AbstractSound {
      */
     public play(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this.state === SoundState.Paused) {
-            this.resume();
+            this.resume(options);
             return;
         }
 

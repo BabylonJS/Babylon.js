@@ -127,6 +127,32 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
             expect(volumes[Channel.R]).toBeCloseTo(0.5, VolumePrecision);
         });
 
+        test("Play sound, pause it, and resume it with `volume` parameter set to 0.5", async ({ page }) => {
+            await page.evaluate(
+                async ({ soundType }) => {
+                    await AudioV2Test.CreateAudioEngineAsync(soundType);
+                    const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulseTrainSoundFile);
+
+                    sound.play();
+                    await AudioV2Test.WaitAsync(0.5, () => {
+                        sound.pause();
+                    });
+                    await AudioV2Test.WaitAsync(0.5, () => {
+                        sound.resume({ volume: 0.5 });
+                    });
+                    await AudioV2Test.WaitAsync(1, () => {
+                        sound.stop();
+                    });
+                },
+                { soundType }
+            );
+
+            const volumes = await EvaluateVolumesAtTimeAsync(page, 1.5);
+
+            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+            expect(volumes[Channel.R]).toBeCloseTo(0.5, VolumePrecision);
+        });
+
         test("Play sound with `startOffset` option set to 1", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync(soundType);

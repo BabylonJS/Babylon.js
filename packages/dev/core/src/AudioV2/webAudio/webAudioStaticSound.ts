@@ -449,9 +449,9 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     /** @internal */
-    public resume(): void {
+    public resume(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this._state === SoundState.Paused) {
-            this.play();
+            this.play(options);
         }
     }
 
