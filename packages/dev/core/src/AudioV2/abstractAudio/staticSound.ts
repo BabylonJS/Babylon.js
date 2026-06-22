@@ -221,6 +221,15 @@ export abstract class StaticSound extends AbstractSound {
     }
 
     /**
+     * Resumes the sound.
+     * - Only options explicitly set here override the paused instance's current options; unset options keep their paused values so playback continues from where it was paused.
+     * @param options The options to use when resuming the sound.
+     */
+    public override resume(options?: Partial<IStaticSoundPlayOptions>): void {
+        super.resume(options);
+    }
+
+    /**
      * Stops the sound.
      * - Triggers `onEndedObservable` if the sound is playing.
      * @param options - The options to use when stopping the sound.

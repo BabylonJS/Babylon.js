@@ -415,7 +415,10 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
 
-        this._volumeNode.gain.value = options.volume ?? 1;
+        // Only override the volume when explicitly provided so resuming a paused instance keeps its current volume.
+        if (options.volume !== undefined) {
+            this._volumeNode.gain.value = options.volume;
+        }
 
         this._initSourceNode();
 
