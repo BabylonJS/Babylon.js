@@ -121,7 +121,7 @@
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops && npm run lint:cycles && npm run check:treeshaking && npm run check:side-effects-sync",
         "lint:cycles": "npx --yes dpdm -T --no-tree --exit-code circular:1 \"./packages/dev/core/src/**/*\"",
         "update-all-dependencies": "npm update -ws",
-        "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
+        "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && npm run build:esm -w @tools/playground && build-tools -c ps",
         "start": "npx nx run-many --targets watch:dev:skip-compile serve --projects @babylonjs/root @tools/babylon-server --parallel 2 --skipNxCache true --outputStyle stream",
         "start:devhost": "npm run serve -w @tools/dev-host"
     },

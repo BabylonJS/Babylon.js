@@ -62,6 +62,19 @@ export const prepareSnapshot = () => {
         copyFile(file, path.join(snapshotDirectory, relative), true);
     }
 
+    // copy the self-hosted, single-file ESM bundles produced by `@tools/playground build:esm`.
+    // The Playground's no-UMD loader resolves `?snapshot=`/`?version=` to `<snapshot-root>/esm/*`,
+    // so these must be available at the snapshot root under `esm/`.
+    {
+        const esmSource = path.join(baseDirectory, "packages", "tools", "playground", "public", "esm");
+        if (fs.existsSync(esmSource)) {
+            const esmFiles = globSync(`${esmSource}/*+(.js|.map)`);
+            for (const file of esmFiles) {
+                copyFile(file, path.join(snapshotDirectory, "esm", path.basename(file)), true);
+            }
+        }
+    }
+
     // generate timestamp.js, which contains the current timestamp
     const timestamp = Date.now();
     const timestampFile = path.join(snapshotDirectory, "timestamp.js");
