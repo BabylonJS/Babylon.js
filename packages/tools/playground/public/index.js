@@ -150,6 +150,68 @@ let readStringFromStore = function (key, defaultValue) {
     return sessionStorage.getItem(key);
 };
 
+// ---------------------------------------------------------------------------
+// Phase 1 prototype: ESM bootstrap (no UMD).
+//
+// When enabled (via `?esm` query param or localStorage "playground-esm"=true),
+// Babylon is loaded as self-hosted, self-registering single-file ESM bundles
+// instead of UMD <script> tags. Each bundle assigns the same globalThis.BABYLON*
+// namespaces the UMD bundles do, so legacy snippets keep working — back-compat is
+// preserved while no UMD is loaded.
+//
+// Build the bundles first:  npm run build:esm -w @tools/playground
+// (outputs to public/esm/, served at /esm/).
+// ---------------------------------------------------------------------------
+const isEsmModeEnabled = function () {
+    if (/[?&]esm\b/i.test(window.location.search)) {
+        return true;
+    }
+    try {
+        return localStorage.getItem("playground-esm") === "true";
+    } catch (e) {
+        return false;
+    }
+};
+
+// Order matters: core must register globalThis.BABYLON before the others augment it.
+//
+// Phase 1 scope: load CORE ONLY. Core (~1.57 MB gz) is the dominant cost and matches
+// the UMD `babylon.js` it replaces. The secondary libs (gui/loaders/materials/...) are
+// intentionally NOT loaded here yet: standalone esbuild bundles currently inline a private
+// copy of core (duplication). Productionizing them requires externalizing `@babylonjs/core`
+// so they reference the already-loaded global — tracked as Phase 4. Until then, secondary
+// libs can be enabled per-snippet by the runner's feature probing.
+const esmBundles = [
+    "babylon.esm.js",
+    // "babylon.gui.esm.js",                 // Phase 4: needs core externalized
+    // "babylonjs.addons.esm.js",
+    // "babylonjs.loaders.esm.js",
+    // "babylonjs.materials.esm.js",
+    // "babylonjs.serializers.esm.js",
+    // "babylonjs.postProcess.esm.js",
+    // "babylonjs.proceduralTextures.esm.js",
+];
+
+let loadBabylonEsmAsync = async function () {
+    const base = (typeof globalThis !== "undefined" && globalThis.__BABYLON_ESM_BASE__) || "/esm/";
+    for (let i = 0; i < esmBundles.length; i++) {
+        const url = base + esmBundles[i];
+        try {
+            await import(/* @vite-ignore */ url);
+        } catch (e) {
+            // Core is required; the rest are optional (registered on demand).
+            if (i === 0) {
+                // eslint-disable-next-line no-console
+                console.error("Failed to load core ESM bundle: " + url, e);
+                throw e;
+            }
+            // eslint-disable-next-line no-console
+            console.warn("Optional ESM bundle not loaded: " + url, e);
+        }
+    }
+    return { version: "", bundles: [] };
+};
+
 let loadInSequenceAsync = async function (versions, index, resolve) {
     if (index >= versions.length) {
         resolve();
@@ -183,6 +245,13 @@ const isVersionGreaterOrEqual = function (version1, version2) {
 };
 
 let checkBabylonVersionAsync = async function () {
+    // Phase 1 prototype: ESM mode bypasses all UMD <script> loading entirely.
+    if (isEsmModeEnabled()) {
+        // eslint-disable-next-line no-console
+        console.log("Playground: loading Babylon as ESM (no UMD). Disable with ?esm removed / localStorage 'playground-esm'.");
+        return loadBabylonEsmAsync();
+    }
+
     let activeVersion = readStringFromStore("version", "Latest");
 
     if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {

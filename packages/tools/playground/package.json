@@ -6,6 +6,7 @@
         "build": "vite build",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "build:deployment": "npm run clean && vite build",
+        "build:esm": "node scripts/build-esm-bundles.mjs",
         "typecheck": "tsc -p tsconfig.build.json --noEmit",
         "serve": "vite",
         "serve:prod": "vite build && vite preview",
