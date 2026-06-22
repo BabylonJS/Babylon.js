@@ -25,12 +25,121 @@
  */
 
 import { build } from "esbuild";
+import { init, parse } from "es-module-lexer";
+import { existsSync, readFileSync } from "fs";
 import { mkdir } from "fs/promises";
-import { dirname, resolve } from "path";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outDir = resolve(here, "../public/esm");
+
+/**
+ * Resolves an ESM re-export specifier (as found inside a built `@babylonjs/core`
+ * file) to an absolute file path. Handles relative specifiers (the common case
+ * for `export * from "./..."` chains) and, as a fallback, bare specifiers.
+ * @param {string} parentFile absolute path of the file containing the specifier
+ * @param {string} spec the import/export specifier
+ * @returns {string | null}
+ */
+function resolveChild(parentFile, spec) {
+    if (spec.startsWith(".")) {
+        const base = resolve(dirname(parentFile), spec);
+        if (existsSync(base) && !existsSync(join(base, "index.js"))) {
+            return base;
+        }
+        if (existsSync(base + ".js")) {
+            return base + ".js";
+        }
+        if (existsSync(join(base, "index.js"))) {
+            return join(base, "index.js");
+        }
+        return existsSync(base) ? base : null;
+    }
+    try {
+        return fileURLToPath(import.meta.resolve(spec));
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Statically collects the full set of named exports a `@babylonjs/core` module
+ * exposes, following `export * from "..."` chains. No code is executed (pure
+ * lexing), so browser-only side effects in core never run during the build.
+ * @param {string} filePath absolute path of the module to analyze
+ * @param {Set<string>} [names] accumulator of export names
+ * @param {Set<string>} [seen] visited files (cycle guard)
+ * @returns {Set<string>}
+ */
+function collectCoreExports(filePath, names = new Set(), seen = new Set()) {
+    if (!filePath || seen.has(filePath) || !existsSync(filePath)) {
+        return names;
+    }
+    seen.add(filePath);
+    const src = readFileSync(filePath, "utf8");
+    const [imports, exports] = parse(src);
+    for (const e of exports) {
+        if (e.n && e.n !== "default") {
+            names.add(e.n);
+        }
+    }
+    for (const i of imports) {
+        if (!i.n) {
+            continue;
+        }
+        const stmt = src.slice(i.ss, i.se);
+        // Only `export * from "..."` needs expansion; named re-exports are already in `exports`.
+        if (/^\s*export\s*\*(?!\s*as)/.test(stmt)) {
+            collectCoreExports(resolveChild(filePath, i.n), names, seen);
+        }
+    }
+    return names;
+}
+
+/**
+ * esbuild plugin that rewrites every `@babylonjs/core` (and subpath) import to
+ * read from the already-loaded `globalThis.BABYLON` global, instead of bundling
+ * a private copy of core. This mirrors UMD's `globals` external mapping (see
+ * `umdGlobals` in packages/public/rollupUMDHelper.mjs) and is what lets the
+ * secondary library bundles stay small (core is loaded once, by `babylon.esm.js`).
+ * @type {import("esbuild").Plugin}
+ */
+const externalizeCorePlugin = {
+    name: "externalize-core-to-global",
+    setup(pluginBuild) {
+        const ns = "core-global";
+        pluginBuild.onResolve({ filter: /^@babylonjs\/core(\/.*)?$/ }, async (args) => {
+            // The guarded re-resolve below re-enters this hook; let esbuild resolve it normally then.
+            if (args.pluginData?.externalized || args.kind === "entry-point") {
+                return undefined;
+            }
+            const resolved = await pluginBuild.resolve(args.path, {
+                resolveDir: args.resolveDir,
+                kind: args.kind,
+                importer: args.importer,
+                pluginData: { externalized: true },
+            });
+            if (resolved.errors.length) {
+                return undefined; // let esbuild report the original resolution error
+            }
+            // `tslib.es6.js` re-exports the TypeScript runtime helpers (__extends, __decorate, ...).
+            // These are build helpers, NOT part of the runtime BABYLON global, so they must be
+            // bundled (esbuild inlines the tiny implementations) rather than read from the global.
+            if (/tslib\.es6\.js$/.test(resolved.path)) {
+                return { path: resolved.path };
+            }
+            return { path: resolved.path, namespace: ns };
+        });
+        pluginBuild.onLoad({ filter: /.*/, namespace: ns }, (args) => {
+            const names = [...collectCoreExports(args.path)];
+            const decl = names.length ? `export const { ${names.join(", ")} } = globalThis.BABYLON;\n` : "";
+            // `export default` covers the rare default-import of core; named imports are lenient
+            // (undefined if absent), matching UMD's global-access behavior — never a build error.
+            return { contents: decl + "export default globalThis.BABYLON;", loader: "js" };
+        });
+    },
+};
 
 /**
  * Each entry bundles one public ESM package into a single self-registering file.
@@ -39,19 +148,17 @@ const outDir = resolve(here, "../public/esm");
  *
  * `core` MUST load first; the others augment the same BABYLON namespace.
  *
- * KNOWN LIMITATION (Phase 4): the non-core bundles below currently INLINE a private
- * copy of `@babylonjs/core` (esbuild has no `external`+global mapping like UMD's
- * `globals`). Measured totals: core 7.0 MB; each secondary lib 0.8–3.0 MB *including
- * duplicated core*. To match UMD's layout (only `babylon.js` carries core), the
- * secondary configs must mark `@babylonjs/core` (and subpaths) external and resolve
- * them to the already-loaded global. Until then the Playground loads CORE ONLY.
+ * Core externalization (Phase 4): every non-core bundle marks `@babylonjs/core`
+ * (and subpaths) external and resolves them to the already-loaded `globalThis.BABYLON`
+ * global (see `externalizeCorePlugin`). So only `babylon.esm.js` carries core; the
+ * secondary bundles stay small, matching the UMD layout where only `babylon.js`
+ * ships core and the other UMD files reference the `BABYLON` global.
  */
 const bundles = [
     { file: "babylon.esm.js", pkg: "@babylonjs/core", global: "BABYLON", merge: true },
     { file: "babylon.gui.esm.js", pkg: "@babylonjs/gui", global: "BABYLON.GUI", merge: false },
     // The following packages register side effects onto the core BABYLON namespace
     // (loaders, materials, etc.). Their named exports are merged into BABYLON too.
-    // NOTE: these currently duplicate core until externalization is added (Phase 4).
     { file: "babylonjs.loaders.esm.js", pkg: "@babylonjs/loaders", global: "BABYLON", merge: true },
     { file: "babylonjs.materials.esm.js", pkg: "@babylonjs/materials", global: "BABYLON", merge: true },
     { file: "babylonjs.serializers.esm.js", pkg: "@babylonjs/serializers", global: "BABYLON", merge: true },
@@ -81,9 +188,11 @@ function makeEntry(cfg) {
 }
 
 async function main() {
+    await init;
     await mkdir(outDir, { recursive: true });
     for (const cfg of bundles) {
         const outfile = resolve(outDir, cfg.file);
+        const isCore = cfg.pkg === "@babylonjs/core";
         try {
             await build({
                 stdin: { contents: makeEntry(cfg), resolveDir: process.cwd(), loader: "js" },
@@ -94,6 +203,8 @@ async function main() {
                 minify: true,
                 legalComments: "none",
                 logLevel: "error",
+                // Core ships itself; every other bundle reads core from globalThis.BABYLON.
+                plugins: isCore ? [] : [externalizeCorePlugin],
             });
             console.log(`  built ${cfg.file}  (${cfg.pkg})`);
         } catch (e) {

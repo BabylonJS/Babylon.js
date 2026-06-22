@@ -177,19 +177,19 @@ const isEsmModeEnabled = function () {
 //
 // Phase 1 scope: load CORE ONLY. Core (~1.57 MB gz) is the dominant cost and matches
 // the UMD `babylon.js` it replaces. The secondary libs (gui/loaders/materials/...) are
-// intentionally NOT loaded here yet: standalone esbuild bundles currently inline a private
-// copy of core (duplication). Productionizing them requires externalizing `@babylonjs/core`
-// so they reference the already-loaded global — tracked as Phase 4. Until then, secondary
-// libs can be enabled per-snippet by the runner's feature probing.
+// `babylon.esm.js` (core) MUST be first; it populates globalThis.BABYLON. The secondary
+// bundles externalize `@babylonjs/core` to that global (Phase 4), so they no longer inline
+// a private copy of core and stay small. They are loaded sequentially after core so the
+// global is populated before they evaluate their `const { ... } = globalThis.BABYLON`.
 const esmBundles = [
     "babylon.esm.js",
-    // "babylon.gui.esm.js",                 // Phase 4: needs core externalized
-    // "babylonjs.addons.esm.js",
-    // "babylonjs.loaders.esm.js",
-    // "babylonjs.materials.esm.js",
-    // "babylonjs.serializers.esm.js",
-    // "babylonjs.postProcess.esm.js",
-    // "babylonjs.proceduralTextures.esm.js",
+    "babylon.gui.esm.js",
+    "babylonjs.addons.esm.js",
+    "babylonjs.loaders.esm.js",
+    "babylonjs.materials.esm.js",
+    "babylonjs.serializers.esm.js",
+    "babylonjs.postProcess.esm.js",
+    "babylonjs.proceduralTextures.esm.js",
 ];
 
 let loadBabylonEsmAsync = async function () {
