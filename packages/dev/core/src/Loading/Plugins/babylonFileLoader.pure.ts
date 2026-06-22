@@ -265,7 +265,7 @@ export const LoadAssetContainer = (
         if (parsedData.lights !== undefined && parsedData.lights !== null) {
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
                 const parsedLight = parsedData.lights[index];
-                const light = Light.Parse(parsedLight, scene);
+                const light = Light.Parse(parsedLight, scene, rootUrl);
                 if (light) {
                     TempIndexContainer[parsedLight.uniqueId] = light;
                     container.lights.push(light);

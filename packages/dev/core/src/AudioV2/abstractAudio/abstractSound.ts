@@ -174,15 +174,16 @@ export abstract class AbstractSound extends AbstractSoundSource {
 
     /**
      * Resumes the sound.
+     * @param options The options to use when resuming the sound. Only options explicitly set here override the paused instance's current options; unset options keep their paused values so playback continues from where it was paused.
      */
-    public resume(): void {
+    public resume(options?: Partial<IAbstractSoundPlayOptions>): void {
         if (this._state !== SoundState.Paused) {
             return;
         }
 
         const it = this._instances.values();
         for (let next = it.next(); !next.done; next = it.next()) {
-            next.value.resume();
+            next.value.resume(options);
         }
 
         this._state = SoundState.Started;

@@ -704,7 +704,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     propertyColorCount++;
                 }
             }
-            const hasMandatoryProperties = propertyCount == splatProperties.length && propertyColorCount == 3;
+            const hasMandatoryProperties = propertyCount == splatProperties.length && propertyColorCount >= 3;
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return await new Promise((resolve) => {

@@ -461,6 +461,12 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting Loading RH",
+            "playgroundId": "#CID4NN#398",
+            "referenceImage": "gsplat-loading-rh.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "EXR Loader",
             "playgroundId": "#4RN0VF#151",
             "referenceImage": "exr-loader.png",
@@ -2044,6 +2050,12 @@
             "playgroundId": "#SYQW69#1209",
             "referenceImage": "objTestLoader.png",
             "dependsOn": ["Loaders", "OBJ"]
+        },
+        {
+            "title": "OBJ empty normal",
+            "playgroundId": "#26R8NS#15",
+            "referenceImage": "objEmptyNormal.png",
+            "dependsOn": ["LibMaterials", "Loaders", "OBJ"]
         },
         {
             "title": "OBJ Stanford Bunny normals (LH)",
