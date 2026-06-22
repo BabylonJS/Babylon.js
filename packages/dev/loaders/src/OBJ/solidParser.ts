@@ -1003,7 +1003,8 @@ export class SolidParser {
             //Set the data for the babylonMesh
             vertexData.indices = this._handledMesh.indices;
             vertexData.positions = this._handledMesh.positions;
-            if (this._loadingOptions.computeNormals || !this._handledMesh.normals) {
+            // Empty arrays are truthy; binding a zero-length buffer causes "Vertex buffer is not big enough for the draw call".
+            if (this._loadingOptions.computeNormals || !this._handledMesh.normals?.length) {
                 // Compute normals if requested or if normals are not defined
                 const normals: Array<number> = new Array<number>();
                 VertexData.ComputeNormals(this._handledMesh.positions, this._handledMesh.indices, normals);
@@ -1011,10 +1012,10 @@ export class SolidParser {
             } else {
                 vertexData.normals = this._handledMesh.normals;
             }
-            if (this._handledMesh.uvs) {
+            if (this._handledMesh.uvs?.length) {
                 vertexData.uvs = this._handledMesh.uvs;
             }
-            if (this._handledMesh.colors) {
+            if (this._handledMesh.colors?.length) {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
