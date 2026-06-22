@@ -3,12 +3,13 @@
 import { Vector3 } from "core/Maths/math.vector.pure";
 import { Light } from "core/Lights/light";
 import { type Effect } from "core/Materials/effect.pure";
-import { serialize, serializeAsTexture } from "core/Misc/decorators";
+import { serialize } from "core/Misc/decorators";
 import { type Scene } from "core/scene.pure";
 import { AreaLight } from "core/Lights/areaLight.pure";
 import { type Nullable } from "core/types";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture.pure";
-import { type Texture } from "core/Materials/Textures/texture.pure";
+import { Texture } from "core/Materials/Textures/texture.pure";
+import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "core/Misc/copyTools";
 import { Constants } from "core/Engines/constants";
 import { Node } from "core/node";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -28,7 +29,6 @@ export class RectAreaLight extends AreaLight {
     /**
      * Gets Rect Area Light emission texture. (Note: This texture needs pre-processing! Use AreaLightTextureTools to pre-process the texture).
      */
-    @serializeAsTexture()
     public get emissionTexture(): Nullable<BaseTexture> {
         return this._emissionTextureTexture;
     }
@@ -117,6 +117,67 @@ export class RectAreaLight extends AreaLight {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return Light.LIGHTTYPEID_RECT_AREALIGHT;
+    }
+
+    /**
+     * Serializes the rect area light into a serialization object.
+     * The emission texture is normally produced at runtime by AreaLightTextureTools and has no
+     * source URL, so its pixels are embedded as a base64 string to keep the scene self-contained.
+     * @returns the serialized object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        if (this._emissionTextureTexture) {
+            const serializedEmissionTexture = this._serializeEmissionTexture(this._emissionTextureTexture);
+            if (serializedEmissionTexture) {
+                serializationObject.emissionTexture = serializedEmissionTexture;
+            }
+        }
+
+        return serializationObject;
+    }
+
+    private _serializeEmissionTexture(texture: BaseTexture): any {
+        // A regular URL-backed texture can be serialized by reference.
+        const referencedTexture = texture.serialize();
+        if (referencedTexture) {
+            return referencedTexture;
+        }
+
+        // The emission texture produced by AreaLightTextureTools is a runtime render-target texture
+        // with no source URL, so embed its pixels as a base64 PNG. On WebGPU (no synchronous texture
+        // read) a promise is stored instead and resolved by SceneSerializer.SerializeAsync.
+        const internalTexture = texture.getInternalTexture();
+        if (!internalTexture) {
+            return null;
+        }
+
+        const base64String = this._scene.getEngine()._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(texture) : GenerateBase64StringFromTextureAsync(texture);
+
+        if (!base64String) {
+            return null;
+        }
+
+        return {
+            name: "areaLightEmissionTexture",
+            base64String: base64String,
+            invertY: internalTexture.invertY,
+            hasAlpha: texture.hasAlpha,
+        };
+    }
+
+    /**
+     * Restores the emission texture from the serialized data after the base light has been parsed.
+     * @param parsedLight The JSON representation of the light
+     * @param scene The scene the light belongs to
+     */
+    protected override _onParsed(parsedLight: any, scene: Scene): void {
+        super._onParsed(parsedLight, scene);
+
+        if (parsedLight.emissionTexture) {
+            this.emissionTexture = Texture.Parse(parsedLight.emissionTexture, scene, "");
+        }
     }
 
     protected _buildUniformLayout(): void {

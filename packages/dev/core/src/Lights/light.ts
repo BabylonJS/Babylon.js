@@ -949,6 +949,11 @@ export abstract class Light extends Node implements ISortableLight {
                 // No fall off in hemispheric light.
                 photometricScale = 1.0;
                 break;
+
+            case Light.LIGHTTYPEID_RECT_AREALIGHT:
+                // Area lights interpret their intensity directly; no additional photometric scaling is applied.
+                photometricScale = 1.0;
+                break;
         }
         return photometricScale;
     }
