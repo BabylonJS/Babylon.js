@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-var */
 // Type definitions for the WICG HTML-in-Canvas proposal (https://github.com/WICG/html-in-canvas).
-// These augment the standard DOM and WebGL types so Babylon can consume the API - whether provided
-// natively (behind chrome://flags/#canvas-draw-element) or by the three-html-render polyfill -
+// These augment the standard DOM, WebGL and WebGPU types so Babylon can consume the API - whether
+// provided natively (behind chrome://flags/#canvas-draw-element) or by the three-html-render polyfill -
 // without TypeScript errors. The proposal is experimental; signatures track the explainer IDL and
-// may change. WebGPU (GPUQueue.copyElementImageToTexture) declarations are added in Phase 2.
+// may change.
 
 /**
  * A transferable snapshot of a rendered element, produced by `HTMLCanvasElement.captureElementImage`.
@@ -80,4 +80,29 @@ interface WebGLRenderingContext {
 interface WebGL2RenderingContext {
     /** Uploads a rendered element (or snapshot) into the currently bound 2D texture. */
     texElementImage2D(target: number, internalformat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
+}
+
+/**
+ * Source descriptor for `GPUQueue.copyElementImageToTexture`.
+ */
+interface GPUCopyElementImageSource {
+    source: Element | ElementImage;
+    sx?: number;
+    sy?: number;
+    swidth?: number;
+    sheight?: number;
+}
+
+/**
+ * Destination descriptor for `GPUQueue.copyElementImageToTexture`.
+ */
+interface GPUCopyElementImageDestination {
+    destination: GPUCopyExternalImageDestInfo;
+    width?: number;
+    height?: number;
+}
+
+interface GPUQueue {
+    /** Uploads a rendered element (or snapshot) into a destination GPU texture. */
+    copyElementImageToTexture(source: GPUCopyElementImageSource, destination: GPUCopyElementImageDestination): void;
 }

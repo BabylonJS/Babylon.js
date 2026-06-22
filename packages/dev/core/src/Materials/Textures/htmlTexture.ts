@@ -11,10 +11,20 @@ import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../Engines/Ext
 
 import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type ThinEngine } from "../../Engines/thinEngine.pure";
+import { type WebGPUEngine } from "../../Engines/webgpuEngine.pure";
+import { type WebGPUHardwareTexture } from "../../Engines/WebGPU/webgpuHardwareTexture";
 import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { type Scene } from "../../scene.pure";
 
 let _HasWarnedAboutMissingApi = false;
+
+function _WarnMissingApi(apiName: string): void {
+    if (_HasWarnedAboutMissingApi) {
+        return;
+    }
+    _HasWarnedAboutMissingApi = true;
+    Logger.Warn(`HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element or install the three-html-render polyfill to use HtmlTexture.`);
+}
 
 /**
  * Uploads a live HTML element (or a captured ElementImage) into an existing 2D texture using the WICG
@@ -22,8 +32,9 @@ let _HasWarnedAboutMissingApi = false;
  *
  * This is a side-effect-free helper - it is only reachable when {@link HtmlTexture} (or a direct caller)
  * is imported, so it adds nothing to bundles that do not use it. It relies on
- * `WebGLRenderingContext.texElementImage2D`, available either natively (behind
- * chrome://flags/#canvas-draw-element) or through the three-html-render polyfill.
+ * `WebGLRenderingContext.texElementImage2D` (WebGL) or `GPUQueue.copyElementImageToTexture` (WebGPU),
+ * available either natively (behind chrome://flags/#canvas-draw-element) or through the
+ * three-html-render polyfill.
  * @param engine defines the engine that owns the texture
  * @param texture defines the internal texture to update
  * @param element defines the source HTML element (or captured ElementImage) to upload
@@ -42,23 +53,31 @@ export function UploadHtmlElementToTexture(
         return false;
     }
 
+    if (engine.isWebGPU) {
+        return _UploadHtmlElementToWebGPUTexture(engine as WebGPUEngine, texture, element, invertY, config);
+    }
+
+    return _UploadHtmlElementToWebGLTexture(engine as ThinEngine, texture, element, invertY, config);
+}
+
+function _UploadHtmlElementToWebGLTexture(
+    engine: ThinEngine,
+    texture: InternalTexture,
+    element: Element | ElementImage,
+    invertY: boolean,
+    config?: WebGLCopyElementImageConfig
+): boolean {
     // texElementImage2D is provided either natively (behind a flag) or by the three-html-render polyfill.
     // Engines without a WebGL context (e.g. NullEngine) have no _gl and are handled by this guard.
-    const thinEngine = engine as ThinEngine;
-    const gl = thinEngine._gl as Nullable<WebGL2RenderingContext>;
+    const gl = engine._gl as Nullable<WebGL2RenderingContext>;
     if (!gl || typeof gl.texElementImage2D !== "function") {
-        if (!_HasWarnedAboutMissingApi) {
-            _HasWarnedAboutMissingApi = true;
-            Logger.Warn(
-                "HTML-in-Canvas: texElementImage2D is not available. Enable chrome://flags/#canvas-draw-element or install the three-html-render polyfill to use HtmlTexture."
-            );
-        }
+        _WarnMissingApi("texElementImage2D");
         return false;
     }
 
-    const internalFormat = thinEngine._getInternalFormat(texture.format);
-    const wasPreviouslyBound = thinEngine._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-    thinEngine._unpackFlipY(invertY);
+    const internalFormat = engine._getInternalFormat(texture.format);
+    const wasPreviouslyBound = engine._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+    engine._unpackFlipY(invertY);
 
     try {
         gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
@@ -68,13 +87,64 @@ export function UploadHtmlElementToTexture(
         }
 
         if (!wasPreviouslyBound) {
-            thinEngine._bindTextureDirectly(gl.TEXTURE_2D, null);
+            engine._bindTextureDirectly(gl.TEXTURE_2D, null);
         }
 
         texture.invertY = invertY;
         texture.isReady = true;
         return true;
-    } catch (ex) {
+    } catch {
+        // Something unexpected happened during the upload; disable the texture to avoid repeated failures.
+        texture._isDisabled = true;
+        return false;
+    }
+}
+
+function _UploadHtmlElementToWebGPUTexture(
+    engine: WebGPUEngine,
+    texture: InternalTexture,
+    element: Element | ElementImage,
+    invertY: boolean,
+    config?: WebGLCopyElementImageConfig
+): boolean {
+    // copyElementImageToTexture is provided either natively (behind a flag) or by the three-html-render polyfill.
+    const device = engine._device;
+    const queue = device && device.queue;
+    if (!device || !queue || typeof queue.copyElementImageToTexture !== "function") {
+        _WarnMissingApi("GPUQueue.copyElementImageToTexture");
+        return false;
+    }
+
+    const gpuTexture = (texture._hardwareTexture as Nullable<WebGPUHardwareTexture>)?.underlyingResource;
+    if (!gpuTexture) {
+        return false;
+    }
+
+    try {
+        const source: GPUCopyElementImageSource = { source: element };
+        if (config) {
+            source.sx = config.sx;
+            source.sy = config.sy;
+            source.swidth = config.swidth;
+            source.sheight = config.sheight;
+        }
+
+        queue.copyElementImageToTexture(source, {
+            destination: { texture: gpuTexture },
+            width: config?.width ?? texture.width,
+            height: config?.height ?? texture.height,
+        });
+
+        if (texture.generateMipMaps) {
+            engine._generateMipmaps(texture);
+        }
+
+        // The WICG copyElementImageToTexture API has no flipY option; the destination orientation is
+        // determined by the source. We record the requested value for downstream sampling conventions.
+        texture.invertY = invertY;
+        texture.isReady = true;
+        return true;
+    } catch {
         // Something unexpected happened during the upload; disable the texture to avoid repeated failures.
         texture._isDisabled = true;
         return false;

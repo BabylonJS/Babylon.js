@@ -117,4 +117,42 @@ describe("HtmlTexture", () => {
     it("UploadHtmlElementToTexture returns false for a null texture", () => {
         expect(UploadHtmlElementToTexture(engine, null, element)).toBe(false);
     });
+
+    it("UploadHtmlElementToTexture uploads through GPUQueue.copyElementImageToTexture on WebGPU", () => {
+        const copySpy = vi.fn();
+        const gpuTexture = {};
+        const webgpuEngine = {
+            isWebGPU: true,
+            _device: { queue: { copyElementImageToTexture: copySpy } },
+            _generateMipmaps: vi.fn(),
+        } as unknown as Engine;
+
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+        internal.width = 64;
+        internal.height = 32;
+        (internal as any)._hardwareTexture = { underlyingResource: gpuTexture };
+
+        expect(UploadHtmlElementToTexture(webgpuEngine, internal, element)).toBe(true);
+        expect(copySpy).toHaveBeenCalledTimes(1);
+
+        const [source, destination] = copySpy.mock.calls[0];
+        expect(source.source).toBe(element);
+        expect(destination.destination.texture).toBe(gpuTexture);
+        expect(destination.width).toBe(64);
+        expect(destination.height).toBe(32);
+        expect(internal.isReady).toBe(true);
+    });
+
+    it("UploadHtmlElementToTexture returns false on WebGPU when copyElementImageToTexture is unavailable", () => {
+        const webgpuEngine = {
+            isWebGPU: true,
+            _device: { queue: {} },
+        } as unknown as Engine;
+
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+        (internal as any)._hardwareTexture = { underlyingResource: {} };
+
+        expect(UploadHtmlElementToTexture(webgpuEngine, internal, element)).toBe(false);
+        expect(internal.isReady).toBe(false);
+    });
 });
