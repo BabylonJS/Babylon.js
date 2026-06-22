@@ -9,10 +9,11 @@
  * pure barrels and public package metadata, so value imports from manifest-listed
  * files would reintroduce side effects through a supposedly pure path.
  *
- * Files whose only manifest side effect is a `declare module` augmentation
- * (`.types.ts` files) are excluded: a `declare module` block is a TypeScript
- * type-level augmentation that erases to an empty module, so importing or
- * re-exporting it carries no runtime cost and cannot reintroduce side effects.
+ * Files whose only manifest side effect is a `declare module` augmentation are
+ * excluded (commonly `.types.ts` files, but any module whose sole side effect is
+ * a `declare module` block): such a block is a TypeScript type-level augmentation
+ * that erases to an empty module, so importing or re-exporting it carries no
+ * runtime cost and cannot reintroduce side effects.
  *
  * Current historical violations are tracked in a baseline. New violations fail
  * the check, and resolved baseline entries must be removed with
