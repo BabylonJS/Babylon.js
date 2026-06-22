@@ -146,15 +146,31 @@ export class RectAreaLight extends AreaLight {
         }
 
         // The emission texture produced by AreaLightTextureTools is a runtime render-target texture
-        // with no source URL, so embed its pixels as a base64 PNG. On WebGPU (no synchronous texture
-        // read) a promise is stored instead and resolved by SceneSerializer.SerializeAsync.
+        // with no source URL, so embed its pixels as a base64 PNG.
         const internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return null;
         }
 
-        const base64String = this._scene.getEngine()._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(texture) : GenerateBase64StringFromTextureAsync(texture);
+        const invertY = internalTexture.invertY;
+        const hasAlpha = texture.hasAlpha;
 
+        // On engines with synchronous texture read (WebGL) the pixels are embedded immediately.
+        if (this._scene.getEngine()._features.supportSyncTextureRead) {
+            return RectAreaLight._BuildEmbeddedEmissionTexture(GenerateBase64StringFromTexture(texture), invertY, hasAlpha);
+        }
+
+        // On WebGPU/Native (no synchronous texture read) a promise for the entire texture object is
+        // returned so it resolves to null (and is skipped on parse) if the pixels cannot be read.
+        // SceneSerializer.SerializeAsync resolves the promise before producing the final JSON.
+        return RectAreaLight._BuildEmbeddedEmissionTextureAsync(GenerateBase64StringFromTextureAsync(texture), invertY, hasAlpha);
+    }
+
+    private static async _BuildEmbeddedEmissionTextureAsync(base64Promise: Promise<Nullable<string>>, invertY: boolean, hasAlpha: boolean): Promise<any> {
+        return RectAreaLight._BuildEmbeddedEmissionTexture(await base64Promise, invertY, hasAlpha);
+    }
+
+    private static _BuildEmbeddedEmissionTexture(base64String: Nullable<string>, invertY: boolean, hasAlpha: boolean): any {
         if (!base64String) {
             return null;
         }
@@ -162,8 +178,8 @@ export class RectAreaLight extends AreaLight {
         return {
             name: "areaLightEmissionTexture",
             base64String: base64String,
-            invertY: internalTexture.invertY,
-            hasAlpha: texture.hasAlpha,
+            invertY: invertY,
+            hasAlpha: hasAlpha,
         };
     }
 
@@ -171,12 +187,13 @@ export class RectAreaLight extends AreaLight {
      * Restores the emission texture from the serialized data after the base light has been parsed.
      * @param parsedLight The JSON representation of the light
      * @param scene The scene the light belongs to
+     * @param rootUrl The root url to use to load the emission texture when serialized by reference
      */
-    protected override _onParsed(parsedLight: any, scene: Scene): void {
-        super._onParsed(parsedLight, scene);
+    protected override _onParsed(parsedLight: any, scene: Scene, rootUrl: string = ""): void {
+        super._onParsed(parsedLight, scene, rootUrl);
 
         if (parsedLight.emissionTexture) {
-            this.emissionTexture = Texture.Parse(parsedLight.emissionTexture, scene, "");
+            this.emissionTexture = Texture.Parse(parsedLight.emissionTexture, scene, rootUrl);
         }
     }
 
