@@ -1344,13 +1344,17 @@ export class GLTFLoader implements IGLTFLoader {
             morphTargetManager.areUpdatesFrozen = false;
 
             if (this._parent.useMaxMorphTargetInfluencers) {
-                // Compile the morph shader once for all targets so it is not recompiled (causing a one-frame
-                // visual glitch) when an animated influence passes through zero and the active influencer count
-                // changes. optimizeInfluencers must be disabled too so the active influencer set - and thus the
-                // bound influences/attributes - always matches NUM_MORPH_INFLUENCERS, including in the
-                // vertex-attribute fallback path (which has no per-frame influencer-count guard).
-                morphTargetManager.optimizeInfluencers = false;
-                morphTargetManager.numMaxInfluencers = morphTargetManager.numTargets;
+                // Compile the morph shader once for all targets so it is not recompiled (causing a one-frame visual
+                // glitch) when an animated influence passes through zero and the active influencer count changes.
+                // optimizeInfluencers is disabled too so the active influencer set - and thus the bound
+                // influences/attributes - matches NUM_MORPH_INFLUENCERS.
+                // In the vertex-attribute fallback path the active set is hard-capped at
+                // MaxActiveMorphTargetsInVertexAttributeMode, so only pin when texture storage is used or the target
+                // count fits within that cap; otherwise NUM_MORPH_INFLUENCERS would exceed the bound attributes.
+                if (morphTargetManager.isUsingTextureForTargets || morphTargetManager.numTargets <= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode) {
+                    morphTargetManager.optimizeInfluencers = false;
+                    morphTargetManager.numMaxInfluencers = morphTargetManager.numTargets;
+                }
             }
         });
     }
