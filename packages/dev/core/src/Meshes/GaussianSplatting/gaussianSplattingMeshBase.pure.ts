@@ -1417,6 +1417,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                                 sortRequestId: cameraViewInfos.sortRequestId,
                                 rangeVersion: this._activeRangeVersion,
                                 useCountingSort: GaussianSplattingMeshBase.UseCountingSort,
+                                rightHanded: this._scene.useRightHandedSystem,
                                 logSortPerformance: GaussianSplattingMeshBase.LogSortPerformance,
                             },
                             [this._depthMix.buffer]
