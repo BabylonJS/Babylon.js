@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { type Engine, NullEngine } from "core/Engines";
-import { HtmlTexture, UploadHtmlElementToTexture } from "core/Materials";
+import { HtmlTexture, IsHtmlInCanvasUploadSupported, UploadHtmlElementToTexture } from "core/Materials";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Scene } from "core/scene";
 
@@ -80,13 +80,15 @@ describe("HtmlTexture", () => {
         texture.dispose();
     });
 
-    it("does not refresh on paint events when auto-update is disabled", () => {
+    it("renders once on the first paint then stops when auto-update is disabled", () => {
         const texture = new HtmlTexture("html", element, { scene, autoUpdate: false });
         const spy = vi.spyOn(texture, "update");
 
         texture.hostCanvas!.dispatchEvent(new Event("paint"));
+        texture.hostCanvas!.dispatchEvent(new Event("paint"));
 
-        expect(spy).not.toHaveBeenCalled();
+        // The first paint provides the initial snapshot (one-shot), the handler then detaches.
+        expect(spy).toHaveBeenCalledTimes(1);
         texture.dispose();
     });
 
@@ -154,5 +156,97 @@ describe("HtmlTexture", () => {
 
         expect(UploadHtmlElementToTexture(webgpuEngine, internal, element)).toBe(false);
         expect(internal.isReady).toBe(false);
+    });
+
+    it("IsHtmlInCanvasUploadSupported reports false when no native API is present", () => {
+        // NullEngine has neither a WebGL context nor a WebGPU device.
+        expect(IsHtmlInCanvasUploadSupported(engine)).toBe(false);
+    });
+
+    it("IsHtmlInCanvasUploadSupported detects the WebGL and WebGPU native APIs", () => {
+        const webglEngine = {
+            isWebGPU: false,
+            _gl: { texElementImage2D: () => {} },
+        } as unknown as Engine;
+        expect(IsHtmlInCanvasUploadSupported(webglEngine)).toBe(true);
+
+        const webgpuEngine = {
+            isWebGPU: true,
+            _device: { queue: { copyElementImageToTexture: () => {} } },
+        } as unknown as Engine;
+        expect(IsHtmlInCanvasUploadSupported(webgpuEngine)).toBe(true);
+
+        const unsupportedWebgpu = {
+            isWebGPU: true,
+            _device: { queue: {} },
+        } as unknown as Engine;
+        expect(IsHtmlInCanvasUploadSupported(unsupportedWebgpu)).toBe(false);
+    });
+
+    it("does not permanently disable the texture when the native upload throws before the first snapshot", () => {
+        const webglEngine = {
+            isWebGPU: false,
+            _gl: {
+                TEXTURE_2D: 0x0de1,
+                texElementImage2D: () => {
+                    throw new Error("no snapshot recorded yet");
+                },
+                generateMipmap: vi.fn(),
+            },
+            _getInternalFormat: () => 0x1908,
+            _bindTextureDirectly: vi.fn().mockReturnValue(false),
+            _unpackFlipY: vi.fn(),
+        } as unknown as Engine;
+
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+
+        expect(UploadHtmlElementToTexture(webglEngine, internal, element)).toBe(false);
+        // The transient failure must not disable the texture, otherwise later paint-driven updates short-circuit.
+        expect(internal._isDisabled).toBeFalsy();
+
+        // A subsequent successful upload must still work.
+        (webglEngine as any)._gl.texElementImage2D = vi.fn();
+        expect(UploadHtmlElementToTexture(webglEngine, internal, element)).toBe(true);
+        expect(internal.isReady).toBe(true);
+    });
+
+    it("renders through the SVG fallback when the native API is unavailable", () => {
+        class FakeImage {
+            public onload: (() => void) | null = null;
+            public onerror: (() => void) | null = null;
+            private _src = "";
+            public get src() {
+                return this._src;
+            }
+            public set src(value: string) {
+                this._src = value;
+                this.onload?.();
+            }
+        }
+        vi.stubGlobal("Image", FakeImage);
+        const updateSpy = vi.spyOn(engine, "updateDynamicTexture").mockImplementation((tex) => {
+            if (tex) {
+                tex.isReady = true;
+            }
+        });
+
+        // Construction triggers the initial update, which routes through the SVG fallback on NullEngine.
+        const texture = new HtmlTexture("html", element, { scene });
+
+        expect(updateSpy).toHaveBeenCalled();
+        const uploadedImage = updateSpy.mock.calls[0][1] as unknown as FakeImage;
+        expect(uploadedImage.src).toContain("data:image/svg+xml");
+
+        texture.dispose();
+        vi.unstubAllGlobals();
+    });
+
+    it("does not use the SVG fallback when it is disabled", () => {
+        const updateSpy = vi.spyOn(engine, "updateDynamicTexture");
+        const texture = new HtmlTexture("html", element, { scene, useSvgFallback: false });
+
+        // With the fallback disabled and no native API, no dynamic texture upload happens.
+        expect(updateSpy).not.toHaveBeenCalled();
+        texture.dispose();
     });
 });

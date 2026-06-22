@@ -23,7 +23,35 @@ function _WarnMissingApi(apiName: string): void {
         return;
     }
     _HasWarnedAboutMissingApi = true;
-    Logger.Warn(`HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element or install the three-html-render polyfill to use HtmlTexture.`);
+    Logger.Warn(
+        `HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element, the built-in SVG fallback, or the three-html-render polyfill to use HtmlTexture.`
+    );
+}
+
+let _HasWarnedAboutSvgFallback = false;
+
+function _WarnSvgFallback(): void {
+    if (_HasWarnedAboutSvgFallback) {
+        return;
+    }
+    _HasWarnedAboutSvgFallback = true;
+    Logger.Warn("HTML-in-Canvas: the SVG fallback could not rasterize the element. This usually means it references cross-origin or external resources, which taint the snapshot.");
+}
+
+/**
+ * Detects whether the engine can upload an HTML element through the native (or polyfilled) WICG
+ * HTML-in-Canvas API, without emitting any warning. Used to decide whether the SVG fallback is needed.
+ * @param engine defines the engine to test
+ * @returns true when the WICG upload API is available for this engine
+ */
+export function IsHtmlInCanvasUploadSupported(engine: AbstractEngine): boolean {
+    if (engine.isWebGPU) {
+        const queue = (engine as WebGPUEngine)._device?.queue;
+        return !!queue && typeof queue.copyElementImageToTexture === "function";
+    }
+
+    const gl = (engine as ThinEngine)._gl as Nullable<WebGL2RenderingContext>;
+    return !!gl && typeof gl.texElementImage2D === "function";
 }
 
 /**
@@ -94,8 +122,9 @@ function _UploadHtmlElementToWebGLTexture(
         texture.isReady = true;
         return true;
     } catch {
-        // Something unexpected happened during the upload; disable the texture to avoid repeated failures.
-        texture._isDisabled = true;
+        // The WICG API throws if called before the first paint snapshot has been recorded; this is a
+        // transient, expected condition (e.g. the very first update before any paint event), so we must
+        // not disable the texture - the next paint-driven update will succeed.
         return false;
     }
 }
@@ -145,8 +174,9 @@ function _UploadHtmlElementToWebGPUTexture(
         texture.isReady = true;
         return true;
     } catch {
-        // Something unexpected happened during the upload; disable the texture to avoid repeated failures.
-        texture._isDisabled = true;
+        // The WICG API throws if called before the first paint snapshot has been recorded; this is a
+        // transient, expected condition (e.g. the very first update before any paint event), so we must
+        // not disable the texture - the next paint-driven update will succeed.
         return false;
     }
 }
@@ -167,6 +197,12 @@ export interface IHtmlTextureOptions {
     format?: number;
     /** Defines whether the texture is automatically updated when the host canvas emits a paint event (default: true). */
     autoUpdate?: boolean;
+    /**
+     * Defines whether to fall back to an SVG `<foreignObject>` rasterization when the native WICG
+     * HTML-in-Canvas API is unavailable (default: true). The fallback works in any browser but only
+     * captures same-origin, inline-styled content as a static snapshot (see the documentation for caveats).
+     */
+    useSvgFallback?: boolean;
     /** Defines the engine instance to use the texture with. Not mandatory if a scene is provided. */
     engine?: Nullable<AbstractEngine>;
     /** Defines the scene the texture belongs to. Not mandatory if an engine is provided. */
@@ -201,16 +237,18 @@ export class HtmlTexture extends BaseTexture {
      */
     public onLoadObservable: Observable<HtmlTexture> = new Observable<HtmlTexture>();
 
-    private static readonly _DefaultOptions: Required<Pick<IHtmlTextureOptions, "generateMipMaps" | "samplingMode" | "format" | "autoUpdate">> = {
+    private static readonly _DefaultOptions: Required<Pick<IHtmlTextureOptions, "generateMipMaps" | "samplingMode" | "format" | "autoUpdate" | "useSvgFallback">> = {
         generateMipMaps: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
         format: Constants.TEXTUREFORMAT_RGBA,
         autoUpdate: true,
+        useSvgFallback: true,
     };
 
     private readonly _format: number;
     private readonly _generateMipMaps: boolean;
     private readonly _samplingMode: number;
+    private readonly _useSvgFallback: boolean;
     private readonly _textureMatrix: Matrix;
     private _paintHandler: Nullable<() => void> = null;
     private _width: number;
@@ -235,12 +273,14 @@ export class HtmlTexture extends BaseTexture {
             this._format = HtmlTexture._DefaultOptions.format;
             this._generateMipMaps = HtmlTexture._DefaultOptions.generateMipMaps;
             this._samplingMode = HtmlTexture._DefaultOptions.samplingMode;
+            this._useSvgFallback = HtmlTexture._DefaultOptions.useSvgFallback;
             return;
         }
 
         this._generateMipMaps = options.generateMipMaps ?? HtmlTexture._DefaultOptions.generateMipMaps;
         this._samplingMode = options.samplingMode ?? HtmlTexture._DefaultOptions.samplingMode;
         this._format = options.format ?? HtmlTexture._DefaultOptions.format;
+        this._useSvgFallback = options.useSvgFallback ?? HtmlTexture._DefaultOptions.useSvgFallback;
         const autoUpdate = options.autoUpdate ?? HtmlTexture._DefaultOptions.autoUpdate;
 
         this._width = options.width || element.offsetWidth || 256;
@@ -253,8 +293,17 @@ export class HtmlTexture extends BaseTexture {
 
         this.hostCanvas = this._createHostCanvas();
 
-        if (autoUpdate && this.hostCanvas) {
-            this._paintHandler = () => this.update();
+        // The native WICG API has no content until the first paint snapshot is recorded, so the initial
+        // upload must happen from a paint event. Always listen for at least the first paint; when
+        // auto-update is disabled, detach after that first refresh.
+        if (this.hostCanvas) {
+            this._paintHandler = () => {
+                this.update();
+                if (!autoUpdate && this._paintHandler && this.hostCanvas) {
+                    this.hostCanvas.removeEventListener("paint", this._paintHandler);
+                    this._paintHandler = null;
+                }
+            };
             this.hostCanvas.addEventListener("paint", this._paintHandler);
         }
 
@@ -293,7 +342,10 @@ export class HtmlTexture extends BaseTexture {
             this._texture.format = this._format;
         }
 
-        this.update();
+        // Trigger the initial render. On the native path this requests a paint so the first upload happens
+        // once a snapshot exists (calling the WICG API before the first snapshot throws); otherwise the
+        // SVG fallback (or a direct update) renders immediately.
+        this.requestUpdate();
     }
 
     /**
@@ -326,12 +378,76 @@ export class HtmlTexture extends BaseTexture {
             return;
         }
 
+        // When the native WICG upload API is unavailable, render through the SVG <foreignObject> fallback
+        // (unless it was explicitly disabled, in which case the upload helper emits a one-time warning).
+        if (this._useSvgFallback && !IsHtmlInCanvasUploadSupported(engine)) {
+            this._updateFromSvgFallback(engine, invertY);
+            return;
+        }
+
         const wasReady = this.isReady();
 
         UploadHtmlElementToTexture(engine, this._texture, this.element, invertY);
 
         if (!wasReady && this.isReady()) {
             this.onLoadObservable.notifyObservers(this);
+        }
+    }
+
+    /**
+     * Renders the element through an SVG `<foreignObject>` snapshot and uploads it to the texture. This
+     * fallback works in any browser but only captures same-origin, inline-styled content as a static image.
+     * @param engine defines the engine that owns the texture
+     * @param invertY defines whether the texture should be inverted on Y
+     */
+    private _updateFromSvgFallback(engine: AbstractEngine, invertY: boolean): void {
+        if (typeof document === "undefined" || typeof Image === "undefined" || typeof XMLSerializer === "undefined") {
+            return;
+        }
+
+        const svgUrl = this._buildSvgDataUrl();
+        if (!svgUrl) {
+            return;
+        }
+
+        const image = new Image();
+        image.onload = () => {
+            if (this._texture == null) {
+                return;
+            }
+            const wasReady = this.isReady();
+            try {
+                engine.updateDynamicTexture(this._texture, image, invertY, false, this._format);
+            } catch {
+                _WarnSvgFallback();
+                return;
+            }
+            if (!wasReady && this.isReady()) {
+                this.onLoadObservable.notifyObservers(this);
+            }
+        };
+        image.onerror = () => {
+            _WarnSvgFallback();
+        };
+        image.src = svgUrl;
+    }
+
+    /**
+     * Serializes the element into an SVG `<foreignObject>` data URL sized to the texture.
+     * @returns a data URL, or null if serialization failed
+     */
+    private _buildSvgDataUrl(): Nullable<string> {
+        try {
+            const clone = this.element.cloneNode(true) as HTMLElement;
+            clone.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+            const serialized = new XMLSerializer().serializeToString(clone);
+            const svg =
+                `<svg xmlns="http://www.w3.org/2000/svg" width="${this._width}" height="${this._height}">` +
+                `<foreignObject x="0" y="0" width="100%" height="100%">${serialized}</foreignObject>` +
+                `</svg>`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+        } catch {
+            return null;
         }
     }
 
