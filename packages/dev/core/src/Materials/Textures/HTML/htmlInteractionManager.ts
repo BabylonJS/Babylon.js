@@ -1,14 +1,11 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+import { type Scene } from "../../../scene.pure";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh.pure";
+import { type HtmlTexture } from "./htmlTexture";
+import { type Observer } from "../../../Misc/observable.pure";
+import { type Nullable } from "../../../types";
 
-import { type Scene } from "core/scene";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { type HtmlTexture } from "core/Materials/Textures/htmlTexture";
-import { type Observer } from "core/Misc/observable";
-import { type Nullable } from "core/types";
-
-import { Matrix, Vector3 } from "core/Maths/math.vector";
-import { Viewport } from "core/Maths/math.viewport";
+import { Matrix, Vector3 } from "../../../Maths/math.vector.pure";
+import { Viewport } from "../../../Maths/math.viewport";
 
 // Attribution: the overlay-and-hit-test technique used here is prior art from `three-html-render`
 // (Palash Bansal, MIT), three.js' `InteractionManager`, and Jake Archibald's `curved-markup` demo.

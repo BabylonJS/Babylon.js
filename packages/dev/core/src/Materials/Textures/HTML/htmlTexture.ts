@@ -1,20 +1,20 @@
 /** This module has no top-level side effects: the engine extension it depends on is registered lazily from the constructor */
 
-import { type Nullable } from "../../types";
-import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
-import { Constants } from "../../Engines/constants";
-import { Matrix } from "../../Maths/math.vector.pure";
-import { Observable } from "../../Misc/observable.pure";
-import { Logger } from "../../Misc/logger";
-import { IsWindowObjectExist } from "../../Misc/domManagement";
-import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../Engines/Extensions/engine.dynamicTexture.pure";
+import { type Nullable } from "../../../types";
+import { BaseTexture } from "../baseTexture.pure";
+import { Constants } from "../../../Engines/constants";
+import { Matrix } from "../../../Maths/math.vector.pure";
+import { Observable } from "../../../Misc/observable.pure";
+import { Logger } from "../../../Misc/logger";
+import { IsWindowObjectExist } from "../../../Misc/domManagement";
+import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../../Engines/Extensions/engine.dynamicTexture.pure";
 
-import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
-import { type ThinEngine } from "../../Engines/thinEngine.pure";
-import { type WebGPUEngine } from "../../Engines/webgpuEngine.pure";
-import { type WebGPUHardwareTexture } from "../../Engines/WebGPU/webgpuHardwareTexture";
-import { type InternalTexture } from "../../Materials/Textures/internalTexture";
-import { type Scene } from "../../scene.pure";
+import { type AbstractEngine } from "../../../Engines/abstractEngine.pure";
+import { type ThinEngine } from "../../../Engines/thinEngine.pure";
+import { type WebGPUEngine } from "../../../Engines/webgpuEngine.pure";
+import { type WebGPUHardwareTexture } from "../../../Engines/WebGPU/webgpuHardwareTexture";
+import { type InternalTexture } from "../internalTexture";
+import { type Scene } from "../../../scene.pure";
 
 let _HasWarnedAboutMissingApi = false;
 

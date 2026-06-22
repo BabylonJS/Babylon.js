@@ -1,12 +1,9 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-import { type Scene } from "core/scene";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { type HtmlTexture } from "core/Materials/Textures/htmlTexture";
-import { type Observer } from "core/Misc/observable";
-import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
-import { type Nullable } from "core/types";
+import { type Scene } from "../../../scene.pure";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh.pure";
+import { type HtmlTexture } from "./htmlTexture";
+import { type Observer } from "../../../Misc/observable.pure";
+import { type PointerInfo, PointerEventTypes } from "../../../Events/pointerEvents";
+import { type Nullable } from "../../../types";
 
 // Attribution: the raycast/UV event-routing technique used here is prior art from
 // `three-html-render` (Palash Bansal, MIT) and Jake Archibald's `curved-markup` demo.

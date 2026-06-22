@@ -1,9 +1,6 @@
 /**
  * @vitest-environment jsdom
  */
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 import { describe, it, expect, beforeAll } from "vitest";
 
 import { Observable } from "core/Misc/observable";
@@ -13,8 +10,8 @@ import { Scene } from "core/scene";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
-import { GetElementPixelFromUv, HtmlRaycastInteractionManager } from "../../../src/htmlInCanvas/htmlRaycastInteractionManager";
-import { ComputeOverlayCssTransform, HtmlInteractionManager } from "../../../src/htmlInCanvas/htmlInteractionManager";
+import { GetElementPixelFromUv, HtmlRaycastInteractionManager } from "core/Materials/Textures/HTML/htmlRaycastInteractionManager";
+import { ComputeOverlayCssTransform, HtmlInteractionManager } from "core/Materials/Textures/HTML/htmlInteractionManager";
 
 // jsdom historically does not implement PointerEvent; provide a minimal stand-in so the dispatch path runs.
 beforeAll(() => {
