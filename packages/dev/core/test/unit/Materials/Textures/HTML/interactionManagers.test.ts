@@ -110,6 +110,62 @@ describe("HtmlRaycastInteractionManager", () => {
 
         expect(called).toBe(false);
     });
+
+    it("routes events to the deepest child under the mapped point and synthesizes a click on pointerup", () => {
+        const { scene, element, mesh } = createMock();
+        const button = document.createElement("button");
+        // (0.5, 0.5) maps to client (200, 100); this child's box contains that point.
+        button.getBoundingClientRect = () => ({ left: 150, top: 80, width: 100, height: 40, right: 250, bottom: 120, x: 150, y: 80, toJSON() {} }) as DOMRect;
+        element.appendChild(button);
+
+        const manager = new HtmlRaycastInteractionManager(scene, { element } as any, mesh);
+
+        let clicks = 0;
+        button.addEventListener("click", () => clicks++);
+
+        // A down/up pair resolving to the same child produces exactly one click on that child.
+        scene.onPointerObservable.notifyObservers(makePointerInfo(0x01, mesh, new Vector2(0.5, 0.5)));
+        scene.onPointerObservable.notifyObservers(makePointerInfo(0x02, mesh, new Vector2(0.5, 0.5)));
+
+        expect(clicks).toBe(1);
+        manager.dispose();
+    });
+
+    it("does not synthesize a click when the release lands on a different target", () => {
+        const { scene, element, mesh } = createMock();
+        const button = document.createElement("button");
+        button.getBoundingClientRect = () => ({ left: 150, top: 80, width: 100, height: 40, right: 250, bottom: 120, x: 150, y: 80, toJSON() {} }) as DOMRect;
+        element.appendChild(button);
+
+        const manager = new HtmlRaycastInteractionManager(scene, { element } as any, mesh);
+
+        let clicks = 0;
+        button.addEventListener("click", () => clicks++);
+
+        // Press on the button, release where only the root element is hit (UV (0, 1) -> client (100, 50)).
+        scene.onPointerObservable.notifyObservers(makePointerInfo(0x01, mesh, new Vector2(0.5, 0.5)));
+        scene.onPointerObservable.notifyObservers(makePointerInfo(0x02, mesh, new Vector2(0, 1)));
+
+        expect(clicks).toBe(0);
+        manager.dispose();
+    });
+
+    it("contains synthetic events so they do not bubble back to the host's ancestors", () => {
+        const { scene, element, mesh } = createMock();
+        const parent = document.createElement("div");
+        parent.appendChild(element);
+
+        const manager = new HtmlRaycastInteractionManager(scene, { element } as any, mesh);
+
+        let bubbled = 0;
+        parent.addEventListener("pointerdown", () => bubbled++);
+
+        scene.onPointerObservable.notifyObservers(makePointerInfo(0x01, mesh, new Vector2(0.5, 0.5)));
+
+        // The engine's rendering canvas is an ancestor of the host element; synthetic events must not reach it.
+        expect(bubbled).toBe(0);
+        manager.dispose();
+    });
 });
 
 describe("HtmlInteractionManager", () => {

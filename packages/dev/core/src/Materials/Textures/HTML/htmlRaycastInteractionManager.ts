@@ -54,6 +54,8 @@ export class HtmlRaycastInteractionManager {
     private readonly _backFaceCulling: boolean;
     private readonly _invertY: boolean;
     private _observer: Nullable<Observer<PointerInfo>>;
+    private _downTarget: Nullable<EventTarget>;
+    private readonly _containHandler: (evt: Event) => void;
 
     /**
      * Creates a raycast interaction manager.
@@ -68,6 +70,16 @@ export class HtmlRaycastInteractionManager {
         this._element = options.targetElement ?? texture.element;
         this._backFaceCulling = options.backFaceCulling ?? true;
         this._invertY = options.invertY ?? true;
+
+        // The hosted element is a child of the engine's rendering canvas, where Babylon's own input
+        // listeners live. The synthetic events we dispatch bubble, so without this they would reach the
+        // canvas and be re-interpreted as real input - moving the camera and re-entering this manager in a
+        // feedback loop. Stopping propagation at the host element keeps them inside the HTML subtree (so
+        // event delegation still works) while never leaking back to the engine.
+        this._containHandler = (evt: Event) => evt.stopPropagation();
+        for (const type of _ContainedEventTypes) {
+            this._element.addEventListener(type, this._containHandler);
+        }
 
         this._observer = scene.onPointerObservable.add((pointerInfo) => this._onPointer(pointerInfo));
     }
@@ -119,9 +131,11 @@ export class HtmlRaycastInteractionManager {
         }
 
         const sourceEvent = pointerInfo.event as Partial<PointerEvent>;
-        // Prefer the deepest element under the mapped point when supported; otherwise dispatch to the root element.
-        const picked = typeof document !== "undefined" && typeof document.elementFromPoint === "function" ? document.elementFromPoint(clientX, clientY) : null;
-        const target = picked ?? this._element;
+        // document.elementFromPoint is unreliable here: the element is hosted inside the engine's rendering
+        // canvas (whose painted WebGL/WebGPU content covers the DOM children) and is marked `inert`, so the
+        // browser's own hit testing skips it. Resolve the deepest descendant under the mapped point manually
+        // from the laid-out subtree instead; synthetic dispatch still triggers listeners on inert elements.
+        const target = this._resolveTarget(clientX, clientY);
 
         const init: PointerEventInit = {
             bubbles: true,
@@ -140,12 +154,51 @@ export class HtmlRaycastInteractionManager {
         if (mouseName) {
             target.dispatchEvent(new MouseEvent(mouseName, init));
         }
+
+        // The browser synthesizes a "click" from a native down/up pair, but synthetic mouse events do not,
+        // so we emit it ourselves: on pointerdown remember the target, then on pointerup dispatch a click
+        // when the release lands on the same element (matching native click semantics closely enough).
+        if (domName === "pointerdown") {
+            this._downTarget = target;
+        } else if (domName === "pointerup") {
+            if (this._downTarget === target) {
+                target.dispatchEvent(new MouseEvent("click", init));
+            }
+            this._downTarget = null;
+        }
+    }
+
+    /**
+     * Resolves the deepest descendant of the hosted element whose layout box contains the given client point.
+     * @param clientX horizontal client coordinate
+     * @param clientY vertical client coordinate
+     * @returns the deepest matching element, or the hosted element itself when no descendant matches
+     */
+    private _resolveTarget(clientX: number, clientY: number): HTMLElement {
+        let target: HTMLElement = this._element;
+        for (let descended = true; descended; ) {
+            descended = false;
+            const children = target.children;
+            for (let i = children.length - 1; i >= 0; i--) {
+                const child = children[i] as HTMLElement;
+                const rect = child.getBoundingClientRect();
+                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                    target = child;
+                    descended = true;
+                    break;
+                }
+            }
+        }
+        return target;
     }
 
     /**
      * Detaches the manager and stops forwarding pointer events.
      */
     public dispose(): void {
+        for (const type of _ContainedEventTypes) {
+            this._element.removeEventListener(type, this._containHandler);
+        }
         if (this._observer) {
             this._scene.onPointerObservable.remove(this._observer);
             this._observer = null;
@@ -178,3 +231,7 @@ function _PointerToMouseEvent(domName: string): Nullable<string> {
             return null;
     }
 }
+
+// Synthetic event types we dispatch into the hosted element; they are contained at the host so they do
+// not bubble back into the engine's rendering canvas (see the constructor for the rationale).
+const _ContainedEventTypes = ["pointerdown", "pointerup", "pointermove", "mousedown", "mouseup", "mousemove", "click"] as const;

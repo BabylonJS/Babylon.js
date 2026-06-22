@@ -38,6 +38,19 @@ function _WarnSvgFallback(): void {
     Logger.Warn("HTML-in-Canvas: the SVG fallback could not rasterize the element. This usually means it references cross-origin or external resources, which taint the snapshot.");
 }
 
+let _HasWarnedAboutUploadFailure = false;
+
+function _WarnUploadFailure(error: unknown): void {
+    if (_HasWarnedAboutUploadFailure) {
+        return;
+    }
+    _HasWarnedAboutUploadFailure = true;
+    const message = error instanceof Error ? error.message : String(error);
+    Logger.Warn(
+        `HTML-in-Canvas: the native upload failed (${message}). The element must be a direct child of the engine's rendering canvas, which must carry the \`layoutsubtree\` attribute, and the upload must run during a paint event.`
+    );
+}
+
 /**
  * Detects whether the engine can upload an HTML element through the native (or polyfilled) WICG
  * HTML-in-Canvas API, without emitting any warning. Used to decide whether the SVG fallback is needed.
@@ -103,12 +116,28 @@ function _UploadHtmlElementToWebGLTexture(
         return false;
     }
 
-    const internalFormat = engine._getInternalFormat(texture.format);
+    // texElementImage2D requires a *sized* internal format (RGBA8, SRGB8_ALPHA8, RGBA16F or RGBA32F);
+    // the unsized gl.RGBA returned by _getInternalFormat is rejected.
+    const internalFormat = engine._getRGBABufferInternalSizedFormat(texture.type, texture.format, texture._useSRGBBuffer);
     const wasPreviouslyBound = engine._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
     engine._unpackFlipY(invertY);
 
     try {
-        gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
+        try {
+            // Current WICG signature: texElementImage2D(target, internalformat, element, config?).
+            gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
+        } catch (newSignatureError) {
+            // Some Chromium builds still ship the earlier signature, mirroring texImage2D:
+            // texElementImage2D(target, level, internalformat, format, type, element).
+            try {
+                const format = engine._getInternalFormat(texture.format);
+                const type = engine._getWebGLTextureType(texture.type);
+                (gl.texElementImage2D as (...args: any[]) => void)(gl.TEXTURE_2D, 0, internalFormat, format, type, element);
+            } catch {
+                // Re-throw the first (spec-compliant) error so the diagnostic reflects the expected signature.
+                throw newSignatureError;
+            }
+        }
 
         if (texture.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D);
@@ -121,10 +150,11 @@ function _UploadHtmlElementToWebGLTexture(
         texture.invertY = invertY;
         texture.isReady = true;
         return true;
-    } catch {
+    } catch (error) {
         // The WICG API throws if called before the first paint snapshot has been recorded; this is a
         // transient, expected condition (e.g. the very first update before any paint event), so we must
         // not disable the texture - the next paint-driven update will succeed.
+        _WarnUploadFailure(error);
         return false;
     }
 }
@@ -150,19 +180,30 @@ function _UploadHtmlElementToWebGPUTexture(
     }
 
     try {
-        const source: GPUCopyElementImageSource = { source: element };
-        if (config) {
-            source.sx = config.sx;
-            source.sy = config.sy;
-            source.swidth = config.swidth;
-            source.sheight = config.sheight;
-        }
+        try {
+            // Current WICG signature: copyElementImageToTexture({ source, ... }, { destination, width, height }).
+            const source: GPUCopyElementImageSource = { source: element };
+            if (config) {
+                source.sx = config.sx;
+                source.sy = config.sy;
+                source.swidth = config.swidth;
+                source.sheight = config.sheight;
+            }
 
-        queue.copyElementImageToTexture(source, {
-            destination: { texture: gpuTexture },
-            width: config?.width ?? texture.width,
-            height: config?.height ?? texture.height,
-        });
+            queue.copyElementImageToTexture(source, {
+                destination: { texture: gpuTexture },
+                width: config?.width ?? texture.width,
+                height: config?.height ?? texture.height,
+            });
+        } catch (newSignatureError) {
+            // Some Chromium builds still ship the earlier signature: copyElementImageToTexture(element, { texture }).
+            try {
+                (queue.copyElementImageToTexture as (...args: any[]) => void)(element, { texture: gpuTexture });
+            } catch {
+                // Re-throw the first (spec-compliant) error so the diagnostic reflects the expected signature.
+                throw newSignatureError;
+            }
+        }
 
         if (texture.generateMipMaps) {
             engine._generateMipmaps(texture);
@@ -173,10 +214,11 @@ function _UploadHtmlElementToWebGPUTexture(
         texture.invertY = invertY;
         texture.isReady = true;
         return true;
-    } catch {
+    } catch (error) {
         // The WICG API throws if called before the first paint snapshot has been recorded; this is a
         // transient, expected condition (e.g. the very first update before any paint event), so we must
         // not disable the texture - the next paint-driven update will succeed.
+        _WarnUploadFailure(error);
         return false;
     }
 }
@@ -213,10 +255,13 @@ export interface IHtmlTextureOptions {
  * A texture whose content is rendered from a live HTML element using the WICG HTML-in-Canvas API
  * (https://github.com/WICG/html-in-canvas).
  *
- * The element is hosted inside a hidden `<canvas layoutsubtree>` so the browser can lay it out and
- * snapshot it. Content is uploaded through `WebGLRenderingContext.texElementImage2D`, which is
+ * The element is hosted as a child of the engine's rendering canvas (which is marked `layoutsubtree`) so
+ * the browser can lay it out and snapshot it; the WICG API requires the source element to be a direct
+ * child of the canvas whose context performs the upload. Content is uploaded through
+ * `WebGLRenderingContext.texElementImage2D` (WebGL) or `GPUQueue.copyElementImageToTexture` (WebGPU),
  * available either natively (behind chrome://flags/#canvas-draw-element) or via the three-html-render
- * polyfill (https://github.com/repalash/three-html-render).
+ * polyfill (https://github.com/repalash/three-html-render). When neither is present, a built-in SVG
+ * `<foreignObject>` fallback is used instead (see `useSvgFallback`).
  *
  * As with {@link HtmlElementTexture}, updates are not automatic unless `autoUpdate` is enabled; in
  * that case the texture refreshes whenever the host canvas reports a paint change.
@@ -228,7 +273,8 @@ export class HtmlTexture extends BaseTexture {
     public readonly element: HTMLElement;
 
     /**
-     * The hidden host canvas that owns the element and drives layout/paint events.
+     * The canvas that hosts the element and drives layout/paint events. This is the engine's rendering
+     * canvas when one is available (as required by the WICG API), or a hidden helper canvas otherwise.
      */
     public readonly hostCanvas: Nullable<HTMLCanvasElement>;
 
@@ -251,6 +297,7 @@ export class HtmlTexture extends BaseTexture {
     private readonly _useSvgFallback: boolean;
     private readonly _textureMatrix: Matrix;
     private _paintHandler: Nullable<() => void> = null;
+    private _ownsHostCanvas: boolean = false;
     private _width: number;
     private _height: number;
 
@@ -315,6 +362,26 @@ export class HtmlTexture extends BaseTexture {
             return null;
         }
 
+        // Per the WICG spec, the source element must be a *direct child* of the same canvas whose WebGL/WebGPU
+        // context performs the upload, and that canvas must opt its subtree into layout via `layoutsubtree`.
+        // The engine already owns our texture through its rendering canvas, so the element has to live inside
+        // that canvas: it is the only one whose context can snapshot the element via texElementImage2D /
+        // copyElementImageToTexture. A separate off-screen canvas would lay the element out but could never be
+        // captured into the engine's texture (this is why nothing rendered on the native path before).
+        const renderingCanvas = this._getEngine()?.getRenderingCanvas() ?? null;
+        if (renderingCanvas) {
+            renderingCanvas.layoutSubtree = true;
+            // `layoutsubtree` opts children into hit testing; mark ours inert so it never steals pointer events
+            // from the canvas (e.g. camera controls). Synthetic event dispatch still reaches inert elements, so
+            // HtmlRaycastInteractionManager keeps working.
+            this.element.setAttribute("inert", "");
+            renderingCanvas.appendChild(this.element);
+            this._ownsHostCanvas = false;
+            return renderingCanvas;
+        }
+
+        // No rendering canvas (e.g. NullEngine / offscreen): create a hidden host so the element can still be
+        // laid out. Only the SVG fallback can render in this case - the native upload paths need a real canvas.
         const hostCanvas = document.createElement("canvas");
         hostCanvas.width = this._width;
         hostCanvas.height = this._height;
@@ -329,6 +396,7 @@ export class HtmlTexture extends BaseTexture {
 
         hostCanvas.appendChild(this.element);
         document.body.appendChild(hostCanvas);
+        this._ownsHostCanvas = true;
 
         return hostCanvas;
     }
@@ -468,7 +536,12 @@ export class HtmlTexture extends BaseTexture {
                 this.hostCanvas.removeEventListener("paint", this._paintHandler);
                 this._paintHandler = null;
             }
-            this.hostCanvas.remove();
+            if (this._ownsHostCanvas) {
+                this.hostCanvas.remove();
+            } else {
+                // We borrowed the engine's rendering canvas; only detach our element, never the canvas itself.
+                this.element.remove();
+            }
         }
 
         this.onLoadObservable.clear();
