@@ -189,6 +189,24 @@ function makeEntry(cfg) {
 
 async function main() {
     await init;
+
+    // Fail-soft: the bundles are produced from the compiled `@babylonjs/*` ES6 libs
+    // (`npm run build:es6:libs`). When those libs are absent — e.g. a CI job that only
+    // builds UMD — skip cleanly with a single clear message instead of emitting a wall
+    // of per-bundle resolution errors. `prepare-snapshot` then proceeds without ESM
+    // bundles rather than failing the build; the publish pipeline (which builds es6
+    // first) still ships them.
+    let coreBuilt = false;
+    try {
+        coreBuilt = existsSync(fileURLToPath(import.meta.resolve("@babylonjs/core")));
+    } catch {
+        coreBuilt = false;
+    }
+    if (!coreBuilt) {
+        console.warn("ESM bundles skipped: built @babylonjs/core not found. Run `npm run build:es6:libs` first.");
+        return;
+    }
+
     await mkdir(outDir, { recursive: true });
     for (const cfg of bundles) {
         const outfile = resolve(outDir, cfg.file);

@@ -96,6 +96,7 @@ jobs:
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "package.json" && echo "##vso[task.setvariable variable=PackageJsonChanged]true"
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q ".build/config.json" && echo "##vso[task.setvariable variable=ConfigJsonChanged]true"
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "smartFilter" && echo "##vso[task.setvariable variable=SmartFiltersChanged]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -qE "packages/tools/playground|prepareSnapshot" && echo "##vso[task.setvariable variable=PlaygroundChanged]true"
 
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD)
             displayName: "Check git changes"
@@ -196,6 +197,17 @@ jobs:
             inputs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/smart-filters-editor"
+
+          # Build the ES6 libs only when the playground changed, so `prepare-snapshot`'s
+          # `build:esm` step can produce the self-hosted ESM bundles for this PR snapshot
+          # (testable via `?snapshot=<branch>`). On unrelated PRs this is skipped and
+          # `build:esm` no-ops; the publish pipeline always builds es6 so releases ship them.
+          - task: Npm@1
+            displayName: "npm build es6 libs (for ESM bundles)"
+            condition: and(succeeded(), eq(variables['PLAYGROUNDCHANGED'], 'true'))
+            inputs:
+                command: custom
+                customCommand: "run build:es6:libs"
 
           - task: Npm@1
             displayName: "Prepare snapshot"
