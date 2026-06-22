@@ -415,7 +415,10 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
 
-        this._volumeNode.gain.value = options.volume ?? 1;
+        // Only override the volume when explicitly provided so resuming a paused instance keeps its current volume.
+        if (options.volume !== undefined) {
+            this._volumeNode.gain.value = options.volume;
+        }
 
         this._initSourceNode();
 
@@ -449,9 +452,9 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     /** @internal */
-    public resume(): void {
+    public resume(options: Partial<IStaticSoundPlayOptions> = {}): void {
         if (this._state === SoundState.Paused) {
-            this.play();
+            this.play(options);
         }
     }
 
