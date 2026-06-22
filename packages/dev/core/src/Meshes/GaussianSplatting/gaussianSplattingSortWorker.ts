@@ -160,7 +160,11 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                     if (compound) {
                         depthCoeffs = partMatrices.map((m) => {
                             const co = computeDepthCoeffs(m);
-                            return [co[0] * depthSign, co[1] * depthSign, co[2] * depthSign, co[3] * depthSign];
+                            co[0] *= depthSign;
+                            co[1] *= depthSign;
+                            co[2] *= depthSign;
+                            co[3] *= depthSign;
+                            return co;
                         });
                         partLen = partIndices.length;
                     } else {
