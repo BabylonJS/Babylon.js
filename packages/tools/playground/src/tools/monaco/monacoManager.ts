@@ -51,6 +51,7 @@ export class MonacoManager {
     private _hostElement!: HTMLDivElement;
     private _lastRunConfig: IRunConfig | null = null;
     private _lastRunConfigHash: string | null = null;
+    private _coreModuleUrl?: string;
 
     private _hydrating = false;
     private _initialized = false;
@@ -396,11 +397,41 @@ export class MonacoManager {
     }
 
     /**
+     * Build (once per session) an ES module that re-exports the Babylon instance already
+     * loaded on the page, so a snippet's `import * as BABYLON from "@babylonjs/core"` resolves
+     * to that single instance rather than to a third-party CDN copy. Works whether Babylon was
+     * loaded as self-hosted ES modules or as the legacy UMD global.
+     * @returns A blob URL for the generated namespace module.
+     */
+    private _getCoreModuleUrl(): string {
+        if (this._coreModuleUrl) {
+            return this._coreModuleUrl;
+        }
+        const babylon = (globalThis as any).BABYLON;
+        const names = babylon ? Object.keys(babylon).filter((key) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) : [];
+        const code = `const B = globalThis.BABYLON;\nexport default B;\n${names.length ? `export const { ${names.join(", ")} } = B;\n` : ""}`;
+        this._coreModuleUrl = URL.createObjectURL(new Blob([code], { type: "text/javascript" }));
+        return this._coreModuleUrl;
+    }
+
+    /**
      * Get or create a V2 runner with caching based on configuration
      * @returns Promise that resolves to a V2Runner instance
      */
     public async getRunnableAsync() {
         const manifest = this.manifest;
+
+        // Phase 2: resolve the bare `@babylonjs/core` specifier to the Babylon instance
+        // that is already loaded on the page (ESM bundle or legacy UMD global), instead of
+        // letting the runner fall back to a third-party CDN. This keeps a single Babylon
+        // instance and avoids any external download. User-provided imports take precedence,
+        // and this transient mapping is never persisted into saved snippets.
+        const runnerImports: Record<string, string> = { ...(manifest.imports || {}) };
+        const coreSpecifier = "@babylonjs/core";
+        if (!runnerImports[coreSpecifier]) {
+            runnerImports[coreSpecifier] = this._getCoreModuleUrl();
+        }
+        manifest.imports = runnerImports;
 
         const options: V2RunnerOptions = {
             monaco,
@@ -668,6 +699,28 @@ declare var engine: BABYLON.Engine;
 declare var canvas: HTMLCanvasElement;
         `;
 
+        // Phase 3: expose the global Babylon namespaces as ES modules so that module-style
+        // imports (Option B, the new default) get full IntelliSense and no "cannot find module"
+        // errors. The npm package specifiers are mapped onto the already-loaded ambient
+        // namespaces (BABYLON / BABYLON.GUI / ADDONS), and matching wildcard patterns cover
+        // deep imports such as `@babylonjs/core/Materials/standardMaterial`.
+        libContent += `
+declare module "@babylonjs/core" { export = BABYLON; }
+declare module "@babylonjs/core/*" { export = BABYLON; }
+declare module "@babylonjs/gui" { export = BABYLON.GUI; }
+declare module "@babylonjs/gui/*" { export = BABYLON.GUI; }
+declare module "@babylonjs/loaders" { export = BABYLON; }
+declare module "@babylonjs/loaders/*" { export = BABYLON; }
+declare module "@babylonjs/materials" { export = BABYLON; }
+declare module "@babylonjs/materials/*" { export = BABYLON; }
+declare module "@babylonjs/serializers" { export = BABYLON; }
+declare module "@babylonjs/serializers/*" { export = BABYLON; }
+declare module "@babylonjs/post-processes" { export = BABYLON; }
+declare module "@babylonjs/post-processes/*" { export = BABYLON; }
+declare module "@babylonjs/procedural-textures" { export = BABYLON; }
+declare module "@babylonjs/procedural-textures/*" { export = BABYLON; }
+        `;
+
         this._tsPipeline.setup(libContent);
 
         // Register completion provider
@@ -695,7 +748,14 @@ declare var canvas: HTMLCanvasElement;
     // ---------------- Defaults ----------------
     private _setDefaultContent() {
         const entry = this.globalState.language === "JS" ? "index.js" : "index.ts";
-        const defaultJs = `export const createScene = function () {
+        // Phase 2: new Playgrounds default to ES module imports (Option B). The bare
+        // `@babylonjs/core` specifier is resolved by the runner to the already-loaded
+        // Babylon (see `_getCoreModuleUrl`), so no UMD and no third-party CDN are used.
+        // The line is fully editable: delete it for the legacy bare-global style, or
+        // replace it with named deep imports (e.g. `import { Scene } from "@babylonjs/core/scene"`).
+        const defaultJs = `import * as BABYLON from "@babylonjs/core";
+
+export const createScene = function () {
     // This creates a basic Babylon Scene object (non-mesh)
     var scene = new BABYLON.Scene(engine);
 
@@ -725,7 +785,9 @@ declare var canvas: HTMLCanvasElement;
 
     return scene;
 };`;
-        const defaultTs = `class Playground {
+        const defaultTs = `import * as BABYLON from "@babylonjs/core";
+
+class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
         // This creates a basic Babylon Scene object (non-mesh)
         var scene = new BABYLON.Scene(engine);
