@@ -1,7 +1,38 @@
 import path from "path";
+import { readFile } from "fs";
+import { fileURLToPath } from "url";
 import { defineConfig, normalizePath, type Plugin, type UserConfig } from "vite";
 // @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
+
+// Serve the Havok physics WASM (used by the flowgraph showcase) from node_modules
+// during dev. The Havok ESM loader requests "/HavokPhysics.wasm" at runtime.
+const HavokWasmFilePath = fileURLToPath(new URL("../../../node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm", import.meta.url));
+
+function serveHavokWasmPlugin(): Plugin {
+    return {
+        name: "serve-havok-wasm",
+        configureServer(server) {
+            server.middlewares.use((request, response, next) => {
+                const requestPath = request.url?.split("?", 1)[0];
+                if (!requestPath?.endsWith("/HavokPhysics.wasm")) {
+                    next();
+                    return;
+                }
+                readFile(HavokWasmFilePath, (error, wasm) => {
+                    if (error) {
+                        next(error);
+                        return;
+                    }
+                    response.statusCode = 200;
+                    response.setHeader("Content-Type", "application/wasm");
+                    response.setHeader("Cache-Control", "no-cache");
+                    response.end(wasm);
+                });
+            });
+        },
+    };
+}
 
 const OptionalPeerDependencies = ["draco3dgltf", "ammo.js", "cannon", "oimo", "recast", "havok", "basis_transcoder"];
 const OptionalPeerDependencyPattern = OptionalPeerDependencies.map((p) => p.replace(".", "\\.")).join("|");
@@ -179,6 +210,6 @@ export default defineConfig((_env) => {
 
     return {
         ...base,
-        plugins: [...(base.plugins ?? []), lottieClassicWorkerPlugin(aliases), stubOptionalPeerDepsPlugin()],
+        plugins: [...(base.plugins ?? []), lottieClassicWorkerPlugin(aliases), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin()],
     };
 });
