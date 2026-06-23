@@ -11,6 +11,8 @@
 // Register GLTF/GLB loader (2.0 sub-loader assigns GLTFFileLoader._CreateGLTF2Loader).
 // The sandbox loads .glb/.gltf files directly via SceneLoader.
 import "loaders/glTF/2.0/glTFLoader";
+// Register the FBX loader so .fbx files can be loaded via SceneLoader (drag-and-drop and the file picker).
+import "loaders/FBX/fbxFileLoader";
 import { Sandbox } from "./sandbox";
 
 const HostElement = document.getElementById("host-element") as HTMLElement;
