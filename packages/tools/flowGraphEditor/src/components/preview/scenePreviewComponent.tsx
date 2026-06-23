@@ -748,6 +748,14 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             // snippet in the editor so it becomes editable. Saving afterwards
             // publishes a new version of that same flow graph snippet.
             await this._tryLoadReferencedFlowGraphAsync(pgResult);
+
+            // The playground's own code typically builds and starts a
+            // FlowGraphCoordinator on the preview scene, so the graph would be
+            // running the moment the scene loads. Stop those coordinators so the
+            // preview waits for the user to press Start in the editor instead of
+            // running immediately. The editor's editable copy lives on its own
+            // scene (globalState.scene), not this preview scene, so it is unaffected.
+            await this._stopSceneFlowGraphCoordinatorsAsync(scene);
         } catch (err: any) {
             this.setState({
                 isLoading: false,
@@ -791,6 +799,27 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this.props.globalState.onLogRequiredObservable.notifyObservers(
                 new LogEntry(`Could not load the flow graph snippet ${flowGraphSnippetId} referenced by the playground: ${err?.message ?? err}`, true)
             );
+        }
+    }
+
+    /**
+     * Dispose every {@link FlowGraphCoordinator} the playground created on the preview
+     * scene. Playgrounds usually call `coordinator.start()` (directly or via
+     * `ParseFlowGraphCoordinatorFromSnippetAsync` + `start`), which would leave the graph
+     * running as soon as the scene loads. Disposing the coordinators leaves the scene
+     * static until the user presses Start in the editor, which runs the editor's own
+     * (separate) copy of the graph against this preview scene.
+     * @param scene - the preview scene whose coordinators should be stopped
+     */
+    private async _stopSceneFlowGraphCoordinatorsAsync(scene: Scene): Promise<void> {
+        const { FlowGraphCoordinator } = await import("core/FlowGraph/flowGraphCoordinator");
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(scene);
+        if (!coordinators || coordinators.length === 0) {
+            return;
+        }
+        // dispose() mutates the registry array in place, so iterate over a copy.
+        for (const coordinator of [...coordinators]) {
+            coordinator.dispose();
         }
     }
 
