@@ -180,17 +180,20 @@
             environmentRadiance = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
         #endif
 
+        var envRadiance: vec3f = environmentRadiance.rgb;
+
         #ifdef RGBDREFLECTION
-            environmentRadiance.rgb = fromRGBD(environmentRadiance);
+            envRadiance = fromRGBD(environmentRadiance);
         #endif
 
         #ifdef GAMMAREFLECTION
-            environmentRadiance.rgb = toLinearSpaceVec3(environmentRadiance.rgb);
+            envRadiance = toLinearSpaceVec3(environmentRadiance.rgb);
         #endif
 
         // _____________________________ Levels _____________________________________
-        environmentRadiance = vec4f(environmentRadiance.rgb * reflectionInfos.x, environmentRadiance.a);
-        return environmentRadiance.rgb;
+        envRadiance *= reflectionInfos.x;
+        
+        return envRadiance;
     }
 
 #if defined(ANISOTROPIC)
