@@ -1,6 +1,7 @@
 {
     "version": 1,
     "files": {
-        "FBX/fbxFileLoader.ts": ["declare-module", "top-level-call"]
+        "FBX/fbxFileLoader.ts": ["top-level-call"],
+        "FBX/fbxFileLoader.types.ts": ["declare-module"]
     }
 }

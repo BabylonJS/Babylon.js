@@ -1,6 +1,7 @@
 {
     "version": 1,
     "files": {
-        "OBJ/objFileLoader.ts": ["declare-module", "top-level-call"]
+        "OBJ/objFileLoader.ts": ["top-level-call"],
+        "OBJ/objFileLoader.types.ts": ["declare-module"]
     }
 }
