@@ -5,10 +5,11 @@ import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsM
 import { type FlyCamera } from "../../Cameras/flyCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { type Scene } from "../../scene";
-import { Quaternion } from "../../Maths/math.vector";
+import { Quaternion } from "../../Maths/math.vector.pure";
 import { Axis } from "../../Maths/math.axis";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type InputConditions } from "../inputMapper";
 /**
  * Listen to mouse events to control the camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
@@ -65,6 +66,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     private _rollObserver: Nullable<Observer<Scene>>;
     private _previousPosition: Nullable<{ x: number; y: number }> = null;
     private _noPreventDefault: boolean | undefined;
+
+    /** Reused conditions object for `resolveInteraction` to avoid per-move allocations. */
+    private readonly _pointerConditions: InputConditions = {};
 
     /**
      * Listen to mouse events to control the camera.
@@ -239,9 +243,20 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     private _rotateCamera(offsetX: number, offsetY: number): void {
         const camera = this.camera;
 
+        // Consult the configurable input map: only rotate when the active button resolves to the
+        // "rotate" interaction, letting consumers remap or disable pointer-driven rotation. The
+        // resolved entry's sensitivity overrides the legacy `angularSensibility` (used as fallback).
+        this._pointerConditions.button = this.activeButton;
+        const entry = camera.movement.input.resolveInteraction("pointer", this._pointerConditions);
+        if (!entry || entry.interaction !== "rotate") {
+            return;
+        }
+
         const handednessMultiplier = camera._calculateHandednessMultiplier();
-        const x = (offsetX * handednessMultiplier) / this.angularSensibility;
-        const y = (offsetY * handednessMultiplier) / this.angularSensibility;
+        const sensitivityX = entry.sensitivityX ?? entry.sensitivity ?? 1 / this.angularSensibility;
+        const sensitivityY = entry.sensitivityY ?? entry.sensitivity ?? 1 / this.angularSensibility;
+        const x = offsetX * handednessMultiplier * sensitivityX;
+        const y = offsetY * handednessMultiplier * sensitivityY;
 
         // Initialize to current rotation.
         const currentRotation = Quaternion.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, camera.rotation.z);

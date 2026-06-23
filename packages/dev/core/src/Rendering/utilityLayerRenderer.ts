@@ -1,14 +1,14 @@
-import { type IDisposable, Scene } from "../scene";
+import { type IDisposable, Scene } from "../scene.pure";
 import { type Nullable } from "../types";
 import { type Observer, Observable } from "../Misc/observable";
 import { type PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
-import { HemisphericLight } from "../Lights/hemisphericLight";
-import { Vector3 } from "../Maths/math.vector";
+import { HemisphericLight } from "../Lights/hemisphericLight.pure";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
-import { Color3 } from "../Maths/math.color";
+import { Color3 } from "../Maths/math.color.pure";
 import { type IPointerEvent } from "../Events/deviceInputEvents";
 
 /**

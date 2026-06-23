@@ -1,17 +1,18 @@
 import { type Geometry } from "../Meshes/geometry";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 import { Constants } from "../Engines/constants";
-import { MultiMaterial } from "../Materials/multiMaterial";
+import { MultiMaterial } from "../Materials/multiMaterial.pure";
 import { type Material } from "../Materials/material";
 import { type Scene } from "../scene";
 import { type Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators.serialization";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type CubeTexture } from "../Materials/Textures/cubeTexture";
 import { type Node } from "../node";
 import { type TransformNode } from "../Meshes/transformNode";
 import { type Camera } from "../Cameras/camera";
 import { Logger } from "core/Misc/logger";
+import { _IsSideEffectImplemented } from "./devTools";
 
 let SerializedGeometries: Geometry[] = [];
 const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -173,7 +174,7 @@ export class SceneSerializer {
         }
 
         //Physics
-        if (scene.isPhysicsEnabled && scene.isPhysicsEnabled()) {
+        if (_IsSideEffectImplemented(scene.isPhysicsEnabled) && scene.isPhysicsEnabled()) {
             const physicEngine = scene.getPhysicsEngine();
 
             if (physicEngine) {

@@ -837,11 +837,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this.nodes.filter((n) => n.content.data === data)[0];
     }
 
-    reset() {
+    /**
+     * Clears the canvas visuals.
+     * @param disposeContent - Whether to dispose the underlying graph data while clearing visuals.
+     */
+    reset(disposeContent = true) {
         this._nodeDataContentList = [];
 
         for (const node of this._nodes) {
-            node.dispose();
+            node.dispose(disposeContent);
         }
 
         const frames = this._frames.splice(0);

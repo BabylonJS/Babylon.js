@@ -7,7 +7,7 @@ import { _GetStereoAudioSubNode } from "../../abstractAudio/subNodes/stereoAudio
 import { type IVolumeAudioOptions, _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
 import { type ISpatialAudioOptions, _HasSpatialAudioOptions } from "../../abstractAudio/subProperties/abstractSpatialAudio";
 import { type IStereoAudioOptions, _HasStereoAudioOptions } from "../../abstractAudio/subProperties/abstractStereoAudio";
-import { type IWebAudioOutNode, type IWebAudioSubNode } from "../webAudioNode";
+import { type IWebAudioInNode, type IWebAudioOutNode } from "../webAudioNode";
 import { type _SpatialWebAudioSubNode, _CreateSpatialAudioSubNodeAsync } from "./spatialWebAudioSubNode";
 import { type _StereoWebAudioSubNode, _CreateStereoAudioSubNodeAsync } from "./stereoWebAudioSubNode";
 import { type _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
@@ -105,14 +105,14 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
 
         if (spatialNode && stereoNode) {
             this._rootNode = new GainNode(this._owner.engine._audioContext);
-            this._rootNode.connect((spatialNode as _SpatialWebAudioSubNode)._outNode);
-            this._rootNode.connect((stereoNode as _StereoWebAudioSubNode)._outNode);
+            this._rootNode.connect((spatialNode as _SpatialWebAudioSubNode)._inNode);
+            this._rootNode.connect((stereoNode as _StereoWebAudioSubNode)._inNode);
         } else {
             this._rootNode?.disconnect();
             this._rootNode = null;
         }
 
-        let inSubNode: Nullable<IWebAudioSubNode> = null;
+        let inSubNode: Nullable<IWebAudioInNode> = null;
 
         let inNode: Nullable<AudioNode>;
 
@@ -127,7 +127,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
                 inSubNode = volumeNode as _VolumeWebAudioSubNode;
             }
 
-            inNode = inSubNode?.node ?? null;
+            inNode = inSubNode?._inNode ?? null;
         }
 
         if (this._inputNode !== inNode) {

@@ -51,6 +51,9 @@ var textureSampler: texture_2d<f32>;
 	uniform texelSize: vec2f;
 
 	uniform projection: mat4x4f;
+#ifdef NORMAL_WORLDSPACE
+	uniform normalWorldToView: mat3x3f;
+#endif
 
 	@fragment
 	fn main(input: FragmentInputs) -> FragmentOutputs {
@@ -58,7 +61,10 @@ var textureSampler: texture_2d<f32>;
 		var depth: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV, 0.0).r;
 		var depthSign: f32 = sign(depth);
 		depth = depth * depthSign;
-		var normal: vec3f = textureSampleLevel(normalSampler, normalSamplerSampler, input.vUV, 0.0).rgb;
+		var normal: vec3f = normalize(textureSampleLevel(normalSampler, normalSamplerSampler, input.vUV, 0.0).rgb);
+#ifdef NORMAL_WORLDSPACE
+		normal = normalize(uniforms.normalWorldToView * normal);
+#endif
 		var occlusion: f32 = 0.0;
 		var correctedRadius: f32 = min(uniforms.radius, uniforms.minZAspect * depth / uniforms.near);
 

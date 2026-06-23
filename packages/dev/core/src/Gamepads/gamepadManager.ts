@@ -5,8 +5,9 @@ import { type Scene } from "../scene";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
 import { DualShockPad } from "./dualShockGamepad";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { AbstractEngine } from "core/Engines/abstractEngine";
+import { RegisterGamepadSceneComponent } from "./gamepadSceneComponent.pure";
 /**
  * Manager for handling gamepads
  */
@@ -37,6 +38,8 @@ export class GamepadManager {
      * @param _scene BabylonJS scene
      */
     constructor(private _scene?: Scene) {
+        RegisterGamepadSceneComponent(GamepadManager);
+
         if (!IsWindowObjectExist()) {
             this._gamepadEventSupported = false;
         } else {

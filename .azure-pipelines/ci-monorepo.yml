@@ -312,11 +312,53 @@ jobs:
             displayName: "Make sure es6 packages are ready"
             continueOnError: true
 
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "$(BuildName)/testResults/es6visplaywright"
+
           - task: Npm@1
             displayName: "Test ES6 packages"
             inputs:
                 command: custom
                 customCommand: "run test:es6-packages -w @tools/tests"
+
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "ES6 visualization tests (BrowserStack)"
+            env:
+                CI: "true"
+                BSTACK_TEST_TYPE: "es6vis"
+                BSTACK_BUILD_NAME: "ES6 Visualization Tests"
+                BROWSERSTACK_LOCAL: "true"
+                BROWSERSTACK_LOCAL_IDENTIFIER: "es6vis-$(Build.BuildId)-$(System.JobAttempt)"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/es6visplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete ES6 visualization test results"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(BuildName)/testResults/es6visplaywright"
+                displayName: "Upload ES6 visualization test results"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]ES6 visualization test report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/es6visplaywright/index.html"
+            displayName: "Log ES6 visualization test report URL"
+            condition: succeededOrFailed()
+
+          - task: PublishTestResults@2
+            displayName: "Publish ES6 visualization test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
 
           - task: Npm@1
             displayName: "npm build modules size"
@@ -374,8 +416,8 @@ jobs:
             env:
                 NODE_OPTIONS: "--max-old-space-size=8192"
 
-          - script: npx --yes dpdm -T --no-tree ./packages/dev/core/src/**/*
-            displayName: "Circular dependencies"
+          - script: npm run check:treeshaking
+            displayName: "Tree-shaking verification"
 
     # ============================================================================
     # TYPEDOC CHECK
@@ -735,7 +777,7 @@ jobs:
       dependsOn:
           - Build
           - FormatLint
-      timeoutInMinutes: 15
+      timeoutInMinutes: 35
       pool:
           vmImage: windows-latest
       steps:
@@ -798,6 +840,28 @@ jobs:
                 Playground.exe app:///Scripts/validation_native.js
             displayName: "Run visualization tests"
             retryCountOnTaskFailure: 3
+
+          - pwsh: |
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Results" | Out-Null
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Errors" | Out-Null
+            displayName: "Ensure native visualization output dirs"
+            condition: not(canceled())
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Rendered Pictures"
+            condition: not(canceled())
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Results"
+                artifact: "native-rendered-pictures"
+                publishLocation: "pipeline"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Error Pictures"
+            condition: failed()
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Errors"
+                artifact: "native-error-pictures"
+                publishLocation: "pipeline"
 
     # ============================================================================
     # PERFORMANCE TESTS

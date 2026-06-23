@@ -1,9 +1,9 @@
 import { type SmartArray } from "../../Misc/smartArray";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene";
-import { Matrix, Vector3, Vector2, TmpVectors } from "../../Maths/math.vector";
-import { Color4 } from "../../Maths/math.color";
-import { VertexBuffer } from "../../Buffers/buffer";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../../Maths/math.vector.pure";
+import { Color4 } from "../../Maths/math.color.pure";
+import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { type SubMesh } from "../../Meshes/subMesh";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type Mesh } from "../../Meshes/mesh";
@@ -12,14 +12,15 @@ import { type IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
 import { type MaterialDefines } from "../../Materials/materialDefines";
 import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
-import { Texture } from "../../Materials/Textures/texture";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Texture } from "../../Materials/Textures/texture.pure";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 
-import { PostProcess } from "../../PostProcesses/postProcess";
-import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
+import { PostProcess } from "../../PostProcesses/postProcess.pure";
+import { BlurPostProcess } from "../../PostProcesses/blurPostProcess.pure";
 import { Constants } from "../../Engines/constants";
 import { Observable } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
+import { RegisterShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent.pure";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
@@ -874,6 +875,13 @@ export class ShadowGenerator implements IShadowGenerator {
     };
 
     /**
+     * @internal
+     * Used by the scene component parser to parse cascaded shadow generators without a direct import
+     * (avoids circular dependency between shadowGeneratorSceneComponent and cascadedShadowGenerator).
+     */
+    public static _CascadedShadowGeneratorParser: ((parsedShadowGenerator: any, scene: Scene) => ShadowGenerator) | null = null;
+
+    /**
      * Gets or sets the size of the texture what stores the shadows
      */
     public get mapSize(): number {
@@ -993,6 +1001,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._sceneUBOs = [this._scene.createSceneUniformBuffer(`Scene for Shadow Generator (light "${this._light.name}")`, { forceMono: true })];
         }
 
+        RegisterShadowGeneratorSceneComponent(ShadowGenerator);
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
         // Texture type fallback from float to int if not supported.

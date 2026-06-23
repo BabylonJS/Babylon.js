@@ -48,6 +48,9 @@ varying vec2 vUV;
 	uniform vec2 texelSize;
 
 	uniform mat4 projection;
+#ifdef NORMAL_WORLDSPACE
+	uniform mat3 normalWorldToView;
+#endif
 
 	void main()
 	{
@@ -55,7 +58,10 @@ varying vec2 vUV;
 		float depth = textureLod(depthSampler, vUV, 0.0).r;
 		float depthSign = sign(depth);
 		depth = depth * depthSign;
-		vec3 normal = textureLod(normalSampler, vUV, 0.0).rgb;
+		vec3 normal = normalize(textureLod(normalSampler, vUV, 0.0).rgb);
+#ifdef NORMAL_WORLDSPACE
+		normal = normalize(normalWorldToView * normal);
+#endif
 		float occlusion = 0.0;
 		float correctedRadius = min(radius, minZAspect * depth / near);
 

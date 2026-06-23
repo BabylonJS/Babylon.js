@@ -14,6 +14,7 @@ import {
     FlowGraphSwitchBlock,
     FlowGraphThrottleBlock,
     FlowGraphSetDelayBlock,
+    FlowGraphCancelDelayBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
@@ -202,6 +203,37 @@ describe("Flow Graph Execution Nodes", () => {
         scene.render();
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom");
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom2");
+    });
+
+    it("Cancel Delay Block cancels the first scheduled delay (index 0)", async () => {
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        flowGraph.addEventBlock(sceneReady);
+
+        const timeToWait = 1000;
+
+        // The first delay scheduled in a context is assigned lastDelayIndex 0.
+        const delay = new FlowGraphSetDelayBlock();
+        sceneReady.done.connectTo(delay.in);
+        delay.duration.setValue(timeToWait / 1000, flowGraphContext);
+
+        const onDone = new FlowGraphConsoleLogBlock();
+        onDone.message.setValue("done", flowGraphContext);
+        delay.done.connectTo(onDone.in);
+
+        // Cancel that delay by feeding its lastDelayIndex (0) into CancelDelay.
+        const cancel = new FlowGraphCancelDelayBlock();
+        delay.lastDelayIndex.connectTo(cancel.delayIndex);
+
+        flowGraph.start();
+
+        // The delay is now scheduled with index 0; cancel it before it elapses.
+        cancel._execute(flowGraphContext, cancel.in);
+
+        // Wait past the original duration — the cancelled delay's done must not fire.
+        await new Promise((resolve) => setTimeout(resolve, timeToWait + 30));
+        scene.render();
+
+        expect(Logger.Log).not.toHaveBeenCalledWith("done");
     });
 
     it("Flip Flop Block", () => {

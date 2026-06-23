@@ -1,4 +1,4 @@
-import { Vector3, Matrix } from "../Maths/math.vector";
+import { Vector3, Matrix } from "../Maths/math.vector.pure";
 import { type TransformNode } from "../Meshes/transformNode";
 
 /**

@@ -1,6 +1,6 @@
 import { type Nullable } from "../types";
 import { type Scene } from "../scene";
-import { Matrix } from "../Maths/math.vector";
+import { Matrix } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
@@ -91,6 +91,12 @@ export class PushMaterial extends Material {
         return subMesh._drawWrapper._forceRebindOnNextCall || scene.isCachedMaterialInvalid(this, effect, visibility);
     }
 
+    /**
+     * Disposes the push material resources.
+     * @param forceDisposeEffect defines whether to dispose the effect
+     * @param forceDisposeTextures defines whether to dispose the textures
+     * @param notBoundToMesh defines whether the material is not bound to a mesh
+     */
     public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean) {
         this._activeEffect = undefined;
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);

@@ -1,20 +1,20 @@
-import { TransformBlock } from "./Blocks/transformBlock";
-import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
-import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
-import { InputBlock } from "./Blocks/Input/inputBlock";
-import { GaussianSplattingBlock } from "./Blocks/GaussianSplatting/gaussianSplattingBlock";
-import { GaussianBlock } from "./Blocks/GaussianSplatting/gaussianBlock";
-import { SplatReaderBlock } from "./Blocks/GaussianSplatting/splatReaderBlock";
+import { TransformBlock } from "./Blocks/transformBlock.pure";
+import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock.pure";
+import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock.pure";
+import { InputBlock } from "./Blocks/Input/inputBlock.pure";
+import { GaussianSplattingBlock } from "./Blocks/GaussianSplatting/gaussianSplattingBlock.pure";
+import { GaussianBlock } from "./Blocks/GaussianSplatting/gaussianBlock.pure";
+import { SplatReaderBlock } from "./Blocks/GaussianSplatting/splatReaderBlock.pure";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
 import { type NodeMaterial } from "./nodeMaterial";
-import { MultiplyBlock } from "./Blocks/multiplyBlock";
-import { Texture } from "../Textures/texture";
-import { Tools } from "core/Misc/tools";
-import { SmartFilterTextureBlock } from "./Blocks/Dual/smartFilterTextureBlock";
-import { Color4 } from "core/Maths/math.color";
-import { AddBlock } from "./Blocks/addBlock";
-import { SmartFilterFragmentOutputBlock } from "./Blocks/Fragment/smartFilterFragmentOutputBlock";
+import { MultiplyBlock } from "./Blocks/multiplyBlock.pure";
+import { Texture } from "../Textures/texture.pure";
+import { Tools } from "core/Misc/tools.pure";
+import { SmartFilterTextureBlock } from "./Blocks/Dual/smartFilterTextureBlock.pure";
+import { Color4 } from "core/Maths/math.color.pure";
+import { AddBlock } from "./Blocks/addBlock.pure";
+import { SmartFilterFragmentOutputBlock } from "./Blocks/Fragment/smartFilterFragmentOutputBlock.pure";
 
 /**
  * Clear the material and set it to a default state for gaussian splatting

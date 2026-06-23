@@ -2,7 +2,7 @@ import { type FlowGraph } from "./flowGraph";
 import { type FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
-import { FlowGraphTypes } from "./flowGraphRichTypes";
+import { FlowGraphTypes } from "./flowGraphRichTypes.pure";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { type FlowGraphEventType } from "./flowGraphEventType";
 

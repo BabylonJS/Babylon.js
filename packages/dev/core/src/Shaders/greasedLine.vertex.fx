@@ -2,7 +2,9 @@ precision highp float;
 #include<instancesDeclaration>
 
 attribute float grl_widths;
+#ifdef GREASED_LINE_USE_OFFSETS
 attribute vec3 grl_offsets;
+#endif
 attribute float grl_colorPointers;
 attribute vec3 position;
 uniform mat4 viewProjection;
@@ -44,7 +46,12 @@ void main() {
         grlCounters = grl_nextAndCounters.w;
         float grlWidth = grlBaseWidth * grl_widths;
 
-        vec3 positionUpdated = position + grl_offsets;
+        #ifdef GREASED_LINE_USE_OFFSETS
+            vec3 grlPositionOffset = grl_offsets;
+        #else
+            vec3 grlPositionOffset = vec3(0.);
+        #endif
+        vec3 positionUpdated = position + grlPositionOffset;
         vec3 worldDir = normalize(grlNext - grlPrevious);
         vec3 nearPosition = positionUpdated + (worldDir * 0.01);
         vec4 grlFinalPosition = grlMatrix * vec4( positionUpdated , 1.0);
@@ -69,7 +76,12 @@ void main() {
         gl_Position = grlFinalPosition;
     #else
         grlCounters = grl_counters;
-        vec4 grlFinalPosition = grlMatrix * vec4( (position + grl_offsets) + grl_slopes * grl_widths , 1.0 ) ;
+        #ifdef GREASED_LINE_USE_OFFSETS
+            vec3 grlPositionOffset = grl_offsets;
+        #else
+            vec3 grlPositionOffset = vec3(0.);
+        #endif
+        vec4 grlFinalPosition = grlMatrix * vec4( (position + grlPositionOffset) + grl_slopes * grl_widths , 1.0 ) ;
         gl_Position = grlFinalPosition;
     #endif
 }

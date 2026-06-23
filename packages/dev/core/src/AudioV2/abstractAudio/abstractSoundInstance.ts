@@ -50,7 +50,7 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
 
     public abstract play(options: Partial<IAbstractSoundPlayOptions>): void;
     public abstract pause(): void;
-    public abstract resume(): void;
+    public abstract resume(options?: Partial<IAbstractSoundPlayOptions>): void;
     public abstract stop(): void;
 
     protected _setState(value: SoundState) {

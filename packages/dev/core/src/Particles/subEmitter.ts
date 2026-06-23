@@ -1,4 +1,4 @@
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { _WarnImport } from "../Misc/devTools";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";

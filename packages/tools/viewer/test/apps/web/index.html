@@ -176,6 +176,13 @@
                     <option value="high">High (environment shadow)</option>
                 </select>
             </div>
+            <div>
+                <span>Material</span>
+                <select id="materialSelect" oninput="onMaterial()">
+                    <option value="pbr">PBR</option>
+                    <option value="openpbr">OpenPBR</option>
+                </select>
+            </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
@@ -193,6 +200,7 @@
                 // viewerElement.selectedAnimation = 1;
             }, 3000);
 
+            let currentSource = viewerElement.source;
             let viewerDetails = viewerElement.viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
@@ -231,12 +239,24 @@
                 //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
+            function getLoadModelOptions() {
+                return { useOpenPBR: document.querySelector("#materialSelect").value === "openpbr" };
+            }
+
             globalThis.onDrop = async (event) => {
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    await viewerDetails.viewer.loadModel(file);
+                    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+                    if (extension === ".hdr" || extension === ".env") {
+                        // blob: URLs have no extension, so pass it explicitly
+                        const url = URL.createObjectURL(file);
+                        await viewerDetails.viewer.loadEnvironment(url, { lighting: true, skybox: true, extension });
+                    } else {
+                        currentSource = file;
+                        await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
+                    }
                 }
             };
 
@@ -291,7 +311,8 @@
                 });
 
                 if (file) {
-                    await viewerDetails.viewer.loadModel(file);
+                    currentSource = file;
+                    await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
                 }
             };
 
@@ -393,6 +414,9 @@
                 const value = document.querySelector("#shadowQualityInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
                 viewer.updateShadows({ quality: value });
+            };
+            globalThis.onMaterial = () => {
+                viewerDetails?.viewer.loadModel(currentSource, getLoadModelOptions());
             };
         </script>
     </body>

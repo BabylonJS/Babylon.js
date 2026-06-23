@@ -1,13 +1,13 @@
 import { Bone } from "./bone";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { type Scene } from "../scene";
 import { type Nullable } from "../types";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { type Animatable } from "../Animations/animatable.core";
 import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
-import { Animation } from "../Animations/animation";
+import { type Animation, AnimationMakeAnimationAdditive, AnimationParse } from "../Animations/animation.pure";
 import { AnimationRange } from "../Animations/animationRange";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
@@ -481,7 +481,7 @@ export class Skeleton implements IAnimatable {
             }
 
             for (let animIndex = 0; animIndex < animations.length; animIndex++) {
-                Animation.MakeAnimationAdditive(animations[animIndex], referenceFrame, range);
+                AnimationMakeAnimationAdditive(animations[animIndex], referenceFrame, range);
             }
         }
 
@@ -913,7 +913,7 @@ export class Skeleton implements IAnimatable {
             }
 
             if (parsedBone.animation) {
-                bone.animations.push(Animation.Parse(parsedBone.animation));
+                bone.animations.push(AnimationParse(parsedBone.animation));
             }
 
             if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {

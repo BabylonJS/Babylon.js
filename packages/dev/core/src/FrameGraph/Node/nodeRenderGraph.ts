@@ -15,22 +15,22 @@ import {
     type Camera,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
-import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
+import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock.pure";
 import { FrameGraph } from "../frameGraph";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
-import { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
-import { Tools } from "../../Misc/tools";
-import { Engine } from "../../Engines/engine";
+import { NodeRenderGraphInputBlock } from "./Blocks/inputBlock.pure";
+import { Tools } from "../../Misc/tools.pure";
+import { Engine } from "../../Engines/engine.pure";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
-import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
+import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock.pure";
 import { NodeRenderGraphBaseObjectRendererBlock } from "./Blocks/Rendering/baseObjectRendererBlock";
-import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
+import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock.pure";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
-import { NodeRenderGraphCullObjectsBlock } from "./Blocks/cullObjectsBlock";
+import { NodeRenderGraphCullObjectsBlock } from "./Blocks/cullObjectsBlock.pure";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 declare let NODERENDERGRAPHEDITOR: any;

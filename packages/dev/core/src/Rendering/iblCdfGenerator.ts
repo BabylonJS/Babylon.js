@@ -2,21 +2,22 @@ import { Constants } from "../Engines/constants";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 import { type Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type TextureSize } from "../Materials/Textures/textureCreationOptions";
-import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { PostProcess, type PostProcessOptions } from "../PostProcesses/postProcess";
-import { Vector3, Vector4 } from "../Maths/math.vector";
+import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture.pure";
+import { PostProcess, type PostProcessOptions } from "../PostProcesses/postProcess.pure";
+import { Vector3, Vector4 } from "../Maths/math.vector.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { _WarnImport } from "../Misc/devTools";
 import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "../Misc/logger";
 import { _RetryWithInterval } from "../Misc/timingTools";
+import { RegisterIblCdfGeneratorSceneComponent } from "./iblCdfGeneratorSceneComponent.pure";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -217,6 +218,7 @@ export class IblCdfGenerator {
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
         this._dummyTexture = new RawTexture(blackPixels, 1, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         if (this._scene) {
+            RegisterIblCdfGeneratorSceneComponent(IblCdfGenerator);
             IblCdfGenerator._SceneComponentInitialization(this._scene);
         }
     }

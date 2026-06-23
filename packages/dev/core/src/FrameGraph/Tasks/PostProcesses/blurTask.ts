@@ -1,7 +1,7 @@
 import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Task which applies a blur post process.
@@ -23,6 +23,13 @@ export class FrameGraphBlurTask extends FrameGraphPostProcessTask {
         return "FrameGraphBlurTask";
     }
 
+    /**
+     * Records the blur task into the frame graph.
+     * @param skipCreationOfDisabledPasses defines whether disabled passes should be skipped
+     * @param additionalExecute defines an optional callback executed by the pass
+     * @param additionalBindings defines an optional callback used to bind extra resources
+     * @returns the recorded render pass
+     */
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

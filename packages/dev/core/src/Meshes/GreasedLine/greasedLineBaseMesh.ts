@@ -1,8 +1,8 @@
 import { type Scene } from "../../scene";
 import { type IGreasedLineMaterial } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
-import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
-import { Mesh } from "../mesh";
-import { Buffer } from "../../Buffers/buffer";
+import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial.pure";
+import { Mesh } from "../mesh.pure";
+import { Buffer } from "../../Buffers/buffer.pure";
 import { type Vector3 } from "../../Maths/math.vector";
 import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";

@@ -383,7 +383,12 @@ export class NodeLink {
         requestAnimationFrame(animate);
     }
 
-    public dispose(notify = true) {
+    /**
+     * Disposes this visual link.
+     * @param notify - Whether to notify observers that the link was disposed.
+     * @param disconnectPorts - Whether to disconnect the underlying port data.
+     */
+    public dispose(notify = true, disconnectPorts = true) {
         this._graphCanvas.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
 
         if (this._path.parentElement) {
@@ -405,7 +410,9 @@ export class NodeLink {
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
 
-            this._portA.portData.disconnectFrom(this._portB!.portData);
+            if (disconnectPorts) {
+                this._portA.portData.disconnectFrom(this._portB!.portData);
+            }
 
             RefreshNode(this._nodeB, undefined, undefined, this._graphCanvas);
         }

@@ -2,9 +2,10 @@
 import { type Scene, type IDisposable } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh.pure";
 import { type Nullable } from "../types";
 import { type Observer, Observable } from "./observable";
+import { _IsSideEffectImplemented } from "./devTools";
 
 /**
  * Defines the root class used to create scene optimization to use with SceneOptimizer
@@ -448,7 +449,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
 
         // Call the octree system optimization if it is defined.
         const sceneAsAny = scene as any;
-        if (sceneAsAny.createOrUpdateSelectionOctree) {
+        if (_IsSideEffectImplemented(sceneAsAny.createOrUpdateSelectionOctree)) {
             if (updateSelectionTree != undefined) {
                 if (updateSelectionTree) {
                     sceneAsAny.createOrUpdateSelectionOctree();

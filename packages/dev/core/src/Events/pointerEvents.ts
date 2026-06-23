@@ -1,5 +1,5 @@
 import { type Nullable } from "../types";
-import { Vector2 } from "../Maths/math.vector";
+import { Vector2 } from "../Maths/math.vector.pure";
 import { type PickingInfo } from "../Collisions/pickingInfo";
 import { type IMouseEvent, type IPointerEvent } from "./deviceInputEvents";
 import { type InputManager } from "../Inputs/scene.inputManager";

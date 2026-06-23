@@ -1,6 +1,6 @@
 import { type IVector2Like } from "core/Maths/math.like";
 
-import { type LottieTextCompatibilityMode } from "../animationConfiguration";
+import { type LottieCompatibilityMode } from "../animationConfiguration";
 import { type RawFont, type RawTextData, type RawTextDocument, type RawTextJustify } from "./rawTypes";
 
 /**
@@ -236,7 +236,7 @@ export function ResolveLottieText(textData: RawTextData, rawFonts: Map<string, R
 export function MeasureLottieText(
     resolvedText: ResolvedLottieText,
     measureText: (text: string) => TextMetricsLike,
-    compatibilityMode: LottieTextCompatibilityMode = "spec"
+    compatibilityMode: LottieCompatibilityMode = "spec"
 ): LottieTextLayout {
     return compatibilityMode === "babylon8" ? MeasureBabylon8LottieText(resolvedText, measureText) : MeasureSpecLottieText(resolvedText, measureText);
 }

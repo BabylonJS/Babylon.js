@@ -1,4 +1,4 @@
-import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector.pure";
 import { _SpatialAudioSubNode } from "../../abstractAudio/subNodes/spatialAudioSubNode";
 import { _SpatialAudioDefaults } from "../../abstractAudio/subProperties/abstractSpatialAudio";
 import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
@@ -24,6 +24,9 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 
 /** @internal */
 export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
+    private _attenuation: _WebAudioParameterComponent;
+    private readonly _attenuationNode: GainNode;
+    private readonly _inputNode: GainNode;
     private _lastOrientation: Vector3 = Vector3.Zero();
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
@@ -31,6 +34,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     private _orientationX: _WebAudioParameterComponent;
     private _orientationY: _WebAudioParameterComponent;
     private _orientationZ: _WebAudioParameterComponent;
+    private _panningEnabled = _SpatialAudioDefaults.panningEnabled;
     private _positionX: _WebAudioParameterComponent;
     private _positionY: _WebAudioParameterComponent;
     private _positionZ: _WebAudioParameterComponent;
@@ -54,6 +58,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
+        this._inputNode = new GainNode(engine._audioContext);
+        this._attenuationNode = new GainNode(engine._audioContext);
+        this._attenuation = new _WebAudioParameterComponent(engine, this._attenuationNode.gain);
         this.node = new PannerNode(engine._audioContext);
 
         this._orientationX = new _WebAudioParameterComponent(engine, this.node.orientationX);
@@ -63,12 +70,15 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         this._positionX = new _WebAudioParameterComponent(engine, this.node.positionX);
         this._positionY = new _WebAudioParameterComponent(engine, this.node.positionY);
         this._positionZ = new _WebAudioParameterComponent(engine, this.node.positionZ);
+
+        this._connectActiveInput();
     }
 
     /** @internal */
     public override dispose(): void {
         super.dispose();
 
+        this._attenuation.dispose();
         this._orientationX.dispose();
         this._orientationY.dispose();
         this._orientationZ.dispose();
@@ -76,6 +86,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         this._positionY.dispose();
         this._positionZ.dispose();
 
+        this._inputNode.disconnect();
+        this._attenuationNode.disconnect();
         this.node.disconnect();
     }
 
@@ -118,6 +130,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         const maxDistance = this.node.maxDistance;
         this.node.maxDistance = maxDistance + 0.001;
         this.node.maxDistance = maxDistance;
+
+        this._updateAttenuation();
     }
 
     /** @internal */
@@ -127,6 +141,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set minDistance(value: number) {
         this.node.refDistance = value;
+        this._updateAttenuation();
     }
 
     /** @internal */
@@ -136,6 +151,22 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set maxDistance(value: number) {
         this.node.maxDistance = value;
+        this._updateAttenuation();
+    }
+
+    /** @internal */
+    public get panningEnabled(): boolean {
+        return this._panningEnabled;
+    }
+
+    public set panningEnabled(value: boolean) {
+        if (this._panningEnabled === value) {
+            return;
+        }
+
+        this._panningEnabled = value;
+        this._connectActiveInput();
+        this._updateAttenuation();
     }
 
     /** @internal */
@@ -154,21 +185,23 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     public set rolloffFactor(value: number) {
         this.node.rolloffFactor = value;
+        this._updateAttenuation();
     }
 
     /** @internal */
     public get _inNode(): AudioNode {
-        return this.node;
+        return this._inputNode;
     }
 
     /** @internal */
     public get _outNode(): AudioNode {
-        return this.node;
+        return this._panningEnabled ? this.node : this._attenuationNode;
     }
 
     /** @internal */
     public _updatePosition(): void {
         if (this._lastPosition.equalsWithEpsilon(this.position)) {
+            this._updateAttenuation();
             return;
         }
 
@@ -177,6 +210,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         this._positionZ.targetValue = this.position.z;
 
         this._lastPosition.copyFrom(this.position);
+        this._updateAttenuation();
     }
 
     /** @internal */
@@ -214,6 +248,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         // If the wrapped node is not available now, it will be connected later by the subgraph.
         if (node._inNode) {
             this.node.connect(node._inNode);
+            this._attenuationNode.connect(node._inNode);
         }
 
         return true;
@@ -228,6 +263,7 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
         if (node._inNode) {
             this.node.disconnect(node._inNode);
+            this._attenuationNode.disconnect(node._inNode);
         }
 
         return true;
@@ -236,5 +272,60 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     /** @internal */
     public getClassName(): string {
         return "_SpatialWebAudioSubNode";
+    }
+
+    private _connectActiveInput(): void {
+        this._inputNode.disconnect();
+
+        if (this._panningEnabled) {
+            this._inputNode.connect(this.node);
+        } else {
+            this._inputNode.connect(this._attenuationNode);
+        }
+    }
+
+    private _updateAttenuation(): void {
+        if (this._panningEnabled) {
+            this._attenuation.targetValue = 1;
+            return;
+        }
+
+        const listenerPosition = this.engine.listener.position;
+        const deltaX = this.position.x - listenerPosition.x;
+        const deltaY = this.position.y - listenerPosition.y;
+        const deltaZ = this.position.z - listenerPosition.z;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+        const minDistance = Math.max(this.minDistance, 0);
+        let attenuation = 1;
+
+        switch (this.distanceModel) {
+            case "linear":
+                {
+                    const maxDistance = Math.max(this.maxDistance, minDistance);
+                    const clampedDistance = Math.min(Math.max(distance, minDistance), maxDistance);
+
+                    attenuation =
+                        maxDistance === minDistance ? (distance <= minDistance ? 1 : 0) : 1 - (this.rolloffFactor * (clampedDistance - minDistance)) / (maxDistance - minDistance);
+                }
+                break;
+            case "inverse":
+                if (minDistance === 0) {
+                    attenuation = 0;
+                    break;
+                }
+
+                attenuation = minDistance / (minDistance + this.rolloffFactor * (Math.max(distance, minDistance) - minDistance));
+                break;
+            case "exponential":
+                if (minDistance === 0) {
+                    attenuation = 0;
+                    break;
+                }
+
+                attenuation = Math.pow(Math.max(distance, minDistance) / minDistance, -this.rolloffFactor);
+                break;
+        }
+
+        this._attenuation.targetValue = Math.min(Math.max(attenuation, 0), 1);
     }
 }

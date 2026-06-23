@@ -4,6 +4,7 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type GLTFLoader } from "./glTFLoader";
 import {
     MultiplyTexturesAsync,
     LerpTexturesAsync,
@@ -97,7 +98,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The alpha cutoff threshold (ignored for OpenPBR)
      */
     public set alphaCutOff(value: number) {
-        // OpenPBR doesn't have a direct equivalent, but could be implemented if needed
+        this._material.alphaCutOff = value;
     }
 
     /**
@@ -105,7 +106,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns Default value of 0.5 (OpenPBR doesn't support this directly)
      */
     public get alphaCutOff(): number {
-        return 0.5; // Default value
+        return this._material.alphaCutOff;
     }
 
     /**
@@ -119,10 +120,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Gets whether alpha is used from the base color texture.
-     * @returns Always false for OpenPBR as it's handled automatically
+     * @returns True if alpha is used from the base color texture
      */
     public get useAlphaFromBaseColorTexture(): boolean {
-        return false;
+        return this._material._useAlphaFromBaseColorTexture;
     }
 
     /**
@@ -1258,10 +1259,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Finalizes material properties after all loading is complete.
-     * @param signal An AbortSignal that fires when the loader is disposed. Intermediate
-     *   textures are disposed and the method returns early when aborted.
+     * @param loader The glTF loader; `loader._disposed` is polled between texture passes to bail early on dispose.
      */
-    public async finalizeAsync(signal: AbortSignal): Promise<void> {
+    public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
@@ -1273,15 +1273,15 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             } else {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
                 await this.copySurfaceToCoatAsync(
+                    loader,
                     this.subsurfaceWeight,
                     this.subsurfaceWeightTexture,
                     TextureChannel.A,
                     this._diffuseTransmissionTint,
                     this._diffuseTransmissionTintTexture,
-                    true,
-                    signal
+                    true
                 );
-                if (signal.aborted) {
+                if (loader._disposed) {
                     return;
                 }
             }
@@ -1294,8 +1294,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
             } else if (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null) {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
-                await this.copySurfaceToCoatAsync(this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture, false, signal);
-                if (signal.aborted) {
+                await this.copySurfaceToCoatAsync(loader, this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture, false);
+                if (loader._disposed) {
                     return;
                 }
             }
@@ -1324,7 +1324,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.Linear,
                 ChannelMask.R
             );
-            if (signal.aborted) {
+            if (loader._disposed) {
                 newRoughnessTexture.texture?.dispose();
                 return;
             }
@@ -1343,7 +1343,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.SRGB,
                 ChannelMask.RGB
             );
-            if (signal.aborted) {
+            if (loader._disposed) {
                 newMetallic.texture?.dispose();
                 return;
             }
@@ -1362,7 +1362,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 TextureColorSpace.SRGB,
                 ChannelMask.RGB
             );
-            if (signal.aborted) {
+            if (loader._disposed) {
                 newBaseColor.texture?.dispose();
                 return;
             }
@@ -1378,13 +1378,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     private async copySurfaceToCoatAsync(
+        loader: GLTFLoader,
         weight: number,
         weightTexture: Nullable<BaseTexture>,
         weightTextureChannel: TextureChannel,
         color: Color3,
         colorTexture: Nullable<BaseTexture>,
-        diffuseTransmission: boolean = false,
-        signal: AbortSignal = new AbortController().signal
+        diffuseTransmission: boolean = false
     ): Promise<void> {
         // Blend coat properties using:
         // New coat will cover all areas that previously had coat or transmission.
@@ -1437,7 +1437,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         const [lerpCoatColor, lerpSurfaceColor] = results.map(
             (r) => (r as PromiseFulfilledResult<(typeof results)[number] extends PromiseSettledResult<infer T> ? T : never>).value
         );
-        if (signal.aborted) {
+        if (loader._disposed) {
             lerpCoatColor.texture?.dispose();
             lerpSurfaceColor.texture?.dispose();
             return;
@@ -1450,7 +1450,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this._material.getScene(),
             TextureColorSpace.SRGB
         );
-        if (signal.aborted) {
+        if (loader._disposed) {
             newCoatColor.texture?.dispose();
             return;
         }
@@ -1470,7 +1470,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
             this._material.getScene()
         );
-        if (signal.aborted) {
+        if (loader._disposed) {
             newCoatIor.texture?.dispose();
             return;
         }
@@ -1487,7 +1487,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
             this._material.getScene()
         );
-        if (signal.aborted) {
+        if (loader._disposed) {
             newCoatRoughness.texture?.dispose();
             return;
         }
@@ -1501,7 +1501,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
             this._material.getScene()
         );
-        if (signal.aborted) {
+        if (loader._disposed) {
             newCoatDarkening.texture?.dispose();
             return;
         }
@@ -1519,7 +1519,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
                 this._material.getScene()
             );
-            if (signal.aborted) {
+            if (loader._disposed) {
                 newSpecularRoughness.texture?.dispose();
                 return;
             }
@@ -1539,7 +1539,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
                 this._material.getScene()
             );
-            if (signal.aborted) {
+            if (loader._disposed) {
                 newCoatNormal.texture?.dispose();
                 return;
             }

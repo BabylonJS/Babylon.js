@@ -1,22 +1,23 @@
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type Nullable } from "../types";
 import { type Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { Clamp } from "../Maths/math.scalar.functions";
 import { EngineStore } from "../Engines/engineStore";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { VertexBuffer } from "../Buffers/buffer";
-import { Ray } from "../Culling/ray";
-import { Material } from "../Materials/material";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { Ray } from "../Culling/ray.pure";
+import { Material } from "../Materials/material.pure";
 import { LensFlare } from "./lensFlare";
 import { Constants } from "../Engines/constants";
 
 import { _WarnImport } from "../Misc/devTools";
 import { type DataBuffer } from "../Buffers/dataBuffer";
-import { Color3 } from "../Maths/math.color";
+import { Color3 } from "../Maths/math.color.pure";
 import { type Viewport } from "../Maths/math.viewport";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Observable } from "core/Misc/observable";
+import { RegisterLensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent.pure";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -111,6 +112,7 @@ export class LensFlareSystem {
         this._scene = scene || EngineStore.LastCreatedScene;
         this.layerMask = this._scene.defaultRenderableLayerMask;
 
+        RegisterLensFlareSystemSceneComponent(LensFlareSystem);
         LensFlareSystem._SceneComponentInitialization(this._scene);
 
         this._emitter = emitter;

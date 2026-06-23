@@ -4,6 +4,7 @@ import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
 import { Color3, TmpColors } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 import "./shaders/handle.vertex";
 import "./shaders/handle.fragment";
@@ -88,11 +89,20 @@ export class HandleMaterial extends ShaderMaterial {
      * @param scene Scene
      */
     constructor(name: string, scene: Scene) {
+        const shaderLanguage = scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+
         super(name, scene, "handle", {
             attributes: ["position"],
             uniforms: ["worldViewProjection", "color", "scale", "positionOffset"],
             needAlphaBlending: false,
             needAlphaTesting: false,
+            shaderLanguage,
+            extraInitializationsAsync:
+                shaderLanguage === ShaderLanguage.WGSL
+                    ? async () => {
+                          await Promise.all([import("./wgsl/handle.vertex"), import("./wgsl/handle.fragment")]);
+                      }
+                    : undefined,
         });
 
         this._updateInterpolationTarget();

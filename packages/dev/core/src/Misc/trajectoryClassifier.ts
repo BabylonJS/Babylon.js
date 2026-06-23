@@ -1,5 +1,5 @@
 import { type DeepImmutable, type Nullable } from "../types";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 
 // This implementation was based on the original MIT-licensed TRACE repository
 // from https://github.com/septagon/TRACE.

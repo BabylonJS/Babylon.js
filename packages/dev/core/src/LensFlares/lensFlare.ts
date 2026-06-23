@@ -1,10 +1,10 @@
 import { type Nullable } from "../types";
-import { Color3 } from "../Maths/math.color";
-import { Texture } from "../Materials/Textures/texture";
+import { Color3 } from "../Maths/math.color.pure";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type LensFlareSystem } from "./lensFlareSystem";
 import { Constants } from "../Engines/constants";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 /**
  * This represents one of the lens effect in a `lensFlareSystem`.
  * It controls one of the individual texture used in the effect.

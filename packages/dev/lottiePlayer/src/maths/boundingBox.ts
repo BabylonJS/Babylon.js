@@ -9,7 +9,7 @@ import {
     type RawTextData,
 } from "../parsing/rawTypes";
 import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
-import { type LottieTextCompatibilityMode } from "../animationConfiguration";
+import { type LottieCompatibilityMode } from "../animationConfiguration";
 import { ApplyLottieTextContext, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
 
 /**
@@ -112,7 +112,7 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
  * @param textData The text to calculate the bounding box for
  * @param rawFonts A map of font names to their raw font data
  * @param variables A map of variables to be used in the animation as text can be a variable which will affect its length
- * @param textLayerCompatibilityMode Text layer compatibility mode used to calculate placement-affecting text metrics.
+ * @param textLayerPlacement Text layer compatibility mode used to calculate placement-affecting text metrics.
  * @returns The bounding box for the text
  */
 export function GetTextBoundingBox(
@@ -120,7 +120,7 @@ export function GetTextBoundingBox(
     textData: RawTextData,
     rawFonts: Map<string, RawFont>,
     variables: Map<string, string>,
-    textLayerCompatibilityMode: LottieTextCompatibilityMode = "spec"
+    textLayerPlacement: LottieCompatibilityMode = "spec"
 ): BoundingBox | undefined {
     spritesCanvasContext.save();
 
@@ -132,7 +132,7 @@ export function GetTextBoundingBox(
 
     ApplyLottieTextContext(spritesCanvasContext, resolvedText);
 
-    const layout = MeasureLottieText(resolvedText, (text) => spritesCanvasContext.measureText(text), textLayerCompatibilityMode);
+    const layout = MeasureLottieText(resolvedText, (text) => spritesCanvasContext.measureText(text), textLayerPlacement);
 
     spritesCanvasContext.restore();
 

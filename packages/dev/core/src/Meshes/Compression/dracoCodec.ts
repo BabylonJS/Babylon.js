@@ -1,4 +1,4 @@
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { AutoReleaseWorkerPool, type WorkerPool } from "../../Misc/workerPool";
 import { type IDisposable } from "../../scene";
 import { initializeWebWorker } from "./dracoCompressionWorker";

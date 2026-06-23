@@ -1,11 +1,11 @@
 import { type Nullable } from "../types";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Scene } from "../scene";
-import { Vector3, Vector4 } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
-import { Condition, ValueCondition } from "./condition";
-import { type IAction, Action } from "./action";
-import { DoNothingAction } from "./directActions";
+import { Vector3, Vector4 } from "../Maths/math.vector.pure";
+import { Color3, Color4 } from "../Maths/math.color.pure";
+import { Condition, RegisterCondition, ValueCondition } from "./condition.pure";
+import { type IAction, Action, RegisterAction } from "./action.pure";
+import { DoNothingAction, RegisterDirectActions } from "./directActions.pure";
 
 import { EngineStore } from "../Engines/engineStore";
 import { type IActionEvent } from "../Actions/actionEvent";
@@ -14,6 +14,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { GetClass } from "../Misc/typeStore";
 import { AbstractActionManager } from "./abstractActionManager";
 import { Constants } from "../Engines/constants";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -445,6 +446,10 @@ export class ActionManager extends AbstractActionManager {
      * @param scene defines the hosting scene
      */
     public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void {
+        RegisterAction();
+        RegisterCondition();
+        RegisterDirectActions();
+
         const actionManager = new ActionManager(scene);
         if (object === null) {
             scene.actionManager = actionManager;
@@ -554,7 +559,7 @@ export class ActionManager extends AbstractActionManager {
                         value = scene.getNodeByName(value);
                     } else if (name === "sound") {
                         // Can not externalize to component, so only checks for the presence off the API.
-                        if (scene.getSoundByName) {
+                        if (_IsSideEffectImplemented(scene.getSoundByName)) {
                             value = scene.getSoundByName(value);
                         }
                     } else if (name !== "propertyPath") {

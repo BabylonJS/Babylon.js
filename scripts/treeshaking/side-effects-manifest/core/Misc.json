@@ -1,0 +1,19 @@
+{
+    "version": 1,
+    "files": {
+        "Misc/PerformanceViewer/performanceViewerSceneExtension.ts": ["top-level-call"],
+        "Misc/basis.ts": ["top-level-call"],
+        "Misc/dds.ts": ["bare-import"],
+        "Misc/dumpTools.ts": ["top-level-call"],
+        "Misc/environmentTextureTools.ts": ["bare-import"],
+        "Misc/equirectangularCapture.ts": ["bare-import"],
+        "Misc/fileTools.ts": ["top-level-call"],
+        "Misc/minMaxReducer.ts": ["bare-import"],
+        "Misc/observable.extensions.ts": ["top-level-call"],
+        "Misc/observable.extensions.types.ts": ["declare-module"],
+        "Misc/observableCoroutine.ts": ["top-level-call"],
+        "Misc/observableCoroutine.types.ts": ["declare-module"],
+        "Misc/screenshotTools.ts": ["top-level-call"],
+        "Misc/tools.ts": ["top-level-call"]
+    }
+}

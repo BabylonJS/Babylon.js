@@ -28,6 +28,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -371,6 +372,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         </LineContainerComponent>
                     )}
+                    <McpSessionComponent globalState={this.props.globalState} />
                     <TextureMemoryUsagePropertyTabComponent globalState={this.props.globalState}></TextureMemoryUsagePropertyTabComponent>
                 </div>
             </div>

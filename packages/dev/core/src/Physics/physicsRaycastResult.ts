@@ -1,4 +1,4 @@
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { CastingResult } from "./castingResult";
 import { type PhysicsBody } from "./v2/physicsBody";
 

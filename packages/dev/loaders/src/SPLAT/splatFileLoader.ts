@@ -10,6 +10,7 @@ import {
 } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingStream } from "./gaussianSplattingStream";
 import { AssetContainer } from "core/assetContainer";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
@@ -24,7 +25,7 @@ import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { ParseSogMeta, type SOGRootData } from "./sog";
+import { ParseSogMeta, ParseSogMetaAsTextures, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
 import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
@@ -73,7 +74,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         keepInRam: false,
         flipY: false,
         needsRotationScaleTextures: false,
-        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
+        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.2/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
@@ -99,6 +100,20 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         _onProgress?: (event: ISceneLoaderProgressEvent) => void,
         _fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
+        const lodStream = this._tryCreateLODStream(scene, data, rootUrl);
+        if (lodStream) {
+            return {
+                meshes: [lodStream],
+                particleSystems: [],
+                skeletons: [],
+                animationGroups: [],
+                transformNodes: [],
+                geometries: [],
+                lights: [],
+                spriteManagers: [],
+            };
+        }
+
         // eslint-disable-next-line github/no-then
         return await this._parseAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
@@ -112,6 +127,41 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 spriteManagers: [],
             };
         });
+    }
+
+    /**
+     * Detects a PlayCanvas-style `lod-meta.json` payload and, if found, creates a streaming mesh for it.
+     * @param scene hosting scene
+     * @param data loaded file data
+     * @param rootUrl root url the metadata's relative paths resolve against
+     * @returns the streaming mesh, or null when the data is not SOG LOD metadata
+     */
+    private _tryCreateLODStream(scene: Scene, data: any, rootUrl: string): Nullable<GaussianSplattingStream> {
+        if (typeof data !== "string") {
+            return null;
+        }
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(data);
+        } catch {
+            return null;
+        }
+        if (!GaussianSplattingStream.IsLODMetadata(parsed)) {
+            return null;
+        }
+
+        const previousBlockEntityCollection = scene._blockEntityCollection;
+        scene._blockEntityCollection = !!this._assetContainer;
+        try {
+            const stream = new GaussianSplattingStream("GaussianSplattingStream", parsed, rootUrl, scene, {
+                deflateURL: this._loadingOptions.deflateURL,
+                fflate: this._loadingOptions.fflate,
+            });
+            stream._parentContainer = this._assetContainer;
+            return stream;
+        } finally {
+            scene._blockEntityCollection = previousBlockEntityCollection;
+        }
     }
 
     private static _BuildPointCloud(pointcloud: PointsCloudSystem, data: ArrayBuffer): boolean {
@@ -215,26 +265,38 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            if (parsedSOG.sogTextures) {
+                gaussianSplatting.setSogTextureData(parsedSOG.sogTextures);
+            } else {
+                gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
+            }
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
         };
 
+        const engine = scene.getEngine();
+        let useSogTextures = this._loadingOptions.useSogTextures;
+        if (useSogTextures && !engine.isWebGPU && engine.version < 2) {
+            Logger.Warn("SPLATFileLoader: useSogTextures requires WebGL2 or WebGPU. Falling back to CPU path.");
+            useSogTextures = false;
+        }
+        const sogParser = useSogTextures ? ParseSogMetaAsTextures : ParseSogMeta;
+
         // check if data is json string
         if (typeof data === "string") {
             const dataSOG = JSON.parse(data) as SOGRootData;
             if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
-                return new Promise((resolve) => {
-                    ParseSogMeta(dataSOG, rootUrl, scene)
+                return new Promise((resolve, reject) => {
+                    sogParser(dataSOG, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         })
                         // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG data.", { cause: e }));
                         });
                 });
             }
@@ -243,17 +305,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const u8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
         // ZIP signature check for SOG
         if (u8[0] === 0x50 && u8[1] === 0x4b) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._unzipWithFFlateAsync(u8).then((files) => {
-                    ParseSogMeta(files, rootUrl, scene)
+                    sogParser(files, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         }) // eslint-disable-next-line github/no-then
-                        .catch(() => {
-                            throw new Error("Failed to parse SOG zip data.");
+                        .catch((e) => {
+                            reject(new Error("Failed to parse SOG zip data.", { cause: e }));
                         });
                 });
             });
@@ -323,8 +385,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         };
 
-        // Check for gzip magic bytes to detect SPZ format
-        if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
+        // Check for gzip (before SPZ V4) and NGSP (SPZ V4+) magic bytes to detect SPZ format
+        const isGZipped = u8[0] === 0x1f && u8[1] === 0x8b;
+        const isNGSP = u8[0] === 0x4e && u8[1] === 0x47 && u8[2] === 0x53 && u8[3] === 0x50;
+        if (!isGZipped && !isNGSP) {
             return new Promise((resolve) => {
                 handlePLY(resolve);
             });
@@ -364,6 +428,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     });
                 });
             });
+        }
+
+        // NGSP (SPZ V4+) requires WASM — the native fallback only handles legacy gzip formats
+        if (isNGSP) {
+            return Promise.reject(
+                new Error(
+                    "SPZ V4+ files (NGSP format) are not supported by the native fallback loader. " +
+                        "Please provide a valid 'spzLibraryUrl' in the loading options to use the WASM-based SPZ library, " +
+                        "or ensure WebAssembly is available in your environment."
+                )
+            );
         }
 
         // Manual path: decompress gzip, then parse with the built-in SPZ parser
@@ -629,7 +704,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     propertyColorCount++;
                 }
             }
-            const hasMandatoryProperties = propertyCount == splatProperties.length && propertyColorCount == 3;
+            const hasMandatoryProperties = propertyCount == splatProperties.length && propertyColorCount >= 3;
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return await new Promise((resolve) => {

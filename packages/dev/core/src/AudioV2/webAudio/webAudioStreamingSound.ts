@@ -1,5 +1,5 @@
 import { Logger } from "../../Misc/logger";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { type Nullable } from "../../types";
 import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type {} from "../abstractAudio/abstractSound";
@@ -290,7 +290,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._mediaElement.currentTime = startOffset;
         }
 
-        this._volumeNode.gain.value = options.volume ?? 1;
+        // Only override the volume when explicitly provided so resuming a paused instance keeps its current volume.
+        if (options.volume !== undefined) {
+            this._volumeNode.gain.value = options.volume;
+        }
 
         this._play();
     }
@@ -308,11 +311,11 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     /** @internal */
-    public resume(): void {
+    public resume(options: Partial<IStreamingSoundPlayOptions> = {}): void {
         if (this._state === SoundState.Paused) {
-            this.play();
+            this.play(options);
         } else if (this._currentTimeChangedWhilePaused) {
-            this.play();
+            this.play(options);
         }
     }
 

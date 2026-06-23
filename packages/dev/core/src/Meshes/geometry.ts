@@ -1,16 +1,17 @@
 import { type Nullable, type FloatArray, type DataArray, type IndicesArray } from "../types";
 import { type Scene } from "../scene";
-import { type Vector2, Vector3 } from "../Maths/math.vector";
-import { Color4 } from "../Maths/math.color";
+import { type Vector2, Vector3 } from "../Maths/math.vector.pure";
+import { Color4 } from "../Maths/math.color.pure";
 import { type IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
-import { VertexBuffer, type Buffer } from "../Buffers/buffer";
+import { VertexBuffer, type Buffer } from "../Buffers/buffer.pure";
 import { SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Effect } from "../Materials/effect";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Constants } from "../Engines/constants";
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
+import { Logger } from "../Misc/logger";
 import { Tags } from "../Misc/tags";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
@@ -860,10 +861,13 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         scene.addPendingData(this);
-        scene._loadFile(
-            this.delayLoadingFile,
-            (data) => {
+        void (async () => {
+            try {
+                const data = await scene._loadDelayedFileAsync(this.delayLoadingFile!, false, true);
+
                 if (!this._delayLoadingFunction) {
+                    // The geometry was disposed while the load was in flight; still release the pending data so the scene can become ready.
+                    scene.removePendingData(this);
                     return;
                 }
 
@@ -883,10 +887,16 @@ export class Geometry implements IGetSetVerticesData {
                 if (onLoaded) {
                     onLoaded();
                 }
-            },
-            undefined,
-            true
-        );
+            } catch (error) {
+                // Remove the pending data so the scene can still become ready.
+                // The state is intentionally left as LOADING so a persistently failing file is not re-fetched every frame.
+                scene.removePendingData(this);
+                // Don't log when the scene is being disposed: in-flight requests are aborted as part of normal teardown.
+                if (!scene.isDisposed) {
+                    Logger.Error(`Unable to delay load geometry "${this.id}" from "${this.delayLoadingFile}": ${error}`);
+                }
+            }
+        })();
     }
 
     /**

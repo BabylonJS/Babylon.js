@@ -1,6 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Scene } from "core/scene";
+import "core/Materials/imageProcessingConfiguration";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const _getActiveImageProcessingObserverCount = (scene: Scene): number => {

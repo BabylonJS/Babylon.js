@@ -2,7 +2,7 @@
 import { type Nullable } from "../../types";
 import { type IAnimatable } from "../../Animations/animatable.interface";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
-import { Color3 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color.pure";
 import { type SmartArray } from "../../Misc/smartArray";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
@@ -10,9 +10,9 @@ import { MaterialFlags } from "../materialFlags";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { type EffectFallbacks } from "../effectFallbacks";
 import { type CubeTexture } from "../Textures/cubeTexture";
-import { TmpVectors } from "../../Maths/math.vector";
+import { TmpVectors } from "../../Maths/math.vector.pure";
 import { type SubMesh } from "../../Meshes/subMesh";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
@@ -419,6 +419,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
     }
 
+    /**
+     * Checks whether the subsurface textures are ready for the sub mesh.
+     * @param defines defines the material defines to inspect
+     * @param scene defines the scene to use for readiness checks
+     * @returns true if subsurface is ready
+     */
     public override isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
@@ -462,6 +468,11 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Updates shader defines for subsurface rendering before attributes are processed.
+     * @param defines defines the material defines to update
+     * @param scene defines the scene to use for texture checks
+     */
     public override prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
@@ -599,6 +610,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds subsurface data for a sub mesh.
+     * @param uniformBuffer defines the uniform buffer to update
+     * @param scene defines the scene to use for texture binding
+     * @param engine defines the engine used for binding
+     * @param subMesh defines the sub mesh being rendered
+     */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
@@ -744,6 +762,11 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Checks whether subsurface rendering uses a texture.
+     * @param texture defines the texture to check
+     * @returns true if the texture is used by subsurface rendering
+     */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._thicknessTexture === texture) {
             return true;
@@ -776,6 +799,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return false;
     }
 
+    /**
+     * Adds the active subsurface textures.
+     * @param activeTextures defines the list of active textures to update
+     */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._thicknessTexture) {
             activeTextures.push(this._thicknessTexture);
@@ -798,6 +825,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Adds the animatable subsurface textures.
+     * @param animatables defines the list of animatables to update
+     */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._thicknessTexture && this._thicknessTexture.animations && this._thicknessTexture.animations.length > 0) {
             animatables.push(this._thicknessTexture);
@@ -820,6 +851,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Disposes the subsurface textures.
+     * @param forceDisposeTextures defines whether to dispose the textures
+     */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             if (this._thicknessTexture) {
@@ -858,6 +893,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
+    /**
+     * Adds the subsurface sampler names.
+     * @param samplers defines the list of sampler names to update
+     */
     public override getSamplers(samplers: string[]): void {
         samplers.push(
             "thicknessSampler",

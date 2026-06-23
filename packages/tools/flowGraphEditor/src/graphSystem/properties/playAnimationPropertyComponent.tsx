@@ -1,8 +1,11 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { GeneralPropertyTabComponent, DataConnectionsPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+
+import { RenderGeneralSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type GlobalState } from "../../globalState";
 import { type SceneContext } from "../../sceneContext";
@@ -11,6 +14,84 @@ import { type Observer } from "core/Misc/observable";
 interface IPlayAnimationPropertyState {
     sceneContext: SceneContext | null;
 }
+
+const useStyles = makeStyles({
+    helpText: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
+
+const AnimationGroupContent: React.FunctionComponent<{
+    sceneContext: SceneContext | null;
+    blockId: string;
+    currentAgId: number;
+    onChange: (id: number) => void;
+}> = ({ sceneContext, blockId, currentAgId, onChange }) => {
+    const classes = useStyles();
+    return (
+        <>
+            {sceneContext ? (
+                <>
+                    <NumberDropdownPropertyLine
+                        key={`ag-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
+                        label="Animation Group"
+                        options={
+                            [
+                                { label: "(none)", value: -1 },
+                                ...sceneContext.animationGroups.map((a) => ({
+                                    label: a.name || `(id ${a.uniqueId})`,
+                                    value: a.uniqueId,
+                                })),
+                            ] as DropdownOption<number>[]
+                        }
+                        value={currentAgId}
+                        onChange={onChange}
+                    />
+                    {sceneContext.animationGroups.length === 0 && <Body1 className={classes.helpText}>No animation groups found in the scene.</Body1>}
+                </>
+            ) : (
+                <Body1 className={classes.helpText}>Load a scene snippet in the Preview panel to pick an animation.</Body1>
+            )}
+        </>
+    );
+};
+
+const AnimationContent: React.FunctionComponent<{
+    sceneContext: SceneContext | null;
+    blockId: string;
+    currentAnimId: number;
+    onChange: (id: number) => void;
+}> = ({ sceneContext, blockId, currentAnimId, onChange }) => {
+    const classes = useStyles();
+    return (
+        <>
+            {sceneContext ? (
+                <>
+                    <NumberDropdownPropertyLine
+                        key={`anim-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
+                        label="Animation"
+                        options={
+                            [
+                                { label: "(none)", value: -1 },
+                                ...sceneContext.animations.map((a) => ({
+                                    label: a.name || `(id ${a.uniqueId})`,
+                                    value: a.uniqueId,
+                                })),
+                            ] as DropdownOption<number>[]
+                        }
+                        value={currentAnimId}
+                        onChange={onChange}
+                    />
+                    {sceneContext.animations.length === 0 && <Body1 className={classes.helpText}>No animations found in the scene.</Body1>}
+                </>
+            ) : (
+                <Body1 className={classes.helpText}>Load a scene snippet in the Preview panel to pick an animation.</Body1>
+            )}
+        </>
+    );
+};
 
 /**
  * Property panel for FlowGraphPlayAnimationBlock.
@@ -173,73 +254,26 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
         const { sceneContext } = this.state;
         const block = this._getBlock();
         const currentAgId = this._resolveCurrentAgId(sceneContext);
         const currentAnimId = this._resolveCurrentAnimId(sceneContext);
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphPlayAnimationProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
 
-                <LineContainerComponent title="ANIMATION GROUP">
-                    {sceneContext ? (
-                        <>
-                            <OptionsLine
-                                key={`ag-${block.uniqueId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
-                                label="Animation Group"
-                                options={[
-                                    { label: "(none)", value: -1 },
-                                    ...sceneContext.animationGroups.map((a) => ({
-                                        label: a.name || `(id ${a.uniqueId})`,
-                                        value: a.uniqueId,
-                                    })),
-                                ]}
-                                target={{}}
-                                propertyName="_unused"
-                                noDirectUpdate={true}
-                                extractValue={() => currentAgId}
-                                onSelect={(value) => this._onAnimationGroupChange(value as number)}
-                            />
-                            {sceneContext.animationGroups.length === 0 && (
-                                <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No animation groups found in the scene.</div>
-                            )}
-                        </>
-                    ) : (
-                        <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick an animation.</div>
-                    )}
-                </LineContainerComponent>
+                <AccordionSection title="Animation Group" collapseByDefault={false}>
+                    <AnimationGroupContent sceneContext={sceneContext} blockId={block.uniqueId} currentAgId={currentAgId} onChange={(id) => this._onAnimationGroupChange(id)} />
+                </AccordionSection>
 
-                <LineContainerComponent title="ANIMATION">
-                    {sceneContext ? (
-                        <>
-                            <OptionsLine
-                                key={`anim-${block.uniqueId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
-                                label="Animation"
-                                options={[
-                                    { label: "(none)", value: -1 },
-                                    ...sceneContext.animations.map((a) => ({
-                                        label: a.name || `(id ${a.uniqueId})`,
-                                        value: a.uniqueId,
-                                    })),
-                                ]}
-                                target={{}}
-                                propertyName="_unused"
-                                noDirectUpdate={true}
-                                extractValue={() => currentAnimId}
-                                onSelect={(value) => this._onAnimationChange(value as number)}
-                            />
-                            {sceneContext.animations.length === 0 && <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No animations found in the scene.</div>}
-                        </>
-                    ) : (
-                        <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick an animation.</div>
-                    )}
-                </LineContainerComponent>
+                <AccordionSection title="Animation" collapseByDefault={false}>
+                    <AnimationContent sceneContext={sceneContext} blockId={block.uniqueId} currentAnimId={currentAnimId} onChange={(id) => this._onAnimationChange(id)} />
+                </AccordionSection>
 
-                <DataConnectionsPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <GenericPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-            </>
+                {RenderDataConnectionsSection(this.props)}
+                {RenderGenericPropStoreSections(this.props)}
+            </Accordion>
         );
     }
 }

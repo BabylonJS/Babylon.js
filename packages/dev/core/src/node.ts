@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Scene } from "./scene";
 import { type Nullable } from "./types";
-import { Matrix, Vector3 } from "./Maths/math.vector";
+import { Matrix, Vector3 } from "./Maths/math.vector.pure";
 import { type AbstractEngine } from "./Engines/abstractEngine";
 import { type IBehaviorAware, type Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
@@ -455,8 +455,12 @@ export class Node implements IBehaviorAware<Node> {
             return this;
         }
 
-        this._behaviors[index].detach();
+        // Remove the behavior from the array before calling detach so that any reentrant
+        // removeBehavior calls performed during detach (e.g. when a behavior owns and removes
+        // child behaviors of its own) operate on a consistent array and do not invalidate
+        // the index used for splicing here. See issue #18537.
         this._behaviors.splice(index, 1);
+        behavior.detach();
 
         return this;
     }

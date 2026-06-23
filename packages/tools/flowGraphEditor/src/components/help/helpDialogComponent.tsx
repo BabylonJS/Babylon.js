@@ -1,7 +1,9 @@
-import * as React from "react";
-import { type HelpTopicId, HelpTopics } from "./helpContent";
+import { type FunctionComponent, useEffect, useMemo, useRef } from "react";
 
-import "./helpDialog.scss";
+import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, Subtitle2, makeStyles, tokens } from "@fluentui/react-components";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+
+import { type HelpTopicId, HelpTopics } from "./helpContent";
 
 interface IHelpDialogProps {
     /** When set, the dialog opens and scrolls to this topic. Null/undefined = closed. */
@@ -10,123 +12,128 @@ interface IHelpDialogProps {
     onClose: () => void;
 }
 
-interface IHelpDialogState {
-    expandedTopics: Set<HelpTopicId>;
-}
+const useStyles = makeStyles({
+    surface: {
+        width: "640px",
+        maxWidth: "90%",
+        // Constrain the surface to 80vh so it doesn't fill the screen on tall content.
+        maxHeight: "80vh",
+    },
+    body: {
+        // Constrain DialogContent to fit within the shrunk surface, accounting for
+        // DialogSurface's 24px top/bottom padding. This ensures content scrolls within
+        // the visible dialog area instead of overflowing.
+        maxHeight: "calc(80vh - 2 * 24px)",
+        minHeight: 0,
+        overflowY: "auto",
+    },
+    topicContent: {
+        padding: `0 ${tokens.spacingHorizontalM} ${tokens.spacingVerticalM}`,
+        color: tokens.colorNeutralForeground2,
+        lineHeight: tokens.lineHeightBase300,
+        // Style the developer-authored HTML rendered via dangerouslySetInnerHTML.
+        "& h4": {
+            margin: `${tokens.spacingVerticalM} 0 ${tokens.spacingVerticalXS}`,
+            fontWeight: tokens.fontWeightSemibold,
+            color: tokens.colorNeutralForeground1,
+        },
+        "& h4:first-child": {
+            marginTop: 0,
+        },
+        "& p": {
+            margin: `${tokens.spacingVerticalXS} 0`,
+        },
+        "& ul, & ol": {
+            margin: `${tokens.spacingVerticalXS} 0`,
+            paddingLeft: tokens.spacingHorizontalXXL,
+        },
+        "& li": {
+            margin: `${tokens.spacingVerticalXXS} 0`,
+        },
+        "& code": {
+            background: tokens.colorNeutralBackground3,
+            padding: `1px ${tokens.spacingHorizontalXS}`,
+            borderRadius: tokens.borderRadiusSmall,
+            fontFamily: tokens.fontFamilyMonospace,
+            fontSize: tokens.fontSizeBase200,
+            color: tokens.colorPaletteDarkOrangeForeground1,
+        },
+        "& table": {
+            width: "100%",
+            borderCollapse: "collapse",
+            margin: `${tokens.spacingVerticalS} 0`,
+        },
+        "& th": {
+            textAlign: "left",
+            padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+            background: tokens.colorNeutralBackground3,
+            color: tokens.colorNeutralForeground1,
+            borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+            fontWeight: tokens.fontWeightSemibold,
+        },
+        "& td": {
+            padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+            borderBottom: `1px solid ${tokens.colorNeutralStroke3}`,
+            color: tokens.colorNeutralForeground2,
+        },
+        "& tr:last-child td": {
+            borderBottom: "none",
+        },
+    },
+});
 
 /**
- * Modal help dialog with collapsible topic sections.
+ * Modal help dialog with collapsible topic sections, using Fluent UI primitives.
+ * @returns The rendered help dialog.
  */
-export class HelpDialogComponent extends React.Component<IHelpDialogProps, IHelpDialogState> {
-    private _topicRefs = new Map<HelpTopicId, React.RefObject<HTMLDivElement>>();
+export const HelpDialogComponent: FunctionComponent<IHelpDialogProps> = ({ initialTopicId, onClose }) => {
+    const classes = useStyles();
 
-    /** @internal */
-    constructor(props: IHelpDialogProps) {
-        super(props);
+    // Memoise the highlight set so the Accordion only opens the requested topic when it
+    // changes. Other topics start collapsed.
+    const highlightSections = useMemo(() => (initialTopicId ? [initialTopicId] : []), [initialTopicId]);
 
-        // Create refs for each topic so we can scroll to them
-        for (const topic of HelpTopics) {
-            this._topicRefs.set(topic.id, React.createRef<HTMLDivElement>());
+    // Track topic refs so we can scroll into view when an initial topic is requested.
+    const topicRefs = useRef(new Map<HelpTopicId, HTMLDivElement | null>());
+
+    useEffect(() => {
+        if (!initialTopicId) {
+            return;
         }
-
-        // If an initial topic is specified, expand it; otherwise start all collapsed
-        const expanded = new Set<HelpTopicId>();
-        if (props.initialTopicId) {
-            expanded.add(props.initialTopicId);
-        }
-        this.state = { expandedTopics: expanded };
-    }
-
-    /** @internal */
-    override componentDidMount() {
-        if (this.props.initialTopicId) {
-            this._scrollToTopic(this.props.initialTopicId);
-        }
-    }
-
-    /** @internal */
-    override componentDidUpdate(prevProps: IHelpDialogProps) {
-        if (this.props.initialTopicId && this.props.initialTopicId !== prevProps.initialTopicId) {
-            this.setState(
-                (prev) => {
-                    const expanded = new Set(prev.expandedTopics);
-                    expanded.add(this.props.initialTopicId!);
-                    return { expandedTopics: expanded };
-                },
-                () => {
-                    this._scrollToTopic(this.props.initialTopicId!);
-                }
-            );
-        }
-    }
-
-    private _scrollToTopic(topicId: HelpTopicId) {
-        requestAnimationFrame(() => {
-            const ref = this._topicRefs.get(topicId);
-            if (ref?.current) {
-                ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
+        // Defer to next frame so the Accordion has expanded the requested section.
+        const handle = requestAnimationFrame(() => {
+            const node = topicRefs.current.get(initialTopicId);
+            node?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
-    }
+        return () => cancelAnimationFrame(handle);
+    }, [initialTopicId]);
 
-    private _toggleTopic(topicId: HelpTopicId) {
-        this.setState((prev) => {
-            const expanded = new Set(prev.expandedTopics);
-            if (expanded.has(topicId)) {
-                expanded.delete(topicId);
-            } else {
-                expanded.add(topicId);
-            }
-            return { expandedTopics: expanded };
-        });
-    }
-
-    private _onOverlayClick = (evt: React.MouseEvent) => {
-        // Close when clicking the overlay background (not the dialog itself)
-        if (evt.target === evt.currentTarget) {
-            this.props.onClose();
-        }
-    };
-
-    /** @internal */
-    override render() {
-        return (
-            <div className="fge-help-overlay" onClick={this._onOverlayClick}>
-                <div className="fge-help-dialog">
-                    <div className="fge-help-header">
-                        <h2>Flow Graph Editor — Help</h2>
-                        <button className="fge-help-close" onClick={this.props.onClose} title="Close">
-                            ✕
-                        </button>
-                    </div>
-                    <div className="fge-help-body">
-                        {HelpTopics.map((topic) => {
-                            const isExpanded = this.state.expandedTopics.has(topic.id);
-                            return (
-                                <div key={topic.id} className="fge-help-topic" ref={this._topicRefs.get(topic.id)}>
-                                    <div className="fge-help-topic-header" onClick={() => this._toggleTopic(topic.id)}>
-                                        <span className={`fge-help-topic-arrow ${isExpanded ? "expanded" : ""}`}>▶</span>
-                                        <span className="fge-help-topic-title">{topic.title}</span>
+    return (
+        <Dialog open onOpenChange={(_, data) => !data.open && onClose()}>
+            <DialogSurface className={classes.surface}>
+                <DialogBody>
+                    <DialogTitle>Flow Graph Editor — Help</DialogTitle>
+                    <DialogContent className={classes.body}>
+                        <Accordion uniqueId="FlowGraphEditorHelp" highlightSections={highlightSections}>
+                            {HelpTopics.map((topic) => (
+                                <AccordionSection key={topic.id} title={topic.title} collapseByDefault={topic.id !== initialTopicId}>
+                                    <div ref={(el) => topicRefs.current.set(topic.id, el)} className={classes.topicContent}>
+                                        {topic.sections.map((section, idx) => (
+                                            <div key={idx}>
+                                                {section.heading && <Subtitle2 block>{section.heading}</Subtitle2>}
+                                                {/* Content is developer-authored from helpContent.ts — safe to render as HTML.
+                                                    If this ever accepts user/external content, sanitize with DOMPurify first. */}
+                                                {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
+                                                <div dangerouslySetInnerHTML={{ __html: section.html }} />
+                                            </div>
+                                        ))}
                                     </div>
-                                    {isExpanded && (
-                                        <div className="fge-help-topic-content">
-                                            {topic.sections.map((section, idx) => (
-                                                <div key={idx}>
-                                                    {section.heading && <h4>{section.heading}</h4>}
-                                                    {/* Content is developer-authored from helpContent.ts — safe to render as HTML.
-                                                        If this ever accepts user/external content, sanitize with DOMPurify first. */}
-                                                    {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-                                                    <div dangerouslySetInnerHTML={{ __html: section.html }} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        );
-    }
-}
+                                </AccordionSection>
+                            ))}
+                        </Accordion>
+                    </DialogContent>
+                </DialogBody>
+            </DialogSurface>
+        </Dialog>
+    );
+};

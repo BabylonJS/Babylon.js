@@ -7,9 +7,10 @@ import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { type PrePassRenderer } from "./prePassRenderer";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { Logger } from "../Misc/logger";
-import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer";
+import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
+import { RegisterDepthPeelingSceneComponent } from "./depthPeelingSceneComponent.pure";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -48,6 +49,8 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
      */
     constructor(scene: Scene, passCount: number = 5) {
         super(scene, passCount);
+
+        RegisterDepthPeelingSceneComponent(DepthPeelingRenderer);
 
         //  We need a depth texture for opaque
         if (!scene.enablePrePassRenderer()) {

@@ -1,0 +1,6 @@
+{
+    "version": 1,
+    "files": {
+        "DeviceInput/internalDeviceSourceManager.types.ts": ["declare-module"]
+    }
+}

@@ -1,7 +1,7 @@
 import { type Quaternion, type Vector3 } from "../../../Maths/math.vector";
 import { type Node } from "../../../node";
 import { type Nullable } from "../../../types";
-import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
+import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import { type AudioEngineV2 } from "../audioEngineV2";
 import { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
 import { type ISpatialAudioOptions, _SpatialAudioDefaults } from "../subProperties/abstractSpatialAudio";
@@ -24,6 +24,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     public abstract maxDistance: number;
     public abstract minDistance: number;
     public abstract orientation: Vector3;
+    public abstract panningEnabled: boolean;
     public abstract panningModel: PanningModelType;
     public abstract position: Vector3;
     public abstract rolloffFactor: number;
@@ -34,6 +35,21 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
     /** @internal */
     public get isAttached(): boolean {
         return this._attacherComponent !== null && this._attacherComponent.isAttached;
+    }
+
+    /** @internal */
+    public get attachedNode(): Nullable<Node> {
+        return this._attacherComponent?.sceneNode ?? null;
+    }
+
+    /** @internal */
+    public get useBoundingBox(): boolean {
+        return this._attacherComponent?.useBoundingBox ?? false;
+    }
+
+    /** @internal */
+    public get attachmentType(): SpatialAudioAttachmentType {
+        return this._attacherComponent?.attachmentType ?? SpatialAudioAttachmentType.PositionAndRotation;
     }
 
     /** @internal */
@@ -69,6 +85,7 @@ export abstract class _SpatialAudioSubNode extends _AbstractAudioSubNode {
         this.maxDistance = options.spatialMaxDistance ?? _SpatialAudioDefaults.maxDistance;
         this.minDistance = options.spatialMinDistance ?? _SpatialAudioDefaults.minDistance;
         this.orientation = options.spatialOrientation ?? _SpatialAudioDefaults.orientation;
+        this.panningEnabled = options.spatialPanningEnabled ?? _SpatialAudioDefaults.panningEnabled;
         this.panningModel = options.spatialPanningModel ?? _SpatialAudioDefaults.panningModel;
         this.rolloffFactor = options.spatialRolloffFactor ?? _SpatialAudioDefaults.rolloffFactor;
 

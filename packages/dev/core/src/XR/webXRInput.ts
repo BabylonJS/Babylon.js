@@ -4,7 +4,7 @@ import { type IDisposable } from "../scene";
 import { type IWebXRControllerOptions, WebXRInputSource } from "./webXRInputSource";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 import { type WebXRCamera } from "./webXRCamera";
-import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
+import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager.pure";
 
 /**
  * The schema for initialization options of the XR Input class

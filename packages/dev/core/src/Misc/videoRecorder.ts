@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-var */
 import { type Nullable } from "../types";
-import { Tools } from "./tools";
+import { Tools } from "./tools.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 interface MediaRecorder {

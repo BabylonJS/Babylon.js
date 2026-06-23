@@ -1042,6 +1042,11 @@ export class Constants {
     public static FLOAT = 5126;
 
     /**
+     * The half float type.
+     */
+    public static HALF_FLOAT = 5131;
+
+    /**
      * Positions
      */
     public static PositionKind = "position";
