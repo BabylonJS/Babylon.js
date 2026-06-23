@@ -97,7 +97,7 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public play(options: Partial<IStreamingSoundPlayOptions> = {}): void {
         if (this.state === SoundState.Paused) {
-            this.resume();
+            this.resume(options);
             return;
         }
 
@@ -126,6 +126,15 @@ export abstract class StreamingSound extends AbstractSound {
         this._beforePlay(instance);
         instance.play(options);
         this._afterPlay(instance);
+    }
+
+    /**
+     * Resumes the sound.
+     * - Only options explicitly set here override the paused instance's current options; unset options keep their paused values so playback continues from where it was paused.
+     * @param options The options to use when resuming the sound.
+     */
+    public override resume(options?: Partial<IStreamingSoundPlayOptions>): void {
+        super.resume(options);
     }
 
     /**

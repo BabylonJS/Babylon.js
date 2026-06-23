@@ -250,6 +250,17 @@ class GLTFLoaderBaseOptions {
     public loadMorphTargets = true;
 
     /**
+     * When loading a mesh with morph targets, configure its MorphTargetManager so the morph shader is compiled
+     * once for all targets (`numMaxInfluencers = numTargets`, `optimizeInfluencers = false`). This prevents the
+     * shader from being recompiled (and the resulting one-frame visual glitch) when an animated morph target
+     * influence passes through zero and the active influencer count changes.
+     * Disable to restore the previous behavior, where only the currently active (non-zero) influencers drive the
+     * shader. That is cheaper per frame for meshes with very large morph target counts, but recompiles the shader
+     * during animation. Defaults to true.
+     */
+    public useMaxMorphTargetInfluencers = true;
+
+    /**
      * Defines if the loader should load node animations. Defaults to true.
      * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
      */
@@ -362,6 +373,7 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
             this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
             this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
             this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
+            this.useMaxMorphTargetInfluencers = options.useMaxMorphTargetInfluencers ?? this.useMaxMorphTargetInfluencers;
             this.useOpenPBR = options.useOpenPBR ?? this.useOpenPBR;
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;

@@ -728,16 +728,17 @@ export abstract class Light extends Node implements ISortableLight {
      * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
      * @param parsedLight The JSON representation of the light
      * @param scene The scene to create the parsed light in
+     * @param rootUrl The root url to use to load assets referenced by the light (e.g. textures)
      * @returns the created light after parsing
      */
-    public static Parse(parsedLight: any, scene: Scene): Nullable<Light> {
+    public static Parse(parsedLight: any, scene: Scene, rootUrl: string = ""): Nullable<Light> {
         const constructor = Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene);
 
         if (!constructor) {
             return null;
         }
 
-        const light = SerializationHelper.Parse(constructor, parsedLight, scene);
+        const light = SerializationHelper.Parse(constructor, parsedLight, scene, rootUrl);
 
         // Inclusion / exclusions
         if (parsedLight.excludedMeshesIds) {
@@ -788,7 +789,7 @@ export abstract class Light extends Node implements ISortableLight {
             light.setEnabled(parsedLight.isEnabled);
         }
 
-        light._onParsed(parsedLight, scene);
+        light._onParsed(parsedLight, scene, rootUrl);
 
         return light;
     }
@@ -798,8 +799,9 @@ export abstract class Light extends Node implements ISortableLight {
      * Override in subclasses to handle custom serialized data.
      * @param _parsedLight The JSON representation of the light
      * @param _scene The scene the light belongs to
+     * @param _rootUrl The root url to use to load assets referenced by the light (e.g. textures)
      */
-    protected _onParsed(_parsedLight: any, _scene: Scene): void {
+    protected _onParsed(_parsedLight: any, _scene: Scene, _rootUrl: string = ""): void {
         // Override in subclasses
     }
 
@@ -947,6 +949,11 @@ export abstract class Light extends Node implements ISortableLight {
 
             case Light.LIGHTTYPEID_HEMISPHERICLIGHT:
                 // No fall off in hemispheric light.
+                photometricScale = 1.0;
+                break;
+
+            case Light.LIGHTTYPEID_RECT_AREALIGHT:
+                // Area lights interpret their intensity directly; no additional photometric scaling is applied.
                 photometricScale = 1.0;
                 break;
         }

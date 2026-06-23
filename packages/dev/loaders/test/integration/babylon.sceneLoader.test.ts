@@ -398,6 +398,78 @@ test.describe("Babylon Scene Loader", function () {
             expect(assertionData.positionAnimations, "positionAnimations").toBe(1);
         });
 
+        test("Load Alien with default morph target influencer pinning", async () => {
+            // By default the glTF loader pins numMaxInfluencers (and disables optimizeInfluencers) so the morph
+            // shader is compiled once and does not recompile when an animated influence passes through zero.
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/Alien/", "Alien.gltf", window.scene).then(() => {
+                    const manager = (window.scene!.getMeshByName("AlienHead") as any).morphTargetManager;
+                    return {
+                        numTargets: manager.numTargets,
+                        numMaxInfluencers: manager.numMaxInfluencers,
+                        optimizeInfluencers: manager.optimizeInfluencers,
+                    };
+                });
+            });
+            expect(assertionData.numTargets, "numTargets").toBe(2);
+            expect(assertionData.numMaxInfluencers, "numMaxInfluencers").toBe(2);
+            expect(assertionData.optimizeInfluencers, "optimizeInfluencers").toBe(false);
+        });
+
+        test("Load Alien with useMaxMorphTargetInfluencers disabled", async () => {
+            // Opting out restores the previous behavior: numMaxInfluencers stays 0 and only active influencers
+            // drive the shader.
+            const assertionData = await page.evaluate(() => {
+                BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                    if (loader.name === "gltf") {
+                        (loader as any).useMaxMorphTargetInfluencers = false;
+                    }
+                });
+                return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/Alien/", "Alien.gltf", window.scene).then(() => {
+                    const manager = (window.scene!.getMeshByName("AlienHead") as any).morphTargetManager;
+                    return {
+                        numMaxInfluencers: manager.numMaxInfluencers,
+                        optimizeInfluencers: manager.optimizeInfluencers,
+                    };
+                });
+            });
+            expect(assertionData.numMaxInfluencers, "numMaxInfluencers").toBe(0);
+            expect(assertionData.optimizeInfluencers, "optimizeInfluencers").toBe(true);
+        });
+
+        test("Load Alien in vertex-attribute morph mode beyond the influencer cap leaves morph influencers unpinned", async () => {
+            // When morph targets fall back to vertex attributes and the target count exceeds
+            // MaxActiveMorphTargetsInVertexAttributeMode, the active set is hard-capped, so the loader must NOT pin
+            // numMaxInfluencers (that would make NUM_MORPH_INFLUENCERS exceed the bound attributes). Force that path
+            // by disabling texture storage and lowering the cap below AlienHead's two targets.
+            const assertionData = await page.evaluate(() => {
+                const previousEnableTextureStorage = BABYLON.MorphTargetManager.EnableTextureStorage;
+                const previousMaxActive = BABYLON.MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode;
+                BABYLON.MorphTargetManager.EnableTextureStorage = false;
+                BABYLON.MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode = 1;
+                return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/Alien/", "Alien.gltf", window.scene)
+                    .then(() => {
+                        const manager = (window.scene!.getMeshByName("AlienHead") as any).morphTargetManager;
+                        return {
+                            numTargets: manager.numTargets,
+                            isUsingTextureForTargets: manager.isUsingTextureForTargets,
+                            numMaxInfluencers: manager.numMaxInfluencers,
+                            optimizeInfluencers: manager.optimizeInfluencers,
+                        };
+                    })
+                    .finally(() => {
+                        BABYLON.MorphTargetManager.EnableTextureStorage = previousEnableTextureStorage;
+                        BABYLON.MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode = previousMaxActive;
+                    });
+            });
+            expect(assertionData.numTargets, "numTargets").toBe(2);
+            expect(assertionData.isUsingTextureForTargets, "isUsingTextureForTargets").toBe(false);
+            // Guard: numTargets (2) exceeds the cap (1) and texture storage is off, so the loader leaves the
+            // morph manager unpinned (previous behavior) to avoid an attribute/define mismatch.
+            expect(assertionData.numMaxInfluencers, "numMaxInfluencers").toBe(0);
+            expect(assertionData.optimizeInfluencers, "optimizeInfluencers").toBe(true);
+        });
+
         test("Load LevelOfDetail", async () => {
             const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<{ [key: string]: boolean }>>();
