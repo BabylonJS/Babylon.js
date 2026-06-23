@@ -20,6 +20,8 @@ import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
+import { ComputeFlowGraphLayout, type IFlowLayoutNode } from "./graphSystem/flowGraphLayout";
+import { type ConnectionPointPortData } from "./graphSystem/connectionPointPortData";
 import { HelpDialogComponent } from "./components/help/helpDialogComponent";
 import { type HelpTopicId } from "./components/help/helpContent";
 import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
@@ -661,6 +663,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.reOrganize();
         });
 
+        this.props.globalState.onSortGraphRequiredObservable.add(() => {
+            this.sortGraph();
+        });
+
         this.props.globalState.onGetNodeFromBlock = (block) => {
             let node = this._blockToNodeMap.get(block);
             if (!node) {
@@ -841,16 +847,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (editorData) {
             this.reOrganize(editorData);
         } else {
-            // No saved positions — defer auto-layout until after the browser
-            // has painted so that node DOM elements have real dimensions.
-            // setTimeout(0) defers to the next macro-task, after the browser
-            // has completed layout and paint. rAF alone is not sufficient
-            // because it fires *before* layout in some browsers.
+            // No saved positions — the graph was never laid out, so apply the flow-aware
+            // "Sort graph" automatically. Deferred to the next macro-task so node DOM
+            // elements have real dimensions: setTimeout(0) runs after the browser has
+            // completed layout and paint (rAF alone is not sufficient because it fires
+            // *before* layout in some browsers).
             setTimeout(() => {
                 if (buildVersion !== this._buildVersion || flowGraph !== this.props.globalState.flowGraph) {
                     return;
                 }
-                this.reOrganize(null);
+                this.sortGraph();
+                this.zoomToFit();
             }, 0);
         }
 
@@ -936,6 +943,82 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.x = 0;
         this._graphCanvas.y = 0;
         this._graphCanvas.zoom = 1;
+    }
+
+    /**
+     * Flow-aware "Sort graph" layout.
+     *
+     * Arranges the blocks following execution semantics: event blocks are anchored in the
+     * left-most column stacked vertically, execution (signal) flow runs left-to-right, and
+     * when flow diverges the branches are stacked with each branch's sub-tree forming a
+     * contiguous vertical band. Data wires are used only as a secondary placement hint and
+     * loop back-edges are dropped so the loop body still flows rightward. Unlike the generic
+     * dagre "Reorganize", this understands the difference between signal and data ports.
+     */
+    sortGraph() {
+        const canvas = this._graphCanvas;
+        if (canvas.nodes.length === 0) {
+            return;
+        }
+
+        this.showWaitScreen();
+        canvas._isLoading = true;
+
+        // Build the layout input from the live visual nodes.
+        const nodeToId = new Map<GraphNode, number>();
+        for (const node of canvas.nodes) {
+            nodeToId.set(node, node.id);
+        }
+
+        const layoutNodes: IFlowLayoutNode[] = canvas.nodes.map((node) => {
+            const signalOut: number[] = [];
+            const dataOut: number[] = [];
+            for (const output of node.content.outputs) {
+                if (!output.hasEndpoints) {
+                    continue;
+                }
+                const kind = (output as ConnectionPointPortData).connectionKind;
+                for (const endpoint of output.endpoints ?? []) {
+                    const targetNode = canvas.nodes.find((n) => n.content.data === endpoint.ownerData);
+                    if (!targetNode) {
+                        continue;
+                    }
+                    const targetId = targetNode.id;
+                    if (kind === "signal") {
+                        signalOut.push(targetId);
+                    } else {
+                        dataOut.push(targetId);
+                    }
+                }
+            }
+            return {
+                id: node.id,
+                width: node.width,
+                height: node.height,
+                isEvent: node.content.data instanceof FlowGraphEventBlock,
+                signalOut,
+                dataOut,
+            };
+        });
+
+        const positions = ComputeFlowGraphLayout(layoutNodes);
+        for (const node of canvas.nodes) {
+            const position = positions.get(node.id);
+            if (position) {
+                node.x = position.x;
+                node.y = position.y;
+                node.cleanAccumulation();
+            }
+        }
+
+        canvas.x = 0;
+        canvas.y = 0;
+        canvas.zoom = 1;
+        canvas._isLoading = false;
+        for (const node of canvas.nodes) {
+            node._refreshLinks();
+        }
+        this.hideWaitScreen();
     }
 
     /** @internal */
@@ -1151,6 +1234,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             items.push({
                 label: "Reorganize",
                 action: () => globalState.onReOrganizedRequiredObservable.notifyObservers(),
+            });
+            items.push({
+                label: "Sort graph",
+                action: () => globalState.onSortGraphRequiredObservable.notifyObservers(),
             });
         }
 
