@@ -36,8 +36,9 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { join, relative, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { spawnSync } from "child_process";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
-import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
+import { getPackageConfig, resolvePackageFromArgv, SUPPORTED_PACKAGES, packageArgs } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -379,6 +380,20 @@ function createSideEffectsEntries(files, allFiles, globDirs, verbose) {
 
 function main() {
     const args = process.argv.slice(2);
+
+    // `--all-packages`: re-run this script once per supported package and aggregate.
+    if (args.includes("--all-packages")) {
+        const forwarded = args.filter((a) => a !== "--all-packages" && a !== "--package" && !a.startsWith("--package="));
+        let failed = 0;
+        for (const pkg of SUPPORTED_PACKAGES) {
+            const result = spawnSync(process.execPath, [__filename, ...forwarded, ...packageArgs(pkg)], { stdio: "inherit" });
+            if (result.status !== 0) {
+                failed++;
+            }
+        }
+        process.exit(failed > 0 ? 1 : 0);
+    }
+
     const dryRun = args.includes("--dry-run");
     const check = args.includes("--check");
     const verbose = args.includes("--verbose");

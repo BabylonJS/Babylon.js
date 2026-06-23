@@ -145,6 +145,12 @@ function processDirectory(dir) {
     const lines = content.split("\n");
     const outputLines = [];
     let hasExports = false;
+    // Track `import * as NS from "./sub/index"` so a later bare `export { NS }`
+    // can be rewritten to re-export the subdirectory's pure barrel namespace.
+    /** @type {Map<string, string>} namespace alias → import specifier */
+    const pendingNamespaceImports = new Map();
+    /** @type {string[]} namespace aliases re-exported from this barrel */
+    const namespaceExportNames = [];
 
     for (const line of lines) {
         const trimmed = line.trim();
@@ -209,6 +215,36 @@ function processDirectory(dir) {
             continue;
         }
 
+        // Handle: import * as NS from "./sub/index"  (paired with a later `export { NS }`)
+        const nsImport = trimmed.match(/^import\s+\*\s+as\s+(\w+)\s+from\s+["'](.+?)["']\s*;?\s*$/);
+        if (nsImport) {
+            pendingNamespaceImports.set(nsImport[1], nsImport[2]);
+            continue;
+        }
+
+        // Handle: export { NS } / export { A, B }  (no `from`) — namespace re-exports
+        const localNamedExport = trimmed.match(/^export\s+\{([^}]+)\}\s*;?\s*$/);
+        if (localNamedExport) {
+            const names = localNamedExport[1]
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+            for (const name of names) {
+                const importSpec = pendingNamespaceImports.get(name);
+                if (!importSpec) {
+                    continue; // Not a tracked namespace import; drop (no pure equivalent)
+                }
+                const pureSpec = mapSpecifierToPureBarrel(dir, importSpec);
+                if (!pureSpec) {
+                    continue; // Subdirectory has no pure barrel; nothing to re-export
+                }
+                outputLines.push(`import * as ${name} from "${pureSpec}";`);
+                namespaceExportNames.push(name);
+                hasExports = true;
+            }
+            continue;
+        }
+
         // Generic comments — keep
         if (trimmed.startsWith("//") || trimmed.startsWith("/*")) {
             outputLines.push(trimmed);
@@ -219,6 +255,12 @@ function processDirectory(dir) {
         if (VERBOSE) {
             console.log(`  SKIP unknown line in ${relative(SRC_ROOT, dir)}/index.ts: ${trimmed}`);
         }
+    }
+
+    // Emit a single combined re-export for tracked namespace imports, mirroring
+    // the source index (e.g. `export { GLTF1, GLTF2 };`).
+    if (namespaceExportNames.length > 0) {
+        outputLines.push(`export { ${dedupePreservingOrder(namespaceExportNames).join(", ")} };`);
     }
 
     // Scan for orphaned .pure.ts files in this directory not yet covered
@@ -415,6 +457,32 @@ function resolveExport(dir, specifier, originalLine) {
     skippedExports++;
     if (VERBOSE) {
         console.log(`  SKIP (side effects, no .pure): ${filePath}`);
+    }
+    return null;
+}
+
+/**
+ * Map a namespace-import specifier (e.g. `./1.0/index` or `./1.0`) to the
+ * corresponding subdirectory pure barrel specifier (e.g. `./1.0/pure`).
+ * Returns null when the subdirectory has no generated/existing pure barrel.
+ * @param {string} dir Absolute path of the directory containing the import line
+ * @param {string} specifier The namespace-import module specifier
+ * @returns {string|null} The pure-barrel specifier, or null when none exists
+ */
+function mapSpecifierToPureBarrel(dir, specifier) {
+    // Resolve the referenced subdirectory and ensure its pure barrel is generated.
+    const subDir = resolve(dir, specifier.replace(/\/index$/, ""));
+    if (existsSync(join(subDir, "index.ts"))) {
+        processDirectory(subDir);
+    }
+    // Normalize `./sub/index` → `./sub/pure`; otherwise append `/pure`.
+    let candidate = specifier.replace(/\/index$/, "/pure");
+    if (candidate === specifier) {
+        candidate = specifier.replace(/\/+$/, "") + "/pure";
+    }
+    const purePath = resolve(dir, candidate + ".ts");
+    if (existsSync(purePath) || expectedBarrelPaths.has(join(subDir, "pure.ts"))) {
+        return candidate;
     }
     return null;
 }
