@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 
