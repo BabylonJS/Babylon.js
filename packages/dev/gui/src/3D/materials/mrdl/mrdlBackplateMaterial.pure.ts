@@ -479,6 +479,13 @@ export class MRDLBackplateMaterial extends PushMaterial {
     }
 
     // Statics
+    /**
+     * Parses a serialized MRDLBackplateMaterial and returns a new instance.
+     * @param source - the serialized object
+     * @param scene - defines the hosting scene
+     * @param rootUrl - the root URL used to load any associated textures
+     * @returns a new MRDLBackplateMaterial
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): MRDLBackplateMaterial {
         return SerializationHelper.Parse(() => new MRDLBackplateMaterial(source.name, scene), source, scene, rootUrl);
     }

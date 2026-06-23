@@ -882,6 +882,13 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     }
 
     // Statics
+    /**
+     * Parses a serialized MRDLSliderBarMaterial and returns a new instance.
+     * @param source - the serialized object
+     * @param scene - defines the hosting scene
+     * @param rootUrl - the root URL used to load any associated textures
+     * @returns a new MRDLSliderBarMaterial
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): MRDLSliderBarMaterial {
         return SerializationHelper.Parse(() => new MRDLSliderBarMaterial(source.name, scene), source, scene, rootUrl);
     }

@@ -32,6 +32,11 @@ export class KHR_texture_basisu implements IGLTFExporterExtensionV2 {
 
     public dispose() {}
 
+    /**
+     * Called after a texture is exported to register the encoded image MIME type.
+     * @param _ - the name of the exported babylon texture (unused)
+     * @param textureInfo - the glTF texture info for the exported texture
+     */
     public postExportTexture(_: string, textureInfo: BABYLON.GLTF2.ITextureInfo): void {
         const texture = this._exporter._textures[textureInfo.index];
         const imageIndex = texture.source;

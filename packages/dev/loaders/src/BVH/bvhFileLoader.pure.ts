@@ -56,10 +56,20 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return this.isBvhHeader(data);
     }
 
+    /**
+     * Returns whether the provided text starts with a BVH HIERARCHY header.
+     * @param text - the text to inspect
+     * @returns true if the text is a BVH header
+     */
     public isBvhHeader(text: string): boolean {
         return text.split("\n")[0] == "HIERARCHY";
     }
 
+    /**
+     * Returns whether the provided text does not start with a BVH HIERARCHY header.
+     * @param text - the text to inspect
+     * @returns true if the text is not a BVH header
+     */
     public isNotBvhHeader(text: string): boolean {
         return !this.isBvhHeader(text);
     }

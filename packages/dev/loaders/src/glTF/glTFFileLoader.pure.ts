@@ -330,6 +330,9 @@ class GLTFLoaderBaseOptions {
  */
 export const GLTFLoaderDefaultOptions = new GLTFLoaderBaseOptions();
 
+/**
+ * Base class for glTF loader options that supports copying values from a partial options object.
+ */
 abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
     // eslint-disable-next-line babylonjs/available
     protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {

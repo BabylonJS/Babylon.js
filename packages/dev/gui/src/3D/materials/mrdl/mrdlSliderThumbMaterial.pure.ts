@@ -882,6 +882,13 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     }
 
     // Statics
+    /**
+     * Parses a serialized MRDLSliderThumbMaterial and returns a new instance.
+     * @param source - the serialized object
+     * @param scene - defines the hosting scene
+     * @param rootUrl - the root URL used to load any associated textures
+     * @returns a new MRDLSliderThumbMaterial
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): MRDLSliderThumbMaterial {
         return SerializationHelper.Parse(() => new MRDLSliderThumbMaterial(source.name, scene), source, scene, rootUrl);
     }
