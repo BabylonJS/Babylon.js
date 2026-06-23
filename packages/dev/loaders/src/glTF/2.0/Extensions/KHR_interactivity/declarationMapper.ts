@@ -258,6 +258,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
         blocks: [FlowGraphBlockNames.SceneReadyEvent],
         outputs: {
+            values: {
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
+            },
             flows: {
                 out: { name: "done" },
             },
@@ -269,6 +273,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             values: {
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
             },
             flows: {
                 out: { name: "done" },
@@ -299,6 +305,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
         outputs: {
+            values: {
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
+            },
             flows: {
                 out: { name: "done" },
             },
@@ -344,8 +354,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
+    "event/stopPropagation": {
+        blocks: [FlowGraphBlockNames.StopEventPropagation],
+        inputs: {
+            values: {
+                event: { name: "event" },
+                stopImmediate: { name: "stopImmediate" },
+            },
+            flows: {
+                in: { name: "in" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
+    },
     "math/E": getSimpleInputMapping(FlowGraphBlockNames.E),
     "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
+    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau),
     "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
     "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN),
     "math/abs": getSimpleInputMapping(FlowGraphBlockNames.Abs),
@@ -414,6 +442,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/clamp": getSimpleInputMapping(FlowGraphBlockNames.Clamp, ["a", "b", "c"]),
     "math/saturate": getSimpleInputMapping(FlowGraphBlockNames.Saturate),
     "math/mix": getSimpleInputMapping(FlowGraphBlockNames.MathInterpolation, ["a", "b", "c"]),
+    // Smooth-step (Hermite interpolation): edges a/b and value c.
+    "math/smoothStep": getSimpleInputMapping(FlowGraphBlockNames.SmoothStep, ["a", "b", "c"]),
     // Quaternion spherical-linear interpolation. Inputs are two unit
     // quaternions and an unclamped float coefficient.
     "math/quatSlerp": getSimpleInputMapping(FlowGraphBlockNames.MathSlerp, ["a", "b", "c"]),

@@ -336,6 +336,15 @@ export class FlowGraphPiBlock extends FlowGraphConstantOperationBlock<number> {
 }
 
 /**
+ * Tau constant (2 * Pi), the ratio of a circle's circumference to its radius.
+ */
+export class FlowGraphTauBlock extends FlowGraphConstantOperationBlock<number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, () => 2 * Math.PI, FlowGraphBlockNames.Tau, config);
+    }
+}
+
+/**
  * Positive inf constant.
  */
 export class FlowGraphInfBlock extends FlowGraphConstantOperationBlock<number> {
@@ -669,6 +678,21 @@ function Interpolate(a: number, b: number, c: number) {
 }
 
 /**
+ * Smooth interpolation per KHR_interactivity `math/smoothStep`: interpolates
+ * from `a` to `b` using the cubic Hermite easing of the coefficient `c`
+ * (`c * c * (3 - 2c)`), i.e. `a + (b - a) * smooth(c)`.
+ * @param a start value (returned when the eased coefficient is 0)
+ * @param b end value (returned when the eased coefficient is 1)
+ * @param c interpolation coefficient (clamped to [0, 1] before easing)
+ * @returns the smoothly interpolated value
+ */
+function SmoothStep(a: number, b: number, c: number) {
+    const t = Saturate(c);
+    const eased = t * t * (3 - 2 * t);
+    return a + (b - a) * eased;
+}
+
+/**
  * Interpolate block.
  */
 export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBlock<
@@ -699,6 +723,26 @@ export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBl
 export class FlowGraphMathSlerpBlock extends FlowGraphTernaryOperationBlock<Quaternion, Quaternion, number, Quaternion> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, RichTypeNumber, RichTypeAny, (a, b, c) => Quaternion.Slerp(a, b, c), FlowGraphBlockNames.MathSlerp, config);
+    }
+}
+
+/**
+ * Smooth-step block, backing the KHR_interactivity `math/smoothStep` operation.
+ * Operates component-wise over floatN inputs (the two edges `a`/`b` and the
+ * value `c`).
+ */
+export class FlowGraphMathSmoothStepBlock extends FlowGraphTernaryOperationBlock<
+    FlowGraphMathOperationType,
+    FlowGraphMathOperationType,
+    FlowGraphMathOperationType,
+    FlowGraphMathOperationType
+> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, RichTypeAny, RichTypeAny, (a, b, c) => this._polymorphicSmoothStep(a, b, c), FlowGraphBlockNames.SmoothStep, config);
+    }
+
+    private _polymorphicSmoothStep(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType, c: FlowGraphMathOperationType) {
+        return ComponentWiseTernaryOperation(a, b, c, SmoothStep);
     }
 }
 
@@ -1346,6 +1390,7 @@ export function RegisterFlowGraphMathBlocks(): void {
     RegisterClass(FlowGraphBlockNames.Random, FlowGraphRandomBlock);
     RegisterClass(FlowGraphBlockNames.E, FlowGraphEBlock);
     RegisterClass(FlowGraphBlockNames.PI, FlowGraphPiBlock);
+    RegisterClass(FlowGraphBlockNames.Tau, FlowGraphTauBlock);
     RegisterClass(FlowGraphBlockNames.Inf, FlowGraphInfBlock);
     RegisterClass(FlowGraphBlockNames.NaN, FlowGraphNaNBlock);
     RegisterClass(FlowGraphBlockNames.Abs, FlowGraphAbsBlock);
@@ -1363,6 +1408,7 @@ export function RegisterFlowGraphMathBlocks(): void {
     RegisterClass(FlowGraphBlockNames.Saturate, FlowGraphSaturateBlock);
     RegisterClass(FlowGraphBlockNames.MathInterpolation, FlowGraphMathInterpolationBlock);
     RegisterClass(FlowGraphBlockNames.MathSlerp, FlowGraphMathSlerpBlock);
+    RegisterClass(FlowGraphBlockNames.SmoothStep, FlowGraphMathSmoothStepBlock);
     RegisterClass(FlowGraphBlockNames.Equality, FlowGraphEqualityBlock);
     RegisterClass(FlowGraphBlockNames.LessThan, FlowGraphLessThanBlock);
     RegisterClass(FlowGraphBlockNames.LessThanOrEqual, FlowGraphLessThanOrEqualBlock);

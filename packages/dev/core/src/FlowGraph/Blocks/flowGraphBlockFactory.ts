@@ -48,12 +48,16 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Event/flowGraphSendCustomEventBlock")).FlowGraphSendCustomEventBlock;
         case FlowGraphBlockNames.ReceiveCustomEvent:
             return async () => (await import("./Event/flowGraphReceiveCustomEventBlock")).FlowGraphReceiveCustomEventBlock;
+        case FlowGraphBlockNames.StopEventPropagation:
+            return async () => (await import("./Event/flowGraphStopEventPropagationBlock")).FlowGraphStopEventPropagationBlock;
         case FlowGraphBlockNames.MeshPickEvent:
             return async () => (await import("./Event/flowGraphMeshPickEventBlock")).FlowGraphMeshPickEventBlock;
         case FlowGraphBlockNames.E:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEBlock;
         case FlowGraphBlockNames.PI:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphPiBlock;
+        case FlowGraphBlockNames.Tau:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTauBlock;
         case FlowGraphBlockNames.Inf:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphInfBlock;
         case FlowGraphBlockNames.NaN:
@@ -98,6 +102,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathInterpolationBlock;
         case FlowGraphBlockNames.MathSlerp:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSlerpBlock;
+        case FlowGraphBlockNames.SmoothStep:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSmoothStepBlock;
         case FlowGraphBlockNames.Equality:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEqualityBlock;
         case FlowGraphBlockNames.LessThan:
