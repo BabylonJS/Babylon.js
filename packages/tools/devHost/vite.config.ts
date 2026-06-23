@@ -21,6 +21,14 @@ function serveHavokWasmPlugin(): Plugin {
                 }
                 readFile(HavokWasmFilePath, (error, wasm) => {
                     if (error) {
+                        // Havok is an optional dependency. When the wasm file isn't installed,
+                        // respond with a clean 404 instead of forwarding the error to Vite, which
+                        // would surface a noisy 500 + error overlay across the whole devHost.
+                        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                            response.statusCode = 404;
+                            response.end();
+                            return;
+                        }
                         next(error);
                         return;
                     }

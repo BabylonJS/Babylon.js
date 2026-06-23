@@ -964,10 +964,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         canvas._isLoading = true;
 
-        // Build the layout input from the live visual nodes.
-        const nodeToId = new Map<GraphNode, number>();
+        // Precompute a single block-instance -> node-id lookup so resolving each endpoint's
+        // owner is O(1) instead of an O(N) scan of canvas.nodes per endpoint.
+        const dataToNodeId = new Map<unknown, number>();
         for (const node of canvas.nodes) {
-            nodeToId.set(node, node.id);
+            dataToNodeId.set(node.content.data, node.id);
         }
 
         const layoutNodes: IFlowLayoutNode[] = canvas.nodes.map((node) => {
@@ -979,11 +980,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
                 const kind = (output as ConnectionPointPortData).connectionKind;
                 for (const endpoint of output.endpoints ?? []) {
-                    const targetNode = canvas.nodes.find((n) => n.content.data === endpoint.ownerData);
-                    if (!targetNode) {
+                    const targetId = dataToNodeId.get(endpoint.ownerData);
+                    if (targetId === undefined) {
                         continue;
                     }
-                    const targetId = targetNode.id;
                     if (kind === "signal") {
                         signalOut.push(targetId);
                     } else {
