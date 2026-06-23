@@ -16,7 +16,6 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture.pure";
 import { Tools } from "core/Misc/tools.pure";
 import { Observable } from "core/Misc/observable.pure";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { _RetryWithInterval } from "../../../Misc/timingTools";
 
 /**
  * Composite task that owns the individual IBL shadows frame graph tasks.
@@ -461,31 +460,16 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
     // ------ Framework overrides ------
 
-    private _initAsyncCancel: Nullable<() => void> = null;
-
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override initAsync(): Promise<unknown> {
         this._frameGraph.scene.enableIblCdfGenerator();
 
-        return new Promise<void>((resolve, reject) => {
-            this._initAsyncCancel = _RetryWithInterval(
-                () => this._tryEnableShadowsTasks(),
-                () => {
-                    this._initAsyncCancel = null;
-                    resolve();
-                },
-                (err, isTimeout) => {
-                    this._initAsyncCancel = null;
-                    if (isTimeout) {
-                        reject(new Error(`FrameGraphIblShadowsRendererTask "${this.name}": timed out waiting for shadow dependencies to be ready.`));
-                    } else {
-                        reject(new Error(err));
-                    }
-                },
-                16,
-                10000
-            );
-        });
+        // Don't poll for shadow dependencies here.  _tryEnableShadowsTasks() is called
+        // in record() (where it imports a placeholder ICDF if the real one isn't ready yet,
+        // preventing any "handle not found" errors) and by _beforeRenderDependencyObserver
+        // on every frame.  Shadows enable automatically once the CDF, environment texture,
+        // and blue-noise texture are all ready — no timeout involved.git pu
+        return Promise.resolve();
     }
 
     public override isReady(): boolean {
@@ -529,8 +513,6 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
      * Disposes the task and owned resources.
      */
     public override dispose(): void {
-        this._initAsyncCancel?.();
-        this._initAsyncCancel = null;
         this._disposeObservers();
         this._voxelizationTask.dispose();
         this._tracingTask.dispose();
@@ -719,31 +701,76 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         const environmentTexture = this._getEnvironmentTextureInternal();
         const blueNoiseInternalTexture = this._blueNoiseTexture.getInternalTexture();
 
-        if (!icdfTexture?.isReady || icdfTexture.width === 1 || !environmentTexture?.isReady || !blueNoiseInternalTexture?.isReady) {
-            if (this._dependenciesResolved) {
-                this._dependenciesResolved = false;
-                this._applyMaterialPluginParameters();
-            }
-            return false;
-        }
-
+        // Always import whatever textures are currently available so that their handles
+        // remain valid in the texture manager across rebuilds.  After a frameGraph.clear()
+        // all texture entries are wiped — without this, stale handles left in the tracing
+        // task would cause _computeTextureLifespan to throw "texture handle not found"
+        // even when CDF generation is still in progress.  Importing the 1×1 placeholder
+        // ICDF (returned by getIcdfTexture() when real generation hasn't completed) is
+        // harmless: _dependenciesResolved stays false, the tracing execute function clears
+        // to white, and the real texture is swapped in the moment CDF is ready.
         const icdfChanged = this._lastImportedIcdfTexture !== icdfTexture;
-        const environmentChanged = this._lastImportedEnvironmentTexture !== environmentTexture;
-        const blueNoiseChanged = this._lastImportedBlueNoiseTexture !== blueNoiseInternalTexture;
-
-        if (icdfChanged) {
+        if (icdfChanged && icdfTexture) {
             this._tracingTask.icdfTexture = this._frameGraph.textureManager.importTexture(`ICDF Texture`, icdfTexture, this._tracingTask.icdfTexture);
             this._lastImportedIcdfTexture = icdfTexture;
         }
 
-        if (environmentChanged) {
-            this._tracingTask.environmentTexture = this._frameGraph.textureManager.importTexture(`Environment Texture`, environmentTexture, this._tracingTask.environmentTexture);
-            this._lastImportedEnvironmentTexture = environmentTexture;
+        const environmentChanged = this._lastImportedEnvironmentTexture !== environmentTexture;
+        if (environmentChanged || !environmentTexture) {
+            if (environmentTexture) {
+                this._tracingTask.environmentTexture = this._frameGraph.textureManager.importTexture(
+                    `Environment Texture`,
+                    environmentTexture,
+                    this._tracingTask.environmentTexture
+                );
+                this._lastImportedEnvironmentTexture = environmentTexture;
+            } else {
+                // No environment texture (null or not yet ready) — clear any stale handle so
+                // it is not added to pass dependencies where _computeTextureLifespan would
+                // fail to find it.  This happens when a new IBL is dragged in: the environment
+                // texture temporarily returns null from _getEnvironmentTextureInternal() while
+                // it is still loading, but _lastImportedEnvironmentTexture was reset to null in
+                // record(), so environmentChanged is false and the old stale handle is never
+                // cleared — unless we add the || !environmentTexture guard here.
+                this._tracingTask.environmentTexture = undefined;
+                this._lastImportedEnvironmentTexture = null;
+            }
         }
 
-        if (blueNoiseChanged) {
-            this._tracingTask.blueNoiseTexture = this._frameGraph.textureManager.importTexture(`Blue Noise Texture`, blueNoiseInternalTexture, this._tracingTask.blueNoiseTexture);
-            this._lastImportedBlueNoiseTexture = blueNoiseInternalTexture;
+        const blueNoiseChanged = this._lastImportedBlueNoiseTexture !== blueNoiseInternalTexture;
+        if (blueNoiseChanged || !blueNoiseInternalTexture) {
+            if (blueNoiseInternalTexture) {
+                this._tracingTask.blueNoiseTexture = this._frameGraph.textureManager.importTexture(
+                    `Blue Noise Texture`,
+                    blueNoiseInternalTexture,
+                    this._tracingTask.blueNoiseTexture
+                );
+                this._lastImportedBlueNoiseTexture = blueNoiseInternalTexture;
+            } else {
+                // Same null-guard as environment above.
+                this._tracingTask.blueNoiseTexture = undefined;
+                this._lastImportedBlueNoiseTexture = null;
+            }
+        }
+
+        // Only mark dependencies as resolved when all textures are genuinely ready.
+        //
+        // Use IblCdfGenerator.isReady() rather than icdfTexture?.isReady (the raw
+        // InternalTexture property).  For a ProceduralTexture render target, InternalTexture
+        // .isReady can remain false after onGeneratedObservable fires — it reflects GPU
+        // texture object creation state, not whether the ICDF effect has been compiled and
+        // the texture has been rendered.  IblCdfGenerator.isReady() checks _icdfPT.isReady()
+        // (ProceduralTexture readiness = effect compiled AND rendered at least once) plus all
+        // intermediate CDF textures.  Without this, _dependenciesResolved never flips to true
+        // when a new model is loaded (the CDF regenerates but isReady stays false), so the
+        // IBLShadowsPluginMaterial plugin is never enabled on any material.
+        const cdfReady = scene.iblCdfGenerator?.isReady() ?? false;
+        const ready = cdfReady && !!environmentTexture?.isReady && !!blueNoiseInternalTexture?.isReady;
+        if (!ready) {
+            if (this._dependenciesResolved) {
+                this._dependenciesResolved = false;
+            }
+            return false;
         }
 
         if (!this._dependenciesResolved) {
