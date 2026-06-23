@@ -101,6 +101,34 @@ export function UploadHtmlElementToTexture(
     return _UploadHtmlElementToWebGLTexture(engine as ThinEngine, texture, element, invertY, config);
 }
 
+// The texElementImage2D signature was changed mid-flight in the WICG proposal (see
+// https://github.com/WICG/html-in-canvas#idl-changes): the current spec form is
+// texElementImage2D(target, internalformat, element, config?), but older Chrome Canary builds (and the
+// polyfill that mirrors them) still ship the legacy texImage2D-shaped overload
+// texElementImage2D(target, level, internalformat, format, type, element). We prefer the new form and
+// fall back to the legacy one when the implementation rejects it for too few arguments. The detected
+// shape is cached so we only pay the failed call once.
+let _UseLegacyTexElementImage2D = false;
+
+function _CallTexElementImage2D(gl: WebGL2RenderingContext, internalFormat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void {
+    if (!_UseLegacyTexElementImage2D) {
+        try {
+            gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
+            return;
+        } catch (error) {
+            // Only a wrong-arity TypeError means we are talking to the legacy signature; anything else
+            // (e.g. the element is not a canvas child) is a genuine upload failure and must propagate.
+            if (!(error instanceof TypeError) || !/arguments required/.test((error as Error).message)) {
+                throw error;
+            }
+            _UseLegacyTexElementImage2D = true;
+        }
+    }
+
+    // Legacy overload: texElementImage2D(target, level, internalformat, format, type, element).
+    gl.texElementImage2D(gl.TEXTURE_2D, 0, internalFormat, gl.RGBA, gl.UNSIGNED_BYTE, element);
+}
+
 function _UploadHtmlElementToWebGLTexture(
     engine: ThinEngine,
     texture: InternalTexture,
@@ -123,7 +151,7 @@ function _UploadHtmlElementToWebGLTexture(
     engine._unpackFlipY(invertY);
 
     try {
-        gl.texElementImage2D(gl.TEXTURE_2D, internalFormat, element, config);
+        _CallTexElementImage2D(gl, internalFormat, element, config);
 
         if (texture.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D);

@@ -73,13 +73,17 @@ interface CanvasRenderingContext2D {
 }
 
 interface WebGLRenderingContext {
-    /** Uploads a rendered element (or snapshot) into the currently bound 2D texture. */
+    /** Uploads a rendered element (or snapshot) into the currently bound 2D texture (current WICG signature). */
     texElementImage2D(target: number, internalformat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
+    /** Legacy texImage2D-shaped overload still shipped by some Chrome Canary builds. */
+    texElementImage2D(target: number, level: number, internalformat: number, format: number, type: number, element: Element | ElementImage): void;
 }
 
 interface WebGL2RenderingContext {
-    /** Uploads a rendered element (or snapshot) into the currently bound 2D texture. */
+    /** Uploads a rendered element (or snapshot) into the currently bound 2D texture (current WICG signature). */
     texElementImage2D(target: number, internalformat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
+    /** Legacy texImage2D-shaped overload still shipped by some Chrome Canary builds. */
+    texElementImage2D(target: number, level: number, internalformat: number, format: number, type: number, element: Element | ElementImage): void;
 }
 
 /**

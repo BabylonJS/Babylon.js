@@ -231,6 +231,45 @@ describe("HtmlTexture", () => {
         expect(internal.isReady).toBe(true);
     });
 
+    it("falls back to the legacy 6-argument texElementImage2D signature when the new form is rejected", () => {
+        // Older Chrome builds (e.g. stable, behind the flag) still ship the texImage2D-shaped overload
+        // and reject the current 4-argument spec form with a wrong-arity TypeError.
+        const legacyCalls: unknown[][] = [];
+        const webglEngine = {
+            isWebGPU: false,
+            _gl: {
+                TEXTURE_2D: 0x0de1,
+                RGBA: 0x1908,
+                UNSIGNED_BYTE: 0x1401,
+                texElementImage2D: (...args: unknown[]) => {
+                    if (args.length < 6) {
+                        throw new TypeError("Failed to execute 'texElementImage2D' on 'WebGL2RenderingContext': 6 arguments required, but only 4 present.");
+                    }
+                    legacyCalls.push(args);
+                },
+                generateMipmap: vi.fn(),
+            },
+            _getRGBABufferInternalSizedFormat: () => 0x8058, // RGBA8
+            _bindTextureDirectly: vi.fn().mockReturnValue(false),
+            _unpackFlipY: vi.fn(),
+        } as unknown as Engine;
+
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+
+        expect(UploadHtmlElementToTexture(webglEngine, internal, element)).toBe(true);
+        expect(internal.isReady).toBe(true);
+        expect(legacyCalls).toHaveLength(1);
+
+        // Legacy overload: (target, level, internalformat, format, type, element).
+        const [target, level, internalformat, format, type, el] = legacyCalls[0];
+        expect(target).toBe(0x0de1);
+        expect(level).toBe(0);
+        expect(internalformat).toBe(0x8058);
+        expect(format).toBe(0x1908);
+        expect(type).toBe(0x1401);
+        expect(el).toBe(element);
+    });
+
     it("renders through the SVG fallback when the native API is unavailable", () => {
         class FakeImage {
             public onload: (() => void) | null = null;
