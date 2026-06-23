@@ -1,0 +1,264 @@
+{
+    "version": 1,
+    "description": "Known direct static imports/re-exports from manifest side-effect-free core files to manifest side-effectful core files.",
+    "violations": [
+        {
+            "importer": "2D/advancedDynamicTexture.ts",
+            "kind": "imports",
+            "source": "./controls/container",
+            "target": "2D/controls/container.ts"
+        },
+        {
+            "importer": "2D/advancedDynamicTexture.ts",
+            "kind": "imports",
+            "source": "./controls/control",
+            "target": "2D/controls/control.ts"
+        },
+        {
+            "importer": "2D/controls/scrollViewers/scrollViewerWindow.ts",
+            "kind": "imports",
+            "source": "../container",
+            "target": "2D/controls/container.ts"
+        },
+        {
+            "importer": "2D/controls/scrollViewers/scrollViewerWindow.ts",
+            "kind": "imports",
+            "source": "../control",
+            "target": "2D/controls/control.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./checkbox",
+            "target": "2D/controls/checkbox.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./container",
+            "target": "2D/controls/container.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./control",
+            "target": "2D/controls/control.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./radioButton",
+            "target": "2D/controls/radioButton.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./rectangle",
+            "target": "2D/controls/rectangle.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./sliders/slider",
+            "target": "2D/controls/sliders/slider.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./stackPanel",
+            "target": "2D/controls/stackPanel.ts"
+        },
+        {
+            "importer": "2D/controls/selector.ts",
+            "kind": "imports",
+            "source": "./textBlock",
+            "target": "2D/controls/textBlock.ts"
+        },
+        {
+            "importer": "2D/controls/sliders/baseSlider.ts",
+            "kind": "imports",
+            "source": "../control",
+            "target": "2D/controls/control.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../../2D/controls/control",
+            "target": "2D/controls/control.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../../2D/controls/grid",
+            "target": "2D/controls/grid.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../../2D/controls/image",
+            "target": "2D/controls/image.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../../2D/controls/rectangle",
+            "target": "2D/controls/rectangle.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../../2D/controls/stackPanel",
+            "target": "2D/controls/stackPanel.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../../2D/controls/textBlock",
+            "target": "2D/controls/textBlock.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../materials/mrdl/mrdlBackglowMaterial",
+            "target": "3D/materials/mrdl/mrdlBackglowMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../materials/mrdl/mrdlBackplateMaterial",
+            "target": "3D/materials/mrdl/mrdlBackplateMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../materials/mrdl/mrdlFrontplateMaterial",
+            "target": "3D/materials/mrdl/mrdlFrontplateMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/MRTK3/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../materials/mrdl/mrdlInnerquadMaterial",
+            "target": "3D/materials/mrdl/mrdlInnerquadMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/holographicBackplate.ts",
+            "kind": "imports",
+            "source": "../materials/fluentBackplate/fluentBackplateMaterial",
+            "target": "3D/materials/fluentBackplate/fluentBackplateMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/holographicButton.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/image",
+            "target": "2D/controls/image.ts"
+        },
+        {
+            "importer": "3D/controls/holographicButton.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/stackPanel",
+            "target": "2D/controls/stackPanel.ts"
+        },
+        {
+            "importer": "3D/controls/holographicButton.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/textBlock",
+            "target": "2D/controls/textBlock.ts"
+        },
+        {
+            "importer": "3D/controls/holographicButton.ts",
+            "kind": "imports",
+            "source": "../materials/fluent/fluentMaterial",
+            "target": "3D/materials/fluent/fluentMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/holographicSlate.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/control",
+            "target": "2D/controls/control.ts"
+        },
+        {
+            "importer": "3D/controls/holographicSlate.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/textBlock",
+            "target": "2D/controls/textBlock.ts"
+        },
+        {
+            "importer": "3D/controls/holographicSlate.ts",
+            "kind": "imports",
+            "source": "../materials/fluent/fluentMaterial",
+            "target": "3D/materials/fluent/fluentMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/holographicSlate.ts",
+            "kind": "imports",
+            "source": "../materials/fluentBackplate/fluentBackplateMaterial",
+            "target": "3D/materials/fluentBackplate/fluentBackplateMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/slider3D.ts",
+            "kind": "imports",
+            "source": "../materials/mrdl/mrdlBackplateMaterial",
+            "target": "3D/materials/mrdl/mrdlBackplateMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/slider3D.ts",
+            "kind": "imports",
+            "source": "../materials/mrdl/mrdlSliderBarMaterial",
+            "target": "3D/materials/mrdl/mrdlSliderBarMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/slider3D.ts",
+            "kind": "imports",
+            "source": "../materials/mrdl/mrdlSliderThumbMaterial",
+            "target": "3D/materials/mrdl/mrdlSliderThumbMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/image",
+            "target": "2D/controls/image.ts"
+        },
+        {
+            "importer": "3D/controls/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/stackPanel",
+            "target": "2D/controls/stackPanel.ts"
+        },
+        {
+            "importer": "3D/controls/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../../2D/controls/textBlock",
+            "target": "2D/controls/textBlock.ts"
+        },
+        {
+            "importer": "3D/controls/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../materials/fluent/fluentMaterial",
+            "target": "3D/materials/fluent/fluentMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/touchHolographicButton.ts",
+            "kind": "imports",
+            "source": "../materials/fluentButton/fluentButtonMaterial",
+            "target": "3D/materials/fluentButton/fluentButtonMaterial.ts"
+        },
+        {
+            "importer": "3D/controls/touchHolographicMenu.ts",
+            "kind": "imports",
+            "source": "../materials/fluent/fluentMaterial",
+            "target": "3D/materials/fluent/fluentMaterial.ts"
+        },
+        {
+            "importer": "3D/gizmos/gizmoHandle.ts",
+            "kind": "imports",
+            "source": "../materials/handle/handleMaterial",
+            "target": "3D/materials/handle/handleMaterial.ts"
+        },
+        {
+            "importer": "3D/materials/fluentMaterial.ts",
+            "kind": "exports",
+            "source": "./fluent/fluentMaterial",
+            "target": "3D/materials/fluent/fluentMaterial.ts"
+        }
+    ]
+}
