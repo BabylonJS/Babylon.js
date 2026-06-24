@@ -17,9 +17,12 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve, dirname, relative, posix } from "path";
 import { globSync } from "glob";
 import { execFileSync } from "child_process";
+import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
-const ROOT = resolve(import.meta.dirname, "../../packages/dev/core/src");
-const REPO_ROOT = resolve(import.meta.dirname, "../..");
+const PACKAGE = resolvePackageFromArgv();
+const PACKAGE_CONFIG = getPackageConfig(PACKAGE);
+const ROOT = PACKAGE_CONFIG.srcRoot;
+const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
 const DRY_RUN = process.argv.includes("--dry-run");
 const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
@@ -208,6 +211,31 @@ let totalMethods = 0;
 let totalProperties = 0;
 let totalSkipped = 0;
 
+/** @type {Map<string, Set<string>>} targetFile → set of runtime class names declared in it */
+const runtimeClassCache = new Map();
+
+/**
+ * Whether the target file declares a runtime `class <className>` (the only kind
+ * that has a usable `.prototype`). Type-only interface augmentations are skipped.
+ * @param {string} targetFile Absolute path of the resolved target module
+ * @param {string} className The augmented interface/class name
+ * @returns {boolean}
+ */
+function fileDeclaresRuntimeClass(targetFile, className) {
+    let classes = runtimeClassCache.get(targetFile);
+    if (!classes) {
+        classes = new Set();
+        const src = readFileSync(targetFile, "utf-8");
+        const classRe = /(?:^|[\s;])(?:export\s+)?(?:declare\s+)?(?:abstract\s+)?class\s+(\w+)/g;
+        let m;
+        while ((m = classRe.exec(src)) !== null) {
+            classes.add(m[1]);
+        }
+        runtimeClassCache.set(targetFile, classes);
+    }
+    return classes.has(className);
+}
+
 for (const typesFile of typesFiles) {
     const blocks = parseTypesFile(typesFile);
 
@@ -225,6 +253,17 @@ for (const typesFile of typesFiles) {
             targetFile = resolvedBase + ".ts";
         } else {
             if (VERBOSE) console.log(`  SKIP: cannot resolve target for declare module "${block.modulePath}" from ${relative(ROOT, typesFile)}`);
+            continue;
+        }
+
+        // Only emit stubs when the augmented entity is a runtime class in the
+        // target file. Augmentations of type-only interfaces (e.g. options bags
+        // like GLTFLoaderExtensionOptions) have no prototype, so referencing
+        // `<Name>.prototype` would be a TS "value used as type" error.
+        if (!fileDeclaresRuntimeClass(targetFile, block.interfaceName)) {
+            if (VERBOSE) {
+                console.log(`  SKIP: ${block.interfaceName} is not a runtime class in ${relative(ROOT, targetFile)} (type-only interface augmentation)`);
+            }
             continue;
         }
 
@@ -346,10 +385,17 @@ const writtenFiles = [];
 let filesModified = 0;
 
 for (const [targetFile, classMap] of stubsByFile) {
-    // Compute relative import path from target to devTools.ts
+    // Compute the import specifier for the devTools warning helper. In core it is
+    // a relative path; in the other packages devTools lives in core, so use the
+    // `core/Misc/devTools` path alias these packages already import through.
     const targetDir = dirname(targetFile);
-    let relPath = posix.normalize(relative(targetDir, resolve(ROOT, "Misc/devTools")).split("\\").join("/"));
-    if (!relPath.startsWith(".")) relPath = "./" + relPath;
+    let relPath;
+    if (PACKAGE === "core") {
+        relPath = posix.normalize(relative(targetDir, resolve(ROOT, "Misc/devTools")).split("\\").join("/"));
+        if (!relPath.startsWith(".")) relPath = "./" + relPath;
+    } else {
+        relPath = "core/Misc/devTools";
+    }
 
     // Read target file first so we can detect its line endings
     let content = readFileSync(targetFile, "utf-8");

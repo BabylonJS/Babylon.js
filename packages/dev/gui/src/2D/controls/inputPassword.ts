@@ -1,23 +1,8 @@
-import { InputText } from "./inputText";
-import { RegisterClass } from "core/Misc/typeStore";
-import { TextWrapper } from "./textWrapper";
-
 /**
- * Class used to create a password control
+ * Re-exports the pure implementation and applies the runtime registration side effect.
+ * Import "./inputPassword.pure" for tree-shakeable, side-effect-free usage.
  */
-export class InputPassword extends InputText {
-    protected override _getTypeName(): string {
-        return "InputPassword";
-    }
+export * from "./inputPassword.pure";
 
-    protected override _beforeRenderText(textWrapper: TextWrapper): TextWrapper {
-        const pwdTextWrapper = new TextWrapper();
-        let txt = "";
-        for (let i = 0; i < textWrapper.length; i++) {
-            txt += "\u2022";
-        }
-        pwdTextWrapper.text = txt;
-        return pwdTextWrapper;
-    }
-}
-RegisterClass("BABYLON.GUI.InputPassword", InputPassword);
+import { RegisterInputPassword } from "./inputPassword.pure";
+RegisterInputPassword();
