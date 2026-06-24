@@ -1,5 +1,7 @@
-import { type Nullable } from "core/types";
-import { Logger } from "core/Misc/logger";
+/** This module has no top-level side effects: it only declares the optional HTML-in-Canvas polyfill installer */
+
+import { type Nullable } from "../../../types";
+import { Logger } from "../../../Misc/logger";
 
 // Attribution: the WICG HTML-in-Canvas polyfill is `three-html-render` by Palash Bansal (`repalash`),
 // MIT. It is consumed as an optional, lazily-imported dependency and is never bundled into Babylon.

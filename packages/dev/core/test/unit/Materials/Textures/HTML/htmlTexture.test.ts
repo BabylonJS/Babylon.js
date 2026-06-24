@@ -231,6 +231,45 @@ describe("HtmlTexture", () => {
         expect(internal.isReady).toBe(true);
     });
 
+    it("falls back to the legacy signature when the three-html-render polyfill rejects the new form", () => {
+        // The three-html-render polyfill implements only the legacy texImage2D-shaped overload and rejects
+        // the 4-argument spec form with a different wrong-arity message than native ("unexpected argument count N").
+        const legacyCalls: unknown[][] = [];
+        const webglEngine = {
+            isWebGPU: false,
+            _gl: {
+                TEXTURE_2D: 0x0de1,
+                RGBA: 0x1908,
+                UNSIGNED_BYTE: 0x1401,
+                texElementImage2D: (...args: unknown[]) => {
+                    if (args.length < 6) {
+                        throw new TypeError("texElementImage2D: unexpected argument count 4");
+                    }
+                    legacyCalls.push(args);
+                },
+                generateMipmap: vi.fn(),
+            },
+            _getRGBABufferInternalSizedFormat: () => 0x8058, // RGBA8
+            _bindTextureDirectly: vi.fn().mockReturnValue(false),
+            _unpackFlipY: vi.fn(),
+        } as unknown as Engine;
+
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+
+        expect(UploadHtmlElementToTexture(webglEngine, internal, element)).toBe(true);
+        expect(internal.isReady).toBe(true);
+        expect(legacyCalls).toHaveLength(1);
+
+        // Legacy overload: (target, level, internalformat, format, type, element).
+        const [target, level, internalformat, format, type, el] = legacyCalls[0];
+        expect(target).toBe(0x0de1);
+        expect(level).toBe(0);
+        expect(internalformat).toBe(0x8058);
+        expect(format).toBe(0x1908);
+        expect(type).toBe(0x1401);
+        expect(el).toBe(element);
+    });
+
     it("falls back to the legacy 6-argument texElementImage2D signature when the new form is rejected", () => {
         // Older Chrome builds (e.g. stable, behind the flag) still ship the texImage2D-shaped overload
         // and reject the current 4-argument spec form with a wrong-arity TypeError.

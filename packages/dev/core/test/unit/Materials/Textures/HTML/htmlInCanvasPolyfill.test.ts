@@ -1,12 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 import { describe, it, expect, vi, afterEach } from "vitest";
 
-import { InstallHtmlInCanvasPolyfill, UninstallHtmlInCanvasPolyfill, IsHtmlInCanvasSupportedNatively } from "../../../src/htmlInCanvas/polyfill";
+import { InstallHtmlInCanvasPolyfill, UninstallHtmlInCanvasPolyfill, IsHtmlInCanvasSupportedNatively } from "core/Materials/Textures/HTML/htmlInCanvasPolyfill";
 
 afterEach(() => {
     // Remove any native-support stub added by individual tests.

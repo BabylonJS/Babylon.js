@@ -104,10 +104,10 @@ export function UploadHtmlElementToTexture(
 // The texElementImage2D signature was changed mid-flight in the WICG proposal (see
 // https://github.com/WICG/html-in-canvas#idl-changes): the current spec form is
 // texElementImage2D(target, internalformat, element, config?), but older Chrome Canary builds (and the
-// polyfill that mirrors them) still ship the legacy texImage2D-shaped overload
+// three-html-render polyfill) still ship the legacy texImage2D-shaped overload
 // texElementImage2D(target, level, internalformat, format, type, element). We prefer the new form and
-// fall back to the legacy one when the implementation rejects it for too few arguments. The detected
-// shape is cached so we only pay the failed call once.
+// fall back to the legacy one when the implementation rejects it for the wrong number of arguments. The
+// detected shape is cached so we only pay the failed call once.
 let _UseLegacyTexElementImage2D = false;
 
 function _CallTexElementImage2D(gl: WebGL2RenderingContext, internalFormat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void {
@@ -118,7 +118,9 @@ function _CallTexElementImage2D(gl: WebGL2RenderingContext, internalFormat: numb
         } catch (error) {
             // Only a wrong-arity TypeError means we are talking to the legacy signature; anything else
             // (e.g. the element is not a canvas child) is a genuine upload failure and must propagate.
-            if (!(error instanceof TypeError) || !/arguments required/.test((error as Error).message)) {
+            // Native rejects the new form with "N arguments required, but only M present"; the
+            // three-html-render polyfill rejects it with "unexpected argument count N".
+            if (!(error instanceof TypeError) || !/arguments required|argument count/.test((error as Error).message)) {
                 throw error;
             }
             _UseLegacyTexElementImage2D = true;
