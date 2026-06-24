@@ -251,6 +251,57 @@ const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: 
             },
         },
     },
+    /**
+     * KHR_node_selectability — node selection (click/tap) events.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    KHR_node_selectability: {
+        // event/onSelect fires when the configured node (or a descendant) is
+        // clicked/selected. The `nodeIndex` configuration is resolved to the
+        // Babylon mesh through the glTF data provider + array index (same
+        // composition as animation/start), feeding the mesh-pick event block's
+        // `asset` input.
+        "event/onSelect": {
+            blocks: [FlowGraphBlockNames.MeshPickEvent, FlowGraphBlockNames.ArrayIndex, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+            configuration: {
+                nodeIndex: { name: "index", toBlock: FlowGraphBlockNames.ArrayIndex },
+            },
+            outputs: {
+                values: {
+                    selectedNode: { name: "pickedMesh" },
+                    selectionPoint: { name: "pickedPoint" },
+                    selectionRayOrigin: { name: "pickOrigin" },
+                    controllerIndex: { name: "pointerId" },
+                },
+                flows: {
+                    out: { name: "done" },
+                },
+            },
+            interBlockConnectors: [
+                {
+                    input: "asset",
+                    output: "value",
+                    inputBlockIndex: 0,
+                    outputBlockIndex: 1,
+                    isVariable: true,
+                },
+                {
+                    input: "array",
+                    output: "nodes",
+                    inputBlockIndex: 1,
+                    outputBlockIndex: 2,
+                    isVariable: true,
+                },
+            ],
+            extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+                // Provide the live glTF tree to the data provider so it can resolve nodes.
+                const serializedObject = serializedObjects[serializedObjects.length - 1];
+                serializedObject.config ||= {};
+                serializedObject.config.glTF = globalGLTF;
+                return serializedObjects;
+            },
+        },
+    },
 };
 
 // this mapper is just a way to convert the glTF nodes to FlowGraph nodes in terms of input/output connection names and values.

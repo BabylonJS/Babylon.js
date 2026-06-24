@@ -11,6 +11,18 @@ import { type Nullable } from "core/types";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
+ * Configuration for the array index block.
+ */
+export interface IFlowGraphArrayIndexBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The index to select. Normally supplied by the `index` data input, but it can
+     * also be set here so the glTF importer can route a static configuration value
+     * (e.g. the `nodeIndex` of a KHR_node_selectability `event/onSelect`) into the block.
+     */
+    index?: FlowGraphNumber;
+}
+
+/**
  * This simple Util block takes an array as input and selects a single element from it.
  */
 export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
@@ -33,11 +45,12 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      * Construct a FlowGraphArrayIndexBlock.
      * @param config construction parameters
      */
-    constructor(public override config: IFlowGraphBlockConfiguration) {
+    constructor(public override config?: IFlowGraphArrayIndexBlockConfiguration) {
         super(config);
 
         this.array = this.registerDataInput("array", RichTypeAny);
-        this.index = this.registerDataInput("index", RichTypeAny, new FlowGraphInteger(-1));
+        const defaultIndex = config?.index !== undefined ? new FlowGraphInteger(getNumericValue(config.index)) : new FlowGraphInteger(-1);
+        this.index = this.registerDataInput("index", RichTypeAny, defaultIndex);
         this.value = this.registerDataOutput("value", RichTypeAny);
     }
 
