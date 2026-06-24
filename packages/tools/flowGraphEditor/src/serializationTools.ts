@@ -9,6 +9,7 @@ import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import { Constants } from "core/Engines/constants";
 import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
+import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
 
 /**
  * Provides serialization and deserialization utilities for the flow graph editor.
@@ -216,15 +217,19 @@ export class SerializationTools {
      */
     public static async LoadFromSnippetServerAsync(id: string, globalState: GlobalState): Promise<Nullable<string>> {
         const cleanId = id.replace(/^#/, "");
-        const url = Constants.SnippetUrl + "/" + cleanId.replace(/#/g, "/");
 
-        const response = await fetch(url);
-        if (!response.ok) {
+        let snippet: ISnippetServerResponse;
+        try {
+            // Reuse the shared snippet-loader for the fetch + id/url normalization
+            // instead of hand-rolling the request here.
+            snippet = await FetchSnippet(cleanId, Constants.SnippetUrl);
+        } catch {
+            // FetchSnippet throws on a non-OK response; preserve the historical
+            // null ("could not be loaded") contract expected by the caller.
             return null;
         }
 
-        const snippet = await response.json();
-        const jsonPayload = JSON.parse(snippet.jsonPayload);
+        const jsonPayload = JSON.parse(snippet.jsonPayload ?? "{}");
         // The Flow Graph Editor saves `flowGraph` as a stringified graph, but
         // older/other producers may store it as a plain object — handle both.
         const serializationObject = typeof jsonPayload.flowGraph === "string" ? JSON.parse(jsonPayload.flowGraph) : jsonPayload.flowGraph;
