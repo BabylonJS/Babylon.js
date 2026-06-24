@@ -8,6 +8,7 @@ import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEven
 import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type KeyboardConditions } from "../inputMapper";
+import { Vector2 } from "../../Maths/math.vector.pure";
 
 /**
  * Manage the keyboard inputs to control the movement of a geospatial camera.
@@ -129,6 +130,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
     private _keyboardConditions: KeyboardConditions = { modifiers: this._keyboardModifiers };
 
+    /** Reused accumulator for the per-frame keyboard pan direction, to avoid per-frame allocations */
+    private _panDirection = new Vector2();
+
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -238,12 +242,11 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             this._keyboardModifiers.alt = this._altPressed;
             this._keyboardModifiers.shift = this._shiftPressed;
 
-            // Pan keys are accumulated into a single direction vector and applied once below.
-            // This way holding two directions at once (e.g. up + left) produces a normalized
-            // diagonal at the same speed as a single direction, instead of a ~1.41x speed boost
-            // (sqrt(1^2 + 1^2)) that comes from applying each pan key independently.
-            let panOffsetX = 0;
-            let panOffsetY = 0;
+            // Pan keys are accumulated into a single direction vector and applied once below, so that
+            // holding two directions at once (e.g. up + left) pans along a normalized diagonal at the
+            // same speed as a single direction, instead of the ~1.41x boost (sqrt(2)) that results from
+            // applying each pan key independently.
+            const panDirection = this._panDirection.set(0, 0);
             let panSensitivity = 0;
 
             for (let index = 0; index < this._keys.length; index++) {
@@ -275,25 +278,22 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                         // Accumulate a unit direction per pan key; the combined vector is normalized after the loop.
                         panSensitivity = sens;
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            panOffsetX += 1;
+                            panDirection.x += 1;
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            panOffsetX -= 1;
+                            panDirection.x -= 1;
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            panOffsetY += 1;
+                            panDirection.y += 1;
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            panOffsetY -= 1;
+                            panDirection.y -= 1;
                         }
                     }
                 }
             }
 
             // Apply a single, normalized pan once all pan keys for this frame have been accumulated.
-            if (panOffsetX !== 0 || panOffsetY !== 0) {
-                // Normalize the direction so diagonal pans aren't faster than axis-aligned ones.
-                // The guard above guarantees the length is non-zero, so there is no divide-by-zero.
-                const length = Math.sqrt(panOffsetX * panOffsetX + panOffsetY * panOffsetY);
-                const normalizedX = (panOffsetX / length) * panSensitivity;
-                const normalizedY = (panOffsetY / length) * panSensitivity;
+            if (panDirection.x !== 0 || panDirection.y !== 0) {
+                // Normalize so a diagonal isn't faster than an axis-aligned pan (normalize() is a no-op on a zero-length vector).
+                panDirection.normalize().scaleInPlace(panSensitivity);
 
                 // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
                 // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
@@ -302,7 +302,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                 const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
                 const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
                 input.handlers.pan.start(centerX, centerY);
-                input.handlers.pan.update(centerX + normalizedX, centerY + normalizedY);
+                input.handlers.pan.update(centerX + panDirection.x, centerY + panDirection.y);
                 input.handlers.pan.stop();
             }
         }
