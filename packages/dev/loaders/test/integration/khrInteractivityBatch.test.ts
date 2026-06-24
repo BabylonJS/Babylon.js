@@ -33,6 +33,33 @@ async function routeGlb(targetPage: Page, filePath: string): Promise<string> {
     return url;
 }
 
+// Drive the scene for `durationMs` of real wall-clock time by rendering frames
+// manually. Headless Chrome throttles requestAnimationFrame to ~0fps once a
+// page.evaluate awaits, so engine.runRenderLoop barely advances the scene (≈1
+// frame). Timer-driven flow nodes — notably flow/setDelay.done, whose
+// AdvancedTimer ticks on scene.onBeforeRenderObservable — therefore never fire,
+// leaving delay-gated self-checks vacuously "ok". Calling scene.render() each
+// iteration advances those timers so delayed verdicts (and any resulting ERROR!
+// logs) actually run. A default camera is created if the asset has none (some
+// interactivity-only GLBs ship without one, and scene.render() requires a camera).
+async function runSceneFrames(targetPage: Page, durationMs: number): Promise<void> {
+    await targetPage.evaluate(async (ms: number) => {
+        const scene = window.scene!;
+        if (!scene.activeCamera) {
+            scene.createDefaultCamera(true);
+        }
+        const start = Date.now();
+        while (Date.now() - start < ms) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 16));
+            try {
+                scene.render();
+            } catch {
+                // Ignore transient render errors; onBeforeRenderObservable still advanced the timers.
+            }
+        }
+    }, durationMs);
+}
+
 const KHRONOS_BASE = process.env.KHR_ASSETS_BASE || "E:\\Github\\glTF-Test-Assets-Interactivity\\Tests\\Interactivity";
 // How long to run each scene (ms). Some assets gate their result evaluation behind
 // flow/setDelay, so allow overriding via env when those need more real time.
@@ -127,14 +154,8 @@ test.describe("KHR_Interactivity Batch", () => {
 
                 expect(loadResult.success, `Load failed: ${loadResult.error}`).toBe(true);
 
-                // Run scene for duration to let async events fire
-                await page.evaluate(async (durationMs: number) => {
-                    const scene = window.scene!;
-                    const engine = window.engine!;
-                    engine.runRenderLoop(() => scene.render());
-                    await new Promise<void>((resolve) => setTimeout(resolve, durationMs));
-                    engine.stopRenderLoop();
-                }, SCENE_RUN_DURATION_MS);
+                // Run scene for duration to let async (incl. setDelay-gated) events fire.
+                await runSceneFrames(page, SCENE_RUN_DURATION_MS);
 
                 if (process.env.KHR_DUMP_VARS === "true") {
                     const vars = await page.evaluate(() => {
@@ -265,13 +286,7 @@ test.describe("KHR_Interactivity Batch", () => {
             expect(loadResult.success, `InterGlb load/bridge failed: ${loadResult.error}`).toBe(true);
 
             // Both files use flow/setDelay fallbacks (File A ~2s, File B ~3s).
-            await page.evaluate(async (durationMs: number) => {
-                const scene = window.scene!;
-                const engine = window.engine!;
-                engine.runRenderLoop(() => scene.render());
-                await new Promise<void>((resolve) => setTimeout(resolve, durationMs));
-                engine.stopRenderLoop();
-            }, 5000);
+            await runSceneFrames(page, 5000);
 
             const bjsMessages = consoleEntries.filter((e) => e.text.startsWith("BJS - "));
             const failedTests = bjsMessages.filter((e) => e.text.includes("ERROR!"));
