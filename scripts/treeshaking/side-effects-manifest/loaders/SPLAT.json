@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "files": {
+        "SPLAT/sog.ts": ["bare-import"],
+        "SPLAT/splatFileLoader.ts": ["bare-import", "top-level-call"],
+        "SPLAT/splatFileLoader.types.ts": ["declare-module"]
+    }
+}

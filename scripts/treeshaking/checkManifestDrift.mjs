@@ -17,17 +17,20 @@
 
 import { execFileSync } from "child_process";
 import { rmSync } from "fs";
-import { resolve, dirname } from "path";
+import { resolve, dirname, relative } from "path";
 import { fileURLToPath } from "url";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
+import { getPackageConfig, resolvePackageFromArgv, packageArgs } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
-const COMMITTED_MANIFEST = resolve(__dirname, "side-effects-manifest/core");
+const PACKAGE = resolvePackageFromArgv();
+const PACKAGE_CONFIG = getPackageConfig(PACKAGE);
+const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
+const COMMITTED_MANIFEST = PACKAGE_CONFIG.manifestDir;
 const TMP_MANIFEST_ROOT = resolve(__dirname, ".tmp-manifest-check");
-const TMP_MANIFEST = resolve(TMP_MANIFEST_ROOT, "core");
-const MANIFEST_ANNOTATION_FILE = "scripts/treeshaking/side-effects-manifest/core/_root.json";
+const TMP_MANIFEST = resolve(TMP_MANIFEST_ROOT, PACKAGE);
+const MANIFEST_ANNOTATION_FILE = PACKAGE_CONFIG.manifestAnnotationFile;
 const IS_ADO = !!process.env.TF_BUILD;
 
 function escapeAdo(value) {
@@ -49,7 +52,10 @@ function main() {
 
     // Run the audit script and write output to a temp file
     try {
-        execFileSync(process.execPath, [resolve(__dirname, "auditSideEffects.mjs"), "--out", TMP_MANIFEST], { cwd: REPO_ROOT, stdio: ["pipe", "pipe", "pipe"] });
+        execFileSync(process.execPath, [resolve(__dirname, "auditSideEffects.mjs"), ...packageArgs(PACKAGE), "--out", TMP_MANIFEST], {
+            cwd: REPO_ROOT,
+            stdio: ["pipe", "pipe", "pipe"],
+        });
     } catch (err) {
         console.error("Failed to run auditSideEffects.mjs:");
         console.error(err.stderr?.toString() ?? err.message);
@@ -122,11 +128,13 @@ function main() {
         console.error("  (e.g., line numbers or detected patterns changed)");
     }
 
+    const manifestDirRel = relative(REPO_ROOT, COMMITTED_MANIFEST).split("\\").join("/");
+    const publicPkgRel = relative(REPO_ROOT, PACKAGE_CONFIG.publicPkgJson).split("\\").join("/");
     console.error(
         "\nTo fix: regenerate the manifest and commit it:\n" +
-            "  npm run update:manifest\n" +
-            "  node scripts/treeshaking/syncSideEffects.mjs\n" +
-            "  git add scripts/treeshaking/side-effects-manifest/core packages/public/@babylonjs/core/package.json\n"
+            `  npm run update:manifest\n` +
+            `  node scripts/treeshaking/syncSideEffects.mjs${PACKAGE === "core" ? "" : ` --package ${PACKAGE}`}\n` +
+            `  git add ${manifestDirRel} ${publicPkgRel}\n`
     );
 
     process.exit(1);
