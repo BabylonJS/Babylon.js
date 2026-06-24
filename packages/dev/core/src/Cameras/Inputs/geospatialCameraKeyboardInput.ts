@@ -238,6 +238,14 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             this._keyboardModifiers.alt = this._altPressed;
             this._keyboardModifiers.shift = this._shiftPressed;
 
+            // Pan keys are accumulated into a single direction vector and applied once below.
+            // This way holding two directions at once (e.g. up + left) produces a normalized
+            // diagonal at the same speed as a single direction, instead of a ~1.41x speed boost
+            // (sqrt(1^2 + 1^2)) that comes from applying each pan key independently.
+            let panOffsetX = 0;
+            let panOffsetY = 0;
+            let panSensitivity = 0;
+
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
 
@@ -264,25 +272,38 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                             input.handlers.rotate(0, sens);
                         }
                     } else if (resolved.interaction === "pan") {
-                        // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
-                        // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
-                        // but the picking logic (scene.pick via CreatePickingRayToRef) expects CSS pixels (it divides by hardwareScalingLevel internally).
-                        const hardwareScaling = this._engine.getHardwareScalingLevel();
-                        const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
-                        const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
-                        input.handlers.pan.start(centerX, centerY);
+                        // Accumulate a unit direction per pan key; the combined vector is normalized after the loop.
+                        panSensitivity = sens;
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX + sens, centerY);
+                            panOffsetX += 1;
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX - sens, centerY);
+                            panOffsetX -= 1;
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX, centerY + sens);
+                            panOffsetY += 1;
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX, centerY - sens);
+                            panOffsetY -= 1;
                         }
-                        input.handlers.pan.stop();
                     }
                 }
+            }
+
+            // Apply a single, normalized pan once all pan keys for this frame have been accumulated.
+            if (panOffsetX !== 0 || panOffsetY !== 0) {
+                // Normalize the direction so diagonal pans aren't faster than axis-aligned ones.
+                // The guard above guarantees the length is non-zero, so there is no divide-by-zero.
+                const length = Math.sqrt(panOffsetX * panOffsetX + panOffsetY * panOffsetY);
+                const normalizedX = (panOffsetX / length) * panSensitivity;
+                const normalizedY = (panOffsetY / length) * panSensitivity;
+
+                // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
+                // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
+                // but the picking logic (scene.pick via CreatePickingRayToRef) expects CSS pixels (it divides by hardwareScalingLevel internally).
+                const hardwareScaling = this._engine.getHardwareScalingLevel();
+                const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
+                const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
+                input.handlers.pan.start(centerX, centerY);
+                input.handlers.pan.update(centerX + normalizedX, centerY + normalizedY);
+                input.handlers.pan.stop();
             }
         }
     }
