@@ -31,6 +31,14 @@
             "dependsOn": ["GaussianSplatting", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting GPU Picking",
+            "playgroundId": "#834G5K",
+            "renderCount": 15,
+            "referenceImage": "gsplat-gpu-picking.png",
+            "dependsOn": ["GaussianSplatting", "Collisions", "Meshes", "Materials"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting PLY SH Reload",
             "playgroundId": "#YMXPPW#1",
             "referenceImage": "gsplat-ply-sh-reload.png",
