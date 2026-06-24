@@ -11,6 +11,10 @@
 // Register GLTF/GLB loader and all glTF 2.0 extensions (side-effect imports
 // register each KHR_/EXT_ extension via registerGLTFExtension).
 import "loaders/glTF/2.0";
+// glTF scenes can reference a single mesh from multiple nodes, which the loader
+// realizes with InstancedMesh. In the tree-shaken dev build that side-effect is
+// not pulled in automatically, so import it explicitly here.
+import "core/Meshes/instancedMesh";
 import { Sandbox } from "./sandbox";
 
 const HostElement = document.getElementById("host-element") as HTMLElement;
