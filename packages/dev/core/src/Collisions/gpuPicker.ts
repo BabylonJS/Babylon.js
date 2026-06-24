@@ -1429,24 +1429,34 @@ export class GPUPicker {
             return;
         }
 
+        const engine = this._cachedScene!.getEngine();
+
         // Cap the number of polling attempts to avoid hanging forever if a shader fails to compile.
         const maxAttempts = 200;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             let allReady = true;
-            // Iterate every mesh (do not break early): each isReady call kicks off compilation
-            // of that mesh's effect variant if not yet started, so visiting them all on the first
-            // attempt lets the compiles run in parallel (KHR_parallel_shader_compile) instead of
-            // being serialized one variant per render frame.
-            for (let i = 0; i < renderList.length; i++) {
-                const mesh = renderList[i];
-                const material = this._meshMaterialMap.get(mesh);
-                // Match the canonical "uses instanced shader variant" check used elsewhere in this file
-                // (see addPickingList) — InstancedMesh entries report isAnInstance=true while
-                // hasInstances=false, so omitting isAnInstance would validate the wrong shader variant.
-                const useInstances = mesh.hasInstances || mesh.isAnInstance || mesh.hasThinInstances;
-                if (material && !material.isReady(mesh, useInstances)) {
-                    allReady = false;
+            // Compile picking effects under the picking texture's render pass id so per-pass effect caches
+            // (e.g. GaussianSplattingMaterial) don't stamp them onto the main pass draw wrapper.
+            const previousRenderPassId = engine.currentRenderPassId;
+            engine.currentRenderPassId = this._pickingTexture!.renderPassId;
+            try {
+                // Iterate every mesh (do not break early): each isReady call kicks off compilation
+                // of that mesh's effect variant if not yet started, so visiting them all on the first
+                // attempt lets the compiles run in parallel (KHR_parallel_shader_compile) instead of
+                // being serialized one variant per render frame.
+                for (let i = 0; i < renderList.length; i++) {
+                    const mesh = renderList[i];
+                    const material = this._meshMaterialMap.get(mesh);
+                    // Match the canonical "uses instanced shader variant" check used elsewhere in this file
+                    // (see addPickingList) — InstancedMesh entries report isAnInstance=true while
+                    // hasInstances=false, so omitting isAnInstance would validate the wrong shader variant.
+                    const useInstances = mesh.hasInstances || mesh.isAnInstance || mesh.hasThinInstances;
+                    if (material && !material.isReady(mesh, useInstances)) {
+                        allReady = false;
+                    }
                 }
+            } finally {
+                engine.currentRenderPassId = previousRenderPassId;
             }
             if (allReady) {
                 return;

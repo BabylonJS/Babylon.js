@@ -736,9 +736,11 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Whether the depth sort is settled: a sort computed for the current active ranges and camera has been
      * applied to the rendered index buffer, and no further sort is pending or in flight. For a static camera
      * and a fixed active set this becomes true once the final sort completes. Used by streaming subclasses to
-     * detect when rendering is fully up to date (e.g. for deterministic screenshots).
+     * detect when rendering is fully up to date (e.g. for deterministic screenshots) and by IBL shadows to
+     * avoid voxelizing against an index buffer the worker has not finished (re)building yet.
+     * @internal
      */
-    protected get _isDepthSortSettled(): boolean {
+    public get _isDepthSortSettled(): boolean {
         return this._readyToDisplay && !this._sortIsDirty && this._canPostToWorker;
     }
 
