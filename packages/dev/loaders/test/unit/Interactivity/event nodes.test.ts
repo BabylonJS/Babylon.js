@@ -12,6 +12,7 @@ import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import "loaders/glTF/2.0/Extensions/KHR_interactivity";
+import "loaders/glTF/2.0/Extensions/KHR_node_selectability";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import {
     IKHRInteractivity_Declaration,
