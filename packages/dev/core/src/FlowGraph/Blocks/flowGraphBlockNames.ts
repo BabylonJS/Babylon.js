@@ -48,6 +48,8 @@ export const enum FlowGraphBlockNames {
     MathInterpolation = "FlowGraphMathInterpolationBlock",
     MathSlerp = "FlowGraphMathSlerpBlock",
     SmoothStep = "FlowGraphSmoothStepBlock",
+    RGBToOkLCh = "FlowGraphRGBToOkLChBlock",
+    RGBFromOkLCh = "FlowGraphRGBFromOkLChBlock",
     Equality = "FlowGraphEqualityBlock",
     LessThan = "FlowGraphLessThanBlock",
     LessThanOrEqual = "FlowGraphLessThanOrEqualBlock",

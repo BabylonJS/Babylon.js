@@ -104,6 +104,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSlerpBlock;
         case FlowGraphBlockNames.SmoothStep:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSmoothStepBlock;
+        case FlowGraphBlockNames.RGBToOkLCh:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRGBToOkLChBlock;
+        case FlowGraphBlockNames.RGBFromOkLCh:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRGBFromOkLChBlock;
         case FlowGraphBlockNames.Equality:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEqualityBlock;
         case FlowGraphBlockNames.LessThan:

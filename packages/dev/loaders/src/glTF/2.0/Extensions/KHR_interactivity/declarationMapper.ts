@@ -444,6 +444,42 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/mix": getSimpleInputMapping(FlowGraphBlockNames.MathInterpolation, ["a", "b", "c"]),
     // Smooth-step (Hermite interpolation): edges a/b and value c.
     "math/smoothStep": getSimpleInputMapping(FlowGraphBlockNames.SmoothStep, ["a", "b", "c"]),
+    // Linear sRGB <-> OkLCh (Oklab polar form). Scalar r/g/b inputs map to l/c/h
+    // outputs (hue in radians) and vice-versa.
+    "math/rgbToOkLCh": {
+        blocks: [FlowGraphBlockNames.RGBToOkLCh],
+        inputs: {
+            values: {
+                r: { name: "r", gltfType: "number" },
+                g: { name: "g", gltfType: "number" },
+                b: { name: "b", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                l: { name: "l" },
+                c: { name: "c" },
+                h: { name: "h" },
+            },
+        },
+    },
+    "math/rgbFromOkLCh": {
+        blocks: [FlowGraphBlockNames.RGBFromOkLCh],
+        inputs: {
+            values: {
+                l: { name: "l", gltfType: "number" },
+                c: { name: "c", gltfType: "number" },
+                h: { name: "h", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                r: { name: "r" },
+                g: { name: "g" },
+                b: { name: "b" },
+            },
+        },
+    },
     // Quaternion spherical-linear interpolation. Inputs are two unit
     // quaternions and an unclamped float coefficient.
     "math/quatSlerp": getSimpleInputMapping(FlowGraphBlockNames.MathSlerp, ["a", "b", "c"]),
