@@ -18,6 +18,7 @@ import {
     BuildFromComponents,
     GetDefaultValueForType,
     InferVariableType,
+    InferVariableTypesFromBlocks,
     type IVariableEntry,
     type VariableTypeName,
 } from "../../variableUtils";
@@ -386,20 +387,31 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
 
         const variables = GatherVariables(fg);
 
+        // Statically infer types from the SetVariable blocks that write each variable. This works
+        // even when the graph is stopped (no runtime context), so variables show meaningful types
+        // instead of defaulting to "any".
+        const staticTypes = InferVariableTypesFromBlocks(fg);
+
         // Read type annotations from the selected context (or first available)
         const ctx = fg.getContext(this.props.globalState.selectedContextIndex) ?? fg.getContext(0);
         const variableTypes = new Map<string, VariableTypeName>();
-        if (ctx) {
-            for (const v of variables) {
-                const declared = ctx.getVariableType(v.name) as VariableTypeName | undefined;
-                if (declared) {
-                    variableTypes.set(v.name, declared);
-                } else {
-                    // Infer from current value
-                    const val = ctx.userVariables[v.name];
-                    variableTypes.set(v.name, InferVariableType(val));
+        for (const v of variables) {
+            // 1. An explicit type declared on the context always wins.
+            const declared = ctx?.getVariableType(v.name) as VariableTypeName | undefined;
+            if (declared) {
+                variableTypes.set(v.name, declared);
+                continue;
+            }
+            // 2. Infer from the live runtime value, when running.
+            if (ctx) {
+                const runtimeType = InferVariableType(ctx.userVariables[v.name]);
+                if (runtimeType !== "any") {
+                    variableTypes.set(v.name, runtimeType);
+                    continue;
                 }
             }
+            // 3. Fall back to the type statically inferred from the SetVariable blocks.
+            variableTypes.set(v.name, staticTypes.get(v.name) ?? "any");
         }
         this.setState({ variables, variableTypes });
     }

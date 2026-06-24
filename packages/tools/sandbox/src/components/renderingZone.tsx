@@ -17,6 +17,7 @@ import { Animation } from "core/Animations/animation";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
 import "core/Helpers/sceneHelpers";
+import "core/Loading/loadingScreen";
 
 import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
@@ -197,9 +198,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
             camera = this._scene.activeCamera! as ArcRotateCamera;
 
-            if (this._currentPluginName === "gltf" || this._currentPluginName === "obj") {
+            if (this._currentPluginName === "gltf" || this._currentPluginName === "obj" || this._currentPluginName === "fbx") {
                 // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
                 // We do this same for obj as it matches other viewers, but obj does not specify a forward convention.
+                // The FBX loader applies the same right-handed-to-left-handed flip as glTF, so its assets share the +Z forward convention.
                 camera.alpha += Math.PI;
             }
 
@@ -303,6 +305,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
+
+        // The FBX loader creates animation groups but does not auto-play them the way the glTF loader does.
+        // Treat FBX assets like glTF in the Sandbox by playing the first animation group (looped) on load.
+        if (this._currentPluginName === "fbx" && this._scene.animationGroups.length > 0) {
+            this._scene.animationGroups[0].start(true);
+        }
 
         const camera = this.prepareCamera();
         this.prepareLighting();

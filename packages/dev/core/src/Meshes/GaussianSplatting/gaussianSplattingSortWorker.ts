@@ -36,7 +36,7 @@ export const GaussianSplattingSortWorkerCommand = {
  * - `partIndices`  set compound-mesh per-splat rig node indices.
  * - `intervals`    set active source-splat ranges (flat [start0, count0, ...]); persisted across sorts.
  * - `sort`         sort the active splats for `{ worldMatrix, cameraForward, cameraPosition, depthMix,
- *                  cameraId, sortRequestId }` and post back a `sorted` result.
+ *                  cameraId, sortRequestId, rightHanded }` and post back a `sorted` result.
  *
  * @param self - the worker global scope
  */
@@ -95,6 +95,14 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
             const useCountingSort = e.data.useCountingSort !== false;
             const logSortPerformance = !!e.data.logSortPerformance;
 
+            // `cameraForward` is the view matrix's third row [m[2], m[6], m[10]], which points into the scene
+            // in a left-handed scene but back toward the viewer in a right-handed one. As a result the signed
+            // `depth = dot(cameraForward, worldPos - cameraPos)` increases with distance in left-handed scenes
+            // but decreases with distance in right-handed ones. The counting sort below relies on "larger depth
+            // = farther", so negate the depth in right-handed scenes to keep that invariant and preserve correct
+            // back-to-front ordering. (The legacy comparison sort handles either sign naturally and is untouched.)
+            const depthSign = e.data.rightHanded ? -1 : 1;
+
             // Resolve the active interval set. The main thread always sends an `intervals` message,
             // but fall back to "all source splats" if a sort somehow arrives before it.
             const activeIntervals = intervals;
@@ -150,14 +158,21 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                     let c = 0;
                     let d = 0;
                     if (compound) {
-                        depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
+                        depthCoeffs = partMatrices.map((m) => {
+                            const co = computeDepthCoeffs(m);
+                            co[0] *= depthSign;
+                            co[1] *= depthSign;
+                            co[2] *= depthSign;
+                            co[3] *= depthSign;
+                            return co;
+                        });
                         partLen = partIndices.length;
                     } else {
                         const coeff = computeDepthCoeffs(globalWorldMatrix);
-                        a = coeff[0];
-                        b = coeff[1];
-                        c = coeff[2];
-                        d = coeff[3];
+                        a = coeff[0] * depthSign;
+                        b = coeff[1] * depthSign;
+                        c = coeff[2] * depthSign;
+                        d = coeff[3] * depthSign;
                     }
 
                     // Pass 1: gather the active source indices, compute each splat's view-space depth (signed

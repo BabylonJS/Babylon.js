@@ -669,7 +669,7 @@ export class ClusteredLightContainer extends Light {
         return serializationObject;
     }
 
-    protected override _onParsed(parsedLight: any, scene: Scene): void {
+    protected override _onParsed(parsedLight: any, scene: Scene, rootUrl: string = ""): void {
         if (parsedLight.clusteredLights) {
             // Parse child lights first, but defer addLight() until after the loader
             // fixup passes (parent resolution, excluded/included mesh resolution)
@@ -677,7 +677,7 @@ export class ClusteredLightContainer extends Light {
             // which would cause those fixups to miss the child lights.
             const parsedChildLights: Light[] = [];
             for (const parsedChildLight of parsedLight.clusteredLights) {
-                const childLight = Light.Parse(parsedChildLight, scene);
+                const childLight = Light.Parse(parsedChildLight, scene, rootUrl);
                 if (childLight) {
                     parsedChildLights.push(childLight);
                 }

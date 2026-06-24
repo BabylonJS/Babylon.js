@@ -398,8 +398,22 @@ function stubOptionalPeerDepsPlugin() {
  * This is needed because Rollup cannot inline dynamic imports of external
  * modules — it leaves `import("babylonjs")` etc. in the UMD output, which is
  * ES2020 syntax that fails the `es-check es6` gate.
+ *
+ * It also neutralizes any *remaining* dynamic import of a non-literal (variable)
+ * specifier — e.g. an optional, lazily-loaded peer dependency such as the
+ * HTML-in-Canvas polyfill. A UMD/global build has no module loader to resolve a
+ * bare specifier, and a literal `import(...)` is ES2020 syntax that the
+ * `es-check es6` gate rejects. Such calls are swapped for a helper that returns a
+ * rejected promise; callers already guard with try/catch and fall back (e.g. by
+ * accepting an explicitly-provided module).
  */
 function rewriteDynamicExternalImportsPlugin(production = false) {
+    const dynamicImportHelperName = "_BabylonUMDDynamicImportUnsupported";
+    const dynamicImportHelper =
+        `function ${dynamicImportHelperName}(){` +
+        `return Promise.reject(new Error("Dynamic import of a module specifier is not supported in the UMD/global Babylon build; use the ES module build or provide the module explicitly."));` +
+        `}\n`;
+
     return {
         name: "rewrite-dynamic-external-imports",
         renderChunk(code) {
@@ -415,6 +429,13 @@ function rewriteDynamicExternalImportsPlugin(production = false) {
                 // Match import("umdId") or import('umdId') — dynamic import of an external.
                 const re = new RegExp(`import\\((['"])${umdId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\1\\)`, "g");
                 result = result.replace(re, `Promise.resolve(${globalVar})`);
+            }
+            // Any dynamic import still present at this point has a variable specifier (string-literal
+            // external imports were rewritten above; internal ones were inlined by Rollup). The UMD/global
+            // build cannot resolve it, so swap the call for the rejecting helper to keep the output es6-clean.
+            if (/(?<![.\w])import\s*\(/.test(result)) {
+                result = result.replace(/(?<![.\w])import\s*\(/g, `${dynamicImportHelperName}(`);
+                result = dynamicImportHelper + result;
             }
             return result !== code ? { code: result, map: null } : null;
         },

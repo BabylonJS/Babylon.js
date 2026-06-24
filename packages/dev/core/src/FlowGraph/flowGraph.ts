@@ -255,6 +255,15 @@ export class FlowGraph {
         // Rebuild with the new scene
         (this as { _scene: Scene })._scene = scene;
         this._scene.constantlyUpdateMeshUnderPointer = true; // ensure pointer info is always up to date for event blocks that need it
+        // Re-resolve node references (e.g. meshes targeted by Get/Set property blocks) against the
+        // new scene. This is required when the graph was parsed before its scene was populated (for
+        // example an editor that loads a graph from a snippet first and the referenced scene second):
+        // the references would otherwise stay bound to nodes from the old/disposed scene.
+        for (const block of this._allBlocks) {
+            for (const input of block.dataInputs) {
+                input._reresolveDefaultValueForScene(scene);
+            }
+        }
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         // Pre-attach the event observer so that events from the new
         // coordinator are routed to the graph immediately.  The handler

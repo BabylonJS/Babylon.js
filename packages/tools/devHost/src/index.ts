@@ -19,6 +19,10 @@ switch (ExpQsp) {
         ImportPromise = import("./bodyTracking/main");
         break;
     }
+    case "flowgraph": {
+        ImportPromise = import("./flowgraph/main");
+        break;
+    }
     case "testscene":
     default: {
         ImportPromise = import("./testScene/main");

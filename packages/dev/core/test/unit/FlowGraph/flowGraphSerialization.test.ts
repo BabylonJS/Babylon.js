@@ -394,6 +394,46 @@ describe("Flow Graph Serialization", () => {
         expect(camera.alpha).toBe(1);
     });
 
+    it("setScene re-resolves node references against the new scene", () => {
+        // Mimics an editor that loads a graph before its referenced scene exists: the parser leaves
+        // node-targeting inputs holding the raw serialized reference ({ id, name, className, uniqueId })
+        // instead of a live node. Moving the graph to the populated scene via setScene must rebind those
+        // references to the matching nodes in the new scene (uniqueIds differ across scene builds).
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+
+        // Case 1: an unresolved serialized reference left by the parser (node absent at parse time).
+        const unresolvedBlock = new FlowGraphSetPropertyBlock<Vector3, FlowGraphAssetType.Mesh>({ propertyName: "position" });
+        graph.addBlock(unresolvedBlock);
+        (unresolvedBlock.object as any)._defaultValue = { id: "hero", name: "hero", className: "Mesh", uniqueId: 20 };
+
+        // Case 2: a reference to a node that belongs to a different (e.g. disposed) scene.
+        const oldScene = new Scene(engine);
+        const oldGoomba = new Mesh("goomba", oldScene);
+        const staleBlock = new FlowGraphSetPropertyBlock<Vector3, FlowGraphAssetType.Mesh>({ propertyName: "position", target: oldGoomba });
+        graph.addBlock(staleBlock);
+
+        // Case 3: a non-node value must be left untouched.
+        const numberBlock = new FlowGraphSetPropertyBlock<number, FlowGraphAssetType.Mesh>({ propertyName: "visibility" });
+        graph.addBlock(numberBlock);
+        (numberBlock.object as any)._defaultValue = 42;
+
+        // The populated preview scene holds fresh instances with different uniqueIds.
+        const previewScene = new Scene(engine);
+        const liveHero = new Mesh("hero", previewScene);
+        const liveGoomba = new Mesh("goomba", previewScene);
+
+        graph.setScene(previewScene);
+
+        const context = graph.createContext();
+        expect(unresolvedBlock.object.getValue(context)).toBe(liveHero);
+        expect(staleBlock.object.getValue(context)).toBe(liveGoomba);
+        expect(numberBlock.object.getValue(context)).toBe(42);
+
+        oldScene.dispose();
+        previewScene.dispose();
+    });
+
     it("Event block fires both out and done signals after round-trip", async () => {
         const mockContext: any = {};
         const pathConverter = new FlowGraphPathConverter(mockContext);

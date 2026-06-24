@@ -257,3 +257,88 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
     fragmentOutputs.fragData3 = vec4<f32>(colRgb, colA);
 }
 `;
+
+/**
+ * Shader name for the work-buffer relayout (defrag/compaction) copy pass.
+ */
+export const GaussianSplattingWorkBufferRelayoutShaderName = "gsWorkBufferRelayout";
+
+/**
+ * Relayout copy fragment shader (GLSL/WebGL2). Copies the four decoded work-buffer textures from a source
+ * layout to a destination layout, one output texel per draw. In map mode (`uUseMap == 1`) each destination
+ * texel reads its source splat index from `uMapTex` (R32F; a negative value marks a gap and is discarded so
+ * the cleared destination stays zero). In identity mode the source texel equals the destination texel.
+ */
+export const GaussianSplattingWorkBufferRelayoutFragmentShaderGLSL = `precision highp float;
+precision highp int;
+
+uniform sampler2D uMapTex;
+uniform sampler2D uSrc0;
+uniform sampler2D uSrc1;
+uniform sampler2D uSrc2;
+uniform sampler2D uSrc3;
+uniform int uDstWidth;
+uniform int uSrcWidth;
+uniform int uUseMap;
+
+layout(location = 0) out vec4 glFragData[4];
+
+void main() {
+    ivec2 p = ivec2(gl_FragCoord.xy);
+    int srcIdx;
+    if (uUseMap == 1) {
+        float m = texelFetch(uMapTex, p, 0).r;
+        if (m < 0.0) {
+            discard;
+        }
+        srcIdx = int(m + 0.5);
+    } else {
+        srcIdx = p.y * uDstWidth + p.x;
+    }
+    ivec2 s = ivec2(srcIdx - (srcIdx / uSrcWidth) * uSrcWidth, srcIdx / uSrcWidth);
+    glFragData[0] = texelFetch(uSrc0, s, 0);
+    glFragData[1] = texelFetch(uSrc1, s, 0);
+    glFragData[2] = texelFetch(uSrc2, s, 0);
+    glFragData[3] = texelFetch(uSrc3, s, 0);
+}
+`;
+
+/**
+ * Relayout copy fragment shader (WGSL/WebGPU) — same copy as the GLSL variant.
+ */
+export const GaussianSplattingWorkBufferRelayoutFragmentShaderWGSL = `
+var uMapTexSampler : sampler;
+var uMapTex : texture_2d<f32>;
+var uSrc0Sampler : sampler;
+var uSrc0 : texture_2d<f32>;
+var uSrc1Sampler : sampler;
+var uSrc1 : texture_2d<f32>;
+var uSrc2Sampler : sampler;
+var uSrc2 : texture_2d<f32>;
+var uSrc3Sampler : sampler;
+var uSrc3 : texture_2d<f32>;
+
+uniform uDstWidth : i32;
+uniform uSrcWidth : i32;
+uniform uUseMap : i32;
+
+@fragment
+fn main(input : FragmentInputs) -> FragmentOutputs {
+    let p : vec2<i32> = vec2<i32>(i32(fragmentInputs.position.x), i32(fragmentInputs.position.y));
+    var srcIdx : i32;
+    if (uniforms.uUseMap == 1) {
+        let m : f32 = textureLoad(uMapTex, p, 0).r;
+        if (m < 0.0) {
+            discard;
+        }
+        srcIdx = i32(m + 0.5);
+    } else {
+        srcIdx = p.y * uniforms.uDstWidth + p.x;
+    }
+    let s : vec2<i32> = vec2<i32>(srcIdx - (srcIdx / uniforms.uSrcWidth) * uniforms.uSrcWidth, srcIdx / uniforms.uSrcWidth);
+    fragmentOutputs.fragData0 = textureLoad(uSrc0, s, 0);
+    fragmentOutputs.fragData1 = textureLoad(uSrc1, s, 0);
+    fragmentOutputs.fragData2 = textureLoad(uSrc2, s, 0);
+    fragmentOutputs.fragData3 = textureLoad(uSrc3, s, 0);
+}
+`;

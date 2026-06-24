@@ -14,8 +14,10 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { type LinesMesh } from "core/Meshes/linesMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { ParseSogMetaAsTextures, type SOGRootData } from "./sog";
+import { ParseSogMetaAsTextures, type SOGRootData } from "./sog.pure";
 import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
+import { GaussianSplattingDownloadManager } from "./gaussianSplattingDownloadManager";
+import { GaussianSplattingResidencyController } from "./gaussianSplattingResidencyController";
 import { type ISogTexturePack } from "./splatDefs";
 
 /**
@@ -54,6 +56,12 @@ interface ISOGLODNode {
     inFrustum?: boolean;
     /** Cached local-space bounding info used for the per-node frustum test (created once per leaf). */
     cullBounds?: BoundingInfo;
+    /** File index this node currently has an in-flight/queued decode request for (its not-yet-decoded target),
+     * or undefined when the node's target is already decoded. Drives pending-download reference counting. */
+    pendingFile?: number;
+    /** File index this node's current {@link activeLod} renders from, or undefined before any LOD is active.
+     * Drives the resident reference count that keeps a file in the work buffer. */
+    activeFile?: number;
 }
 
 /**
@@ -116,10 +124,39 @@ export interface IGaussianSplattingStreamOptions {
      * the camera turns toward them, then refine. Set to `false` to render every node at its distance LOD.
      */
     frustumCulling?: boolean;
+    /** Maximum number of LOD file downloads allowed to run concurrently. PlayCanvas default `2`. */
+    maxConcurrentDownloads?: number;
+    /** Number of times a failed file download is retried before giving up. PlayCanvas default `2`. */
+    maxDownloadRetries?: number;
+    /**
+     * GPU memory budget (in megabytes) for resident splats. When set (and smaller than the full dataset),
+     * LOD files are streamed through a fixed-size work buffer and unreferenced files are evicted to stay
+     * within budget, allowing datasets larger than a single full-dataset buffer. Converted to a splat count
+     * at ~84 bytes/splat. Combined with {@link maxResidentSplats} by taking the smaller of the two.
+     */
+    memoryBudgetMb?: number;
+    /**
+     * Maximum number of splats kept resident in the work buffer. When set (and smaller than the full
+     * dataset), enables eviction-based streaming (see {@link memoryBudgetMb}). Default unset = size the work
+     * buffer for the whole dataset (no eviction).
+     */
+    maxResidentSplats?: number;
+    /**
+     * Frames an unreferenced (no longer rendered) LOD file stays resident before it is evicted, so a quick
+     * return to it avoids a re-download. Only used when a budget enables eviction. PlayCanvas default `100`.
+     */
+    evictionCooldownFrames?: number;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
 const RefTanHalfFov = Math.tan((22.5 * Math.PI) / 180);
+
+// Sentinel "file" ids for the residency controller's pinned (never-evicted) allocations.
+const PaddingFileId = -2;
+const EnvironmentFileId = -1;
+// Approximate bytes per resident splat used to convert a memory budget (MB) to a splat budget: the four
+// work-buffer textures cost 16+16+16+4 = 52 bytes on the GPU, plus ~32 bytes of CPU position/sort data.
+const BytesPerResidentSplat = 84;
 
 // Scratch objects reused by the per-frame optimal-LOD evaluation (avoids per-call allocations).
 const TmpInvWorld = new Matrix();
@@ -220,18 +257,36 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Set once the one-time readback validation has run (success or failure).
     private _readbackProbed = false;
 
-    // Global splat offset where each source file begins in the work buffer (fixed for all files up front).
-    private readonly _fileBaseSplat = new Map<number, number>();
+    // Residency controller: owns the work-buffer slot allocator, per-file blocks, and eviction cooldowns.
+    private _residency: Nullable<GaussianSplattingResidencyController> = null;
     // Splat count of each source file (learned from its metadata before allocation).
     private readonly _fileCounts = new Map<number, number>();
     // Cached SOG metadata per file so on-demand decodes don't refetch the meta.json.
     private readonly _fileMeta = new Map<number, { sogData: SOGRootData; subRootUrl: string }>();
-    // Files whose splats have been GPU-decoded into the work buffer.
+    // Files whose splats have been fully GPU-decoded into the work buffer (render-safe).
     private readonly _decodedFiles = new Set<number>();
     // Files whose decode is currently in flight (dedupes concurrent requests).
     private readonly _loadingFiles = new Set<number>();
     // FIFO of file ids waiting to be decoded (drained under a per-frame budget).
     private readonly _decodeQueue: number[] = [];
+    // Per-file reference count: number of leaf nodes whose active LOD renders, or whose pending target points
+    // at, each file. At zero, a decoded file is scheduled for eviction and a still-downloading file is cancelled.
+    private readonly _fileRefs = new Map<number, number>();
+    // Files whose in-flight decode was cancelled; checked at decode checkpoints to bail out cooperatively.
+    private readonly _cancelledDecodes = new Set<number>();
+    // Eviction streaming config: enabled only when a budget smaller than the full dataset is configured.
+    private _evictionEnabled = false;
+    private _residentBudget = 0;
+    private _evictionCooldownFrames = 100;
+    // Serializes the allocate -> decode -> readback critical section so a defrag relayout (which runs inside it)
+    // never overlaps another file's decode writing the work buffer, which would corrupt the moved data.
+    private _decodeGate: Promise<void> = Promise.resolve();
+    // Reusable scratch for the (rare) defrag relayout, to avoid per-relayout allocations during streaming.
+    private readonly _relayoutOldOffsets = new Map<number, number>();
+    private _relayoutSrcIndex: Nullable<Float32Array> = null;
+
+    // Throttles and retries the SOG file/image downloads (PlayCanvas-style download manager).
+    private readonly _downloadManager: GaussianSplattingDownloadManager;
 
     // Global range covered by the environment file (always rendered), or null until it loads.
     private _environmentRange: Nullable<{ offset: number; count: number }> = null;
@@ -329,6 +384,24 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.debugLodSource) {
             this._debugLodSource = options.debugLodSource;
         }
+        if (options.evictionCooldownFrames !== undefined) {
+            this._evictionCooldownFrames = Math.max(0, Math.floor(options.evictionCooldownFrames));
+        }
+        // Resolve the resident-splat budget from the splat-count and/or memory-size options (smaller wins).
+        let budget = 0;
+        if (options.maxResidentSplats !== undefined && options.maxResidentSplats > 0) {
+            budget = Math.floor(options.maxResidentSplats);
+        }
+        if (options.memoryBudgetMb !== undefined && options.memoryBudgetMb > 0) {
+            const fromMB = Math.floor((options.memoryBudgetMb * 1024 * 1024) / BytesPerResidentSplat);
+            budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
+        }
+        this._residentBudget = budget;
+
+        this._downloadManager = new GaussianSplattingDownloadManager({
+            maxConcurrent: options.maxConcurrentDownloads,
+            maxRetries: options.maxDownloadRetries,
+        });
 
         // PlayCanvas SOG data is authored with a flipped Y; match the standard SOG loader.
         this.scaling.y *= -1;
@@ -350,6 +423,91 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     public override getClassName(): string {
         return "GaussianSplattingStream";
+    }
+
+    /**
+     * Resolves once the scene is fully streamed and displayed for the current camera: a LOD re-evaluation has
+     * run for the current point of view, every reachable LOD file has finished downloading and decoding (no
+     * downloads, decodes, or queued work remain), and the depth sort for the resulting splats has been applied
+     * and rendered. Intended for deterministic automated testing and screenshot/image comparison.
+     *
+     * Streaming and settling require rendered frames. If an external render loop is already running, this waits
+     * on it passively; otherwise (e.g. when awaited inside an async `createScene` before the host starts its
+     * render loop) it drives `scene.render()` itself until settled, so it never deadlocks.
+     *
+     * Note: the promise only resolves while the camera is still — if the camera keeps moving, the target LODs
+     * (and the depth sort) keep changing and the stream never settles. Position the camera, then await this.
+     * @param stableFrames number of consecutive settled frames to require before resolving (defaults to 3), so
+     *   the final sorted frame is actually on screen
+     * @returns a promise that resolves when loading and rendering are complete for the current view
+     */
+    public async whenSettledAsync(stableFrames = 3): Promise<void> {
+        if (this._disposed) {
+            return;
+        }
+        // Re-evaluate LODs immediately so the target levels reflect the current camera before we wait.
+        this._forceLodUpdate = true;
+        const required = Math.max(1, stableFrames);
+        const scene = this._scene;
+        let stable = 0;
+        const isSettled = (): boolean => {
+            if (this._isLoadingIdle() && this._isDepthSortSettled) {
+                return ++stable >= required;
+            }
+            stable = 0;
+            return false;
+        };
+
+        // An external render loop is already driving frames: observe it passively.
+        if (scene.getEngine().activeRenderLoops.length > 0) {
+            await new Promise<void>((resolve) => {
+                let observer: Nullable<Observer<Scene>> = null;
+                observer = scene.onAfterRenderObservable.add(() => {
+                    if (this._disposed || isSettled()) {
+                        if (observer) {
+                            scene.onAfterRenderObservable.remove(observer);
+                            observer = null;
+                        }
+                        resolve();
+                    }
+                });
+            });
+            return;
+        }
+
+        // No render loop yet (e.g. awaited inside createScene): drive rendering ourselves so the streaming
+        // decodes and depth sort can progress, yielding between frames so async downloads/readbacks resolve.
+        // Wrap each render in beginFrame/endFrame exactly like the engine's own render loop: on WebGPU,
+        // endFrame submits the frame's command buffers and presents the swapchain, so a bare scene.render()
+        // would leave the acquired swapchain texture to be destroyed at the frame boundary before its command
+        // buffer is submitted ("destroyed texture used in a submit").
+        const engine = scene.getEngine();
+        const requestFrame = (globalThis as { requestAnimationFrame?: (cb: () => void) => void }).requestAnimationFrame;
+        while (!this._disposed) {
+            engine.beginFrame();
+            scene.render();
+            engine.endFrame();
+            if (isSettled()) {
+                return;
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise<void>((resolve) => {
+                if (typeof requestFrame === "function") {
+                    requestFrame(() => resolve());
+                } else {
+                    setTimeout(resolve, 16);
+                }
+            });
+        }
+    }
+
+    /**
+     * Whether the base layer is ready and there is no streaming work in flight (nothing queued for decode, no
+     * decode running, and no downloads pending).
+     * @returns true when no loading work remains
+     */
+    private _isLoadingIdle(): boolean {
+        return this._baseLayerReady && this._decodeQueue.length === 0 && this._loadingFiles.size === 0 && this._downloadManager.isIdle;
     }
 
     /**
@@ -442,6 +600,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this._lodObserver = null;
         }
         this._clearDebugDisplay();
+        this._downloadManager.dispose();
+        this._residency?.dispose();
+        this._residency = null;
         this._workBuffer?.dispose();
         this._workBuffer = null;
         super.dispose(doNotRecurse);
@@ -744,25 +905,40 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             return;
         }
 
-        // Phase 2: assign fixed work-buffer offsets (environment first, then every file) and allocate.
+        // Phase 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
+        // sized to this unless a smaller budget enables eviction-based streaming.
         // Index 0 is reserved as a never-decoded padding splat: the sort worker and index buffer pad unused
         // slots with index 0, and leaving that slot zeroed (center.w = 0 => zero covariance, alpha 0) makes
         // the padding invisible instead of ghosting a copy of the first real splat.
-        let capacity = 1;
+        let fullCapacity = 1;
         if (envCount > 0) {
-            this._environmentRange = { offset: capacity, count: envCount };
-            capacity += envCount;
+            fullCapacity += envCount;
         }
         for (const fileId of fileIds) {
             const count = this._fileCounts.get(fileId);
-            if (count === undefined || count <= 0) {
-                continue;
+            if (count !== undefined && count > 0) {
+                fullCapacity += count;
             }
-            this._fileBaseSplat.set(fileId, capacity);
-            capacity += count;
         }
-        if (capacity <= 1) {
+        if (fullCapacity <= 1) {
             return;
+        }
+
+        // Eviction streams the dataset through a fixed budget; only enabled when that budget is below the full set.
+        this._evictionEnabled = this._residentBudget > 0 && this._residentBudget < fullCapacity;
+        const capacity = this._evictionEnabled ? Math.max(this._residentBudget, 1) : fullCapacity;
+
+        this._residency = new GaussianSplattingResidencyController(capacity, this._evictionCooldownFrames, (file) => this._onFileEvicted(file));
+        // Pin splat 0 as the invisible padding splat, then the environment (always rendered) — neither is evicted.
+        this._residency.pin(PaddingFileId, 1);
+        if (envCount > 0) {
+            const envOffset = this._residency.pin(EnvironmentFileId, envCount);
+            if (envOffset !== null) {
+                this._environmentRange = { offset: envOffset, count: envCount };
+            } else {
+                Logger.Warn("GaussianSplattingStream: environment does not fit the memory budget; skipping it.");
+                this._environmentFiles = null;
+            }
         }
 
         this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
@@ -785,7 +961,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const baseFiles = new Set<number>();
         for (const node of this._leafNodes) {
             const entry = node.lods![String(node.baseLod)];
-            if (entry && this._fileBaseSplat.has(entry.file)) {
+            if (entry && this._fileCounts.has(entry.file)) {
                 baseFiles.add(entry.file);
             }
         }
@@ -835,7 +1011,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (this._metadata.environment) {
             try {
                 const url = this._rootUrl + this._metadata.environment;
-                const buffer = (await Tools.LoadFileAsync(url, true)) as ArrayBuffer;
+                const buffer = await this._downloadManager.loadFileAsync(url);
                 const files = await this._unzipAsync(new Uint8Array(buffer));
                 const metaBytes = files.get("meta.json");
                 if (metaBytes) {
@@ -859,8 +1035,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 try {
                     const metaUrl = this._rootUrl + relativePath;
                     const subRootUrl = metaUrl.substring(0, metaUrl.lastIndexOf("/") + 1);
-                    const metaText = (await Tools.LoadFileAsync(metaUrl, false)) as string;
-                    const sogData = JSON.parse(metaText) as SOGRootData;
+                    const metaBuffer = await this._downloadManager.loadFileAsync(metaUrl);
+                    const sogData = JSON.parse(new TextDecoder().decode(new Uint8Array(metaBuffer))) as SOGRootData;
                     this._fileCounts.set(fileId, GaussianSplattingStream._GetSplatCount(sogData));
                     this._fileMeta.set(fileId, { sogData, subRootUrl });
                 } catch (e: any) {
@@ -1007,7 +1183,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         const range = this._environmentRange;
         try {
-            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback);
+            const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback, this._downloadManager);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
@@ -1037,32 +1213,54 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     /**
      * Loads one LOD source file as GPU textures, decodes it into its fixed work-buffer block, records its
      * CPU centers for sorting, frees the source textures, then promotes any nodes that were waiting for it.
-     * Concurrent or repeat requests for the same file are ignored.
+     * Concurrent or repeat requests for the same file are ignored. If the file is cancelled mid-flight
+     * (because every node that wanted it retargeted), the decode bails cooperatively at the next checkpoint.
      * @param fileId file index to decode
      */
     private async _decodeFileAsync(fileId: number): Promise<void> {
-        if (this._decodedFiles.has(fileId) || this._loadingFiles.has(fileId)) {
+        if (this._decodedFiles.has(fileId) || this._loadingFiles.has(fileId) || !this._residency) {
             return;
         }
         const meta = this._fileMeta.get(fileId);
-        const base = this._fileBaseSplat.get(fileId);
         const count = this._fileCounts.get(fileId);
-        if (!meta || base === undefined || count === undefined) {
+        if (!meta || count === undefined) {
             return;
         }
         this._loadingFiles.add(fileId);
+        this._cancelledDecodes.delete(fileId);
+        let allocated = false;
         try {
-            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback);
+            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback, this._downloadManager, fileId);
             const pack = parsed.sogTextures;
             if (!pack) {
                 return;
             }
+            // Serialize the allocate -> decode -> readback section: a relayout runs only inside it (see
+            // _relayoutAndAllocateAsync), so it never moves a file whose decode has not finished writing.
+            const release = await this._acquireDecodeGateAsync();
             try {
-                if (this._disposed || !this._workBuffer) {
+                if (this._disposed || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
+                    return;
+                }
+                let base = this._residency.allocate(fileId, count);
+                if (base === null) {
+                    // Defragment the work buffer to reclaim fragmented free space, then retry.
+                    base = await this._relayoutAndAllocateAsync(fileId, count);
+                }
+                if (base === null) {
+                    // No room even after evicting and compacting: refuse and keep nodes on their current LOD.
+                    // A file cancelled mid-flight isn't a budget problem, so don't warn for it.
+                    if (!this._cancelledDecodes.has(fileId)) {
+                        Logger.Warn(`GaussianSplattingStream: resident memory budget full; skipping LOD file ${fileId}.`);
+                    }
+                    return;
+                }
+                allocated = true;
+                if (this._disposed || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
                     return;
                 }
                 await this._workBuffer.decodeAsync(pack, base);
-                if (this._disposed) {
+                if (this._disposed || this._cancelledDecodes.has(fileId)) {
                     return;
                 }
                 await this._applyDecodedPositionsAsync(pack, base, count);
@@ -1075,12 +1273,141 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                     this._refreshActiveRanges();
                 }
             } finally {
-                // Always release the GPU source textures (the decode pass is the only consumer).
                 GaussianSplattingStream._DisposePack(pack);
+                release();
+            }
+        } catch (e) {
+            // A cancelled file rejects its downloads on purpose — swallow that; re-throw genuine failures.
+            if (!this._cancelledDecodes.has(fileId)) {
+                throw e;
             }
         } finally {
+            // If a slot was allocated but the decode did not complete (cancelled/disposed), release it.
+            if (allocated && !this._decodedFiles.has(fileId)) {
+                this._residency.free(fileId);
+            }
             this._loadingFiles.delete(fileId);
+            this._cancelledDecodes.delete(fileId);
         }
+    }
+
+    /**
+     * Acquires the decode gate (a simple async mutex). Resolves once any prior holder releases, returning a
+     * release function the caller must invoke in a `finally`.
+     * @returns the release function
+     */
+    private async _acquireDecodeGateAsync(): Promise<() => void> {
+        const previous = this._decodeGate;
+        let release!: () => void;
+        this._decodeGate = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        await previous;
+        return release;
+    }
+
+    /**
+     * Defragments the work buffer to make room for a file that did not fit, then allocates its slot. Runs the
+     * compaction + GPU relayout atomically inside a single `onBeforeRender` so no inconsistent CPU/GPU layout
+     * is ever rendered. Returns the new slot offset, or null if even compaction cannot free enough contiguous
+     * space (the caller refuses the upgrade).
+     * @param fileId file to allocate after compaction
+     * @param count splats the file needs
+     * @returns the allocated offset, or null
+     */
+    private async _relayoutAndAllocateAsync(fileId: number, count: number): Promise<Nullable<number>> {
+        if (!this._residency || !this._workBuffer) {
+            return null;
+        }
+        // Even a perfect compaction cannot help if the total free space is below what is needed.
+        if (this._residency.freeSize < count) {
+            return null;
+        }
+        return await new Promise<Nullable<number>>((resolve) => {
+            const attempt = () => {
+                // Bail out (no relayout) if the file was cancelled while we waited for the shader to be ready,
+                // so rapidly-changing targets don't trigger an expensive compaction for a file no longer needed.
+                if (this._disposed || !this._residency || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
+                    resolve(null);
+                    return;
+                }
+                if (!this._workBuffer.isRelayoutReady()) {
+                    this._scene.onBeforeRenderObservable.addOnce(attempt);
+                    return;
+                }
+                this._performRelayout();
+                resolve(this._residency.allocate(fileId, count));
+            };
+            this._scene.onBeforeRenderObservable.addOnce(attempt);
+        });
+    }
+
+    /**
+     * Compacts the resident set and relocates the corresponding GPU textures and CPU positions to the new
+     * layout. Must run at a frame-safe point with the work buffer's relayout shader ready.
+     */
+    private _performRelayout(): void {
+        if (!this._residency || !this._workBuffer || !this._splatPositions) {
+            return;
+        }
+        const oldOffsets = this._relayoutOldOffsets;
+        oldOffsets.clear();
+        for (const block of this._residency.getResidentBlocks()) {
+            oldOffsets.set(block.file, block.offset);
+        }
+        const moves = this._residency.compact();
+        if (moves.length === 0) {
+            return;
+        }
+
+        const capacity = this._residency.capacity;
+        if (!this._relayoutSrcIndex || this._relayoutSrcIndex.length !== capacity) {
+            this._relayoutSrcIndex = new Float32Array(capacity);
+        }
+        const srcIndexByDst = this._relayoutSrcIndex;
+        srcIndexByDst.fill(-1);
+
+        const resident = this._residency.getResidentBlocks();
+        // Destination->source splat index map for the GPU relayout pass.
+        for (const block of resident) {
+            const oldOffset = oldOffsets.get(block.file)!;
+            for (let k = 0; k < block.count; k++) {
+                srcIndexByDst[block.offset + k] = oldOffset + k;
+            }
+        }
+        // GPU: relocate the decoded textures in place (same texture instances).
+        this._workBuffer.relayoutSync(srcIndexByDst);
+
+        // CPU positions: compaction only ever moves a block to a lower offset, so copying in place in ascending
+        // new-offset order is safe (a block's source is never overwritten by an earlier move). This avoids a
+        // full capacity*4 scratch buffer.
+        const positions = this._splatPositions;
+        resident.sort((a, b) => a.offset - b.offset);
+        for (const block of resident) {
+            const oldOffset = oldOffsets.get(block.file)!;
+            if (oldOffset !== block.offset) {
+                positions.copyWithin(block.offset * 4, oldOffset * 4, (oldOffset + block.count) * 4);
+            }
+        }
+
+        // Update the environment offset (it may have moved), re-post to the sort worker, and refresh ranges.
+        if (this._environmentRange) {
+            const envOffset = this._residency.offset(EnvironmentFileId);
+            if (envOffset !== undefined) {
+                this._environmentRange.offset = envOffset;
+            }
+        }
+        this._notifyWorkerNewData();
+        this._refreshActiveRanges();
+    }
+
+    /**
+     * Drops a file evicted by the residency controller from the decoded set so it will be re-decoded on demand.
+     * The file had no remaining references, so no node was rendering or downloading it.
+     * @param fileId evicted file index
+     */
+    private _onFileEvicted(fileId: number): void {
+        this._decodedFiles.delete(fileId);
     }
 
     /**
@@ -1123,33 +1450,121 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     /**
      * Applies each node's {@link ISOGLODNode.targetLevel}: switches a node to its target level when that
-     * level's file is already decoded, otherwise queues the file and leaves the node on its current LOD (so
-     * nothing ever disappears). Nodes within their post-switch cooldown are left untouched to damp oscillation.
+     * level's file is already decoded, otherwise records a pending download request for the file and leaves
+     * the node on its current LOD (so nothing ever disappears). Nodes within their post-switch cooldown are
+     * left untouched to damp oscillation (and keep their existing pending request).
+     *
+     * Each node tracks the single file it currently needs but lacks ({@link ISOGLODNode.pendingFile}). When a
+     * node's target changes before that file finished downloading, the old file's reference is released; if no
+     * other node still needs it, its queued/in-flight download is cancelled (see {@link _releaseFileRef}).
      * @returns true when at least one node changed LOD (callers should refresh the active ranges)
      */
     private _applyDesiredLods(): boolean {
         let dirty = false;
         for (const node of this._leafNodes) {
+            // Nodes in cooldown keep their current LOD and their existing pending request untouched.
             if (node.lodCooldown && node.lodCooldown > 0) {
                 continue;
             }
             const desired = node.targetLevel ?? node.baseLod!;
-            if (desired === node.activeLod) {
-                continue;
+            let newPending: number | undefined;
+            if (desired !== node.activeLod) {
+                const entry = node.lods![String(desired)];
+                if (entry) {
+                    if (this._decodedFiles.has(entry.file)) {
+                        this._switchActiveFile(node, entry.file);
+                        node.activeLod = desired;
+                        node.lodCooldown = this._lodCooldownFrames;
+                        dirty = true;
+                    } else {
+                        newPending = entry.file;
+                    }
+                }
             }
-            const entry = node.lods![String(desired)];
-            if (!entry) {
-                continue;
-            }
-            if (this._decodedFiles.has(entry.file)) {
-                node.activeLod = desired;
-                node.lodCooldown = this._lodCooldownFrames;
-                dirty = true;
-            } else {
-                this._enqueueDecode(entry.file);
+            // Reconcile this node's pending-download reference against its (possibly changed) target.
+            if (node.pendingFile !== newPending) {
+                if (node.pendingFile !== undefined) {
+                    this._releaseFileRef(node.pendingFile);
+                }
+                if (newPending !== undefined) {
+                    this._acquirePendingFile(newPending);
+                }
+                node.pendingFile = newPending;
             }
         }
         return dirty;
+    }
+
+    /**
+     * Moves a node's resident reference from its previous active file to the one it now renders, so the file
+     * count that keeps a block in the work buffer stays accurate (and cancels any pending eviction of the new
+     * file). The new file is already decoded.
+     * @param node leaf node switching its rendered file
+     * @param file the file the node now renders from
+     */
+    private _switchActiveFile(node: ISOGLODNode, file: number): void {
+        if (node.activeFile === file) {
+            return;
+        }
+        if (node.activeFile !== undefined) {
+            this._releaseFileRef(node.activeFile);
+        }
+        this._acquireFileRef(file);
+        node.activeFile = file;
+    }
+
+    /**
+     * Adds a reference to a file (active render or pending download), cancelling any scheduled eviction.
+     * @param fileId file index
+     */
+    private _acquireFileRef(fileId: number): void {
+        const refs = (this._fileRefs.get(fileId) ?? 0) + 1;
+        this._fileRefs.set(fileId, refs);
+        if (refs === 1) {
+            // Referenced again before its eviction cooldown elapsed: keep it resident.
+            this._residency?.cancelEviction(fileId);
+        }
+    }
+
+    /**
+     * Records that a node needs a not-yet-decoded file, bumping its reference count and queueing the decode.
+     * @param fileId file index the node now targets
+     */
+    private _acquirePendingFile(fileId: number): void {
+        this._acquireFileRef(fileId);
+        this._enqueueDecode(fileId);
+    }
+
+    /**
+     * Releases a node's reference to a file. When the last reference is dropped: a decoded file is scheduled
+     * for eviction (when streaming under a budget), and a still-downloading file has its queued decode dropped
+     * and any in-flight download cancelled.
+     * @param fileId file index the node no longer references
+     */
+    private _releaseFileRef(fileId: number): void {
+        const refs = (this._fileRefs.get(fileId) ?? 0) - 1;
+        if (refs > 0) {
+            this._fileRefs.set(fileId, refs);
+            return;
+        }
+        this._fileRefs.delete(fileId);
+        if (this._decodedFiles.has(fileId)) {
+            // No node renders it anymore: schedule eviction (only when streaming under a budget).
+            if (this._evictionEnabled) {
+                this._residency?.scheduleEviction(fileId);
+            }
+            return;
+        }
+        // Still downloading/queued: drop the queued decode and cancel any in-flight download.
+        const queueIndex = this._decodeQueue.indexOf(fileId);
+        if (queueIndex !== -1) {
+            this._decodeQueue.splice(queueIndex, 1);
+        }
+        if (this._loadingFiles.has(fileId)) {
+            // Flag the in-flight decode to bail at its next checkpoint and cancel its image downloads.
+            this._cancelledDecodes.add(fileId);
+            this._downloadManager.cancelGroup(fileId);
+        }
     }
 
     /**
@@ -1167,6 +1582,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             if (node.lodCooldown && node.lodCooldown > 0) {
                 node.lodCooldown--;
             }
+        }
+        // Tick eviction cooldowns: unreferenced files are freed once their cooldown elapses (budgeted streaming).
+        if (this._evictionEnabled) {
+            this._residency?.tick();
         }
         // In-flight/queued decodes still progress every frame.
         this._pumpDecodeQueue();
@@ -1299,7 +1718,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             if (!entry) {
                 continue;
             }
-            const base = this._fileBaseSplat.get(entry.file);
+            const base = this._residency?.offset(entry.file);
             if (base === undefined) {
                 continue;
             }

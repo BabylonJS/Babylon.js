@@ -7,7 +7,9 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
+import { Constants } from "core/Engines/constants";
 import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
+import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
 
 /**
  * Provides serialization and deserialization utilities for the flow graph editor.
@@ -201,6 +203,40 @@ export class SerializationTools {
         } finally {
             globalState.onIsLoadingChanged.notifyObservers(false);
         }
+    }
+
+    /**
+     * Fetches a flow graph snippet from the Babylon snippet server and loads it
+     * into the editor. Supports plain ids ("ABC123"), versioned ids
+     * ("ABC123#4") and ids with a leading '#'. After a successful load the
+     * snippet id is stored on `globalState.flowGraphSnippetId`, so the next save
+     * publishes a new version of that same snippet.
+     * @param id - the flow graph snippet id to load
+     * @param globalState - the editor's global state
+     * @returns the normalized snippet id that was loaded, or `null` if the load failed
+     */
+    public static async LoadFromSnippetServerAsync(id: string, globalState: GlobalState): Promise<Nullable<string>> {
+        const cleanId = id.replace(/^#/, "");
+
+        let snippet: ISnippetServerResponse;
+        try {
+            // Reuse the shared snippet-loader for the fetch + id/url normalization
+            // instead of hand-rolling the request here.
+            snippet = await FetchSnippet(cleanId, Constants.SnippetUrl);
+        } catch {
+            // FetchSnippet throws on a non-OK response; preserve the historical
+            // null ("could not be loaded") contract expected by the caller.
+            return null;
+        }
+
+        const jsonPayload = JSON.parse(snippet.jsonPayload ?? "{}");
+        // The Flow Graph Editor saves `flowGraph` as a stringified graph, but
+        // older/other producers may store it as a plain object — handle both.
+        const serializationObject = typeof jsonPayload.flowGraph === "string" ? JSON.parse(jsonPayload.flowGraph) : jsonPayload.flowGraph;
+
+        await SerializationTools.DeserializeAsync(serializationObject, globalState);
+        globalState.flowGraphSnippetId = cleanId;
+        return cleanId;
     }
 
     /**
