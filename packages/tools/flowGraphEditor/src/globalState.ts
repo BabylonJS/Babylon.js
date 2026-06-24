@@ -47,6 +47,8 @@ export class GlobalState {
     onZoomToFitRequiredObservable = new Observable<void>();
     /** Observable triggered when reorganization is required */
     onReOrganizedRequiredObservable = new Observable<void>();
+    /** Observable triggered when a flow-aware graph sort is required */
+    onSortGraphRequiredObservable = new Observable<void>();
     /** Observable triggered when log entry is required */
     onLogRequiredObservable = new Observable<LogEntry>();
     /** Observable triggered when loading state changes */

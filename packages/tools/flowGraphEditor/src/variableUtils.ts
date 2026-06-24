@@ -352,6 +352,87 @@ export function GatherVariables(fg: FlowGraph): IVariableEntry[] {
 }
 
 /**
+ * Map a flow-graph rich-type name (the {@link FlowGraphTypes} string stored on a
+ * connection's `richType.typeName`) to an editor {@link VariableTypeName}.
+ * Returns "any" for rich types the editor does not model (Quaternion, Matrix, etc.).
+ * @param typeName - the rich-type name to map
+ * @returns the matching editor variable type name, or "any"
+ */
+function MapRichTypeNameToVariableType(typeName: string | undefined): VariableTypeName {
+    switch (typeName) {
+        case "string":
+        case "number":
+        case "boolean":
+        case "FlowGraphInteger":
+        case "Vector2":
+        case "Vector3":
+        case "Vector4":
+        case "Color3":
+        case "Color4":
+            return typeName;
+        default:
+            return "any";
+    }
+}
+
+/**
+ * Statically infer variable types from the SetVariable blocks that write them, without
+ * running the graph. For each variable a SetVariable block sets, the type is deduced from
+ * (in order of preference): the connected source output's rich type, the value input's own
+ * rich type, the value input's literal default value, then the last value the input saw.
+ * This lets the variables panel display meaningful types even while the graph is stopped,
+ * where no runtime context values exist to infer from.
+ * @param fg - The flow graph to scan.
+ * @returns A map of variable name to inferred type. Variables whose type cannot be deduced are omitted.
+ */
+export function InferVariableTypesFromBlocks(fg: FlowGraph): Map<string, VariableTypeName> {
+    const types = new Map<string, VariableTypeName>();
+
+    const inferFromInput = (variableName: string, input?: FlowGraphBlock["dataInputs"][number]): void => {
+        if (!input || types.has(variableName)) {
+            return;
+        }
+        let inferred: VariableTypeName = "any";
+        // 1. The connected source output's rich type (SetVariable inputs are RichTypeAny, so the
+        // useful type information lives on whatever output is wired into them).
+        if (input.isConnected() && input._connectedPoint.length > 0) {
+            inferred = MapRichTypeNameToVariableType(input._connectedPoint[0].richType?.typeName);
+        }
+        // 2. The input's own rich type (in case a future block declares a typed value input).
+        if (inferred === "any") {
+            inferred = MapRichTypeNameToVariableType(input.richType?.typeName);
+        }
+        // 3. The literal default value typed directly into the input.
+        if (inferred === "any") {
+            inferred = InferVariableType((input as unknown as { _defaultValue?: unknown })._defaultValue);
+        }
+        // 4. The last value the input resolved to during a prior run (debug snapshot).
+        if (inferred === "any") {
+            inferred = InferVariableType(input._getLastValue());
+        }
+        if (inferred !== "any") {
+            types.set(variableName, inferred);
+        }
+    };
+
+    for (const block of fg.getAllBlocks()) {
+        if (block.getClassName() !== FlowGraphBlockNames.SetVariable) {
+            continue;
+        }
+        const config = block.config as any;
+        if (config?.variables) {
+            for (const v of config.variables) {
+                inferFromInput(v, block.getDataInput(v));
+            }
+        } else if (config?.variable) {
+            inferFromInput(config.variable, block.getDataInput("value"));
+        }
+    }
+
+    return types;
+}
+
+/**
  * Gather all variable names from a flow graph, excluding variables owned
  * by a specific block (to avoid self-reference in pickers).
  * @param fg - The flow graph to scan.

@@ -28,7 +28,17 @@ function IsAnimationGroupClassName(className: string) {
     return className === "AnimationGroup";
 }
 
-function GetSceneNodeFromSerializedReference(serializedReference: any, scene: Scene): Node | undefined {
+/**
+ * Resolves a serialized node reference (`{ id, name, className, uniqueId }`) to an actual scene node.
+ * Matching prefers `id` (falling back to `name`), then narrows by class name, then by `uniqueId`.
+ * Because `uniqueId` is reassigned every time a scene is built, it is only used as a tie-breaker so
+ * that references still resolve after a scene is reloaded (e.g. an editor preview).
+ * @param serializedReference the serialized reference to resolve
+ * @param scene the scene to resolve the reference against
+ * @returns the matching node, or undefined when none is found
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function GetSceneNodeFromSerializedReference(serializedReference: any, scene: Scene): Node | undefined {
     if (!serializedReference || (!serializedReference.id && !serializedReference.name)) {
         return undefined;
     }
