@@ -24,13 +24,13 @@ Feature documentation lives in `/specs/`. Each feature has its own folder named 
 
 ## Tree-Shaking Architecture
 
-The `@babylonjs/core` package uses a three-file split only for modules that need a side-effect-free implementation plus a backward-compatible side-effect wrapper:
+The `@babylonjs/core`, `@babylonjs/gui`, `@babylonjs/loaders`, and `@babylonjs/serializers` packages use a three-file split only for modules that need a side-effect-free implementation plus a backward-compatible side-effect wrapper:
 
 - **`foo.pure.ts`** — Pure implementation and idempotent registration function. Imports only from other pure-safe modules. No top-level side effects.
 - **`foo.ts`** — Thin wrapper that re-exports from `.pure.ts`, re-exports `.types.ts` when present, and calls the registration function.
 - **`foo.types.ts`** — `declare module` augmentations only when the module augments another class or namespace.
 
-Do not create `.pure.ts` plus an empty wrapper for side-effect-free modules. If a module has no runtime side effects or registration work, keep it as a single plain `.ts` file. Generated shader files under `Shaders/`, `ShadersWGSL/`, and `ShadersInclude/` are generated side-effect modules; never create `.pure.ts` variants for them. The committed side-effects manifest is sharded under `scripts/treeshaking/side-effects-manifest/core/`; generated shader `shader-store-write` diagnostics intentionally use stable `line: 0` entries so regenerated shader text does not cause manifest drift. When modifying an existing split module in core, edit the `.pure.ts` file for logic. Side effects (RegisterClass, prototype augmentations, static API reattachment, generated shader imports, etc.) are owned by the registration function in `.pure.ts` and invoked by the wrapper. See [instructions/tree-shaking.instructions.md](instructions/tree-shaking.instructions.md) for the full guide.
+Do not create `.pure.ts` plus an empty wrapper for side-effect-free modules. If a module has no runtime side effects or registration work, keep it as a single plain `.ts` file. Generated shader files under `Shaders/`, `ShadersWGSL/`, and `ShadersInclude/` are generated side-effect modules; never create `.pure.ts` variants for them. The committed side-effects manifest is sharded per package under `scripts/treeshaking/side-effects-manifest/{core,gui,loaders,serializers}/`; generated shader `shader-store-write` diagnostics intentionally use stable `line: 0` entries so regenerated shader text does not cause manifest drift. The tree-shaking tooling is parameterized by `--package <name>` (default `core`); CI validates every package via `--all-packages` in `check:treeshaking` and `check:side-effects-sync`. When modifying an existing split module, edit the `.pure.ts` file for logic. Side effects (RegisterClass, prototype augmentations, static API reattachment, scene-loader/glTF-extension registration, generated shader imports, etc.) are owned by the registration function in `.pure.ts` and invoked by the wrapper. See [instructions/tree-shaking.instructions.md](instructions/tree-shaking.instructions.md) for the full guide.
 
 ## Public APIs
 

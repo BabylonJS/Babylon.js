@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { type Engine, NullEngine } from "core/Engines";
 import { type FlowGraph, type FlowGraphContext, FlowGraphCoordinator, FlowGraphGetVariableBlock } from "core/FlowGraph";
 import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
+import { FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
 import { Scene } from "core/scene";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -21,6 +22,7 @@ import {
     BuildFromComponents,
     GetDefaultValueForType,
     InferVariableType,
+    InferVariableTypesFromBlocks,
     type VariableTypeName,
 } from "flow-graph-editor/variableUtils";
 import { CONSTRUCTOR_CONFIG } from "flow-graph-editor/graphSystem/properties/constructorConfigRegistry";
@@ -764,6 +766,75 @@ describe("Flow Graph Variable Utils", () => {
         it("returns any for objects with unrecognized className", () => {
             const obj = { getClassName: () => "SomeUnknownType" };
             expect(InferVariableType(obj)).toBe("any");
+        });
+    });
+
+    // --------------------------------------------------------
+    // inferVariableTypesFromBlocks
+    // --------------------------------------------------------
+    describe("inferVariableTypesFromBlocks", () => {
+        it("returns an empty map when there are no SetVariable blocks", () => {
+            flowGraph.addBlock(new FlowGraphGetVariableBlock({ variable: "x" }));
+            expect(InferVariableTypesFromBlocks(flowGraph).size).toBe(0);
+        });
+
+        it("infers a type from the value input's literal default", () => {
+            const set = new FlowGraphSetVariableBlock({ variable: "score" });
+            flowGraph.addBlock(set);
+            (set.getDataInput("value") as unknown as { _defaultValue: unknown })._defaultValue = 42;
+
+            const types = InferVariableTypesFromBlocks(flowGraph);
+            expect(types.get("score")).toBe("number");
+        });
+
+        it("infers a boolean type from a literal default", () => {
+            const set = new FlowGraphSetVariableBlock({ variable: "active" });
+            flowGraph.addBlock(set);
+            (set.getDataInput("value") as unknown as { _defaultValue: unknown })._defaultValue = false;
+
+            const types = InferVariableTypesFromBlocks(flowGraph);
+            expect(types.get("active")).toBe("boolean");
+        });
+
+        it("infers a type from the connected source output's rich type", () => {
+            const constant = new FlowGraphConstantBlock<number>({ value: 7 });
+            const set = new FlowGraphSetVariableBlock({ variable: "lives" });
+            flowGraph.addBlock(constant);
+            flowGraph.addBlock(set);
+            constant.output.connectTo(set.getDataInput("value")!);
+
+            const types = InferVariableTypesFromBlocks(flowGraph);
+            expect(types.get("lives")).toBe("number");
+        });
+
+        it("infers types for each variable of a multi-variable SetVariable block", () => {
+            const set = new FlowGraphSetVariableBlock({ variables: ["a", "b"] });
+            flowGraph.addBlock(set);
+            (set.getDataInput("a") as unknown as { _defaultValue: unknown })._defaultValue = "hello";
+            (set.getDataInput("b") as unknown as { _defaultValue: unknown })._defaultValue = true;
+
+            const types = InferVariableTypesFromBlocks(flowGraph);
+            expect(types.get("a")).toBe("string");
+            expect(types.get("b")).toBe("boolean");
+        });
+
+        it("omits variables whose type cannot be deduced", () => {
+            const set = new FlowGraphSetVariableBlock({ variable: "mystery" });
+            flowGraph.addBlock(set);
+
+            const types = InferVariableTypesFromBlocks(flowGraph);
+            expect(types.has("mystery")).toBe(false);
+        });
+
+        it("infers a Vector3 from the connected source output", () => {
+            const constant = new FlowGraphConstantBlock<Vector3>({ value: new Vector3(1, 2, 3) });
+            const set = new FlowGraphSetVariableBlock({ variable: "position" });
+            flowGraph.addBlock(constant);
+            flowGraph.addBlock(set);
+            constant.output.connectTo(set.getDataInput("value")!);
+
+            const types = InferVariableTypesFromBlocks(flowGraph);
+            expect(types.get("position")).toBe("Vector3");
         });
     });
 });

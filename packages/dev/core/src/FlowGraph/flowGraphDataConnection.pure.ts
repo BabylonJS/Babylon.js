@@ -6,8 +6,9 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
 import { type FlowGraphContext } from "./flowGraphContext";
 import { type RichType } from "./flowGraphRichTypes.pure";
 import { Observable } from "core/Misc/observable.pure";
-import { defaultValueSerializationFunction } from "./serialization";
+import { defaultValueSerializationFunction, GetSceneNodeFromSerializedReference } from "./serialization";
 import { RegisterClass } from "../Misc/typeStore";
+import { type Scene } from "core/scene";
 /**
  * Represents a connection point for data.
  * An unconnected input point can have a default value.
@@ -116,6 +117,44 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      */
     public resetToDefaultValue(context: FlowGraphContext): void {
         context._setConnectionValue(this, this._defaultValue);
+    }
+
+    /**
+     * Re-resolves this input's default value against a (new) scene when the value is a node reference.
+     * This handles two cases that occur when a graph is moved to a different scene (see
+     * {@link FlowGraph.setScene}):
+     * - the value is still an unresolved serialized reference (`{ id, name, className, uniqueId }`)
+     *   because the node did not yet exist in the scene at parse time, or
+     * - the value is a node that belongs to a different (e.g. disposed) scene.
+     * Values that are not node references (numbers, vectors, matrices, etc.) are left untouched, and
+     * the default value is only replaced when a matching node is found in the new scene.
+     * @param scene the scene to resolve the reference against
+     * @internal
+     */
+    public _reresolveDefaultValueForScene(scene: Scene): void {
+        const value = this._defaultValue as any;
+        if (!value || typeof value !== "object") {
+            return;
+        }
+
+        let reference: { id?: string; name?: string; className?: string; uniqueId?: number } | undefined;
+        if (typeof value.getClassName === "function" && typeof value.getScene === "function") {
+            // A scene node — only rebind when it belongs to a different scene.
+            if (value.getScene() === scene) {
+                return;
+            }
+            reference = { id: value.id, name: value.name, className: value.getClassName(), uniqueId: value.uniqueId };
+        } else if (typeof value.className === "string" && (value.id || value.name) && value.value === undefined) {
+            // An unresolved serialized node reference left by the parser.
+            reference = value;
+        } else {
+            return;
+        }
+
+        const node = GetSceneNodeFromSerializedReference(reference, scene);
+        if (node) {
+            this._defaultValue = node as unknown as T;
+        }
     }
 
     /**

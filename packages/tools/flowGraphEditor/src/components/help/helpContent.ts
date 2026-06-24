@@ -61,7 +61,8 @@ export const HelpTopics: IHelpTopic[] = [
 <li>Enter a Playground snippet ID (e.g. <code>ABC123</code>), a versioned ID (<code>ABC123#5</code>), or a full Playground URL.</li>
 <li>Press <b>Enter</b> to load and run the scene.</li>
 </ol>
-<p>The loaded scene's objects (meshes, lights, cameras, etc.) become available as references in flow graph block configuration fields.</p>`,
+<p>The loaded scene's objects (meshes, lights, cameras, etc.) become available as references in flow graph block configuration fields.</p>
+<p>If the playground builds its flow graph from a snippet (e.g. <code>ParseFlowGraphCoordinatorFromSnippetAsync</code>), that flow graph is automatically opened in the editor for editing. Saving it to the snippet server then publishes a new version of that same snippet.</p>`,
             },
             {
                 heading: "Saving and Loading Graphs",

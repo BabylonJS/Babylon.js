@@ -14,7 +14,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { type LinesMesh } from "core/Meshes/linesMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { ParseSogMetaAsTextures, type SOGRootData } from "./sog";
+import { ParseSogMetaAsTextures, type SOGRootData } from "./sog.pure";
 import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
 import { GaussianSplattingDownloadManager } from "./gaussianSplattingDownloadManager";
 import { GaussianSplattingResidencyController } from "./gaussianSplattingResidencyController";
