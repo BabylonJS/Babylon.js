@@ -9,8 +9,13 @@
  * here to start the sandbox with the correct version info.
  */
 // Register GLTF/GLB loader and all glTF 2.0 extensions (side-effect imports
-// register each KHR_/EXT_ extension via registerGLTFExtension).
+// register each KHR_/EXT_ extension via registerGLTFExtension). Importing the
+// 2.0 folder (rather than just glTFLoader) pulls in KHR_interactivity and the
+// node selectability/hoverability/visibility extensions needed to manually
+// test interactive glTF assets in the sandbox.
 import "loaders/glTF/2.0";
+// Register the FBX loader so .fbx files can be loaded via SceneLoader (drag-and-drop and the file picker).
+import "loaders/FBX/fbxFileLoader";
 // glTF scenes can reference a single mesh from multiple nodes, which the loader
 // realizes with InstancedMesh. In the tree-shaken dev build that side-effect is
 // not pulled in automatically, so import it explicitly here.

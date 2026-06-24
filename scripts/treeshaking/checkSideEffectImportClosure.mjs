@@ -25,13 +25,16 @@ import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync 
 import { dirname, join, relative, resolve } from "path";
 import { fileURLToPath } from "url";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
+import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
-const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
-const MANIFEST_PATH = join(__dirname, "side-effects-manifest/core");
-const BASELINE_PATH = join(__dirname, "side-effect-import-closure-baseline.json");
+const PACKAGE = resolvePackageFromArgv();
+const PACKAGE_CONFIG = getPackageConfig(PACKAGE);
+const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
+const CORE_SRC = PACKAGE_CONFIG.srcRoot;
+const MANIFEST_PATH = PACKAGE_CONFIG.manifestDir;
+const BASELINE_PATH = join(__dirname, PACKAGE === "core" ? "side-effect-import-closure-baseline.json" : `side-effect-import-closure-baseline.${PACKAGE}.json`);
 
 const args = process.argv.slice(2);
 const updateBaseline = args.includes("--update-baseline");

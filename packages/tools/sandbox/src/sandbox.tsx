@@ -404,7 +404,7 @@ export class Sandbox extends React.Component<
      * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
      */
     private _getSupportedExtensions(): string {
-        const fallbackExtensions = "babylon, gltf, glb, obj, ply, sog, splat, spz or stl";
+        const fallbackExtensions = "babylon, gltf, glb, fbx, obj, ply, sog, splat, spz or stl";
 
         try {
             const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();

@@ -35,6 +35,7 @@ import { resolve, relative, dirname } from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { globSync } from "glob";
+import { getPackageConfig, resolvePackageFromArgv, stripPackageArg } from "./packageConfig.mjs";
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
@@ -43,11 +44,12 @@ const format = args.includes("--format");
 const writtenFiles = [];
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const PACKAGE_CONFIG = getPackageConfig(resolvePackageFromArgv());
 
 // Accept an optional positional argument for the directory to scan.
-// Falls back to packages/dev/core/dist if not provided.
-const positionalArgs = args.filter((a) => !a.startsWith("--"));
-const distDir = positionalArgs.length > 0 ? resolve(positionalArgs[0]) : resolve(__dirname, "../../packages/dev/core/dist");
+// Falls back to the resolved package's dist directory if not provided.
+const positionalArgs = stripPackageArg(args).filter((a) => !a.startsWith("--"));
+const distDir = positionalArgs.length > 0 ? resolve(positionalArgs[0]) : PACKAGE_CONFIG.distDir;
 
 // Find all .pure.js files in dist/
 const pureFiles = globSync("**/*.pure.js", { cwd: distDir, absolute: true });

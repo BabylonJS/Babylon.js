@@ -9,6 +9,7 @@ import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { SceneContext } from "../../sceneContext";
 import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
+import { ShowToast } from "../toast/toastComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
 import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { CheckmarkRegular } from "@fluentui/react-icons";
@@ -644,6 +645,30 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     }
 
     /**
+     * Scan a loaded playground's source for a flow graph snippet reference such
+     * as `ParseFlowGraphCoordinatorFromSnippetAsync("#ABC123#0", ...)`. When a
+     * playground builds its flow graph from a snippet, that snippet can be
+     * opened directly in the editor for editing.
+     * @param pgResult - the loaded playground snippet
+     * @returns the referenced flow graph snippet id, or null when none is found
+     */
+    private _detectFlowGraphSnippetId(pgResult: IPlaygroundSnippetResult): Nullable<string> {
+        // Matches Parse.../Get...FlowGraph...FromSnippetAsync("<id>") with any quote style.
+        const snippetCallRegex = /FlowGraph[A-Za-z]*FromSnippetAsync\s*\(\s*(["'`])([^"'`]+)\1/;
+        const sources = [pgResult.code, ...Object.values(pgResult.files ?? {})];
+        for (const source of sources) {
+            if (!source) {
+                continue;
+            }
+            const match = snippetCallRegex.exec(source);
+            if (match && match[2]) {
+                return match[2].trim();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Load a playground snippet, execute it, and populate the scene context.
      */
     async loadSnippetAsync() {
@@ -718,6 +743,19 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
             const langTag = pgResult.language === "TS" ? " [TypeScript]" : "";
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded snippet${langTag} with ${sceneContext.entries.length} scene objects`, false));
+
+            // If the playground builds its flow graph from a snippet, open that
+            // snippet in the editor so it becomes editable. Saving afterwards
+            // publishes a new version of that same flow graph snippet.
+            await this._tryLoadReferencedFlowGraphAsync(pgResult);
+
+            // The playground's own code typically builds and starts a
+            // FlowGraphCoordinator on the preview scene, so the graph would be
+            // running the moment the scene loads. Stop those coordinators so the
+            // preview waits for the user to press Start in the editor instead of
+            // running immediately. The editor's editable copy lives on its own
+            // scene (globalState.scene), not this preview scene, so it is unaffected.
+            await this._stopSceneFlowGraphCoordinatorsAsync(scene);
         } catch (err: any) {
             this.setState({
                 isLoading: false,
@@ -728,6 +766,60 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
             // Notify listeners that the reload failed so waiting promises (e.g. _onResetAsync) don't hang
             this.props.globalState.onSceneContextChanged.notifyObservers(null);
+        }
+    }
+
+    /**
+     * Detect a flow graph snippet referenced by the just-loaded playground and,
+     * when present, load it into the editor for editing. The loaded snippet id
+     * is remembered so the next save publishes a new version of it.
+     * @param pgResult - the loaded playground snippet
+     */
+    private async _tryLoadReferencedFlowGraphAsync(pgResult: IPlaygroundSnippetResult): Promise<void> {
+        const flowGraphSnippetId = this._detectFlowGraphSnippetId(pgResult);
+        if (!flowGraphSnippetId) {
+            return;
+        }
+
+        try {
+            const loadedId = await SerializationTools.LoadFromSnippetServerAsync(flowGraphSnippetId, this.props.globalState);
+            if (loadedId) {
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onClearUndoStack.notifyObservers();
+                this.props.globalState.onLogRequiredObservable.notifyObservers(
+                    new LogEntry(`Loaded flow graph snippet ${loadedId} referenced by the playground — edit and save to publish a new version`, false)
+                );
+                ShowToast(this.props.globalState, `Flow graph ${loadedId} loaded for editing`, "success");
+            } else {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(
+                    new LogEntry(`The playground references flow graph snippet ${flowGraphSnippetId}, but it could not be loaded`, true)
+                );
+            }
+        } catch (err: any) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(
+                new LogEntry(`Could not load the flow graph snippet ${flowGraphSnippetId} referenced by the playground: ${err?.message ?? err}`, true)
+            );
+        }
+    }
+
+    /**
+     * Dispose every {@link FlowGraphCoordinator} the playground created on the preview
+     * scene. Playgrounds usually call `coordinator.start()` (directly or via
+     * `ParseFlowGraphCoordinatorFromSnippetAsync` + `start`), which would leave the graph
+     * running as soon as the scene loads. Disposing the coordinators leaves the scene
+     * static until the user presses Start in the editor, which runs the editor's own
+     * (separate) copy of the graph against this preview scene.
+     * @param scene - the preview scene whose coordinators should be stopped
+     */
+    private async _stopSceneFlowGraphCoordinatorsAsync(scene: Scene): Promise<void> {
+        const { FlowGraphCoordinator } = await import("core/FlowGraph/flowGraphCoordinator");
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(scene);
+        if (!coordinators || coordinators.length === 0) {
+            return;
+        }
+        // dispose() mutates the registry array in place, so iterate over a copy.
+        for (const coordinator of [...coordinators]) {
+            coordinator.dispose();
         }
     }
 
