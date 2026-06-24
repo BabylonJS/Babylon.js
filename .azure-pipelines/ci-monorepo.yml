@@ -460,8 +460,6 @@ jobs:
                 version: "22.x"
 
           - template: templates/cache-steps.yml
-            parameters:
-                nx: true
 
           - script: npm install
             displayName: "npm install"

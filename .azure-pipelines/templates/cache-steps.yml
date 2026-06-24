@@ -54,3 +54,11 @@ steps:
                 restoreKeys: |
                     playwright | "$(Agent.OS)"
                 path: $(PLAYWRIGHT_BROWSERS_PATH)
+
+    # Guarantee the cache paths exist so the automatic post-job save never
+    # fails on a missing directory (e.g. a job whose tool wrote nothing, or a
+    # tool that hasn't created its dir yet). Caching an empty dir is harmless,
+    # and paths without a Cache task above are simply left unused.
+    - bash: |
+          mkdir -p "$(npm_config_cache)" "$(NX_CACHE_DIRECTORY)" "$(PLAYWRIGHT_BROWSERS_PATH)"
+      displayName: "Ensure cache directories exist"
