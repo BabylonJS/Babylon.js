@@ -35,6 +35,7 @@
             "playgroundId": "#834G5K#0",
             "renderCount": 15,
             "referenceImage": "gsplat-gpu-picking.png",
+            "errorRatio": 5,
             "dependsOn": ["GaussianSplatting", "Collisions", "Meshes", "Materials"],
             "excludeFromPerformance": true
         },
