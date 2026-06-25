@@ -12,8 +12,8 @@ import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
 import { type Scene } from "core/scene";
 
-import { Container } from "./controls/container";
-import { Control } from "./controls/control";
+import { Container } from "./controls/container.pure";
+import { Control } from "./controls/control.pure";
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from "core/Engines/constants";

@@ -15,29 +15,24 @@
  * that erases to an empty module, so importing or re-exporting it carries no
  * runtime cost and cannot reintroduce side effects.
  *
- * Current historical violations are tracked in a baseline. New violations fail
- * the check, and resolved baseline entries must be removed with
- * `--update-baseline`.
+ * Any violation fails the check. There is intentionally no baseline/allow-list
+ * mechanism: a side-effect-free file must never statically value-import or
+ * re-export a side-effectful file. Fix violations by importing the dependency's
+ * `.pure` module or by splitting the importer, never by suppressing the check.
  */
 
 import ts from "typescript";
-import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
+import { readFileSync, readdirSync, statSync } from "fs";
 import { dirname, join, relative, resolve } from "path";
-import { fileURLToPath } from "url";
 import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const PACKAGE = resolvePackageFromArgv();
 const PACKAGE_CONFIG = getPackageConfig(PACKAGE);
-const REPO_ROOT = PACKAGE_CONFIG.repoRoot;
 const CORE_SRC = PACKAGE_CONFIG.srcRoot;
 const MANIFEST_PATH = PACKAGE_CONFIG.manifestDir;
-const BASELINE_PATH = join(__dirname, PACKAGE === "core" ? "side-effect-import-closure-baseline.json" : `side-effect-import-closure-baseline.${PACKAGE}.json`);
 
 const args = process.argv.slice(2);
-const updateBaseline = args.includes("--update-baseline");
 const verbose = args.includes("--verbose");
 
 function toPosixPath(filePath) {
@@ -215,58 +210,19 @@ function findViolations(filePath) {
     return violations;
 }
 
-function readBaseline() {
-    if (!existsSync(BASELINE_PATH)) {
-        return [];
-    }
-    const baseline = JSON.parse(readFileSync(BASELINE_PATH, "utf-8"));
-    return baseline.violations ?? [];
-}
-
-function writeBaseline(violations) {
-    if (violations.length === 0) {
-        // No known violations: the baseline file should not exist.
-        if (existsSync(BASELINE_PATH)) {
-            rmSync(BASELINE_PATH);
-        }
-        return;
-    }
-    const baseline = {
-        version: 1,
-        description: "Known direct static imports/re-exports from manifest side-effect-free core files to manifest side-effectful core files.",
-        violations: violations.map(({ importer, kind, source, target }) => ({ importer, kind, source, target })).sort(compareViolations),
-    };
-    writeFileSync(BASELINE_PATH, `${JSON.stringify(baseline, null, 4)}\n`);
-}
-
 const actualViolations = allFiles.flatMap(findViolations).sort(compareViolations);
 
-if (updateBaseline) {
-    writeBaseline(actualViolations);
-    if (actualViolations.length === 0) {
-        console.log(`No known violations; removed ${toPosixPath(relative(REPO_ROOT, BASELINE_PATH))} if present.`);
-    } else {
-        console.log(`Updated ${toPosixPath(relative(REPO_ROOT, BASELINE_PATH))} with ${actualViolations.length} violation(s).`);
-    }
-    process.exit(0);
-}
-
-const baselineViolations = readBaseline().sort(compareViolations);
-const actualByKey = new Map(actualViolations.map((violation) => [violationKey(violation), violation]));
-const baselineByKey = new Map(baselineViolations.map((violation) => [violationKey(violation), violation]));
-
 const pureBarrelViolations = actualViolations.filter((violation) => isPureBarrelPath(violation.importer));
-const newViolations = actualViolations.filter((violation) => !baselineByKey.has(violationKey(violation)) && !isPureBarrelPath(violation.importer));
-const resolvedBaselineViolations = baselineViolations.filter((violation) => !actualByKey.has(violationKey(violation)));
+const otherViolations = actualViolations.filter((violation) => !isPureBarrelPath(violation.importer));
 
-if (pureBarrelViolations.length === 0 && newViolations.length === 0 && resolvedBaselineViolations.length === 0) {
-    console.log(`✅ Side-effect import closure matches baseline (${actualViolations.length} known violation(s)).`);
+if (actualViolations.length === 0) {
+    console.log("✅ Side-effect import closure clean (0 violations).");
     process.exit(0);
 }
 
 if (pureBarrelViolations.length > 0) {
     console.error(`❌ Found ${pureBarrelViolations.length} pure barrel side-effect import closure violation(s):`);
-    console.error("  Pure barrels may never import or re-export side-effectful files, even through the baseline.");
+    console.error("  Pure barrels may never import or re-export side-effectful files.");
     for (const violation of pureBarrelViolations.slice(0, 50)) {
         console.error(`  ${formatViolation(violation)}`);
     }
@@ -275,23 +231,13 @@ if (pureBarrelViolations.length > 0) {
     }
 }
 
-if (newViolations.length > 0) {
-    console.error(`❌ Found ${newViolations.length} new side-effect import closure violation(s):`);
-    for (const violation of newViolations.slice(0, 50)) {
+if (otherViolations.length > 0) {
+    console.error(`❌ Found ${otherViolations.length} side-effect import closure violation(s):`);
+    for (const violation of otherViolations.slice(0, 50)) {
         console.error(`  ${formatViolation(violation)}`);
     }
-    if (newViolations.length > 50) {
-        console.error(`  ...and ${newViolations.length - 50} more.`);
-    }
-}
-
-if (resolvedBaselineViolations.length > 0) {
-    console.error(`❌ Found ${resolvedBaselineViolations.length} resolved baseline violation(s). Run with --update-baseline after reviewing the cleanup:`);
-    for (const violation of resolvedBaselineViolations.slice(0, 50)) {
-        console.error(`  ${violation.importer} ${violation.kind} ${JSON.stringify(violation.source)} -> ${violation.target}`);
-    }
-    if (resolvedBaselineViolations.length > 50) {
-        console.error(`  ...and ${resolvedBaselineViolations.length - 50} more.`);
+    if (otherViolations.length > 50) {
+        console.error(`  ...and ${otherViolations.length - 50} more.`);
     }
 }
 
@@ -299,6 +245,7 @@ if (verbose) {
     console.error(`Checked ${allFiles.length} core TypeScript source file(s).`);
 }
 
-console.error("\nTo accept the current reviewed state, run:");
-console.error("  node scripts/treeshaking/checkSideEffectImportClosure.mjs --update-baseline");
+console.error("\nA side-effect-free file must not statically value-import or re-export a side-effectful file.");
+console.error("Fix each violation by importing the dependency's `.pure` module, or by splitting the importer.");
+console.error("Suppressing the check with a baseline/allow-list is not permitted.");
 process.exit(1);

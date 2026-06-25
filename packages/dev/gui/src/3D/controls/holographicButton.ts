@@ -11,10 +11,10 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
 import { type Scene } from "core/scene";
 
-import { FluentMaterial } from "../materials/fluent/fluentMaterial";
-import { StackPanel } from "../../2D/controls/stackPanel";
-import { Image } from "../../2D/controls/image";
-import { TextBlock } from "../../2D/controls/textBlock";
+import { FluentMaterial } from "../materials/fluent/fluentMaterial.pure";
+import { StackPanel } from "../../2D/controls/stackPanel.pure";
+import { Image } from "../../2D/controls/image.pure";
+import { TextBlock } from "../../2D/controls/textBlock.pure";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { type Control3D } from "./control3D";
 import { Color3 } from "core/Maths/math.color";
