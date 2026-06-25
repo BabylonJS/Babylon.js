@@ -1,27 +1,23 @@
-import {
-    type AbstractEngine,
-    type AbstractMesh,
-    type EffectLayer,
-    type Mesh,
-    type Nullable,
-    type Observer,
-    type Scene,
-    type WebGPUDrawContext,
-    type WebGPUShaderProcessor,
-    type WebGPUPipelineContext,
-    type GaussianSplattingMesh,
-    type DrawWrapper,
-    type Camera,
-    type SpriteManager,
-    type IParticleSystem,
-    type ParticleSystem,
-    type Matrix,
-} from "core/index";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
+import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
+import { type EffectLayer } from "core/Layers/effectLayer";
+import { type Mesh } from "core/Meshes/mesh.pure";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable.pure";
+import { type Scene, ScenePerformancePriority } from "core/scene.pure";
+import { type WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
+import { type WebGPUShaderProcessor } from "core/Engines/WebGPU/webgpuShaderProcessor";
+import { type WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
+import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type DrawWrapper } from "core/Materials/drawWrapper";
+import { type Camera } from "core/Cameras/camera.pure";
+import { type SpriteManager } from "core/Sprites/spriteManager";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
+import { type ParticleSystem } from "core/Particles/particleSystem.pure";
 
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
-import { ScenePerformancePriority } from "core/scene.pure";
-import { TmpVectors } from "core/Maths/math.vector.pure";
+import { TmpVectors, type Matrix } from "core/Maths/math.vector.pure";
 import { Logger } from "core/Misc/logger";
 import { FrameGraphBaseLayerTask } from "../FrameGraph/Tasks/Layers/baseLayerTask";
 import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";

@@ -28,6 +28,10 @@ import { type RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Node } from "core/node";
 import { RegisterClusteredLightingSceneComponent } from "./clusteredLightingSceneComponent.pure";
+import { RegisterEnginesExtensionsEngineRawTexture } from "core/Engines/Extensions/engine.rawTexture.pure";
+import { RegisterEnginesExtensionsEngineRenderTarget } from "core/Engines/Extensions/engine.renderTarget.pure";
+import { RegisterEnginesExtensionsEngineRenderTargetTexture } from "core/Engines/Extensions/engine.renderTargetTexture.pure";
+import { RegisterThinInstanceMesh } from "core/Meshes/thinInstanceMesh.pure";
 
 const DefaultDepthSlices = 16;
 const MobileClusteredLightBatchSize = 8;
@@ -236,6 +240,16 @@ export class ClusteredLightContainer extends Light {
         super(name, scene);
         const engine = this.getEngine();
         this._batchSize = ClusteredLightContainer._GetEngineBatchSize(engine);
+
+        // Clustered lighting relies on engine and mesh side effects that are not part of the
+        // pure import baseline. Register them here (idempotently) so the feature works on the
+        // tree-shakeable path without requiring callers to import these extensions manually.
+        // Without this, createRawTexture/createRenderTargetTexture throw and the thin-instance
+        // setters silently no-op, leaving the scene unlit with no error.
+        RegisterEnginesExtensionsEngineRawTexture();
+        RegisterEnginesExtensionsEngineRenderTarget();
+        RegisterEnginesExtensionsEngineRenderTargetTexture();
+        RegisterThinInstanceMesh();
 
         const proxyShader = { vertex: "lightProxy", fragment: "lightProxy" };
         const defines = [`CLUSTLIGHT_BATCH ${this._batchSize}`];
