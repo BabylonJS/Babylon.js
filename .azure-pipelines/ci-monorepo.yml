@@ -1051,8 +1051,9 @@ jobs:
           displayName: "Memory leak tests (packages suite)"
           npmScript: "test:memory-leaks:packages"
           suiteLabel: "packages suite"
-          # Secondary suite: only comments when it actually detects a leak, so
-          # the common (clean) case keeps the PR to a single memory-leak comment.
+          # Secondary suite: stays silent only on a clean pass, and still
+          # comments on any leak or runner error, so the common (clean) case
+          # keeps the PR to a single memory-leak comment without hiding failures.
           alwaysComment: false
 
     # ============================================================================

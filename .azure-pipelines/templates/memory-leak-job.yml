@@ -7,8 +7,9 @@
 # now instantiated as two parallel jobs via this template to trim the
 # post-Build critical-path tail. To avoid doubling PR comments, each job's
 # GitHub comment is gated by the `alwaysComment` parameter: the first-class
-# `ci` suite always comments, while secondary suites only comment when they
-# actually detect a leak (see ci-monorepo.yml).
+# `ci` suite always comments, while secondary suites only stay silent on a
+# clean pass and still comment on any leak or runner error (see
+# ci-monorepo.yml).
 #
 # Non-blocking: failures do not fail the overall pipeline.
 # =============================================================================
@@ -69,7 +70,11 @@ jobs:
                 if [ ! -f "$FILE" ]; then
                     echo "No memory leak comment file found"
                     echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
-                elif [ "$ALWAYS" != "true" ] && ! grep -q "Leaked Scenarios" "$FILE"; then
+                elif [ "$ALWAYS" != "true" ] && grep -q "no leaks detected" "$FILE"; then
+                    # The runner only emits the "no leaks detected" all-clear when
+                    # it ran scenarios, found no leaks, and hit no error. Any other
+                    # state (leaks, or a runner error/empty results) lacks that line
+                    # and still comments, so secondary-suite failures stay visible.
                     echo "Suite is clean and alwaysComment=false; skipping PR comment to reduce noise"
                     echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
                 else
