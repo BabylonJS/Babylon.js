@@ -154,7 +154,7 @@
         #endif
     }
 
-    #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
+    #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
         // _____________________________ Fuzz Layer IBL _______________________________________
         
         // From the LUT, the y component represents a slight skewing of the lobe. I'm using this to
@@ -336,7 +336,7 @@
         #endif
     }
 
-    #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
+    #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
         vec3 slab_fuzz_ibl = fuzzEnvironmentLight * vLightingIntensity.z;
     #endif
 
@@ -543,11 +543,5 @@
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (baseGeoInfo.NdotV);
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, black, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, black, coatIblFresnel, coatAbsorption, vec3(1.0));
-    // #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
-    //     slab_fuzz_ibl *= min(vec3(specular_ambient_occlusion), ambient_occlusion);
-    //     material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
-    // #else
-    //     material_surface_ibl = material_coated_base_ibl;
-    // #endif
     material_surface_ibl = material_coated_base_ibl;
 #endif
