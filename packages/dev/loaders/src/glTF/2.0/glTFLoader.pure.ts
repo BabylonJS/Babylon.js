@@ -477,8 +477,18 @@ export class GLTFLoader implements IGLTFLoader {
 
                     if (needsOpenPBR && !this._pbrMaterialImpls.has("openpbr")) {
                         implPromises.push(
-                            Promise.all([import("core/Materials/PBR/openpbrMaterial"), import("./openpbrMaterialLoadingAdapter")]).then(
-                                ([{ OpenPBRMaterial: openPBRMaterialClass }, { OpenPBRMaterialLoadingAdapter: openPBRAdapterClass }]) => {
+                            // Import the .pure module (which directly declares the class and its registration
+                            // function) rather than the side-effect wrapper. The wrapper re-exports the class via
+                            // `export *`, and some bundlers fail to surface star-re-exported bindings on a dynamic
+                            // import namespace across a chunk boundary (e.g. a Web Worker chunk), which would leave
+                            // materialClass undefined and throw a cryptic "materialClass is not a constructor" later.
+                            // A direct named export is reliable everywhere; we trigger registration explicitly.
+                            Promise.all([import("core/Materials/PBR/openpbrMaterial.pure"), import("./openpbrMaterialLoadingAdapter")]).then(
+                                ([
+                                    { OpenPBRMaterial: openPBRMaterialClass, RegisterOpenpbrMaterial: registerOpenPBRMaterial },
+                                    { OpenPBRMaterialLoadingAdapter: openPBRAdapterClass },
+                                ]) => {
+                                    registerOpenPBRMaterial();
                                     this._pbrMaterialImpls.set("openpbr", {
                                         materialClass: openPBRMaterialClass,
                                         adapterClass: openPBRAdapterClass,
@@ -490,8 +500,11 @@ export class GLTFLoader implements IGLTFLoader {
 
                     if (needsPBR && !this._pbrMaterialImpls.has("pbr")) {
                         implPromises.push(
-                            Promise.all([import("core/Materials/PBR/pbrMaterial"), import("./pbrMaterialLoadingAdapter")]).then(
-                                ([{ PBRMaterial: pbrMaterialClass }, { PBRMaterialLoadingAdapter: pbrAdapterClass }]) => {
+                            // See the openpbr note above: import the .pure module for a reliable class binding and
+                            // register the class explicitly instead of relying on the wrapper's `export *` re-export.
+                            Promise.all([import("core/Materials/PBR/pbrMaterial.pure"), import("./pbrMaterialLoadingAdapter")]).then(
+                                ([{ PBRMaterial: pbrMaterialClass, RegisterPbrMaterial: registerPBRMaterial }, { PBRMaterialLoadingAdapter: pbrAdapterClass }]) => {
+                                    registerPBRMaterial();
                                     this._pbrMaterialImpls.set("pbr", {
                                         materialClass: pbrMaterialClass,
                                         adapterClass: pbrAdapterClass,
