@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "../types";
-import { GetDirectStoreFromMetadata } from "./decorators.functions.pure";
+import { GetDirectStoreFromMetadata } from "./decorators.functions";
 import { _WarnImport } from "./devTools";
 
 /**

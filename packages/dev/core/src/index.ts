@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 // Ensure Symbol.metadata exists before any decorated class in this package is evaluated.
 // This must be the first import so the polyfill runs before the re-exported modules below.
-import "./Misc/decorators.functions";
+import "./Misc/symbolMetadataPolyfill";
 export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";

@@ -1,6 +1,5 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 /* eslint-disable @typescript-eslint/no-restricted-imports */
-export * from "./Misc/decorators.functions.pure";
 export * from "./Actions/pure";
 export * from "./Animations/pure";
 export * from "./assetContainer";
