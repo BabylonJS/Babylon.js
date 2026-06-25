@@ -7,6 +7,13 @@
  * Dynamically imports ./scenes/{scene}/{style}.ts and calls its run() export.
  */
 
+// Ensure Symbol.metadata exists for TC39 decorator metadata. The "deep" and "pure" import
+// styles don't pull the package index that applies this polyfill, so apply it here in the
+// guaranteed-first bootstrap. Inlined (no core import) to avoid affecting the tree-shaking styles.
+if (typeof Symbol !== "undefined" && !(Symbol as any).metadata) {
+    (Symbol as any).metadata = Symbol("Symbol.metadata");
+}
+
 const params = new URLSearchParams(window.location.search);
 const scene = params.get("scene") || "basic";
 const style = params.get("style") || "barrel";

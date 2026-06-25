@@ -4,7 +4,7 @@
         "Misc/PerformanceViewer/performanceViewerSceneExtension.ts": ["top-level-call"],
         "Misc/basis.ts": ["top-level-call"],
         "Misc/dds.ts": ["bare-import"],
-        "Misc/decorators.functions.ts": ["symbol-metadata-polyfill"],
+        "Misc/decorators.functions.ts": ["top-level-call"],
         "Misc/dumpTools.ts": ["top-level-call"],
         "Misc/environmentTextureTools.ts": ["bare-import"],
         "Misc/equirectangularCapture.ts": ["bare-import"],

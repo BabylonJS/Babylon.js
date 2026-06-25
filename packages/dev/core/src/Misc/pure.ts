@@ -77,3 +77,4 @@ export * from "./lazy";
 export * from "./uniqueIdGenerator";
 export { workerFunction as KTX2WorkerFunction, initializeWebWorker as KTX2InitializeWebWorker } from "./khronosTextureContainer2Worker";
 export * from "./tools.internals";
+export * from "./decorators.functions.pure";

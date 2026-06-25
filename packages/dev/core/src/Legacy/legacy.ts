@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-restricted-imports */
+// Ensure Symbol.metadata exists before any decorated class in core/index is evaluated.
+// This must be the first import so the polyfill runs before "core/index" below.
+import "core/Misc/decorators.functions";
 import * as BABYLON from "core/index";
 import * as DebugImport from "core/Debug/index";
 import { RegisterMathColor } from "core/Maths/math.color.pure";

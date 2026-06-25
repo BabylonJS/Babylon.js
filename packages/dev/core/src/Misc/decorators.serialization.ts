@@ -10,7 +10,7 @@ import { Tags } from "./tags";
 import { Color3, Color4 } from "../Maths/math.color.pure";
 import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
-import { GetMergedStore } from "./decorators.functions";
+import { GetMergedStore } from "./decorators.functions.pure";
 
 /** @internal */
 export interface ICopySourceOptions {

@@ -1,6 +1,6 @@
 {
     "version": 1,
     "files": {
-        "Legacy/legacy.ts": ["top-level-call"]
+        "Legacy/legacy.ts": ["bare-import", "top-level-call"]
     }
 }

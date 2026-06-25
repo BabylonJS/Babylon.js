@@ -1,17 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "../types";
-import { GetDirectStoreFromMetadata } from "./decorators.functions";
+import { GetDirectStoreFromMetadata } from "./decorators.functions.pure";
 import { _WarnImport } from "./devTools";
 
 /**
  * TC39 decorator context types that serialization decorators can be applied to.
  * Serialization decorators can be applied to fields, getters, setters, and auto-accessors.
+ * `metadata` can be undefined at runtime when `Symbol.metadata` is not available (e.g. tree-shaken
+ * usage on a runtime that lacks native support and never triggered the polyfill); in that case the
+ * serialization metadata is simply not recorded.
  */
-type SerializableContext = { name: string | symbol; metadata: DecoratorMetadataObject };
+type SerializableContext = { name: string | symbol; metadata: DecoratorMetadataObject | undefined };
 
 function generateSerializableMember(type: number, sourceName?: string) {
     return (_value: unknown, context: SerializableContext) => {
+        if (!context.metadata) {
+            return;
+        }
         const propertyKey = String(context.name);
         const store = GetDirectStoreFromMetadata(context.metadata);
 

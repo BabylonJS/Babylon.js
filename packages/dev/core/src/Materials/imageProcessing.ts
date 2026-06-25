@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { GetDirectStoreFromMetadata } from "../Misc/decorators.functions";
+import { GetDirectStoreFromMetadata } from "../Misc/decorators.functions.pure";
 import { type Nullable } from "../types";
 import { type ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import { type Observer } from "../Misc/observable";
