@@ -23,6 +23,7 @@ This directory contains instruction files that define coding practices, review r
 - **[fluent.instructions.md](fluent.instructions.md)** — Fluent UI conventions (shared components, `makeStyles`, spacing tokens, icon imports, `Collapse`, `ToggleButton`).
 - **[inspector.instructions.md](inspector.instructions.md)** — Inspector v2-specific conventions (`ISettingsStore`, extension architecture, service definitions).
 - **[editor-interaction.instructions.md](editor-interaction.instructions.md)** — How to interact with Babylon editors (layout, wiring nodes, selecting blocks/wires).
+- **[../design-guidelines.md](../design-guidelines.md)** — Shareable design guidelines for Babylon.js tools (Fluent-based color schema, shell/panel structure, components, typography). Written to be copied into other Babylon.js repositories.
 - For porting tools from legacy shared-ui-components to Fluent UI, use the `porting-tools-to-fluent` skill.
 
 ## Testing
