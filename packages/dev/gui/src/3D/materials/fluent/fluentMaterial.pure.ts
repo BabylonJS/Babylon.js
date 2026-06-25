@@ -231,6 +231,8 @@ export class FluentMaterial extends PushMaterial {
                             : async () => {
                                   if (this.shaderLanguage === ShaderLanguage.WGSL) {
                                       await Promise.all([import("./wgsl/fluent.vertex"), import("./wgsl/fluent.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./shaders/fluent.vertex"), import("./shaders/fluent.fragment")]);
                                   }
 
                                   this._shadersLoaded = true;

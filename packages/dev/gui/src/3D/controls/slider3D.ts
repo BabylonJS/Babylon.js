@@ -9,9 +9,9 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial";
-import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial";
-import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
+import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial.pure";
+import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial.pure";
+import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial.pure";
 import { Tools } from "core/Misc/tools";
 
 const SLIDER_MIN: number = 0;

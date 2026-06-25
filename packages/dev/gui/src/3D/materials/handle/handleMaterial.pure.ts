@@ -99,7 +99,9 @@ export class HandleMaterial extends ShaderMaterial {
                     ? async () => {
                           await Promise.all([import("./wgsl/handle.vertex"), import("./wgsl/handle.fragment")]);
                       }
-                    : undefined,
+                    : async () => {
+                          await Promise.all([import("./shaders/handle.vertex"), import("./shaders/handle.fragment")]);
+                      },
         });
 
         this._updateInterpolationTarget();

@@ -1,7 +1,7 @@
 import { Observable } from "core/Misc/observable";
 import { type Vector2 } from "core/Maths/math.vector";
 
-import { Control } from "../control";
+import { Control } from "../control.pure";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { type PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";

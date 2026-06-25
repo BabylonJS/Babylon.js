@@ -197,6 +197,9 @@ export class MRDLInnerquadMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
+                        extraInitializationsAsync: async () => {
+                            await Promise.all([import("./shaders/mrdlInnerquad.vertex"), import("./shaders/mrdlInnerquad.fragment")]);
+                        },
                     },
                     engine
                 ),
