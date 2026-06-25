@@ -5,7 +5,10 @@
 # local Chrome DevTools Protocol access, so BrowserStack is not viable).
 # The two suites (ci + packages) used to run sequentially in one job; they are
 # now instantiated as two parallel jobs via this template to trim the
-# post-Build critical-path tail. Each job posts its own GitHub comment.
+# post-Build critical-path tail. To avoid doubling PR comments, each job's
+# GitHub comment is gated by the `alwaysComment` parameter: the first-class
+# `ci` suite always comments, while secondary suites only comment when they
+# actually detect a leak (see ci-monorepo.yml).
 #
 # Non-blocking: failures do not fail the overall pipeline.
 # =============================================================================
@@ -19,6 +22,13 @@ parameters:
       type: string
     - name: suiteLabel
       type: string
+    # When false, this suite only posts its GitHub comment if it actually
+    # detected a leak. Used to keep the steady-state PR noise at a single
+    # comment (the first-class "ci" suite) while still surfacing a packages
+    # suite regression the moment one appears.
+    - name: alwaysComment
+      type: boolean
+      default: true
 
 jobs:
     - job: ${{ parameters.jobName }}
@@ -54,16 +64,21 @@ jobs:
                 MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
 
           - bash: |
-                if [ -f "$(Build.ArtifactStagingDirectory)/memleak-comment.md" ]; then
-                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/memleak-comment.md")
+                FILE="$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+                ALWAYS=$(echo "${{ parameters.alwaysComment }}" | tr '[:upper:]' '[:lower:]')
+                if [ ! -f "$FILE" ]; then
+                    echo "No memory leak comment file found"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
+                elif [ "$ALWAYS" != "true" ] && ! grep -q "Leaked Scenarios" "$FILE"; then
+                    echo "Suite is clean and alwaysComment=false; skipping PR comment to reduce noise"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
+                else
+                    COMMENT=$(cat "$FILE")
                     COMMENT="${COMMENT//'%'/'%25'}"
                     COMMENT="${COMMENT//$'\n'/'%0A'}"
                     COMMENT="${COMMENT//$'\r'/'%0D'}"
                     echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
                     echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
-                else
-                    echo "No memory leak comment file found"
-                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
                 fi
             displayName: "Read memory leak comment"
             condition: succeededOrFailed()

@@ -1042,6 +1042,8 @@ jobs:
           displayName: "Memory leak tests (ci suite)"
           npmScript: "test:memory-leaks"
           suiteLabel: "ci suite"
+          # First-class PR-facing suite: always posts a single results comment.
+          alwaysComment: true
 
     - template: templates/memory-leak-job.yml
       parameters:
@@ -1049,6 +1051,9 @@ jobs:
           displayName: "Memory leak tests (packages suite)"
           npmScript: "test:memory-leaks:packages"
           suiteLabel: "packages suite"
+          # Secondary suite: only comments when it actually detects a leak, so
+          # the common (clean) case keeps the PR to a single memory-leak comment.
+          alwaysComment: false
 
     # ============================================================================
     # VIEWER TESTS
