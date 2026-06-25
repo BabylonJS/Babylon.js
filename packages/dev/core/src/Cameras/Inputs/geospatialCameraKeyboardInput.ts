@@ -276,7 +276,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                         }
                     } else if (resolved.interaction === "pan") {
                         // Accumulate a unit direction per pan key; the combined vector is normalized after the loop.
-                        panSensitivity = sens;
+                        // Aggregate sensitivity with max so the pan speed is independent of key insertion order
+                        // when keys resolve to different per-key sensitivities.
+                        panSensitivity = Math.max(panSensitivity, sens);
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
                             panDirection.x += 1;
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
