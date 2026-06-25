@@ -68,12 +68,6 @@ const esbuildConfig = {
     },
 };
 
-// babylonjs-gltf2interface is a types-only package (const enums inlined by
-// TypeScript at compile time). It has no JS entry point, so Vite's resolver
-// cannot find one. Provide a runtime stub so glTF loader tests can import
-// modules that reference this package.
-const gltf2InterfaceStub = path.resolve(__dirname, "packages/public/glTF2Interface/babylonjs-gltf2interface.stub.ts");
-
 export default defineConfig({
     esbuild: esbuildConfig,
     resolve: {
