@@ -1,0 +1,64 @@
+# =============================================================================
+# Template: Pipeline caches (npm / Nx / Playwright)
+#
+# Emits Cache@2 restore+save steps. Insert this immediately BEFORE the job's
+# `npm install` step so the npm download cache is restored first, and (when
+# enabled) the Nx computation cache is available for the later build target.
+#
+# Requires these pipeline-level variables to be defined (see ci-monorepo.yml):
+#   - npm_config_cache          e.g. $(Pipeline.Workspace)/.npm
+#   - NX_CACHE_DIRECTORY        e.g. $(Pipeline.Workspace)/.nxcache
+#   - PLAYWRIGHT_BROWSERS_PATH  e.g. $(Pipeline.Workspace)/.playwright
+#
+# Cache keys:
+#   - npm:        keyed on package-lock.json (hits until dependencies change).
+#   - nx:         keyed per-job on the commit, with restoreKeys falling back to
+#                 the most recent prior cache. Nx validates each task by its own
+#                 input hash, so unchanged packages are restored as cache hits —
+#                 this is what makes re-pushes (e.g. fixing one comment) fast.
+#   - playwright: keyed on package-lock.json (browser version is pinned there).
+# =============================================================================
+
+parameters:
+    - name: nx
+      type: boolean
+      default: false
+    - name: playwright
+      type: boolean
+      default: false
+
+steps:
+    - task: Cache@2
+      displayName: "Cache npm packages"
+      inputs:
+          key: 'npm | "$(Agent.OS)" | package-lock.json'
+          restoreKeys: |
+              npm | "$(Agent.OS)"
+          path: $(npm_config_cache)
+
+    - ${{ if eq(parameters.nx, true) }}:
+          - task: Cache@2
+            displayName: "Cache Nx computation"
+            inputs:
+                key: 'nx | "$(Agent.OS)" | "$(System.JobName)" | $(Build.SourceVersion)'
+                restoreKeys: |
+                    nx | "$(Agent.OS)" | "$(System.JobName)"
+                    nx | "$(Agent.OS)"
+                path: $(NX_CACHE_DIRECTORY)
+
+    - ${{ if eq(parameters.playwright, true) }}:
+          - task: Cache@2
+            displayName: "Cache Playwright browsers"
+            inputs:
+                key: 'playwright | "$(Agent.OS)" | package-lock.json'
+                restoreKeys: |
+                    playwright | "$(Agent.OS)"
+                path: $(PLAYWRIGHT_BROWSERS_PATH)
+
+    # Guarantee the cache paths exist so the automatic post-job save never
+    # fails on a missing directory (e.g. a job whose tool wrote nothing, or a
+    # tool that hasn't created its dir yet). Caching an empty dir is harmless,
+    # and paths without a Cache task above are simply left unused.
+    - bash: |
+          mkdir -p "$(npm_config_cache)" "$(NX_CACHE_DIRECTORY)" "$(PLAYWRIGHT_BROWSERS_PATH)"
+      displayName: "Ensure cache directories exist"
