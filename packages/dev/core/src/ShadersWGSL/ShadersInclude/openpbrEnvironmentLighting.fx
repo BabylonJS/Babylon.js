@@ -165,8 +165,8 @@
         // _____________________________ Fuzz Layer IBL _______________________________________
 
         // From the LUT, the y component represents a slight skewing of the lobe. I'm using this to
-        // bump the roughness down slightly.
-        let modifiedFuzzRoughness: f32 = clamp(fuzz_roughness * fuzz_roughness * (1.0f - 0.5f * environmentFuzzBrdf.y), 0.0f, 1.0f);
+        // bump the roughness up slightly.
+        let modifiedFuzzRoughness: f32 = clamp(fuzz_roughness * fuzz_roughness * (1.0f + 0.5f * environmentFuzzBrdf.y), 0.0f, 1.0f);
 
         // The x component of the LUT, represents the anisotropy of the lobe (0 being anisotropic, 1 being isotropic)
         // We'll do a simple approximation by sampling the environment multiple times around an imaginary fiber.
@@ -225,6 +225,7 @@
                 , vec3f(1.0f)
             );
         #else
+            // Otherwise, the base diffuse environment light will be used for the diffuse component of the fuzz layer.
             var fuzzDiffuseEnvironmentLight: vec3f = baseDiffuseEnvironmentLight;
         #endif
         // The fibers are modeled as cylinders at fuzz_roughness = 0. At fuzz_roughness = 1, the fibers are modeled as spheres.
