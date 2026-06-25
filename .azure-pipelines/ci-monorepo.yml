@@ -827,13 +827,6 @@ jobs:
             displayName: "Update scripts from snapshot"
             retryCountOnTaskFailure: 5
 
-          - script: |
-                cd
-                cd ..\BabylonNativeNightlyUnitTests\RelWithDebInfo
-                UnitTests.exe
-            displayName: "Run unit tests"
-            retryCountOnTaskFailure: 3
-
           - script: npm install
             displayName: "npm install"
             retryCountOnTaskFailure: 1
@@ -841,9 +834,23 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
+          # Babylon Native runs on Chakra, which cannot parse the class/auto-accessor
+          # syntax emitted for the TC39 decorator migration. Downlevel the core script
+          # for BOTH the unit tests and the playground before either is executed.
+          - script: |
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets\babylon.max.js
+            displayName: "Downlevel core script for Native (unit tests)"
+
+          - script: |
+                cd
+                cd ..\BabylonNativeNightlyUnitTests\RelWithDebInfo
+                UnitTests.exe
+            displayName: "Run unit tests"
+            retryCountOnTaskFailure: 3
+
           - script: |
                 npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\babylon.max.js
-            displayName: "Downlevel core script for Native"
+            displayName: "Downlevel core script for Native (visualization)"
 
           - script: |
                 cd
