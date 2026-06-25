@@ -3,7 +3,7 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Specifies the level of blur that should be applied when using the depth of field effect
@@ -23,6 +23,9 @@ export const enum ThinDepthOfFieldEffectBlurLevel {
     High,
 }
 
+/**
+ * Thin depth of field effect composed of circle of confusion, blur, and merge post processes.
+ */
 export class ThinDepthOfFieldEffect {
     /** @internal */
     public readonly _circleOfConfusion: ThinCircleOfConfusionPostProcess;

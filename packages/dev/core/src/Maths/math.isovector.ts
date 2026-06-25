@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import { Vector3 } from "./math.vector";
+import { Vector3 } from "./math.vector.pure";
 
 /**
  * Class representing an isovector a vector containing 2 INTEGER coordinates

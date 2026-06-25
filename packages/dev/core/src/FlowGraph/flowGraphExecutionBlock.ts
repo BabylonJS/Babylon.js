@@ -1,7 +1,7 @@
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
 import { type FlowGraphContext } from "./flowGraphContext";
-import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
+import { FlowGraphSignalConnection } from "./flowGraphSignalConnection.pure";
 
 /**
  * A block that executes some action. Always has an input signal (which is not used by event blocks).

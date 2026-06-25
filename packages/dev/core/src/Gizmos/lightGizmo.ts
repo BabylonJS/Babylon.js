@@ -1,22 +1,22 @@
 import { type Nullable } from "../types";
-import { Vector3, Quaternion, TmpVectors } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
-import { Mesh } from "../Meshes/mesh";
+import { Vector3, Quaternion, TmpVectors } from "../Maths/math.vector.pure";
+import { Color3 } from "../Maths/math.color.pure";
+import { Mesh } from "../Meshes/mesh.pure";
 import { type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { type Node } from "../node";
-import { StandardMaterial } from "../Materials/standardMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type Light } from "../Lights/light";
 import { type Scene } from "../scene";
-import { HemisphericLight } from "../Lights/hemisphericLight";
-import { DirectionalLight } from "../Lights/directionalLight";
-import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import { CreateHemisphere } from "../Meshes/Builders/hemisphereBuilder";
-import { SpotLight } from "../Lights/spotLight";
-import { TransformNode } from "../Meshes/transformNode";
+import { HemisphericLight } from "../Lights/hemisphericLight.pure";
+import { DirectionalLight } from "../Lights/directionalLight.pure";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
+import { CreateHemisphere } from "../Meshes/Builders/hemisphereBuilder.pure";
+import { SpotLight } from "../Lights/spotLight.pure";
+import { TransformNode } from "../Meshes/transformNode.pure";
 import { type PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { type Observer, Observable } from "../Misc/observable";
-import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder.pure";
 import { Logger } from "core/Misc/logger";
 
 /**

@@ -23,6 +23,10 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { type GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 
+// Max frames _renderVoxelGrid waits for splat depth sorts to settle before voxelizing anyway
+// (~3s at 60fps). Bounds the wait so a continuously re-sorting (orbiting) splat can't block it.
+const _MaxSortSettleWaitFrames = 180;
+
 /**
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
@@ -123,6 +127,9 @@ export class _IblShadowsVoxelRenderer {
     }
 
     private _voxelizationInProgress: boolean = false;
+    // Frames spent waiting for shadow-casting splats' depth sort to settle before voxelizing; see
+    // _renderVoxelGrid. Capped so a continuously re-sorting (e.g. orbiting) splat can't starve it.
+    private _sortSettleWaitFrames: number = 0;
     private _invWorldScaleMatrix: Matrix = Matrix.Identity();
 
     /**
@@ -600,6 +607,35 @@ export class _IblShadowsVoxelRenderer {
 
     private _renderVoxelGrid() {
         if (this._voxelizationInProgress) {
+            // Wait for shadow-casting GaussianSplatting meshes' depth sort to settle before
+            // rasterizing. Voxelization is order-independent — the order splats are drawn never
+            // affects the grid — but the GS voxel draw still *indexes* each splat through the
+            // `splatIndex` thin-instance buffer, and that buffer is (re)sized, filled and rebound by
+            // the sort worker's callback (the same callback that flips `_isDepthSortSettled`). After
+            // addPart() merges a splat, `forcedInstanceCount` jumps to the new total synchronously
+            // but the index buffer is only finalized when the sort lands; rasterizing in between
+            // indexes a stale/mismatched buffer and writes an empty grid (no IBL shadow until a
+            // later refresh). Frame-capped so a continuously re-sorting (orbiting) splat still
+            // voxelizes eventually rather than blocking forever.
+            let gsSortPending = false;
+            for (let i = 0; i < this._renderTargets.length && !gsSortPending; i++) {
+                const renderList = this._renderTargets[i].renderList;
+                if (!renderList) {
+                    continue;
+                }
+                for (const mesh of renderList) {
+                    if (mesh.getClassName() === "GaussianSplattingMesh" && !(mesh as GaussianSplattingMesh)._isDepthSortSettled) {
+                        gsSortPending = true;
+                        break;
+                    }
+                }
+            }
+            if (gsSortPending && this._sortSettleWaitFrames < _MaxSortSettleWaitFrames) {
+                this._sortSettleWaitFrames++;
+                return;
+            }
+            this._sortSettleWaitFrames = 0;
+
             let allReady = this.getVoxelGrid().isReady();
             for (let i = 0; i < this._mipArray.length; i++) {
                 const mipReady = this._mipArray[i].isReady();

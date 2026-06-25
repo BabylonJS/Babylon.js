@@ -4,7 +4,7 @@ import { Observable } from "../Misc/observable.pure";
 import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
 import { type Camera } from "../Cameras/camera.pure";
 import { type Scene, type IDisposable, ScenePerformancePriority } from "../scene.pure";
-import { type Vector2, Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
+import { type Vector2, type Vector4, Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
 import { type Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
@@ -26,6 +26,7 @@ import { type AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport, _MissingSideEffect, _MissingSideEffectProperty } from "../Misc/devTools";
+import { FromHalfFloat } from "../Misc/halfFloat";
 import { type RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color.pure";
@@ -33,6 +34,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { type Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { Logger } from "../Misc/logger";
 
 import { type Ray, type TrianglePickingPredicate } from "../Culling/ray.pure";
 import { type Collider } from "../Collisions/collider";
@@ -126,6 +128,109 @@ function ApplySkeleton(
     }
 }
 
+function BakedVertexAnimationModulo(value: number, divisor: number): number {
+    return value - Math.floor(value / divisor) * divisor;
+}
+
+function GetBakedVertexAnimationFrame(animationSettings: DeepImmutable<Vector4>, time: number): number {
+    const totalFrames = animationSettings.y - animationSettings.x + 1;
+    const normalizedTime = (time * animationSettings.w) / totalFrames;
+    const frameCorrection = normalizedTime < 1 ? 0 : 1;
+    const numOfFrames = totalFrames - frameCorrection;
+
+    let frameNum = BakedVertexAnimationModulo(normalizedTime - Math.floor(normalizedTime), 1) * numOfFrames;
+    frameNum = BakedVertexAnimationModulo(frameNum + animationSettings.z, numOfFrames);
+    return Math.floor(frameNum) + animationSettings.x + frameCorrection;
+}
+
+function ReadBakedVertexAnimationMatrixToRef(data: Float32Array | Uint16Array, offset: number, matrix: Matrix): void {
+    if (data instanceof Float32Array) {
+        Matrix.FromArrayToRef(data, offset, matrix);
+        return;
+    }
+
+    matrix.copyFromFloats(
+        FromHalfFloat(data[offset]),
+        FromHalfFloat(data[offset + 1]),
+        FromHalfFloat(data[offset + 2]),
+        FromHalfFloat(data[offset + 3]),
+        FromHalfFloat(data[offset + 4]),
+        FromHalfFloat(data[offset + 5]),
+        FromHalfFloat(data[offset + 6]),
+        FromHalfFloat(data[offset + 7]),
+        FromHalfFloat(data[offset + 8]),
+        FromHalfFloat(data[offset + 9]),
+        FromHalfFloat(data[offset + 10]),
+        FromHalfFloat(data[offset + 11]),
+        FromHalfFloat(data[offset + 12]),
+        FromHalfFloat(data[offset + 13]),
+        FromHalfFloat(data[offset + 14]),
+        FromHalfFloat(data[offset + 15])
+    );
+}
+
+function ApplyBakedVertexAnimation(
+    data: FloatArray,
+    kind: string,
+    bakedVertexAnimationManager: IBakedVertexAnimationManager,
+    animationSettings: DeepImmutable<Vector4>,
+    matricesIndicesData: FloatArray,
+    matricesWeightsData: FloatArray,
+    matricesIndicesExtraData: Nullable<FloatArray>,
+    matricesWeightsExtraData: Nullable<FloatArray>,
+    numBoneInfluencers: number
+): boolean {
+    const texture = bakedVertexAnimationManager.texture;
+    const internalTexture = texture?.getInternalTexture();
+    const textureData = internalTexture?._bufferView;
+
+    if (!(textureData instanceof Float32Array) && !(textureData instanceof Uint16Array)) {
+        Logger.Warn("Baked vertex animation bounding info requires CPU-readable Float32Array or Uint16Array texture data.", 1);
+        return false;
+    }
+
+    const textureSize = texture!.getSize();
+    const frame = GetBakedVertexAnimationFrame(animationSettings, bakedVertexAnimationManager.time);
+    if (!isFinite(frame) || frame < 0 || frame >= textureSize.height) {
+        Logger.Warn("Baked vertex animation bounding info could not be refreshed because the computed frame is outside the texture.", 1);
+        return false;
+    }
+
+    const tempVector = TmpVectors.Vector3[0];
+    const finalMatrix = TmpVectors.Matrix[0];
+    const tempMatrix = TmpVectors.Matrix[1];
+    const textureFrameOffset = frame * textureSize.width * 4;
+    const transformFromFloatsToRef = kind === VertexBuffer.NormalKind ? Vector3.TransformNormalFromFloatsToRef : Vector3.TransformCoordinatesFromFloatsToRef;
+
+    for (let index = 0, matWeightIdx = 0; index < data.length; index += 3, matWeightIdx += 4) {
+        finalMatrix.reset();
+
+        let inf: number;
+        let weight: number;
+        for (inf = 0; inf < 4 && inf < numBoneInfluencers; inf++) {
+            weight = matricesWeightsData[matWeightIdx + inf];
+            if (weight > 0) {
+                ReadBakedVertexAnimationMatrixToRef(textureData, textureFrameOffset + Math.floor(matricesIndicesData[matWeightIdx + inf]) * 16, tempMatrix);
+                tempMatrix.scaleAndAddToRef(weight, finalMatrix);
+            }
+        }
+        if (matricesIndicesExtraData && matricesWeightsExtraData) {
+            for (inf = 0; inf < 4 && inf + 4 < numBoneInfluencers; inf++) {
+                weight = matricesWeightsExtraData[matWeightIdx + inf];
+                if (weight > 0) {
+                    ReadBakedVertexAnimationMatrixToRef(textureData, textureFrameOffset + Math.floor(matricesIndicesExtraData[matWeightIdx + inf]) * 16, tempMatrix);
+                    tempMatrix.scaleAndAddToRef(weight, finalMatrix);
+                }
+            }
+        }
+
+        transformFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+        tempVector.toArray(data, index);
+    }
+
+    return true;
+}
+
 /**
  * Opaque cache when computing data about a mesh
  */
@@ -146,6 +251,12 @@ export interface IMeshDataOptions {
 
     /** Apply morph when computing the bounding info. Defaults to false. */
     applyMorph?: boolean;
+
+    /** Apply baked vertex animation when computing data. Defaults to false. */
+    applyBakedVertexAnimation?: boolean;
+
+    /** Baked vertex animation settings to use instead of the manager's animationParameters. */
+    bakedVertexAnimationSettings?: DeepImmutable<Vector4>;
 
     /** Update the cached positions stored as a Vector3 array. Defaults to true. */
     updatePositionsArray?: boolean;
@@ -1739,7 +1850,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
 
             data = cache._outputData;
-        } else if ((options.applyMorph && this.morphTargetManager) || (options.applySkeleton && this.skeleton)) {
+        } else if (
+            (options.applyMorph && this.morphTargetManager) ||
+            (options.applySkeleton && this.skeleton) ||
+            (options.applyBakedVertexAnimation && this.bakedVertexAnimationManager?.isEnabled)
+        ) {
             data = data.slice();
         }
 
@@ -1747,7 +1862,30 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             ApplyMorph(data, kind, this.morphTargetManager);
         }
 
-        if (options.applySkeleton && this.skeleton) {
+        const bakedVertexAnimationManager = this.bakedVertexAnimationManager;
+        let bakedVertexAnimationApplied = false;
+        if (options.applyBakedVertexAnimation && bakedVertexAnimationManager?.isEnabled) {
+            const matricesIndicesData = getVertexData(VertexBuffer.MatricesIndicesKind);
+            const matricesWeightsData = getVertexData(VertexBuffer.MatricesWeightsKind);
+            if (matricesWeightsData && matricesIndicesData) {
+                const needExtras = this.numBoneInfluencers > 4;
+                const matricesIndicesExtraData = needExtras ? getVertexData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                const matricesWeightsExtraData = needExtras ? getVertexData(VertexBuffer.MatricesWeightsExtraKind) : null;
+                bakedVertexAnimationApplied = ApplyBakedVertexAnimation(
+                    data,
+                    kind,
+                    bakedVertexAnimationManager,
+                    options.bakedVertexAnimationSettings ?? bakedVertexAnimationManager.animationParameters,
+                    matricesIndicesData,
+                    matricesWeightsData,
+                    matricesIndicesExtraData,
+                    matricesWeightsExtraData,
+                    this.numBoneInfluencers
+                );
+            }
+        }
+
+        if (!bakedVertexAnimationApplied && options.applySkeleton && this.skeleton) {
             const matricesIndicesData = getVertexData(VertexBuffer.MatricesIndicesKind);
             const matricesWeightsData = getVertexData(VertexBuffer.MatricesWeightsKind);
             if (matricesWeightsData && matricesIndicesData) {

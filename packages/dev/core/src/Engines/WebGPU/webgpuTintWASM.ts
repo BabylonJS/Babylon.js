@@ -1,5 +1,5 @@
 import { Logger } from "core/Misc/logger";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 
 /**
  * Options to load the associated Twgsl library

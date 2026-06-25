@@ -11,6 +11,7 @@ import {
     EditRegular,
     FastForwardRegular,
     FlashRegular,
+    FlowchartRegular,
     NextRegular,
     PauseRegular,
     PlayRegular,
@@ -415,6 +416,9 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = (p
                         forceUpdate({});
                     }}
                 />
+            </Tooltip>
+            <Tooltip content="Sort graph (arrange by execution flow)" relationship="label">
+                <Button size="small" appearance="subtle" icon={<FlowchartRegular />} onClick={() => globalState.onSortGraphRequiredObservable.notifyObservers()} />
             </Tooltip>
             <Divider vertical className={classes.separator} />
             <Tooltip content="Start" relationship="label">

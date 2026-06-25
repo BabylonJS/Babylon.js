@@ -1,8 +1,8 @@
 import { Logger } from "../Misc/logger";
 import { type Scene } from "../scene";
-import { Vector3, Vector2 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Buffers/buffer";
-import { Mesh } from "../Meshes/mesh";
+import { Vector3, Vector2 } from "../Maths/math.vector.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
+import { Mesh } from "../Meshes/mesh.pure";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { type Nullable } from "../types";
 import { Path2 } from "../Maths/math.path";

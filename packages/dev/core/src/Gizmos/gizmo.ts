@@ -1,10 +1,10 @@
 import { type Observer } from "../Misc/observable";
 import { type Nullable } from "../types";
 import { type Scene, type IDisposable } from "../scene";
-import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { Camera } from "../Cameras/camera";
+import { Mesh } from "../Meshes/mesh.pure";
+import { Camera } from "../Cameras/camera.pure";
 import { type TargetCamera } from "../Cameras/targetCamera";
 import { type Node } from "../node";
 import { type Bone } from "../Bones/bone";

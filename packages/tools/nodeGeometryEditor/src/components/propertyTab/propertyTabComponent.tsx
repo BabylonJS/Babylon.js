@@ -28,6 +28,7 @@ import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { McpSessionComponent } from "../mcpSession/mcpSessionComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -414,6 +415,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         globalState={this.props.globalState}
                         inputs={this.props.globalState.nodeGeometry.getInputBlocks()}
                     ></InputsPropertyTabComponent>
+                    <McpSessionComponent globalState={this.props.globalState} />
                 </div>
             </div>
         );

@@ -47,6 +47,8 @@ export class GlobalState {
     onZoomToFitRequiredObservable = new Observable<void>();
     /** Observable triggered when reorganization is required */
     onReOrganizedRequiredObservable = new Observable<void>();
+    /** Observable triggered when a flow-aware graph sort is required */
+    onSortGraphRequiredObservable = new Observable<void>();
     /** Observable triggered when log entry is required */
     onLogRequiredObservable = new Observable<LogEntry>();
     /** Observable triggered when loading state changes */
@@ -75,6 +77,15 @@ export class GlobalState {
     pointerOverCanvas: boolean = false;
     /** Lock object for property grid */
     lockObject = new LockObject();
+
+    /** Current MCP editor-session URL. */
+    mcpSessionUrl: string | null = null;
+    /** Whether the editor is connected to an MCP session. */
+    mcpSessionConnected: boolean = false;
+    /** Active MCP session event stream. */
+    mcpEventSource: EventSource | null = null;
+    /** Observable triggered when MCP session connection state changes. */
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
 
     // ── Time Scale ─────────────────────────────────────────────────────
     /** Observable triggered when the time scale changes. */

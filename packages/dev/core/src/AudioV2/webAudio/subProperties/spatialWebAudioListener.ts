@@ -1,4 +1,4 @@
-import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector.pure";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
 import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
 import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";

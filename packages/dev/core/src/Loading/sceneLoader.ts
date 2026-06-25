@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { Observable } from "../Misc/observable";
 import { type DeepImmutable, type Nullable } from "../types";
-import { Scene } from "../scene";
+import { Scene } from "../scene.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type AnimationGroup } from "../Animations/animationGroup";
@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { type IFileRequest } from "../Misc/fileRequest";
 import { type WebRequest } from "../Misc/webRequest";
-import { type LoadFileError, IsBase64DataUrl } from "../Misc/fileTools";
+import { type LoadFileError, IsBase64DataUrl } from "../Misc/fileTools.pure";
 import { type TransformNode } from "../Meshes/transformNode";
 import { type Geometry } from "../Meshes/geometry";
 import { type Light } from "../Lights/light";
@@ -325,13 +325,18 @@ interface ISceneLoaderPluginInternal {
 }
 
 /**
+ * A concrete (non-factory) SceneLoader plugin, which may be synchronous or asynchronous and may expose internal members.
+ */
+type SceneLoaderPlugin = (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>;
+
+/**
  * Defines a plugin registered by the SceneLoader
  */
 interface IRegisteredPlugin {
     /**
      * Defines the plugin to use
      */
-    plugin: ((ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) | ISceneLoaderPluginFactory;
+    plugin: SceneLoaderPlugin | ISceneLoaderPluginFactory;
     /**
      * Defines if the plugin supports binary data
      */
@@ -559,22 +564,117 @@ function formatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: a
     return errorMessage;
 }
 
+/**
+ * The plugin instance and the loaded data produced by loadDataAsync.
+ */
+type LoadedPluginData = {
+    plugin: SceneLoaderPlugin;
+    data: unknown;
+    responseURL?: string;
+};
+
+function createLoadError(fileInfo: IFileInfo, message?: string, exception?: any): RuntimeError {
+    const errorMessage = formatErrorMessage(fileInfo, message, exception);
+    return new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception);
+}
+
+function getErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
+// Converts an error into a SceneLoader RuntimeError, leaving an already-wrapped SceneLoader error untouched
+// so that it is not double-wrapped (which would duplicate the "Unable to load from ..." prefix).
+function toLoadError(fileInfo: IFileInfo, error: unknown): RuntimeError {
+    return error instanceof RuntimeError && error.errorCode === ErrorCodes.SceneLoaderError ? error : createLoadError(fileInfo, getErrorMessage(error), error);
+}
+
+const loadAssetContainerNotSupportedMessage = "LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssetContainer or loadAssetContainerAsync method.";
+
+// A synchronous plugin exposes the synchronous import/load methods; an asynchronous plugin exposes the *Async methods.
+function isSyncPlugin(plugin: SceneLoaderPlugin): plugin is ISceneLoaderPlugin & Partial<ISceneLoaderPluginInternal> {
+    const candidate = plugin as Partial<ISceneLoaderPlugin>;
+    return !!candidate.importMesh || !!candidate.load || !!candidate.loadAssetContainer;
+}
+
+// Adapts a synchronous ISceneLoaderPlugin into an ISceneLoaderPluginAsync so that callers can use a single
+// promise-based code path regardless of whether the underlying plugin is synchronous or asynchronous.
+// Asynchronous plugins are returned unchanged. The synchronous plugin reports failure via an onError callback
+// and/or a falsy return value; both are translated into a rejected promise.
+function toAsyncPlugin(plugin: SceneLoaderPlugin, fileInfo: IFileInfo): ISceneLoaderPluginAsync {
+    if (!isSyncPlugin(plugin)) {
+        return plugin;
+    }
+
+    const runSync = <T>(invoke: (onError: (message?: string, exception?: any) => void) => T): NonNullable<T> => {
+        let pluginError: { message?: string; exception?: any } | undefined;
+        const result = invoke((message, exception) => {
+            pluginError = { message, exception };
+        });
+        if (!result) {
+            throw createLoadError(fileInfo, pluginError?.message, pluginError?.exception);
+        }
+        return result;
+    };
+
+    return {
+        name: plugin.name,
+        extensions: plugin.extensions,
+        importMeshAsync: async (meshesNames, scene, data, rootUrl) => {
+            const meshes: AbstractMesh[] = [];
+            const particleSystems: IParticleSystem[] = [];
+            const skeletons: Skeleton[] = [];
+            runSync((onError) => plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons, onError));
+            return { meshes, particleSystems, skeletons, animationGroups: [], transformNodes: [], geometries: [], lights: [], spriteManagers: [] };
+        },
+        loadAsync: async (scene, data, rootUrl) => {
+            runSync((onError) => plugin.load(scene, data, rootUrl, onError));
+        },
+        loadAssetContainerAsync: async (scene, data, rootUrl) => {
+            return runSync((onError) => plugin.loadAssetContainer(scene, data, rootUrl, onError));
+        },
+    };
+}
+
+// Reports a load failure to the legacy onError callback. The onError signature requires a Scene, but a scene
+// may not be available (e.g. the error occurred before any scene was created). In that case, fall back to
+// logging so the error handler does not throw a secondary error and mask the original failure.
+function reportLegacyLoadError(onError: Nullable<(scene: Scene, message: string, exception?: any) => void> | undefined, reportScene: Nullable<Scene>, error: unknown): void {
+    const message = getErrorMessage(error);
+    if (onError && reportScene) {
+        onError(reportScene, message, error);
+    } else {
+        Logger.Error(message);
+    }
+}
+
+// Wraps a user supplied progress callback so that an exception thrown by it is logged rather than
+// aborting the entire loading operation.
+function wrapProgress(onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined): ((event: ISceneLoaderProgressEvent) => void) | undefined {
+    if (!onProgress) {
+        return undefined;
+    }
+
+    return (event: ISceneLoaderProgressEvent) => {
+        try {
+            onProgress(event);
+        } catch (error) {
+            Logger.Warn("Error in onProgress callback: " + getErrorMessage(error));
+        }
+    };
+}
+
 async function loadDataAsync(
     fileInfo: IFileInfo,
     scene: Scene,
-    onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: unknown, responseURL?: string) => void,
     onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined,
-    onError: (message?: string, exception?: any) => void,
-    onDispose: () => void,
     pluginExtension: Nullable<string>,
     name: string,
     pluginOptions: PluginOptions
-): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
+): Promise<LoadedPluginData> {
     const directLoad = getDirectLoad(fileInfo.url);
 
     if (fileInfo.rawData && !pluginExtension) {
-        // eslint-disable-next-line no-throw-literal
-        throw "When using ArrayBufferView to load data the file extension must be provided.";
+        throw new Error("When using ArrayBufferView to load data the file extension must be provided.");
     }
 
     const fileExtension = !directLoad && !pluginExtension ? getFilenameExtension(fileInfo.url) : "";
@@ -591,7 +691,6 @@ async function loadDataAsync(
             const response = await _FetchAsync(fileInfo.url, { method: "HEAD", responseHeaders: ["Content-Type"] });
             const mimeType = response.headerValues ? response.headerValues["Content-Type"] : "";
             if (mimeType) {
-                // eslint-disable-next-line require-atomic-updates
                 registeredPlugin = getPluginForMimeType(mimeType);
             }
         }
@@ -610,81 +709,55 @@ async function loadDataAsync(
     }
 
     if (fileInfo.rawData && !registeredPlugin.isBinary) {
-        // eslint-disable-next-line no-throw-literal
-        throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
+        throw new Error("Loading from ArrayBufferView can not be used with plugins that don't support binary loading.");
     }
 
-    const getPluginInstance = (callback: (plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) => void) => {
-        // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
-        // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
-        // plugin call. Given this, options are only supported for plugins that provide a factory function.
-        if (IsFactory(registeredPlugin.plugin)) {
-            const pluginFactory = registeredPlugin.plugin;
-            const partialPlugin = pluginFactory.createPlugin((pluginOptions ?? {}) as SceneLoaderPluginOptions);
-            if (partialPlugin instanceof Promise) {
-                // eslint-disable-next-line github/no-then
-                partialPlugin.then(callback).catch((error) => {
-                    onError("Error instantiating plugin.", error);
-                });
-                // When async factories are used, the plugin instance cannot be returned synchronously.
-                // In this case, the legacy loader functions will return null.
-                return null;
-            } else {
-                callback(partialPlugin);
-                return partialPlugin;
-            }
-        } else {
-            callback(registeredPlugin.plugin);
-            return registeredPlugin.plugin;
+    // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
+    // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
+    // plugin call. Given this, options are only supported for plugins that provide a factory function.
+    let plugin: SceneLoaderPlugin;
+    if (IsFactory(registeredPlugin.plugin)) {
+        const pluginFactory = registeredPlugin.plugin;
+        try {
+            // Only await when the factory is actually asynchronous, so that for synchronous factories the plugin is
+            // instantiated (and onPluginActivatedObservable is notified) synchronously within the calling load operation.
+            const createdPlugin = pluginFactory.createPlugin((pluginOptions ?? {}) as SceneLoaderPluginOptions);
+            plugin = createdPlugin instanceof Promise ? await createdPlugin : createdPlugin;
+        } catch (error) {
+            throw createLoadError(fileInfo, "Error instantiating plugin.", error);
         }
-    };
+    } else {
+        plugin = registeredPlugin.plugin;
+    }
 
-    return getPluginInstance((plugin) => {
-        if (!plugin) {
-            // eslint-disable-next-line no-throw-literal
-            throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
-        }
+    if (!plugin) {
+        throw new Error(`The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`);
+    }
 
-        onPluginActivatedObservable.notifyObservers(plugin);
+    onPluginActivatedObservable.notifyObservers(plugin);
 
-        // Check if we have a direct load url. If the plugin is registered to handle
-        // it or it's not a base64 data url, then pass it through the direct load path.
-        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) || !IsBase64DataUrl(fileInfo.url))) {
-            if (plugin.directLoad) {
-                const result = plugin.directLoad(scene, directLoad);
-                if (result instanceof Promise) {
-                    result
-                        // eslint-disable-next-line github/no-then
-                        .then((data: unknown) => {
-                            onSuccess(plugin, data);
-                        })
-                        // eslint-disable-next-line github/no-then
-                        .catch((error: any) => {
-                            onError("Error in directLoad of _loadData: " + error, error);
-                        });
-                } else {
-                    onSuccess(plugin, result);
-                }
-            } else {
-                onSuccess(plugin, directLoad);
+    // Check if we have a direct load url. If the plugin is registered to handle
+    // it or it's not a base64 data url, then pass it through the direct load path.
+    if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) || !IsBase64DataUrl(fileInfo.url))) {
+        if (plugin.directLoad) {
+            let data: unknown;
+            try {
+                data = await plugin.directLoad(scene, directLoad);
+            } catch (error) {
+                throw createLoadError(fileInfo, "Error in directLoad of _loadData: " + error, error);
             }
-            return;
+            return { plugin, data };
         }
+        return { plugin, data: directLoad };
+    }
 
-        const useArrayBuffer = registeredPlugin.isBinary;
+    const useArrayBuffer = registeredPlugin.isBinary;
 
-        const dataCallback = (data: unknown, responseURL?: string) => {
-            if (scene.isDisposed) {
-                onError("Scene has been disposed");
-                return;
-            }
-
-            onSuccess(plugin, data, responseURL);
-        };
-
+    return await new Promise<LoadedPluginData>((resolve, reject) => {
         let request: Nullable<IFileRequest> = null;
         let pluginDisposed = false;
-        plugin.onDisposeObservable?.add(() => {
+
+        const onDisposeObserver = plugin.onDisposeObservable?.add(() => {
             pluginDisposed = true;
 
             if (request) {
@@ -692,8 +765,32 @@ async function loadDataAsync(
                 request = null;
             }
 
-            onDispose();
+            rejectAndCleanup(createLoadError(fileInfo, "Loading was aborted because the plugin was disposed."));
         });
+
+        // Ensure the onDispose observer is removed once the promise settles, so observers do not accumulate across loads.
+        const cleanup = () => {
+            if (onDisposeObserver) {
+                plugin.onDisposeObservable?.remove(onDisposeObserver);
+            }
+        };
+        const resolveAndCleanup = (value: LoadedPluginData) => {
+            cleanup();
+            resolve(value);
+        };
+        const rejectAndCleanup = (error: Error) => {
+            cleanup();
+            reject(error);
+        };
+
+        const dataCallback = (data: unknown, responseURL?: string) => {
+            if (scene.isDisposed) {
+                rejectAndCleanup(createLoadError(fileInfo, "Scene has been disposed"));
+                return;
+            }
+
+            resolveAndCleanup({ plugin, data, responseURL });
+        };
 
         const manifestChecked = () => {
             if (pluginDisposed) {
@@ -701,21 +798,27 @@ async function loadDataAsync(
             }
 
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-                onError(request?.statusText, exception);
+                rejectAndCleanup(createLoadError(fileInfo, request?.statusText, exception));
             };
 
             if (!plugin.loadFile && fileInfo.rawData) {
-                // eslint-disable-next-line no-throw-literal
-                throw "Plugin does not support loading ArrayBufferView.";
+                rejectAndCleanup(createLoadError(fileInfo, "Plugin does not support loading ArrayBufferView."));
+                return;
             }
 
-            request = plugin.loadFile
-                ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
-                : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
+            try {
+                request = plugin.loadFile
+                    ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
+                    : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
+            } catch (error) {
+                rejectAndCleanup(createLoadError(fileInfo, undefined, error));
+            }
         };
 
         const engine = scene.getEngine();
-        let canUseOfflineSupport = engine.enableOfflineSupport;
+        // File objects and raw data buffers are already in-memory and are not URL-backed requests, so they must
+        // not be routed through the offline (manifest/cache) provider.
+        let canUseOfflineSupport = !fileInfo.file && !fileInfo.rawData && engine.enableOfflineSupport;
         if (canUseOfflineSupport) {
             // Also check for exceptions
             let exceptionFound = false;
@@ -731,7 +834,11 @@ async function loadDataAsync(
 
         if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
             // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+            try {
+                scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+            } catch (error) {
+                rejectAndCleanup(createLoadError(fileInfo, undefined, error));
+            }
         } else {
             manifestChecked();
         }
@@ -856,192 +963,80 @@ export function GetRegisteredSceneLoaderPluginMetadata(): DeepImmutable<
  */
 export async function ImportMeshAsync(source: SceneSource, scene: Scene, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult> {
     const { meshNames, rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return await importMeshAsyncCoreAsync(meshNames, rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return await importMeshCoreAsync(meshNames, rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
-async function importMeshAsync(
+async function importMeshCoreAsync(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-    onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
-    onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-    pluginExtension: Nullable<string> = null,
+    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+    pluginExtension?: Nullable<string>,
     name = "",
     pluginOptions: PluginOptions = {}
-): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
+): Promise<ISceneLoaderAsyncResult> {
     if (!scene) {
-        Logger.Error("No scene available to import mesh to");
-        return null;
+        throw new Error("No scene available to import mesh to");
     }
 
     const fileInfo = GetFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
-        return null;
+        throw new Error("Cannot load file: a valid scene filename or root url was not provided.");
     }
 
     const loadingToken = {};
     scene.addPendingData(loadingToken);
 
-    const disposeHandler = () => {
-        scene.removePendingData(loadingToken);
-    };
+    const progressHandler = wrapProgress(onProgress);
 
-    const errorHandler = (message?: string, exception?: any) => {
-        const errorMessage = formatErrorMessage(fileInfo, message, exception);
+    try {
+        const { plugin, data, responseURL } = await loadDataAsync(fileInfo, scene, progressHandler, pluginExtension ?? null, name, pluginOptions);
 
-        if (onError) {
-            onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
-        } else {
-            Logger.Error(errorMessage);
-            // should the exception be thrown?
+        if (plugin.rewriteRootURL) {
+            fileInfo.rootUrl = plugin.rewriteRootURL(fileInfo.rootUrl, responseURL);
         }
 
-        disposeHandler();
-    };
+        let result: ISceneLoaderAsyncResult;
+        try {
+            result = await toAsyncPlugin(plugin, fileInfo).importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name);
+        } catch (error) {
+            throw toLoadError(fileInfo, error);
+        }
 
-    const progressHandler = onProgress
-        ? (event: ISceneLoaderProgressEvent) => {
-              try {
-                  onProgress(event);
-              } catch (e) {
-                  errorHandler("Error in onProgress callback: " + e, e);
-              }
-          }
-        : undefined;
-
-    const successHandler: SceneLoaderSuccessCallback = (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
+        // eslint-disable-next-line require-atomic-updates
+        scene.loadingPluginName = plugin.name;
         scene.importedMeshesFiles.push(fileInfo.url);
 
-        if (onSuccess) {
-            try {
-                onSuccess(meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers);
-            } catch (e) {
-                errorHandler("Error in onSuccess callback: " + e, e);
-            }
-        }
-
+        return result;
+    } finally {
         scene.removePendingData(loadingToken);
-    };
-
-    return await loadDataAsync(
-        fileInfo,
-        scene,
-        (plugin, data, responseURL) => {
-            if (plugin.rewriteRootURL) {
-                fileInfo.rootUrl = plugin.rewriteRootURL(fileInfo.rootUrl, responseURL);
-            }
-
-            if ((plugin as ISceneLoaderPlugin).importMesh) {
-                const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                const meshes: AbstractMesh[] = [];
-                const particleSystems: IParticleSystem[] = [];
-                const skeletons: Skeleton[] = [];
-
-                if (!syncedPlugin.importMesh(meshNames, scene, data, fileInfo.rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
-                    return;
-                }
-
-                scene.loadingPluginName = plugin.name;
-                successHandler(meshes, particleSystems, skeletons, [], [], [], [], []);
-            } else {
-                const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                asyncedPlugin
-                    .importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
-                    // eslint-disable-next-line github/no-then
-                    .then((result) => {
-                        scene.loadingPluginName = plugin.name;
-                        successHandler(
-                            result.meshes,
-                            result.particleSystems,
-                            result.skeletons,
-                            result.animationGroups,
-                            result.transformNodes,
-                            result.geometries,
-                            result.lights,
-                            result.spriteManagers
-                        );
-                    })
-                    // eslint-disable-next-line github/no-then
-                    .catch((error) => {
-                        errorHandler(error.message, error);
-                    });
-            }
-        },
-        progressHandler,
-        errorHandler,
-        disposeHandler,
-        pluginExtension,
-        name,
-        pluginOptions
-    );
-}
-
-async function importMeshAsyncCoreAsync(
-    meshNames: string | readonly string[] | null | undefined,
-    rootUrl: string,
-    sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
-    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-    pluginExtension?: Nullable<string>,
-    name?: string,
-    pluginOptions?: PluginOptions
-): Promise<ISceneLoaderAsyncResult> {
-    return await new Promise((resolve, reject) => {
-        try {
-            importMeshAsync(
-                meshNames,
-                rootUrl,
-                sceneFilename,
-                scene,
-                (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
-                    resolve({
-                        meshes: meshes,
-                        particleSystems: particleSystems,
-                        skeletons: skeletons,
-                        animationGroups: animationGroups,
-                        transformNodes: transformNodes,
-                        geometries: geometries,
-                        lights: lights,
-                        spriteManagers: spriteManagers,
-                    });
-                },
-                onProgress,
-                (scene, message, exception) => {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(exception || new Error(message));
-                },
-                pluginExtension,
-                name,
-                pluginOptions
-                // eslint-disable-next-line github/no-then
-            ).catch(reject);
-        } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(error);
-        }
-    });
+    }
 }
 
 // This is the core implementation of load scene
-async function loadSceneImplAsync(
+async function loadSceneCoreAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
-    onSuccess: Nullable<(scene: Scene) => void> = null,
-    onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-    pluginExtension: Nullable<string> = null,
+    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+    pluginExtension?: Nullable<string>,
     name = "",
     pluginOptions: PluginOptions = {}
-): Promise<void> {
+): Promise<Scene> {
     if (!engine) {
-        Tools.Error("No engine available");
-        return;
+        throw new Error("No engine available");
     }
 
-    await appendSceneImplAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
+    const scene = new Scene(engine);
+    try {
+        await appendSceneCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name, pluginOptions);
+    } catch (error) {
+        // The scene was created here, so dispose it on failure to avoid leaking the partially loaded scene.
+        scene.dispose();
+        throw error;
+    }
+    return scene;
 }
 
 /**
@@ -1053,7 +1048,7 @@ async function loadSceneImplAsync(
  */
 export async function LoadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return await loadSceneSharedAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
+    return await loadSceneCoreAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1068,65 +1063,27 @@ export async function loadSceneAsync(source: SceneSource, engine: AbstractEngine
     return await LoadSceneAsync(source, engine, options);
 }
 
-// This function is shared between the new module level loadSceneAsync and the legacy SceneLoader.LoadAsync
-async function loadSceneSharedAsync(
-    rootUrl: string,
-    sceneFilename?: SceneSource,
-    engine?: Nullable<AbstractEngine>,
-    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-    pluginExtension?: Nullable<string>,
-    name?: string,
-    pluginOptions?: PluginOptions
-): Promise<Scene> {
-    return await new Promise((resolve, reject) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        loadSceneImplAsync(
-            rootUrl,
-            sceneFilename,
-            engine,
-            (scene) => {
-                resolve(scene);
-            },
-            onProgress,
-            (scene, message, exception) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                reject(exception || new Error(message));
-            },
-            pluginExtension,
-            name,
-            pluginOptions
-        );
-    });
-}
-
 // This is the core implementation of append scene
-async function appendSceneImplAsync(
+async function appendSceneCoreAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-    onSuccess: Nullable<(scene: Scene) => void> = null,
-    onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-    pluginExtension: Nullable<string> = null,
+    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+    pluginExtension?: Nullable<string>,
     name = "",
     pluginOptions: PluginOptions = {}
-): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
+): Promise<Scene> {
     if (!scene) {
-        Logger.Error("No scene available to append to");
-        return null;
+        throw new Error("No scene available to append to");
     }
 
     const fileInfo = GetFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
-        return null;
+        throw new Error("Cannot load file: a valid scene filename or root url was not provided.");
     }
 
     const loadingToken = {};
     scene.addPendingData(loadingToken);
-
-    const disposeHandler = () => {
-        scene.removePendingData(loadingToken);
-    };
 
     if (SceneLoaderFlags.ShowLoadingScreen && !showingLoadingScreen) {
         showingLoadingScreen = true;
@@ -1137,75 +1094,23 @@ async function appendSceneImplAsync(
         });
     }
 
-    const errorHandler = (message?: string, exception?: any) => {
-        const errorMessage = formatErrorMessage(fileInfo, message, exception);
+    const progressHandler = wrapProgress(onProgress);
 
-        if (onError) {
-            onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
-        } else {
-            Logger.Error(errorMessage);
-            // should the exception be thrown?
+    try {
+        const { plugin, data } = await loadDataAsync(fileInfo, scene, progressHandler, pluginExtension ?? null, name, pluginOptions);
+
+        try {
+            await toAsyncPlugin(plugin, fileInfo).loadAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name);
+        } catch (error) {
+            throw toLoadError(fileInfo, error);
         }
 
-        disposeHandler();
-    };
-
-    const progressHandler = onProgress
-        ? (event: ISceneLoaderProgressEvent) => {
-              try {
-                  onProgress(event);
-              } catch (e) {
-                  errorHandler("Error in onProgress callback", e);
-              }
-          }
-        : undefined;
-
-    const successHandler = () => {
-        if (onSuccess) {
-            try {
-                onSuccess(scene);
-            } catch (e) {
-                errorHandler("Error in onSuccess callback", e);
-            }
-        }
-
+        // eslint-disable-next-line require-atomic-updates
+        scene.loadingPluginName = plugin.name;
+        return scene;
+    } finally {
         scene.removePendingData(loadingToken);
-    };
-
-    return await loadDataAsync(
-        fileInfo,
-        scene,
-        (plugin, data) => {
-            if ((plugin as ISceneLoaderPlugin).load) {
-                const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                if (!syncedPlugin.load(scene, data, fileInfo.rootUrl, errorHandler)) {
-                    return;
-                }
-
-                scene.loadingPluginName = plugin.name;
-                successHandler();
-            } else {
-                const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                asyncedPlugin
-                    .loadAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
-                    // eslint-disable-next-line github/no-then
-                    .then(() => {
-                        scene.loadingPluginName = plugin.name;
-                        successHandler();
-                    })
-                    // eslint-disable-next-line github/no-then
-                    .catch((error) => {
-                        errorHandler(error.message, error);
-                    });
-            }
-        },
-        progressHandler,
-        errorHandler,
-        disposeHandler,
-        pluginExtension,
-        name,
-        pluginOptions
-    );
+    }
 }
 
 /**
@@ -1217,7 +1122,7 @@ async function appendSceneImplAsync(
  */
 export async function AppendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    await appendSceneSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    await appendSceneCoreAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1232,144 +1137,53 @@ export async function appendSceneAsync(source: SceneSource, scene: Scene, option
     return await AppendSceneAsync(source, scene, options);
 }
 
-// This function is shared between the new module level appendSceneAsync and the legacy SceneLoader.AppendAsync
-async function appendSceneSharedAsync(
-    rootUrl: string,
-    sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
-    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-    pluginExtension?: Nullable<string>,
-    name?: string,
-    pluginOptions?: PluginOptions
-): Promise<Scene> {
-    return await new Promise((resolve, reject) => {
-        try {
-            appendSceneImplAsync(
-                rootUrl,
-                sceneFilename,
-                scene,
-                (scene) => {
-                    resolve(scene);
-                },
-                onProgress,
-                (scene, message, exception) => {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(exception || new Error(message));
-                },
-                pluginExtension,
-                name,
-                pluginOptions
-                // eslint-disable-next-line github/no-then
-            ).catch(reject);
-        } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(error);
-        }
-    });
-}
-
 // This is the core implementation of load asset container
-async function loadAssetContainerImplAsync(
+async function loadAssetContainerCoreAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-    onSuccess: Nullable<(assets: AssetContainer) => void> = null,
-    onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-    pluginExtension: Nullable<string> = null,
+    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+    pluginExtension?: Nullable<string>,
     name = "",
     pluginOptions: PluginOptions = {}
-): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
+): Promise<AssetContainer> {
     if (!scene) {
-        Logger.Error("No scene available to load asset container to");
-        return null;
+        throw new Error("No scene available to load asset container to");
     }
 
     const fileInfo = GetFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
-        return null;
+        throw new Error("Cannot load file: a valid scene filename or root url was not provided.");
     }
 
     const loadingToken = {};
     scene.addPendingData(loadingToken);
 
-    const disposeHandler = () => {
-        scene.removePendingData(loadingToken);
-    };
+    const progressHandler = wrapProgress(onProgress);
 
-    const errorHandler = (message?: string, exception?: any) => {
-        const errorMessage = formatErrorMessage(fileInfo, message, exception);
+    try {
+        const { plugin, data } = await loadDataAsync(fileInfo, scene, progressHandler, pluginExtension ?? null, name, pluginOptions);
 
-        if (onError) {
-            onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
-        } else {
-            Logger.Error(errorMessage);
-            // should the exception be thrown?
+        const asyncPlugin = toAsyncPlugin(plugin, fileInfo);
+        if (!asyncPlugin.loadAssetContainerAsync) {
+            throw createLoadError(fileInfo, loadAssetContainerNotSupportedMessage);
         }
 
-        disposeHandler();
-    };
-
-    const progressHandler = onProgress
-        ? (event: ISceneLoaderProgressEvent) => {
-              try {
-                  onProgress(event);
-              } catch (e) {
-                  errorHandler("Error in onProgress callback", e);
-              }
-          }
-        : undefined;
-
-    const successHandler = (assets: AssetContainer) => {
-        if (onSuccess) {
-            try {
-                onSuccess(assets);
-            } catch (e) {
-                errorHandler("Error in onSuccess callback", e);
-            }
+        let assetContainer: AssetContainer;
+        try {
+            assetContainer = await asyncPlugin.loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name);
+        } catch (error) {
+            throw toLoadError(fileInfo, error);
         }
 
-        scene.removePendingData(loadingToken);
-    };
+        assetContainer.populateRootNodes();
+        // eslint-disable-next-line require-atomic-updates
+        scene.loadingPluginName = plugin.name;
 
-    return await loadDataAsync(
-        fileInfo,
-        scene,
-        (plugin, data) => {
-            if ((plugin as ISceneLoaderPlugin).loadAssetContainer) {
-                const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                const assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler);
-                if (!assetContainer) {
-                    return;
-                }
-                assetContainer.populateRootNodes();
-                scene.loadingPluginName = plugin.name;
-                successHandler(assetContainer);
-            } else if ((plugin as ISceneLoaderPluginAsync).loadAssetContainerAsync) {
-                const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                asyncedPlugin
-                    .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
-                    // eslint-disable-next-line github/no-then
-                    .then((assetContainer) => {
-                        assetContainer.populateRootNodes();
-                        scene.loadingPluginName = plugin.name;
-                        successHandler(assetContainer);
-                    })
-                    // eslint-disable-next-line github/no-then
-                    .catch((error) => {
-                        errorHandler(error.message, error);
-                    });
-            } else {
-                errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssetContainer or loadAssetContainerAsync method.");
-            }
-        },
-        progressHandler,
-        errorHandler,
-        disposeHandler,
-        pluginExtension,
-        name,
-        pluginOptions
-    );
+        return assetContainer;
+    } finally {
+        scene.removePendingData(loadingToken);
+    }
 }
 
 /**
@@ -1381,7 +1195,7 @@ async function loadAssetContainerImplAsync(
  */
 export async function LoadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return await loadAssetContainerSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return await loadAssetContainerCoreAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1396,60 +1210,21 @@ export async function loadAssetContainerAsync(source: SceneSource, scene: Scene,
     return await LoadAssetContainerAsync(source, scene, options);
 }
 
-// This function is shared between the new module level loadAssetContainerAsync and the legacy SceneLoader.LoadAssetContainerAsync
-async function loadAssetContainerSharedAsync(
-    rootUrl: string,
-    sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
-    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-    pluginExtension?: Nullable<string>,
-    name?: string,
-    pluginOptions?: PluginOptions
-): Promise<AssetContainer> {
-    return await new Promise((resolve, reject) => {
-        try {
-            loadAssetContainerImplAsync(
-                rootUrl,
-                sceneFilename,
-                scene,
-                (assets) => {
-                    resolve(assets);
-                },
-                onProgress,
-                (scene, message, exception) => {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(exception || new Error(message));
-                },
-                pluginExtension,
-                name,
-                pluginOptions
-                // eslint-disable-next-line github/no-then
-            ).catch(reject);
-        } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(error);
-        }
-    });
-}
-
 // This is the core implementation of import animations
-async function importAnimationsImplAsync(
+async function importAnimationsCoreAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
     overwriteAnimations = true,
     animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
     targetConverter: Nullable<(target: any) => any> = null,
-    onSuccess: Nullable<(scene: Scene) => void> = null,
-    onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-    pluginExtension: Nullable<string> = null,
+    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+    pluginExtension?: Nullable<string>,
     name = "",
     pluginOptions: PluginOptions = {}
 ): Promise<void> {
     if (!scene) {
-        Logger.Error("No scene available to load animations to");
-        return;
+        throw new Error("No scene available to load animations to");
     }
 
     if (overwriteAnimations) {
@@ -1491,26 +1266,17 @@ async function importAnimationsImplAsync(
                 // nothing to do
                 break;
             default:
-                Logger.Error("Unknown animation group loading mode value '" + animationGroupLoadingMode + "'");
-                return;
+                throw new Error("Unknown animation group loading mode value '" + animationGroupLoadingMode + "'");
         }
     }
 
     const startingIndexForNewAnimatables = scene.animatables.length;
 
-    const onAssetContainerLoaded = (container: AssetContainer) => {
-        container.mergeAnimationsTo(scene, scene.animatables.slice(startingIndexForNewAnimatables), targetConverter);
+    const container = await loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name, pluginOptions);
 
-        container.dispose();
-
-        scene.onAnimationFileImportedObservable.notifyObservers(scene);
-
-        if (onSuccess) {
-            onSuccess(scene);
-        }
-    };
-
-    await loadAssetContainerImplAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
+    container.mergeAnimationsTo(scene, scene.animatables.slice(startingIndexForNewAnimatables), targetConverter);
+    container.dispose();
+    scene.onAnimationFileImportedObservable.notifyObservers(scene);
 }
 
 /**
@@ -1522,7 +1288,7 @@ async function importAnimationsImplAsync(
  */
 export async function ImportAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
     const { rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    await importAnimationsSharedAsync(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
+    await importAnimationsCoreAsync(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1535,48 +1301,6 @@ export async function ImportAnimationsAsync(source: SceneSource, scene: Scene, o
  */
 export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
     return await ImportAnimationsAsync(source, scene, options);
-}
-
-// This function is shared between the new module level importAnimationsAsync and the legacy SceneLoader.ImportAnimationsAsync
-async function importAnimationsSharedAsync(
-    rootUrl: string,
-    sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
-    overwriteAnimations?: boolean,
-    animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
-    targetConverter?: Nullable<(target: any) => any>,
-    onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-    pluginExtension?: Nullable<string>,
-    name?: string,
-    pluginOptions?: PluginOptions
-): Promise<Scene> {
-    return await new Promise((resolve, reject) => {
-        try {
-            importAnimationsImplAsync(
-                rootUrl,
-                sceneFilename,
-                scene,
-                overwriteAnimations,
-                animationGroupLoadingMode,
-                targetConverter,
-                (scene) => {
-                    resolve(scene);
-                },
-                onProgress,
-                (scene, message, exception) => {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(exception || new Error(message));
-                },
-                pluginExtension,
-                name,
-                pluginOptions
-                // eslint-disable-next-line github/no-then
-            ).catch(reject);
-        } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(error);
-        }
-    });
 }
 
 /**
@@ -1722,10 +1446,24 @@ export class SceneLoader {
         name?: string,
         pluginOptions?: PluginOptions
     ): void {
-        // eslint-disable-next-line github/no-then
-        importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name, pluginOptions).catch((error) =>
-            onError?.(EngineStore.LastCreatedScene!, error?.message, error)
-        );
+        const reportScene = scene ?? EngineStore.LastCreatedScene;
+        void (async () => {
+            try {
+                const result = await importMeshCoreAsync(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name, pluginOptions);
+                onSuccess?.(
+                    result.meshes,
+                    result.particleSystems,
+                    result.skeletons,
+                    result.animationGroups,
+                    result.transformNodes,
+                    result.geometries,
+                    result.lights,
+                    result.spriteManagers
+                );
+            } catch (error) {
+                reportLegacyLoadError(onError, reportScene, error);
+            }
+        })();
     }
 
     /**
@@ -1749,7 +1487,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        return await importMeshAsyncCoreAsync(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return await importMeshCoreAsync(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1774,10 +1512,14 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        // eslint-disable-next-line github/no-then
-        loadSceneImplAsync(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
-            onError?.(EngineStore.LastCreatedScene!, error?.message, error)
-        );
+        void (async () => {
+            try {
+                const scene = await loadSceneCoreAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
+                onSuccess?.(scene);
+            } catch (error) {
+                reportLegacyLoadError(onError, EngineStore.LastCreatedScene, error);
+            }
+        })();
     }
 
     /**
@@ -1799,7 +1541,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return await loadSceneSharedAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
+        return await loadSceneCoreAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1824,10 +1566,15 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        // eslint-disable-next-line github/no-then
-        appendSceneImplAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
-            onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
-        );
+        const reportScene = scene ?? EngineStore.LastCreatedScene;
+        void (async () => {
+            try {
+                const appendedScene = await appendSceneCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+                onSuccess?.(appendedScene);
+            } catch (error) {
+                reportLegacyLoadError(onError, reportScene, error);
+            }
+        })();
     }
 
     /**
@@ -1849,7 +1596,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return await appendSceneSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return await appendSceneCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1874,10 +1621,15 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
-        // eslint-disable-next-line github/no-then
-        loadAssetContainerImplAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
-            onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
-        );
+        const reportScene = scene ?? EngineStore.LastCreatedScene;
+        void (async () => {
+            try {
+                const assets = await loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+                onSuccess?.(assets);
+            } catch (error) {
+                reportLegacyLoadError(onError, reportScene, error);
+            }
+        })();
     }
 
     /**
@@ -1899,7 +1651,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<AssetContainer> {
-        return await loadAssetContainerSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return await loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1930,20 +1682,15 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
-        importAnimationsImplAsync(
-            rootUrl,
-            sceneFilename,
-            scene,
-            overwriteAnimations,
-            animationGroupLoadingMode,
-            targetConverter,
-            onSuccess,
-            onProgress,
-            onError,
-            pluginExtension,
-            name
-            // eslint-disable-next-line github/no-then
-        ).catch((error) => onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error));
+        const reportScene = scene ?? EngineStore.LastCreatedScene;
+        void (async () => {
+            try {
+                await importAnimationsCoreAsync(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
+                onSuccess?.(reportScene!);
+            } catch (error) {
+                reportLegacyLoadError(onError, reportScene, error);
+            }
+        })();
     }
 
     /**
@@ -1977,6 +1724,8 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return await importAnimationsSharedAsync(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
+        const targetScene = scene ?? EngineStore.LastCreatedScene;
+        await importAnimationsCoreAsync(rootUrl, sceneFilename, targetScene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
+        return targetScene!;
     }
 }

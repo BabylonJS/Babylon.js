@@ -72,6 +72,12 @@ export class GlobalState {
     debugBlocksToRefresh: NodeMaterialDebugBlock[] = [];
     forcedDebugBlock: Nullable<NodeMaterialDebugBlock> = null;
 
+    // ── MCP Session state ──────────────────────────────────────────────
+    mcpSessionUrl: string | null = null;
+    mcpSessionConnected: boolean = false;
+    mcpEventSource: EventSource | null = null;
+    onMcpSessionStateChangedObservable = new Observable<boolean>();
+
     /** Gets the mode */
     public get mode(): NodeMaterialModes {
         return this._mode;

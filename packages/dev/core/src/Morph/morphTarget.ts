@@ -4,7 +4,7 @@ import { type Nullable, type FloatArray } from "../types";
 import { type Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";

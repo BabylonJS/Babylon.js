@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { GetAllSmartAssets, GetSmartAssetManager, RegisterSmartAsset } from "core/SmartAssets/smartAssetManager";
+import { GetAllSmartAssets, GetSmartAssetManager, RegisterSmartAsset } from "core/SmartAssets/smartAssetManager.pure";
 import { AddOverride, DisposeOverrideManager, GetOverrideManager, GetOverrides, type OverrideManager } from "../../src/projects/overrideManager";
 import { DeserializeProject, LoadProjectAsync, SerializeProject } from "../../src/projects/projectFile";
 
@@ -286,7 +286,7 @@ describe("ProjectSerializer", () => {
             const fakeTexture = { name: "rockTex", isReady: () => true, dispose: vi.fn() } as any;
             (scene.textures as any[]).push(fakeTexture);
 
-            const samManager = await import("core/SmartAssets/smartAssetManager");
+            const samManager = await import("core/SmartAssets/smartAssetManager.pure");
             const findKeySpy = vi.spyOn(samManager, "FindSmartAssetKeyForObject").mockImplementation((_s, obj) => (obj === fakeTexture ? "rockTex" : undefined));
 
             try {

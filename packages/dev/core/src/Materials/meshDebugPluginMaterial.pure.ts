@@ -26,8 +26,8 @@ flat varying float dbg_vPass;
 const vertexDefinitionsWebGPU = `#if defined(DBG_ENABLED)
 attribute dbg_initialPass: f32;
 varying dbg_vBarycentric: vec3f;
-varying dbg_vVertexWorldPos: vec3f;
-varying dbg_vPass: f32;
+flat varying dbg_vVertexWorldPos: vec3f;
+flat varying dbg_vPass: f32;
 #endif`;
 
 const vertexMainEnd = `#if defined(DBG_ENABLED)
@@ -152,8 +152,8 @@ flat varying float dbg_vPass;
 
 const fragmentDefinitionsWebGPU = `#if defined(DBG_ENABLED)
 varying dbg_vBarycentric: vec3f;
-varying dbg_vVertexWorldPos: vec3f;
-varying dbg_vPass: f32;
+flat varying dbg_vVertexWorldPos: vec3f;
+flat varying dbg_vPass: f32;
 
 #if !defined(DBG_MULTIPLY)
     fn dbg_applyShading(color: vec3f) -> vec3f {
@@ -179,10 +179,10 @@ varying dbg_vPass: f32;
 
 #if DBG_MODE == 2 || DBG_MODE == 3
     fn dbg_cornerFactor() -> f32 {
-        var worldPos = fragmentInputs.vPositionW;
-        float dist = length(worldPos - fragmentInputs.dbg_vVertexWorldPos);
-        float camDist = length(worldPos - scene.vEyePosition.xyz);
-        float d = sqrt(camDist) * .001;
+        let worldPos = fragmentInputs.vPositionW;
+        let dist = length(worldPos - fragmentInputs.dbg_vVertexWorldPos);
+        let camDist = length(worldPos - scene.vEyePosition.xyz);
+        let d = sqrt(camDist) * .001;
         return smoothstep((uniforms.dbg_thicknessRadiusScale.y * d), ((uniforms.dbg_thicknessRadiusScale.y * 1.01) * d), dist);
     }
 #endif
@@ -191,7 +191,7 @@ varying dbg_vPass: f32;
     fn dbg_checkerboardFactor(uv: vec2f) -> f32 {
         var f = fract(uv * uniforms.dbg_thicknessRadiusScale.z);
         f -= .5;
-        return (f.x * f.y) > 0. ? 1. : 0.;
+        return select(0.0, 1.0, (f.x * f.y) > 0.0);
     }
 #endif
 #endif`;
@@ -233,9 +233,11 @@ var dbg_color = vec3f(1.);
 #if DBG_MODE == 1
     dbg_color = mix(uniforms.dbg_wireframeTrianglesColor, vec3f(1.), dbg_edgeFactor());
 #elif DBG_MODE == 2 || DBG_MODE == 3
-    var dbg_cornerFactor = dbg_cornerFactor();
-    if (fragmentInputs.dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
-    dbg_color = mix(uniforms.dbg_vertexColor, vec3(1.), dbg_cornerFactor);
+    let dbg_cornerFactor = dbg_cornerFactor();
+    if (fragmentInputs.dbg_vPass == 0.0 && dbg_cornerFactor == 1.0) {
+        discard;
+    }
+    dbg_color = mix(uniforms.dbg_vertexColor, vec3f(1.), dbg_cornerFactor);
     #if DBG_MODE == 3
         dbg_color *= mix(uniforms.dbg_wireframeVerticesColor, vec3f(1.), dbg_edgeFactor());
     #endif
@@ -253,7 +255,7 @@ var dbg_color = vec3f(1.);
     fragmentOutputs.color *= vec4f(dbg_color, 1.);
 #else
     #if DBG_MODE != 6
-        fragmentOutputs.color = vec4f(dbg_applyShading(dbg_shadedDiffuseColor) * dbg_color, 1.);
+        fragmentOutputs.color = vec4f(dbg_applyShading(uniforms.dbg_shadedDiffuseColor) * dbg_color, 1.);
     #else
         fragmentOutputs.color = vec4f(dbg_color, 1.);
     #endif

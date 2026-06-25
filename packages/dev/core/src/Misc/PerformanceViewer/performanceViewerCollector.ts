@@ -2,7 +2,7 @@ import { type Scene } from "../../scene";
 import { type IPerfCustomEvent, type IPerfDatasets, type IPerfMetadata } from "../interfaces/iPerfViewer";
 import { EventState, Observable } from "../observable";
 import { PrecisionDate } from "../precisionDate";
-import { Tools } from "../tools";
+import { Tools } from "../tools.pure";
 import { DynamicFloat32Array } from "./dynamicFloat32Array";
 import { type IPerfViewerCollectionStrategy, type PerfStrategyInitialization } from "./performanceViewerCollectionStrategies";
 

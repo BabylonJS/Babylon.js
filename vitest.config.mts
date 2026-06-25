@@ -16,13 +16,19 @@ const convertPathsToAliases = () => {
     for (const key in paths) {
         // Convert glob patterns to regex-compatible aliases
         const aliasKey = key.replace("/*", "");
-        const aliasValue = path.resolve(__dirname, paths[key][0].replace("/*", ""));
+        const aliasValue = path.resolve(__dirname, "packages", paths[key][0].replace("/*", ""));
         aliases[aliasKey] = aliasValue;
     }
     return aliases;
 };
 
 const aliases = convertPathsToAliases();
+
+// babylonjs-gltf2interface is a types-only package (const enums inlined by
+// TypeScript at compile time). It has no JS entry point, so Vite's resolver
+// cannot find one. Provide a runtime stub so glTF loader tests can import
+// modules that reference this package.
+const gltf2InterfaceStub = path.resolve(__dirname, "packages/public/glTF2Interface/babylonjs-gltf2interface.stub.ts");
 
 const createProjectConfig = (type: string) => {
     const globalSetupLocation = path.resolve(".", `vitest.${type}.setup.ts`);

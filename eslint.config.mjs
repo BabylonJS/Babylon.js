@@ -716,7 +716,7 @@ export default tseslint.config(
     // Pure files: require /*#__PURE__*/ on top-level calls
     // ===========================================
     {
-        files: ["packages/dev/core/src/**/*.pure.ts"],
+        files: ["packages/dev/{core,gui,loaders,serializers}/src/**/*.pure.ts"],
         rules: {
             "babylonjs/require-pure-annotation": "error",
         },
@@ -726,7 +726,7 @@ export default tseslint.config(
     // Pure files: no side-effect (bare) imports
     // ===========================================
     {
-        files: ["packages/dev/core/src/**/*.pure.ts", "packages/dev/core/src/**/pure.ts"],
+        files: ["packages/dev/{core,gui,loaders,serializers}/src/**/*.pure.ts", "packages/dev/{core,gui,loaders,serializers}/src/**/pure.ts"],
         rules: {
             "babylonjs/no-side-effect-imports-in-pure": "error",
         },
@@ -752,6 +752,7 @@ export default tseslint.config(
         ],
         rules: {
             "babylonjs/no-downlevel-iteration": "error",
+            "babylonjs/no-super-in-accessor": "error",
         },
     }
 );

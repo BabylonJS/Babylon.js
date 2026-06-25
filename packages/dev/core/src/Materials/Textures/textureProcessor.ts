@@ -1,13 +1,13 @@
 import { type Scene } from "../../scene";
 import { type IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { ProceduralTexture } from "./Procedurals/proceduralTexture";
+import { ProceduralTexture } from "./Procedurals/proceduralTexture.pure";
 import { type BaseTexture } from "./baseTexture";
 import { type Nullable } from "../../types";
 import { type Texture } from "./texture";
 import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
-import { Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color.pure";
 
 const _ShaderName = "textureProcessor";
 

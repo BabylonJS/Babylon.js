@@ -1,8 +1,26 @@
-import { type AnimationConfiguration } from "lottie-player/animationConfiguration";
+import { type AnimationConfiguration, type LottieCompatibilityMode, type LottieCompatibilityOptions } from "lottie-player/animationConfiguration";
 import { type RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
 import { DecodeQspStringToObject } from "./utils";
+
+function ParseCompatibilityMode(value: string | null): LottieCompatibilityMode | undefined {
+    return value === "spec" || value === "babylon8" ? value : undefined;
+}
+
+function GetCompatibilityOptions(searchParams: URLSearchParams): LottieCompatibilityOptions | undefined {
+    const textLayerPlacement = ParseCompatibilityMode(searchParams.get("textlayerplacement"));
+    const solidLayerRendering = ParseCompatibilityMode(searchParams.get("solidlayerrendering"));
+
+    if (textLayerPlacement === undefined && solidLayerRendering === undefined) {
+        return undefined;
+    }
+
+    return {
+        ...(textLayerPlacement !== undefined ? { textLayerPlacement } : {}),
+        ...(solidLayerRendering !== undefined ? { solidLayerRendering } : {}),
+    };
+}
 
 /**
  * Main entry point for the default scene for lottie-player
@@ -55,16 +73,14 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const debugParam = searchParams.get("debug");
     const debug = debugParam !== "false";
 
-    // Whether text layers should use Babylon.js 8.x placement compatibility.
-    const legacyTextPositionParam = searchParams.get("legacytextposition");
-    const legacyTextPosition = legacyTextPositionParam === "true";
+    const compatibility = GetCompatibilityOptions(searchParams);
 
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
     const configuration: Partial<AnimationConfiguration> = {
         backgroundColor: { r: 255 / 255, g: 255 / 255, b: 255 / 255, a: 1 }, // Background color for the animation canvas, visual tests use white
         stopAtFrame: stopAtFrame, // If set, the animation will stop at this frame (used by visual tests)
         debug: debug, // Log unsupported lottie features after parsing
-        textLayerCompatibilityMode: legacyTextPosition ? "babylon8" : "spec", // Use Babylon.js 8.x text placement compatibility when requested
+        ...(compatibility !== undefined ? { compatibility } : {}),
     };
 
     // Signal that the first frame has been rendered (used by visual tests for deterministic screenshots)

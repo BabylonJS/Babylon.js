@@ -1,5 +1,5 @@
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture.pure";
 import { type Scene } from "../scene";
 import { RGBDTextureTools } from "./rgbdTextureTools";
 

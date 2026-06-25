@@ -4,7 +4,7 @@
  */
 
 import { IsWindowObjectExist } from "./domManagement";
-import { Tools } from "./tools";
+import { Tools } from "./tools.pure";
 
 let UniqueResolveID = 0;
 

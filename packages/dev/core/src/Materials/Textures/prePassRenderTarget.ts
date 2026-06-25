@@ -1,4 +1,4 @@
-import { type IMultiRenderTargetOptions, MultiRenderTarget } from "./multiRenderTarget";
+import { type IMultiRenderTargetOptions, MultiRenderTarget } from "./multiRenderTarget.pure";
 import { type Engine } from "../../Engines/engine";
 import { type RenderTargetTexture } from "./renderTargetTexture";
 import { type Scene } from "../../scene";

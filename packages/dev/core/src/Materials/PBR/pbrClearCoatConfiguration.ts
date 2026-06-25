@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "../../types";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
-import { Color3 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
@@ -9,7 +9,7 @@ import { type IAnimatable } from "../../Animations/animatable.interface";
 import { type EffectFallbacks } from "../effectFallbacks";
 import { type SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { MaterialDefines } from "../materialDefines";
 
 import { type Engine } from "../../Engines/engine";
@@ -190,11 +190,11 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Checks whether the clear coat configuration is ready for the current submesh.
-     * @param defines defines the material defines to evaluate
-     * @param scene defines the scene to use for texture readiness checks
-     * @param engine defines the engine to use for capability checks
-     * @returns true if the configuration is ready
+     * Checks whether the clear coat textures are ready for the sub mesh.
+     * @param defines defines the material defines to inspect
+     * @param scene defines the scene to use for readiness checks
+     * @param engine defines the engine to use for readiness checks
+     * @returns true if clear coat is ready
      */
     public override isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
@@ -235,9 +235,9 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Updates the clear coat shader defines before attribute processing.
+     * Updates shader defines for clear coat before attributes are processed.
      * @param defines defines the material defines to update
-     * @param scene defines the scene to use for texture define checks
+     * @param scene defines the scene to use for texture checks
      */
     public override prepareDefinesBeforeAttributes(defines: MaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
@@ -300,11 +300,11 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Binds the clear coat data for the current submesh.
+     * Binds clear coat data for a sub mesh.
      * @param uniformBuffer defines the uniform buffer to update
-     * @param scene defines the scene the material belongs to
+     * @param scene defines the scene to use for texture binding
      * @param engine defines the engine to use for capability checks
-     * @param subMesh defines the submesh being rendered
+     * @param subMesh defines the sub mesh being rendered
      */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
@@ -389,9 +389,9 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Checks whether the clear coat configuration references a texture.
+     * Checks whether clear coat uses a texture.
      * @param texture defines the texture to check
-     * @returns true if the texture is used by the configuration
+     * @returns true if the texture is used by clear coat
      */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
@@ -414,8 +414,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Adds the active clear coat textures to the provided array.
-     * @param activeTextures defines the active texture array to update
+     * Adds the active clear coat textures.
+     * @param activeTextures defines the list of active textures to update
      */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
@@ -436,8 +436,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Adds the animatable clear coat textures to the provided array.
-     * @param animatables defines the animatable array to update
+     * Adds the animatable clear coat textures.
+     * @param animatables defines the list of animatables to update
      */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
@@ -458,8 +458,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Disposes the clear coat configuration resources.
-     * @param forceDisposeTextures defines whether to dispose associated textures
+     * Disposes the clear coat textures.
+     * @param forceDisposeTextures defines whether to dispose the textures
      */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
@@ -488,8 +488,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Adds the clear coat sampler names to the provided array.
-     * @param samplers defines the sampler array to update
+     * Adds the clear coat sampler names.
+     * @param samplers defines the list of sampler names to update
      */
     public override getSamplers(samplers: string[]): void {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");

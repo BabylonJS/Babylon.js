@@ -2,7 +2,7 @@
 import { Constants } from "../../Engines/constants";
 import { serialize, expandToProperty } from "../../Misc/decorators";
 import { MaterialDefines } from "../materialDefines";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { type PBRBaseMaterial } from "./pbrBaseMaterial";
 
 /**
@@ -188,7 +188,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Updates the BRDF shader defines.
+     * Updates the material defines for BRDF settings.
      * @param defines defines the material defines to update
      */
     public override prepareDefines(defines: MaterialBRDFDefines): void {

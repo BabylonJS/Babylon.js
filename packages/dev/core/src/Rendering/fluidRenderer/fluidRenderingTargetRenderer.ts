@@ -4,10 +4,10 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { type ThinTexture } from "core/Materials/Textures/thinTexture";
-import { Color3, Color4 } from "core/Maths/math.color";
-import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { Observable } from "core/Misc/observable";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import { PostProcess } from "core/PostProcesses/postProcess.pure";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 

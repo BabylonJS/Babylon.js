@@ -7,9 +7,9 @@ import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { type PrePassRenderer } from "./prePassRenderer";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { Logger } from "../Misc/logger";
-import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer";
+import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
 import { RegisterDepthPeelingSceneComponent } from "./depthPeelingSceneComponent.pure";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {

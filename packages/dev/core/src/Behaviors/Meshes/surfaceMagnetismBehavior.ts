@@ -1,6 +1,6 @@
 import { type PickingInfo } from "../../Collisions/pickingInfo";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { type Mesh } from "../../Meshes/mesh";
 import { type Observer } from "../../Misc/observable";

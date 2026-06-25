@@ -7,7 +7,7 @@ import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { type IAnimatable } from "../../Animations/animatable.interface";
 import { type EffectFallbacks } from "../effectFallbacks";
 import { Constants } from "../../Engines/constants";
-import { MaterialPluginBase } from "../materialPluginBase";
+import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { MaterialDefines } from "../materialDefines";
 
 import { type Scene } from "../../scene";
@@ -124,10 +124,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Checks whether the iridescence configuration is ready for the current submesh.
-     * @param defines defines the material defines to evaluate
-     * @param scene defines the scene to use for texture readiness checks
-     * @returns true if the configuration is ready
+     * Checks whether the iridescence textures are ready for the sub mesh.
+     * @param defines defines the material defines to inspect
+     * @param scene defines the scene to use for readiness checks
+     * @returns true if iridescence is ready
      */
     public override isReadyForSubMesh(defines: MaterialIridescenceDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
@@ -154,9 +154,9 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Updates the iridescence shader defines before attribute processing.
+     * Updates shader defines for iridescence before attributes are processed.
      * @param defines defines the material defines to update
-     * @param scene defines the scene to use for texture define checks
+     * @param scene defines the scene to use for texture checks
      */
     public override prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
         if (this._isEnabled) {
@@ -187,9 +187,9 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Binds the iridescence data for the current submesh.
+     * Binds iridescence data for a sub mesh.
      * @param uniformBuffer defines the uniform buffer to update
-     * @param scene defines the scene the material belongs to
+     * @param scene defines the scene to use for texture binding
      */
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
@@ -232,9 +232,9 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Checks whether the iridescence configuration references a texture.
+     * Checks whether iridescence uses a texture.
      * @param texture defines the texture to check
-     * @returns true if the texture is used by the configuration
+     * @returns true if the texture is used by iridescence
      */
     public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
@@ -249,8 +249,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Adds the active iridescence textures to the provided array.
-     * @param activeTextures defines the active texture array to update
+     * Adds the active iridescence textures.
+     * @param activeTextures defines the list of active textures to update
      */
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
@@ -263,8 +263,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Adds the animatable iridescence textures to the provided array.
-     * @param animatables defines the animatable array to update
+     * Adds the animatable iridescence textures.
+     * @param animatables defines the list of animatables to update
      */
     public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
@@ -277,8 +277,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Disposes the iridescence configuration resources.
-     * @param forceDisposeTextures defines whether to dispose associated textures
+     * Disposes the iridescence textures.
+     * @param forceDisposeTextures defines whether to dispose the textures
      */
     public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
@@ -299,8 +299,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Adds the iridescence sampler names to the provided array.
-     * @param samplers defines the sampler array to update
+     * Adds the iridescence sampler names.
+     * @param samplers defines the list of sampler names to update
      */
     public override getSamplers(samplers: string[]): void {
         samplers.push("iridescenceSampler", "iridescenceThicknessSampler");

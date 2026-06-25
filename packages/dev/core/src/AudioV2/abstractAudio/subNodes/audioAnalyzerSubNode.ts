@@ -17,7 +17,9 @@ export abstract class _AudioAnalyzerSubNode extends _AbstractAudioSubNode {
     public abstract smoothing: number;
 
     public abstract getByteFrequencyData(): Uint8Array;
+    public abstract getByteTimeDomainData(): Uint8Array;
     public abstract getFloatFrequencyData(): Float32Array;
+    public abstract getFloatTimeDomainData(): Float32Array;
 
     /** @internal */
     public setOptions(options: Partial<IAudioAnalyzerOptions>): void {

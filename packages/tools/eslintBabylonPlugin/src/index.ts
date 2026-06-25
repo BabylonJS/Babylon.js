@@ -713,6 +713,65 @@ const plugin: IPlugin = {
                 };
             },
         },
+        "no-super-in-accessor": {
+            meta: {
+                type: "problem",
+                docs: {
+                    description:
+                        "Disallow super.<member> property access inside a get/set accessor. The UMD build is compiled with TypeScript at `target: ES5`, and ES5 downleveling of `super` access inside a (decorated) accessor mis-compiles to `undefined`, even though it works in native-ESM dev. Same ES5-target UMD hazard family as `no-downlevel-iteration`. Use a private backing field instead.",
+                },
+                messages: {
+                    superInAccessor:
+                        "super.{{member}} inside a get/set accessor mis-compiles to `undefined` in the UMD build (ES5 target downleveling of `super` inside a decorated accessor), even though it works in dev/ESM. Use a private backing field instead (see TargetCamera._targetInertia).",
+                },
+            },
+            create(context: eslint.Rule.RuleContext) {
+                const sourceCode = context.sourceCode;
+
+                function isAccessorValue(fnNode: ESTree.Node, parent: ESTree.Node | undefined): boolean {
+                    return (
+                        !!parent &&
+                        (parent.type === "MethodDefinition" || parent.type === "Property") &&
+                        ((parent as any).kind === "get" || (parent as any).kind === "set") &&
+                        (parent as any).value === fnNode
+                    );
+                }
+
+                return {
+                    MemberExpression(node: ESTree.MemberExpression & eslint.Rule.NodeParentExtension) {
+                        if (node.object.type !== "Super") {
+                            return;
+                        }
+                        // Allow super method calls: `super.foo(...)` are emitted differently and are not affected.
+                        const parent = (node as any).parent as ESTree.Node | undefined;
+                        if (parent && parent.type === "CallExpression" && (parent as ESTree.CallExpression).callee === (node as ESTree.Node)) {
+                            return;
+                        }
+
+                        const ancestors = sourceCode.getAncestors ? sourceCode.getAncestors(node) : (context as any).getAncestors();
+                        // Walk nearest -> farthest. Arrow functions are transparent to `super`, so skip them
+                        // and stop at the first `super`-binding (non-arrow) function: if that function is the
+                        // value of a get/set accessor, this `super` access is the risky pattern.
+                        for (let i = ancestors.length - 1; i >= 0; i--) {
+                            const a = ancestors[i] as ESTree.Node;
+                            if (a.type === "ArrowFunctionExpression") {
+                                continue;
+                            }
+                            if (a.type === "FunctionExpression" || a.type === "FunctionDeclaration") {
+                                if (isAccessorValue(a, ancestors[i - 1] as ESTree.Node | undefined)) {
+                                    context.report({
+                                        node,
+                                        messageId: "superInAccessor",
+                                        data: { member: node.computed ? "[…]" : ((node.property as ESTree.Identifier).name ?? "<member>") },
+                                    });
+                                }
+                                return;
+                            }
+                        }
+                    },
+                };
+            },
+        },
         "require-context-save-before-apply-states": {
             meta: {
                 type: "problem",
@@ -869,13 +928,21 @@ const plugin: IPlugin = {
                         "Call/new expression in a .pure.ts file must be annotated with /*#__PURE__*/. " + "Without it, bundlers cannot tree-shake this code. Expression: {{expr}}",
                 },
             },
-            create(context: { filename?: string; getFilename?: () => string; sourceCode?: any; getSourceCode?: () => any; report: (desc: any) => void }) {
-                const filename = context.filename ?? context.getFilename?.() ?? "";
+            create(context: eslint.Rule.RuleContext) {
+                const filename = context.filename;
                 if (!filename.endsWith(".pure.ts")) {
                     return {};
                 }
 
-                const sourceCode = context.sourceCode ?? context.getSourceCode?.();
+                const sourceCode = context.sourceCode;
+
+                type TypeScriptExpressionWrapper = ESTree.BaseExpression & {
+                    type: "TSAsExpression" | "TSTypeAssertion" | "TSSatisfiesExpression" | "TSNonNullExpression";
+                    expression: PureAnnotationNode;
+                };
+
+                type PureAnnotationNode = ESTree.Node | TypeScriptExpressionWrapper;
+                type PureAnnotationCallOrNewExpression = ESTree.SimpleCallExpression | ESTree.NewExpression;
 
                 /**
                  * Unwrap TS type assertions (e.g. `new Foo() as Bar`) to find the
@@ -883,14 +950,14 @@ const plugin: IPlugin = {
                  * @param node - The AST node to unwrap.
                  * @returns The unwrapped CallExpression/NewExpression, or null.
                  */
-                function findCallOrNew(node: any): any {
+                function findCallOrNew(node: PureAnnotationNode | null | undefined): PureAnnotationCallOrNewExpression | null {
                     if (!node) {
                         return null;
                     }
                     if (node.type === "NewExpression" || node.type === "CallExpression") {
                         return node;
                     }
-                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression") {
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
                         return findCallOrNew(node.expression);
                     }
                     return null;
@@ -901,9 +968,9 @@ const plugin: IPlugin = {
                  * @param node - The AST node to check.
                  * @returns True if a #__PURE__ annotation precedes the node.
                  */
-                function hasPureAnnotation(node: any): boolean {
+                function hasPureAnnotation(node: PureAnnotationCallOrNewExpression): boolean {
                     // getCommentsBefore returns leading comments attached to the node
-                    const comments = sourceCode.getCommentsBefore?.(node) ?? [];
+                    const comments = sourceCode.getCommentsBefore(node);
                     for (const c of comments) {
                         if (c.type === "Block" && c.value.trim() === "#__PURE__") {
                             return true;
@@ -911,22 +978,119 @@ const plugin: IPlugin = {
                     }
                     // Also check the immediately preceding token (comment) in case
                     // ESLint attached it differently
-                    const prev = sourceCode.getTokenBefore?.(node, { includeComments: true });
+                    const prev = sourceCode.getTokenBefore(node, { includeComments: true });
                     if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") {
                         return true;
                     }
                     return false;
                 }
 
-                function reportMissing(callOrNew: any) {
+                const safelyAutofixablePureConstructors = new Set<string>([
+                    "Map",
+                    "Set",
+                    "WeakMap",
+                    "WeakSet",
+                    "Color3",
+                    "Color4",
+                    "Matrix",
+                    "Plane",
+                    "Quaternion",
+                    "Size",
+                    "Vector2",
+                    "Vector3",
+                    "Vector4",
+                    "Viewport",
+                ]);
+
+                function unwrapExpression(node: PureAnnotationNode | null | undefined): PureAnnotationNode | null | undefined {
+                    if (!node) {
+                        return node;
+                    }
+                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
+                        return unwrapExpression(node.expression);
+                    }
+                    return node;
+                }
+
+                function isSimplePureArgument(node: PureAnnotationNode | null | undefined): boolean {
+                    const unwrappedNode = unwrapExpression(node);
+                    if (!unwrappedNode) {
+                        return true;
+                    }
+                    switch (unwrappedNode.type) {
+                        case "Identifier":
+                        case "Literal":
+                        case "ThisExpression":
+                            return true;
+                        case "TemplateLiteral":
+                            return unwrappedNode.expressions.length === 0;
+                        case "UnaryExpression":
+                            // Reject side-effecting unary operators; allow safe ones.
+                            if (unwrappedNode.operator === "delete") {
+                                return false;
+                            }
+                            return isSimplePureArgument(unwrappedNode.argument);
+                        case "ArrayExpression":
+                            return unwrappedNode.elements.every((element) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
+                        case "ObjectExpression":
+                            return unwrappedNode.properties.every((property) => {
+                                if (property.type === "SpreadElement" || property.computed) {
+                                    return false;
+                                }
+                                return isSimplePureArgument(property.value);
+                            });
+                        default:
+                            return false;
+                    }
+                }
+
+                function hasOnlySimplePureArguments(node: PureAnnotationCallOrNewExpression): boolean {
+                    // Keep autofix limited to arguments that are already values or literal containers.
+                    // For example, `new Vector3(GetXValue(), 0, 0)` still needs manual review because
+                    // the argument call may have side effects even though `Vector3` itself is safe.
+                    return node.arguments.every((argument) => isSimplePureArgument(argument));
+                }
+
+                function isSafelyAutofixablePureExpression(node: PureAnnotationCallOrNewExpression): boolean {
+                    if (node.type === "NewExpression") {
+                        // Only accept a plain Identifier callee (e.g. `new Vector3()`).
+                        // Member-expression callees like `new SomeNamespace.Vector3()` are
+                        // rejected because the trailing name alone cannot confirm the type.
+                        const calleeNode = unwrapExpression(node.callee);
+                        if (!calleeNode || calleeNode.type !== "Identifier") {
+                            return false;
+                        }
+                        return safelyAutofixablePureConstructors.has(calleeNode.name) && hasOnlySimplePureArguments(node);
+                    }
+
+                    if (node.type === "CallExpression") {
+                        // Only accept a direct `Math.<identifier>(...)` call —
+                        // not chains like `Math.abs.call(...)` / `Math.max.bind(...)`.
+                        const calleeNode = unwrapExpression(node.callee);
+                        if (
+                            !calleeNode ||
+                            calleeNode.type !== "MemberExpression" ||
+                            calleeNode.computed ||
+                            calleeNode.object?.type !== "Identifier" ||
+                            calleeNode.object.name !== "Math" ||
+                            calleeNode.property?.type !== "Identifier"
+                        ) {
+                            return false;
+                        }
+                        return hasOnlySimplePureArguments(node);
+                    }
+
+                    return false;
+                }
+
+                function reportMissing(callOrNew: PureAnnotationCallOrNewExpression) {
                     const text = sourceCode.getText(callOrNew);
+                    const canAutofix = isSafelyAutofixablePureExpression(callOrNew);
                     context.report({
                         node: callOrNew,
                         messageId: "missing-pure-annotation",
                         data: { expr: text.length > 60 ? text.slice(0, 57) + "..." : text },
-                        fix(fixer: any) {
-                            return fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ");
-                        },
+                        fix: canAutofix ? (fixer: eslint.Rule.RuleFixer) => fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ") : undefined,
                     });
                 }
 

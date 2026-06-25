@@ -5,7 +5,7 @@ import { type FollowCamera } from "../../Cameras/followCamera";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { type IWheelEvent } from "../../Events/deviceInputEvents";
-import { Tools } from "../../Misc/tools";
+import { Tools } from "../../Misc/tools.pure";
 import { Logger } from "core/Misc/logger";
 
 /**

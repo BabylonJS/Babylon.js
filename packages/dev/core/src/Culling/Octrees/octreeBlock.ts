@@ -1,5 +1,5 @@
 import { type SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import { Vector3 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector.pure";
 import { type Ray } from "../../Culling/ray";
 import { BoundingBox } from "../../Culling/boundingBox";
 import { type Plane } from "../../Maths/math.plane";

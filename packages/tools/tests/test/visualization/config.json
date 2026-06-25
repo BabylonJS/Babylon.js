@@ -2,6 +2,14 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting LOD",
+            "playgroundId": "#418POI#12",
+            "renderCount": 15,
+            "referenceImage": "gsplat-lod.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "MSAA RTT samples=4 (magnified)",
             "playgroundId": "#DY1H5P#0",
             "referenceImage": "msaa-rtt-samples4-magnified.png",
@@ -21,6 +29,15 @@
             "playgroundId": "#O53CPP#0",
             "referenceImage": "gsplat-splat-modify.png",
             "dependsOn": ["GaussianSplatting", "SPLATLoader"]
+        },
+        {
+            "title": "Gaussian Splatting GPU Picking",
+            "playgroundId": "#834G5K#0",
+            "renderCount": 15,
+            "referenceImage": "gsplat-gpu-picking.png",
+            "errorRatio": 5,
+            "dependsOn": ["GaussianSplatting", "Collisions", "Meshes", "Materials"],
+            "excludeFromPerformance": true
         },
         {
             "title": "Gaussian Splatting PLY SH Reload",
@@ -192,6 +209,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting IBL Shadows Camera Switch",
+            "playgroundId": "#DAID4Q#10",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadows-camera-switch.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Compound IBL Shadows Single Part",
             "playgroundId": "#DAID4Q#4",
             "renderCount": 15,
@@ -259,6 +284,15 @@
             "renderCount": 5,
             "errorRatio": 5,
             "referenceImage": "gsplat-debug-part-test.png",
+            "dependsOn": ["GaussianSplatting", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Debug Part Auto Tracking Test",
+            "playgroundId": "#BTS11N#3",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-debug-part-auto-tracking-test.png",
             "dependsOn": ["GaussianSplatting", "Loaders"],
             "excludeFromPerformance": true
         },
@@ -436,6 +470,12 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting Loading RH",
+            "playgroundId": "#CID4NN#398",
+            "referenceImage": "gsplat-loading-rh.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "EXR Loader",
             "playgroundId": "#4RN0VF#151",
             "referenceImage": "exr-loader.png",
@@ -523,6 +563,14 @@
             "title": "GPUPicker",
             "playgroundId": "#1RWFMT#8",
             "referenceImage": "gpuPicker.png",
+            "dependsOn": ["Meshes"]
+        },
+        {
+            "title": "GPUPicker Depth Point and Normal",
+            "playgroundId": "#JVKFZJ#0",
+            "referenceImage": "gpuPickerDepthPointNormal.png",
+            "renderCount": 30,
+            "excludedEngines": ["webgl1"],
             "dependsOn": ["Meshes"]
         },
         {
@@ -2013,6 +2061,12 @@
             "dependsOn": ["Loaders", "OBJ"]
         },
         {
+            "title": "OBJ empty normal",
+            "playgroundId": "#26R8NS#15",
+            "referenceImage": "objEmptyNormal.png",
+            "dependsOn": ["LibMaterials", "Loaders", "OBJ"]
+        },
+        {
             "title": "OBJ Stanford Bunny normals (LH)",
             "playgroundId": "#26R8NS#6",
             "referenceImage": "objStanfordBunnyNormalsLH.png",
@@ -2586,7 +2640,7 @@
         },
         {
             "title": "Serialize scene without materials",
-            "playgroundId": "#PH4DEZ#1",
+            "playgroundId": "#PH4DEZ#4",
             "referenceImage": "serializeWithoutMaterials.png",
             "dependsOn": ["Meshes", "Serializers"]
         },
@@ -2880,6 +2934,18 @@
             "title": "cube-with-holes-using-stencil-buffer",
             "playgroundId": "#CW5PRI#11",
             "dependsOn": ["Lights", "Materials"]
+        },
+        {
+            "title": "Grid Material",
+            "playgroundId": "#RKGF05",
+            "referenceImage": "grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Multi Scale Grid Material",
+            "playgroundId": "#RKGF05#5",
+            "referenceImage": "multi-scale-grid-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
         },
         {
             "title": "water-material",
@@ -5276,6 +5342,135 @@
             "errorRatio": 7.5,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures"]
+        },
+        {
+            "title": "FBX loader - cube + Phong material",
+            "playgroundId": "#DZBTQU#0",
+            "referenceImage": "fbx-m01-cube-phong.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
+            "title": "FBX loader - n-gons + vertex colors",
+            "playgroundId": "#DZBTQU#1",
+            "referenceImage": "fbx-m02-ngons.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - smooth vs flat normals",
+            "playgroundId": "#DZBTQU#2",
+            "referenceImage": "fbx-m03-normals.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - material properties",
+            "playgroundId": "#DZBTQU#3",
+            "referenceImage": "fbx-m04-materials.png",
+            "dependsOn": ["Loaders", "Materials"]
+        },
+        {
+            "title": "FBX loader - texture slots",
+            "playgroundId": "#DZBTQU#4",
+            "referenceImage": "fbx-m05-textures.png",
+            "dependsOn": ["Loaders", "Materials", "Textures"]
+        },
+        {
+            "title": "FBX loader - UV transform",
+            "playgroundId": "#DZBTQU#5",
+            "referenceImage": "fbx-m06-uv-transform.png",
+            "dependsOn": ["Loaders", "Materials", "Textures"]
+        },
+        {
+            "title": "FBX loader - multi-material submeshes",
+            "playgroundId": "#DZBTQU#6",
+            "referenceImage": "fbx-m07-multimaterial.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
+            "title": "FBX loader - transform chains",
+            "playgroundId": "#DZBTQU#7",
+            "referenceImage": "fbx-m08-transforms.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - skinning",
+            "playgroundId": "#DZBTQU#8",
+            "referenceImage": "fbx-m09-skinning.png",
+            "dependsOn": ["Loaders", "Bones", "Meshes"]
+        },
+        {
+            "title": "FBX loader - morph targets",
+            "playgroundId": "#DZBTQU#9",
+            "referenceImage": "fbx-m10-morph.png",
+            "dependsOn": ["Loaders", "Morph"]
+        },
+        {
+            "title": "FBX loader - node animation",
+            "playgroundId": "#DZBTQU#10",
+            "referenceImage": "fbx-m11-node-anim.png",
+            "dependsOn": ["Loaders", "Animations"]
+        },
+        {
+            "title": "FBX loader - skeletal animation",
+            "playgroundId": "#DZBTQU#11",
+            "referenceImage": "fbx-m12-skeletal-anim.png",
+            "dependsOn": ["Loaders", "Bones", "Animations"]
+        },
+        {
+            "title": "FBX loader - morph animation",
+            "playgroundId": "#DZBTQU#12",
+            "referenceImage": "fbx-m13-morph-anim.png",
+            "dependsOn": ["Loaders", "Morph", "Animations"]
+        },
+        {
+            "title": "FBX loader - multiple animation clips",
+            "playgroundId": "#DZBTQU#13",
+            "referenceImage": "fbx-m14-multiclip.png",
+            "dependsOn": ["Loaders", "Animations"]
+        },
+        {
+            "title": "FBX loader - cameras and lights",
+            "playgroundId": "#DZBTQU#14",
+            "referenceImage": "fbx-m15-camera-lights.png",
+            "dependsOn": ["Loaders", "Cameras", "Lights"]
+        },
+        {
+            "title": "FBX loader - axis Y-up",
+            "playgroundId": "#DZBTQU#15",
+            "referenceImage": "fbx-m16-axis-yup.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - axis Z-up conversion",
+            "playgroundId": "#DZBTQU#16",
+            "referenceImage": "fbx-m16-axis-zup.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "FBX loader - unit scale",
+            "playgroundId": "#DZBTQU#17",
+            "referenceImage": "fbx-m16-units.png",
+            "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "CSG2 Right-Handed glTF winding",
+            "playgroundId": "#1HYT9N#0",
+            "referenceImage": "csg2-righthanded-gltf-winding.png",
+            "errorRatio": 1.5,
+            "dependsOn": ["CSG", "Meshes"]
+        },
+        {
+            "title": "FreeCamera framerate-independent movement",
+            "playgroundId": "#Y3PG6K#0",
+            "referenceImage": "freecamera-framerate-independent-movement.png",
+            "renderCount": 1,
+            "dependsOn": ["Cameras", "Materials", "Meshes"]
+        },
+        {
+            "title": "FlyCamera framerate-independent movement",
+            "playgroundId": "#PX1JQY#0",
+            "referenceImage": "flycamera-framerate-independent-movement.png",
+            "renderCount": 1,
+            "dependsOn": ["Cameras", "Materials", "Meshes"]
         }
     ]
 }

@@ -7,7 +7,6 @@ import { type ILoadingScreen } from "../Loading/loadingScreen.pure";
 import { EngineStore } from "./engineStore";
 import { type WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import { type IPipelineContext } from "./IPipelineContext";
-import { type ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
 import { type EngineOptions, ThinEngine } from "./thinEngine.pure";
 import { Constants } from "./constants";
 import { type IViewportLike, type IColor4Like } from "../Maths/math.like";
@@ -321,11 +320,6 @@ export class Engine extends ThinEngine {
 
     // Members
 
-    /**
-     * If set, will be used to request the next animation frame for the render loop
-     */
-    public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
-
     private _rescalePostProcess: Nullable<PostProcess>;
 
     protected override get _supportsHardwareTextureRescaling() {
@@ -505,30 +499,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
-     * @param y defines the y-coordinate of the corner of the clear rectangle
-     * @param width defines the width of the clear rectangle
-     * @param height defines the height of the clear rectangle
-     */
-    public enableScissor(x: number, y: number, width: number, height: number): void {
-        const gl = this._gl;
-
-        // Change state
-        gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(x, y, width, height);
-    }
-
-    /**
-     * Disable previously set scissor test rectangle
-     */
-    public disableScissor() {
-        const gl = this._gl;
-
-        gl.disable(gl.SCISSOR_TEST);
-    }
-
-    /**
      * Gets the source code of the vertex shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the vertex shader associated with the program
@@ -592,39 +562,6 @@ export class Engine extends ThinEngine {
      */
     public override getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         return GetFontOffset(font);
-    }
-
-    protected override _cancelFrame() {
-        if (this.customAnimationFrameRequester) {
-            if (this._frameHandler !== 0) {
-                this._frameHandler = 0;
-                const { cancelAnimationFrame } = this.customAnimationFrameRequester;
-                if (cancelAnimationFrame) {
-                    cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
-                }
-            }
-        } else {
-            super._cancelFrame();
-        }
-    }
-
-    public override _renderLoop(timestamp?: number): void {
-        this._processFrame(timestamp);
-
-        // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
-        // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
-        // already been queued (e.g., if `stopRenderLoop` and `runRenderLoop` is called mid frame).
-        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
-            if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(
-                    this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
-                    this.customAnimationFrameRequester
-                );
-                this._frameHandler = this.customAnimationFrameRequester.requestID;
-            } else {
-                this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
-            }
-        }
     }
 
     /**

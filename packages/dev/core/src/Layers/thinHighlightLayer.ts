@@ -10,13 +10,13 @@ import {
     type Color3,
     type EffectWrapper,
 } from "core/index";
-import { Vector2 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Buffers/buffer";
+import { Vector2 } from "../Maths/math.vector.pure";
+import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Material } from "../Materials/material";
 import { ThinPassPostProcess } from "../PostProcesses/thinPassPostProcess";
 import { ThinEffectLayer, ThinGlowBlurPostProcess } from "./thinEffectLayer";
 import { Constants } from "../Engines/constants";
-import { Color4 } from "../Maths/math.color";
+import { Color4 } from "../Maths/math.color.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 

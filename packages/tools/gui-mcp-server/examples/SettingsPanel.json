@@ -1,0 +1,149 @@
+{
+  "root": {
+    "name": "root",
+    "className": "Container",
+    "children": [
+      {
+        "name": "overlay",
+        "className": "Rectangle",
+        "width": "1",
+        "height": "1",
+        "background": "rgba(0,0,0,0.7)",
+        "thickness": 0,
+        "children": [
+          {
+            "name": "dialog",
+            "className": "Rectangle",
+            "width": "500px",
+            "height": "600px",
+            "background": "#2D2D2D",
+            "cornerRadius": 15,
+            "thickness": 2,
+            "color": "#555",
+            "children": [
+              {
+                "name": "title",
+                "className": "TextBlock",
+                "text": "⚙ Settings",
+                "color": "white",
+                "fontSize": "24px",
+                "top": "-240px"
+              },
+              {
+                "name": "options",
+                "className": "StackPanel",
+                "isVertical": true,
+                "width": "400px",
+                "top": "-100px",
+                "children": [
+                  {
+                    "name": "volLabel",
+                    "className": "TextBlock",
+                    "text": "Volume",
+                    "color": "#BBB",
+                    "fontSize": "16px",
+                    "height": "30px"
+                  },
+                  {
+                    "name": "volSlider",
+                    "className": "Slider",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "value": 75,
+                    "step": 5,
+                    "height": "30px",
+                    "color": "#4CAF50"
+                  },
+                  {
+                    "name": "brightLabel",
+                    "className": "TextBlock",
+                    "text": "Brightness",
+                    "color": "#BBB",
+                    "fontSize": "16px",
+                    "height": "30px"
+                  },
+                  {
+                    "name": "brightSlider",
+                    "className": "Slider",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "value": 50,
+                    "height": "30px",
+                    "color": "#2196F3"
+                  },
+                  {
+                    "name": "fsRow",
+                    "className": "StackPanel",
+                    "isVertical": false,
+                    "height": "30px",
+                    "children": [
+                      {
+                        "name": "fsCb",
+                        "className": "Checkbox",
+                        "isChecked": false,
+                        "width": "20px",
+                        "height": "20px",
+                        "color": "#4CAF50"
+                      },
+                      {
+                        "name": "fsLabel",
+                        "className": "TextBlock",
+                        "text": "Fullscreen",
+                        "color": "white",
+                        "fontSize": "16px",
+                        "width": "150px"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "btnRow",
+                "className": "StackPanel",
+                "isVertical": false,
+                "top": "240px",
+                "height": "50px",
+                "children": [
+                  {
+                    "name": "applyBtn",
+                    "className": "Button",
+                    "width": "120px",
+                    "height": "40px",
+                    "background": "#4CAF50",
+                    "color": "white",
+                    "textBlockName": "applyBtn_text",
+                    "children": [
+                      {
+                        "name": "applyBtn_text",
+                        "className": "TextBlock",
+                        "text": "Apply"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "cancelBtn",
+                    "className": "Button",
+                    "width": "120px",
+                    "height": "40px",
+                    "background": "#666",
+                    "color": "white",
+                    "textBlockName": "cancelBtn_text",
+                    "children": [
+                      {
+                        "name": "cancelBtn_text",
+                        "className": "TextBlock",
+                        "text": "Cancel"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "width": 1920,
+  "height": 1080
+}

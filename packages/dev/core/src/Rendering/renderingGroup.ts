@@ -2,7 +2,7 @@ import { SmartArray, SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Nullable, type DeepImmutable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector.pure";
 import { type IParticleSystem } from "../Particles/IParticleSystem";
 import { type IEdgesRenderer } from "./edgesRenderer";
 import { type ISpriteManager } from "../Sprites/spriteManager";

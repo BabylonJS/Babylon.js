@@ -27,14 +27,12 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
-import { join, relative, resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { join, relative, resolve } from "path";
 import { writeSideEffectsManifest } from "./sideEffectsManifest.mjs";
+import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../..");
-const CORE_SRC = join(REPO_ROOT, "packages/dev/core/src");
+const PACKAGE_CONFIG = getPackageConfig(resolvePackageFromArgv());
+const CORE_SRC = PACKAGE_CONFIG.srcRoot;
 
 /**
  * @param {string} filePath
@@ -501,7 +499,7 @@ function main() {
     }
 
     if (wantSummary) {
-        console.log("\n=== Babylon.js Core — Side-Effect Audit ===\n");
+        console.log(`\n=== Babylon.js ${PACKAGE_CONFIG.package} — Side-Effect Audit ===\n`);
         console.log(`Total .ts files scanned:    ${stats.totalFiles}`);
         console.log(`Files WITH side effects:    ${stats.filesWithSideEffects}`);
         console.log(`Files WITHOUT side effects: ${stats.filesWithoutSideEffects}`);

@@ -16,4 +16,4 @@ export {
     LoadAllSmartAssetsAsync,
     LoadSmartAssetMapAsync,
     GetSmartAssetTextureExtensions,
-} from "./smartAssetManager";
+} from "./smartAssetManager.pure";

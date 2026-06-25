@@ -2,7 +2,7 @@ import { type Nullable } from "../../../types";
 import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial";
 import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { type IInternalTextureLoader } from "./internalTextureLoader";
-import { type DDSInfo, DDSTools } from "../../../Misc/dds";
+import { type DDSInfo, DDSTools } from "../../../Misc/dds.pure";
 
 import { type Engine } from "core/Engines/engine";
 

@@ -1,16 +1,16 @@
 import { type Nullable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
-import { Mesh } from "../Meshes/mesh";
+import { Vector3 } from "../Maths/math.vector.pure";
+import { Color3, Color4 } from "../Maths/math.color.pure";
+import { Mesh } from "../Meshes/mesh.pure";
 import { type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "../Materials/standardMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial.pure";
 import { type Scene } from "../scene";
 import { type Camera } from "../Cameras/camera";
-import { CreateBox } from "../Meshes/Builders/boxBuilder";
-import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder.pure";
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder.pure";
 import { Matrix } from "../Maths/math";
-import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
+import { CreateLineSystem } from "../Meshes/Builders/linesBuilder.pure";
 import { type PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { type Observer, Observable } from "../Misc/observable";
 

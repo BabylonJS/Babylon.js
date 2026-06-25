@@ -1,10 +1,12 @@
 ---
-applyTo: "packages/dev/core/src/**/*.ts"
+applyTo: "packages/dev/{core,gui,loaders,serializers}/src/**/*.ts"
 ---
 
 # Tree-Shaking File Architecture
 
-The `@babylonjs/core` package uses a **conditional split** pattern so bundlers can tree-shake unused code while legacy imports keep their side effects. Use the split only when a module needs a side-effect-free implementation plus a backward-compatible side-effect wrapper. Do not split files mechanically.
+The `@babylonjs/core`, `@babylonjs/gui`, `@babylonjs/loaders`, and `@babylonjs/serializers` packages use a **conditional split** pattern so bundlers can tree-shake unused code while legacy imports keep their side effects. Use the split only when a module needs a side-effect-free implementation plus a backward-compatible side-effect wrapper. Do not split files mechanically.
+
+The tooling is parameterized by package via `--package <name>` (default `core`). CI validates every package through `--all-packages` (see the Tooling section). Manifest shards live under `scripts/treeshaking/side-effects-manifest/{core,gui,loaders,serializers}/`.
 
 ## The Three Files
 
@@ -133,6 +135,17 @@ Run the full verification pipeline:
 ```sh
 npm run check:treeshaking && npm run check:side-effects-sync && npm run test:treeshaking
 ```
+
+`check:treeshaking` and `check:side-effects-sync` validate **all four packages** (they pass `--all-packages`). To scope generation or checks to one package, add `--package <gui|loaders|serializers>` to the underlying script (core is the default and takes no flag), e.g. `node ./scripts/treeshaking/generatePureBarrels.mjs --package loaders`.
+
+## Package-specific patterns
+
+The split pattern is identical across packages; only the side effect placed inside `register*()` differs.
+
+- **Scene-loader plugins (loaders).** Files that call `RegisterSceneLoaderPlugin(new XFileLoader())` at module scope move that call into `RegisterX()` in `.pure.ts`; the wrapper invokes it. Loader option interfaces are augmented through `.types.ts` `declare module` blocks on `SceneLoaderPluginOptions`; a named option interface is **not** assignable to the `Record<string, unknown>` index type, so use `Partial<XFileLoaderOptions>` (mapped types carry an implicit index signature). Cross-reference `gltf-extensions.instructions.md` for glTF extension authoring.
+- **glTF 2.0 extensions (loaders).** Each extension keeps its `unregisterGLTFExtension(NAME); registerGLTFExtension(NAME, factory)` pair **inside** `RegisterX()` (do not add a hard `_registered` short-circuit — it must stay replaceable by the lazy `dynamic.ts` factory). The lazy aggregators `registerBuiltInLoaders()` / `registerBuiltInGLTFExtensions()` in `dynamic.ts` use dynamic `import()` and are already side-effect-free; they are the recommended tree-shakeable opt-in. When a `.types.ts` augments a **type-only** options interface (e.g. `GLTFLoaderExtensionOptions`), the stub generator correctly emits **no** prototype stub because there is no runtime class.
+- **GUI statics (gui).** Static-property assignments such as `Control.AddHeader = function () { ... }` move into an idempotent `RegisterGUIStatics()` in a `statics.pure.ts`; the wrapper calls it. Shader-only modules with no registration (e.g. `handleMaterial.ts`) stay a single plain `.ts` file.
+- **glTF exporter extensions (serializers).** The eager `GLTFExporter.RegisterExtension(NAME, (exporter) => new XExtension(exporter))` call moves into an idempotent `RegisterX()` (guarded by a `_registered` flag); the wrapper calls it. Serializers need no `.types.ts` because they do not augment external classes.
 
 ## Modifying an Existing File
 

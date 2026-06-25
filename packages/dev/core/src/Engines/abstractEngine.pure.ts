@@ -38,6 +38,7 @@ import { type WebRequest } from "core/Misc/webRequest";
 import { type PerformanceMonitor } from "core/Misc/performanceMonitor";
 import { type ILoadingScreen } from "../Loading/loadingScreen.pure";
 import { EngineStore } from "./engineStore";
+import { type ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
 import { Logger } from "../Misc/logger";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { PrecisionDate } from "../Misc/precisionDate";
@@ -76,6 +77,13 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
     // Note that there is kind of a typing issue here, as `setTimeout` might return something else than a number (NodeJs returns a NodeJS.Timeout object).
     // Also if the global `requestAnimationFrame`'s returnType is number, `requester.requestPostAnimationFrame` and `requester.requestAnimationFrame` types
     // are `any`.
+
+    if (requester) {
+        const { requestAnimationFrame } = requester as { requestAnimationFrame: (callback: FrameRequestCallback) => number };
+        if (typeof requestAnimationFrame === "function") {
+            return requestAnimationFrame(func);
+        }
+    }
 
     if (!IsWindowObjectExist()) {
         if (typeof requestAnimationFrame === "function") {
@@ -171,6 +179,14 @@ export interface AbstractEngineOptions {
      * Otherwise, the default is to use a cheaper approximation.
      */
     useExactSrgbConversions?: boolean;
+
+    /**
+     * Defines the tab index to set on the rendering canvas (default: 1).
+     * Any value >= 0 makes the canvas focusable so it can capture keyboard events and places it in the
+     * document's sequential tab order (0 follows DOM order, a positive value forces an explicit order).
+     * Use -1 to keep the canvas focusable programmatically (via focus()) while excluding it from the tab order.
+     */
+    canvasTabIndex?: number;
 }
 
 /**
@@ -474,7 +490,7 @@ export abstract class AbstractEngine {
      */
     public postProcesses: PostProcess[] = [];
 
-    /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+    /** Gets or sets the tab index to set to the rendering canvas. Any value >= 0 makes the canvas focusable to capture keyboard events and adds it to the tab order; use -1 to keep it focusable programmatically but out of the tab order */
     public canvasTabIndex = 1;
 
     /** @internal */
@@ -853,6 +869,11 @@ export abstract class AbstractEngine {
     protected _activeRenderLoops = new Array<() => void>();
 
     /**
+     * If set, will be used to request the next animation frame for the render loop
+     */
+    public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
+
+    /**
      * Gets the list of current active render loop functions
      * @returns a read only array with the current render loop functions
      */
@@ -882,6 +903,18 @@ export abstract class AbstractEngine {
     }
 
     protected _cancelFrame() {
+        if (this.customAnimationFrameRequester) {
+            if (this._frameHandler !== 0) {
+                this._frameHandler = 0;
+                const { cancelAnimationFrame } = this.customAnimationFrameRequester;
+                if (cancelAnimationFrame) {
+                    cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
+                }
+                delete this.customAnimationFrameRequester.requestID;
+            }
+            return;
+        }
+
         if (this._frameHandler !== 0) {
             const handlerToCancel = this._frameHandler;
             this._frameHandler = 0;
@@ -1009,14 +1042,14 @@ export abstract class AbstractEngine {
     }
 
     /** @internal */
-    public _renderLoop(timestamp: number | undefined): void {
+    public _renderLoop(timestamp?: number): void {
         this._processFrame(timestamp);
 
         // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
         // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
         // already been queued (e.g., if `stopRenderLoop` and `runRenderLoop` is called mid frame).
         if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
-            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+            this._queueNewFrameForRenderLoop();
         }
     }
 
@@ -1042,6 +1075,18 @@ export abstract class AbstractEngine {
         return QueueNewFrame(bindedRenderFunction, requester);
     }
 
+    protected _queueNewFrameForRenderLoop(): void {
+        if (this.customAnimationFrameRequester) {
+            this.customAnimationFrameRequester.requestID = this._queueNewFrame(
+                this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
+                this.customAnimationFrameRequester
+            );
+            this._frameHandler = this.customAnimationFrameRequester.requestID;
+        } else {
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+        }
+    }
+
     /**
      * Register and execute a render loop. The engine can have more than one render function
      * @param renderFunction defines the function to continuously execute
@@ -1055,7 +1100,7 @@ export abstract class AbstractEngine {
 
         // On the first added function, start the render loop.
         if (this._activeRenderLoops.length === 1 && this._frameHandler === 0) {
-            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+            this._queueNewFrameForRenderLoop();
         }
     }
 
@@ -1941,14 +1986,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.9.1";
+        return "babylonjs@9.14.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.9.1";
+        return "9.14.0";
     }
 
     /**
@@ -2096,6 +2141,7 @@ export abstract class AbstractEngine {
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;
         this._isStencilEnable = options.stencil ? true : false;
         this.useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+        this.canvasTabIndex = options.canvasTabIndex ?? this.canvasTabIndex;
 
         const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
 

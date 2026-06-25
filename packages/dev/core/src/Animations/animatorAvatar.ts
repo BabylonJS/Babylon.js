@@ -11,10 +11,10 @@ import {
     type TargetedAnimation,
     type DeepImmutableObject,
 } from "core/index";
-import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector.pure";
 import { Logger } from "../Misc/logger";
-import { TransformNode } from "../Meshes/transformNode";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { TransformNode } from "../Meshes/transformNode.pure";
+import { AbstractMesh } from "../Meshes/abstractMesh.pure";
 
 /**
  * Options for retargeting an animation group to an avatar.

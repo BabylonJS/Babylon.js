@@ -100,6 +100,15 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
         super(externalProperties);
         this.rebuild();
     }
+
+    /**
+     * Checks if a define is part of the generated define list.
+     * @param name define name to check
+     * @returns true if the define exists
+     */
+    public hasDefine(name: string): boolean {
+        return this._keys.indexOf(name) !== -1;
+    }
 }
 
 /**
@@ -130,9 +139,20 @@ export class GaussianSplattingMaterial extends PushMaterial {
     public static Compensation: boolean = false;
 
     /**
+     * Minimum projected splat size, in pixels, below which a splat is discarded (default 0 = disabled).
+     * Matches PlayCanvas `minPixelSize`. Applies to all Gaussian Splatting meshes using this material.
+     */
+    public static MinPixelSize: number = 0;
+
+    /**
      * Point spread function (default 0.3). Can be overriden per GS material, otherwise, using default static `KernelSize` value
      */
     public kernelSize = GaussianSplattingMaterial.KernelSize;
+
+    /**
+     * Minimum projected splat size, in pixels, below which a splat is discarded (default 0 = disabled).
+     */
+    public minPixelSize = GaussianSplattingMaterial.MinPixelSize;
     private _compensation = GaussianSplattingMaterial.Compensation;
 
     // set to true when material defines are dirty
@@ -220,6 +240,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "focal",
         "eyePosition",
         "kernelSize",
+        "minPixelSize",
         "alpha",
         "depthValues",
         "partWorld",
@@ -257,9 +278,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh.materialDefines) {
+        if (!subMesh.materialDefines || this.pluginManager) {
             this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-            defines = subMesh.materialDefines = new GaussianSplattingMaterialDefines(this._eventInfo.defineNames);
+            const defineNames = this._eventInfo.defineNames;
+            const needsNewDefines = !subMesh.materialDefines || (defineNames && Object.keys(defineNames).some((name) => !defines.hasDefine(name)));
+            if (needsNewDefines) {
+                defines = subMesh.materialDefines = new GaussianSplattingMaterialDefines(defineNames);
+            }
         }
 
         const scene = this.getScene();
@@ -468,6 +493,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("minPixelSize", gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize);
         effect.setFloat("alpha", gsMaterial.alpha);
         scene.bindEyePosition(effect, "eyePosition", true);
 
@@ -613,6 +639,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("minPixelSize", gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize);
         effect.setFloat("alpha", gsMaterial.alpha);
 
         let minZ: number, maxZ: number;

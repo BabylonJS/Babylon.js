@@ -10,6 +10,7 @@ import {
     type Camera,
     type CubeTexture,
     type Engine,
+    type FrameGraph,
     type HDRCubeTexture,
     type IblCdfGenerator,
     type IblShadowsRenderPipeline,
@@ -18,8 +19,8 @@ import {
     type ISceneLoaderProgressEvent,
     type LoadAssetContainerOptions,
     type Nullable,
-    type Observable,
     type Observer,
+    type Observable,
     type PickingInfo,
     type ShaderMaterial,
     type ShadowGenerator,
@@ -116,8 +117,7 @@ async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal):
     });
 }
 
-const environmentMode = ["none", "auto", "url"] as const;
-type EnvironmentMode = (typeof environmentMode)[number];
+type EnvironmentMode = "none" | "auto" | "url";
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
@@ -533,6 +533,20 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private readonly _shadowState: ShadowState = {};
     private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
 
+    private _objectListFilters: ReadonlyArray<(mesh: AbstractMesh) => boolean> = [];
+    private _objectListModelChangedObserver: Nullable<Observer<Nullable<string | File | ArrayBufferView>>> = null;
+
+    /**
+     * Called whenever the filtered object lists managed by an active frame graph are recomputed.
+     * Each entry in the array corresponds to the filter at the same index passed to
+     * {@link _setActiveFrameGraph}. Called once immediately when _setActiveFrameGraph is called,
+     * and again after every model change. Override in a subclass to wire ObjectList input blocks
+     * or perform other per-model setup without managing observer lifetimes manually.
+     * @param _objectLists The filtered lists of meshes corresponding to the filters passed to _setActiveFrameGraph.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _onObjectListsUpdated(_objectLists: ReadonlyArray<ReadonlyArray<AbstractMesh>>): void {}
+
     public constructor(
         private readonly _engine: AbstractEngine,
         protected readonly _options?: Readonly<ViewerOptions>
@@ -660,7 +674,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._applyCameraAutoOrbitSpeed();
         this._applyCameraAutoOrbitDelay();
 
-        this._scene.onAfterRenderCameraObservable.add(() => {
+        this._scene.onAfterRenderObservable.add(() => {
             this.onAfterRenderObservable.notifyObservers();
         });
 
@@ -939,16 +953,19 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     protected _updateSSAOPipeline() {
+        // Always abort any in-flight SSAO init first, regardless of frame graph state.
+        this._ssaoAbortController?.abort(new AbortError("SSAO pipeline is being updated."));
+        this._ssaoAbortController = null;
+
         observePromise(
             (async () => {
-                this._ssaoAbortController?.abort(new AbortError("SSAO is being changed before previous SSAO finished initializing."));
                 this._ssaoAbortController = new AbortController();
                 const abortSignal = this._ssaoAbortController.signal;
 
                 await this._updateSSAOLock.lockAsync(async () => {
-                    let shouldEnable = this._ssaoOption === "enabled";
+                    let shouldEnable = this._ssaoOption === "enabled" && !this._scene.frameGraph;
 
-                    if (this._ssaoOption === "auto") {
+                    if (this._ssaoOption === "auto" && !this._scene.frameGraph) {
                         const hasModels = this._loadedModels.length > 0;
                         const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
                         const iblShadowsEnabled = this._shadowQuality === "high";
@@ -969,6 +986,47 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                 });
             })()
         );
+    }
+
+    /**
+     * Applies the specified FrameGraph to the scene, or clears the active frame graph when null.
+     * Call this from a derived class after constructing and building a FrameGraph.
+     *
+     * Optionally accepts an array of mesh filter predicates. For each predicate, the viewer
+     * maintains a filtered list of scene meshes and calls {@link _onObjectListsUpdated} with all
+     * lists whenever the active model changes. The method is also called immediately on this call
+     * so the caller can perform initial wiring without a separate code path.
+     *
+     * @param frameGraph The FrameGraph to activate, or null to revert to default rendering.
+     * @param filters Optional array of predicates — one per ObjectList input block to populate.
+     */
+    protected _setActiveFrameGraph(frameGraph: Nullable<FrameGraph>, filters: ReadonlyArray<(mesh: AbstractMesh) => boolean> = []): void {
+        // Tear down any existing object-list tracking.
+        this.onModelChanged.remove(this._objectListModelChangedObserver);
+        this._objectListModelChangedObserver = null;
+        this._objectListFilters = [];
+
+        this._scene.frameGraph = frameGraph;
+
+        // Always re-evaluate SSAO: tear it down when a frame graph is active,
+        // rebuild it when the frame graph is cleared.
+        this._updateSSAOPipeline();
+
+        if (!frameGraph) {
+            return;
+        }
+
+        this._objectListFilters = filters;
+
+        const notify = () => {
+            this._onObjectListsUpdated(this._objectListFilters.map((filter) => this._scene.meshes.filter(filter)));
+        };
+
+        // Fire immediately so the caller can wire up ObjectList blocks in one place.
+        notify();
+
+        // Re-fire after every model change so lists stay current as models are swapped.
+        this._objectListModelChangedObserver = this.onModelChanged.add(notify);
     }
 
     /**
@@ -1146,7 +1204,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                     transparencyAsCoverage: true,
                     useOpenPBR: (options as ViewerLoadModelOptions | undefined)?.useOpenPBR ?? this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
                     extensionOptions: {
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {
                             // Capture the material variants controller when it is loaded.
                             onLoaded: onMaterialVariantsLoaded,
@@ -1422,7 +1479,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     private async _updateEnvShadow(abortSignal?: AbortSignal) {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const [{ ShaderMaterial }, { ShaderLanguage }, { CreateDisc }, { IblShadowsRenderPipeline }] = await Promise.all([
             import("core/Materials/shaderMaterial"),
             import("core/Materials/shaderLanguage"),
@@ -1596,7 +1652,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }, { IblCdfGenerator }] = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
             import("core/Materials/Textures/renderTargetTexture"),
@@ -2186,6 +2241,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._beforeRenderObserver?.remove();
         this._snapshotHelper?.dispose();
 
+        this.onModelChanged.remove(this._objectListModelChangedObserver);
+
         // Base disposes observables and sets _isDisposed = true
         super.dispose();
     }
@@ -2341,6 +2398,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         // 5. The environment shadows are not yet in a ready state.
         // 6. The SSAO pipeline is not yet in a ready state.
         // 7. At least one model should render (playing animations).
+        // 8. A model (or other asset) load is in flight.
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
@@ -2348,7 +2406,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             this._shadowState.normal?.shouldRender ||
             this._shadowState.high?.shouldRender ||
             this._ssaoPipeline?.isReady() === false ||
-            this._loadedModelsBacking.some((model) => model._shouldRender())
+            this._loadedModelsBacking.some((model) => model._shouldRender()) ||
+            this._loadOperations.size > 0
         );
     }
 

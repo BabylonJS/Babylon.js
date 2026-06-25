@@ -4,8 +4,8 @@ import { type Nullable } from "../../types";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import { Tools } from "../../Misc/tools";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector.pure";
+import { Tools } from "../../Misc/tools.pure";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.
@@ -187,17 +187,30 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         }
 
         const camera = this.camera;
+        // Touch look (yaw/pitch) is gated on touch→rotate and the forward drag-move on
+        // touch→translate. Removing an entry disables that touch behavior. An entry's optional
+        // `sensitivity` replaces the legacy 1/touchAngularSensibility (rotate) or
+        // 1/touchMoveSensibility (translate) scale factor.
+        const input = camera.movement.input;
+        const rotateEntry = input.getEntry("touch", "rotate");
+        const translateEntry = input.getEntry("touch", "translate");
         const handednessMultiplier = camera._calculateHandednessMultiplier();
-        camera.cameraRotation.y = (this._offsetX * handednessMultiplier) / this.touchAngularSensibility;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
-        if (rotateCamera) {
-            camera.cameraRotation.x = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
-        } else {
+        if (rotateEntry) {
+            const rotateSensitivity = rotateEntry.sensitivity ?? 1 / this.touchAngularSensibility;
+            camera.cameraRotation.y = this._offsetX * handednessMultiplier * rotateSensitivity;
+            if (rotateCamera) {
+                camera.cameraRotation.x = -(this._offsetY * handednessMultiplier) * rotateSensitivity;
+            }
+        }
+
+        if (!rotateCamera && translateEntry) {
             const speed = camera._computeLocalCameraSpeed();
+            const moveSensitivity = translateEntry.sensitivity ?? (this.touchMoveSensibility !== 0 ? 1 / this.touchMoveSensibility : 0);
             const direction = TmpVectors.Vector3[0];
-            direction.copyFromFloats(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
+            direction.copyFromFloats(0, 0, speed * this._offsetY * moveSensitivity);
 
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
             Vector3.TransformCoordinatesToRef(direction, camera._cameraRotationMatrix, direction);

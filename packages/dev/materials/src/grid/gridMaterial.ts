@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, serializeAsVector3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import { type Matrix, Vector4, Vector3 } from "core/Maths/math.vector";
+import { type Matrix, Vector4, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
+import { type Nullable } from "core/types";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
@@ -34,7 +35,7 @@ class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE6 = false;
     public OPACITY = false;
     public ANTIALIAS = false;
-    public TRANSPARENT = false;
+    public LINES_ONLY = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
     public MAX_LINE = false;
@@ -45,6 +46,10 @@ class GridMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
+    public MULTI_SCALE = false;
+    public HORIZON_FADE = false;
+    public BELOW_LINE_COLOR = false;
+    public ORIGIN_MARKER = false;
 
     constructor() {
         super();
@@ -94,7 +99,7 @@ export class GridMaterial extends PushMaterial {
     public minorUnitVisibility = 0.33;
 
     /**
-     * The grid opacity outside of the lines.
+     * Overall mesh opacity. In linesOnly mode this also scales the maximum line alpha.
      */
     @serialize()
     public opacity = 1.0;
@@ -104,6 +109,79 @@ export class GridMaterial extends PushMaterial {
      */
     @serialize()
     public antialias = true;
+
+    /**
+     * Color of grid lines when the camera is below the surface.
+     * When set, lineColor acts as the above-surface color.
+     */
+    @serializeAsColor3()
+    public get belowLineColor(): Nullable<Color3> {
+        return this._belowLineColor;
+    }
+    public set belowLineColor(value: Nullable<Color3>) {
+        if (this._belowLineColor === value) {
+            return;
+        }
+        this._belowLineColor = value;
+        this._markAllSubMeshesAsMiscDirty();
+    }
+    private _belowLineColor: Nullable<Color3> = null;
+
+    /**
+     * Enable multi-scale logarithmic grid LOD. Number of octaves is controlled by gridOctaves.
+     */
+    @serialize()
+    public useMultiScale: boolean = false;
+
+    /**
+     * World-unit spacing of the finest octave. Default 0.001.
+     */
+    @serialize()
+    public minGridSpacing: number = 0.001;
+
+    /**
+     * Number of logarithmic octaves rendered (1–8). Default 4.
+     */
+    @serialize()
+    public gridOctaves: number = 4;
+
+    /**
+     * Enable camera-distance-aware horizon (grazing-angle) fade.
+     */
+    @serialize()
+    public useHorizonFade: boolean = false;
+
+    /**
+     * Render an ultra-fine crosshair at the world origin.
+     */
+    @serialize()
+    public useOriginMarker: boolean = false;
+
+    /**
+     * When true, only grid lines are visible — non-grid pixels are discarded.
+     * Puts the material in the alpha-blend queue and enables a depth pre-pass so grid lines
+     * correctly occlude translucent objects (e.g. Gaussian splats). Set mesh.alphaIndex to a
+     * value lower than other transparent objects so the depth pre-pass fires first.
+     */
+    @serialize()
+    public get linesOnly(): boolean {
+        return this._linesOnly;
+    }
+    public set linesOnly(value: boolean) {
+        if (this._linesOnly === value) {
+            return;
+        }
+        this._linesOnly = value;
+        this.needDepthPrePass = value;
+        this._markAllSubMeshesAsMiscDirty();
+    }
+    private _linesOnly = false;
+
+    /**
+     * Scales grid line width. Values \> 1 produce thicker lines. Default 1.0.
+     */
+    @serialize()
+    public gridThicknessModifier: number = 1.0;
 
     /**
      * Determine RBG output is premultiplied by alpha value.
@@ -126,6 +204,7 @@ export class GridMaterial extends PushMaterial {
     public accessor opacityTexture: BaseTexture;
 
     private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
+    private _viewportSize: Vector2 = new Vector2();
 
     /**
      * constructor
@@ -143,7 +222,7 @@ export class GridMaterial extends PushMaterial {
      * @returns whether or not the grid requires alpha blending.
      */
     public override needAlphaBlending(): boolean {
-        return this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());
+        return this.linesOnly || this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());
     }
 
     public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
@@ -170,8 +249,8 @@ export class GridMaterial extends PushMaterial {
             return true;
         }
 
-        if (defines.TRANSPARENT !== this.opacity < 1.0) {
-            defines.TRANSPARENT = !defines.TRANSPARENT;
+        if (defines.LINES_ONLY !== this.linesOnly) {
+            defines.LINES_ONLY = this.linesOnly;
             defines.markAsUnprocessed();
         }
 
@@ -186,7 +265,28 @@ export class GridMaterial extends PushMaterial {
         }
 
         if (defines.ANTIALIAS !== this.antialias) {
-            defines.ANTIALIAS = !defines.ANTIALIAS;
+            defines.ANTIALIAS = this.antialias;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.MULTI_SCALE !== this.useMultiScale) {
+            defines.MULTI_SCALE = this.useMultiScale;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.HORIZON_FADE !== this.useHorizonFade) {
+            defines.HORIZON_FADE = this.useHorizonFade;
+            defines.markAsUnprocessed();
+        }
+
+        const wantsBelowColor = this._belowLineColor !== null;
+        if (defines.BELOW_LINE_COLOR !== wantsBelowColor) {
+            defines.BELOW_LINE_COLOR = wantsBelowColor;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.ORIGIN_MARKER !== this.useOriginMarker) {
+            defines.ORIGIN_MARKER = this.useOriginMarker;
             defines.markAsUnprocessed();
         }
 
@@ -244,7 +344,17 @@ export class GridMaterial extends PushMaterial {
                 "vOpacityInfos",
                 "visibility",
                 "logarithmicDepthConstant",
+                "gridThicknessModifier",
             ];
+            if (defines.MULTI_SCALE) {
+                uniforms.push("minGridSpacing", "gridOctaves");
+            }
+            if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR || defines.ORIGIN_MARKER) {
+                uniforms.push("cameraPosition", "viewportSize");
+            }
+            if (defines.BELOW_LINE_COLOR) {
+                uniforms.push("belowLineColor");
+            }
             // Defines
             const join = defines.toString();
             AddClipPlaneUniforms(uniforms);
@@ -326,6 +436,16 @@ export class GridMaterial extends PushMaterial {
             this._gridControl.z = this.minorUnitVisibility;
             this._gridControl.w = this.opacity;
             this._activeEffect.setVector4("gridControl", this._gridControl);
+            this._activeEffect.setFloat("gridThicknessModifier", this.gridThicknessModifier);
+
+            if (defines.BELOW_LINE_COLOR && this._belowLineColor) {
+                this._activeEffect.setColor3("belowLineColor", this._belowLineColor);
+            }
+
+            if (defines.MULTI_SCALE) {
+                this._activeEffect.setFloat("minGridSpacing", this.minGridSpacing);
+                this._activeEffect.setFloat("gridOctaves", Math.max(1, Math.min(8, Math.round(this.gridOctaves))));
+            }
 
             if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                 this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
@@ -342,6 +462,18 @@ export class GridMaterial extends PushMaterial {
         }
         // Fog
         BindFogParameters(scene, mesh, this._activeEffect);
+
+        // Camera uniforms — must be updated every frame
+        if (defines.HORIZON_FADE || defines.BELOW_LINE_COLOR || defines.ORIGIN_MARKER) {
+            const cam = scene.activeCamera;
+            if (cam) {
+                this._activeEffect.setVector3("cameraPosition", cam.globalPosition);
+                const engine = scene.getEngine();
+                this._viewportSize.x = engine.getRenderWidth();
+                this._viewportSize.y = engine.getRenderHeight();
+                this._activeEffect.setVector2("viewportSize", this._viewportSize);
+            }
+        }
 
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
@@ -369,11 +501,11 @@ export class GridMaterial extends PushMaterial {
     }
 
     /**
-     * Parses a serialized grid material.
-     * @param source defines the serialized material source
-     * @param scene defines the scene to parse into
-     * @param rootUrl defines the root URL for referenced resources
-     * @returns the parsed grid material
+     * Parse a JSON input to create back a grid material.
+     * @param source the JSON data to parse
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new grid material
      */
     public static override Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
         return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);

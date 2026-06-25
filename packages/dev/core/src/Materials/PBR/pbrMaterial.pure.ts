@@ -762,3 +762,12 @@ export function RegisterPbrMaterial(): void {
 
     RegisterClass("BABYLON.PBRMaterial", PBRMaterial);
 }
+
+/**
+ * Register side effects for PBRMaterial.
+ * Safe to call multiple times; only the first call has an effect.
+ * Alias for {@link RegisterPbrMaterial}.
+ */
+export function RegisterPBRMaterial(): void {
+    RegisterPbrMaterial();
+}

@@ -3,7 +3,7 @@ import { type KeyboardInfo } from "core/Events/keyboardEvents";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeBoolean, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeBoolean, RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { _IsMacPlatform } from "core/FlowGraph/utils";
 
 /**

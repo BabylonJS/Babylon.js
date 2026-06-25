@@ -26,6 +26,8 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     private _partVisibility: number[] = [];
     private _defaultPartVisibility: number[] = [];
     private _maxPartCount: number;
+    private _enableDepthPicking = false;
+    private _enablePackedDepthPicking = false;
 
     /**
      * Creates a new GaussianSplattingGpuPickingMaterialPlugin.
@@ -33,11 +35,38 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
      * @param maxPartCount The maximum number of parts supported for compound meshes.
      */
     constructor(material: GaussianSplattingMaterial, maxPartCount?: number) {
-        super(material, "GaussianSplatGpuPicking", 200);
+        super(material, "GaussianSplatGpuPicking", 200, {
+            GPUPICKER_DEPTH: false,
+            GPUPICKER_PACK_DEPTH: false,
+        });
 
         this._maxPartCount = maxPartCount ?? GetGaussianSplattingMaxPartCount(material.getScene().getEngine());
         this._defaultPartVisibility = new Array(this._maxPartCount).fill(1.0);
         this._enable(true);
+    }
+
+    /**
+     * Enables writing the GPU picker depth MRT attachment.
+     */
+    public set enableDepthPicking(value: boolean) {
+        if (this._enableDepthPicking === value) {
+            return;
+        }
+
+        this._enableDepthPicking = value;
+        this.markAllDefinesAsDirty();
+    }
+
+    /**
+     * Enables byte-packed depth output for the GPU picker depth MRT attachment.
+     */
+    public set enablePackedDepthPicking(value: boolean) {
+        if (this._enablePackedDepthPicking === value) {
+            return;
+        }
+
+        this._enablePackedDepthPicking = value;
+        this.markAllDefinesAsDirty();
     }
 
     /**
@@ -135,6 +164,15 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
      */
     public override isReadyForSubMesh(_defines: MaterialDefines, _scene: Scene, _engine: AbstractEngine, _subMesh: SubMesh): boolean {
         return true;
+    }
+
+    /**
+     * Sets the defines for the next rendering.
+     * @param defines the list of defines to update
+     */
+    public override prepareDefines(defines: MaterialDefines): void {
+        defines["GPUPICKER_DEPTH"] = this._enableDepthPicking;
+        defines["GPUPICKER_PACK_DEPTH"] = this._enableDepthPicking && this._enablePackedDepthPicking;
     }
 
     /**

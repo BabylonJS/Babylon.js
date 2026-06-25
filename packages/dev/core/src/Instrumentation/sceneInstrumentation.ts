@@ -1,4 +1,4 @@
-import { Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools.pure";
 import { type Observer } from "../Misc/observable";
 import { type Nullable } from "../types";
 import { type Camera } from "../Cameras/camera";

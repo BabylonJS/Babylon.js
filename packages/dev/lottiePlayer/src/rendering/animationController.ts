@@ -5,7 +5,7 @@ import "core/Shaders/sprites.fragment";
 import { type RawLottieAnimation } from "../parsing/rawTypes";
 import { type AnimationInfo } from "../parsing/parsedTypes";
 import { type Node } from "../nodes/node";
-import { type AnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
+import { type AnimationConfiguration, type ResolvedAnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
 
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";
@@ -29,7 +29,7 @@ export class AnimationController {
     private _canvasScale: number;
     private readonly _atlasScale: number;
     private readonly _variables: Map<string, string>;
-    private _configuration: AnimationConfiguration;
+    private _configuration: ResolvedAnimationConfiguration;
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
 

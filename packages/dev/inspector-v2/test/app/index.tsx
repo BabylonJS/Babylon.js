@@ -36,7 +36,7 @@ import {
 } from "core/pure";
 
 // Not re-exported from core/pure because smartAssetManager has module side effects.
-import { LoadSmartAssetAsync, RemoveSmartAssetAsync } from "core/SmartAssets/smartAssetManager";
+import { LoadSmartAssetAsync, RemoveSmartAssetAsync } from "core/SmartAssets/smartAssetManager.pure";
 
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";

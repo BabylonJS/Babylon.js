@@ -1,6 +1,6 @@
 import { type Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
-import { type VideoTextureSettings, VideoTexture } from "../Materials/Textures/videoTexture";
+import { Texture } from "../Materials/Textures/texture.pure";
+import { type VideoTextureSettings, VideoTexture } from "../Materials/Textures/videoTexture.pure";
 import { TextureDome } from "./textureDome";
 import { type PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { type Nullable } from "../types";

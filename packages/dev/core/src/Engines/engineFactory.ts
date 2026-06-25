@@ -1,7 +1,7 @@
 import { type AbstractEngine } from "./abstractEngine";
-import { Engine } from "./engine";
-import { NullEngine, type NullEngineOptions } from "./nullEngine";
-import { WebGPUEngine, type WebGPUEngineOptions } from "./webgpuEngine";
+import { Engine } from "./engine.pure";
+import { NullEngine, type NullEngineOptions } from "./nullEngine.pure";
+import { WebGPUEngine, type WebGPUEngineOptions } from "./webgpuEngine.pure";
 import { type EngineOptions } from "./thinEngine";
 
 /**

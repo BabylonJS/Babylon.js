@@ -19,12 +19,20 @@ import { writeFileSync, mkdirSync, readFileSync, rmSync, statSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
+import { spawnSync } from "child_process";
+import { resolvePackageFromArgv, SUPPORTED_PACKAGES, packageArgs } from "./packageConfig.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../..");
+const PACKAGE = resolvePackageFromArgv();
 const TMP_DIR = join(REPO_ROOT, "scripts/treeshaking/.tmp");
 const CORE_DIST = join(REPO_ROOT, "packages/dev/core/dist");
+const SERIALIZERS_DIST = join(REPO_ROOT, "packages/dev/serializers/dist");
+// Dist of the package under test. Bundler config treats this as "internal"
+// (bundleable) and externalizes everything else (e.g. `core/...` imports from a
+// secondary package), so the test measures only the package's own tree-shaking.
+const PKG_DIST = join(REPO_ROOT, "packages/dev", PACKAGE, "dist");
 const IS_ADO = !!process.env.TF_BUILD;
 
 function adoError(msg) {
@@ -67,7 +75,7 @@ function fileSize(path) {
  */
 
 /** @type {TestCase[]} */
-const TEST_CASES = [
+const CORE_TEST_CASES = [
     {
         name: "thinmaths-import",
         entryCode: `import "${CORE_DIST}/Maths/ThinMaths/index.js";\n`,
@@ -199,6 +207,40 @@ const TEST_CASES = [
     },
 ];
 
+/**
+ * Per-package smoke test cases. Secondary packages prove that an unused,
+ * side-effect-free `.pure.js` (e.g. a glTF exporter extension) tree-shakes away,
+ * while importing + calling its `Register*` function retains the code.
+ * @type {Record<string, TestCase[]>}
+ */
+const TEST_CASES_BY_PACKAGE = {
+    core: CORE_TEST_CASES,
+    serializers: [
+        {
+            name: "serializers-extension-pure-bare",
+            entryCode: `import "${SERIALIZERS_DIST}/glTF/2.0/Extensions/EXT_lights_area.pure.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of an unused glTF exporter extension (.pure) should tree-shake to a near-empty bundle",
+        },
+        {
+            name: "serializers-extension-pure-register",
+            entryCode: `import { RegisterEXT_lights_area } from "${SERIALIZERS_DIST}/glTF/2.0/Extensions/EXT_lights_area.pure.js";\nRegisterEXT_lights_area();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the extension Register function should bundle (sanity check)",
+        },
+        {
+            name: "serializers-extensions-pure-barrel-bare",
+            entryCode: `import "${SERIALIZERS_DIST}/glTF/2.0/Extensions/pure.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of the Extensions/pure barrel should tree-shake to a near-empty bundle",
+        },
+    ],
+};
+
+/** @type {TestCase[]} */
+const TEST_CASES = TEST_CASES_BY_PACKAGE[PACKAGE] ?? [];
+
 // ---------------------------------------------------------------------------
 // Rollup test
 // ---------------------------------------------------------------------------
@@ -213,12 +255,12 @@ async function testWithRollup(testCase) {
     try {
         const bundle = await rollup({
             input: entryPath,
-            // Treat everything outside the entry and core dist as external
+            // Treat everything outside the entry and the package dist as external
             external: (id) => {
                 if (id === entryPath) {
                     return false;
                 }
-                if (id.startsWith(CORE_DIST)) {
+                if (id.startsWith(PKG_DIST)) {
                     return false;
                 }
                 return true;
@@ -383,14 +425,38 @@ async function testWithWebpack(testCase) {
 async function main() {
     console.log("\n=== Tree-Shaking Bundle Smoke Tests ===\n");
 
-    // Check that core is compiled
+    // `--all-packages`: re-run this script once per supported package and aggregate.
+    if (process.argv.includes("--all-packages")) {
+        const forwarded = process.argv.slice(2).filter((a) => a !== "--all-packages" && a !== "--package" && !a.startsWith("--package="));
+        let failed = 0;
+        for (const pkg of SUPPORTED_PACKAGES) {
+            const result = spawnSync(process.execPath, [__filename, ...forwarded, ...packageArgs(pkg)], { stdio: "inherit" });
+            if (result.status !== 0) {
+                failed++;
+            }
+        }
+        process.exit(failed > 0 ? 1 : 0);
+    }
+
+    if (TEST_CASES.length === 0) {
+        console.log(`No bundle smoke tests defined for ${PACKAGE}; skipping.\n`);
+        return;
+    }
+
+    // Check that the package under test is compiled. Core is required (it always
+    // builds before this stage); a missing secondary-package dist is skipped
+    // gracefully so the check never blocks on an unbuilt optional package.
     try {
-        statSync(join(CORE_DIST, "Maths/ThinMaths/index.js"));
+        statSync(PKG_DIST);
     } catch {
-        const msg = "packages/dev/core/dist/ not found. Run `npm run build:source` first.";
-        console.error(`ERROR: ${msg}`);
-        adoError(msg);
-        process.exit(1);
+        const msg = `packages/dev/${PACKAGE}/dist/ not found. Run \`npm run build:source\` first.`;
+        if (PACKAGE === "core") {
+            console.error(`ERROR: ${msg}`);
+            adoError(msg);
+            process.exit(1);
+        }
+        console.log(`${msg} Skipping ${PACKAGE} smoke tests.\n`);
+        return;
     }
 
     ensureDir(TMP_DIR);
