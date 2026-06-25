@@ -332,7 +332,10 @@ import { LightTheme, DarkTheme } from "@babylonjs/shared-ui-components/modularTo
 
 ### Install
 
-`@babylonjs/shared-ui-components` declares its React/Fluent/graph dependencies as **peer dependencies**, so they are *not* installed automatically — the consuming repo must add them explicitly. It also imports from `@babylonjs/core` (e.g. `Observable`, `Logger`), so core is required too:
+None of these are bundled, so the consuming repo must install them explicitly. They fall into two groups:
+
+- **Declared peer dependencies** of the published `@babylonjs/shared-ui-components` package — `react`, `react-dom`, `react-dnd`, `react-dnd-touch-backend`, `dagre` (+ `@types/dagre`). npm warns if these are missing.
+- **Required-but-not-declared** — `@fluentui/react-components`, `@fluentui/react-icons`, and `@babylonjs/core`. The Fluent/`modularTool` entrypoints import these at runtime (e.g. `Observable`, `Logger` from core), but the published package does **not** list them in `peerDependencies`, so npm won't warn — you must add them yourself.
 
 ```bash
 npm install @babylonjs/shared-ui-components @babylonjs/core \
@@ -340,15 +343,16 @@ npm install @babylonjs/shared-ui-components @babylonjs/core \
     react react-dom react-dnd react-dnd-touch-backend dagre
 ```
 
-Approximate versions to match (check the package's `peerDependencies` for the authoritative ranges):
+Versions to match — for the declared peer deps, the published package's `peerDependencies` is authoritative; for the undeclared Fluent/core deps, match the versions `shared-ui-components` is built against (Babylon's `@dev/shared-ui-components` dependencies) and keep `@babylonjs/core` on the same major as `shared-ui-components`:
 
-| Package | Range |
-| --- | --- |
-| `react` / `react-dom` | `^18.2.0` |
-| `@fluentui/react-components` | `^9.70.0` |
-| `@fluentui/react-icons` | `^2.0.310` |
-| `react-dnd` / `react-dnd-touch-backend` | `15.0.1` |
-| `dagre` | `^0.8.5` (node-graph features) |
+| Package | Range | Declared as peer dep? |
+| --- | --- | --- |
+| `react` / `react-dom` | `^18.2.0` | Yes |
+| `react-dnd` / `react-dnd-touch-backend` | `15.0.1` | Yes |
+| `dagre` | `^0.8.5` (node-graph features) | Yes |
+| `@fluentui/react-components` | `^9.70.0` | No — install explicitly |
+| `@fluentui/react-icons` | `^2.0.310` | No — install explicitly |
+| `@babylonjs/core` | match `shared-ui-components` major | No — install explicitly |
 
 ### Stability caveat
 
