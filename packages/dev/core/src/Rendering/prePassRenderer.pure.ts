@@ -17,6 +17,7 @@ import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer.pure";
 import { RegisterPrePassRendererSceneComponent } from "./prePassRendererSceneComponent.pure";
+import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 
 /**
  * Renders a pre pass of the scene
@@ -336,6 +337,7 @@ export class PrePassRenderer {
         }
 
         RegisterPrePassRendererSceneComponent(PrePassRenderer);
+        RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
         this._currentTarget = this.defaultRT;

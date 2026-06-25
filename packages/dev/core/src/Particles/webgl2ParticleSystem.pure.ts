@@ -12,6 +12,7 @@ import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEff
 import { Constants } from "../Engines/constants";
 import { type Engine } from "../Engines/engine.pure";
 import { RegisterClass } from "../Misc/typeStore";
+import { RegisterEngineTransformFeedback } from "../Engines/Extensions/engine.transformFeedback.pure";
 
 /** @internal */
 export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
@@ -29,6 +30,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
     /** @internal */
     constructor(parent: GPUParticleSystem, engine: ThinEngine) {
+        RegisterEngineTransformFeedback();
+
         this._parent = parent;
         this._engine = engine;
 

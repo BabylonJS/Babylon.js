@@ -7,6 +7,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { Constants } from "../../Engines/constants";
 
 import { type InternalTexture } from "./internalTexture";
+import { RegisterEnginesExtensionsEngineMultiRender } from "../../Engines/Extensions/engine.multiRender.pure";
 
 /**
  * Creation options of the multi render target texture.
@@ -197,6 +198,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
         const drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+
+        RegisterEnginesExtensionsEngineMultiRender();
 
         if (!this.isSupported) {
             this.dispose();

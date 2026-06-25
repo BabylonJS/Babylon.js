@@ -3,6 +3,7 @@ import { Engine } from "core/Engines/engine";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { Animation } from "core/Animations/animation";
+import "core/Animations/animatable";
 import "core/Helpers/sceneHelpers";
 
 /**

@@ -10,6 +10,8 @@ import { type ExternalTexture } from "./externalTexture";
 import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type Scene } from "../../scene.pure";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../Engines/Extensions/engine.dynamicTexture.pure";
+import { RegisterEnginesExtensionsEngineVideoTexture } from "../../Engines/Extensions/engine.videoTexture.pure";
 
 /**
  * Defines the options related to the creation of an HtmlElementTexture
@@ -81,6 +83,9 @@ export class HtmlElementTexture extends BaseTexture {
      */
     constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions) {
         super(options.scene || options.engine);
+
+        RegisterEnginesExtensionsEngineDynamicTexture();
+        RegisterEnginesExtensionsEngineVideoTexture();
 
         if (!element || (!options.engine && !options.scene)) {
             return;

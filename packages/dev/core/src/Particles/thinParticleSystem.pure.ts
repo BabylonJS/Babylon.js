@@ -17,6 +17,7 @@ import { Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { RegisterAnimatable } from "../Animations/animatable.pure";
+import { RegisterEnginesExtensionsEngineAlpha } from "../Engines/Extensions/engine.alpha.pure";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import { type DataBuffer } from "../Buffers/dataBuffer";
@@ -554,6 +555,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         noUpdateQueue: boolean = false
     ) {
         RegisterAnimatable();
+        RegisterEnginesExtensionsEngineAlpha();
         super(name);
 
         this._capacity = capacity;

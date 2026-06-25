@@ -15,6 +15,8 @@ import { Texture } from "core/Materials/Textures/texture.pure";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture.pure";
 import { Tools } from "core/Misc/tools.pure";
 import { Observable } from "core/Misc/observable.pure";
+import { IblCdfGenerator } from "core/Rendering/iblCdfGenerator";
+import { RegisterIblCdfGeneratorSceneComponent } from "core/Rendering/iblCdfGeneratorSceneComponent.pure";
 import { FrameGraphTask } from "../../frameGraphTask";
 
 /**
@@ -529,6 +531,8 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
      */
     constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
+
+        RegisterIblCdfGeneratorSceneComponent(IblCdfGenerator);
 
         this._voxelizationTask = new FrameGraphIblShadowsVoxelizationTask(`${name} Voxelization`, frameGraph);
 

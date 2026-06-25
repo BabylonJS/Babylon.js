@@ -19,6 +19,9 @@ import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postP
 import { type Camera } from "core/Cameras/camera.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "core/Rendering/geometryBufferRenderer.pure";
+import { RegisterGeometryBufferRendererSceneComponent } from "core/Rendering/geometryBufferRendererSceneComponent.pure";
+import { IblCdfGenerator } from "core/Rendering/iblCdfGenerator";
+import { RegisterIblCdfGeneratorSceneComponent } from "core/Rendering/iblCdfGeneratorSceneComponent.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial.pure";
@@ -764,6 +767,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     constructor(name: string, scene: Scene, options: Partial<IIblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
         this.scene = scene;
+        RegisterGeometryBufferRendererSceneComponent(GeometryBufferRenderer);
+        RegisterIblCdfGeneratorSceneComponent(IblCdfGenerator);
         this._cameras = cameras || [scene.activeCamera!];
         // Create the dummy textures to be used when the pipeline is not ready
         const blackPixels = new Uint8Array([0, 0, 0, 255]);
