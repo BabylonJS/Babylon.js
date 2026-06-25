@@ -242,7 +242,7 @@ if (otherViolations.length > 0) {
 }
 
 if (verbose) {
-    console.error(`Checked ${allFiles.length} core TypeScript source file(s).`);
+    console.error(`Checked ${allFiles.length} ${PACKAGE} TypeScript source file(s).`);
 }
 
 console.error("\nA side-effect-free file must not statically value-import or re-export a side-effectful file.");
