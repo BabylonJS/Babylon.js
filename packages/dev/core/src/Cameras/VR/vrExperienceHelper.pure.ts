@@ -33,6 +33,9 @@ import { CreateGround } from "../../Meshes/Builders/groundBuilder.pure";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { type Mesh } from "core/Meshes/mesh.pure";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder.pure";
+import { GamepadManager } from "../../Gamepads/gamepadManager";
+import { RegisterGamepadSceneComponent } from "../../Gamepads/gamepadSceneComponent.pure";
+import { RegisterAnimatable } from "../../Animations/animatable.pure";
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -528,6 +531,8 @@ export class VRExperienceHelper {
     ) {
         Logger.Warn("WebVR is deprecated. Please avoid using this experience helper and use the WebXR experience helper instead");
         this._scene = scene;
+        RegisterGamepadSceneComponent(GamepadManager);
+        RegisterAnimatable();
         this._inputElement = scene.getEngine().getInputElement();
 
         // check for VR support:

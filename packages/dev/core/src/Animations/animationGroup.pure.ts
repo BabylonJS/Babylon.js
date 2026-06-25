@@ -1,6 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Animatable } from "./animatable.core";
+import { RegisterAnimatable } from "./animatable.pure";
 import { type Animation, AnimationMakeAnimationAdditive, AnimationParse, type IMakeAnimationAdditiveOptions } from "./animation.pure";
 import { type IAnimationKey } from "./animationKey";
 
@@ -485,6 +486,8 @@ export class AnimationGroup implements IDisposable {
         this._weight = weight;
         this._playOrder = playOrder;
         this.uniqueId = this._scene.getUniqueId();
+
+        RegisterAnimatable();
 
         this._scene.addAnimationGroup(this);
     }

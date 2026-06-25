@@ -3,8 +3,6 @@
     "files": {
         "Rendering/GlobalIllumination/giRSMManager.ts": ["top-level-call"],
         "Rendering/IBLShadows/iblShadowsPluginMaterial.ts": ["top-level-call"],
-        "Rendering/IBLShadows/iblShadowsRenderPipeline.ts": ["bare-import"],
-        "Rendering/IBLShadows/iblShadowsVoxelRenderer.ts": ["bare-import"],
         "Rendering/boundingBoxRenderer.ts": ["top-level-call"],
         "Rendering/boundingBoxRenderer.types.ts": ["declare-module"],
         "Rendering/depthPeelingSceneComponent.ts": ["top-level-call"],
@@ -23,12 +21,10 @@
         "Rendering/iblCdfGeneratorSceneComponent.types.ts": ["declare-module"],
         "Rendering/outlineRenderer.ts": ["top-level-call"],
         "Rendering/outlineRenderer.types.ts": ["declare-module"],
-        "Rendering/prePassRenderer.ts": ["bare-import"],
         "Rendering/prePassRendererSceneComponent.ts": ["top-level-call"],
         "Rendering/prePassRendererSceneComponent.types.ts": ["declare-module"],
         "Rendering/reflectiveShadowMap.ts": ["top-level-call"],
         "Rendering/subSurfaceSceneComponent.ts": ["top-level-call"],
-        "Rendering/subSurfaceSceneComponent.types.ts": ["declare-module"],
-        "Rendering/thinDepthPeelingRenderer.ts": ["bare-import"]
+        "Rendering/subSurfaceSceneComponent.types.ts": ["declare-module"]
     }
 }
