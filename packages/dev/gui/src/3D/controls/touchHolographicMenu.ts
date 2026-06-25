@@ -7,7 +7,7 @@ import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Mesh } from "core/Meshes/mesh";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { FluentMaterial } from "../materials/fluent/fluentMaterial";
+import { FluentMaterial } from "../materials/fluent/fluentMaterial.pure";
 import { Color3 } from "core/Maths/math.color";
 import { type Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";

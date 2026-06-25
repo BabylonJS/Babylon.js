@@ -366,6 +366,9 @@ export class MRDLBackplateMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
+                        extraInitializationsAsync: async () => {
+                            await Promise.all([import("./shaders/mrdlBackplate.vertex"), import("./shaders/mrdlBackplate.fragment")]);
+                        },
                     },
                     engine
                 ),

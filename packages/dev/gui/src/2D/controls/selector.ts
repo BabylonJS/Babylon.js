@@ -1,11 +1,11 @@
-import { Rectangle } from "./rectangle";
-import { StackPanel } from "./stackPanel";
-import { Control } from "./control";
-import { TextBlock } from "./textBlock";
-import { Checkbox } from "./checkbox";
-import { RadioButton } from "./radioButton";
-import { Slider } from "./sliders/slider";
-import { Container } from "./container";
+import { Rectangle } from "./rectangle.pure";
+import { StackPanel } from "./stackPanel.pure";
+import { Control } from "./control.pure";
+import { TextBlock } from "./textBlock.pure";
+import { Checkbox } from "./checkbox.pure";
+import { RadioButton } from "./radioButton.pure";
+import { Slider } from "./sliders/slider.pure";
+import { Container } from "./container.pure";
 
 /** Class used to create a RadioGroup
  * which contains groups of radio buttons

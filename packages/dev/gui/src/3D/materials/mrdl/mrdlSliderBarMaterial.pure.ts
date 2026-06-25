@@ -686,6 +686,9 @@ export class MRDLSliderBarMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
+                        extraInitializationsAsync: async () => {
+                            await Promise.all([import("./shaders/mrdlSliderBar.vertex"), import("./shaders/mrdlSliderBar.fragment")]);
+                        },
                     },
                     engine
                 ),

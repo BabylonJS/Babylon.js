@@ -1,7 +1,7 @@
 import { Measure } from "../../measure";
-import { Container } from "../container";
+import { Container } from "../container.pure";
 import { ValueAndUnit } from "../../valueAndUnit";
-import { Control } from "../control";
+import { Control } from "../control.pure";
 import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**

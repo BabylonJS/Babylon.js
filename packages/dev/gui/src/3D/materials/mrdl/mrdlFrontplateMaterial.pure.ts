@@ -439,6 +439,9 @@ export class MRDLFrontplateMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
+                        extraInitializationsAsync: async () => {
+                            await Promise.all([import("./shaders/mrdlFrontplate.vertex"), import("./shaders/mrdlFrontplate.fragment")]);
+                        },
                     },
                     engine
                 ),

@@ -106,13 +106,13 @@ Normal mode writes `packages/public/@babylonjs/core/package.json`. `--check` mod
 
 Checks that files omitted from the side-effects manifest do not statically value-import or value-re-export files included in the manifest. This protects the side-effect-free import surface used by pure barrels and public package metadata.
 
-Historical violations can be tracked in `side-effect-import-closure-baseline.json` during migrations so the check can reject new violations while an existing backlog is migrated incrementally. The baseline file is not needed when there are no known violations.
+Any violation fails the check. There is intentionally **no** baseline or allow-list: a side-effect-free file must never statically value-import or re-export a side-effectful file. Fix violations by importing the dependency's `.pure` module, or by splitting the importer — never by suppressing the check.
 
 Common commands:
 
 ```sh
 node scripts/treeshaking/checkSideEffectImportClosure.mjs
-node scripts/treeshaking/checkSideEffectImportClosure.mjs --update-baseline
+node scripts/treeshaking/checkSideEffectImportClosure.mjs --package gui --verbose
 ```
 
 ### `generatePureBarrels.mjs`
