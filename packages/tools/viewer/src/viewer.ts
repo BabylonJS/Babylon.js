@@ -37,8 +37,7 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type Material } from "core/Materials/material";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
 import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
@@ -152,6 +151,11 @@ type ShadowState = {
 function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
     const className = mesh.getClassName();
     return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
+}
+
+function IsPBRMaterial(material: Material): boolean {
+    const cn = material.getClassName();
+    return cn.startsWith("PBR") || cn === "OpenPBRMaterial";
 }
 
 async function createCubeTexture(url: string, scene: Scene, extension?: string) {
@@ -567,14 +571,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         {
             const scene = new Scene(this._engine);
             scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
-
-            const defaultMaterial = new PBRMaterial("default Material", scene);
-            defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
-            defaultMaterial.metallic = 0;
-            defaultMaterial.roughness = 1;
-            defaultMaterial.baseDiffuseRoughness = 1;
-            defaultMaterial.microSurface = 0;
-            scene.defaultMaterial = defaultMaterial;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -1386,9 +1382,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         abortSignal: AbortSignal | undefined,
         internalAbortSignal: AbortSignal
     ): Promise<void> {
-        const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
+        const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some(IsPBRMaterial));
         const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
-        // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
+        // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the scene's default material)
         // and an environment texture is not already loaded, then load the default environment.
         if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
             // Combine the caller's external `abortSignal` with our `internalAbortSignal` so the
@@ -1849,7 +1845,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     public override async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         const promises: Promise<void>[] = [];
         // When there are PBR materials, the default environment should be used for lighting.
-        if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+        if (options?.lighting && this._scene.materials.some(IsPBRMaterial)) {
             const lightingOptions = { ...options, skybox: false };
             options = { ...options, lighting: false };
             promises.push(this._updateEnvironment("auto", lightingOptions, abortSignal));
@@ -2642,9 +2638,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         } else {
             const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasNonPBRMaterials = this._loadedModels.some((model) =>
-                model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial || material instanceof OpenPBRMaterial))
-            );
+            const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !IsPBRMaterial(material)));
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;
