@@ -25,9 +25,27 @@ const babelOptions = {
         setPublicClassFields: true,
         superIsCallableConstructor: true,
     },
-    // Keep the transform narrowly scoped so CI can isolate class syntax
-    // compatibility without introducing broad preset-env semantic drift.
-    plugins: ["@babel/plugin-transform-classes"],
+    // The TC39 decorator migration forces the Native UMD bundle to be emitted at an ES2015 target
+    // (the `accessor` keyword requires ES2015+). Babylon Native's Chakra engine consumes ES5-level
+    // script, so transforming classes alone is not enough: arrow functions, let/const, template
+    // literals, for-of, destructuring, default/rest params and async/generators all remain and abort
+    // the engine. Run the full preset-env transform down to ES5. `forceAllTransforms` ignores any
+    // browserslist target and lowers every ES2015+ construct, and Babel inlines a self-contained
+    // regenerator runtime for async/generators (no external `regeneratorRuntime` global required).
+    // `useBuiltIns: false` keeps library behavior untouched (Chakra already provides the ES2015
+    // built-ins the previous ES5 TypeScript output relied on).
+    presets: [
+        [
+            "@babel/preset-env",
+            {
+                bugfixes: true,
+                modules: false,
+                useBuiltIns: false,
+                forceAllTransforms: true,
+                ignoreBrowserslistConfig: true,
+            },
+        ],
+    ],
 };
 
 function isNativeScriptFile(filePath) {
