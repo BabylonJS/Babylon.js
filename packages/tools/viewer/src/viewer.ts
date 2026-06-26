@@ -38,6 +38,7 @@ import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
 import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
@@ -2641,7 +2642,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         } else {
             const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial)));
+            const hasNonPBRMaterials = this._loadedModels.some((model) =>
+                model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial || material instanceof OpenPBRMaterial))
+            );
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;
