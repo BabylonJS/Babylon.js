@@ -27,7 +27,7 @@ Babylon tools use a **single brand color ramp** fed into Fluent's theme generato
 
 ### Brand ramp
 
-The brand key color is **`#3A94FC`** (Babylon blue). The full 16-step brand ramp:
+The brand key color is **`#3A94FC`**. The full 16-step brand ramp:
 
 ```ts
 // Generated from https://react.fluentui.dev/?path=/docs/theme-theme-designer--docs

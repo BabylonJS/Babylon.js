@@ -9,6 +9,8 @@ Guide for porting Babylon.js tools (NME, NGE, NPE, NRGE, Playground, etc.) from 
 
 **Reference implementation:** `packages/tools/viewer-configurator/` (fully ported).
 
+**Design guidelines:** For the shared design system these ports target — color schema, shell/panel structure, component and styling conventions — see [`.github/design-guidelines.md`](../../design-guidelines.md).
+
 ---
 
 ## Overview
