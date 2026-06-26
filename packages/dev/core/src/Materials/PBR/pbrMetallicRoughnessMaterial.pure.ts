@@ -6,6 +6,7 @@ import { type Scene } from "../../scene.pure";
 import { type Color3 } from "../../Maths/math.color.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
+import { RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { type Nullable } from "../../types";
 import { RegisterClass } from "../../Misc/typeStore";
 
@@ -171,6 +172,9 @@ export function RegisterPbrMetallicRoughnessMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // PBRMetallicRoughnessMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.PBRMetallicRoughnessMaterial", PBRMetallicRoughnessMaterial);
 }

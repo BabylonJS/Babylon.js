@@ -66,6 +66,7 @@ import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBl
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass, AreLightsTexturesReady } from "../materialHelper.functions";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
+import { RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type LoopBlock } from "./Blocks/loopBlock.pure";
@@ -2811,6 +2812,9 @@ export function RegisterNodeMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // NodeMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     NodeMaterial._BlockIsTextureBlock = NodeMaterialBlockIsTextureBlock;
     NodeMaterial.Parse = NodeMaterialParse;

@@ -7,6 +7,7 @@ import { type Scene } from "../../scene.pure";
 import { Color3 } from "../../Maths/math.color.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseMaterial } from "./pbrBaseMaterial.pure";
+import { RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { Material } from "../material.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { RegisterClass } from "../../Misc/typeStore";
@@ -759,6 +760,9 @@ export function RegisterPbrMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // PBRMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.PBRMaterial", PBRMaterial);
 }

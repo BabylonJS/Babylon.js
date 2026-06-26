@@ -13,7 +13,7 @@ import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { PrePassConfiguration } from "./prePassConfiguration";
 import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
+import { ImageProcessingConfiguration, RegisterImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
 import { type FresnelParameters } from "./fresnelParameters.pure";
 import { Material } from "../Materials/material.pure";
 import { type ICustomShaderNameResolveOptions } from "../Materials/material";
@@ -2003,6 +2003,9 @@ export function RegisterStandardMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // StandardMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 

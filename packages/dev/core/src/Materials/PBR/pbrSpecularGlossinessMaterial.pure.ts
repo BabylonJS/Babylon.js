@@ -5,6 +5,7 @@ import { type Scene } from "../../scene.pure";
 import { type Color3 } from "../../Maths/math.color.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
+import { RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { type Nullable } from "../../types";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { RegisterClass } from "../../Misc/typeStore";
@@ -168,6 +169,9 @@ export function RegisterPbrSpecularGlossinessMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // PBRSpecularGlossinessMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.PBRSpecularGlossinessMaterial", PBRSpecularGlossinessMaterial);
 }
