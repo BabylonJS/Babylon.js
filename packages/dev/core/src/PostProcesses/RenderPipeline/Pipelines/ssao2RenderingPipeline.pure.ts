@@ -23,6 +23,8 @@ import { type ISize } from "../../../Maths/math.size";
 import { ThinSSAO2BlurPostProcess } from "../../thinSSAO2BlurPostProcess";
 import { ThinSSAO2CombinePostProcess } from "../../thinSSAO2CombinePostProcess";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { RegisterPostProcessRenderPipelineManagerSceneComponent } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent.pure";
+import { PostProcessRenderPipelineManager } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManager";
 import { RegisterPrePassRendererSceneComponent } from "../../../Rendering/prePassRendererSceneComponent.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "../../../Rendering/geometryBufferRendererSceneComponent.pure";
 
@@ -638,6 +640,12 @@ export function RegisterSsao2RenderingPipeline(): void {
         return;
     }
     _Registered = true;
+
+    // Eagerly register the Scene.postProcessRenderPipelineManager getter (and inject its concrete class).
+    // The base PostProcessRenderPipeline constructor also registers it, but consumers may access the manager
+    // (e.g. to subscribe to its observables) before constructing the SSAO2 pipeline, so register it as soon as
+    // the SSAO2 module is imported. Idempotent.
+    RegisterPostProcessRenderPipelineManagerSceneComponent(PostProcessRenderPipelineManager);
 
     SSAO2RenderingPipeline.Parse = SSAO2RenderingPipelineParse;
 
