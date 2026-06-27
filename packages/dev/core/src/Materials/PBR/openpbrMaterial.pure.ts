@@ -6,7 +6,7 @@ import { GetEnvironmentFuzzBRDFTexture, GetOpenPBREnvironmentBRDFTexture } from 
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
 import { Color3, Color4 } from "../../Maths/math.color.pure";
-import { ImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
+import { ImageProcessingConfiguration, RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { Texture } from "../Textures/texture.pure";
@@ -3429,6 +3429,9 @@ export function RegisterOpenpbrMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // OpenPBRMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.OpenPBRMaterial", OpenPBRMaterial);
 }
