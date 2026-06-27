@@ -7,6 +7,7 @@ import { type Material } from "core/Materials/material.pure";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
 import { type Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -51,8 +52,11 @@ const OriginOffsetKm = { x: 0, y: 0, z: 0 };
  * Adds shading logic to a PBRMaterial that provides radiance, diffuse sky irradiance, and aerial perspective from the atmosphere.
  */
 export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
+    private static readonly _ShaderIncludesRetryDelayMs = 5000;
+
     private _shaderIncludesLoaded = false;
     private _shaderIncludesLoadPromise: Nullable<Promise<void>> = null;
+    private _shaderIncludesNextRetryTime = 0;
 
     /**
      * Constructs the {@link AtmospherePBRMaterialPlugin}.
@@ -128,7 +132,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         // Gate readiness until they are loaded, otherwise the host material's effect would fail to
         // resolve `#include<atmosphereFunctions>` and friends at compile time.
         if (!this._shaderIncludesLoaded) {
-            if (!this._shaderIncludesLoadPromise) {
+            if (!this._shaderIncludesLoadPromise && Date.now() >= this._shaderIncludesNextRetryTime) {
                 this._shaderIncludesLoadPromise = this._loadShaderIncludesAsync();
             }
             return false;
@@ -167,8 +171,17 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 ]);
             }
             this._shaderIncludesLoaded = true;
-        } catch {
-            // Clear the in-flight promise so the next readiness check can retry the load.
+        } catch (error) {
+            // Surface the failure (a missing shader-include registration would otherwise silently stall
+            // rendering forever) and back off before retrying so we don't hammer the loader every frame.
+            // A retry still allows recovery from transient failures such as a dropped network request.
+            Logger.Error(
+                `AtmospherePBRMaterialPlugin: Failed to load atmosphere shader includes; the atmosphere material will not render until they load. Retrying in ${
+                    AtmospherePBRMaterialPlugin._ShaderIncludesRetryDelayMs / 1000
+                }s. ${error}`
+            );
+            this._shaderIncludesNextRetryTime = Date.now() + AtmospherePBRMaterialPlugin._ShaderIncludesRetryDelayMs;
+            // Clear the in-flight promise so a later readiness check can retry the load.
             this._shaderIncludesLoadPromise = null;
         }
     }
