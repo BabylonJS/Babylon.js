@@ -26,22 +26,35 @@ import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Mesh } from "core/Meshes/mesh";
 import { type RectAreaLight } from "core/Lights/rectAreaLight";
 
+/**
+ * Describes the object model tree that maps glTF pointer paths to their corresponding Babylon objects.
+ */
 export interface IGLTFObjectModelTree {
+    /** Mapping for the glTF cameras collection. */
     cameras: IGLTFObjectModelTreeCamerasObject;
+    /** Mapping for the glTF nodes collection. */
     nodes: IGLTFObjectModelTreeNodesObject;
+    /** Mapping for the glTF materials collection. */
     materials: IGLTFObjectModelTreeMaterialsObject;
+    /** Mapping for the glTF extensions. */
     extensions: IGLTFObjectModelTreeExtensionsObject;
+    /** Mapping for the glTF animations collection. */
     animations: {
         length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
         __array__: {};
     };
+    /** Mapping for the glTF meshes collection. */
     meshes: {
         length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
         __array__: {};
     };
 }
 
+/**
+ * Describes the mapping of glTF node properties to their corresponding Babylon transform node properties.
+ */
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
+    /** Accessor for the number of nodes. */
     length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], number>;
     __array__: {
         __target__: boolean;
@@ -66,6 +79,9 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
     };
 }
 
+/**
+ * Describes the mapping of glTF camera properties to their corresponding Babylon camera properties.
+ */
 export interface IGLTFObjectModelTreeCamerasObject {
     __array__: {
         __target__: boolean;
@@ -84,6 +100,9 @@ export interface IGLTFObjectModelTreeCamerasObject {
     };
 }
 
+/**
+ * Describes the mapping of glTF material properties to their corresponding Babylon material properties.
+ */
 export interface IGLTFObjectModelTreeMaterialsObject {
     __array__: {
         __target__: boolean;
@@ -245,9 +264,16 @@ interface ITextureDefinition {
     scale: IObjectAccessor<IMaterial, PBRMaterial, Vector2>;
 }
 
+/**
+ * Describes the mapping of glTF mesh properties to their corresponding Babylon mesh properties.
+ */
 export interface IGLTFObjectModelTreeMeshesObject {}
 
+/**
+ * Describes the mapping of glTF extension properties to their corresponding Babylon properties.
+ */
 export interface IGLTFObjectModelTreeExtensionsObject {
+    /** Mapping for the KHR_lights_punctual extension. */
     KHR_lights_punctual: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
@@ -263,6 +289,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
+    /** Mapping for the EXT_lights_area extension. */
     EXT_lights_area: {
         lights: {
             length: IObjectAccessor<IEXTLightsArea_Light[], Light[], number>;
@@ -277,11 +304,13 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
+    /** Mapping for the EXT_lights_ies extension. */
     EXT_lights_ies: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
         };
     };
+    /** Mapping for the EXT_lights_image_based extension. */
     EXT_lights_image_based: {
         lights: {
             __array__: {
