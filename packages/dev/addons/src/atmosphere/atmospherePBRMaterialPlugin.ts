@@ -10,8 +10,6 @@ import { type Nullable } from "core/types";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
-import "./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     public USE_CUSTOM_REFLECTION = false;
@@ -53,6 +51,9 @@ const OriginOffsetKm = { x: 0, y: 0, z: 0 };
  * Adds shading logic to a PBRMaterial that provides radiance, diffuse sky irradiance, and aerial perspective from the atmosphere.
  */
 export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
+    private _shaderIncludesLoaded = false;
+    private _shaderIncludesLoadPromise: Nullable<Promise<void>> = null;
+
     /**
      * Constructs the {@link AtmospherePBRMaterialPlugin}.
      * @param material - The material to apply the plugin to.
@@ -122,6 +123,17 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
      * @override
      */
     public override isReadyForSubMesh(): boolean {
+        // The shader includes used by this plugin's custom code (injected via getCustomCode) are
+        // registered into the ShaderStore lazily so this module stays free of top-level side effects.
+        // Gate readiness until they are loaded, otherwise the host material's effect would fail to
+        // resolve `#include<atmosphereFunctions>` and friends at compile time.
+        if (!this._shaderIncludesLoaded) {
+            if (!this._shaderIncludesLoadPromise) {
+                this._shaderIncludesLoadPromise = this._loadShaderIncludesAsync();
+            }
+            return false;
+        }
+
         const atmosphere = this._atmosphere;
 
         if (!atmosphere.transmittanceLut?.hasLutData || (atmosphere.diffuseSkyIrradianceLut && !atmosphere.diffuseSkyIrradianceLut.hasLutData)) {
@@ -136,6 +148,29 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         }
 
         return true;
+    }
+
+    /**
+     * Lazily loads (and thereby registers into the ShaderStore) the shader includes referenced by
+     * this plugin's injected custom code. Loading the correct variant for the host material's shader
+     * language keeps this module free of top-level shader side effects so it can be tree-shaken.
+     */
+    private async _loadShaderIncludesAsync(): Promise<void> {
+        try {
+            if (this._material.shaderLanguage === ShaderLanguage.WGSL) {
+                await Promise.all([import("./ShadersWGSL/ShadersInclude/atmosphereFunctions"), import("./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration")]);
+            } else {
+                await Promise.all([
+                    import("./Shaders/ShadersInclude/atmosphereFunctions"),
+                    import("./Shaders/ShadersInclude/atmosphereUboDeclaration"),
+                    import("./Shaders/ShadersInclude/atmosphereFragmentDeclaration"),
+                ]);
+            }
+            this._shaderIncludesLoaded = true;
+        } catch {
+            // Clear the in-flight promise so the next readiness check can retry the load.
+            this._shaderIncludesLoadPromise = null;
+        }
     }
 
     /**
