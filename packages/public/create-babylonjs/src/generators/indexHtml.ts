@@ -4,17 +4,15 @@ export function generateIndexHtml(options: ProjectOptions): string {
     const { bundler, moduleFormat } = options;
 
     const styles = `
-        html, body {
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
+        body {
             margin: 0;
             padding: 0;
         }
 
         #renderCanvas {
-            width: 100%;
-            height: 100%;
+            display: block;
+            width: 100dvw;
+            height: 100dvh;
             touch-action: none;
         }`;
 
@@ -40,13 +38,18 @@ export function generateIndexHtml(options: ProjectOptions): string {
         const createScene = async function () {
             const scene = new BABYLON.Scene(engine);
 
-            // Load a glTF model
-            await BABYLON.AppendSceneAsync("https://assets.babylonjs.com/meshes/boombox.glb", scene);
+            // Create a default box mesh
+            BABYLON.CreateBox("box", {}, scene);
 
-            // Create a default camera that frames the loaded model
+            // Create a default camera, and event caught by the controls will call preventdefault(),
+            // such as wheel event
             scene.createDefaultCamera(true, true, true);
-            // Rotate the camera to face the front of the model
-            scene.activeCamera.alpha += Math.PI;
+            const camera = scene.activeCamera;
+            camera.setPosition(new BABYLON.Vector3(3, 3, 3));
+            camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+
+            // Create a default light for the scene
+            scene.createDefaultLight(true);
 
             // Create a default environment (skybox + ground + environment lighting)
             scene.createDefaultEnvironment({
