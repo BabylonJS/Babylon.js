@@ -14,7 +14,7 @@ import { type Effect } from "../../../effect.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import { CubeTexture, CubeTextureParse } from "../../../Textures/cubeTexture.pure";
+import { CubeTextureParse, type CubeTexture } from "../../../Textures/cubeTexture.pure";
 import { Texture } from "../../../Textures/texture.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

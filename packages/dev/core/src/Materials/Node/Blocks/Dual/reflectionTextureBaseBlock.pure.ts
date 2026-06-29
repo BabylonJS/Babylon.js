@@ -14,7 +14,7 @@ import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Constants } from "../../../../Engines/constants";
 
-import { CubeTexture, CubeTextureParse } from "../../../Textures/cubeTexture.pure";
+import { CubeTextureParse, type CubeTexture } from "../../../Textures/cubeTexture.pure";
 import { Texture } from "../../../Textures/texture.pure";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
