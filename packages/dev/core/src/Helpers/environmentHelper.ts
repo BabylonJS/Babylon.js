@@ -9,7 +9,7 @@ import { Mesh } from "../Meshes/mesh.pure";
 import { BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { MirrorTexture } from "../Materials/Textures/mirrorTexture.pure";
-import { CubeTexture } from "../Materials/Textures/cubeTexture.pure";
+import { CubeTexture, CubeTextureCreateFromPrefilteredData } from "../Materials/Textures/cubeTexture.pure";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial.pure";
 import { Constants } from "../Engines/constants";
 
@@ -460,7 +460,7 @@ export class EnvironmentHelper {
             return;
         }
 
-        const environmentTexture = CubeTexture.CreateFromPrefilteredData(this._options.environmentTexture, this._scene);
+        const environmentTexture = CubeTextureCreateFromPrefilteredData(this._options.environmentTexture, this._scene);
         this._scene.environmentTexture = environmentTexture;
     }
 

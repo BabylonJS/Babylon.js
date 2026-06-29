@@ -14,7 +14,7 @@ import { type Effect } from "../../../effect.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { type Scene } from "../../../../scene.pure";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import { CubeTexture } from "../../../Textures/cubeTexture.pure";
+import { CubeTextureParse, type CubeTexture } from "../../../Textures/cubeTexture.pure";
 import { Texture } from "../../../Textures/texture.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -425,7 +425,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         if (serializationObject.texture) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             if (serializationObject.texture.isCube) {
-                this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
+                this.texture = CubeTextureParse(serializationObject.texture, scene, rootUrl);
             } else {
                 this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
             }
