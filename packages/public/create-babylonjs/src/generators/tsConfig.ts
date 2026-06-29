@@ -34,10 +34,5 @@ export function generateTsConfig(options: ProjectOptions): string {
         compilerOptions.types = types;
     }
 
-    const base: Record<string, unknown> = {
-        compilerOptions,
-        include: ["src"],
-    };
-
-    return JSON.stringify(base, null, 2) + "\n";
+    return JSON.stringify({ compilerOptions, include: ["src"] }, null, 2) + "\n";
 }
