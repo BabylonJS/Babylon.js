@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 import type * as GLTF2 from "babylonjs-gltf2interface";
 import { type Nullable } from "core/types";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let GLTFValidator: GLTF2.IGLTFValidator;
