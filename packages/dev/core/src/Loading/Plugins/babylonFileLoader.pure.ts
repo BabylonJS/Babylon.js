@@ -7,7 +7,7 @@ import { Geometry } from "../../Meshes/geometry";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 import { Material } from "../../Materials/material.pure";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
-import { CubeTexture } from "../../Materials/Textures/cubeTexture.pure";
+import { CubeTexture, CubeTextureCreateFromPrefilteredData, CubeTextureParse } from "../../Materials/Textures/cubeTexture.pure";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture.pure";
 import { AnimationGroupParse } from "../../Animations/animationGroup.pure";
 import { Light } from "../../Lights/light";
@@ -219,7 +219,7 @@ export const LoadAssetContainer = (
                 scene.environmentTexture = hdrTexture;
             } else {
                 if (typeof parsedData.environmentTexture === "object") {
-                    const environmentTexture = CubeTexture.Parse(parsedData.environmentTexture, scene, rootUrl);
+                    const environmentTexture = CubeTextureParse(parsedData.environmentTexture, scene, rootUrl);
                     scene.environmentTexture = environmentTexture;
                 } else if ((parsedData.environmentTexture as string).endsWith(".env")) {
                     const compressedTexture = new CubeTexture(
@@ -232,7 +232,7 @@ export const LoadAssetContainer = (
                     }
                     scene.environmentTexture = compressedTexture;
                 } else {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(
+                    const cubeTexture = CubeTextureCreateFromPrefilteredData(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
                         scene,
                         parsedData.environmentTextureForcedExtension
