@@ -12,6 +12,14 @@ const __bjsSerializableKey = "__bjs_serializable__";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _mergedStoreCache = new WeakMap<object, any>();
 
+// Universal `Object.hasOwn` equivalent. We intentionally avoid the native `Object.hasOwn` (ES2022)
+// because TypeScript does not down-level runtime APIs and some Babylon Native engines (e.g. ChakraCore)
+// do not provide it. `Object.prototype.hasOwnProperty` exists on every engine, and routing through it
+// here also stays safe for the null-prototype metadata objects created below.
+function HasOwn(target: object, key: PropertyKey): boolean {
+    return Object.prototype.hasOwnProperty.call(target, key);
+}
+
 function GetMetadataSymbol(): symbol {
     let metadataSymbol = (Symbol as any).metadata as symbol | undefined;
     if (!metadataSymbol) {
@@ -39,7 +47,7 @@ function GetOwnMetadata(ctor: any): any {
     if (!ctor) {
         return undefined;
     }
-    if (!Object.prototype.hasOwnProperty.call(ctor, GetMetadataSymbol())) {
+    if (!HasOwn(ctor, GetMetadataSymbol())) {
         const parent = Object.getPrototypeOf(ctor);
         const parentMetadata = parent ? parent[GetMetadataSymbol()] : null;
         Object.defineProperty(ctor, GetMetadataSymbol(), {
@@ -58,7 +66,7 @@ export function GetDirectStore(target: any): any {
     if (!metadata) {
         return {};
     }
-    if (!Object.prototype.hasOwnProperty.call(metadata, __bjsSerializableKey)) {
+    if (!HasOwn(metadata, __bjsSerializableKey)) {
         metadata[__bjsSerializableKey] = {};
     }
     return metadata[__bjsSerializableKey];
@@ -90,7 +98,7 @@ export function GetMergedStore(target: any): any {
         current = Object.getPrototypeOf(current);
     }
     for (const meta of chain) {
-        if (Object.prototype.hasOwnProperty.call(meta, __bjsSerializableKey)) {
+        if (HasOwn(meta, __bjsSerializableKey)) {
             const initialStore = meta[__bjsSerializableKey];
             for (const property in initialStore) {
                 store[property] = initialStore[property];
