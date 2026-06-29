@@ -16,13 +16,13 @@ import {
     type IScene,
     type ISkin,
 } from "../glTFLoaderInterfaces";
-import { type Vector3, Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
+import { type Vector3, Matrix, Quaternion, Vector2 } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";
-import { type Color3, Color4 } from "core/Maths/math.color";
+import { type Color3, Color4 } from "core/Maths/math.color.pure";
 import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type Light } from "core/Lights/light";
 import { type Nullable } from "core/types";
-import { SpotLight } from "core/Lights/spotLight";
+import { SpotLight } from "core/Lights/spotLight.pure";
 import { type IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type IInterpolationPropertyInfo, type IObjectAccessor } from "core/FlowGraph/typeDefinitions";

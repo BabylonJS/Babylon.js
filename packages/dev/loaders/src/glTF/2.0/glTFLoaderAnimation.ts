@@ -1,5 +1,5 @@
-import { Animation } from "core/Animations/animation";
-import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import { Animation } from "core/Animations/animation.pure";
+import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type INode } from "./glTFLoaderInterfaces";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { SetInterpolationForKey } from "./Extensions/objectModelMapping";
