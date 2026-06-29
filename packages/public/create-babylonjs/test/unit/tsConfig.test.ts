@@ -12,7 +12,7 @@ describe("generateTsConfig", () => {
         const result = JSON.parse(generateTsConfig(options));
         expect(result.compilerOptions.module).toBe("ESNext");
         expect(result.compilerOptions.moduleResolution).toBe("bundler");
-        expect(result.compilerOptions.types).toBeUndefined();
+        expect(result.compilerOptions.types).toEqual(["vite/client"]);
     });
 
     it("generates ES2020 module config for Webpack", () => {
