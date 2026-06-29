@@ -12,6 +12,7 @@ import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { Observable } from "../../Misc/observable.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { RegisterAbstractEngineCubeTexture } from "../../Engines/AbstractEngine/abstractEngine.cubeTexture.pure";
 
 /**
  * Defines the available options when creating a cube texture
@@ -214,6 +215,8 @@ export class CubeTexture extends BaseTexture {
         useSRGBBuffer?: boolean
     ) {
         super(sceneOrEngine);
+
+        RegisterAbstractEngineCubeTexture();
 
         this.name = rootUrl;
         this.url = rootUrl;

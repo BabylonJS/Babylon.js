@@ -546,6 +546,12 @@ export class PostProcess {
         shaderLanguage?: ShaderLanguage,
         extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     ) {
+        // PostProcess pipelines that chain textures (SSAO2, bloom, depth of field, ...) rely on the
+        // setTextureFromPostProcess / setTextureFromPostProcessOutput engine/effect methods, which are
+        // registered as a side effect. Register them at construction time so these methods work in
+        // tree-shaken builds that import the pure module without the side-effect wrapper. Idempotent.
+        RegisterPostProcess();
+
         let size: number | { width: number; height: number } = 1;
         let uniformBuffers: Nullable<string[]> = null;
         let effectWrapper: EffectWrapper | undefined;

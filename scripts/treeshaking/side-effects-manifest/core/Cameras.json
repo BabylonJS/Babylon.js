@@ -18,7 +18,6 @@
         "Cameras/VR/vrDeviceOrientationArcRotateCamera.ts": ["top-level-call"],
         "Cameras/VR/vrDeviceOrientationFreeCamera.ts": ["top-level-call"],
         "Cameras/VR/vrDeviceOrientationGamepadCamera.ts": ["top-level-call"],
-        "Cameras/VR/vrExperienceHelper.ts": ["bare-import"],
         "Cameras/arcRotateCamera.ts": ["top-level-call"],
         "Cameras/camera.ts": ["top-level-call"],
         "Cameras/camera.types.ts": ["declare-module"],

@@ -551,6 +551,49 @@ test("load SPZ gaussian splat model", async ({ page }) => {
 });
 
 // ============================================================
+// OBJ + SSAO
+// ============================================================
+
+test('load OBJ model with ssao="enabled"', async ({ page }) => {
+    test.setTimeout(60000);
+
+    // SSAO's sampling-kernel rotation texture is seeded from Math.random, which would make the
+    // rendered result differ between runs. Install a deterministic PRNG before any page script runs
+    // so the screenshot comparison is stable.
+    await page.addInitScript(() => {
+        let seed = 0x9e3779b9;
+        Math.random = () => {
+            seed |= 0;
+            seed = (seed + 0x6d2b79f5) | 0;
+            let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    });
+
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/StanfordBunny.obj"
+            ssao="enabled"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const ssao = await page.evaluate(() => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        return viewer.viewerDetails?.viewer.postProcessing.ssao;
+    });
+    expect(ssao).toBe("enabled");
+
+    await expectScreenshotMatch(page, "viewer-obj-ssao.png");
+});
+
+// ============================================================
 // Environment
 // ============================================================
 

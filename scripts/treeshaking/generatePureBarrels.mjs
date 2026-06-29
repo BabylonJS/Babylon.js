@@ -367,6 +367,24 @@ function isBarrelWithSideEffects(filePath, contextDir) {
 }
 
 /**
+ * Generated shader modules (anything under a `Shaders`, `ShadersWGSL`, or
+ * `ShadersInclude` directory) are always side-effectful: importing one registers
+ * its source into `ShaderStore`. They have no `.pure` variant and must never be
+ * re-exported from a pure barrel — independently of whether they currently appear
+ * in the side-effects manifest (the generated `.ts` files and their manifest
+ * entries may not exist yet at generation time). Treat them as a hard, structural
+ * exclusion so a stale or incomplete manifest can never leak shader code into a
+ * pure barrel.
+ * @param {string} dir Absolute path of the directory containing the export line
+ * @param {string} specifier The module specifier (e.g. "../Shaders/postprocess.vertex")
+ * @returns {boolean} True when the specifier resolves into a generated shader directory
+ */
+function isShaderModule(dir, specifier) {
+    const relPath = toPosixPath(relative(SRC_ROOT, resolve(dir, specifier)));
+    return relPath.split("/").some((segment) => segment === "Shaders" || segment === "ShadersWGSL" || segment === "ShadersInclude");
+}
+
+/**
  * Resolve an `export * from "./specifier"` line.
  * Returns the rewritten line for pure.ts, or null to skip.
  * @param {string} dir Absolute path of the directory containing the export line
@@ -375,6 +393,15 @@ function isBarrelWithSideEffects(filePath, contextDir) {
  * @returns {string|null} The resolved export line for pure.ts, or null to skip
  */
 function resolveExport(dir, specifier, originalLine) {
+    // Generated shader modules are always side-effectful and have no pure variant — never re-export them.
+    if (isShaderModule(dir, specifier)) {
+        skippedExports++;
+        if (VERBOSE) {
+            console.log(`  SKIP (generated shader module): ${specifier}`);
+        }
+        return null;
+    }
+
     // Case 1: Subdirectory barrel reference (ends with /index)
     if (specifier.endsWith("/index")) {
         const subDir = resolve(dir, specifier.replace(/\/index$/, ""));
@@ -497,6 +524,15 @@ function mapSpecifierToPureBarrel(dir, specifier) {
  * @returns {string|null} The resolved export line for pure.ts, or null to skip
  */
 function resolveNamedExport(dir, specifier, names, originalLine) {
+    // Generated shader modules are always side-effectful and have no pure variant — never re-export them.
+    if (isShaderModule(dir, specifier)) {
+        skippedExports++;
+        if (VERBOSE) {
+            console.log(`  SKIP named export (generated shader module): ${specifier}`);
+        }
+        return null;
+    }
+
     const relPath = toPosixPath(relative(SRC_ROOT, resolve(dir, specifier)));
     const pureSpecifier = specifier + ".pure";
     const pureRelPath = relPath + ".pure";

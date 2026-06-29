@@ -46,7 +46,6 @@
         "FrameGraph/Node/Blocks/inputBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/lightingVolumeBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/outputBlock.ts": ["top-level-call"],
-        "FrameGraph/Node/Blocks/resourceContainerBlock.ts": ["top-level-call"],
-        "FrameGraph/Tasks/Rendering/iblShadowsRendererTask.ts": ["bare-import"]
+        "FrameGraph/Node/Blocks/resourceContainerBlock.ts": ["top-level-call"]
     }
 }

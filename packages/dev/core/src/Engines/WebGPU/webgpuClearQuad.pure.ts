@@ -50,7 +50,24 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setDepthTestEnabled(false);
         this._cacheRenderPipeline.setStencilReadMask(0xff);
 
-        this._effect = engine.createEffect("clearQuad", [], ["color", "depthValue"], undefined, undefined, undefined, undefined, undefined, undefined, ShaderLanguage.WGSL);
+        this._effect = engine.createEffect(
+            "clearQuad",
+            [],
+            ["color", "depthValue"],
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ShaderLanguage.WGSL,
+            // On the pure import path the wrapper modules that eagerly register the clearQuad shaders are not in the
+            // module graph, so load the generated shader modules here to guarantee they are present in the ShaderStore
+            // before the effect compiles (otherwise the engine falls back to fetching clearQuad.*.fx and 404s).
+            async () => {
+                await Promise.all([import("../../ShadersWGSL/clearQuad.vertex"), import("../../ShadersWGSL/clearQuad.fragment")]);
+            }
+        );
     }
 
     public clear(

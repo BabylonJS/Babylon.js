@@ -15,7 +15,7 @@ import { type IEffectCreationOptions } from "../../Materials/effect.pure";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration.pure";
+import { ImageProcessingConfiguration, RegisterImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 import { type IShadowLight } from "../../Lights/shadowLight";
@@ -1167,6 +1167,9 @@ export function RegisterBackgroundMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // BackgroundMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.BackgroundMaterial", BackgroundMaterial);
 }

@@ -1,0 +1,99 @@
+# =============================================================================
+# Template: a single Memory leak test suite job
+#
+# memlab runs Puppeteer/Chromium locally on the agent (heap snapshots need
+# local Chrome DevTools Protocol access, so BrowserStack is not viable).
+# The two suites (ci + packages) used to run sequentially in one job; they are
+# now instantiated as two parallel jobs via this template to trim the
+# post-Build critical-path tail. To avoid doubling PR comments, each job's
+# GitHub comment is gated by the `alwaysComment` parameter: the first-class
+# `ci` suite always comments, while secondary suites only stay silent on a
+# clean pass and still comment on any leak or runner error (see
+# ci-monorepo.yml).
+#
+# Non-blocking: failures do not fail the overall pipeline.
+# =============================================================================
+
+parameters:
+    - name: jobName
+      type: string
+    - name: displayName
+      type: string
+    - name: npmScript
+      type: string
+    - name: suiteLabel
+      type: string
+    # When false, this suite only posts its GitHub comment if it actually
+    # detected a leak. Used to keep the steady-state PR noise at a single
+    # comment (the first-class "ci" suite) while still surfacing a packages
+    # suite regression the moment one appears.
+    - name: alwaysComment
+      type: boolean
+      default: true
+
+jobs:
+    - job: ${{ parameters.jobName }}
+      displayName: ${{ parameters.displayName }}
+      dependsOn:
+          - Build
+          - FormatLint
+      continueOnError: true
+      timeoutInMinutes: 45
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "22.x"
+
+          - template: cache-steps.yml
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+
+          - script: npm run ${{ parameters.npmScript }} -- --no-fail-fast
+            displayName: "Run memory leak tests (${{ parameters.suiteLabel }})"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+
+          - bash: |
+                FILE="$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+                ALWAYS=$(echo "${{ parameters.alwaysComment }}" | tr '[:upper:]' '[:lower:]')
+                if [ ! -f "$FILE" ]; then
+                    echo "No memory leak comment file found"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
+                elif [ "$ALWAYS" != "true" ] && grep -q "no leaks detected" "$FILE"; then
+                    # The runner only emits the "no leaks detected" all-clear when
+                    # it ran scenarios, found no leaks, and hit no error. Any other
+                    # state (leaks, or a runner error/empty results) lacks that line
+                    # and still comments, so secondary-suite failures stay visible.
+                    echo "Suite is clean and alwaysComment=false; skipping PR comment to reduce noise"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
+                else
+                    COMMENT=$(cat "$FILE")
+                    COMMENT="${COMMENT//'%'/'%25'}"
+                    COMMENT="${COMMENT//$'\n'/'%0A'}"
+                    COMMENT="${COMMENT//$'\r'/'%0D'}"
+                    echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
+                fi
+            displayName: "Read memory leak comment"
+            condition: succeededOrFailed()
+
+          - task: GitHubComment@0
+            displayName: "Post memory leak results"
+            condition: and(succeededOrFailed(), eq(variables['HAS_MEMLEAK_COMMENT'], 'true'))
+            continueOnError: true
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    $(MEMLEAK_COMMENT)

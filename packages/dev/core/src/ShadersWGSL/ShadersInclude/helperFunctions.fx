@@ -87,14 +87,14 @@ fn toLinearSpaceExact(color: vec3f) -> vec3f
 {
     let nearZeroSection: vec3f = 0.0773993808 * color;
     let remainingSection: vec3f = pow(0.947867299 * (color + vec3f(0.055)), vec3f(2.4));
-    return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3f(0.04045)));
+    return select(remainingSection, nearZeroSection, color <= vec3f(0.04045));
 }
 
 fn toGammaSpaceExact(color: vec3f) -> vec3f
 {
     let nearZeroSection: vec3f = 12.92 * color;
     let remainingSection: vec3f = 1.055 * pow(color, vec3f(0.41666)) - vec3f(0.055);
-    return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3f(0.0031308)));
+    return select(remainingSection, nearZeroSection, color <= vec3f(0.0031308));
 }
 #endif
 
