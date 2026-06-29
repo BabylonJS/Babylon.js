@@ -88,7 +88,10 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
 
     public override _doOperation(context: FlowGraphContext): P {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const value = accessorContainer.info.get(accessorContainer.object) as P;
+        // Pass the context as the accessor payload so context-aware object-model
+        // accessors (e.g. the KHR_interactivity `/extensions/KHR_interactivity/delays/{}`
+        // validity accessor, which checks the runtime active-delay set) can resolve.
+        const value = accessorContainer.info.get(accessorContainer.object, undefined, context) as P;
         const object = accessorContainer.info.getTarget?.(accessorContainer.object);
         const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
         if (!object) {
@@ -118,7 +121,9 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     private _getPropertyValue(_target: O, _propertyName: string, context: FlowGraphContext): P | undefined {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
         const type = accessorContainer.info.type;
-        const value = accessorContainer.info.get(accessorContainer.object);
+        // Pass the context as the accessor payload (see _doOperation) so the
+        // KHR_interactivity delay/event validity accessors can resolve.
+        const value = accessorContainer.info.get(accessorContainer.object, undefined, context);
         if (type.startsWith("Color")) {
             return FromColor(value as Color3 | Color4) as unknown as P;
         }

@@ -13,6 +13,8 @@ export * from "./flowGraphAssetsContext";
 export * from "./flowGraphParser";
 export * from "./flowGraphPathConverter";
 export * from "./flowGraphPathConverterComponent";
+export * from "./flowGraphEventReference";
+export * from "./flowGraphDelayReference";
 export * from "./flowGraphLogger";
 export * from "./flowGraphValidator";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports

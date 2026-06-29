@@ -10,6 +10,7 @@ import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { MarkDelayActive, MarkDelayInactive } from "core/FlowGraph/flowGraphDelayReference";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
@@ -68,6 +69,10 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         const newIndex = lastDelayIndex + 1;
         this.lastDelayIndex.setValue(new FlowGraphInteger(newIndex), context);
         context._setGlobalContextVariable("lastDelayIndex", newIndex);
+        // Track the delay as active so `pointer/get` on
+        // `/extensions/KHR_interactivity/delays/{}` reports it as valid until it
+        // fires or is cancelled (KHR_interactivity spec §4.2.4).
+        MarkDelayActive(context, newIndex);
 
         timers[newIndex] = timer;
         context._setExecutionVariable(this, "pendingDelays", timers);
@@ -76,8 +81,13 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
 
     public override _cancelPendingTasks(context: FlowGraphContext): void {
         const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
-        for (const timer of timers) {
-            timer?.dispose();
+        for (let index = 0; index < timers.length; index++) {
+            const timer = timers[index];
+            if (timer) {
+                timer.dispose();
+                // The delay is no longer scheduled, so drop it from the active set.
+                MarkDelayInactive(context, index);
+            }
         }
         context._deleteExecutionVariable(this, "pendingDelays");
         this.lastDelayIndex.setValue(new FlowGraphInteger(-1), context);
@@ -103,6 +113,8 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         const index = timers.indexOf(timer);
         if (index !== -1) {
             timers.splice(index, 1);
+            // The delay has fired and is no longer scheduled.
+            MarkDelayInactive(context, index);
         } else {
             Logger.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
         }

@@ -14,6 +14,9 @@ import { type Scene } from "core/scene";
 import { type IAnimation } from "../glTFLoaderInterfaces";
 import { CompositePathToObjectConverter, type IPathConverterPrefixEntry } from "./compositePathToObjectConverter";
 import { BabylonScenePathToObjectConverter, BABYLON_SCENE_OBJECT_MODEL_PREFIX, CreateDefaultBabylonSceneObjectModelTree } from "./babylonScenePathToObjectConverter";
+import { InteractivityRefPathToObjectConverter } from "./interactivityRefPathToObjectConverter";
+import { EventReferencePrefix } from "core/FlowGraph/flowGraphEventReference";
+import { DelayReferencePrefix } from "core/FlowGraph/flowGraphDelayReference";
 import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 
@@ -57,6 +60,13 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     converter: new BabylonScenePathToObjectConverter(scene, CreateDefaultBabylonSceneObjectModelTree()),
                 });
             }
+            // KHR_interactivity ref-validity pointers (`/extensions/KHR_interactivity/events/{}`
+            // and `/extensions/KHR_interactivity/delays/{}`) are virtual: they validate an opaque
+            // event/delay reference rather than addressing a glTF object, so route them to a
+            // dedicated converter instead of the glTF fallback.
+            const refConverter = new InteractivityRefPathToObjectConverter();
+            initialPrefixes.push({ prefix: EventReferencePrefix, converter: refConverter });
+            initialPrefixes.push({ prefix: DelayReferencePrefix, converter: refConverter });
             this._pathConverter = new CompositePathToObjectConverter<IObjectAccessor>(
                 initialPrefixes,
                 this._gltfPathConverter as unknown as IPathToObjectConverter<IObjectAccessor>

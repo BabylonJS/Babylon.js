@@ -15,6 +15,8 @@ export * from "./flowGraphAssetsContext";
 export * from "./flowGraphParser";
 export * from "./flowGraphPathConverter";
 export * from "./flowGraphPathConverterComponent";
+export * from "./flowGraphEventReference";
+export * from "./flowGraphDelayReference";
 export * from "./flowGraphLogger";
 export * from "./flowGraphValidator";
 export * from "./Blocks/pure";
