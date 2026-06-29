@@ -6,9 +6,8 @@
  * entry points.
  */
 
-/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const __bjsSerializableKey = "__bjs_serializable__";
+const __bjsSerializableKey = "__bjs_serializable__";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _mergedStoreCache = new WeakMap<object, any>();
