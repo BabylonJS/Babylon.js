@@ -11,6 +11,7 @@ import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
 import { ShowToast } from "../toast/toastComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
+import { DetectFlowGraphSnippetId } from "./flowGraphSnippetDetection";
 import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { CheckmarkRegular } from "@fluentui/react-icons";
 
@@ -653,19 +654,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * @returns the referenced flow graph snippet id, or null when none is found
      */
     private _detectFlowGraphSnippetId(pgResult: IPlaygroundSnippetResult): Nullable<string> {
-        // Matches Parse.../Get...FlowGraph...FromSnippetAsync("<id>") with any quote style.
-        const snippetCallRegex = /FlowGraph[A-Za-z]*FromSnippetAsync\s*\(\s*(["'`])([^"'`]+)\1/;
+        // Scrub comments before matching so a commented-out loader (an inert
+        // preview scene) does not clobber the graph the user has open.
         const sources = [pgResult.code, ...Object.values(pgResult.files ?? {})];
-        for (const source of sources) {
-            if (!source) {
-                continue;
-            }
-            const match = snippetCallRegex.exec(source);
-            if (match && match[2]) {
-                return match[2].trim();
-            }
-        }
-        return null;
+        return DetectFlowGraphSnippetId(sources);
     }
 
     /**
