@@ -7,6 +7,8 @@
         "url": "https://github.com/BabylonJS/bjs-monorepo"
     },
     "devDependencies": {
+        "@babel/core": "^7.29.7",
+        "@babel/preset-env": "^7.29.7",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
@@ -59,6 +61,7 @@
         "build:umd": "npm run build:umd:libs && npm run build:umd:tools",
         "build:umd:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-ktx2decoder,babylonjs-accessibility,babylonjs-addons",
         "build:umd:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector-legacy,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor,babylonjs-inspector,create-babylonjs",
+        "downlevel:native-scripts": "node ./scripts/downlevelNativeScripts.mjs",
         "build:es6": "npm run build:assets:smart-filters && npm run build:es6:libs && npm run build:es6:tools && npm run check:treeshaking-all",
         "build:es6:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=@babylonjs/core,@babylonjs/gui,@babylonjs/loaders,@babylonjs/materials,@babylonjs/serializers,@babylonjs/post-processes,@babylonjs/procedural-textures,@babylonjs/viewer,@babylonjs/shared-ui-components,@babylonjs/addons,@babylonjs/accessibility,@babylonjs/ktx2decoder,@babylonjs/smart-filters,@babylonjs/smart-filters-blocks,@babylonjs/lottie-player",
         "build:es6:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=@babylonjs/node-editor,@babylonjs/node-geometry-editor,@babylonjs/node-render-graph-editor,@babylonjs/node-particle-editor,@babylonjs/inspector-legacy,@babylonjs/gui-editor,@tools/smart-filters-editor-control,@tools/smart-filters-debugger,@tools/smart-filters-editor,@babylonjs/inspector,@babylonjs/mcp-servers",

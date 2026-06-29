@@ -903,12 +903,31 @@ jobs:
             displayName: "Update scripts from snapshot"
             retryCountOnTaskFailure: 5
 
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          # Babylon Native runs on Chakra, which consumes ES5-level script. The TC39 decorator
+          # migration forces the core UMD bundle to an ES2015 target (the `accessor` keyword requires
+          # it), so it must be downleveled to ES5 for BOTH the unit tests and the playground before
+          # either is executed.
+          - script: |
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets\babylon.max.js
+            displayName: "Downlevel core script for Native (unit tests)"
+
           - script: |
                 cd
                 cd ..\BabylonNativeNightlyUnitTests\RelWithDebInfo
                 UnitTests.exe
             displayName: "Run unit tests"
             retryCountOnTaskFailure: 3
+
+          - script: |
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\babylon.max.js
+            displayName: "Downlevel core script for Native (visualization)"
 
           - script: |
                 cd
