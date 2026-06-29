@@ -56,10 +56,10 @@ export function generateIndexHtml(options: ProjectOptions): string {
                 const camera = scene.activeCamera;
                 camera.setPosition(new BABYLON.Vector3(3, 3, 3));
                 camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-            }
 
-            // Create a default light for the scene
-            scene.createDefaultLight(true);
+                // Create a default light for the scene
+                scene.createDefaultLight(true);
+            }
 
             // Create a default environment (skybox + ground + environment lighting)
             scene.createDefaultEnvironment({

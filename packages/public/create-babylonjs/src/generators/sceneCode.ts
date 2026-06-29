@@ -43,10 +43,10 @@ const engine = new Engine(canvas, true);
             const camera = scene.activeCamera${cameraCast};
             camera.setPosition(new Vector3(3, 3, 3));
             camera.setTarget(new Vector3(0, 0, 0));
-        }
 
-        // Create a default light for the scene
-        scene.createDefaultLight(true);
+            // Create a default light for the scene
+            scene.createDefaultLight(true);
+        }
 
         // Create a default environment (skybox + ground + environment lighting)
         scene.createDefaultEnvironment({
@@ -99,10 +99,10 @@ const createScene = async (): Promise<BABYLON.Scene> => {
         const camera = scene.activeCamera as BABYLON.ArcRotateCamera;
         camera.setPosition(new BABYLON.Vector3(3, 3, 3));
         camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-    }
 
-    // Create a default light for the scene
-    scene.createDefaultLight(true);
+        // Create a default light for the scene
+        scene.createDefaultLight(true);
+    }
 
     // Create a default environment (skybox + ground + environment lighting)
     scene.createDefaultEnvironment({
@@ -154,10 +154,10 @@ const createScene = async () => {
         const camera = scene.activeCamera;
         camera.setPosition(new BABYLON.Vector3(3, 3, 3));
         camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-    }
 
-    // Create a default light for the scene
-    scene.createDefaultLight(true);
+        // Create a default light for the scene
+        scene.createDefaultLight(true);
+    }
 
     // Create a default environment (skybox + ground + environment lighting)
     scene.createDefaultEnvironment({
