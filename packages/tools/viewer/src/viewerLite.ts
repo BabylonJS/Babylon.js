@@ -977,8 +977,8 @@ export class Viewer extends ViewerBase implements IViewer {
         if (!group || group.duration <= 0) {
             return 0;
         }
-        // currentFrame is in seconds; duration is also in seconds
-        return Math.min(group.currentFrame / group.duration, 1);
+        // currentTime is in seconds; duration is also in seconds
+        return Math.min(group.currentTime / group.duration, 1);
     }
 
     public set animationProgress(value: number) {
@@ -1094,7 +1094,7 @@ export class Viewer extends ViewerBase implements IViewer {
         }
 
         if (isPlaying) {
-            const progress = group.duration > 0 ? group.currentFrame / group.duration : 0;
+            const progress = group.duration > 0 ? group.currentTime / group.duration : 0;
             if (progress !== this._lastProgress) {
                 this._lastProgress = progress;
                 this.onAnimationProgressChanged.notifyObservers();
