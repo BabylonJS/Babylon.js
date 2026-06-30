@@ -190,57 +190,62 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
             const translateEntry = input.getEntry("keyboard", "translate");
             const rotateEntry = input.getEntry("keyboard", "rotate");
             const rotateGain = rotateEntry?.sensitivity ?? 1;
+
+            // Movement keys are accumulated into a single local direction and applied once below, so that
+            // holding two directions at once (e.g. forward + left) moves along a normalized diagonal at the
+            // same speed as a single direction, instead of the ~1.41x boost (sqrt(2)) that results from
+            // applying each movement key independently. Rotation keys act on separate angular axes and are
+            // applied directly as before.
+            const localDirection = camera._localDirection.copyFromFloats(0, 0, 0);
+
             // Keyboard
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
-                const speed = camera._computeLocalCameraSpeed() * (translateEntry?.sensitivity ?? 1);
 
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(-speed, 0, 0);
+                    localDirection.x -= 1;
                 } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, speed);
+                    localDirection.z += 1;
                 } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(speed, 0, 0);
+                    localDirection.x += 1;
                 } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, -speed);
+                    localDirection.z -= 1;
                 } else if (this.keysUpward.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, speed, 0);
+                    localDirection.y += 1;
                 } else if (this.keysDownward.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, -speed, 0);
+                    localDirection.y -= 1;
                 } else if (this.keysRotateLeft.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, 0);
                     if (rotateEntry) {
                         camera.cameraRotation.y -= this._getLocalRotation() * rotateGain;
                     }
                 } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, 0);
                     if (rotateEntry) {
                         camera.cameraRotation.y += this._getLocalRotation() * rotateGain;
                     }
                 } else if (this.keysRotateUp.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, 0);
                     if (rotateEntry) {
                         camera.cameraRotation.x -= this._getLocalRotation() * rotateGain;
                     }
                 } else if (this.keysRotateDown.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, 0);
                     if (rotateEntry) {
                         camera.cameraRotation.x += this._getLocalRotation() * rotateGain;
                     }
                 }
+            }
 
-                // Suppress accumulated translation when the keyboard→translate mapping is removed.
-                // Rotation keys already zeroed `_localDirection`, so this is a no-op for them.
-                if (!translateEntry) {
-                    camera._localDirection.copyFromFloats(0, 0, 0);
-                }
+            // Apply a single, normalized movement once all keys for this frame have been accumulated.
+            // Translation is suppressed when the keyboard→translate mapping is removed.
+            if (translateEntry && (localDirection.x !== 0 || localDirection.y !== 0 || localDirection.z !== 0)) {
+                const speed = camera._computeLocalCameraSpeed() * (translateEntry.sensitivity ?? 1);
+                // Normalize so a diagonal isn't faster than an axis-aligned move, then scale to the per-frame speed.
+                localDirection.normalize().scaleInPlace(speed);
 
                 if (camera.getScene().useRightHandedSystem) {
-                    camera._localDirection.z *= -1;
+                    localDirection.z *= -1;
                 }
 
                 camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
-                Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
+                Vector3.TransformNormalToRef(localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
                 camera.cameraDirection.addInPlace(camera._transformedDirection);
             }
         }

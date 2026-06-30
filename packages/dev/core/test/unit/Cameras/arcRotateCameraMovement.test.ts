@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
@@ -25,6 +26,59 @@ describe("ArcRotateCameraMovement", () => {
     afterEach(() => {
         scene?.dispose();
         engine?.dispose();
+    });
+
+    const pressKey = (keyCode: number, modifiers: { ctrl?: boolean; alt?: boolean } = {}) => {
+        scene!.onKeyboardObservable.notifyObservers({
+            type: KeyboardEventTypes.KEYDOWN,
+            event: { keyCode, metaKey: false, ctrlKey: !!modifiers.ctrl, altKey: !!modifiers.alt, preventDefault: () => {} },
+        } as any);
+    };
+
+    describe("diagonal keyboard movement normalization", () => {
+        it("rotation: a two-axis diagonal rotates at the same speed as a single axis (no sqrt(2) boost)", () => {
+            camera.attachControl();
+            const keyboard = camera.inputs.attached["keyboard"] as any;
+
+            pressKey(37); // left
+            keyboard.checkInputs();
+            const single = camera.movement.rotationAccumulatedPixels;
+            const singleMag = Math.hypot(single.x, single.y);
+
+            camera.movement.rotationAccumulatedPixels.set(0, 0, 0);
+            keyboard._keys.length = 0;
+
+            pressKey(37); // left
+            pressKey(38); // up
+            keyboard.checkInputs();
+            const diagonal = camera.movement.rotationAccumulatedPixels;
+            const diagonalMag = Math.hypot(diagonal.x, diagonal.y);
+
+            expect(singleMag).toBeGreaterThan(0);
+            expect(diagonalMag).toBeCloseTo(singleMag, 5);
+        });
+
+        it("pan: a two-axis diagonal pans at the same speed as a single axis (no sqrt(2) boost)", () => {
+            camera.attachControl();
+            const keyboard = camera.inputs.attached["keyboard"] as any;
+
+            pressKey(37, { ctrl: true }); // ctrl+left -> pan
+            keyboard.checkInputs();
+            const single = camera.movement.panAccumulatedPixels;
+            const singleMag = Math.hypot(single.x, single.y);
+
+            camera.movement.panAccumulatedPixels.set(0, 0, 0);
+            keyboard._keys.length = 0;
+
+            pressKey(37, { ctrl: true }); // ctrl+left -> pan
+            pressKey(38, { ctrl: true }); // ctrl+up -> pan
+            keyboard.checkInputs();
+            const diagonal = camera.movement.panAccumulatedPixels;
+            const diagonalMag = Math.hypot(diagonal.x, diagonal.y);
+
+            expect(singleMag).toBeGreaterThan(0);
+            expect(diagonalMag).toBeCloseTo(singleMag, 5);
+        });
     });
 
     describe("always-on movement", () => {
