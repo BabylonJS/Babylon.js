@@ -6,6 +6,7 @@ import { Logger } from "core/Misc/logger";
 import {
     addToScene,
     attachControl,
+    computeMaxExtents,
     createArcRotateCamera,
     createDirectionalLight,
     createDisc,
@@ -15,6 +16,7 @@ import {
     createSceneContext,
     disposeEngine,
     disposeScene,
+    getContainerMeshes,
     getVariantNames,
     goToFrame,
     loadEnvironment as liteLoadEnvironment,
@@ -37,8 +39,6 @@ import {
     type AnimationGroup as LiteAnimationGroup,
     type ShadowGenerator as LiteShadowGenerator,
     type SceneContext,
-    type SceneNode,
-    type LightBase,
 } from "@babylonjs/lite";
 
 import {
@@ -149,6 +149,8 @@ export class Viewer extends ViewerBase implements IViewer {
     private _container: AssetContainer | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
+    /** Cached animation-aware model bounds for the current model. Reset on unload. See {@link _computeModelBounds}. */
+    private _cachedModelBounds: { min: [number, number, number]; max: [number, number, number]; center: [number, number, number]; radius: number } | null = null;
 
     // Animation
     private _selectedAnimation = -1;
@@ -368,26 +370,20 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     /**
-     * Compute the aggregate world-space bounding box of the loaded model.
+     * Compute the aggregate world-space bounding box of the loaded model, accounting for
+     * animation.
      *
-     * Walks the scene-graph hierarchy from each root in `this._container.entities`. For every
-     * node in the tree two contributions are added to the aggregate AABB:
+     * Delegates to Lite's {@link computeMaxExtents}, which steps through the currently-selected
+     * animation group and unions every sampled pose. This captures the full swept volume of
+     * node (TRS), skeletal, and morph-target animation — so skinned models like the
+     * acrobaticPlane glTF frame correctly instead of reporting their (much smaller) bind-pose
+     * AABB. Meshes are gathered with {@link getContainerMeshes} so Viewer-added meshes (e.g. the
+     * shadow-receiver disc) are excluded.
      *
-     * 1. The node's world-space position (column 3 of its `worldMatrix`). Including this
-     *    captures bones that sit outside the bind-pose mesh AABB — without this, skinned
-     *    models like the acrobaticPlane glTF report a bind-pose AABB that is dramatically
-     *    smaller than the mesh's actual reach during skeletal animation.
-     * 2. For mesh nodes, the 8 corners of the mesh-local `boundMin`/`boundMax` AABB
-     *    transformed by the node's `worldMatrix`. This correctly accounts for parent
-     *    scale/rotate/translate (Lite stores `boundMin`/`boundMax` in mesh-local space, so
-     *    using them directly underreports for any model whose root has a non-identity
-     *    transform).
-     *
-     * Walking the entity tree (rather than `_scene.meshes`) avoids including non-model
-     * meshes added to the scene by the Viewer itself (e.g. the shadow-receiver disc).
-     *
-     * Used by `_frameCameraToModel` (camera target + radius + near/far planes) and
-     * `_setupShadows` (light positioning, ground placement, frustum sizing).
+     * The result is cached for the lifetime of the loaded model (reset in
+     * `_unloadCurrentModel`) so the two consumers — `_frameCameraToModel` (camera target +
+     * radius + near/far planes) and `_setupShadows` (light positioning, ground placement,
+     * frustum sizing) — share a single animation sweep rather than stepping it twice.
      *
      * @returns aggregate `min`, `max`, `center`, and bounding-sphere `radius`
      *   (= half the diagonal), or `null` if the model has no bounds info.
@@ -396,78 +392,64 @@ export class Viewer extends ViewerBase implements IViewer {
         if (!this._container) {
             return null;
         }
+        if (this._cachedModelBounds) {
+            return this._cachedModelBounds;
+        }
+
+        const meshes = getContainerMeshes(this._container);
+        if (meshes.length === 0) {
+            return null;
+        }
+
+        // Sample the selected animation so the bounds cover the model's full motion.
+        const animationGroup = this._getActiveAnimationGroup();
+        const extents = computeMaxExtents(meshes, animationGroup, this._engine);
+
         let minX = Infinity,
             minY = Infinity,
             minZ = Infinity;
         let maxX = -Infinity,
             maxY = -Infinity,
             maxZ = -Infinity;
-        let hasBounds = false;
-        const includePoint = (x: number, y: number, z: number): void => {
-            if (x < minX) {
-                minX = x;
+        for (const extent of extents) {
+            // Skip meshes that contributed no geometry (inverted extent).
+            if (extent.minimum[0] > extent.maximum[0]) {
+                continue;
             }
-            if (y < minY) {
-                minY = y;
+            if (extent.minimum[0] < minX) {
+                minX = extent.minimum[0];
             }
-            if (z < minZ) {
-                minZ = z;
+            if (extent.minimum[1] < minY) {
+                minY = extent.minimum[1];
             }
-            if (x > maxX) {
-                maxX = x;
+            if (extent.minimum[2] < minZ) {
+                minZ = extent.minimum[2];
             }
-            if (y > maxY) {
-                maxY = y;
+            if (extent.maximum[0] > maxX) {
+                maxX = extent.maximum[0];
             }
-            if (z > maxZ) {
-                maxZ = z;
+            if (extent.maximum[1] > maxY) {
+                maxY = extent.maximum[1];
             }
-            hasBounds = true;
-        };
-        const visit = (node: SceneNode | LightBase): void => {
-            const wm = (node as { worldMatrix?: ArrayLike<number> }).worldMatrix;
-            if (wm) {
-                // World position of the node (column 3 of the column-major 4×4).
-                includePoint(wm[12]!, wm[13]!, wm[14]!);
-                const mesh = node as { boundMin?: [number, number, number]; boundMax?: [number, number, number] };
-                if (mesh.boundMin && mesh.boundMax) {
-                    // Transform the 8 corners of the local AABB by the node's worldMatrix.
-                    const [bx0, by0, bz0] = mesh.boundMin;
-                    const [bx1, by1, bz1] = mesh.boundMax;
-                    for (let i = 0; i < 8; i++) {
-                        const lx = i & 1 ? bx1 : bx0;
-                        const ly = i & 2 ? by1 : by0;
-                        const lz = i & 4 ? bz1 : bz0;
-                        const wx = wm[0]! * lx + wm[4]! * ly + wm[8]! * lz + wm[12]!;
-                        const wy = wm[1]! * lx + wm[5]! * ly + wm[9]! * lz + wm[13]!;
-                        const wz = wm[2]! * lx + wm[6]! * ly + wm[10]! * lz + wm[14]!;
-                        includePoint(wx, wy, wz);
-                    }
-                }
+            if (extent.maximum[2] > maxZ) {
+                maxZ = extent.maximum[2];
             }
-            const children = (node as { children?: (SceneNode | LightBase)[] }).children;
-            if (children) {
-                for (const c of children) {
-                    visit(c);
-                }
-            }
-        };
-        for (const entity of this._container.entities) {
-            visit(entity);
         }
-        if (!hasBounds) {
+        if (minX > maxX) {
             return null;
         }
+
         const dx = maxX - minX;
         const dy = maxY - minY;
         const dz = maxZ - minZ;
         const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) / 2;
-        return {
+        this._cachedModelBounds = {
             min: [minX, minY, minZ],
             max: [maxX, maxY, maxZ],
             center: [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2],
             radius,
         };
+        return this._cachedModelBounds;
     }
 
     // ── Environment ──
@@ -908,6 +890,7 @@ export class Viewer extends ViewerBase implements IViewer {
 
         this._container = null;
         this._modelSource = null;
+        this._cachedModelBounds = null;
     }
 
     // ── Animation ──
