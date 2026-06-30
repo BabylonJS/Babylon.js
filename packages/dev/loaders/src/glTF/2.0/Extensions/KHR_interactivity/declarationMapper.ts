@@ -483,6 +483,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     // Quaternion spherical-linear interpolation. Inputs are two unit
     // quaternions and an unclamped float coefficient.
     "math/quatSlerp": getSimpleInputMapping(FlowGraphBlockNames.MathSlerp, ["a", "b", "c"]),
+    // Vector spherical-linear interpolation (float2/float3). Inputs are two
+    // vectors and an unclamped float coefficient.
+    "math/slerp": getSimpleInputMapping(FlowGraphBlockNames.VectorSlerp, ["a", "b", "c"]),
     "math/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
     // Reference equality. The spec defines `ref/eq` as: true if both refs are
     // null, true if both refer to the same object (regardless of whether it
@@ -761,6 +764,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/quatToAxisAngle": getSimpleInputMapping(FlowGraphBlockNames.AxisAngleFromQuaternion, ["a"]),
     "math/quatFromDirections": getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
+    "math/quatFromUpForward": {
+        blocks: [FlowGraphBlockNames.QuaternionFromUpForward],
+        inputs: {
+            values: {
+                up: { name: "a", gltfType: "float3" },
+                forward: { name: "b", gltfType: "float3" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     "math/combine2x2": {
         blocks: [FlowGraphBlockNames.CombineMatrix2D],
         inputs: {

@@ -757,6 +757,13 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicEq(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
+        // KHR_interactivity has no dedicated quaternion type: rotations are float4 values. Treat Quaternion and
+        // Vector4 (both four-component) as comparable so that, for example, a decomposed rotation can be compared
+        // against a float4 literal.
+        const isFourComponent = (className?: string) => className === FlowGraphTypes.Vector4 || className === FlowGraphTypes.Quaternion;
+        if (isFourComponent(aClassName) && isFourComponent(bClassName)) {
+            return (a as Vector4).equals(b as Vector4);
+        }
         if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             return (a as Vector3).equals(b as Vector3);
         }

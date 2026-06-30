@@ -290,6 +290,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAxisAngleFromQuaternionBlock;
         case FlowGraphBlockNames.QuaternionFromDirections:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromDirectionsBlock;
+        case FlowGraphBlockNames.QuaternionFromUpForward:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromUpForwardBlock;
+        case FlowGraphBlockNames.VectorSlerp:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphVectorSlerpBlock;
         case FlowGraphBlockNames.MatrixDecompose:
             return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;
         case FlowGraphBlockNames.MatrixCompose:
