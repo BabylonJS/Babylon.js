@@ -276,7 +276,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         // undefined, fall back to the legacy properties for backward compatibility.
                         if (resolved.interaction === "pan") {
                             // Accumulate a unit direction per pan key; the combined vector is normalized after the loop.
-                            panSensitivity = resolved.sensitivity ?? 1 / this.panningSensibility;
+                            // Aggregate sensitivity with max so the pan speed is independent of key insertion order
+                            // when keys resolve to different per-key sensitivities.
+                            panSensitivity = Math.max(panSensitivity, resolved.sensitivity ?? 1 / this.panningSensibility);
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
                                 panDirection.x -= 1;
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
@@ -295,7 +297,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                             }
                         } else if (resolved.interaction === "rotate") {
                             // Accumulate a unit direction per rotate key; the combined vector is normalized after the loop.
-                            rotateSensitivity = resolved.sensitivity ?? this.angularSpeed;
+                            // Aggregate sensitivity with max so the rotate speed is independent of key insertion order
+                            // when keys resolve to different per-key sensitivities.
+                            rotateSensitivity = Math.max(rotateSensitivity, resolved.sensitivity ?? this.angularSpeed);
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
                                 rotateDirection.x -= 1;
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
