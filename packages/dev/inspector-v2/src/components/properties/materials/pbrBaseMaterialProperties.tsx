@@ -160,6 +160,15 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
     const scene = material.getScene();
 
     const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
+    const useGltfMetallicRoughnessChannels = (texture: typeof material._metallicTexture) => {
+        if (texture) {
+            material._useRoughnessFromMetallicTextureAlpha = false;
+            material._useRoughnessFromMetallicTextureGreen = true;
+            material._useMetallnessFromMetallicTextureBlue = true;
+        }
+
+        return texture;
+    };
 
     return (
         <>
@@ -202,6 +211,7 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
                 onLink={selectEntity}
                 defaultValue={null}
                 material={material}
+                convertFrom={useGltfMetallicRoughnessChannels}
             />
             <BoundProperty
                 component={MaterialTextureDebugPropertyLine}
