@@ -54,6 +54,8 @@ import {
     type ViewerLoadModelOptions,
     ViewerBase,
     DefaultViewerBaseOptions,
+    FramingCameraAlpha,
+    FramingCameraBeta,
     throwIfAborted,
     observePromise,
 } from "./viewerBase";
@@ -309,6 +311,18 @@ export class Viewer extends ViewerBase implements IViewer {
     protected override _applyCameraAutoOrbitDelay(): void {}
 
     public resetCamera(reframe?: boolean): void {
+        if (reframe === undefined) {
+            // Match the full Viewer: when the selected animation differs from the default, the explicit
+            // default pose likely won't frame the model (it may even be out of view), so reframe to the
+            // model bounds instead. See viewer.ts `resetCamera`.
+            reframe = this._selectedAnimation !== (this._options?.selectedAnimation ?? 0);
+        }
+
+        if (reframe) {
+            this._frameCameraToModel();
+            return;
+        }
+
         this._camera.alpha = this._defaultAlpha;
         this._camera.beta = this._defaultBeta;
         this._camera.radius = this._defaultRadius;
@@ -318,10 +332,6 @@ export class Viewer extends ViewerBase implements IViewer {
         this._camera.target.x = this._defaultTarget.x;
         this._camera.target.y = this._defaultTarget.y;
         this._camera.target.z = this._defaultTarget.z;
-
-        if (reframe) {
-            // TODO: compute bounds from loaded meshes when Lite exposes bounding info
-        }
     }
 
     public updateCamera(pose: { alpha?: number; beta?: number; radius?: number; targetX?: number; targetY?: number; targetZ?: number }): void {
@@ -352,21 +362,35 @@ export class Viewer extends ViewerBase implements IViewer {
         if (!bounds) {
             return;
         }
+
+        // Mirror the full Viewer's framing math (viewer.ts `_getCameraConfig` / `_reframeCameraFromBounds`)
+        // so Lite frames identically. The framing radius is the bounding-box diagonal * 1.1. `bounds.radius`
+        // is the bounding-sphere radius (half the diagonal), so the diagonal is `bounds.radius * 2`.
+        let radius = bounds.radius * 2 * 1.1;
+        if (!isFinite(radius) || radius <= 0) {
+            radius = 1;
+        }
+
+        // Reset the orbit angles to the framing pose on every reframe, matching the full Viewer
+        // (its reframe always applies a fixed alpha/beta, independent of any cameraOrbit option).
+        // This keeps a consistent viewpoint across load and animation switches.
+        this._camera.alpha = FramingCameraAlpha;
+        this._camera.beta = FramingCameraBeta;
+        this._camera.radius = radius;
+
         // Mutate the existing target ObservableVec3 in place — replacing it with a plain object
         // would silently lose Lite's ObservableVec3 dirty-tracking, which is what notifies the
         // camera that its world matrix needs to recompute when target changes.
         this._camera.target.x = bounds.center[0];
         this._camera.target.y = bounds.center[1];
         this._camera.target.z = bounds.center[2];
-        // Camera radius (= distance from target) sized to the bounding-sphere diameter * 1.5,
-        // matching the previous size*1.5 framing distance.
-        this._camera.radius = bounds.radius * 3;
-        // Scale near/far planes to the model size. Lite's arc-rotate defaults (0.1 / 1000) clip
-        // models that are much smaller (camera ends up inside the near plane) or much larger
-        // (model extends beyond the far plane) than ~1 unit. Mirrors Lite's
-        // `frameSceneToActiveCamera` heuristic: near = radius * 0.01, far = radius * 1000.
-        this._camera.nearPlane = bounds.radius * 0.01;
-        this._camera.farPlane = bounds.radius * 1000;
+
+        // Near/far planes and zoom limits scaled to the framing radius, matching the full Viewer
+        // (near = radius * 0.001, far = radius * 1000, radius limits = radius * 0.001 .. radius * 5).
+        this._camera.nearPlane = radius * 0.001;
+        this._camera.farPlane = radius * 1000;
+        this._camera.lowerRadiusLimit = radius * 0.001;
+        this._camera.upperRadiusLimit = radius * 5;
     }
 
     /**
@@ -927,6 +951,14 @@ export class Viewer extends ViewerBase implements IViewer {
 
         this._selectedAnimation = newIndex;
         this._isolateSelectedAnimation();
+
+        // The framing bounds are animation-specific (each clip sweeps a different volume), so drop
+        // the cached bounds and reframe the camera to the newly-selected animation. Without this the
+        // camera stays framed for the previously-selected clip and the model can animate out of view
+        // — e.g. the acrobaticPlane/UFO "flight" clip travels far outside the "hover" bounds. Matches
+        // the full Viewer, whose `selectedAnimation` setter calls `_reframeCamera`.
+        this._cachedModelBounds = null;
+        this._frameCameraToModel();
 
         this.onSelectedAnimationChanged.notifyObservers();
 
