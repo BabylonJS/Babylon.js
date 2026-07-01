@@ -562,6 +562,7 @@
         "Misc/observable.extensions.js",
         "Misc/observableCoroutine.js",
         "Misc/screenshotTools.js",
+        "Misc/symbolMetadataPolyfill.js",
         "Misc/tools.js",
         "Offline/database.js",
         "Particles/Node/Blocks/Conditions/particleConditionBlock.js",
