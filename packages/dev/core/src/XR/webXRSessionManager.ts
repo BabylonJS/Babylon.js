@@ -10,6 +10,7 @@ import { type Viewport } from "../Maths/math.viewport";
 import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
+import { type IWebXRGraphicsBinding, WebXRWebGLGraphicsBinding } from "./webXRGraphicsBinding";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 /**
@@ -21,6 +22,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _referenceSpace: XRReferenceSpace;
     private _baseLayerWrapper: Nullable<WebXRLayerWrapper>;
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
+    private _graphicsBinding: Nullable<IWebXRGraphicsBinding> = null;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
     private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
@@ -222,6 +224,21 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     }
 
     /**
+     * Obtains the XR graphics binding for the current session, creating it lazily.
+     * This is the API-agnostic seam a future non-WebGL backend uses to provide its own binding
+     * (XRWebGLBinding vs a future XRGPUBinding); the XR features are migrated onto it in a later
+     * phase, so it is not consumed yet.
+     * @returns the XR graphics binding for the current session
+     * @internal
+     */
+    public _getGraphicsBinding(): IWebXRGraphicsBinding {
+        if (!this._graphicsBinding) {
+            this._graphicsBinding = WebXRWebGLGraphicsBinding.CreateFromEngine(this.session, this._engine!);
+        }
+        return this._graphicsBinding;
+    }
+
+    /**
      * Creates a WebXRRenderTarget object for the XR session
      * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
@@ -295,6 +312,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 }
                 this._baseLayerRTTProvider = null;
                 this._baseLayerWrapper = null;
+                this._graphicsBinding = null;
             },
             { once: true }
         );

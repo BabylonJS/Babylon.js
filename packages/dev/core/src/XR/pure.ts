@@ -7,6 +7,7 @@ export * from "./webXRInput";
 export * from "./webXRInputSource";
 export * from "./webXRManagedOutputCanvas";
 export * from "./webXRTypes";
+export * from "./webXRGraphicsBinding";
 export * from "./webXRSessionManager";
 export * from "./webXRDefaultExperience";
 export * from "./webXRFeaturesManager";
