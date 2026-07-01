@@ -60,6 +60,18 @@ function GetOwnMetadata(ctor: any): any {
     return ctor[GetMetadataSymbol()];
 }
 
+/**
+ * Returns (creating if necessary) the serialization store owned by the provided decorator metadata.
+ * Used by the TC39 decorators, which receive `context.metadata` directly.
+ * @internal
+ */
+export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): Record<string, any> {
+    if (!HasOwn(metadata, __bjsSerializableKey)) {
+        (metadata as any)[__bjsSerializableKey] = {};
+    }
+    return (metadata as any)[__bjsSerializableKey];
+}
+
 /** @internal */
 export function GetDirectStore(target: any): any {
     const metadata = GetOwnMetadata(GetConstructor(target));

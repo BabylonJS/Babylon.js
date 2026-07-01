@@ -2,9 +2,9 @@
     "extends": "./tsconfig.build.json",
 
     "compilerOptions": {
+        "useDefineForClassFields": false,
         "ignoreDeprecations": "6.0",
         "baseUrl": "packages",
-        "experimentalDecorators": true,
         "noImplicitAny": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
