@@ -101,6 +101,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 currentAnimationGroup.dispose();
             }
             let animationGroupToUse = ag;
+            let isInterpolation = false;
+            let interpolationAnimationsArray: Animation[] | undefined;
+            let interpolationTarget: any;
             // check which animation to use. If no animationGroup was defined and an animation was provided, use the animation
             if (animation && !animationGroupToUse) {
                 const target = this.object.getValue(context);
@@ -110,7 +113,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 const animationsArray = Array.isArray(animation) ? animation : [animation];
                 const name = animationsArray[0].name;
                 animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
-                let isInterpolation = false;
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
                 for (const anim of animationsArray) {
                     animationGroupToUse.addTargetedAnimation(anim, target);
@@ -118,10 +120,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                         isInterpolation = true;
                     }
                 }
-
-                if (isInterpolation) {
-                    this._checkInterpolationDuplications(context, animationsArray, target);
-                }
+                interpolationAnimationsArray = animationsArray;
+                interpolationTarget = target;
             }
             // not accepting 0
             const speed = this.speed.getValue(context) || 1;
@@ -151,6 +151,13 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                         }
                     }
                 }
+            }
+
+            // Stop any interpolation already running on the same target/property, but only after validation has
+            // passed. An invalid interpolation (bad duration or NaN control points) must report [err] without
+            // disturbing an interpolation that is already running on the same target.
+            if (isInterpolation && interpolationAnimationsArray && interpolationTarget !== undefined) {
+                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget);
             }
 
             const loop = !isFinite(to) || this.loop.getValue(context);
