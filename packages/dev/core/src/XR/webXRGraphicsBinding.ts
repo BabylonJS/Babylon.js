@@ -3,6 +3,7 @@ import { type ThinEngine } from "../Engines/thinEngine";
 
 /**
  * The kind of underlying native binding an {@link IWebXRGraphicsBinding} wraps.
+ * @internal
  */
 export const enum WebXRGraphicsBindingType {
     /**
@@ -17,6 +18,7 @@ export const enum WebXRGraphicsBindingType {
  *
  * This is introduced as a seam so the XR features can be migrated off the concrete
  * `XRWebGLBinding` in a later phase without changing behavior today.
+ * @internal
  */
 export interface IWebXRGraphicsBinding {
     /**
@@ -27,6 +29,7 @@ export interface IWebXRGraphicsBinding {
 
 /**
  * WebGL implementation of {@link IWebXRGraphicsBinding}, wrapping an `XRWebGLBinding`.
+ * @internal
  */
 export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding {
     /**
