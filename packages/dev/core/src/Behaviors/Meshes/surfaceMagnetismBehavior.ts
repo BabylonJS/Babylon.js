@@ -211,6 +211,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
         if (!this.interpolatePose) {
             this._attachedMesh.position.copyFrom(this._workingPosition).subtractInPlace(worldOffset);
             this._attachedMesh.rotationQuaternion!.copyFrom(this._workingQuaternion);
+            this._attachedMesh.setParent(oldParent);
             return;
         }
 
