@@ -1,4 +1,5 @@
-import { type Engine } from "../Engines/engine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { WebGLHardwareTexture } from "../Engines/WebGL/webGLHardwareTexture";
 import { type WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -47,20 +48,21 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
     protected _renderTargetTextures = new Array<RenderTargetTexture>();
     protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     constructor(
         private readonly _scene: Scene,
         public readonly layerWrapper: WebXRLayerWrapper
     ) {
-        this._engine = _scene.getEngine() as Engine;
+        this._engine = _scene.getEngine();
     }
 
     private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {
         const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
         internalTexture.width = textureSize.width;
         internalTexture.height = textureSize.height;
-        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._engine._gl);
+        // WebGL-specific hardware texture creation; relocated to the WebGL-specific provider in a later phase.
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, (this._engine as ThinEngine)._gl);
         internalTexture.isReady = true;
         return internalTexture;
     }

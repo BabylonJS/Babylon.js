@@ -5,7 +5,6 @@ import { type IDisposable, type Scene } from "../scene";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { type WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
-import { type Engine } from "../Engines/engine";
 import { type IWebXRRenderTargetTextureProvider, type WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 import { type Viewport } from "../Maths/math.viewport";
 import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
@@ -18,7 +17,7 @@ import { type AbstractEngine } from "../Engines/abstractEngine";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRSessionManagers
  */
 export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextureProvider {
-    private _engine: Nullable<Engine>;
+    private _engine: Nullable<AbstractEngine>;
     private _referenceSpace: XRReferenceSpace;
     private _baseLayerWrapper: Nullable<WebXRLayerWrapper>;
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
@@ -120,7 +119,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         /** The scene which the session should be created for */
         public scene: Scene
     ) {
-        this._engine = scene.getEngine() as Engine;
+        this._engine = scene.getEngine();
         this._onEngineDisposedObserver = this._engine.onDisposeObservable.addOnce(() => {
             this._engine = null;
         });
