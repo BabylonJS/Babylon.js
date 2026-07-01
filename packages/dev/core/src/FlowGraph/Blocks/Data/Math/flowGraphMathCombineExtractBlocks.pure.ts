@@ -221,16 +221,18 @@ export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<Flo
         const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix2D>>(this, "cachedMatrix", null) as FlowGraphMatrix2D;
         const array = this.config?.inputIsColumnMajor
             ? [
-                  // column to row-major
+                  // Column-major inputs are stored as-is: FlowGraphMatrix2D keeps the glTF column-major array, which is
+                  // also how matrix literals are parsed and how math/extract2x2 reads the elements back.
                   this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
                   this.getDataInput("input_1")!.getValue(context),
+                  this.getDataInput("input_2")!.getValue(context),
                   this.getDataInput("input_3")!.getValue(context),
               ]
             : [
+                  // Row-major inputs are transposed into the column-major storage.
                   this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
                   this.getDataInput("input_2")!.getValue(context),
+                  this.getDataInput("input_1")!.getValue(context),
                   this.getDataInput("input_3")!.getValue(context),
               ];
         matrix.fromArray(array);
@@ -257,26 +259,28 @@ export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<Flo
         const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix3D>>(this, "cachedMatrix", null) as FlowGraphMatrix3D;
         const array = this.config?.inputIsColumnMajor
             ? [
-                  // column to row major
+                  // Column-major inputs are stored as-is: FlowGraphMatrix3D keeps the glTF column-major array, which is
+                  // also how matrix literals are parsed and how math/extract3x3 reads the elements back.
                   this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_3")!.getValue(context),
-                  this.getDataInput("input_6")!.getValue(context),
                   this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_4")!.getValue(context),
-                  this.getDataInput("input_7")!.getValue(context),
                   this.getDataInput("input_2")!.getValue(context),
+                  this.getDataInput("input_3")!.getValue(context),
+                  this.getDataInput("input_4")!.getValue(context),
                   this.getDataInput("input_5")!.getValue(context),
+                  this.getDataInput("input_6")!.getValue(context),
+                  this.getDataInput("input_7")!.getValue(context),
                   this.getDataInput("input_8")!.getValue(context),
               ]
             : [
+                  // Row-major inputs are transposed into the column-major storage.
                   this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
                   this.getDataInput("input_3")!.getValue(context),
-                  this.getDataInput("input_4")!.getValue(context),
-                  this.getDataInput("input_5")!.getValue(context),
                   this.getDataInput("input_6")!.getValue(context),
+                  this.getDataInput("input_1")!.getValue(context),
+                  this.getDataInput("input_4")!.getValue(context),
                   this.getDataInput("input_7")!.getValue(context),
+                  this.getDataInput("input_2")!.getValue(context),
+                  this.getDataInput("input_5")!.getValue(context),
                   this.getDataInput("input_8")!.getValue(context),
               ];
         matrix.fromArray(array);

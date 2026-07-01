@@ -2197,6 +2197,49 @@ describe("Interactivity math nodes", () => {
         expect(Array.from(logItem!.payload.value.m)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
     });
 
+    it("should use math/combine2x2 with column-major ordering", async () => {
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine2x2" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [0] },
+                        b: { type: 0, value: [1] },
+                        c: { type: 0, value: [2] },
+                        d: { type: 0, value: [3] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // Column-major inputs are stored directly, so math/extract2x2 reads them back in the same order.
+        expect(Array.from(logItem!.payload.value.m)).toEqual([0, 1, 2, 3]);
+    });
+
+    it("should use math/combine3x3 with column-major ordering", async () => {
+        const inputKeys = ["a", "b", "c", "d", "e", "f", "g", "h", "i"];
+        const values: any = {};
+        inputKeys.forEach((key, index) => {
+            values[key] = { type: 0, value: [index] };
+        });
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/combine3x3" }],
+            [
+                {
+                    declaration: 0,
+                    values,
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        expect(Array.from(logItem!.payload.value.m)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    });
+
     // math/inverse reports isValid = false for a non-invertible matrix
 
     it("should report math/inverse isValid = false for a singular matrix", async () => {
