@@ -678,18 +678,18 @@ function Interpolate(a: number, b: number, c: number) {
 }
 
 /**
- * Smooth interpolation per KHR_interactivity `math/smoothStep`: interpolates
- * from `a` to `b` using the cubic Hermite easing of the coefficient `c`
- * (`c * c * (3 - 2c)`), i.e. `a + (b - a) * smooth(c)`.
- * @param a start value (returned when the eased coefficient is 0)
- * @param b end value (returned when the eased coefficient is 1)
- * @param c interpolation coefficient (clamped to [0, 1] before easing)
- * @returns the smoothly interpolated value
+ * Smooth step (Hermite interpolation) per KHR_interactivity `math/smoothStep`.
+ * Given the edges `a`/`b` and the value `c`, computes the smooth interpolation
+ * coefficient `t * t * (3 - 2 * t)` where `t = saturate((c - min(a, b)) / |b - a|)`.
+ * Note that this returns the coefficient in [0, 1]; it does not interpolate between `a` and `b`.
+ * @param a first edge
+ * @param b second edge
+ * @param c value to interpolate
+ * @returns the smooth-step interpolation coefficient
  */
 function SmoothStep(a: number, b: number, c: number) {
-    const t = Saturate(c);
-    const eased = t * t * (3 - 2 * t);
-    return a + (b - a) * eased;
+    const t = Saturate((c - Math.min(a, b)) / Math.abs(b - a));
+    return t * t * (3 - 2 * t);
 }
 
 /**

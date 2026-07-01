@@ -2240,7 +2240,50 @@ describe("Interactivity math nodes", () => {
         expect(Array.from(logItem!.payload.value.m)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
     });
 
-    // math/inverse reports isValid = false for a non-invertible matrix
+    // math/smoothStep returns the smooth-step coefficient saturate((c-min(a,b))/|b-a|)^2 * (3-2t), NOT an interpolation between a and b
+
+    it("should use math/smoothStep correctly - float3 with non-unit edges", async () => {
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/smoothStep" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [0, 0, 0] },
+                        b: { type: 0, value: [1, 2, 4] },
+                        c: { type: 0, value: [0.5, 1, 3] },
+                    },
+                },
+            ],
+            [{ signature: "float3" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // t = (0.5, 0.5, 0.75) -> t*t*(3-2t) = (0.5, 0.5, 0.84375)
+        expect(roundArray3(logItem!.payload.value.asArray())).toEqual([0.5, 0.5, 0.844]);
+    });
+
+    it("should use math/smoothStep correctly with reversed edges", async () => {
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/smoothStep" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        // a > b: uses min(a,b) and |b-a|
+                        a: { type: 0, value: [1] },
+                        b: { type: 0, value: [0] },
+                        c: { type: 0, value: [0.25] },
+                    },
+                },
+            ],
+            [{ signature: "float" }, { signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // t = saturate((0.25 - 0) / 1) = 0.25 -> 0.25*0.25*(3-0.5) = 0.15625
+        expect(round3(logItem!.payload.value)).toEqual(0.156);
+    });
 
     it("should report math/inverse isValid = false for a singular matrix", async () => {
         // A matrix with a zero column has determinant 0 and is not invertible.
