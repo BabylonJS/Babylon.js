@@ -1,6 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "core/types";
+import { type Matrix } from "core/Maths/math.vector.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
@@ -36,8 +37,15 @@ export class GaussianSplattingGpuSorter {
     private _depth: Nullable<ComputeShader> = null;
     private _histogram: Nullable<ComputeShader> = null;
     private _scatter: Nullable<ComputeShader> = null;
+    private _cull: Nullable<ComputeShader> = null;
+    private _compact: Nullable<ComputeShader> = null;
+    private _finalize: Nullable<ComputeShader> = null;
     private _prefixSum: Nullable<PrefixSumCompute> = null;
+    private _cullPrefixSum: Nullable<PrefixSumCompute> = null;
     private _params: Nullable<UniformBuffer> = null;
+    private _cullParams: Nullable<UniformBuffer> = null;
+    private _compactParams: Nullable<UniformBuffer> = null;
+    private _finalizeParams: Nullable<UniformBuffer> = null;
 
     private _positions: Nullable<StorageBuffer> = null;
     private _seed: Nullable<StorageBuffer> = null;
@@ -46,6 +54,16 @@ export class GaussianSplattingGpuSorter {
     private _range: Nullable<StorageBuffer> = null;
     private _histogramBuffer: Nullable<StorageBuffer> = null;
     private _sortedIndexBuffer: Nullable<StorageBuffer> = null;
+    // Culling buffers.
+    private _flag: Nullable<StorageBuffer> = null;
+    private _offsets: Nullable<StorageBuffer> = null;
+    private _drawList: Nullable<StorageBuffer> = null;
+    private _count: Nullable<StorageBuffer> = null;
+    private _cullCapacity = 0;
+    // Draw-indexed-indirect arguments [indexCount, instanceCount, firstIndex, baseVertex, firstInstance].
+    // Fixed 5-u32 buffer (never grows), so cached render bundles referencing it stay valid while its contents update.
+    private _indirectArgs: Nullable<StorageBuffer> = null;
+    private _indirectArgsData = new Uint32Array(5);
 
     private _positionCapacity = 0;
     private _paddedCapacity = 0;
@@ -118,12 +136,89 @@ export class GaussianSplattingGpuSorter {
             },
         });
         this._prefixSum = new PrefixSumCompute(this._engine);
-        this._params = new UniformBuffer(this._engine, undefined, undefined, "GaussianSplattingGpuSorterParams");
+        // The cull owns a separate prefix-sum instance from the sort. Sharing one ring made the cull's scan reuse a
+        // UBO the sort had just written with a different element count; combined with the one-dispatch compute-UBO
+        // upload lag, the cull then scanned with the wrong count. A dedicated ring always holds the cull's count.
+        this._cullPrefixSum = new PrefixSumCompute(this._engine);
+        // trackUBOsInFrame=false: these UBOs are updated once and dispatched immediately during mesh render; the
+        // default per-frame buffer rotation left the compute reading a stale buffer, freezing the sort/cull data.
+        this._params = new UniformBuffer(this._engine, undefined, undefined, "GaussianSplattingGpuSorterParams", false, false);
         this._params.addUniform("count", 1);
         this._params.addUniform("paddedCount", 1);
         this._params.addUniform("numBuckets", 1);
         this._params.addUniform("pad", 1);
         this._params.addUniform("coeff", 4);
+
+        this._cull = new ComputeShader("gaussianSplattingCull", this._engine, "gaussianSplattingCull", {
+            bindingsMapping: {
+                positions: { group: 0, binding: 0 },
+                sortedIndex: { group: 0, binding: 1 },
+                flag: { group: 0, binding: 2 },
+                offsets: { group: 0, binding: 3 },
+                params: { group: 0, binding: 4 },
+            },
+        });
+        this._compact = new ComputeShader("gaussianSplattingCullCompact", this._engine, "gaussianSplattingCullCompact", {
+            bindingsMapping: {
+                sortedIndex: { group: 0, binding: 0 },
+                flag: { group: 0, binding: 1 },
+                offsets: { group: 0, binding: 2 },
+                drawList: { group: 0, binding: 3 },
+                params: { group: 0, binding: 4 },
+            },
+        });
+        this._finalize = new ComputeShader("gaussianSplattingCullFinalize", this._engine, "gaussianSplattingCullFinalize", {
+            bindingsMapping: {
+                flag: { group: 0, binding: 0 },
+                offsets: { group: 0, binding: 1 },
+                countOut: { group: 0, binding: 2 },
+                indirectArgs: { group: 0, binding: 3 },
+                drawList: { group: 0, binding: 4 },
+                params: { group: 0, binding: 5 },
+            },
+        });
+        this._compactParams = new UniformBuffer(this._engine, undefined, undefined, "GaussianSplattingCompactParams", false, false);
+        this._compactParams.addUniform("count", 1);
+        this._cullParams = new UniformBuffer(this._engine, undefined, undefined, "GaussianSplattingCullParams", false, false);
+        this._cullParams.addUniform("count", 1);
+        this._cullParams.addUniform("pad0", 1);
+        this._cullParams.addUniform("pad1", 1);
+        this._cullParams.addUniform("pad2", 1);
+        this._cullParams.addUniform("clip0", 4);
+        this._cullParams.addUniform("clip1", 4);
+        this._cullParams.addUniform("clip2", 4);
+        this._cullParams.addUniform("clip3", 4);
+        this._finalizeParams = new UniformBuffer(this._engine, undefined, undefined, "GaussianSplattingCullFinalizeParams", false, false);
+        this._finalizeParams.addUniform("count", 1);
+        this._finalizeParams.addUniform("indexCount", 1);
+        this._finalizeParams.addUniform("pad0", 1);
+        this._finalizeParams.addUniform("pad1", 1);
+
+        // Fixed-size indirect draw-args buffer (also compute-writable in the culling path).
+        this._indirectArgs = this._createStorage(5 * Uint32Array.BYTES_PER_ELEMENT, Constants.BUFFER_CREATIONFLAG_INDIRECT, "GaussianSplattingSortIndirectArgs");
+        this._count = this._createStorage(Uint32Array.BYTES_PER_ELEMENT, 0, "GaussianSplattingCullCount");
+    }
+
+    /**
+     * The GPU indirect draw-args buffer to bind as the mesh's indirect draw buffer.
+     */
+    public get indirectArgsBuffer(): Nullable<DataBuffer> {
+        return this._indirectArgs ? this._indirectArgs.getBuffer() : null;
+    }
+
+    /**
+     * Writes the draw-indexed-indirect arguments from the CPU.
+     * @param indexCount indices per instance (subMesh.indexCount)
+     * @param instanceCount number of instances to draw
+     */
+    public setIndirectArgs(indexCount: number, instanceCount: number): void {
+        this._ensureShaders();
+        this._indirectArgsData[0] = indexCount;
+        this._indirectArgsData[1] = instanceCount;
+        this._indirectArgsData[2] = 0;
+        this._indirectArgsData[3] = 0;
+        this._indirectArgsData[4] = 0;
+        this._indirectArgs!.update(this._indirectArgsData);
     }
 
     private _createStorage(byteLength: number, extraFlags: number, label: string): StorageBuffer {
@@ -175,9 +270,102 @@ export class GaussianSplattingGpuSorter {
             this._range = this._createStorage(2 * Int32Array.BYTES_PER_ELEMENT, 0, "GaussianSplattingSortRange");
         }
 
+        // Culling buffers: flag/offsets padded to a workgroup multiple so the compaction scan stays in bounds;
+        // drawList is the compacted (visible, sorted) index buffer consumed as the instanced vertex buffer.
+        const cullCapacity = Math.ceil(this._paddedCount / WorkgroupSize) * WorkgroupSize;
+        if (cullCapacity > this._cullCapacity) {
+            this._flag?.dispose();
+            this._offsets?.dispose();
+            this._drawList?.dispose();
+            this._flag = this._createStorage(cullCapacity * Uint32Array.BYTES_PER_ELEMENT, 0, "GaussianSplattingCullFlag");
+            this._offsets = this._createStorage(cullCapacity * Uint32Array.BYTES_PER_ELEMENT, 0, "GaussianSplattingCullOffsets");
+            this._drawList = this._createStorage(cullCapacity * Float32Array.BYTES_PER_ELEMENT, Constants.BUFFER_CREATIONFLAG_VERTEX, "GaussianSplattingCullDrawList");
+            this._cullCapacity = cullCapacity;
+        }
+
         this._positions!.update(positions);
         this._seed!.update(seedIndices);
         this._hasSource = true;
+    }
+
+    /**
+     * Whether the culling compute shaders are compiled and ready to dispatch.
+     * @returns true when a cull pass can run
+     */
+    public isCullReady(): boolean {
+        return !!this._cull && !!this._cull.isReady() && !!this._compact!.isReady() && !!this._finalize!.isReady() && !!this._cullPrefixSum!.isReady();
+    }
+
+    /**
+     * Runs a post-sort frustum cull + compaction. Uses a dedicated clip-matrix UBO and prefix-sum instance so it
+     * can run every frame independently of {@link sort}. Produces the compacted visible draw list
+     * ({@link culledDrawBuffer}) and writes the draw-indexed-indirect arguments with a GPU-computed instance count.
+     * @param indexCount indices per instance (subMesh.indexCount)
+     * @param clipMatrix local->clip transform (world * view * projection) used for the frustum test
+     * @returns true when the cull passes were dispatched; false when shaders are not ready
+     */
+    public cull(indexCount: number, clipMatrix: Matrix): boolean {
+        if (!this._hasSource || this._renderedCount === 0 || !this.isCullReady()) {
+            return false;
+        }
+
+        // The cull owns its clip-matrix UBO and uploads it immediately before dispatching (mirroring sort()'s
+        // update-then-dispatch adjacency). Sharing sort()'s params UBO left the cull reading a frame-1 snapshot.
+        const cm = clipMatrix.m;
+        this._cullParams!.updateUInt("count", this._renderedCount);
+        this._cullParams!.updateUInt("pad0", 0);
+        this._cullParams!.updateUInt("pad1", 0);
+        this._cullParams!.updateUInt("pad2", 0);
+        this._cullParams!.updateFloat4("clip0", cm[0], cm[1], cm[2], cm[3]);
+        this._cullParams!.updateFloat4("clip1", cm[4], cm[5], cm[6], cm[7]);
+        this._cullParams!.updateFloat4("clip2", cm[8], cm[9], cm[10], cm[11]);
+        this._cullParams!.updateFloat4("clip3", cm[12], cm[13], cm[14], cm[15]);
+        this._cullParams!.update();
+
+        this._compactParams!.updateUInt("count", this._renderedCount);
+        this._compactParams!.update();
+
+        this._finalizeParams!.updateUInt("count", this._renderedCount);
+        this._finalizeParams!.updateUInt("indexCount", indexCount);
+        this._finalizeParams!.update();
+
+        const groups = Math.ceil(this._renderedCount / WorkgroupSize);
+
+        this._cull!.setStorageBuffer("positions", this._positions!);
+        this._cull!.setStorageBuffer("sortedIndex", this._sortedIndexBuffer!);
+        this._cull!.setStorageBuffer("flag", this._flag!);
+        this._cull!.setStorageBuffer("offsets", this._offsets!);
+        this._cull!.setUniformBuffer("params", this._cullParams!);
+        this._cull!.dispatch(groups);
+
+        // Cull-owned prefix-sum ring (see constructor): reset and scan on the dedicated instance so it never
+        // collides with the sort's ring and always scans the cull's element count.
+        this._cullPrefixSum!.resetForFrame();
+        this._cullPrefixSum!.scanExclusive(this._offsets!, this._renderedCount);
+
+        this._compact!.setStorageBuffer("sortedIndex", this._sortedIndexBuffer!);
+        this._compact!.setStorageBuffer("flag", this._flag!);
+        this._compact!.setStorageBuffer("offsets", this._offsets!);
+        this._compact!.setStorageBuffer("drawList", this._drawList!);
+        this._compact!.setUniformBuffer("params", this._compactParams!);
+        this._compact!.dispatch(groups);
+
+        this._finalize!.setStorageBuffer("flag", this._flag!);
+        this._finalize!.setStorageBuffer("offsets", this._offsets!);
+        this._finalize!.setStorageBuffer("countOut", this._count!);
+        this._finalize!.setStorageBuffer("indirectArgs", this._indirectArgs!);
+        this._finalize!.setStorageBuffer("drawList", this._drawList!);
+        this._finalize!.setUniformBuffer("params", this._finalizeParams!);
+        this._finalize!.dispatch(1);
+
+        return true;
+    }
+
+    /**
+     * The compacted visible draw list to bind as the `splatIndex` instanced vertex buffer when culling is active.
+     */
+    public get culledDrawBuffer(): Nullable<DataBuffer> {
+        return this._drawList ? this._drawList.getBuffer() : null;
     }
 
     /**
@@ -271,8 +459,17 @@ export class GaussianSplattingGpuSorter {
         this._range?.dispose();
         this._histogramBuffer?.dispose();
         this._sortedIndexBuffer?.dispose();
+        this._indirectArgs?.dispose();
+        this._flag?.dispose();
+        this._offsets?.dispose();
+        this._drawList?.dispose();
+        this._count?.dispose();
         this._params?.dispose();
+        this._compactParams?.dispose();
+        this._cullParams?.dispose();
+        this._finalizeParams?.dispose();
         this._prefixSum?.dispose();
+        this._cullPrefixSum?.dispose();
         this._positions = null;
         this._seed = null;
         this._depthBuffer = null;
@@ -280,15 +477,28 @@ export class GaussianSplattingGpuSorter {
         this._range = null;
         this._histogramBuffer = null;
         this._sortedIndexBuffer = null;
+        this._indirectArgs = null;
+        this._flag = null;
+        this._offsets = null;
+        this._drawList = null;
+        this._count = null;
         this._params = null;
+        this._compactParams = null;
+        this._cullParams = null;
+        this._finalizeParams = null;
         this._prefixSum = null;
+        this._cullPrefixSum = null;
         this._clear = null;
         this._depth = null;
         this._histogram = null;
         this._scatter = null;
+        this._cull = null;
+        this._compact = null;
+        this._finalize = null;
         this._positionCapacity = 0;
         this._paddedCapacity = 0;
         this._histCapacity = 0;
+        this._cullCapacity = 0;
         this._hasSource = false;
     }
 }

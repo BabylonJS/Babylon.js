@@ -539,6 +539,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._internalMeshDataInfo._forcedInstanceCount = count;
     }
 
+    /**
+     * @internal
+     * Optional GPU indirect-args buffer (5 u32: indexCount, instanceCount, firstIndex, baseVertex, firstInstance).
+     * When set, indexed draws for this mesh issue drawIndexedIndirect from this buffer instead of a CPU instance
+     * count. Used by the Gaussian Splatting GPU culling path (WebGPU only).
+     */
+    public _indirectDrawBuffer: Nullable<DataBuffer> = null;
+
     /** @internal */
     public _instanceDataStorage: _InstanceDataStorage;
 
@@ -2141,6 +2149,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else if (useVertexPulling) {
             // We're rendering the number of indices in the index buffer but the vertex shader is handling the data itself.
             engine.drawArraysType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
+        } else if (this._indirectDrawBuffer) {
+            // GPU-driven indirect draw: the instance count is computed on the GPU (e.g. Gaussian Splatting culling).
+            engine.drawElementsInstancedIndirect(fillMode, subMesh.indexStart, subMesh.indexCount, this._indirectDrawBuffer);
         } else {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         }

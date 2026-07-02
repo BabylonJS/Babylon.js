@@ -3722,7 +3722,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
     }
 
-    private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number): void {
+    private _draw(drawType: number, fillMode: number, start: number, count: number, instancesCount: number, externalIndirect?: { buffer: GPUBuffer; offset: number }): void {
         const renderPass = this._getCurrentRenderPass();
         const bundleList = this._bundleList;
 
@@ -3764,7 +3764,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._applyRenderPassChanges(bundleList);
             if (!this._snapshotRendering.record) {
                 this._counters.numBundleReuseNonCompatMode++;
-                if (this._currentDrawContext.indirectDrawBuffer) {
+                if (externalIndirect) {
+                    // The instance count lives in an app-owned indirect buffer written by a compute shader; the
+                    // cached bundle already records drawIndexedIndirect against it, so nothing to update here.
+                } else if (this._currentDrawContext.indirectDrawBuffer) {
                     this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
                 }
                 bundleList.addBundle(this._currentDrawContext.fastBundle);
@@ -3838,7 +3841,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // draw
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
 
-        if ((nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer) {
+        if (externalIndirect) {
+            // App-driven indirect draw: the draw arguments (including a GPU-computed instance count) live in a
+            // caller-owned buffer. Used by the Gaussian Splatting GPU culling path.
+            if (drawType === 0) {
+                renderPass2.drawIndexedIndirect(externalIndirect.buffer, externalIndirect.offset);
+            } else {
+                renderPass2.drawIndirect(externalIndirect.buffer, externalIndirect.offset);
+            }
+        } else if ((nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer) {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
             if (drawType === 0) {
                 renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
@@ -3880,6 +3891,23 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
         this._currentIndexBuffer = null;
         this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
+    }
+
+    /**
+     * Draws indexed instanced primitives where the draw arguments (including the instance count) are read
+     * from a caller-owned GPU buffer (drawIndexedIndirect). The buffer must contain 5 consecutive u32:
+     * [indexCount, instanceCount, firstIndex, baseVertex, firstInstance] and be created with the
+     * {@link Constants.BUFFER_CREATIONFLAG_INDIRECT} usage. Used by the Gaussian Splatting GPU culling path so
+     * that a compute-computed visible count drives the draw without any CPU readback.
+     * @param fillMode defines the primitive to use
+     * @param indexStart defines the starting index (used for pipeline/index-buffer binding)
+     * @param indexCount defines the number of indices per instance (used for pipeline/index-buffer binding)
+     * @param indirectBuffer the GPU buffer holding the draw-indexed-indirect arguments
+     * @param indirectByteOffset byte offset of the arguments within the buffer (default 0)
+     */
+    public override drawElementsInstancedIndirect(fillMode: number, indexStart: number, indexCount: number, indirectBuffer: DataBuffer, indirectByteOffset: number = 0): void {
+        const buffer = (indirectBuffer as WebGPUDataBuffer).underlyingResource as GPUBuffer;
+        this._draw(0, fillMode, indexStart, indexCount, 1, { buffer, offset: indirectByteOffset });
     }
 
     //------------------------------------------------------------------------------

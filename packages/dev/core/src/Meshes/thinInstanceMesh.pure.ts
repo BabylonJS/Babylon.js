@@ -390,6 +390,10 @@ export function RegisterThinInstanceMesh(): void {
         this._thinInstanceDataStorage.instancesCount = instanceCount;
         this._thinInstanceDataStorage.matrixBuffer?.dispose();
         const splatInstancesBuffer = new Buffer(this.getEngine(), dataBuffer, false, 16, false, true);
+        // The passed DataBuffer is owned and reused across frames by its producer (e.g. the GPU splat sorter),
+        // not by this wrapper. Take a reference so the wrapper's dispose() (on the next rebind) only releases our
+        // borrow instead of destroying the shared buffer while the producer's compute passes still read it.
+        dataBuffer.references++;
         this._thinInstanceDataStorage.matrixBuffer = splatInstancesBuffer;
         for (let i = 0; i < 4; i++) {
             this.setVerticesBuffer(splatInstancesBuffer.createVertexBuffer("splatIndex" + i, i * 4, 4));

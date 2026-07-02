@@ -84,7 +84,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     let splatIndex: f32 = getSplatIndex(i32(vertexInputs.position.z + 0.5), vertexInputs.splatIndex0, vertexInputs.splatIndex1, vertexInputs.splatIndex2, vertexInputs.splatIndex3);
 
-    var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
+    // A negative index is the GPU-culling padding sentinel: the last indirect-draw instance has < 16 real splats,
+    // and the remaining slots are set to -1 so this vertex is clipped and renders nothing.
+    let isPaddingSplat: bool = splatIndex < 0.0;
+
+    var splat: Splat = readSplat(max(splatIndex, 0.0), uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
 
@@ -142,6 +146,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #define CUSTOM_VERTEX_UPDATE
 
     vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, scale, covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize, uniforms.minPixelSize);
+
+    // Clip GPU-culling padding vertices (sentinel index) so the last partial instance renders nothing.
+    if (isPaddingSplat) {
+        vertexOutputs.position = vec4f(0.0, 0.0, 2.0, 1.0);
+    }
 
 #include<clipPlaneVertex>
 #include<fogVertex>

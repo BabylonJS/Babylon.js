@@ -509,6 +509,30 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public static GpuSortMode: GaussianSplattingGpuSortMode = GaussianSplattingGpuSortMode.Auto;
 
+    /**
+     * When true, the WebGPU GPU-sort path drives the draw via a GPU indirect-args buffer (drawIndexedIndirect),
+     * which the culling pipeline uses to reduce the drawn instance count. Set false to fall back to a CPU-set
+     * instance count (draws all active splats). Only affects meshes using the GPU sort path.
+     */
+    public static EnableGpuIndirectDraw = true;
+
+    /**
+     * When true (and {@link EnableGpuIndirectDraw} is on), the WebGPU GPU-sort path runs a per-frame frustum cull
+     * on the GPU and draws only the visible splats via an indirect draw. The cull test matches the vertex shader
+     * exactly, so it never removes a splat the shader would have shown. Set false to draw all sorted splats.
+     *
+     * Currently defaults to false: the cull path is complete but blocked by a one-dispatch UniformBuffer-upload
+     * lag for compute dispatched inside the mesh render pass (the cull reads the previous dispatch's clip matrix).
+     * The GPU sort + non-culled indirect draw path is unaffected and remains the shipping default.
+     */
+    /**
+     * When true (and {@link EnableGpuIndirectDraw} is on), the WebGPU GPU-sort path runs a per-frame frustum cull
+     * on the GPU and draws only the visible splats via an indirect draw. The cull test matches the vertex shader
+     * exactly (same local->clip transform and 1.2*w bounds), so it never removes a splat the shader would have
+     * shown. Set false to draw all sorted splats.
+     */
+    public static EnableGpuCulling = true;
+
     /** @internal */
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
@@ -521,6 +545,11 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _gpuSortDirty = false;
     // Last GPU data buffer bound as the splatIndex vertex buffer; its identity changes when the buffer is grown.
     private _gpuSortedDataBuffer: Nullable<DataBuffer> = null;
+    // Whether the GPU frustum-cull pass ran for the current sort (culling active for this mesh this frame).
+    private _gpuCulling = false;
+    // Reused matrices for the GPU cull local->clip transform (avoids per-frame allocation).
+    private _gpuClipMatrix = Matrix.Identity();
+    private _gpuViewProjMatrix = Matrix.Identity();
     private _modelViewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
@@ -1404,7 +1433,16 @@ export class GaussianSplattingMeshBase extends Mesh {
         const worldMatrix = this.computeWorldMatrix(true);
 
         // Re-sort when the data changed, when this view has not been displayed yet, or when the camera/world moved.
-        const needSort = this._gpuSortDirty || !this._readyToDisplay || this._isSortStateDirty(primary, worldMatrix, camera);
+        // Also keep re-running while culling is enabled but not yet active (its compute shaders may still be
+        // compiling on the first frames — without this a static camera would never start culling).
+        const cullingWanted = GaussianSplattingMeshBase.EnableGpuIndirectDraw && GaussianSplattingMeshBase.EnableGpuCulling;
+        const needSort = this._gpuSortDirty || !this._readyToDisplay || (cullingWanted && !this._gpuCulling) || this._isSortStateDirty(primary, worldMatrix, camera);
+
+        // Local->clip matrix (world * view * projection) for the frustum cull pass. Recomputed every frame so the
+        // per-frame cull tracks the camera even when the (more expensive) depth sort is skipped.
+        camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._gpuViewProjMatrix);
+        worldMatrix.multiplyToRef(this._gpuViewProjMatrix, this._gpuClipMatrix);
+
         if (needSort) {
             const cameraViewMatrix = camera.getViewMatrix();
             const world = worldMatrix.m;
@@ -1435,22 +1473,45 @@ export class GaussianSplattingMeshBase extends Mesh {
             primary.sortAppliedId = primary.sortRequestId;
         }
 
-        const dataBuffer = sorter.sortedDataBuffer;
+        // Post-sort GPU frustum cull runs EVERY frame (not only when the sort re-runs) so it tracks the camera:
+        // once the sort has produced a sorted-index buffer, the cull compacts the visible splats and writes the
+        // indirect instance count using the same 1.2*w bounds the vertex shader uses.
+        if (cullingWanted && !this._gpuSortDirty) {
+            this._gpuCulling = sorter.cull(GaussianSplattingMeshBase._BatchSize * 6, this._gpuClipMatrix);
+        } else if (!cullingWanted) {
+            this._gpuCulling = false;
+        }
+
+        // When culling is active the draw reads the compacted visible list and the GPU-written indirect args;
+        // otherwise it reads the full sorted list with a CPU-written full instance count.
+        const cullingActive = GaussianSplattingMeshBase.EnableGpuIndirectDraw && GaussianSplattingMeshBase.EnableGpuCulling && this._gpuCulling;
+        const dataBuffer = cullingActive ? sorter.culledDrawBuffer : sorter.sortedDataBuffer;
         if (!dataBuffer) {
             return;
         }
         if (dataBuffer !== this._gpuSortedDataBuffer) {
-            // The underlying buffer was (re)allocated, so every camera mesh must rebind against it.
+            // The bound buffer changed (realloc, or culling toggled on/off), so every camera mesh must rebind.
             this._gpuSortedDataBuffer = dataBuffer;
             this._cameraViewInfos.forEach((info) => (info.splatIndexBufferSet = false));
         }
 
         const instanceCount = Math.max(this._splatIndex.length >> 4, 1);
+        const indexCount = GaussianSplattingMeshBase._BatchSize * 6;
+        let indirectBuffer: Nullable<DataBuffer> = null;
+        if (GaussianSplattingMeshBase.EnableGpuIndirectDraw) {
+            if (!cullingActive) {
+                // Non-culled indirect draw: write the full instance count from the CPU.
+                sorter.setIndirectArgs(indexCount, instanceCount);
+            }
+            // When culling is active the cull's finalize pass already wrote the indirect args on the GPU.
+            indirectBuffer = sorter.indirectArgsBuffer;
+        }
         activeViewInfos.forEach((info) => {
             if (!info.splatIndexBufferSet) {
                 info.mesh._thinInstanceSetSplatIndexBuffer(dataBuffer, instanceCount);
                 info.splatIndexBufferSet = true;
             }
+            info.mesh._indirectDrawBuffer = indirectBuffer;
             info.frameIdLastUpdate = frameId;
         });
         this._readyToDisplay = true;

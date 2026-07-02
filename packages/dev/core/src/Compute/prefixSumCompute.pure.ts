@@ -61,7 +61,7 @@ export class PrefixSumCompute {
 
     private _getUbo(count: number): UniformBuffer {
         if (this._uboIndex >= this._ubos.length) {
-            const ubo = new UniformBuffer(this._engine, undefined, undefined, "PrefixSumComputeParams");
+            const ubo = new UniformBuffer(this._engine, undefined, undefined, "PrefixSumComputeParams", false, false);
             ubo.addUniform("count", 1);
             this._ubos.push(ubo);
         }

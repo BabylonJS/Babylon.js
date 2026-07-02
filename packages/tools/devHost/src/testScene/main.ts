@@ -1,8 +1,8 @@
 import { type Scene } from "core/scene";
-import { Engine } from "core/Engines/engine";
+import { WebGPUEngine } from "core/Engines/webgpuEngine";
+import "core/Engines/WebGPU/Extensions/engine.computeShader";
 
 import { createScene as createSceneTs } from "./createScene";
-import { createScene as createSceneJs } from "./createSceneJS.js";
 
 /**
  * Main entry point for the default scene for the devhost
@@ -15,19 +15,11 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     canvas.id = "babylon-canvas";
     mainDiv.appendChild(canvas);
 
-    // Whether to use the TS or JS scene files, default to TS
-    const useTsParam = searchParams.get("usets");
-    const useTs = useTsParam !== "false"; // Default to true if not specified
+    // Setup a WebGPU engine (required for the Gaussian Splatting GPU sort/cull compute path)
+    const engine = new WebGPUEngine(canvas, { antialias: true });
+    await engine.initAsync();
 
-    // Setup the engine and create the scene
-    const engine = new Engine(canvas, true);
-
-    let scene: Scene | undefined = undefined;
-    if (useTs) {
-        scene = await createSceneTs(engine, canvas);
-    } else {
-        scene = await createSceneJs(engine, canvas);
-    }
+    const scene: Scene = await createSceneTs(engine, canvas);
 
     // Register a render loop to repeatedly render the scene
     engine.runRenderLoop(function () {
