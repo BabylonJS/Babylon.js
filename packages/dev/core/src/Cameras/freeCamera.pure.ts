@@ -61,7 +61,10 @@ export class FreeCamera extends TargetCamera {
      * the inherited {@link TargetCamera.movement} to {@link TargetCameraMovement}; the instance is
      * created by the {@link TargetCamera} constructor.
      */
-    public override movement: TargetCameraMovement;
+    // `declare`, not `override`: the value is created by the base TargetCamera constructor. Under TC39
+    // decorators a plain field redeclaration is materialized as a constructor field-init that runs after
+    // super() and would clobber that value back to undefined; `declare` keeps this a type-only narrowing.
+    declare public movement: TargetCameraMovement;
 
     /**
      * Gets the input sensibility for a mouse input. (default is 2000.0)
