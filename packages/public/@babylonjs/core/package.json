@@ -122,6 +122,7 @@
         "Cameras/virtualJoysticksCamera.js",
         "Collisions/collisionCoordinator.js",
         "Compute/computeShader.types.js",
+        "Compute/prefixSumCompute.js",
         "Culling/Helper/computeShaderBoundingHelper.js",
         "Culling/Helper/transformFeedbackBoundingHelper.js",
         "Culling/Octrees/octreeSceneComponent.js",

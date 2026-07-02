@@ -1375,58 +1375,82 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!GaussianSplattingGpuSorter.IsSupported(this._scene.getEngine())) {
             return false;
         }
-        // Auto keeps the worker path until GPU depth sorting is implemented; only an explicit Gpu request opts in.
+        // Auto currently keeps the CPU worker as the default; the GPU depth sort is opt-in via GpuSortMode.Gpu
+        // while it gains broader validation. The worker path remains the fallback in every case above.
         return mode === GaussianSplattingGpuSortMode.Gpu;
     }
 
     /**
-     * Generates (when needed) the GPU sorted-index buffer and binds it to each active camera mesh.
+     * Generates (when needed) the GPU depth-sorted `splatIndex` buffer and binds it to each active camera
+     * mesh. The sort is re-run when the source data changed or when the active camera / world transform moved.
      * @param activeViewInfos the per-camera view infos to bind the buffer to
      * @param frameId the current frame id
      */
     private _updateGpuSortBuffers(activeViewInfos: ICameraViewInfo[], frameId: number): void {
         const sorter = this._gpuSorter;
-        if (!sorter || !this._splatIndex) {
+        if (!sorter || !this._splatIndex || !this._splatPositions || !activeViewInfos.length) {
             return;
         }
 
-        if (this._gpuSortDirty || !this._gpuSortedDataBuffer) {
-            // The packed source-index seed (identity / interval-aware order) is produced on the CPU by
-            // _updateSplatIndexBuffer; the compute pass copies it into the GPU sorted-index buffer.
-            const ready = sorter.build(this._splatIndex);
-            const dataBuffer = sorter.sortedDataBuffer;
-            if (dataBuffer !== this._gpuSortedDataBuffer) {
-                // The underlying buffer was (re)allocated, so every camera mesh must rebind against it.
-                this._gpuSortedDataBuffer = dataBuffer;
-                this._cameraViewInfos.forEach((info) => (info.splatIndexBufferSet = false));
-            }
-            // Keep retrying while the compute shader is still compiling; clear the flag only once it ran.
-            if (ready) {
-                this._gpuSortDirty = false;
-            }
+        // Re-upload the source (positions + packed active source indices) whenever the data/seed changed.
+        if (this._gpuSortDirty) {
+            sorter.setSource(this._splatPositions, this._splatIndex, this.renderedSplatCount);
         }
 
-        const dataBuffer = this._gpuSortedDataBuffer;
+        // The GPU produces a single ordering per frame, so sort for the camera being rendered.
+        const activeCamera = this._scene.activeCamera;
+        const primary = (activeCamera && activeViewInfos.find((info) => info.camera === activeCamera)) || activeViewInfos[0];
+        const camera = primary.camera;
+        const worldMatrix = this.computeWorldMatrix(true);
+
+        // Re-sort when the data changed, when this view has not been displayed yet, or when the camera/world moved.
+        const needSort = this._gpuSortDirty || !this._readyToDisplay || this._isSortStateDirty(primary, worldMatrix, camera);
+        if (needSort) {
+            const cameraViewMatrix = camera.getViewMatrix();
+            const world = worldMatrix.m;
+            const fx = cameraViewMatrix.m[2];
+            const fy = cameraViewMatrix.m[6];
+            const fz = cameraViewMatrix.m[10];
+            const cameraPosition = camera.globalPosition;
+            const camDot = fx * cameraPosition.x + fy * cameraPosition.y + fz * cameraPosition.z;
+            // Fold the world matrix and camera forward into depth coefficients so depth = a*x + b*y + c*z + d.
+            // Negate in right-handed scenes so "larger depth = farther" holds (matching the worker's counting sort).
+            const depthSign = this._scene.useRightHandedSystem ? -1 : 1;
+            const a = (fx * world[0] + fy * world[1] + fz * world[2]) * depthSign;
+            const b = (fx * world[4] + fy * world[5] + fz * world[6]) * depthSign;
+            const c = (fx * world[8] + fy * world[9] + fz * world[10]) * depthSign;
+            const d = (fx * world[12] + fy * world[13] + fz * world[14] - camDot) * depthSign;
+
+            if (!sorter.sort(a, b, c, d)) {
+                // Shaders still compiling (or no source yet): keep the dirty state and retry next frame.
+                return;
+            }
+            this._gpuSortDirty = false;
+
+            // Record the sort state on the view we sorted for so it is not re-sorted until the camera/world moves.
+            primary.sortWorldMatrix.copyFrom(worldMatrix);
+            primary.sortCameraForward.set(fx, fy, fz);
+            primary.sortCameraPosition.copyFrom(cameraPosition);
+            primary.cameraDirection.copyFrom(this._getCameraDirection(camera));
+            primary.sortAppliedId = primary.sortRequestId;
+        }
+
+        const dataBuffer = sorter.sortedDataBuffer;
         if (!dataBuffer) {
             return;
         }
+        if (dataBuffer !== this._gpuSortedDataBuffer) {
+            // The underlying buffer was (re)allocated, so every camera mesh must rebind against it.
+            this._gpuSortedDataBuffer = dataBuffer;
+            this._cameraViewInfos.forEach((info) => (info.splatIndexBufferSet = false));
+        }
 
         const instanceCount = Math.max(this._splatIndex.length >> 4, 1);
-        const worldMatrix = this.computeWorldMatrix(true);
         activeViewInfos.forEach((info) => {
             if (!info.splatIndexBufferSet) {
                 info.mesh._thinInstanceSetSplatIndexBuffer(dataBuffer, instanceCount);
                 info.splatIndexBufferSet = true;
             }
-            // Keep the per-view sort bookkeeping current so isReady() / _isSortStateDirty consider this view's
-            // ordering applied (the GPU path bypasses the worker-posting block that normally updates these).
-            const camera = info.camera;
-            const cameraViewMatrix = camera.getViewMatrix();
-            info.cameraDirection.copyFrom(this._getCameraDirection(camera));
-            info.sortWorldMatrix.copyFrom(worldMatrix);
-            info.sortCameraForward.set(cameraViewMatrix.m[2], cameraViewMatrix.m[6], cameraViewMatrix.m[10]);
-            info.sortCameraPosition.copyFrom(camera.globalPosition);
-            info.sortAppliedId = info.sortRequestId;
             info.frameIdLastUpdate = frameId;
         });
         this._readyToDisplay = true;
@@ -2775,6 +2799,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                     // Re-sync the active interval set in case the source splat count changed.
                     this._postIntervalsToWorker();
                 }
+                // The GPU sort path (when active) re-uploads its source positions/indices on the next sort.
+                this._gpuSortDirty = true;
                 this._postToWorker(true);
             }
         }
@@ -2818,6 +2844,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._postIntervalsToWorker();
         }
         this._sortIsDirty = true;
+        // The GPU sort path (when active) re-uploads its source positions/indices on the next sort.
+        this._gpuSortDirty = true;
     }
 
     /**
@@ -2838,6 +2866,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const data = this._splatPositions.slice(floatOffset, floatOffset + splatCount * 4);
         this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS_UPDATE, offset: floatOffset, data }, [data.buffer]);
         this._sortIsDirty = true;
+        this._gpuSortDirty = true;
     }
 
     private *_updateData(
