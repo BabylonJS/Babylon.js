@@ -10,7 +10,7 @@ import { type Viewport } from "../Maths/math.viewport";
 import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
-import { type IWebXRGraphicsBinding, WebXRWebGLGraphicsBinding } from "./webXRGraphicsBinding";
+import { type IWebXRGraphicsBinding, WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "./webXRGraphicsBinding";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 /**
@@ -239,7 +239,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             throw new Error("Cannot create the XR graphics binding before the XR session is initialized.");
         }
         if (!this._graphicsBinding) {
-            this._graphicsBinding = WebXRWebGLGraphicsBinding.CreateFromEngine(this.session, this._engine);
+            this._graphicsBinding = this._engine.isWebGPU
+                ? WebXRWebGPUGraphicsBinding.CreateFromEngine(this.session, this._engine)
+                : WebXRWebGLGraphicsBinding.CreateFromEngine(this.session, this._engine);
         }
         return this._graphicsBinding;
     }
@@ -280,6 +282,19 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise which will resolve once the session has been initialized
      */
     public async initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+        // A WebGPU engine requires a WebGPU-compatible XR session (per the WebXR/WebGPU binding spec).
+        // The "webgpu" feature descriptor is requested as a *required* feature: a WebGPU engine cannot
+        // fall back to a WebGL-compatible session, so if the UA/device cannot provide one we let
+        // requestSession reject and surface that error to the caller rather than silently handing back
+        // an incompatible session. WebGL engines leave xrSessionInit untouched.
+        if (this._engine?.isWebGPU) {
+            const requiredFeatures = xrSessionInit.requiredFeatures ? [...xrSessionInit.requiredFeatures] : [];
+            if (!requiredFeatures.includes("webgpu")) {
+                requiredFeatures.push("webgpu");
+            }
+            xrSessionInit = { ...xrSessionInit, requiredFeatures };
+        }
+
         const session = await this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit);
 
         this.session = session;

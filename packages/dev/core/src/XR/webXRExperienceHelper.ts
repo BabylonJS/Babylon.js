@@ -160,7 +160,10 @@ export class WebXRExperienceHelper implements IDisposable {
             };
 
             // The layers feature will have already initialized the xr session's layers on session init.
-            if (!this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
+            // A WebGPU-compatible XR session is layers-only (per the WebXR/WebGPU binding spec): the
+            // baseLayer/XRWebGLLayer path cannot be used. The WebGPU XRProjectionLayer is wired up in a
+            // later phase, so a WebGPU XR session currently enters with no layer and renders nothing yet.
+            if (!this._scene.getEngine().isWebGPU && !this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
                 const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
                 xrRenderState.baseLayer = baseLayer;
             }
