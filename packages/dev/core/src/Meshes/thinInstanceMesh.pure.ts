@@ -6,6 +6,7 @@ import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { Mesh } from "../Meshes/mesh.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 
 const BakedVertexAnimationSettingsInstancedKind = "bakedVertexAnimationSettingsInstanced";
 
@@ -375,6 +376,23 @@ export function RegisterThinInstanceMesh(): void {
 
                 this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers[kind]!);
             }
+        }
+    };
+
+    Mesh.prototype._thinInstanceSetSplatIndexBuffer = function (dataBuffer: Nullable<DataBuffer>, instanceCount: number): void {
+        if (!dataBuffer) {
+            return;
+        }
+        // GPU-produced counterpart of the `splatIndex` branch in thinInstanceSetBuffer: instead of wrapping a CPU
+        // Float32Array, it binds an existing GPU DataBuffer (typically a StorageBuffer written by a compute pass)
+        // as the four `splatIndex0..3` instanced vertex attributes, avoiding any CPU readback.
+        this._thinInstanceInitializeUserStorage();
+        this._thinInstanceDataStorage.instancesCount = instanceCount;
+        this._thinInstanceDataStorage.matrixBuffer?.dispose();
+        const splatInstancesBuffer = new Buffer(this.getEngine(), dataBuffer, false, 16, false, true);
+        this._thinInstanceDataStorage.matrixBuffer = splatInstancesBuffer;
+        for (let i = 0; i < 4; i++) {
+            this.setVerticesBuffer(splatInstancesBuffer.createVertexBuffer("splatIndex" + i, i * 4, 4));
         }
     };
 

@@ -196,6 +196,7 @@
         "ShadersWGSL/gaussianSplatting.vertex.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplattingDepth.fragment.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplattingDepth.vertex.ts": ["shader-store-write"],
+        "ShadersWGSL/gaussianSplattingSplatIndexInit.compute.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplattingVoxel.fragment.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplattingVoxel.vertex.ts": ["shader-store-write"],
         "ShadersWGSL/geometry.fragment.ts": ["shader-store-write"],

@@ -1,6 +1,7 @@
 import { type Nullable, type DeepImmutableObject } from "../types";
 import { type Matrix } from "../Maths/math.vector";
 import { type VertexBuffer, type Buffer } from "../Buffers/buffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 declare module "./mesh.pure" {
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -107,6 +108,9 @@ declare module "./mesh.pure" {
 
         /** @internal */
         _thinInstanceInitializeUserStorage(): void;
+
+        /** @internal */
+        _thinInstanceSetSplatIndexBuffer(dataBuffer: Nullable<DataBuffer>, instanceCount: number): void;
 
         /** @internal */
         _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
