@@ -71,7 +71,7 @@ export class GradientMaterial extends PushMaterial {
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     // The gradient top color, red by default
     @serializeAsColor3()
@@ -100,7 +100,7 @@ export class GradientMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     private _shadersLoaded = false;
 

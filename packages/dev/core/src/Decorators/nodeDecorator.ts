@@ -1,5 +1,6 @@
 import { type Nullable } from "../types";
 import { type Scene } from "../scene";
+import { MetadataSymbol } from "../Misc/decorators.functions";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the node editor
@@ -107,19 +108,60 @@ export function editableInPropertyPage(
     groupName: string = "PROPERTIES",
     options?: IEditablePropertyOption
 ) {
-    return (target: any, propertyKey: string) => {
-        let propStore: IPropertyDescriptionForEdition[] = target._propStore;
-        if (!propStore) {
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => {
+        const meta = context.metadata as DecoratorMetadataObject | undefined;
+        if (!meta) {
+            // `context.metadata` is `void 0` when `Symbol.metadata` was not installed before this class
+            // was evaluated. Importing `MetadataSymbol` from decorators.functions runs the polyfill at
+            // module load (before this class body), so this should never happen; referencing it here also
+            // keeps that module-load polyfill anchored against bundler tree-shaking.
+            throw new Error(
+                `editableInPropertyPage: decorator metadata is unavailable; the Symbol.metadata (${String(MetadataSymbol)}) polyfill must run before decorated classes are evaluated.`
+            );
+        }
+        let propStore: IPropertyDescriptionForEdition[];
+        if (Object.prototype.hasOwnProperty.call(meta, __bjsPropStoreKey)) {
+            propStore = meta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
+        } else {
             propStore = [];
-            target._propStore = propStore;
+            meta[__bjsPropStoreKey] = propStore;
         }
         propStore.push({
-            propertyName: propertyKey,
+            propertyName: String(context.name),
             displayName: displayName,
             type: propertyType,
             groupName: groupName,
             options: options ?? {},
-            className: target.getClassName(),
+            className: "",
         });
     };
+}
+
+/** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const __bjsPropStoreKey = "__bjs_prop_store__";
+
+/**
+ * Gets the editable properties for a given target using TC39 decorator metadata.
+ * Walks the metadata prototype chain to include properties from parent classes.
+ * @param target - the target object (instance or constructor)
+ * @returns array of property descriptions
+ */
+export function GetEditableProperties(target: any): IPropertyDescriptionForEdition[] {
+    const ctor = typeof target === "function" ? target : target?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[MetadataSymbol];
+    if (!metadata) {
+        return [];
+    }
+
+    const result: IPropertyDescriptionForEdition[] = [];
+    let currentMeta: any = metadata;
+    while (currentMeta) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, __bjsPropStoreKey)) {
+            const store = currentMeta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
+            result.push(...store);
+        }
+        currentMeta = Object.getPrototypeOf(currentMeta);
+    }
+    return result;
 }

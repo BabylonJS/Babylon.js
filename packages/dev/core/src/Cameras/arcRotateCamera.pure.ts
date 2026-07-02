@@ -694,7 +694,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the input associated to the camera.
      */
-    public override inputs: ArcRotateCameraInputsManager;
+    declare public inputs: ArcRotateCameraInputsManager;
 
     /**
      * Movement controller that provides framerate-independent physics and the declarative

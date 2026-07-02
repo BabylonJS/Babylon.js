@@ -2,7 +2,7 @@ import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { type IPropertyDescriptionForEdition, type IEditablePropertyListOption, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type IPropertyDescriptionForEdition, type IEditablePropertyListOption, PropertyTypeForEdition, GetEditableProperties } from "core/Decorators/nodeDecorator";
 import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
@@ -138,29 +138,17 @@ type GenericContent = {
 };
 function GetGenericPropertiesContent(stateManager: StateManager, nodeData: INodeData): GenericContent | undefined {
     const block = nodeData.data as NodeMaterialBlock,
-        propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
+        propStore: IPropertyDescriptionForEdition[] = GetEditableProperties(block);
 
-    if (!propStore) {
+    if (!propStore.length) {
         return undefined;
     }
 
     const componentList: { [groupName: string]: JSX.Element[] } = {},
         groups: string[] = [];
 
-    const classes: string[] = [];
-
-    let proto = Object.getPrototypeOf(block);
-    while (proto && proto.getClassName) {
-        classes.push(proto.getClassName());
-        proto = Object.getPrototypeOf(proto);
-    }
-
-    for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
+    for (const { propertyName, displayName, type, groupName, options } of propStore) {
         let components = componentList[groupName];
-
-        if (classes.indexOf(className) === -1) {
-            continue;
-        }
 
         if (!components) {
             components = [];

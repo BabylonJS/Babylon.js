@@ -29,7 +29,7 @@ export class MaterialIridescenceDefines extends MaterialDefines {
  * Plugin that implements the iridescence (thin film) component of the PBR material
  */
 export class PBRIridescenceConfiguration extends MaterialPluginBase {
-    protected override _material: PBRBaseMaterial;
+    declare protected _material: PBRBaseMaterial;
 
     /**
      * The default minimum thickness of the thin-film layer given in nanometers (nm).
@@ -58,7 +58,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     /**
      * Defines the iridescence layer strength (between 0 and 1) it defaults to 1.
@@ -90,7 +90,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<BaseTexture> = null;
+    public accessor texture: Nullable<BaseTexture> = null;
 
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
@@ -98,7 +98,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public thicknessTexture: Nullable<BaseTexture> = null;
+    public accessor thicknessTexture: Nullable<BaseTexture> = null;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;

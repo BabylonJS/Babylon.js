@@ -104,6 +104,22 @@ describe("Babylon Material", function () {
             expect(Object.is(noRepeatCloneMaterial.albedoTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
         });
 
+        it("uses the surface index of refraction as the default volume index", () => {
+            const scene = new Scene(subject);
+            const material = new PBRMaterial("material", scene);
+
+            expect(material.subSurface.volumeIndexOfRefraction).toBe(1.5);
+
+            material.subSurface.indexOfRefraction = 1.3;
+            expect(material.subSurface.volumeIndexOfRefraction).toBe(1.3);
+
+            material.subSurface.volumeIndexOfRefraction = 1.1;
+            expect(material.subSurface.volumeIndexOfRefraction).toBe(1.1);
+
+            material.subSurface.volumeIndexOfRefraction = 0;
+            expect(material.subSurface.volumeIndexOfRefraction).toBe(1.3);
+        });
+
         it("Clone Standard material with and without cloning repeated textures", () => {
             const scene = new Scene(subject);
             const baseMaterial = new StandardMaterial("material", scene);
@@ -115,6 +131,18 @@ describe("Babylon Material", function () {
 
             const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", true);
             expect(Object.is(noRepeatCloneMaterial.diffuseTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
+        });
+
+        it("updates primary colors when changing background material highlight level", () => {
+            const scene = new Scene(subject);
+            const material = new BackgroundMaterial("material", scene);
+            const computePrimaryColorsSpy = vi.spyOn(material as any, "_computePrimaryColors");
+
+            expect(material.primaryColor.r).toBe(1);
+
+            material.primaryColorHighlightLevel = 0.5;
+
+            expect(computePrimaryColorsSpy).toHaveBeenCalledTimes(1);
         });
     });
 });
