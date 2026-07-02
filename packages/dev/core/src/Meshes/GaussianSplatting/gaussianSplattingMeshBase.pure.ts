@@ -27,6 +27,8 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
 import { GaussianSplattingSortWorker, GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
+import { GaussianSplattingGpuSorter } from "./gaussianSplattingGpuSorter.pure";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -58,6 +60,20 @@ interface ISogPackInternal {
 
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
+
+/**
+ * Depth-sort backend selection for Gaussian Splatting meshes.
+ * @see GaussianSplattingMeshBase.GpuSortMode
+ */
+export enum GaussianSplattingGpuSortMode {
+    /** Pick automatically. Currently keeps the CPU worker / native path until GPU sorting is complete. */
+    Auto,
+    /** Force the WebGPU compute sort path. Falls back to the worker when compute shaders are unavailable. */
+    Gpu,
+    /** Force the legacy CPU worker (or Babylon Native) sort path. */
+    Worker,
+}
+
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
     covB: Uint16Array;
@@ -485,9 +501,58 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public static LogSortPerformance = false;
 
+    /**
+     * Selects the depth-sort backend used by every Gaussian Splatting mesh.
+     * Defaults to {@link GaussianSplattingGpuSortMode.Auto}. The CPU worker / native path is always kept as a
+     * fallback: when the WebGPU compute path is requested but unsupported (or not applicable, e.g. compound
+     * meshes), the mesh transparently falls back to the worker.
+     */
+    public static GpuSortMode: GaussianSplattingGpuSortMode = GaussianSplattingGpuSortMode.Auto;
+
+    /**
+     * When true, the WebGPU GPU-sort path drives the draw via a GPU indirect-args buffer (drawIndexedIndirect),
+     * which the culling pipeline uses to reduce the drawn instance count. Set false to fall back to a CPU-set
+     * instance count (draws all active splats). Only affects meshes using the GPU sort path.
+     */
+    public static EnableGpuIndirectDraw = true;
+
+    /**
+     * When true (and {@link EnableGpuIndirectDraw} is on), the WebGPU GPU-sort path runs a GPU frustum cull and
+     * draws only the visible splats via an indirect draw. The cull test matches the vertex shader exactly (same
+     * local->clip transform and 1.2*w bounds), so it never removes a splat the shader would have shown. Set false
+     * to draw all sorted splats.
+     */
+    public static EnableGpuCulling = true;
+
+    /**
+     * Number of frames the camera/world must stay stationary before the GPU frustum cull re-engages after a move.
+     * While the camera is moving (and for this many frames after it stops) the full sorted splat list is drawn
+     * instead of the culled list: this keeps culling off the expensive motion frames (where the depth sort also
+     * re-runs) and avoids edge popping, and gives the per-frame cull compute a frame to converge (its UBO upload
+     * reaches the shader one dispatch late). Set to 0 to cull every frame regardless of motion.
+     */
+    public static GpuCullResumeDelayFrames = 2;
+
     /** @internal */
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
+    // WebGPU compute sort driver, created only when the GPU path is active for this mesh. When null the mesh
+    // uses the CPU worker (or Babylon Native) sort path.
+    private _gpuSorter: Nullable<GaussianSplattingGpuSorter> = null;
+    // Resolved once per (re)build in _instantiateWorker: true when this mesh currently uses the GPU sort path.
+    private _useGpuSort = false;
+    // Set when the packed source-index seed changed and the GPU sorted-index buffer must be regenerated.
+    private _gpuSortDirty = false;
+    // Last GPU data buffer bound as the splatIndex vertex buffer; its identity changes when the buffer is grown.
+    private _gpuSortedDataBuffer: Nullable<DataBuffer> = null;
+    // Whether the GPU frustum-cull pass ran for the current sort (culling active for this mesh this frame).
+    private _gpuCulling = false;
+    // Frames the camera/world has been stationary. Reset to 0 on any move; gates when culling re-engages
+    // (see GpuCullResumeDelayFrames).
+    private _gpuCullSettleFrames = 0;
+    // Reused matrices for the GPU cull local->clip transform (avoids per-frame allocation).
+    private _gpuClipMatrix = Matrix.Identity();
+    private _gpuViewProjMatrix = Matrix.Identity();
     private _modelViewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
@@ -1320,6 +1385,150 @@ export class GaussianSplattingMeshBase extends Mesh {
         );
     }
 
+    /**
+     * Resolves whether this mesh should use the WebGPU compute sort path for the current build.
+     * The CPU worker / native path is always available as a fallback, so this returns false whenever the GPU
+     * path is not applicable (unsupported engine, native, depth sort disabled, or compound meshes which still
+     * sort on the worker in this phase).
+     * @returns true when the GPU compute sort should be used
+     */
+    protected _resolveUseGpuSort(): boolean {
+        const mode = GaussianSplattingMeshBase.GpuSortMode;
+        if (mode === GaussianSplattingGpuSortMode.Worker) {
+            return false;
+        }
+        if (IsNative || this._disableDepthSort) {
+            return false;
+        }
+        // Compound (rig) meshes need per-part depth coefficients that the GPU scaffold does not handle yet.
+        if (this.isCompound) {
+            return false;
+        }
+        if (!GaussianSplattingGpuSorter.IsSupported(this._scene.getEngine())) {
+            return false;
+        }
+        // Auto currently keeps the CPU worker as the default; the GPU depth sort is opt-in via GpuSortMode.Gpu
+        // while it gains broader validation. The worker path remains the fallback in every case above.
+        return mode === GaussianSplattingGpuSortMode.Gpu;
+    }
+
+    /**
+     * Generates (when needed) the GPU depth-sorted `splatIndex` buffer and binds it to each active camera
+     * mesh. The sort is re-run when the source data changed or when the active camera / world transform moved.
+     * @param activeViewInfos the per-camera view infos to bind the buffer to
+     * @param frameId the current frame id
+     */
+    private _updateGpuSortBuffers(activeViewInfos: ICameraViewInfo[], frameId: number): void {
+        const sorter = this._gpuSorter;
+        if (!sorter || !this._splatIndex || !this._splatPositions || !activeViewInfos.length) {
+            return;
+        }
+
+        // Re-upload the source (positions + packed active source indices) whenever the data/seed changed.
+        if (this._gpuSortDirty) {
+            sorter.setSource(this._splatPositions, this._splatIndex, this.renderedSplatCount);
+        }
+
+        // The GPU produces a single ordering per frame, so sort for the camera being rendered.
+        const activeCamera = this._scene.activeCamera;
+        const primary = (activeCamera && activeViewInfos.find((info) => info.camera === activeCamera)) || activeViewInfos[0];
+        const camera = primary.camera;
+        const worldMatrix = this.computeWorldMatrix(true);
+
+        // Re-sort when the data changed, when this view has not been displayed yet, or when the camera/world moved.
+        const cullingWanted = GaussianSplattingMeshBase.EnableGpuIndirectDraw && GaussianSplattingMeshBase.EnableGpuCulling;
+        const cameraMoved = this._isSortStateDirty(primary, worldMatrix, camera);
+        const needSort = this._gpuSortDirty || !this._readyToDisplay || cameraMoved;
+
+        // Track how long the camera has been stationary so the frustum cull only engages once it settles.
+        if (cameraMoved) {
+            this._gpuCullSettleFrames = 0;
+        } else if (this._gpuCullSettleFrames < 0xffff) {
+            this._gpuCullSettleFrames++;
+        }
+
+        // Local->clip matrix (world * view * projection) for the frustum cull pass. Recomputed every frame so the
+        // cull tracks the camera when it re-engages.
+        camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._gpuViewProjMatrix);
+        worldMatrix.multiplyToRef(this._gpuViewProjMatrix, this._gpuClipMatrix);
+
+        if (needSort) {
+            const cameraViewMatrix = camera.getViewMatrix();
+            const world = worldMatrix.m;
+            const fx = cameraViewMatrix.m[2];
+            const fy = cameraViewMatrix.m[6];
+            const fz = cameraViewMatrix.m[10];
+            const cameraPosition = camera.globalPosition;
+            const camDot = fx * cameraPosition.x + fy * cameraPosition.y + fz * cameraPosition.z;
+            // Fold the world matrix and camera forward into depth coefficients so depth = a*x + b*y + c*z + d.
+            // Negate in right-handed scenes so "larger depth = farther" holds (matching the worker's counting sort).
+            const depthSign = this._scene.useRightHandedSystem ? -1 : 1;
+            const a = (fx * world[0] + fy * world[1] + fz * world[2]) * depthSign;
+            const b = (fx * world[4] + fy * world[5] + fz * world[6]) * depthSign;
+            const c = (fx * world[8] + fy * world[9] + fz * world[10]) * depthSign;
+            const d = (fx * world[12] + fy * world[13] + fz * world[14] - camDot) * depthSign;
+
+            if (!sorter.sort(a, b, c, d)) {
+                // Shaders still compiling (or no source yet): keep the dirty state and retry next frame.
+                return;
+            }
+            this._gpuSortDirty = false;
+
+            // Record the sort state on the view we sorted for so it is not re-sorted until the camera/world moves.
+            primary.sortWorldMatrix.copyFrom(worldMatrix);
+            primary.sortCameraForward.set(fx, fy, fz);
+            primary.sortCameraPosition.copyFrom(cameraPosition);
+            primary.cameraDirection.copyFrom(this._getCameraDirection(camera));
+            primary.sortAppliedId = primary.sortRequestId;
+        }
+
+        // GPU frustum cull. Skipped while the camera is moving (the full sorted list is drawn instead, avoiding
+        // cull cost on the expensive motion frames and any edge popping). The cull compute is dispatched one frame
+        // before its result is used so the one-dispatch UBO upload lag has converged (see GpuCullResumeDelayFrames).
+        const cullDelay = GaussianSplattingMeshBase.GpuCullResumeDelayFrames;
+        const cullWarming = cullingWanted && !this._gpuSortDirty && this._gpuCullSettleFrames >= Math.max(0, cullDelay - 1);
+        if (cullWarming) {
+            this._gpuCulling = sorter.cull(GaussianSplattingMeshBase._BatchSize * 6, this._gpuClipMatrix);
+        } else {
+            this._gpuCulling = false;
+        }
+
+        // The draw uses the compacted visible list only once the cull has settled (its result is converged);
+        // otherwise it reads the full sorted list with a CPU-written full instance count.
+        const cullingActive = this._gpuCulling && this._gpuCullSettleFrames >= cullDelay;
+        const dataBuffer = cullingActive ? sorter.culledDrawBuffer : sorter.sortedDataBuffer;
+        if (!dataBuffer) {
+            return;
+        }
+        if (dataBuffer !== this._gpuSortedDataBuffer) {
+            // The bound buffer changed (realloc, or culling toggled on/off), so every camera mesh must rebind.
+            this._gpuSortedDataBuffer = dataBuffer;
+            this._cameraViewInfos.forEach((info) => (info.splatIndexBufferSet = false));
+        }
+
+        const instanceCount = Math.max(this._splatIndex.length >> 4, 1);
+        const indexCount = GaussianSplattingMeshBase._BatchSize * 6;
+        let indirectBuffer: Nullable<DataBuffer> = null;
+        if (GaussianSplattingMeshBase.EnableGpuIndirectDraw) {
+            if (!cullingActive) {
+                // Non-culled indirect draw: write the full instance count from the CPU.
+                sorter.setIndirectArgs(indexCount, instanceCount);
+            }
+            // When culling is active the cull's finalize pass already wrote the indirect args on the GPU.
+            indirectBuffer = sorter.indirectArgsBuffer;
+        }
+        activeViewInfos.forEach((info) => {
+            if (!info.splatIndexBufferSet) {
+                info.mesh._thinInstanceSetSplatIndexBuffer(dataBuffer, instanceCount);
+                info.splatIndexBufferSet = true;
+            }
+            info.mesh._indirectDrawBuffer = indirectBuffer;
+            info.frameIdLastUpdate = frameId;
+        });
+        this._readyToDisplay = true;
+        this._canPostToWorker = true;
+    }
+
     /** @internal */
     public _postToWorker(forced = false): void {
         const scene = this._scene;
@@ -1390,6 +1599,14 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
             return a.frameIdLastUpdate - b.frameIdLastUpdate;
         });
+
+        // WebGPU compute sort path: generate the sorted-index buffer on the GPU and bind it to each active
+        // camera mesh. This bypasses the CPU worker / native branches entirely (they remain the fallback and
+        // are used whenever _useGpuSort is false).
+        if (this._useGpuSort && this._gpuSorter) {
+            this._updateGpuSortBuffers(activeViewInfos, frameId);
+            return;
+        }
 
         const hasSortFunction = this._worker || Native?.sortSplats || this._disableDepthSort;
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
@@ -2297,6 +2514,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         _ReleaseGsInterFrameYield(this.getEngine());
         this._worker?.terminate();
         this._worker = null;
+        this._gpuSorter?.dispose();
+        this._gpuSorter = null;
+        this._gpuSortedDataBuffer = null;
 
         this.onPartCountChangedObservable.clear();
         this.onPartRemovedObservable.clear();
@@ -2651,6 +2871,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                     // Re-sync the active interval set in case the source splat count changed.
                     this._postIntervalsToWorker();
                 }
+                // The GPU sort path (when active) re-uploads its source positions/indices on the next sort.
+                this._gpuSortDirty = true;
                 this._postToWorker(true);
             }
         }
@@ -2694,6 +2916,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._postIntervalsToWorker();
         }
         this._sortIsDirty = true;
+        // The GPU sort path (when active) re-uploads its source positions/indices on the next sort.
+        this._gpuSortDirty = true;
     }
 
     /**
@@ -2714,6 +2938,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const data = this._splatPositions.slice(floatOffset, floatOffset + splatCount * 4);
         this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS_UPDATE, offset: floatOffset, data }, [data.buffer]);
         this._sortIsDirty = true;
+        this._gpuSortDirty = true;
     }
 
     private *_updateData(
@@ -2956,6 +3181,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         this.forcedInstanceCount = Math.max(paddedVertexCount >> 4, 1);
+
+        // The packed source-index seed changed: the GPU sorted-index buffer (when active) must be regenerated.
+        this._gpuSortDirty = true;
     }
 
     protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
@@ -3058,6 +3286,20 @@ export class GaussianSplattingMeshBase extends Mesh {
             return;
         }
         this._updateSplatIndexBuffer(this._vertexCount);
+
+        // Resolve the sort backend. When the WebGPU compute path is active, no CPU worker is created: the
+        // sorted-index buffer is produced on the GPU and bound directly as the splatIndex vertex buffer.
+        this._useGpuSort = this._resolveUseGpuSort();
+        if (this._useGpuSort) {
+            this._worker?.terminate();
+            this._worker = null;
+            this._canPostToWorker = true;
+            if (!this._gpuSorter) {
+                this._gpuSorter = new GaussianSplattingGpuSorter(this._scene.getEngine());
+            }
+            this._gpuSortDirty = true;
+            return;
+        }
 
         // no worker in native
         if (IsNative) {

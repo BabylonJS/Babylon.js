@@ -6,6 +6,7 @@ import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { Mesh } from "../Meshes/mesh.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 
 const BakedVertexAnimationSettingsInstancedKind = "bakedVertexAnimationSettingsInstanced";
 
@@ -375,6 +376,27 @@ export function RegisterThinInstanceMesh(): void {
 
                 this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers[kind]!);
             }
+        }
+    };
+
+    Mesh.prototype._thinInstanceSetSplatIndexBuffer = function (dataBuffer: Nullable<DataBuffer>, instanceCount: number): void {
+        if (!dataBuffer) {
+            return;
+        }
+        // GPU-produced counterpart of the `splatIndex` branch in thinInstanceSetBuffer: instead of wrapping a CPU
+        // Float32Array, it binds an existing GPU DataBuffer (typically a StorageBuffer written by a compute pass)
+        // as the four `splatIndex0..3` instanced vertex attributes, avoiding any CPU readback.
+        this._thinInstanceInitializeUserStorage();
+        this._thinInstanceDataStorage.instancesCount = instanceCount;
+        this._thinInstanceDataStorage.matrixBuffer?.dispose();
+        const splatInstancesBuffer = new Buffer(this.getEngine(), dataBuffer, false, 16, false, true);
+        // The passed DataBuffer is owned and reused across frames by its producer (e.g. the GPU splat sorter),
+        // not by this wrapper. Take a reference so the wrapper's dispose() (on the next rebind) only releases our
+        // borrow instead of destroying the shared buffer while the producer's compute passes still read it.
+        dataBuffer.references++;
+        this._thinInstanceDataStorage.matrixBuffer = splatInstancesBuffer;
+        for (let i = 0; i < 4; i++) {
+            this.setVerticesBuffer(splatInstancesBuffer.createVertexBuffer("splatIndex" + i, i * 4, 4));
         }
     };
 

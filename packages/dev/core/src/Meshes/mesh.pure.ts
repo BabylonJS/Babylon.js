@@ -205,6 +205,9 @@ class _InternalMeshDataInfo {
     public meshMap: Nullable<{ [id: string]: Mesh | undefined }> = null;
 
     public _preActivateId: number = -1;
+    // Optional GPU indirect draw-args buffer (Gaussian Splatting GPU culling path). Stored here rather than as a
+    // direct Mesh field to keep Mesh under the V8 fast-property own-property threshold (see dictionaryMode test).
+    public _indirectDrawBuffer: Nullable<DataBuffer> = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _LODLevels = new Array<MeshLODLevel>();
     /** Alternative definition of LOD level, using screen coverage instead of distance */
@@ -537,6 +540,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set forcedInstanceCount(count: number) {
         this._internalMeshDataInfo._forcedInstanceCount = count;
+    }
+
+    /**
+     * @internal
+     * Optional GPU indirect-args buffer (5 u32: indexCount, instanceCount, firstIndex, baseVertex, firstInstance).
+     * When set, indexed draws for this mesh issue drawIndexedIndirect from this buffer instead of a CPU instance
+     * count. Used by the Gaussian Splatting GPU culling path (WebGPU only). Backed by `_internalMeshDataInfo` (via
+     * an accessor) so it does not add an own property to every Mesh instance (V8 fast-property threshold).
+     */
+    public get _indirectDrawBuffer(): Nullable<DataBuffer> {
+        return this._internalMeshDataInfo._indirectDrawBuffer;
+    }
+
+    public set _indirectDrawBuffer(value: Nullable<DataBuffer>) {
+        this._internalMeshDataInfo._indirectDrawBuffer = value;
     }
 
     /** @internal */
@@ -2141,6 +2159,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else if (useVertexPulling) {
             // We're rendering the number of indices in the index buffer but the vertex shader is handling the data itself.
             engine.drawArraysType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
+        } else if (this._indirectDrawBuffer) {
+            // GPU-driven indirect draw: the instance count is computed on the GPU (e.g. Gaussian Splatting culling).
+            engine.drawElementsInstancedIndirect(fillMode, subMesh.indexStart, subMesh.indexCount, this._indirectDrawBuffer);
         } else {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         }

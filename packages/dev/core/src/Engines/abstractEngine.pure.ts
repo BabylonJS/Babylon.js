@@ -1356,6 +1356,19 @@ export abstract class AbstractEngine {
     public abstract drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
 
     /**
+     * Draws indexed instanced primitives where the draw arguments (including the instance count) are read from a
+     * caller-owned GPU indirect buffer. Only supported on WebGPU; other engines throw.
+     * @param _fillMode defines the primitive to use
+     * @param _indexStart defines the starting index
+     * @param _indexCount defines the number of indices per instance
+     * @param _indirectBuffer the GPU buffer holding the draw-indexed-indirect arguments
+     * @param _indirectByteOffset byte offset of the arguments within the buffer (default 0)
+     */
+    public drawElementsInstancedIndirect(_fillMode: number, _indexStart: number, _indexCount: number, _indirectBuffer: DataBuffer, _indirectByteOffset = 0): void {
+        throw new Error("drawElementsInstancedIndirect is only supported on WebGPU engines.");
+    }
+
+    /**
      * Unbind the current render target texture from the webGL context
      * @param texture defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
