@@ -87,6 +87,11 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         depthStencilTexture: Nullable<InternalTexture>,
         multiview: boolean
     ): RenderTargetTexture {
+        if (multiview) {
+            // The multiview color/depth array wiring is not implemented on this API-agnostic hook yet.
+            // The WebGL provider still owns the array path via its own _createRenderTargetTexture.
+            throw new Error("Multiview render targets are not yet supported by the API-agnostic render target creation path.");
+        }
         const renderTargetTexture = this._createRenderTargetTextureShell(width, height, multiview);
         const renderTargetWrapper = renderTargetTexture.renderTarget!;
 

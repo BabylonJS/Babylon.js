@@ -59,6 +59,10 @@ export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding {
      * @returns the created WebGL graphics binding
      */
     public static CreateFromEngine(session: XRSession, engine: AbstractEngine): WebXRWebGLGraphicsBinding {
-        return new WebXRWebGLGraphicsBinding(session, (engine as ThinEngine)._gl);
+        const gl = (engine as ThinEngine)._gl;
+        if (!gl) {
+            throw new Error("WebXRWebGLGraphicsBinding requires a WebGL-capable engine.");
+        }
+        return new WebXRWebGLGraphicsBinding(session, gl);
     }
 }

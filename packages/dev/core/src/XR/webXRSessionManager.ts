@@ -232,8 +232,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @internal
      */
     public _getGraphicsBinding(): IWebXRGraphicsBinding {
+        if (!this._engine) {
+            throw new Error("Cannot create the XR graphics binding: the engine has been disposed.");
+        }
+        if (!this.session) {
+            throw new Error("Cannot create the XR graphics binding before the XR session is initialized.");
+        }
         if (!this._graphicsBinding) {
-            this._graphicsBinding = WebXRWebGLGraphicsBinding.CreateFromEngine(this.session, this._engine!);
+            this._graphicsBinding = WebXRWebGLGraphicsBinding.CreateFromEngine(this.session, this._engine);
         }
         return this._graphicsBinding;
     }

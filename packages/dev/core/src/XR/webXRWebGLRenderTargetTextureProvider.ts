@@ -13,10 +13,14 @@ import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextur
  */
 export abstract class WebXRWebGLRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {
+        const gl = (this._engine as ThinEngine)._gl;
+        if (!gl) {
+            throw new Error("WebXRWebGLRenderTargetTextureProvider requires a WebGL-capable engine.");
+        }
         const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
         internalTexture.width = textureSize.width;
         internalTexture.height = textureSize.height;
-        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, (this._engine as ThinEngine)._gl);
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, gl);
         internalTexture.isReady = true;
         return internalTexture;
     }
