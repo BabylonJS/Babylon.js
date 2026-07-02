@@ -2159,6 +2159,144 @@ describe("WebXRTrackedBody - hand twist correction", () => {
     });
 });
 
+describe("WebXRTrackedBody - hand retargeting startup pose", () => {
+    let engine: Engine;
+    let scene: Scene;
+
+    beforeEach(() => {
+        engine = new NullEngine({ renderHeight: 256, renderWidth: 256, textureSize: 256 });
+        scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    const jointIndex = (joint: WebXRBodyJoint): number => {
+        const idx = WebXRBodyTracking.AllBodyJoints.indexOf(joint);
+        expect(idx).toBeGreaterThanOrEqual(0);
+        return idx;
+    };
+
+    const leftWristIdx = jointIndex(WebXRBodyJoint.LEFT_HAND_WRIST);
+    const leftMiddleMetacarpalIdx = jointIndex(WebXRBodyJoint.LEFT_HAND_MIDDLE_METACARPAL);
+    const leftIndexMetacarpalIdx = jointIndex(WebXRBodyJoint.LEFT_HAND_INDEX_METACARPAL);
+    // Ring metacarpal is the second twist reference (not little/pinky) because common rigs
+    // name this bone "Ring1" which matches the token "ring", while "little" does not match
+    // the typical "Pinky" bone names used in rigs like Mixamo.
+    const leftRingMetacarpalIdx = jointIndex(WebXRBodyJoint.LEFT_HAND_RING_METACARPAL);
+    const leftLittleMetacarpalIdx = jointIndex(WebXRBodyJoint.LEFT_HAND_LITTLE_METACARPAL);
+
+    const createIdentityJointMatrices = (): Float32Array => {
+        const matrices = new Float32Array(BODY_JOINT_COUNT * 16);
+        for (let i = 0; i < BODY_JOINT_COUNT; i++) {
+            const offset = i * 16;
+            matrices[offset] = 1;
+            matrices[offset + 5] = 1;
+            matrices[offset + 10] = 1;
+            matrices[offset + 15] = 1;
+        }
+        return matrices;
+    };
+
+    const setJointPose = (matrices: Float32Array, jointIdx: number, rotation: Quaternion, position: Vector3): void => {
+        const matrix = new Matrix();
+        Matrix.ComposeToRef(Vector3.One(), rotation, position, matrix);
+        matrix.copyToArray(matrices, jointIdx * 16);
+    };
+
+    // Build a hand frame whose palm plane is rolled by `palmRollRadians` around the aim axis
+    // (the wrist→middle direction, +Y). The wrist joint rotation stays identity so the only
+    // signal a roll-around-aim correction can pick up is the rolled finger *positions*. The
+    // middle metacarpal sits on the aim axis, so it is unaffected by the roll and the aim
+    // direction is identical across frames — isolating the twist (roll) correction.
+    const createHandFrame = (palmRollRadians: number): Float32Array => {
+        const matrices = createIdentityJointMatrices();
+        const roll = Quaternion.RotationAxis(Vector3.Up(), palmRollRadians);
+        const rolled = (x: number, y: number, z: number): Vector3 => new Vector3(x, y, z).rotateByQuaternionToRef(roll, new Vector3());
+        setJointPose(matrices, leftWristIdx, Quaternion.Identity(), Vector3.Zero());
+        setJointPose(matrices, leftMiddleMetacarpalIdx, Quaternion.Identity(), new Vector3(0, 1, 0));
+        setJointPose(matrices, leftIndexMetacarpalIdx, Quaternion.Identity(), rolled(-0.3, 0.8, 0));
+        setJointPose(matrices, leftRingMetacarpalIdx, Quaternion.Identity(), rolled(0.3, 0.8, 0));
+        // Little (pinky) joint is colinear with the ring spread so that, whichever joint the
+        // twist reference uses at runtime, the live palm normal is identical. This makes the
+        // test sensitive only to which *bind* normal is used (rig bind pose vs tracked startup).
+        setJointPose(matrices, leftLittleMetacarpalIdx, Quaternion.Identity(), rolled(0.6, 0.8, 0));
+        return matrices;
+    };
+
+    const createTrackedHand = (): { trackedBody: WebXRTrackedBody; handBone: Bone } => {
+        const mesh = new Mesh("hand-mesh", scene);
+        const skeleton = new Skeleton("hand-skeleton", "hand-skeleton", scene);
+        mesh.skeleton = skeleton;
+
+        // Use real Mixamo-style finger bone names. Crucially, none of them contain the
+        // substring "metacarpal", and the little finger is named "Pinky" — so the twist
+        // reference must use the RING joint (token "ring" → "LeftHandRing1") to resolve a
+        // descendant. If the twist reference used LITTLE, its tokens ("little"/"metacarpal")
+        // would match no bone here and the palm-plane twist correction would be disabled,
+        // re-introducing the startup-roll bug this test guards against.
+        const handBone = new Bone("LeftHand", skeleton, null, Matrix.Identity(), null, Matrix.Identity(), 0);
+        new Bone("LeftHandMiddle1", skeleton, handBone, Matrix.Translation(0, 1, 0), null, Matrix.Translation(0, 1, 0));
+        new Bone("LeftHandIndex1", skeleton, handBone, Matrix.Translation(-0.3, 0.8, 0), null, Matrix.Translation(-0.3, 0.8, 0));
+        new Bone("LeftHandRing1", skeleton, handBone, Matrix.Translation(0.3, 0.8, 0), null, Matrix.Translation(0.3, 0.8, 0));
+        new Bone("LeftHandPinky1", skeleton, handBone, Matrix.Translation(0.5, 0.7, 0), null, Matrix.Translation(0.5, 0.7, 0));
+        mesh.computeWorldMatrix(true);
+
+        const trackedBody = new WebXRTrackedBody(scene, mesh, { [WebXRBodyJoint.LEFT_HAND_WRIST]: "LeftHand" }, 1, false, true, {
+            [WebXRBodyJoint.LEFT_HAND_WRIST]: WebXRBodyJoint.LEFT_HAND_MIDDLE_METACARPAL,
+        });
+
+        return { trackedBody, handBone };
+    };
+
+    const getBoneWorldRotation = (bone: Bone): Quaternion => {
+        const rotation = new Quaternion();
+        bone.getFinalMatrix().decompose(undefined, rotation, undefined);
+        rotation.normalize();
+        return rotation;
+    };
+
+    it("auto-captures first tracked frame as bind pose by default", () => {
+        const { trackedBody } = createTrackedHand();
+
+        expect(trackedBody.autoCaptureBindOnFirstFrame).toBe(true);
+
+        trackedBody.dispose();
+    });
+
+    it("does not bake the startup palm roll into later hand orientation", () => {
+        // The same live pose (neutral palm) must produce the same avatar orientation no matter
+        // how the user's palm was rolled around the aim axis on the captured bind frame.
+        //
+        // The twist correction must derive its reference palm-plane normal from the AVATAR's
+        // bind pose (the ring metacarpal bone resolved by name), NOT from the tracked startup
+        // positions. If the second twist reference used LITTLE, it would not resolve to a bone
+        // on a Mixamo-style rig (named "...Pinky1"), the reference normal would fall back to the
+        // tracked startup palm, and a startup roll would be baked in permanently — diverging the
+        // two scenarios below.
+        const neutralLiveFrame = createHandFrame(0);
+
+        const startsRolled = createTrackedHand();
+        // First frame: palm rolled 90° around the aim axis — captured as bind (auto-capture on).
+        startsRolled.trackedBody.replayRawJointMatrices(createHandFrame(Math.PI / 2), true);
+        // Second frame: neutral palm — should converge to the same orientation as the neutral start.
+        startsRolled.trackedBody.replayRawJointMatrices(neutralLiveFrame, true);
+        const afterRolledStart = getBoneWorldRotation(startsRolled.handBone);
+
+        const startsNeutral = createTrackedHand();
+        // First frame: neutral palm — captured as bind.
+        startsNeutral.trackedBody.replayRawJointMatrices(neutralLiveFrame, true);
+        const afterNeutralStart = getBoneWorldRotation(startsNeutral.handBone);
+
+        expect(Math.abs(Quaternion.Dot(afterRolledStart, afterNeutralStart))).toBeGreaterThan(0.9999);
+
+        startsRolled.trackedBody.dispose();
+        startsNeutral.trackedBody.dispose();
+    });
+});
+
 describe("WebXRBodyTracking - feature class", () => {
     let engine: Engine;
     let scene: Scene;
