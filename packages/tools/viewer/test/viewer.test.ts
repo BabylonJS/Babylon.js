@@ -388,6 +388,71 @@ test("load model from URL", async ({ page }) => {
     await expectScreenshotMatch(page, "viewer-load-model-url.png");
 });
 
+test("material-less model gets default clay material", async ({ page }) => {
+    // A minimal cube OBJ with no MTL reference, so its mesh has no material after loading. Because the
+    // viewer relies on image-based lighting (no direct lights), the engine's default StandardMaterial
+    // would render such a mesh black. The viewer instead assigns a lazily-created "clay" PBR material so
+    // the mesh is shaded consistently, and loads the default environment for PBR content. The model is
+    // embedded inline as a base64 data URL (rather than a separate checked-in file) and loaded purely via
+    // the declarative "source"/"extension" attributes. The explicit "extension" is required because a data
+    // URL has no file extension for the loader to infer the format from — this also exercises the
+    // construction-time load path forwarding the viewer-level plugin extension.
+    const objText = [
+        "v -1.0 -1.0 -1.0",
+        "v -1.0 -1.0  1.0",
+        "v -1.0  1.0 -1.0",
+        "v -1.0  1.0  1.0",
+        "v  1.0 -1.0 -1.0",
+        "v  1.0 -1.0  1.0",
+        "v  1.0  1.0 -1.0",
+        "v  1.0  1.0  1.0",
+        "vn -1.0  0.0  0.0",
+        "vn  1.0  0.0  0.0",
+        "vn  0.0 -1.0  0.0",
+        "vn  0.0  1.0  0.0",
+        "vn  0.0  0.0 -1.0",
+        "vn  0.0  0.0  1.0",
+        "o Cube",
+        "f 1//1 2//1 4//1 3//1",
+        "f 5//2 7//2 8//2 6//2",
+        "f 1//3 5//3 6//3 2//3",
+        "f 3//4 4//4 8//4 7//4",
+        "f 1//5 3//5 7//5 5//5",
+        "f 2//6 6//6 8//6 4//6",
+    ].join("\n");
+    const objDataUrl = `data:model/obj;base64,${Buffer.from(objText).toString("base64")}`;
+
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer source="${objDataUrl}" extension=".obj">
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // The clay PBR material is assigned during load, and because it is PBR the viewer also loads the
+    // default environment in its post-load step. Wait until both are in place so the assertions (and
+    // the screenshot's image-based lighting) are deterministic rather than racing the post-load step.
+    const materialInfo = await (
+        await page.waitForFunction(() => {
+            const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+            const scene = viewer.viewerDetails?.scene;
+            const mesh = scene?.meshes.find((m) => m.name === "Cube");
+            if (!mesh?.material || !scene?.environmentTexture) {
+                return null;
+            }
+            return { className: mesh.material.getClassName(), name: mesh.material.name, hasEnvTexture: true };
+        })
+    ).jsonValue();
+    expect(materialInfo.className).toBe("PBRMaterial");
+    expect(materialInfo.name).toBe("Viewer Default Material");
+    expect(materialInfo.hasEnvTexture).toBe(true);
+
+    await expectScreenshotMatch(page, "viewer-default-clay-material.png");
+});
+
 test("change model source", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
