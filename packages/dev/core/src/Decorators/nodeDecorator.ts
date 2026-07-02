@@ -137,9 +137,8 @@ export function editableInPropertyPage(
     };
 }
 
-/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const __bjsPropStoreKey = "__bjs_prop_store__";
+const __bjsPropStoreKey = "__bjs_prop_store__";
 
 /**
  * Gets the editable properties for a given target using TC39 decorator metadata.
