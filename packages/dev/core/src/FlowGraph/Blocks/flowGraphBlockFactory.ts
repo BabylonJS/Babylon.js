@@ -48,12 +48,16 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Event/flowGraphSendCustomEventBlock")).FlowGraphSendCustomEventBlock;
         case FlowGraphBlockNames.ReceiveCustomEvent:
             return async () => (await import("./Event/flowGraphReceiveCustomEventBlock")).FlowGraphReceiveCustomEventBlock;
+        case FlowGraphBlockNames.StopEventPropagation:
+            return async () => (await import("./Event/flowGraphStopEventPropagationBlock")).FlowGraphStopEventPropagationBlock;
         case FlowGraphBlockNames.MeshPickEvent:
             return async () => (await import("./Event/flowGraphMeshPickEventBlock")).FlowGraphMeshPickEventBlock;
         case FlowGraphBlockNames.E:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEBlock;
         case FlowGraphBlockNames.PI:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphPiBlock;
+        case FlowGraphBlockNames.Tau:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTauBlock;
         case FlowGraphBlockNames.Inf:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphInfBlock;
         case FlowGraphBlockNames.NaN:
@@ -96,6 +100,14 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSaturateBlock;
         case FlowGraphBlockNames.MathInterpolation:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathInterpolationBlock;
+        case FlowGraphBlockNames.MathSlerp:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSlerpBlock;
+        case FlowGraphBlockNames.SmoothStep:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSmoothStepBlock;
+        case FlowGraphBlockNames.RGBToOkLCh:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRGBToOkLChBlock;
+        case FlowGraphBlockNames.RGBFromOkLCh:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRGBFromOkLChBlock;
         case FlowGraphBlockNames.Equality:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEqualityBlock;
         case FlowGraphBlockNames.LessThan:
@@ -278,6 +290,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAxisAngleFromQuaternionBlock;
         case FlowGraphBlockNames.QuaternionFromDirections:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromDirectionsBlock;
+        case FlowGraphBlockNames.QuaternionFromUpForward:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromUpForwardBlock;
+        case FlowGraphBlockNames.VectorSlerp:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphVectorSlerpBlock;
         case FlowGraphBlockNames.MatrixDecompose:
             return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;
         case FlowGraphBlockNames.MatrixCompose:

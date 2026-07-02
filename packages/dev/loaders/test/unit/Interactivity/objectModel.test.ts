@@ -385,4 +385,64 @@ describe("glTF interactivity Object Model", () => {
 
         log.mockImplementation(() => {});
     });
+
+    // A concurrent invalid pointer/interpolate (bad duration) must not cancel a running interpolation on the same target.
+    it("should not let an invalid pointer/interpolate cancel a running one", async () => {
+        const mesh = new Mesh("mesh", scene);
+        mesh.position.set(1, 2, 3);
+        const mockGltf: any = {
+            nodes: [
+                {
+                    _babylonTransformNode: mesh,
+                },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            // 0: valid interpolate, 1: invalid interpolate (same op/declaration), 2: unused
+            [{ op: "pointer/interpolate" }],
+            [
+                {
+                    // valid interpolation to (2,3,4) over ~0.9s
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/translation"] },
+                        type: { value: [0] },
+                    },
+                    values: {
+                        value: { value: [2, 3, 4], type: 0 },
+                        duration: { value: [0.9], type: 1 },
+                    },
+                    flows: {
+                        // as soon as the valid interpolation starts, trigger the invalid one on the same target
+                        out: {
+                            node: 1,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    // invalid interpolation (negative duration) targeting the same node
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/translation"] },
+                        type: { value: [0] },
+                    },
+                    values: {
+                        value: { value: [9, 9, 9], type: 0 },
+                        duration: { value: [-1], type: 1 },
+                    },
+                },
+            ],
+            [{ signature: "float3" }, { signature: "float" }]
+        );
+
+        // wait for the valid interpolation to complete
+        await new Promise((resolve) => setTimeout(resolve, 1000 + 300));
+        // the running interpolation must not have been cancelled by the invalid one
+        expect(mesh.position.x).toBeCloseTo(2, 3);
+        expect(mesh.position.y).toBeCloseTo(3, 3);
+        expect(mesh.position.z).toBeCloseTo(4, 3);
+    });
 });

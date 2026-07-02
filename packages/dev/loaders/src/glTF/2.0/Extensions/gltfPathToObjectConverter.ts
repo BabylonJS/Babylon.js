@@ -14,6 +14,18 @@ export const OptionalPathExceptionsList: {
         // get the node as object when reading an extension
         regex: new RegExp(`^/nodes/\\d+/extensions/`),
     },
+    {
+        // weights may be undefined on nodes without morph targets
+        regex: new RegExp(`^/nodes/\\d+/weights`),
+    },
+    {
+        // weights may be undefined on meshes without morph targets
+        regex: new RegExp(`^/meshes/\\d+/weights`),
+    },
+    {
+        // KHR_texture_transform may not be present on texture info objects
+        regex: new RegExp(`/extensions/KHR_texture_transform/`),
+    },
 ];
 
 /**
@@ -61,6 +73,15 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
         const parts = path.split("/");
         parts.shift();
 
+        // KHR_interactivity Opaque-Reference spec uses a trailing slash to mean
+        // "ref to the resource itself" (e.g. `/animations/0/` is a ref to the
+        // animation). Drop the trailing empty segment so we resolve to the
+        // accessor for the resource rather than descending into a non-existent
+        // empty-named child.
+        if (parts.length > 0 && parts[parts.length - 1] === "") {
+            parts.pop();
+        }
+
         //if the last part has ".length" in it, separate that as an extra part
         if (parts[parts.length - 1].includes(".length")) {
             const lastPart = parts[parts.length - 1];
@@ -73,13 +94,27 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
 
         for (const part of parts) {
             const isLength = part === "length";
-            if (isLength && !infoTree.__array__) {
-                throw new Error(`Path ${path} is invalid`);
+            if (isLength) {
+                // For .length, check if the current level has a 'length' accessor
+                if (infoTree.length) {
+                    infoTree = infoTree.length;
+                } else if (infoTree.__array__) {
+                    // Fallback: length of an array that doesn't have explicit length accessor
+                    throw new Error(`Path ${path} is invalid - no length accessor`);
+                } else {
+                    throw new Error(`Path ${path} is invalid`);
+                }
+                // Set target to the current object tree (the array itself)
+                // Only update target if objectTree is defined, otherwise keep the last valid target
+                if (objectTree !== undefined) {
+                    target = objectTree;
+                }
+                continue;
             }
             if (infoTree.__ignoreObjectTree__) {
                 ignoreObjectTree = true;
             }
-            if (infoTree.__array__ && !isLength) {
+            if (infoTree.__array__) {
                 infoTree = infoTree.__array__;
             } else {
                 infoTree = infoTree[part];
@@ -87,20 +122,43 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
                     throw new Error(`Path ${path} is invalid`);
                 }
             }
-            if (!ignoreObjectTree) {
+            // __passThroughTarget__: skip objectTree traversal for this property.
+            // The accessor functions will receive the parent target (e.g., the INode)
+            // instead of the child property (e.g., node.weights which may be undefined).
+            if (infoTree.__passThroughTarget__) {
+                ignoreObjectTree = true;
+            } else if (!ignoreObjectTree) {
                 if (objectTree === undefined) {
                     // check if the path is in the exception list. If it is, break and return the last object that was found
                     const exception = OptionalPathExceptionsList.find((e) => e.regex.test(path));
                     if (!exception) {
                         throw new Error(`Path ${path} is invalid`);
                     }
-                } else if (!isLength) {
+                } else {
                     objectTree = objectTree?.[part];
+                }
+            } else {
+                // When ignoring object tree traversal and encountering a numeric array index,
+                // wrap the accessor functions to pass the index through as the second argument.
+                const numericIndex = parseInt(part);
+                if (!isNaN(numericIndex) && typeof infoTree.get === "function") {
+                    const orig = infoTree;
+                    infoTree = { ...orig };
+                    infoTree.get = (target: any) => orig.get(target, numericIndex);
+                    if (typeof orig.set === "function") {
+                        infoTree.set = (value: any, target: any) => orig.set(value, target, numericIndex);
+                    }
+                    if (typeof orig.getTarget === "function") {
+                        infoTree.getTarget = (target: any) => orig.getTarget(target, numericIndex);
+                    }
                 }
             }
 
-            if (infoTree.__target__ || isLength) {
-                target = objectTree;
+            if (infoTree.__target__) {
+                // Only update target if objectTree is defined, otherwise keep the last valid target
+                if (objectTree !== undefined) {
+                    target = objectTree;
+                }
             }
         }
 

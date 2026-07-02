@@ -10,6 +10,7 @@ import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { getNumericValue } from "core/FlowGraph/utils";
+import { MarkDelayInactive } from "core/FlowGraph/flowGraphDelayReference";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
@@ -37,6 +38,9 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
             timer.dispose();
             // not removing it from the array. Disposing it will clear all of its resources
         }
+        // The delay is cancelled, so drop it from the active set used by the
+        // `/extensions/KHR_interactivity/delays/{}` validity check.
+        MarkDelayInactive(context, delayIndex);
         // activate the out output flow
         this.out._activateSignal(context);
     }

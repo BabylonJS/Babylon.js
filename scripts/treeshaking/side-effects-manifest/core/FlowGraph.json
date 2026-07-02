@@ -39,6 +39,7 @@
         "FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphSoundEndedEventBlock.ts": ["top-level-call"],
+        "FlowGraph/Blocks/Event/flowGraphStopEventPropagationBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Execution/Animation/flowGraphBezierCurveEasingBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Execution/Animation/flowGraphEasingBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.ts": ["top-level-call"],

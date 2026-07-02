@@ -5,10 +5,12 @@ import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type Nullable } from "../../../types";
 import { Logger } from "../../../Misc/logger";
-import { type RichType, getRichTypeByFlowGraphType } from "../../flowGraphRichTypes.pure";
+import { type RichType, getRichTypeByFlowGraphType, RichTypeString } from "../../flowGraphRichTypes.pure";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
 import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
@@ -34,6 +36,13 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public override initPriority: number = 1;
 
+    /**
+     * Output: the KHR_interactivity event reference for the received custom event.
+     * Per spec (event/receive) receivers of the same event index return the same,
+     * non-null event reference. We key the reference by the configured event id.
+     */
+    public readonly eventRef: FlowGraphDataConnection<string>;
+
     constructor(
         /**
          * the configuration of the block
@@ -49,8 +58,15 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
             const typeKey = typeof entry.type === "string" ? entry.type : entry.type?.typeName;
             const richType = typeof entry.type?.serialize === "function" ? entry.type : getRichTypeByFlowGraphType(typeKey);
             entry.type = richType;
-            this.registerDataOutput(key, richType);
+            // Pass default value from event data schema so outputs have the correct initial value
+            this.registerDataOutput(key, richType, (entry as any).value);
         }
+        // Reserved `event` output exposing the event reference. Guard against a
+        // (pathological) custom event value socket literally named "event".
+        this.eventRef =
+            this.config.eventData && Object.prototype.hasOwnProperty.call(this.config.eventData, "event")
+                ? this.getDataOutput("event")!
+                : this.registerDataOutput("event", RichTypeString, GetEventReference(this.config.eventId));
     }
 
     public override _preparePendingTasks(context: FlowGraphContext): void {
@@ -61,12 +77,21 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
             return;
         }
 
-        const eventObserver = observable.add((eventData: { [key: string]: any }) => {
-            const keys = Object.keys(eventData);
-            for (const key of keys) {
-                this.getDataOutput(key)?.setValue(eventData[key], context);
+        const eventObserver = observable.add((eventData: { [key: string]: any }, eventState) => {
+            // Make this dispatch's EventState reachable by event/stopPropagation
+            // for the duration of the synchronous receiver flow.
+            context.configuration.coordinator._beginEventDispatch(this.config.eventId, eventState);
+            try {
+                const keys = Object.keys(eventData);
+                for (const key of keys) {
+                    this.getDataOutput(key)?.setValue(eventData[key], context);
+                }
+                // Expose the event reference before activating downstream flow.
+                this.eventRef.setValue(GetEventReference(this.config.eventId), context);
+                this._execute(context);
+            } finally {
+                context.configuration.coordinator._endEventDispatch();
             }
-            this._execute(context);
         });
         context._setExecutionVariable(this, "_eventObserver", eventObserver);
     }

@@ -8,9 +8,21 @@ import { type FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNa
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
+/**
+ * Description of a KHR_interactivity custom event, as parsed from the
+ * glTF `events` array. Used by the importer to register the event with the
+ * FlowGraph send/receive event blocks.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
+    /** Identifier of the event, used to match send and receive blocks. */
     eventId: string;
+    /**
+     * Optional payload schema for the event. Each entry describes one
+     * value carried by the event: an `id` (the FlowGraph data socket name),
+     * a `type` (glTF interactivity type name) and an optional default
+     * `value`. `eventData` (the boolean) is currently unused.
+     */
     eventData?: {
         eventData: boolean;
         id: string;
@@ -20,7 +32,7 @@ export interface InteractivityEvent {
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const gltfTypeToBabylonType: {
-    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
+    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" };
 } = {
     float: { length: 1, flowGraphType: FlowGraphTypes.Number, elementType: "number" },
     bool: { length: 1, flowGraphType: FlowGraphTypes.Boolean, elementType: "boolean" },
@@ -31,14 +43,27 @@ export const gltfTypeToBabylonType: {
     float2x2: { length: 4, flowGraphType: FlowGraphTypes.Matrix2D, elementType: "number" },
     float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
     int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
+    // KHR_interactivity opaque reference type. Represented as a JSON Pointer string
+    // (e.g. "/nodes/17/") that addresses a glTF object. The empty string is the
+    // canonical "null reference" sentinel used by the parser.
+    ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
 };
 
+/**
+ * Parses a KHR_interactivity graph definition (the raw glTF JSON object) into
+ * the serialized FlowGraph form consumed by {@link ParseFlowGraphAsync}.
+ *
+ * The class walks the interactivity types, declarations, variables, events
+ * and nodes in order, applies any importer-side transforms (e.g. the
+ * relative-pointer-prefix bake) and emits an {@link ISerializedFlowGraph}
+ * via {@link serializeToFlowGraph}.
+ */
 export class InteractivityGraphToFlowGraphParser {
     /**
      * Note - the graph should be rejected if the same type is defined twice.
      * We currently don't validate that.
      */
-    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" }[] = [];
+    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" }[] = [];
     private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }[] = [];
     private _staticVariables: { type: FlowGraphTypes; value: any[] }[] = [];
     private _events: InteractivityEvent[] = [];
@@ -132,6 +157,10 @@ export class InteractivityGraphToFlowGraphParser {
                 case FlowGraphTypes.Number:
                     value.push(NaN);
                     break;
+                case FlowGraphTypes.String:
+                    // Default for a `ref`-typed value is the null reference, encoded as the empty string.
+                    value.push("" as any);
+                    break;
                 case FlowGraphTypes.Vector2:
                     value.push(NaN, NaN);
                     break;
@@ -214,6 +243,10 @@ export class InteractivityGraphToFlowGraphParser {
                     throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
             }
+            // Bake any static ref-typed value sockets into pointer templates that
+            // were authored as "relative" (no leading slash). See
+            // _bakeRelativePointerPrefix for full rationale.
+            this._bakeRelativePointerPrefix(node, mapping.fullOperationName);
             const blocks: ISerializedFlowGraphBlock[] = [];
             // create block(s) for this node using the mapping
             for (const blockType of mapping.flowGraphMapping.blocks) {
@@ -222,6 +255,90 @@ export class InteractivityGraphToFlowGraphParser {
                 blocks.push(block);
             }
             this._nodes.push({ blocks, fullOperationName: mapping.fullOperationName });
+        }
+    }
+
+    /**
+     * KHR_interactivity test assets such as `Calculator.glb` author
+     * `pointer/get` and `pointer/set` nodes whose `pointer` configuration value
+     * is a *relative* JSON Pointer (no leading slash), e.g.
+     * `extensions/KHR_node_visibility/visible`, paired with a static ref-typed
+     * value socket like `nodeRef = "/nodes/22/"` that supplies the absolute
+     * prefix. The standard spec algorithm only substitutes `{name}`/`[name]`
+     * template parameters and would leave the relative path untouched, so the
+     * effective JSON Pointer ends up invalid and the `nodeRef` socket has
+     * nowhere to land on the FlowGraph block (causing
+     * "Could not find data input with name nodeRef" failures at parse time).
+     *
+     * To support this convention we splice a static ref value into the
+     * pointer template at parse time, dropping the now-baked socket from the
+     * node's `values` map so the connection wiring step ignores it. Only
+     * literal/static refs are baked here; refs that come from an upstream
+     * connection (`{ node, socket }` shape) are left untouched, since we have
+     * no way to know their value at parse time. Such cases would still
+     * surface as the same parse-time error and need a richer runtime
+     * substitution strategy.
+     * @param node The interactivity node to patch in place.
+     * @param fullOperationName The fully qualified op name (e.g. `pointer/get`).
+     */
+    private _bakeRelativePointerPrefix(node: IKHRInteractivity_Node, fullOperationName: string): void {
+        if (!fullOperationName.startsWith("pointer/")) {
+            return;
+        }
+        const pointerCfg = node.configuration?.pointer;
+        const template = pointerCfg?.value?.[0];
+        if (typeof template !== "string" || template.startsWith("/")) {
+            return;
+        }
+        if (!node.values) {
+            return;
+        }
+        for (const name of Object.keys(node.values)) {
+            const socket = node.values[name] as IKHRInteractivity_Variable & { node?: number; socket?: string };
+            // Skip non-ref-typed inputs. By KHR_interactivity convention the ref
+            // socket of a `pointer/*` op is named after the ref it carries
+            // (``nodeRef``, ``materialRef``, ``meshRef``, etc.) and never
+            // ``value`` — `value` is the data being read or written by the
+            // pointer op, not the pointer prefix. Only consider sockets whose
+            // declared type is ``ref`` (a literal whose serialized type maps to
+            // FlowGraphTypes.String) or whose name follows the *Ref convention.
+            const literal = socket?.value?.[0];
+            const declaredType = (socket as any)?.type;
+            const isLiteralRef = typeof literal === "string" && literal.startsWith("/");
+            const isTypedRef = typeof declaredType === "number" && this._types[declaredType]?.flowGraphType === FlowGraphTypes.String;
+            const isNamedRef = name.endsWith("Ref");
+            if (!isLiteralRef && !isTypedRef && !isNamedRef) {
+                continue;
+            }
+            // Static-literal case: the socket has a hardcoded JSON-Pointer ref
+            // value (e.g. ``"/nodes/22/"``). Splice the literal into the template
+            // and drop the socket entirely so the connection-wiring step ignores
+            // it. This is the Calculator.glb pattern.
+            if (isLiteralRef) {
+                const trimmedRef = (literal as string).replace(/\/+$/, "");
+                (pointerCfg!.value as any[])[0] = trimmedRef + "/" + template;
+                delete (node.values as any)[name];
+                break;
+            }
+            // Dynamic-ref case: the socket is connected to an upstream output
+            // (``{ node, socket }``). We can't bake the value at parse time, so
+            // instead we rewrite the template so the existing template-parameter
+            // substitution machinery substitutes the runtime ref. For a socket
+            // named ``nodeRef`` and a relative template like
+            // ``extensions/KHR_node_visibility/visible``, rewrite to
+            // ``/nodes/{nodeRef}/extensions/KHR_node_visibility/visible``. The
+            // FlowGraphPathConverterComponent will register a ``nodeRef`` data
+            // input on the block and the connection-wiring step will hook it
+            // up to the upstream output. At runtime the runtime substitution
+            // logic extracts the matching JSON-Pointer segment from the ref
+            // string delivered by that connection.
+            // This is the MagicBall.glb pattern.
+            if (typeof socket?.node === "number") {
+                (pointerCfg!.value as any[])[0] = `/nodes/{${name}}/${template}`;
+                // Leave the value socket entry as is — it is now the data input
+                // that the substitution machinery will consume.
+                break;
+            }
         }
     }
 
@@ -295,6 +412,17 @@ export class InteractivityGraphToFlowGraphParser {
                 Logger.Error(["No mapping found for node", gltfNode]);
                 throw new Error("Error parsing node connections");
             }
+            // KHR_interactivity spec section 3.2.4 "Unsupported Operations":
+            // nodes referring to unsupported operations are demoted to no-ops.
+            // Activations of their input flow sockets are ignored, their output
+            // flow sockets are never activated, and their output value sockets
+            // return constant type-default values. They have no backing
+            // FlowGraph blocks (blocks.length === 0), so there is nothing to
+            // wire for this node — skip all of its connections.
+            if (flowGraphBlocks.blocks.length === 0) {
+                Logger.Warn(`Skipping connections for no-op node #${i} (unsupported operation: ${flowGraphBlocks.fullOperationName})`);
+                continue;
+            }
             const flowsFromGLTF = gltfNode.flows || {};
             const flowsKeys = Object.keys(flowsFromGLTF).sort(); // sorting as some operations require sorted keys
             // connect the flows
@@ -302,10 +430,6 @@ export class InteractivityGraphToFlowGraphParser {
                 const flow = flowsFromGLTF[flowKey];
                 const flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
                 const socketOutName = flowMapping?.name || flowKey;
-                // create a serialized socket
-                const socketOut = this._createNewSocketConnection(socketOutName, true);
-                const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.signalOutputs.push(socketOut);
                 // get the input node of this block
                 const inputNodeId = flow.node;
                 const nodeIn = this._nodes[inputNodeId];
@@ -313,6 +437,17 @@ export class InteractivityGraphToFlowGraphParser {
                     Logger.Error(["No node found for input node id", inputNodeId]);
                     throw new Error("Error parsing node connections");
                 }
+                // Spec 3.2.4: input flow activations on no-op nodes are ignored,
+                // so a flow connection into a no-op target is itself a no-op.
+                // Drop it instead of crashing on the missing target block.
+                if (nodeIn.blocks.length === 0) {
+                    Logger.Warn(`Dropping flow connection from node #${i} "${flowKey}" to no-op node #${inputNodeId} (unsupported operation: ${nodeIn.fullOperationName})`);
+                    continue;
+                }
+                // create a serialized socket
+                const socketOut = this._createNewSocketConnection(socketOutName, true);
+                const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
+                block.signalOutputs.push(socketOut);
                 // get the mapper for the input node - in case it mapped to multiple blocks
                 const inputMapper = getMappingForFullOperationName(nodeIn.fullOperationName);
                 if (!inputMapper) {
@@ -372,6 +507,16 @@ export class InteractivityGraphToFlowGraphParser {
                     if (!nodeOut) {
                         Logger.Error(["No node found for output socket reference", value]);
                         throw new Error("Error parsing node connections");
+                    }
+                    // Spec 3.2.4: output value sockets of no-op nodes return
+                    // constant type-default values. Leave the consumer's
+                    // dataInput unconnected (no connectedPointIds) so the
+                    // FlowGraph runtime falls back to the RichType default.
+                    if (nodeOut.blocks.length === 0) {
+                        Logger.Warn(
+                            `Dropping value connection from no-op node #${nodeOutId} (unsupported operation: ${nodeOut.fullOperationName}) into node #${i} "${valueKey}"; consumer will use type-default value`
+                        );
+                        continue;
                     }
                     const outputMapper = getMappingForFullOperationName(nodeOut.fullOperationName);
                     if (!outputMapper) {
@@ -462,10 +607,22 @@ export class InteractivityGraphToFlowGraphParser {
         outputConnection.connectedPointIds.push(inputConnection.uniqueId);
     }
 
+    /**
+     * Returns the deterministic FlowGraph user-variable name used for the
+     * static variable at the given declaration index.
+     * @param index zero-based index into the interactivity graph's `variables` array.
+     * @returns the FlowGraph variable name (e.g. `staticVariable_3`).
+     */
     public getVariableName(index: number) {
         return "staticVariable_" + index;
     }
 
+    /**
+     * Serializes the parsed interactivity graph into the {@link ISerializedFlowGraph}
+     * payload consumed by `ParseFlowGraphAsync`. Performs node-connection wiring
+     * and seeds the execution context with the graph's static variables.
+     * @returns the serialized FlowGraph for the parsed KHR_interactivity graph.
+     */
     public serializeToFlowGraph(): ISerializedFlowGraph {
         const context: ISerializedFlowGraphContext = {
             uniqueId: RandomGUID(),

@@ -36,7 +36,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
      * The maximum number of iterations allowed for the loop.
      * If the loop exceeds this number, it will stop. This number is configurable to avoid infinite loops.
      */
-    public static MaxLoopIterations = 1000;
+    public static MaxLoopIterations = 100000;
     /**
      * Input connection: The start index of the loop.
      */
@@ -85,11 +85,14 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         const index = getNumericValue(this.startIndex.getValue(context));
         const step = this.step.getValue(context);
         let endIndex = getNumericValue(this.endIndex.getValue(context));
+        let iterations = 0;
         for (let i = index; i < endIndex; i += step) {
             this.index.setValue(new FlowGraphInteger(i), context);
             this.executionFlow._activateSignal(context);
             endIndex = getNumericValue(this.endIndex.getValue(context));
-            if (i > FlowGraphForLoopBlock.MaxLoopIterations * step) {
+            // Safety net against runaway loops. The cap counts iterations (not the index value) so it
+            // behaves correctly regardless of startIndex/step.
+            if (++iterations >= FlowGraphForLoopBlock.MaxLoopIterations) {
                 break;
             }
         }

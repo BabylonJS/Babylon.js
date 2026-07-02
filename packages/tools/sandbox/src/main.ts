@@ -15,6 +15,10 @@ import "loaders/glTF/2.0";
 import "loaders/FBX/fbxFileLoader";
 // Register Scene animation extensions (e.g. getAllAnimatablesByTarget) used by the Inspector's animation panel.
 import "core/Animations/animatable";
+// glTF scenes can reference a single mesh from multiple nodes, which the loader
+// realizes with InstancedMesh. In the tree-shaken dev build that side-effect is
+// not pulled in automatically, so import it explicitly here.
+import "core/Meshes/instancedMesh";
 import { Sandbox } from "./sandbox";
 
 const HostElement = document.getElementById("host-element") as HTMLElement;

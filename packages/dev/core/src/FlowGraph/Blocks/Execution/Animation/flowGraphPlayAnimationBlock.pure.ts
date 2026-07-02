@@ -101,6 +101,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 currentAnimationGroup.dispose();
             }
             let animationGroupToUse = ag;
+            let isInterpolation = false;
+            let interpolationAnimationsArray: Animation[] | undefined;
+            let interpolationTarget: any;
             // check which animation to use. If no animationGroup was defined and an animation was provided, use the animation
             if (animation && !animationGroupToUse) {
                 const target = this.object.getValue(context);
@@ -110,7 +113,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 const animationsArray = Array.isArray(animation) ? animation : [animation];
                 const name = animationsArray[0].name;
                 animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
-                let isInterpolation = false;
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
                 for (const anim of animationsArray) {
                     animationGroupToUse.addTargetedAnimation(anim, target);
@@ -118,16 +120,46 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                         isInterpolation = true;
                     }
                 }
-
-                if (isInterpolation) {
-                    this._checkInterpolationDuplications(context, animationsArray, target);
-                }
+                interpolationAnimationsArray = animationsArray;
+                interpolationTarget = target;
             }
             // not accepting 0
             const speed = this.speed.getValue(context) || 1;
             const from = this.from.getValue(context) ?? 0;
             // not accepting 0
             const to = this.to.getValue(context) || animationGroupToUse.to;
+
+            // Validate duration for interpolation animations: non-finite or negative values trigger the error flow.
+            // Only validate when animation is provided (interpolation case), not for general animation/start
+            // where the AnimationGroup's default to value may legitimately be negative.
+            if (!isFinite(to) || !isFinite(from)) {
+                return this._reportError(context, "Invalid animation duration");
+            }
+            if (animation && to < 0) {
+                return this._reportError(context, "Invalid animation duration");
+            }
+
+            // Validate easing function: NaN bezier control points trigger the error flow
+            if (animation) {
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                for (const anim of animationsArray) {
+                    const easing = anim.getEasingFunction?.();
+                    if (easing && "x1" in easing) {
+                        const bezier = easing as unknown as { x1: number; y1: number; x2: number; y2: number };
+                        if (isNaN(bezier.x1) || isNaN(bezier.y1) || isNaN(bezier.x2) || isNaN(bezier.y2)) {
+                            return this._reportError(context, "Invalid bezier curve control points");
+                        }
+                    }
+                }
+            }
+
+            // Stop any interpolation already running on the same target/property, but only after validation has
+            // passed. An invalid interpolation (bad duration or NaN control points) must report [err] without
+            // disturbing an interpolation that is already running on the same target.
+            if (isInterpolation && interpolationAnimationsArray && interpolationTarget !== undefined) {
+                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget);
+            }
+
             const loop = !isFinite(to) || this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
 

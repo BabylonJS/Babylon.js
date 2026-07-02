@@ -59,6 +59,12 @@ interface IGLTFToFlowGraphMappingObject {
     defaultValue?: any;
 }
 
+/**
+ * Description of how a KHR_interactivity declaration (op such as
+ * `pointer/get`, `event/onSelect`, `math/add`) maps to one or more
+ * FlowGraph blocks. Used by {@link InteractivityGraphToFlowGraphParser}
+ * to translate the source glTF graph into the serialized FlowGraph form.
+ */
 export interface IGLTFToFlowGraphMapping {
     /**
      * The type of the FlowGraph block(s).
@@ -252,6 +258,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
         blocks: [FlowGraphBlockNames.SceneReadyEvent],
         outputs: {
+            values: {
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
+            },
             flows: {
                 out: { name: "done" },
             },
@@ -263,6 +273,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             values: {
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
             },
             flows: {
                 out: { name: "done" },
@@ -293,6 +305,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
         outputs: {
+            values: {
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
+            },
             flows: {
                 out: { name: "done" },
             },
@@ -338,8 +354,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
+    "event/stopPropagation": {
+        blocks: [FlowGraphBlockNames.StopEventPropagation],
+        inputs: {
+            values: {
+                event: { name: "event" },
+                stopImmediate: { name: "stopImmediate" },
+            },
+            flows: {
+                in: { name: "in" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
+    },
     "math/E": getSimpleInputMapping(FlowGraphBlockNames.E),
     "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
+    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau),
     "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
     "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN),
     "math/abs": getSimpleInputMapping(FlowGraphBlockNames.Abs),
@@ -408,7 +442,57 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/clamp": getSimpleInputMapping(FlowGraphBlockNames.Clamp, ["a", "b", "c"]),
     "math/saturate": getSimpleInputMapping(FlowGraphBlockNames.Saturate),
     "math/mix": getSimpleInputMapping(FlowGraphBlockNames.MathInterpolation, ["a", "b", "c"]),
+    // Smooth-step (Hermite interpolation): edges a/b and value c.
+    "math/smoothStep": getSimpleInputMapping(FlowGraphBlockNames.SmoothStep, ["a", "b", "c"]),
+    // Linear sRGB <-> OkLCh (Oklab polar form). Scalar r/g/b inputs map to l/c/h
+    // outputs (hue in radians) and vice-versa.
+    "math/rgbToOkLCh": {
+        blocks: [FlowGraphBlockNames.RGBToOkLCh],
+        inputs: {
+            values: {
+                r: { name: "r", gltfType: "number" },
+                g: { name: "g", gltfType: "number" },
+                b: { name: "b", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                l: { name: "l" },
+                c: { name: "c" },
+                h: { name: "h" },
+            },
+        },
+    },
+    "math/rgbFromOkLCh": {
+        blocks: [FlowGraphBlockNames.RGBFromOkLCh],
+        inputs: {
+            values: {
+                l: { name: "l", gltfType: "number" },
+                c: { name: "c", gltfType: "number" },
+                h: { name: "h", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                r: { name: "r" },
+                g: { name: "g" },
+                b: { name: "b" },
+            },
+        },
+    },
+    // Quaternion spherical-linear interpolation. Inputs are two unit
+    // quaternions and an unclamped float coefficient.
+    "math/quatSlerp": getSimpleInputMapping(FlowGraphBlockNames.MathSlerp, ["a", "b", "c"]),
+    // Vector spherical-linear interpolation (float2/float3). Inputs are two
+    // vectors and an unclamped float coefficient.
+    "math/slerp": getSimpleInputMapping(FlowGraphBlockNames.VectorSlerp, ["a", "b", "c"]),
     "math/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
+    // Reference equality. The spec defines `ref/eq` as: true if both refs are
+    // null, true if both refer to the same object (regardless of whether it
+    // exists), false otherwise. FlowGraphEqualityBlock falls through to a
+    // strict `===` comparison for non-vector/matrix/numeric types, which
+    // already produces the spec-defined behaviour for Babylon object refs.
+    "ref/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
     "math/lt": getSimpleInputMapping(FlowGraphBlockNames.LessThan, ["a", "b"]),
     "math/le": getSimpleInputMapping(FlowGraphBlockNames.LessThanOrEqual, ["a", "b"]),
     "math/gt": getSimpleInputMapping(FlowGraphBlockNames.GreaterThan, ["a", "b"]),
@@ -680,6 +764,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/quatToAxisAngle": getSimpleInputMapping(FlowGraphBlockNames.AxisAngleFromQuaternion, ["a"]),
     "math/quatFromDirections": getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
+    "math/quatFromUpForward": {
+        blocks: [FlowGraphBlockNames.QuaternionFromUpForward],
+        inputs: {
+            values: {
+                up: { name: "a", gltfType: "float3" },
+                forward: { name: "b", gltfType: "float3" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     "math/combine2x2": {
         blocks: [FlowGraphBlockNames.CombineMatrix2D],
         inputs: {
@@ -1104,10 +1202,22 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             flows: {
                 err: { name: "error" },
             },
+            values: {
+                // New spec renames this output to `lastDelay` (ref). Internally we still produce a
+                // FlowGraphInteger; the index is unique per delay so it acts as the opaque handle.
+                lastDelay: { name: "lastDelayIndex" },
+            },
         },
     },
     "flow/cancelDelay": {
         blocks: [FlowGraphBlockNames.CancelDelay],
+        inputs: {
+            values: {
+                // New spec renames this input to `delay` (ref). The underlying block reads an int
+                // from `delayIndex`; when a ref-string flows in we coerce it via the path converter.
+                delay: { name: "delayIndex" },
+            },
+        },
     },
     "variable/get": {
         blocks: [FlowGraphBlockNames.GetVariable],

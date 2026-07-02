@@ -1,10 +1,11 @@
-import { type Observer, Observable } from "core/Misc/observable";
+import { type Observer, type EventState, Observable } from "core/Misc/observable";
 import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import { type IObjectAccessor } from "./typeDefinitions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
+import { EventReferencePrefix, IsEventReference } from "./flowGraphEventReference";
 
 /**
  * Parameters used to create a flow graph engine.
@@ -77,6 +78,16 @@ export class FlowGraphCoordinator {
     private _onBeforeRenderObserver: Observer<Scene>;
     private _executeOnNextFrame: { id: string; data?: any; uniqueId: number }[] = [];
     private _eventUniqueId: number = 0;
+
+    /**
+     * Stack of custom-event dispatches currently in progress. Each entry pairs the
+     * dispatched event id with the Observable's EventState so that
+     * `event/stopPropagation` can stop the remaining handlers of an in-flight
+     * dispatch. A stack (rather than a single value) tolerates re-entrant
+     * dispatching, e.g. an event handler synchronously sending another event.
+     * @internal
+     */
+    public _eventDispatchStack: { eventId: string; state: EventState }[] = [];
 
     public constructor(
         /**
@@ -232,6 +243,59 @@ export class FlowGraphCoordinator {
         const observable = this._customEventsMap.get(id);
         if (observable) {
             observable.notifyObservers(data);
+        }
+    }
+
+    /**
+     * @internal
+     * Marks the beginning of a custom-event dispatch. Called by event receiver
+     * blocks from within their Observable callback so that the dispatch's
+     * EventState becomes reachable by `event/stopPropagation` while the receiver
+     * flow executes synchronously.
+     * @param eventId the id of the event being dispatched
+     * @param state the Observable EventState for this dispatch
+     */
+    public _beginEventDispatch(eventId: string, state: EventState): void {
+        this._eventDispatchStack.push({ eventId, state });
+    }
+
+    /**
+     * @internal
+     * Marks the end of the most recent custom-event dispatch started with
+     * {@link _beginEventDispatch}.
+     */
+    public _endEventDispatch(): void {
+        this._eventDispatchStack.pop();
+    }
+
+    /**
+     * Stops the propagation of an in-flight custom event, preventing any event
+     * handler nodes that have not been activated yet from running for the current
+     * dispatch. This backs the KHR_interactivity `event/stopPropagation` operation.
+     *
+     * The `event` argument is the opaque event reference produced by an event
+     * operation (see {@link IsEventReference}). If it does not reference an event
+     * that is currently being dispatched, this is a no-op.
+     *
+     * In the Babylon runtime all handlers of a given custom event share a single
+     * Observable dispatch chain, so the `stopImmediate` distinction from the spec
+     * (transitive-only vs. also-immediate) collapses: stopping propagation always
+     * skips the remaining handlers of the current dispatch. The flag is accepted
+     * for spec/forward compatibility.
+     * @param event the event reference to stop propagation for
+     * @param _stopImmediate whether to also stop remaining immediate handlers (see remarks)
+     */
+    public stopEventPropagation(event: string, _stopImmediate: boolean): void {
+        if (!IsEventReference(event)) {
+            return;
+        }
+        const eventId = event.substring(EventReferencePrefix.length);
+        // Find the most recent matching in-flight dispatch and skip its remaining observers.
+        for (let i = this._eventDispatchStack.length - 1; i >= 0; i--) {
+            if (this._eventDispatchStack[i].eventId === eventId) {
+                this._eventDispatchStack[i].state.skipNextObservers = true;
+                return;
+            }
         }
     }
 }

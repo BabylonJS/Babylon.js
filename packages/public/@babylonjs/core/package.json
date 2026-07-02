@@ -195,6 +195,7 @@
         "FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.js",
         "FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock.js",
         "FlowGraph/Blocks/Event/flowGraphSoundEndedEventBlock.js",
+        "FlowGraph/Blocks/Event/flowGraphStopEventPropagationBlock.js",
         "FlowGraph/Blocks/Execution/Animation/flowGraphBezierCurveEasingBlock.js",
         "FlowGraph/Blocks/Execution/Animation/flowGraphEasingBlock.js",
         "FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.js",

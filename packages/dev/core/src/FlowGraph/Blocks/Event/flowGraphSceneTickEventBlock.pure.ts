@@ -2,10 +2,11 @@
 
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -36,12 +37,20 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
      */
     public readonly deltaTime: FlowGraphDataConnection<number>;
 
+    /**
+     * Output: the KHR_interactivity event reference for this lifecycle event.
+     * Per spec (event/onTick) all instances of this operation return the same,
+     * non-null event reference within a tick.
+     */
+    public readonly eventRef: FlowGraphDataConnection<string>;
+
     public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneBeforeRender;
 
     constructor() {
         super();
         this.timeSinceStart = this.registerDataOutput("timeSinceStart", RichTypeNumber);
         this.deltaTime = this.registerDataOutput("deltaTime", RichTypeNumber);
+        this.eventRef = this.registerDataOutput("event", RichTypeString, GetEventReference("onTick"));
     }
 
     /**
@@ -57,6 +66,7 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     public override _executeEvent(context: FlowGraphContext, payload: IFlowGraphOnTickEventPayload): boolean {
         this.timeSinceStart.setValue(payload.timeSinceStart, context);
         this.deltaTime.setValue(payload.deltaTime, context);
+        this.eventRef.setValue(GetEventReference("onTick"), context);
         this._execute(context);
         return true;
     }
