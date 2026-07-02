@@ -3,7 +3,8 @@ import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTe
 import { type Viewport } from "core/Maths/math.viewport";
 import { Observable } from "core/Misc/observable";
 import { type WebXRLayerType, WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
-import { WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
+import { type WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
+import { WebXRWebGLRenderTargetTextureProvider } from "core/XR/webXRWebGLRenderTargetTextureProvider";
 import { type WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { type Nullable } from "core/types";
 
@@ -29,7 +30,7 @@ export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
  * Provides render target textures and other important rendering information for a given XRCompositionLayer.
  * @internal
  */
-export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRWebGLRenderTargetTextureProvider {
     protected _lastSubImages = new Map<XREye, XRWebGLSubImage>();
     private _compositionLayer: XRCompositionLayer;
     /**

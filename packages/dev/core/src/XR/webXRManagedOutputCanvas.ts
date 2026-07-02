@@ -151,7 +151,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      */
     public async initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
         const createLayer = () => {
-            this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+            this.xrLayer = this._createXRLayer(xrSession);
             this._xrLayerWrapper = new WebXRWebGLLayerWrapper(this.xrLayer);
             this.onXRLayerInitObservable.notifyObservers(this.xrLayer);
             return this.xrLayer;
@@ -168,6 +168,16 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             .then(() => {
                 return createLayer();
             });
+    }
+
+    /**
+     * Creates the XR layer that will be used as the session's baseLayer.
+     * This is the WebGL-specific seam: a non-WebGL backend can override it to build a different layer type.
+     * @param xrSession the xr session the layer is created for
+     * @returns the created XR layer
+     */
+    protected _createXRLayer(xrSession: XRSession): XRWebGLLayer {
+        return new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
     }
 
     private _addCanvas() {
@@ -226,10 +236,21 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 height: canvas.offsetHeight,
             };
             this._canvas = canvas;
-            this.canvasContext = <any>this._canvas.getContext("webgl2");
-            if (!this.canvasContext) {
-                this.canvasContext = <any>this._canvas.getContext("webgl");
-            }
+            this.canvasContext = this._createXRCompatibleRenderingContext(canvas);
         }
+    }
+
+    /**
+     * Creates the rendering context used for the XR layer.
+     * This is the WebGL-specific seam: a non-WebGL backend can override it to obtain a different context.
+     * @param canvas the canvas to obtain the context from
+     * @returns the rendering context to use for the XR layer
+     */
+    protected _createXRCompatibleRenderingContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {
+        let context = <any>canvas.getContext("webgl2");
+        if (!context) {
+            context = <any>canvas.getContext("webgl");
+        }
+        return context;
     }
 }

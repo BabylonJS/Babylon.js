@@ -9,7 +9,6 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera.pure";
 import { Quaternion, Vector3 } from "../Maths/math.vector.pure";
-import { type ThinEngine } from "../Engines/thinEngine";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
@@ -310,7 +309,7 @@ export class WebXRExperienceHelper implements IDisposable {
                     this._spectatorAfterRenderObserver = this._scene.onAfterRenderCameraObservable.add((camera) => {
                         if (camera === this.camera) {
                             // reset the dimensions object for correct resizing
-                            (this._scene.getEngine() as ThinEngine).framebufferDimensionsObject = null;
+                            this._scene.getEngine().framebufferDimensionsObject = null;
                         }
                     });
                 } else if (this.state === WebXRState.EXITING_XR) {

@@ -873,6 +873,16 @@ export abstract class AbstractEngine {
      */
     public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
 
+    protected _framebufferDimensionsObject: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
+
+    /**
+     * sets the object from which width and height will be taken from when getting render width and height
+     * @param dimensions the framebuffer width and height that will be used.
+     */
+    public set framebufferDimensionsObject(dimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>) {
+        this._framebufferDimensionsObject = dimensions;
+    }
+
     /**
      * Gets the list of current active render loop functions
      * @returns a read only array with the current render loop functions
