@@ -1,5 +1,6 @@
 import { type Nullable } from "../types";
 import { type Scene } from "../scene";
+import { MetadataSymbol } from "../Misc/decorators.functions";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the node editor
@@ -108,7 +109,16 @@ export function editableInPropertyPage(
     options?: IEditablePropertyOption
 ) {
     return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => {
-        const meta = context.metadata;
+        const meta = context.metadata as DecoratorMetadataObject | undefined;
+        if (!meta) {
+            // `context.metadata` is `void 0` when `Symbol.metadata` was not installed before this class
+            // was evaluated. Importing `MetadataSymbol` from decorators.functions runs the polyfill at
+            // module load (before this class body), so this should never happen; referencing it here also
+            // keeps that module-load polyfill anchored against bundler tree-shaking.
+            throw new Error(
+                `editableInPropertyPage: decorator metadata is unavailable; the Symbol.metadata (${String(MetadataSymbol)}) polyfill must run before decorated classes are evaluated.`
+            );
+        }
         let propStore: IPropertyDescriptionForEdition[];
         if (Object.prototype.hasOwnProperty.call(meta, __bjsPropStoreKey)) {
             propStore = meta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
@@ -139,7 +149,7 @@ export const __bjsPropStoreKey = "__bjs_prop_store__";
  */
 export function GetEditableProperties(target: any): IPropertyDescriptionForEdition[] {
     const ctor = typeof target === "function" ? target : target?.constructor;
-    const metadata: DecoratorMetadataObject | undefined = ctor?.[Symbol.metadata];
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[MetadataSymbol];
     if (!metadata) {
         return [];
     }

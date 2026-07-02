@@ -35,6 +35,24 @@ function GetMetadataSymbol(): symbol {
     return metadataSymbol;
 }
 
+/**
+ * The well-known `Symbol.metadata` symbol, resolved once at module-evaluation time.
+ *
+ * Reading (and thereby resolving) this symbol at module load guarantees that `Symbol.metadata`
+ * exists BEFORE any decorated class which imports the decorator infrastructure evaluates its class
+ * body. TypeScript's TC39 decorator emit captures `context.metadata` from `Symbol.metadata` at the
+ * top of the class `static {}` block (before the decorator factory runs), so if the symbol is not
+ * yet installed the metadata object is `void 0` and every metadata-based decorator throws.
+ *
+ * It is intentionally an exported `const` initialized from a function call: bundlers that treat this
+ * module as side-effect-free may drop bare top-level calls, but they cannot drop a `const` whose
+ * value is referenced by the retained decorator helpers below. The tree-shaking side-effect detector
+ * likewise skips `const X = ...` initializers, so this module stays classified as pure and remains
+ * importable from `.pure` modules.
+ * @internal
+ */
+export const MetadataSymbol: symbol = GetMetadataSymbol();
+
 // Returns the constructor for the provided decorator/serialization target.
 // Experimental decorators pass a prototype; serialization passes an instance or a constructor.
 function GetConstructor(target: any): any {
@@ -47,17 +65,17 @@ function GetOwnMetadata(ctor: any): any {
     if (!ctor) {
         return undefined;
     }
-    if (!HasOwn(ctor, GetMetadataSymbol())) {
+    if (!HasOwn(ctor, MetadataSymbol)) {
         const parent = Object.getPrototypeOf(ctor);
-        const parentMetadata = parent ? parent[GetMetadataSymbol()] : null;
-        Object.defineProperty(ctor, GetMetadataSymbol(), {
+        const parentMetadata = parent ? parent[MetadataSymbol] : null;
+        Object.defineProperty(ctor, MetadataSymbol, {
             value: Object.create(parentMetadata ?? null),
             configurable: true,
             writable: true,
             enumerable: false,
         });
     }
-    return ctor[GetMetadataSymbol()];
+    return ctor[MetadataSymbol];
 }
 
 /**
@@ -66,6 +84,13 @@ function GetOwnMetadata(ctor: any): any {
  * @internal
  */
 export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): Record<string, any> {
+    if (!metadata) {
+        // `metadata` is `context.metadata`, which is `void 0` when `Symbol.metadata` was not installed
+        // before the class was evaluated. Referencing `MetadataSymbol` here (a) produces an actionable
+        // error instead of a cryptic "Cannot convert undefined to object" and (b) keeps the module-load
+        // polyfill anchored so bundlers cannot tree-shake it away on the decorate-time serialize path.
+        throw new Error(`Decorator metadata is unavailable; the Symbol.metadata (${String(MetadataSymbol)}) polyfill must run before decorated classes are evaluated.`);
+    }
     if (!HasOwn(metadata, __bjsSerializableKey)) {
         (metadata as any)[__bjsSerializableKey] = {};
     }
@@ -90,7 +115,7 @@ export function GetDirectStore(target: any): any {
  */
 export function GetMergedStore(target: any): any {
     const ctor = GetConstructor(target);
-    const metadata = ctor ? ctor[GetMetadataSymbol()] : undefined;
+    const metadata = ctor ? ctor[MetadataSymbol] : undefined;
     if (!metadata) {
         return {};
     }
