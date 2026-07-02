@@ -282,6 +282,19 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise which will resolve once the session has been initialized
      */
     public async initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+        // A WebGPU engine requires a WebGPU-compatible XR session (per the WebXR/WebGPU binding spec).
+        // The "webgpu" feature descriptor is requested as a *required* feature: a WebGPU engine cannot
+        // fall back to a WebGL-compatible session, so if the UA/device cannot provide one we let
+        // requestSession reject and surface that error to the caller rather than silently handing back
+        // an incompatible session. WebGL engines leave xrSessionInit untouched.
+        if (this._engine?.isWebGPU) {
+            const requiredFeatures = xrSessionInit.requiredFeatures ? [...xrSessionInit.requiredFeatures] : [];
+            if (!requiredFeatures.includes("webgpu")) {
+                requiredFeatures.push("webgpu");
+            }
+            xrSessionInit = { ...xrSessionInit, requiredFeatures };
+        }
+
         const session = await this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit);
 
         this.session = session;

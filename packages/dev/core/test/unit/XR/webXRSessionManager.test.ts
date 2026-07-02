@@ -299,4 +299,50 @@ describe("WebXRSessionManager", () => {
             expect(() => sessionManager._getGraphicsBinding()).toThrow();
         });
     });
+
+    describe("initializeSessionAsync webgpu feature descriptor", () => {
+        const fakeSession = { addEventListener: vi.fn() } as unknown as XRSession;
+        let requestSession: ReturnType<typeof vi.fn>;
+
+        beforeEach(() => {
+            requestSession = vi.fn().mockResolvedValue(fakeSession);
+            (sessionManager as any)._xrNavigator = { xr: { requestSession } };
+        });
+
+        it("adds the 'webgpu' required feature for a WebGPU engine", async () => {
+            (engine as any)._isWebGPU = true;
+
+            await sessionManager.initializeSessionAsync("immersive-vr", {});
+
+            expect(requestSession).toHaveBeenCalledWith("immersive-vr", expect.objectContaining({ requiredFeatures: ["webgpu"] }));
+        });
+
+        it("leaves the session init untouched for a non-WebGPU engine", async () => {
+            const init: XRSessionInit = { requiredFeatures: ["local-floor"] };
+
+            await sessionManager.initializeSessionAsync("immersive-vr", init);
+
+            // WebGL path must be byte-for-byte identical: same object, no 'webgpu' injected.
+            expect(requestSession.mock.calls[0][1]).toBe(init);
+            expect(init.requiredFeatures).toEqual(["local-floor"]);
+        });
+
+        it("preserves existing required features and avoids duplicates for a WebGPU engine", async () => {
+            (engine as any)._isWebGPU = true;
+
+            await sessionManager.initializeSessionAsync("immersive-vr", { requiredFeatures: ["local-floor", "webgpu"] });
+
+            expect(requestSession.mock.calls[0][1].requiredFeatures).toEqual(["local-floor", "webgpu"]);
+        });
+    });
+
+    describe("updateRenderState", () => {
+        it("does not throw when neither baseLayer nor layers is provided (WebGPU Phase 1 state)", () => {
+            const updateRenderState = vi.fn();
+            (sessionManager as any).session = { updateRenderState };
+
+            expect(() => sessionManager.updateRenderState({ depthFar: 100, depthNear: 0.1 })).not.toThrow();
+            expect(updateRenderState).toHaveBeenCalledTimes(1);
+        });
+    });
 });
