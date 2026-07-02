@@ -5,6 +5,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
+import { WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "core/XR/webXRGraphicsBinding";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 describe("WebXRSessionManager", () => {
@@ -260,6 +261,50 @@ describe("WebXRSessionManager", () => {
             sessionManager.dispose();
 
             expect(() => sessionManager._getGraphicsBinding()).toThrow(/has been disposed/);
+        });
+
+        describe("binding selection", () => {
+            const fakeSession = {} as XRSession;
+            let originalWebGLBinding: unknown;
+            let originalGPUBinding: unknown;
+
+            beforeEach(() => {
+                originalWebGLBinding = (globalThis as any).XRWebGLBinding;
+                originalGPUBinding = (globalThis as any).XRGPUBinding;
+                // jsdom has neither binding constructor; stub them so CreateFromEngine can run.
+                (globalThis as any).XRWebGLBinding = vi.fn();
+                (globalThis as any).XRGPUBinding = vi.fn();
+                (sessionManager as any).session = fakeSession;
+            });
+
+            afterEach(() => {
+                (globalThis as any).XRWebGLBinding = originalWebGLBinding;
+                (globalThis as any).XRGPUBinding = originalGPUBinding;
+            });
+
+            it("returns a WebGL binding for a non-WebGPU engine", () => {
+                (engine as any)._gl = {};
+                expect(engine.isWebGPU).toBe(false);
+
+                expect(sessionManager._getGraphicsBinding()).toBeInstanceOf(WebXRWebGLGraphicsBinding);
+            });
+
+            it("returns a WebGPU binding for a WebGPU engine", () => {
+                (engine as any)._isWebGPU = true;
+                (engine as any)._device = {};
+                expect(engine.isWebGPU).toBe(true);
+
+                expect(sessionManager._getGraphicsBinding()).toBeInstanceOf(WebXRWebGPUGraphicsBinding);
+            });
+
+            it("caches the binding across calls", () => {
+                (engine as any)._gl = {};
+
+                const first = sessionManager._getGraphicsBinding();
+                const second = sessionManager._getGraphicsBinding();
+
+                expect(second).toBe(first);
+            });
         });
     });
 });
