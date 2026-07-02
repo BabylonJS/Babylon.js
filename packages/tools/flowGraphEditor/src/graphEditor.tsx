@@ -852,6 +852,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // elements have real dimensions: setTimeout(0) runs after the browser has
             // completed layout and paint (rAF alone is not sufficient because it fires
             // *before* layout in some browsers).
+            //
+            // The bulk node creation in loadGraph() is already done, so clear the loading
+            // flag synchronously here. Otherwise it would stay set until the deferred
+            // sortGraph() runs, and if that is skipped (newer build, changed flow graph,
+            // or empty graph) the flag would be stranded as true — which freezes link and
+            // frame updates while dragging nodes (_refreshLinks/_refreshFrames early-out).
+            this._graphCanvas._isLoading = false;
             setTimeout(() => {
                 if (buildVersion !== this._buildVersion || flowGraph !== this.props.globalState.flowGraph) {
                     return;
@@ -958,6 +965,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     sortGraph() {
         const canvas = this._graphCanvas;
         if (canvas.nodes.length === 0) {
+            // Nothing to lay out, but make sure the loading flag is never left set by a
+            // caller (e.g. build()) so node drags keep refreshing links and frames.
+            canvas._isLoading = false;
             return;
         }
 

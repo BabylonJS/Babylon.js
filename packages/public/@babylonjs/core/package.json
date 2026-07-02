@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.14.0",
+    "version": "9.15.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -562,6 +562,7 @@
         "Misc/observable.extensions.js",
         "Misc/observableCoroutine.js",
         "Misc/screenshotTools.js",
+        "Misc/symbolMetadataPolyfill.js",
         "Misc/tools.js",
         "Offline/database.js",
         "Particles/Node/Blocks/Conditions/particleConditionBlock.js",

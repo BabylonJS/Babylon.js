@@ -534,6 +534,29 @@ test.describe("Flow Graph Editor — Node Operations", () => {
         expect(after.y).toBeGreaterThan(before.y);
     });
 
+    test("connections follow their nodes when a node is dragged", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        // Reproduces the stranded-loading-flag bug: on a fresh (empty) editor the initial
+        // build defers to sortGraph(), which used to early-return on 0 nodes without clearing
+        // the canvas _isLoading flag. That left link refreshes disabled, so dragging a node
+        // moved the box but froze its connections in place.
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        expect(await fge.getLinkCount()).toBeGreaterThanOrEqual(1);
+
+        const before = await fge.getLinkPaths();
+        await fge.dragNode("FlowGraphConsoleLogBlock", 160, 120);
+        const after = await fge.getLinkPaths();
+
+        // The link geometry must change to follow the moved node.
+        expect(after).not.toEqual(before);
+    });
+
     test("user can delete a node", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
