@@ -154,6 +154,16 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
     forceFallbackAdapter?: boolean;
 
     /**
+     * When set to true, requests a GPU adapter that is compatible with the user agent's XR device,
+     * as required to create a WebGPU-compatible WebXR session (see the WebXR/WebGPU binding spec).
+     * This mirrors the WebGL `xrCompatible` context attribute and must be set when the engine is
+     * created (adapter-request time): WebGPU has no post-hoc "make XR compatible" step, so it cannot
+     * be toggled on later. Leave unset/false for the default non-XR path.
+     * Default: false
+     */
+    xrCompatible?: boolean;
+
+    /**
      * Defines the device descriptor used to create a device once we have retrieved an appropriate adapter
      */
     deviceDescriptor?: GPUDeviceDescriptor;
