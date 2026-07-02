@@ -1,50 +1,44 @@
 import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Vector3 } from "core/Maths/math.vector";
-import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
-import { GaussianSplattingMeshBase, GaussianSplattingGpuSortMode } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
-// Register the .splat file loader (side-effect).
-import "loaders/SPLAT/splatFileLoader";
-
-const SplatUrl = "https://raw.githubusercontent.com/CedricGuillemet/dump/master/Halo_Believe.splat";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const createScene = async function (engine: Engine, canvas: HTMLCanvasElement): Promise<Scene> {
+    // This creates a basic Babylon Scene object (non-mesh)
     const scene = new Scene(engine);
 
-    const camera = new ArcRotateCamera("camera1", 0.6, 1.3, 8, Vector3.Zero(), scene);
+    // This creates and positions a free camera (non-mesh)
+    const camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
+
+    // This targets the camera to scene origin
+    camera.setTarget(Vector3.Zero());
+
+    // This attaches the camera to the canvas
     camera.attachControl(canvas, true);
-    camera.wheelPrecision = 50;
-    camera.minZ = 0.01;
-    new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
 
-    // Force the WebGPU GPU sort + cull path (bypasses the CPU worker fallback).
-    GaussianSplattingMeshBase.GpuSortMode = GaussianSplattingGpuSortMode.Gpu;
+    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+    const light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
 
-    const gs = new GaussianSplattingMesh("gs", null, scene);
-    await gs.loadFileAsync(SplatUrl);
+    // Default intensity is 1. Let's dim the light a small amount
+    light.intensity = 0.7;
 
-    gs.computeWorldMatrix(true);
-    const bounds = gs.getBoundingInfo().boundingSphere;
-    camera.setTarget(bounds.centerWorld.clone());
-    camera.radius = bounds.radiusWorld * 2.5 + 1;
+    // Default material for all meshes
+    const material = new StandardMaterial("sceneMaterial", scene);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).__gsScene = scene;
-    scene.onBeforeRenderObservable.add(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const win = window as any;
-        const anyGs = gs as unknown as { _useGpuSort: boolean; _worker: unknown; _gpuSorter: unknown };
-        win.__gsVerify = {
-            found: true,
-            useGpuSort: anyGs._useGpuSort,
-            hasWorker: !!anyGs._worker,
-            hasGpuSorter: !!anyGs._gpuSorter,
-            renderedSplatCount: gs.renderedSplatCount,
-        };
-    });
+    // Our built-in 'sphere' shape. Params: name, options, scene
+    const sphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+    sphere.material = material;
+
+    // Move the sphere upward 1/2 its height
+    sphere.position.y = 1;
+
+    // Our built-in 'ground' shape. Params: name, options, scene
+    const ground = MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+    ground.material = material;
 
     return scene;
 };
