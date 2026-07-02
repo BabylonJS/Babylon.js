@@ -517,21 +517,21 @@ export class GaussianSplattingMeshBase extends Mesh {
     public static EnableGpuIndirectDraw = true;
 
     /**
-     * When true (and {@link EnableGpuIndirectDraw} is on), the WebGPU GPU-sort path runs a per-frame frustum cull
-     * on the GPU and draws only the visible splats via an indirect draw. The cull test matches the vertex shader
-     * exactly, so it never removes a splat the shader would have shown. Set false to draw all sorted splats.
-     *
-     * Currently defaults to false: the cull path is complete but blocked by a one-dispatch UniformBuffer-upload
-     * lag for compute dispatched inside the mesh render pass (the cull reads the previous dispatch's clip matrix).
-     * The GPU sort + non-culled indirect draw path is unaffected and remains the shipping default.
-     */
-    /**
-     * When true (and {@link EnableGpuIndirectDraw} is on), the WebGPU GPU-sort path runs a per-frame frustum cull
-     * on the GPU and draws only the visible splats via an indirect draw. The cull test matches the vertex shader
-     * exactly (same local->clip transform and 1.2*w bounds), so it never removes a splat the shader would have
-     * shown. Set false to draw all sorted splats.
+     * When true (and {@link EnableGpuIndirectDraw} is on), the WebGPU GPU-sort path runs a GPU frustum cull and
+     * draws only the visible splats via an indirect draw. The cull test matches the vertex shader exactly (same
+     * local->clip transform and 1.2*w bounds), so it never removes a splat the shader would have shown. Set false
+     * to draw all sorted splats.
      */
     public static EnableGpuCulling = true;
+
+    /**
+     * Number of frames the camera/world must stay stationary before the GPU frustum cull re-engages after a move.
+     * While the camera is moving (and for this many frames after it stops) the full sorted splat list is drawn
+     * instead of the culled list: this keeps culling off the expensive motion frames (where the depth sort also
+     * re-runs) and avoids edge popping, and gives the per-frame cull compute a frame to converge (its UBO upload
+     * reaches the shader one dispatch late). Set to 0 to cull every frame regardless of motion.
+     */
+    public static GpuCullResumeDelayFrames = 2;
 
     /** @internal */
     public _vertexCount = 0;
@@ -547,6 +547,9 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _gpuSortedDataBuffer: Nullable<DataBuffer> = null;
     // Whether the GPU frustum-cull pass ran for the current sort (culling active for this mesh this frame).
     private _gpuCulling = false;
+    // Frames the camera/world has been stationary. Reset to 0 on any move; gates when culling re-engages
+    // (see GpuCullResumeDelayFrames).
+    private _gpuCullSettleFrames = 0;
     // Reused matrices for the GPU cull local->clip transform (avoids per-frame allocation).
     private _gpuClipMatrix = Matrix.Identity();
     private _gpuViewProjMatrix = Matrix.Identity();
@@ -1433,13 +1436,19 @@ export class GaussianSplattingMeshBase extends Mesh {
         const worldMatrix = this.computeWorldMatrix(true);
 
         // Re-sort when the data changed, when this view has not been displayed yet, or when the camera/world moved.
-        // Also keep re-running while culling is enabled but not yet active (its compute shaders may still be
-        // compiling on the first frames — without this a static camera would never start culling).
         const cullingWanted = GaussianSplattingMeshBase.EnableGpuIndirectDraw && GaussianSplattingMeshBase.EnableGpuCulling;
-        const needSort = this._gpuSortDirty || !this._readyToDisplay || (cullingWanted && !this._gpuCulling) || this._isSortStateDirty(primary, worldMatrix, camera);
+        const cameraMoved = this._isSortStateDirty(primary, worldMatrix, camera);
+        const needSort = this._gpuSortDirty || !this._readyToDisplay || cameraMoved;
+
+        // Track how long the camera has been stationary so the frustum cull only engages once it settles.
+        if (cameraMoved) {
+            this._gpuCullSettleFrames = 0;
+        } else if (this._gpuCullSettleFrames < 0xffff) {
+            this._gpuCullSettleFrames++;
+        }
 
         // Local->clip matrix (world * view * projection) for the frustum cull pass. Recomputed every frame so the
-        // per-frame cull tracks the camera even when the (more expensive) depth sort is skipped.
+        // cull tracks the camera when it re-engages.
         camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._gpuViewProjMatrix);
         worldMatrix.multiplyToRef(this._gpuViewProjMatrix, this._gpuClipMatrix);
 
@@ -1473,18 +1482,20 @@ export class GaussianSplattingMeshBase extends Mesh {
             primary.sortAppliedId = primary.sortRequestId;
         }
 
-        // Post-sort GPU frustum cull runs EVERY frame (not only when the sort re-runs) so it tracks the camera:
-        // once the sort has produced a sorted-index buffer, the cull compacts the visible splats and writes the
-        // indirect instance count using the same 1.2*w bounds the vertex shader uses.
-        if (cullingWanted && !this._gpuSortDirty) {
+        // GPU frustum cull. Skipped while the camera is moving (the full sorted list is drawn instead, avoiding
+        // cull cost on the expensive motion frames and any edge popping). The cull compute is dispatched one frame
+        // before its result is used so the one-dispatch UBO upload lag has converged (see GpuCullResumeDelayFrames).
+        const cullDelay = GaussianSplattingMeshBase.GpuCullResumeDelayFrames;
+        const cullWarming = cullingWanted && !this._gpuSortDirty && this._gpuCullSettleFrames >= Math.max(0, cullDelay - 1);
+        if (cullWarming) {
             this._gpuCulling = sorter.cull(GaussianSplattingMeshBase._BatchSize * 6, this._gpuClipMatrix);
-        } else if (!cullingWanted) {
+        } else {
             this._gpuCulling = false;
         }
 
-        // When culling is active the draw reads the compacted visible list and the GPU-written indirect args;
+        // The draw uses the compacted visible list only once the cull has settled (its result is converged);
         // otherwise it reads the full sorted list with a CPU-written full instance count.
-        const cullingActive = GaussianSplattingMeshBase.EnableGpuIndirectDraw && GaussianSplattingMeshBase.EnableGpuCulling && this._gpuCulling;
+        const cullingActive = this._gpuCulling && this._gpuCullSettleFrames >= cullDelay;
         const dataBuffer = cullingActive ? sorter.culledDrawBuffer : sorter.sortedDataBuffer;
         if (!dataBuffer) {
             return;
