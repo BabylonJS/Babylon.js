@@ -248,4 +248,18 @@ describe("WebXRSessionManager", () => {
             expect(disposeSpy).toHaveBeenCalled();
         });
     });
+
+    describe("_getGraphicsBinding", () => {
+        it("throws when called before the XR session is initialized", () => {
+            // No session has been entered, so the graphics binding cannot be created yet.
+            expect(() => sessionManager._getGraphicsBinding()).toThrow(/before the XR session is initialized/);
+        });
+
+        it("throws when the engine has been disposed", () => {
+            // Disposing the manager nulls out its engine reference.
+            sessionManager.dispose();
+
+            expect(() => sessionManager._getGraphicsBinding()).toThrow(/has been disposed/);
+        });
+    });
 });
