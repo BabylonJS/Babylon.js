@@ -205,6 +205,9 @@ class _InternalMeshDataInfo {
     public meshMap: Nullable<{ [id: string]: Mesh | undefined }> = null;
 
     public _preActivateId: number = -1;
+    // Optional GPU indirect draw-args buffer (Gaussian Splatting GPU culling path). Stored here rather than as a
+    // direct Mesh field to keep Mesh under the V8 fast-property own-property threshold (see dictionaryMode test).
+    public _indirectDrawBuffer: Nullable<DataBuffer> = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _LODLevels = new Array<MeshLODLevel>();
     /** Alternative definition of LOD level, using screen coverage instead of distance */
@@ -543,9 +546,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      * Optional GPU indirect-args buffer (5 u32: indexCount, instanceCount, firstIndex, baseVertex, firstInstance).
      * When set, indexed draws for this mesh issue drawIndexedIndirect from this buffer instead of a CPU instance
-     * count. Used by the Gaussian Splatting GPU culling path (WebGPU only).
+     * count. Used by the Gaussian Splatting GPU culling path (WebGPU only). Backed by `_internalMeshDataInfo` (via
+     * an accessor) so it does not add an own property to every Mesh instance (V8 fast-property threshold).
      */
-    public _indirectDrawBuffer: Nullable<DataBuffer> = null;
+    public get _indirectDrawBuffer(): Nullable<DataBuffer> {
+        return this._internalMeshDataInfo._indirectDrawBuffer;
+    }
+
+    public set _indirectDrawBuffer(value: Nullable<DataBuffer>) {
+        this._internalMeshDataInfo._indirectDrawBuffer = value;
+    }
 
     /** @internal */
     public _instanceDataStorage: _InstanceDataStorage;
