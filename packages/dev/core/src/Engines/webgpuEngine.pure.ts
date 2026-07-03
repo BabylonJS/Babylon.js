@@ -2585,6 +2585,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
         const hardwareTexture = new WebGPUHardwareTexture(this, texture);
+        // Report the real format of the wrapped texture. The hardware texture otherwise keeps its
+        // default (RGBA8Unorm); the render-pass color attachment view + pipeline color target are
+        // built from hardwareTexture.format (see _setColorFormat / bindFramebuffer), so an external
+        // texture created with any other format (e.g. bgra8unorm or an *-srgb variant, as returned by
+        // XRGPUBinding.getPreferredColorFormat()) would otherwise get a mismatched view and fail to render.
+        hardwareTexture.format = texture.format;
+        hardwareTexture.originalFormat = texture.format;
         const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = texture.width;
