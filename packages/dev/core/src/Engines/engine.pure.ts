@@ -1067,19 +1067,3 @@ export class Engine extends ThinEngine {
         super.dispose();
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect } from "../Misc/devTools";
-
-Engine.prototype.createMultiviewRenderTargetTexture ??= _MissingSideEffect("Engine", "createMultiviewRenderTargetTexture") as any;
-Engine.prototype.bindMultiviewFramebuffer ??= _MissingSideEffect("Engine", "bindMultiviewFramebuffer") as any;
-Engine.prototype.bindSpaceWarpFramebuffer ??= _MissingSideEffect("Engine", "bindSpaceWarpFramebuffer") as any;
-Engine.prototype.createTransformFeedback ??= _MissingSideEffect("Engine", "createTransformFeedback") as any;
-Engine.prototype.deleteTransformFeedback ??= _MissingSideEffect("Engine", "deleteTransformFeedback") as any;
-Engine.prototype.bindTransformFeedback ??= _MissingSideEffect("Engine", "bindTransformFeedback") as any;
-Engine.prototype.beginTransformFeedback ??= _MissingSideEffect("Engine", "beginTransformFeedback") as any;
-Engine.prototype.endTransformFeedback ??= _MissingSideEffect("Engine", "endTransformFeedback") as any;
-Engine.prototype.setTranformFeedbackVaryings ??= _MissingSideEffect("Engine", "setTranformFeedbackVaryings") as any;
-Engine.prototype.bindTransformFeedbackBuffer ??= _MissingSideEffect("Engine", "bindTransformFeedbackBuffer") as any;
-Engine.prototype.readTransformFeedbackBuffer ??= _MissingSideEffect("Engine", "readTransformFeedbackBuffer") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS
