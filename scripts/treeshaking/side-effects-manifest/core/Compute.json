@@ -2,7 +2,6 @@
     "version": 1,
     "files": {
         "Compute/computeShader.ts": ["top-level-call"],
-        "Compute/computeShader.types.ts": ["declare-module"],
-        "Compute/prefixSumCompute.ts": ["bare-import"]
+        "Compute/computeShader.types.ts": ["declare-module"]
     }
 }

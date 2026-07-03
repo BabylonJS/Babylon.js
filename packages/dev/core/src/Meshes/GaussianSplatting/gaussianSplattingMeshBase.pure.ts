@@ -27,7 +27,7 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
 import { GaussianSplattingSortWorker, GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
-import { GaussianSplattingGpuSorter } from "./gaussianSplattingGpuSorter.pure";
+import { GaussianSplattingGpuSorter } from "./gaussianSplattingGpuSorter";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
