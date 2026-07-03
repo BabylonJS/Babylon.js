@@ -353,4 +353,44 @@ describe("WebXRSessionManager", () => {
             expect(updateRenderState).toHaveBeenCalledTimes(1);
         });
     });
+
+    describe("native session end cleanup", () => {
+        let endHandler: (() => void) | undefined;
+        let requestSession: ReturnType<typeof vi.fn>;
+
+        beforeEach(() => {
+            endHandler = undefined;
+            const fakeSession = {
+                addEventListener: (type: string, cb: () => void) => {
+                    if (type === "end") {
+                        endHandler = cb;
+                    }
+                },
+            } as unknown as XRSession;
+            requestSession = vi.fn().mockResolvedValue(fakeSession);
+            (sessionManager as any)._xrNavigator = { xr: { requestSession } };
+        });
+
+        // A WebGPU Phase 1 session stalls with no layer/no frame; ending it (e.g. the headset
+        // system menu) must still clean up regardless of whether a frame ever arrived.
+        it("cleans up when the session ends before any frame arrives (WebGPU no-frame path)", async () => {
+            (engine as any)._isWebGPU = true;
+            const endedObserver = vi.fn();
+            sessionManager.onXRSessionEnded.add(endedObserver);
+
+            await sessionManager.initializeSessionAsync("immersive-vr", {});
+            expect(sessionManager.inXRSession).toBe(true);
+
+            // Seed a graphics binding so we can assert it is released on end.
+            (sessionManager as any)._graphicsBinding = {};
+            expect(endHandler).toBeDefined();
+
+            // Simulate the native "end" event (no XR frame was ever produced).
+            expect(() => endHandler!()).not.toThrow();
+
+            expect(sessionManager.inXRSession).toBe(false);
+            expect(endedObserver).toHaveBeenCalledTimes(1);
+            expect((sessionManager as any)._graphicsBinding).toBeNull();
+        });
+    });
 });
