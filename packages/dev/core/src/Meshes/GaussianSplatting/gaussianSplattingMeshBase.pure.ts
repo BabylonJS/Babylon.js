@@ -1433,8 +1433,17 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         // The GPU produces a single ordering per frame, so sort for the camera being rendered.
+        // Plain loop (no find/closure) to avoid a per-frame allocation in this render-loop path.
         const activeCamera = this._scene.activeCamera;
-        const primary = (activeCamera && activeViewInfos.find((info) => info.camera === activeCamera)) || activeViewInfos[0];
+        let primary = activeViewInfos[0];
+        if (activeCamera) {
+            for (let i = 0; i < activeViewInfos.length; i++) {
+                if (activeViewInfos[i].camera === activeCamera) {
+                    primary = activeViewInfos[i];
+                    break;
+                }
+            }
+        }
         const camera = primary.camera;
         const worldMatrix = this.computeWorldMatrix(true);
 
@@ -1520,14 +1529,16 @@ export class GaussianSplattingMeshBase extends Mesh {
             // When culling is active the cull's finalize pass already wrote the indirect args on the GPU.
             indirectBuffer = sorter.indirectArgsBuffer;
         }
-        activeViewInfos.forEach((info) => {
+        // Plain loop (no forEach closure) to avoid a per-frame allocation in this render-loop path.
+        for (let i = 0; i < activeViewInfos.length; i++) {
+            const info = activeViewInfos[i];
             if (!info.splatIndexBufferSet) {
                 info.mesh._thinInstanceSetSplatIndexBuffer(dataBuffer, instanceCount);
                 info.splatIndexBufferSet = true;
             }
             info.mesh._indirectDrawBuffer = indirectBuffer;
             info.frameIdLastUpdate = frameId;
-        });
+        }
         this._readyToDisplay = true;
         this._canPostToWorker = true;
     }
