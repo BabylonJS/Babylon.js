@@ -1321,6 +1321,8 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
                                 return !(viewerElement.hasAttribute("render-when-idle") || target.autoSuspendRendering === false);
                             case "source":
                                 return viewerElement.getAttribute("source") ?? target.source;
+                            case "pluginExtension":
+                                return viewerElement.extension ?? target.pluginExtension;
                             case "useOpenPBR":
                                 return viewerElement.hasAttribute("use-open-pbr") ? true : (viewerElement.useOpenPBR ?? target.useOpenPBR);
                             case "environmentLighting":

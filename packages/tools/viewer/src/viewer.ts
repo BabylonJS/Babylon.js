@@ -37,7 +37,7 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type Material } from "core/Materials/material";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
 import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
@@ -151,6 +151,11 @@ type ShadowState = {
 function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
     const className = mesh.getClassName();
     return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
+}
+
+function IsPBRMaterial(material: Material): boolean {
+    const cn = material.getClassName();
+    return cn.startsWith("PBR") || cn === "OpenPBRMaterial";
 }
 
 async function createCubeTexture(url: string, scene: Scene, extension?: string) {
@@ -488,6 +493,12 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     protected readonly _camera: ArcRotateCamera;
     protected readonly _snapshotHelper: Nullable<SnapshotRenderingHelper> = null;
 
+    // Lazily created, viewer-scoped "clay" material assigned to loaded meshes that have no material
+    // (e.g. an OBJ with no MTL, or an STL). It is created on first use and disposed with the scene.
+    // We cache the promise (not the material) so that concurrent callers are de-duplicated and only
+    // a single material is ever created, without relying on any external lock.
+    private _defaultMaterialPromise: Nullable<Promise<Material>> = null;
+
     private readonly _defaultHardwareScalingLevel: number;
     private _lastHardwareScalingLevel: number;
     private _renderedLastFrame: Nullable<boolean> = null;
@@ -566,14 +577,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         {
             const scene = new Scene(this._engine);
             scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
-
-            const defaultMaterial = new PBRMaterial("default Material", scene);
-            defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
-            defaultMaterial.metallic = 0;
-            defaultMaterial.roughness = 1;
-            defaultMaterial.baseDiffuseRoughness = 1;
-            defaultMaterial.microSurface = 0;
-            scene.defaultMaterial = defaultMaterial;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -1155,6 +1158,29 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         }
     }
 
+    /**
+     * Lazily creates (on first use) and returns a viewer-scoped "clay" PBR material used for loaded meshes
+     * that have no material of their own. The material is created in the viewer's scene and is therefore
+     * disposed together with the scene when the viewer is disposed. PBRMaterial is dynamically imported so
+     * that it is only pulled into the bundle when a material-less model is actually loaded.
+     * @returns The default "clay" material.
+     */
+    private async _getDefaultMaterialAsync(): Promise<Material> {
+        // Cache the promise so concurrent callers share a single in-flight creation and we never
+        // create (and leak) more than one material.
+        this._defaultMaterialPromise ??= (async () => {
+            const { PBRMaterial } = await import("core/Materials/PBR/pbrMaterial");
+            const defaultMaterial = new PBRMaterial("Viewer Default Material", this._scene);
+            defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
+            defaultMaterial.metallic = 0;
+            defaultMaterial.roughness = 1;
+            defaultMaterial.baseDiffuseRoughness = 1;
+            defaultMaterial.microSurface = 0;
+            return defaultMaterial;
+        })();
+        return await this._defaultMaterialPromise;
+    }
+
     protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
         this._throwIfDisposedOrAborted(abortSignal);
 
@@ -1173,6 +1199,14 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             materialVariantsController = controller;
         };
         delete options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
+
+        // Fall back to the viewer-level plugin extension (e.g. the <babylon-viewer extension="..."> attribute)
+        // when a per-load extension isn't provided. This is needed for the construction-time model load and for
+        // sources whose extension cannot be inferred from the URL (e.g. data URLs or extension-less URLs).
+        if (!options?.pluginExtension && this._options?.pluginExtension) {
+            options = options ?? {};
+            options.pluginExtension = this._options.pluginExtension;
+        }
 
         // Detect SPZ files and set the appropriate plugin extension and options.
         if (!options?.pluginExtension) {
@@ -1223,6 +1257,18 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         try {
             const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
             RemoveUnreferencedVerticesData(assetContainer.meshes.filter((mesh) => mesh instanceof Mesh));
+
+            // Meshes with no material (e.g. an OBJ with no MTL, or an STL) would otherwise fall back to the
+            // engine's default StandardMaterial, which the viewer does not light (it relies on image-based
+            // lighting). Assign a lazily-created "clay" PBR material so these meshes are shaded consistently.
+            const materiallessMeshes = assetContainer.meshes.filter((mesh) => !mesh.material);
+            if (materiallessMeshes.length > 0) {
+                const defaultMaterial = await this._getDefaultMaterialAsync();
+                for (const mesh of materiallessMeshes) {
+                    mesh.material = defaultMaterial;
+                }
+            }
+
             assetContainer.animationGroups.forEach((group) => {
                 group.start(true, this.animationSpeed);
                 group.pause();
@@ -1385,11 +1431,14 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         abortSignal: AbortSignal | undefined,
         internalAbortSignal: AbortSignal
     ): Promise<void> {
-        const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
-        const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
-        // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
-        // and an environment texture is not already loaded, then load the default environment.
-        if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
+        // If PBR is used and an environment texture is not already loaded, then load the default environment.
+        // This includes the implicit case where a mesh had no material and was assigned the viewer's default
+        // "clay" PBR material during load, which is why we also inspect the meshes' assigned materials (that
+        // material is viewer-scoped and therefore not part of any model's assetContainer.materials).
+        const hasPBRMaterials = this._loadedModels.some(
+            (model) => model.assetContainer.materials.some(IsPBRMaterial) || model.assetContainer.meshes.some((mesh) => mesh.material != null && IsPBRMaterial(mesh.material))
+        );
+        if (!this._scene.environmentTexture && hasPBRMaterials) {
             // Combine the caller's external `abortSignal` with our `internalAbortSignal` so the
             // fallback environment load aborts on either: caller cancellation OR a newer loadModel
             // superseding us. Without this OR, a stale fallback could mutate the scene before the
@@ -1848,7 +1897,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     public override async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         const promises: Promise<void>[] = [];
         // When there are PBR materials, the default environment should be used for lighting.
-        if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+        if (options?.lighting && this._scene.materials.some(IsPBRMaterial)) {
             const lightingOptions = { ...options, skybox: false };
             options = { ...options, lighting: false };
             promises.push(this._updateEnvironment("auto", lightingOptions, abortSignal));
@@ -2641,7 +2690,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         } else {
             const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial)));
+            const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !IsPBRMaterial(material)));
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;
