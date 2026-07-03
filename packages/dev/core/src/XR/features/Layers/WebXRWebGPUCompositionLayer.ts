@@ -84,7 +84,15 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
         }
 
         this._lastSubImages.set(eye, subImage);
-        return this._renderTargetTextures[eyeIndex];
+
+        // The projection-layer color/depth textures may be a texture ARRAY with one layer per eye
+        // (depthOrArrayLayers > 1). The sub-image's view descriptor carries the authoritative array-layer
+        // index for this eye, so route it into the render target's bind so each eye renders into its own
+        // layer. For non-layered textures this is 0 (unchanged behavior).
+        const renderTargetTexture = this._renderTargetTextures[eyeIndex];
+        renderTargetTexture._bindFrameBufferLayer = subImage.getViewDescriptor().baseArrayLayer ?? 0;
+
+        return renderTargetTexture;
     }
 
     private _getSubImageForEye(eye?: XREye): Nullable<XRGPUSubImage> {

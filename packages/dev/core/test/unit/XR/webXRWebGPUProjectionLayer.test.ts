@@ -13,12 +13,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Build a minimal XRGPUSubImage-shaped object. Typed loosely because the WebGPU-XR ambient types are not
 // registered as eslint globals in the test environment.
-function createSubImage(width: number, height: number, viewport = { x: 0, y: 0, width, height }): any {
+function createSubImage(width: number, height: number, viewport = { x: 0, y: 0, width, height }, baseArrayLayer = 0): any {
     return {
         colorTexture: { width, height },
         depthStencilTexture: { width, height },
         viewport,
-        getViewDescriptor: () => ({}),
+        getViewDescriptor: () => ({ baseArrayLayer }),
     };
 }
 
@@ -143,6 +143,27 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(viewport.y).toBeCloseTo(0.125);
             expect(viewport.width).toBeCloseTo(0.5);
             expect(viewport.height).toBeCloseTo(0.25);
+        });
+
+        it("routes the per-eye array layer from the sub-image view descriptor into the render target", () => {
+            // Projection-layer textures may be a texture array with one layer per eye (left=0, right=1);
+            // the provider must read baseArrayLayer from getViewDescriptor() and set it on the RTT so each
+            // eye binds its own layer.
+            const binding: any = {
+                getViewSubImage: vi.fn((_layer: unknown, view: XRView) => createSubImage(512, 512, undefined, view.eye === "right" ? 1 : 0)),
+            };
+            const layer: any = { textureWidth: 512, textureHeight: 512 };
+            const wrapper = new WebXRWebGPUProjectionLayerWrapper(layer, false, binding, "depth24plus-stencil8");
+            const provider = wrapper.createRenderTargetTextureProvider({ scene } as unknown as WebXRSessionManager);
+
+            const leftRtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+            const rightRtt = provider.getRenderTargetTextureForView({ eye: "right" } as XRView);
+
+            expect(leftRtt).not.toBeNull();
+            expect(rightRtt).not.toBeNull();
+            expect(leftRtt).not.toBe(rightRtt);
+            expect(leftRtt!._bindFrameBufferLayer).toBe(0);
+            expect(rightRtt!._bindFrameBufferLayer).toBe(1);
         });
     });
 });
