@@ -124,14 +124,23 @@ export function serializeAsCameraReference(sourceName?: string) {
 declare const _native: any;
 
 /**
- * Decorator used to redirect a function to a native implementation if available.
- * @internal
+ * Shared implementation for the {@link nativeOverride} decorator and its `.filter` variant.
+ * Both flavors install a wrapper that, on first invocation, resolves the function to use once:
+ * either the original JS function or (when running in a Babylon Native context) a native-aware
+ * function produced by `resolveNative`. The resolved function then replaces the wrapper on the
+ * target so subsequent calls skip this setup entirely.
+ * @param originalMethod - The decorated JS method.
+ * @param context - The TC39 method decorator context.
+ * @param resolveNative - Builds the function to use when a native override is present, given the
+ * native function and the original JS function.
+ * @returns The wrapper function that replaces the decorated method.
  */
-export function nativeOverride<This, Args extends any[], Return>(
+function ApplyNativeOverride<This, Args extends any[], Return>(
     originalMethod: (this: This, ...args: Args) => Return,
-    _context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+    resolveNative: (nativeFunc: (this: This, ...args: Args) => Return, jsFunc: (this: This, ...args: Args) => Return) => (this: This, ...args: Args) => Return
 ): (this: This, ...args: Args) => Return {
-    const propertyKey = String(_context.name);
+    const propertyKey = String(context.name);
     let resolvedFunc: ((this: This, ...args: Args) => Return) | null = null;
 
     const wrapper = function (this: This, ...params: Args): Return {
@@ -141,10 +150,10 @@ export function nativeOverride<This, Args extends any[], Return>(
 
             // Check if we are executing in a Babylon Native context and if so, check for a function override.
             if (typeof _native !== "undefined" && _native[propertyKey]) {
-                resolvedFunc = _native[propertyKey] as (this: This, ...args: Args) => Return;
+                resolvedFunc = resolveNative(_native[propertyKey] as (this: This, ...args: Args) => Return, originalMethod);
             }
 
-            const target = (this && (_context.static ? this : Object.getPrototypeOf(this))) as any;
+            const target = (this && (context.static ? this : Object.getPrototypeOf(this))) as any;
             if (target?.[propertyKey] === wrapper) {
                 target[propertyKey] = resolvedFunc;
             }
@@ -157,6 +166,18 @@ export function nativeOverride<This, Args extends any[], Return>(
 }
 
 /**
+ * Decorator used to redirect a function to a native implementation if available.
+ * @internal
+ */
+export function nativeOverride<This, Args extends any[], Return>(
+    originalMethod: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+): (this: This, ...args: Args) => Return {
+    // When a native override exists, use it directly.
+    return ApplyNativeOverride(originalMethod, context, (nativeFunc) => nativeFunc);
+}
+
+/**
  * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
  * @param predicate
  * @example @nativeOverride.filter((arg1: string) => arg1.length > 20)
@@ -164,36 +185,19 @@ export function nativeOverride<This, Args extends any[], Return>(
  * @internal
  */
 nativeOverride.filter = function <T extends (...params: any) => boolean>(predicate: T) {
-    return (originalMethod: (...args: any[]) => any, _context: ClassMethodDecoratorContext): ((...args: any[]) => any) => {
-        const propertyKey = String(_context.name);
-        let resolvedFunc: ((this: any, ...args: any[]) => any) | undefined;
-        let resolved = false;
-
-        const wrapper = function (this: any, ...params: any[]): unknown {
-            if (!resolved) {
-                resolved = true;
-                if (typeof _native !== "undefined" && _native[propertyKey]) {
-                    const nativeFunc = _native[propertyKey] as (...args: any[]) => any;
-                    resolvedFunc = function (this: any, ...args: any[]): unknown {
-                        if (predicate(...(args as Parameters<T>))) {
-                            return nativeFunc(...args);
-                        }
-                        return originalMethod.apply(this, args);
-                    };
-                } else {
-                    resolvedFunc = originalMethod;
+    return <This, Args extends any[], Return>(
+        originalMethod: (this: This, ...args: Args) => Return,
+        context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+    ): ((this: This, ...args: Args) => Return) => {
+        // When a native override exists, evaluate the predicate on each call to choose between the native and JS function.
+        return ApplyNativeOverride(originalMethod, context, (nativeFunc, jsFunc) => {
+            return function (this: This, ...args: Args): Return {
+                if (predicate(...(args as unknown as Parameters<T>))) {
+                    return nativeFunc(...args);
                 }
-
-                const target = this && (_context.static ? this : Object.getPrototypeOf(this));
-                if (target?.[propertyKey] === wrapper) {
-                    target[propertyKey] = resolvedFunc;
-                }
-            }
-
-            return resolvedFunc!.apply(this, params);
-        };
-
-        return wrapper;
+                return jsFunc.apply(this, args);
+            };
+        });
     };
 };
 

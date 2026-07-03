@@ -2,10 +2,10 @@
  * Quick sanity test for TC39 decorator migration.
  * Tests the core decorator functions work correctly with Symbol.metadata.
  */
-import { serialize, serializeAsColor3, expandToProperty } from "core/Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, nativeOverride } from "core/Misc/decorators";
 import { GetDirectStore, GetMergedStore } from "core/Misc/decorators.functions";
 import { Color3 } from "core/Maths/math.color";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("TC39 Decorator Migration", () => {
     describe("serialize decorator", () => {
@@ -119,6 +119,91 @@ describe("TC39 Decorator Migration", () => {
             instance.myExpanded = 20;
             expect(instance.myExpanded).toBe(20);
             expect(callback).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("nativeOverride decorator", () => {
+        afterEach(() => {
+            delete (globalThis as any)._native;
+        });
+
+        it("uses the original JS implementation when no native context is present", () => {
+            class Test {
+                @nativeOverride
+                public compute(a: number, b: number): number {
+                    return a + b;
+                }
+            }
+
+            expect(new Test().compute(2, 3)).toBe(5);
+        });
+
+        it("redirects to the native implementation when a native context is present", () => {
+            const nativeCompute = vi.fn(function (this: unknown, a: number, b: number) {
+                return a * b;
+            });
+            (globalThis as any)._native = { compute: nativeCompute };
+
+            class Test {
+                @nativeOverride
+                public compute(a: number, b: number): number {
+                    return a + b;
+                }
+            }
+
+            expect(new Test().compute(2, 3)).toBe(6);
+            expect(nativeCompute).toHaveBeenCalledTimes(1);
+        });
+
+        it("resolves the target function once and replaces the wrapper on the prototype", () => {
+            class Test {
+                @nativeOverride
+                public compute(a: number, b: number): number {
+                    return a + b;
+                }
+            }
+
+            const instance = new Test();
+            const wrapper = Test.prototype.compute;
+            instance.compute(1, 1);
+            // The wrapper should have replaced itself with the resolved function on the prototype.
+            expect(Test.prototype.compute).not.toBe(wrapper);
+            expect(instance.compute(4, 5)).toBe(9);
+        });
+
+        describe(".filter", () => {
+            it("uses the JS implementation for every call when no native context is present", () => {
+                class Test {
+                    @nativeOverride.filter((a: number) => a > 10)
+                    public compute(a: number): number {
+                        return a + 1;
+                    }
+                }
+
+                const instance = new Test();
+                expect(instance.compute(5)).toBe(6);
+                expect(instance.compute(20)).toBe(21);
+            });
+
+            it("redirects to native only when the predicate passes", () => {
+                const nativeCompute = vi.fn((a: number) => a * 100);
+                (globalThis as any)._native = { compute: nativeCompute };
+
+                class Test {
+                    @nativeOverride.filter((a: number) => a > 10)
+                    public compute(a: number): number {
+                        return a + 1;
+                    }
+                }
+
+                const instance = new Test();
+                // Predicate is false -> JS implementation is used.
+                expect(instance.compute(5)).toBe(6);
+                expect(nativeCompute).not.toHaveBeenCalled();
+                // Predicate is true -> native implementation is used.
+                expect(instance.compute(20)).toBe(2000);
+                expect(nativeCompute).toHaveBeenCalledTimes(1);
+            });
         });
     });
 });
