@@ -163,6 +163,12 @@ export class WebXRExperienceHelper implements IDisposable {
             // A WebGPU-compatible XR session is layers-only (per the WebXR/WebGPU binding spec): the
             // baseLayer/XRWebGLLayer path cannot be used. The WebGPU XRProjectionLayer is wired up in a
             // later phase, so a WebGPU XR session currently enters with no layer and renders nothing yet.
+            // Because no layer is attached, the session receives no requestAnimationFrame callbacks, so
+            // onXRFrameObservable never fires and WebXRState stays at ENTERING_XR (it does NOT reach
+            // IN_XR, which is gated on the first frame below) until the later-phase projection layer
+            // produces that first frame. This is the expected Phase 1 end-state, not a regression, and
+            // has been confirmed on Quest hardware as well as at the raw-browser level (a no-layer WebXR
+            // session gets zero rAF callbacks). The session still ends cleanly via its native "end" path.
             if (!this._scene.getEngine().isWebGPU && !this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
                 const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
                 xrRenderState.baseLayer = baseLayer;
