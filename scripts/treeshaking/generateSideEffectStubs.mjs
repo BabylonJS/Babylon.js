@@ -66,7 +66,7 @@ const STUB_EXCLUDED_CLASSES = new Set(["AbstractEngine", "ThinEngine", "Engine",
  * only meaningful for the core package.
  * @type {Set<string>}
  */
-let STUB_EXCLUDED_FILES = new Set();
+let STUB_EXCLUDED_FILES;
 
 /**
  * Load the authoritative thin-engine closure from `thin-engine-modules.json` and
