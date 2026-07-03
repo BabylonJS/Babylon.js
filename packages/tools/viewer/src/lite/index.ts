@@ -5,3 +5,4 @@ export type { ViewerElementEventMap } from "../viewerElementBase";
 export { ViewerHotSpotResult } from "../viewerBase";
 export { ViewerElement, HTML3DElement, ConfigureCustomViewerElement } from "../viewerElementLite";
 export { Viewer, CreateViewerForCanvas, DefaultViewerOptions } from "../viewerLite";
+export { HTML3DAnnotationElement } from "../viewerAnnotationElement";

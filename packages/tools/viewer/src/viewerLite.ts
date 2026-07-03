@@ -16,8 +16,12 @@ import {
     createSceneContext,
     disposeEngine,
     disposeScene,
+    getCameraPosition,
     getContainerMeshes,
+    computeDeformedPositionToRef,
+    getEffectiveAspectRatio,
     getVariantNames,
+    getViewProjectionMatrix,
     goToFrame,
     loadEnvironment as liteLoadEnvironment,
     pauseAnimation as litePauseAnimation,
@@ -37,12 +41,14 @@ import {
     type AssetContainer,
     type EngineContext,
     type AnimationGroup as LiteAnimationGroup,
+    type Mesh as LiteMesh,
     type ShadowGenerator as LiteShadowGenerator,
     type SceneContext,
 } from "@babylonjs/lite";
 
 import {
     type IViewer,
+    type HotSpot,
     type ResolvedLoadEnvironmentOptions,
     type PostProcessing,
     type ShadowParams,
@@ -50,9 +56,9 @@ import {
     type SSAOOptions,
     type ToneMapping,
     type ViewerBaseOptions,
-    type ViewerHotSpotResult,
     type ViewerLoadModelOptions,
     ViewerBase,
+    ViewerHotSpotResult,
     DefaultViewerBaseOptions,
     FramingCameraAlpha,
     FramingCameraBeta,
@@ -87,6 +93,15 @@ const DefaultCameraBeta = Math.PI / 2.5;
 const DefaultCameraRadius = 3;
 
 // ── Helpers ──
+
+// Reusable scratch vectors for hotspot resolution to keep per-frame querying zero-allocation.
+const _tmpHotSpotVectors = {
+    a: { x: 0, y: 0, z: 0 },
+    b: { x: 0, y: 0, z: 0 },
+    c: { x: 0, y: 0, z: 0 },
+    worldPos: { x: 0, y: 0, z: 0 },
+    worldNormal: { x: 0, y: 0, z: 0 },
+};
 
 function getExtension(url: string, explicitExt?: string): string {
     if (explicitExt) {
@@ -1161,14 +1176,188 @@ export class Viewer extends ViewerBase implements IViewer {
         this.onCamerasAsHotSpotsChanged.notifyObservers();
     }
 
-    public queryHotSpot(_name: string, _result: ViewerHotSpotResult): boolean {
-        Logger.Warn("Viewer: Hot spot queries are not supported by Babylon Lite.");
-        return false;
+    public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
+        return this._queryHotSpot(name, result) != null;
     }
 
-    public focusHotSpot(_name: string): boolean {
-        Logger.Warn("Viewer: Hot spot focus is not supported by Babylon Lite.");
-        return false;
+    public focusHotSpot(name: string): boolean {
+        const result = new ViewerHotSpotResult();
+        const hotSpot = this._queryHotSpot(name, result);
+        if (!hotSpot) {
+            return false;
+        }
+
+        observePromise(this.pauseAnimation());
+
+        // Move the camera to the hotspot's associated orbit pose (if any), always retargeting to the
+        // hotspot's world position. Lite's arc-rotate camera has no interpolation, so this snaps.
+        const orbit = hotSpot.cameraOrbit;
+        if (orbit) {
+            if (orbit[0] !== undefined && !isNaN(orbit[0])) {
+                this._camera.alpha = orbit[0];
+            }
+            if (orbit[1] !== undefined && !isNaN(orbit[1])) {
+                this._camera.beta = orbit[1];
+            }
+            if (orbit[2] !== undefined && !isNaN(orbit[2])) {
+                this._camera.radius = orbit[2];
+            }
+        }
+        this._camera.target.x = result.worldPosition[0];
+        this._camera.target.y = result.worldPosition[1];
+        this._camera.target.z = result.worldPosition[2];
+        return true;
+    }
+
+    /**
+     * Resolves a named hotspot to its world position, screen position, and visibility, writing the
+     * result into `result`. Returns the hotspot definition on success (so callers like
+     * {@link focusHotSpot} can read its `cameraOrbit`), or `null` if the hotspot is unknown or cannot
+     * be resolved (e.g. an out-of-range surface vertex).
+     *
+     * Surface hotspots track skeletal + morph animation: the three referenced vertices are deformed
+     * for the current frame via {@link computeDeformedPositionToRef} (mesh-local), barycentric-
+     * blended, then transformed to world space by the mesh world matrix — mirroring Babylon.js core's
+     * `GetHotSpotToRef`. World hotspots use their fixed position/normal.
+     * @param name The name of the hotspot to resolve.
+     * @param result The result object to write the world position, screen position, and visibility into.
+     * @returns The hotspot definition on success, or `null` if it cannot be resolved.
+     */
+    private _queryHotSpot(name: string, result: ViewerHotSpotResult): Nullable<HotSpot> {
+        const hotSpot = this.hotSpots[name];
+        if (!hotSpot) {
+            return null;
+        }
+
+        const worldPos = _tmpHotSpotVectors.worldPos;
+        const worldNormal = _tmpHotSpotVectors.worldNormal;
+
+        if (hotSpot.type === "surface") {
+            // Hotspot `meshIndex` values are authored against the full Viewer, whose glTF loader
+            // inserts a synthetic `__root__` mesh at `assetContainer.meshes[0]` — so index 1 is the
+            // first real mesh. Lite's `getContainerMeshes` returns only renderable meshes (no root),
+            // so shift by one to keep shared hotspot configs consistent across both viewers.
+            const meshes = this._container ? getContainerMeshes(this._container) : [];
+            const mesh = meshes[hotSpot.meshIndex - 1];
+            if (!mesh) {
+                return null;
+            }
+            if (!this._getSurfaceHotSpotToRef(mesh, hotSpot.pointIndex, hotSpot.barycentric, worldPos, worldNormal)) {
+                return null;
+            }
+        } else {
+            worldPos.x = hotSpot.position[0];
+            worldPos.y = hotSpot.position[1];
+            worldPos.z = hotSpot.position[2];
+            worldNormal.x = hotSpot.normal[0];
+            worldNormal.y = hotSpot.normal[1];
+            worldNormal.z = hotSpot.normal[2];
+        }
+
+        // Project the world position to screen space. Aspect matches the rendered drawing buffer;
+        // the NDC→pixel mapping uses the canvas CSS size so it aligns with the DOM annotation overlay.
+        const canvas = this._engine.canvas as HTMLCanvasElement;
+        const bufferWidth = canvas.width || 1;
+        const bufferHeight = canvas.height || 1;
+        const cssWidth = canvas.clientWidth || bufferWidth;
+        const cssHeight = canvas.clientHeight || bufferHeight;
+        const aspect = getEffectiveAspectRatio(this._camera, bufferWidth, bufferHeight);
+        const vp = getViewProjectionMatrix(this._camera, aspect) as unknown as ArrayLike<number>;
+
+        // clip = VP * [worldPos, 1] (column-major).
+        const cx = vp[0]! * worldPos.x + vp[4]! * worldPos.y + vp[8]! * worldPos.z + vp[12]!;
+        const cy = vp[1]! * worldPos.x + vp[5]! * worldPos.y + vp[9]! * worldPos.z + vp[13]!;
+        const cw = vp[3]! * worldPos.x + vp[7]! * worldPos.y + vp[11]! * worldPos.z + vp[15]!;
+        if (cw <= 0) {
+            // Behind the camera — report as invalid (matches an off-screen/back projection).
+            result.screenPosition[0] = NaN;
+            result.screenPosition[1] = NaN;
+        } else {
+            const ndcX = cx / cw;
+            const ndcY = cy / cw;
+            // Inverse of Lite's createPickingRay screen→NDC mapping (Y flipped for WebGPU).
+            result.screenPosition[0] = ((ndcX + 1) / 2) * cssWidth;
+            result.screenPosition[1] = ((1 - ndcY) / 2) * cssHeight;
+        }
+
+        result.worldPosition[0] = worldPos.x;
+        result.worldPosition[1] = worldPos.y;
+        result.worldPosition[2] = worldPos.z;
+
+        // Visibility: dot(eyeToSurface, worldNormal). > 0 front-facing, <= 0 back-facing.
+        const eye = getCameraPosition(this._camera);
+        let ex = eye.x - worldPos.x;
+        let ey = eye.y - worldPos.y;
+        let ez = eye.z - worldPos.z;
+        const len = Math.hypot(ex, ey, ez) || 1;
+        ex /= len;
+        ey /= len;
+        ez /= len;
+        result.visibility = ex * worldNormal.x + ey * worldNormal.y + ez * worldNormal.z;
+
+        return hotSpot;
+    }
+
+    /**
+     * Computes the world-space position and normal of a surface hotspot on `mesh` from three vertex
+     * indices and barycentric weights, applying the mesh's current animation pose. Mirrors core's
+     * `GetHotSpotToRef`: deform each vertex to mesh-local space, blend by barycentric, then transform
+     * the single blended point (and the local triangle normal) to world space.
+     * @param mesh The mesh the hotspot is anchored to.
+     * @param pointIndex The three vertex indices defining the hotspot's triangle.
+     * @param barycentric The barycentric weights blending the three vertices.
+     * @param outPos Receives the world-space hotspot position.
+     * @param outNormal Receives the world-space hotspot normal.
+     * @returns `true` if the position and normal were computed, or `false` if a vertex is out of range.
+     */
+    private _getSurfaceHotSpotToRef(
+        mesh: LiteMesh,
+        pointIndex: readonly [number, number, number],
+        barycentric: readonly [number, number, number],
+        outPos: { x: number; y: number; z: number },
+        outNormal: { x: number; y: number; z: number }
+    ): boolean {
+        const a = _tmpHotSpotVectors.a;
+        const b = _tmpHotSpotVectors.b;
+        const c = _tmpHotSpotVectors.c;
+        if (
+            !computeDeformedPositionToRef(mesh, pointIndex[0], a) ||
+            !computeDeformedPositionToRef(mesh, pointIndex[1], b) ||
+            !computeDeformedPositionToRef(mesh, pointIndex[2], c)
+        ) {
+            return false;
+        }
+
+        // Barycentric blend in mesh-local space.
+        const lx = a.x * barycentric[0] + b.x * barycentric[1] + c.x * barycentric[2];
+        const ly = a.y * barycentric[0] + b.y * barycentric[1] + c.y * barycentric[2];
+        const lz = a.z * barycentric[0] + b.z * barycentric[1] + c.z * barycentric[2];
+
+        // Local triangle normal = (b - a) x (c - a).
+        const abx = b.x - a.x;
+        const aby = b.y - a.y;
+        const abz = b.z - a.z;
+        const acx = c.x - a.x;
+        const acy = c.y - a.y;
+        const acz = c.z - a.z;
+        const nx = aby * acz - abz * acy;
+        const ny = abz * acx - abx * acz;
+        const nz = abx * acy - aby * acx;
+
+        const m = mesh.worldMatrix as unknown as ArrayLike<number>;
+        // Position → world (column-major, with translation).
+        outPos.x = m[0]! * lx + m[4]! * ly + m[8]! * lz + m[12]!;
+        outPos.y = m[1]! * lx + m[5]! * ly + m[9]! * lz + m[13]!;
+        outPos.z = m[2]! * lx + m[6]! * ly + m[10]! * lz + m[14]!;
+        // Normal → world (rotation/scale only, no translation), then normalize.
+        const wnx = m[0]! * nx + m[4]! * ny + m[8]! * nz;
+        const wny = m[1]! * nx + m[5]! * ny + m[9]! * nz;
+        const wnz = m[2]! * nx + m[6]! * ny + m[10]! * nz;
+        const nlen = Math.hypot(wnx, wny, wnz) || 1;
+        outNormal.x = wnx / nlen;
+        outNormal.y = wny / nlen;
+        outNormal.z = wnz / nlen;
+        return true;
     }
 
     // ── State ──
