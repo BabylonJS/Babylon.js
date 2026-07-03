@@ -3750,9 +3750,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             return;
         }
 
+        // The cached fast bundle records drawIndirect against a specific external buffer/offset, which is not part
+        // of the draw/material context dirty key. Invalidate it when the caller supplies a different external
+        // indirect buffer/offset (or stops/starts using one), so a stale bundle can't draw from the wrong buffer.
+        const externalIndirectChanged = externalIndirect
+            ? this._currentDrawContext._externalIndirectBuffer !== externalIndirect.buffer || this._currentDrawContext._externalIndirectOffset !== externalIndirect.offset
+            : this._currentDrawContext._externalIndirectBuffer !== undefined;
+
         if (
             !this.compatibilityMode &&
-            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)
+            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) ||
+                this._currentMaterialContext.isDirty ||
+                this._currentMaterialContext.forceBindGroupCreation ||
+                externalIndirectChanged)
         ) {
             this._currentDrawContext.fastBundle = undefined;
         }
@@ -3863,6 +3873,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         if (nonCompatMode) {
+            // Remember which external indirect buffer/offset this bundle draws from, so it is invalidated above if
+            // the caller changes it on a later draw sharing this draw context.
+            this._currentDrawContext._externalIndirectBuffer = externalIndirect?.buffer;
+            this._currentDrawContext._externalIndirectOffset = externalIndirect?.offset ?? 0;
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
             bundleList.addBundle(this._currentDrawContext.fastBundle);
         }

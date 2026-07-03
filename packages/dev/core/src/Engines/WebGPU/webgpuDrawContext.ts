@@ -39,6 +39,16 @@ export class WebGPUDrawContext implements IDrawContext {
 
     public indirectDrawBuffer?: GPUBuffer;
 
+    /**
+     * @internal
+     * The caller-owned (external) indirect buffer and offset the cached {@link fastBundle} was recorded against,
+     * if any. Used to invalidate the bundle when the caller passes a different external indirect buffer/offset
+     * (the bundle records drawIndirect against a specific buffer, which is otherwise not part of the dirty key).
+     */
+    public _externalIndirectBuffer?: GPUBuffer;
+    /** @internal */
+    public _externalIndirectOffset = 0;
+
     private _materialContextUpdateId: number;
     private _bufferManager: WebGPUBufferManager;
     private _useInstancing: boolean;

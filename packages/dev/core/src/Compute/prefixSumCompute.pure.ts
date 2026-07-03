@@ -117,7 +117,9 @@ export class PrefixSumCompute {
     }
 
     private _scanRecursive(data: DataBuffer, count: number, level: number): void {
-        if (count <= 1) {
+        // count === 1 must still run the block scan so the single element is written to its exclusive value (0);
+        // returning here would leave it unchanged. Only an empty scan is a true no-op.
+        if (count <= 0) {
             return;
         }
         const numBlocks = Math.ceil(count / BlockSize);

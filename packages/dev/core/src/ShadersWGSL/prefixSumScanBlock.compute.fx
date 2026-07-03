@@ -19,7 +19,13 @@ fn main(@builtin(global_invocation_id) gid : vec3u, @builtin(local_invocation_id
     let g = gid.x;
     let t = lid.x;
 
-    let v = select(0u, data[g], g < params.count);
+    // Explicit bounds check: `select` would still evaluate `data[g]` for out-of-range lanes, and the recursive
+    // block-sums buffer is sized to the exact block count (not padded to the workgroup size), so that read can be
+    // out of bounds. Guard the load so padded lanes contribute 0.
+    var v = 0u;
+    if (g < params.count) {
+        v = data[g];
+    }
     temp[t] = v;
     workgroupBarrier();
 

@@ -66,7 +66,10 @@ const Native = IsNative ? _native : null;
  * @see GaussianSplattingMeshBase.GpuSortMode
  */
 export enum GaussianSplattingGpuSortMode {
-    /** Pick automatically. Currently keeps the CPU worker / native path until GPU sorting is complete. */
+    /**
+     * Pick automatically. Currently uses the CPU worker / Babylon Native path; the WebGPU compute sort is opt-in
+     * via {@link GaussianSplattingGpuSortMode.Gpu} while it gains broader validation.
+     */
     Auto,
     /** Force the WebGPU compute sort path. Falls back to the worker when compute shaders are unavailable. */
     Gpu,
@@ -3299,6 +3302,18 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
             this._gpuSortDirty = true;
             return;
+        }
+
+        // Falling back to the CPU worker / Babylon Native path. If this mesh was previously on the GPU sort path,
+        // clear that draw state so the worker rebinds a CPU splatIndex buffer (the GPU buffer wrapper is not
+        // updatable, so thinInstanceBufferUpdated would silently fail) and Mesh._draw stops issuing GPU indirect
+        // draws from the now-unused sorter's indirect-args buffer.
+        if (this._gpuSortedDataBuffer) {
+            this._gpuSortedDataBuffer = null;
+            this._cameraViewInfos.forEach((info) => {
+                info.splatIndexBufferSet = false;
+                info.mesh._indirectDrawBuffer = null;
+            });
         }
 
         // no worker in native
