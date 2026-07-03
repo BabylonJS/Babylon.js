@@ -193,7 +193,8 @@ nativeOverride.filter = function <T extends (...params: any) => boolean>(predica
         return ApplyNativeOverride(originalMethod, context, (nativeFunc, jsFunc) => {
             return function (this: This, ...args: Args): Return {
                 if (predicate(...(args as unknown as Parameters<T>))) {
-                    return nativeFunc(...args);
+                    // The native function is invoked without a `this` binding, matching the original behavior.
+                    return (nativeFunc as (...args: Args) => Return)(...args);
                 }
                 return jsFunc.apply(this, args);
             };
