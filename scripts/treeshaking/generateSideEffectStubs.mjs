@@ -17,7 +17,6 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve, dirname, relative, posix, join } from "path";
 import { globSync } from "glob";
 import { execFileSync } from "child_process";
-import { build } from "esbuild";
 import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
 const PACKAGE = resolvePackageFromArgv();
@@ -53,56 +52,52 @@ const PRETTIER_PRINT_WIDTH = 180;
 const STUB_EXCLUDED_CLASSES = new Set(["AbstractEngine", "ThinEngine", "Engine", "WebGPUEngine", "ThinWebGPUEngine", "NativeEngine", "ThinNativeEngine"]);
 
 /**
- * Absolute paths of files that are part of the thin-engine import closure.
+ * Absolute paths of files that make up the thin-engine import closure.
  *
- * Every file reachable from `thinEngine.pure` is loaded in even the most
+ * Every file pulled in by `new ThinEngine(canvas)` (see
+ * packages/tools/tests/src/thinEngineOnly.ts) is loaded in even the most
  * minimal engine build, so a module-load stub (`X.prototype.m ??= ...`) placed
  * in one of them can never be tree-shaken and permanently inflates the thin
- * engine. We compute the closure with esbuild (a dev dependency) rather than
- * hand-maintaining a class list so newly-added always-loaded classes are
- * excluded automatically. Populated by `computeThinEngineClosure()` below;
+ * engine. The authoritative list lives in `thin-engine-modules.json` (derived
+ * from the real production bundle) rather than being recomputed here: a
+ * source-only esbuild pass tree-shakes differently from the shipped build
+ * (constants inlining, injected `/*#__PURE__*\/` annotations) and would
+ * under-count the true closure. Populated by `loadThinEngineClosure()` below;
  * only meaningful for the core package.
  * @type {Set<string>}
  */
 let STUB_EXCLUDED_FILES = new Set();
 
 /**
- * Compute the transitive import closure of the WebGL thin engine so any file it
- * pulls in is excluded from stub generation. Only relevant for `core` (the thin
- * engine lives there and never imports the other packages). Uses esbuild's
- * metafile, which resolves re-exports, index files and the `core/` alias
- * correctly — far more reliably than hand-rolled import parsing.
- * @returns {Promise<Set<string>>} absolute file paths in the thin-engine closure
+ * Load the authoritative thin-engine closure from `thin-engine-modules.json` and
+ * resolve each module to an absolute source path. Only relevant for `core` (the
+ * thin engine lives there and never imports the other packages). Every listed
+ * module must exist so a rename can never silently drop a file out of the
+ * exclusion set (which would let a stub creep back into the thin engine).
+ * @returns {Set<string>} absolute file paths in the thin-engine closure
  */
-async function computeThinEngineClosure() {
+function loadThinEngineClosure() {
     if (PACKAGE !== "core") {
         return new Set();
     }
     const coreSrc = join(REPO_ROOT, "packages", "dev", "core", "src");
-    const entry = join(coreSrc, "Engines", "thinEngine.pure.ts");
-    if (!existsSync(entry)) {
-        return new Set();
-    }
-    let result;
-    try {
-        result = await build({
-            entryPoints: [entry],
-            bundle: true,
-            write: false,
-            metafile: true,
-            format: "esm",
-            logLevel: "silent",
-            absWorkingDir: REPO_ROOT,
-            alias: { core: coreSrc },
-            // Match the package's TS build so decorators/class fields resolve like a real build.
-            tsconfigRaw: { compilerOptions: { experimentalDecorators: true, useDefineForClassFields: false } },
-        });
-    } catch (err) {
-        throw new Error(`Failed to compute the thin-engine closure for stub exclusion (is the source valid?): ${err.message}`);
-    }
+    const listPath = join(REPO_ROOT, "scripts", "treeshaking", "thin-engine-modules.json");
+    const { modules } = JSON.parse(readFileSync(listPath, "utf8"));
     const files = new Set();
-    for (const key of Object.keys(result.metafile.inputs)) {
-        files.add(resolve(REPO_ROOT, key));
+    const missing = [];
+    for (const rel of modules) {
+        const abs = join(coreSrc, rel);
+        if (!existsSync(abs)) {
+            missing.push(rel);
+            continue;
+        }
+        files.add(abs);
+    }
+    if (missing.length > 0) {
+        throw new Error(
+            `Stale thin-engine exclusion list: ${missing.length} module(s) in thin-engine-modules.json no longer exist ` +
+                `(${missing.join(", ")}). Update scripts/treeshaking/thin-engine-modules.json after the rename/removal.`
+        );
     }
     return files;
 }
@@ -112,9 +107,9 @@ async function computeThinEngineClosure() {
 const typesFiles = globSync("**/*.types.ts", { cwd: ROOT, absolute: true }).sort();
 if (VERBOSE) console.log(`Found ${typesFiles.length} .types.ts files`);
 
-// Compute the thin-engine closure up front so stubs are never emitted into any
+// Load the thin-engine closure up front so stubs are never emitted into any
 // always-loaded thin-engine file (see STUB_EXCLUDED_FILES).
-STUB_EXCLUDED_FILES = await computeThinEngineClosure();
+STUB_EXCLUDED_FILES = loadThinEngineClosure();
 if (VERBOSE) console.log(`Thin-engine closure: ${STUB_EXCLUDED_FILES.size} files excluded from stub generation`);
 
 // ── Step 2: Parse declare module blocks ─────────────────────────────────────
