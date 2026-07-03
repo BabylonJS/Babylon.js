@@ -2013,11 +2013,3 @@ export function RegisterStandardMaterial(): void {
         return new StandardMaterial("default material", scene);
     };
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffectProperty } from "../Misc/devTools";
-
-if (!Object.getOwnPropertyDescriptor(StandardMaterial.prototype, "decalMap")) {
-    Object.defineProperty(StandardMaterial.prototype, "decalMap", _MissingSideEffectProperty("StandardMaterial", "decalMap"));
-}
-// #endregion GENERATED_SIDE_EFFECT_STUBS

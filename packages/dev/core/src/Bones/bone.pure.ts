@@ -1202,9 +1202,3 @@ export class Bone extends Node {
         super.dispose();
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect } from "../Misc/devTools";
-
-Bone.prototype.copyAnimationRange ??= _MissingSideEffect("Bone", "copyAnimationRange") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

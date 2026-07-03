@@ -14,7 +14,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { resolve, dirname, relative, posix } from "path";
+import { resolve, dirname, relative, posix, basename } from "path";
 import { globSync } from "glob";
 import { execFileSync } from "child_process";
 import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
@@ -193,6 +193,13 @@ function parseInterfaceMembers(body) {
 /** @type {Map<string, Map<string, ClassStubs>>} targetFile -> className -> stubs */
 const stubsByFile = new Map();
 
+/**
+ * @type {Map<string, string>} targetFile -> module specifier to import the augmented
+ * class(es) from, used when the stubs live in a side-effectful `.ts` wrapper and the
+ * class itself is defined in the sibling `.pure` module (so it must be imported).
+ */
+const classImportModuleByFile = new Map();
+
 // Keep generated stubs stable without relying on Prettier for long lines.
 function appendPropertyStub(lines, className, propName) {
     const definePropertyLine = `    Object.defineProperty(${className}.prototype, "${propName}", _MissingSideEffectProperty("${className}", "${propName}"));`;
@@ -244,27 +251,49 @@ for (const typesFile of typesFiles) {
         const typeDir = dirname(typesFile);
         let resolvedBase = resolve(typeDir, block.modulePath);
 
-        // Find the actual .ts or .pure.ts file
+        // Resolve the target file for the stubs.
+        //
+        // For a side-effect-split class (both `foo.pure.ts` and `foo.ts` exist), the
+        // stubs are module-level side effects, so they belong in the side-effectful
+        // `foo.ts` WRAPPER — importing the class from `foo.pure`. This keeps
+        // `foo.pure.ts` free of module-level side effects so it stays tree-shakeable,
+        // and consumers only pay for the stubs when they import the wrapper (which the
+        // package barrels do). Files that exist only as `foo.ts` (or only `foo.pure.ts`)
+        // keep the stubs inline, where the class is already in lexical scope.
         let targetFile = null;
-        // Prefer .pure.ts for the target (stubs attached to the pure class)
-        if (existsSync(resolvedBase + ".pure.ts")) {
-            targetFile = resolvedBase + ".pure.ts";
-        } else if (existsSync(resolvedBase + ".ts")) {
-            targetFile = resolvedBase + ".ts";
+        let classImportModule = null;
+        // Augmentations `declare module` against the `.pure` module, so `resolvedBase`
+        // already carries a `.pure` suffix; normalize to the base name first.
+        const base = resolvedBase.endsWith(".pure") ? resolvedBase.slice(0, -".pure".length) : resolvedBase;
+        const purePath = base + ".pure.ts";
+        const wrapperPath = base + ".ts";
+        if (existsSync(purePath) && existsSync(wrapperPath)) {
+            targetFile = wrapperPath;
+            classImportModule = "./" + basename(base) + ".pure";
+        } else if (existsSync(wrapperPath)) {
+            targetFile = wrapperPath;
+        } else if (existsSync(purePath)) {
+            targetFile = purePath;
         } else {
             if (VERBOSE) console.log(`  SKIP: cannot resolve target for declare module "${block.modulePath}" from ${relative(ROOT, typesFile)}`);
             continue;
         }
 
-        // Only emit stubs when the augmented entity is a runtime class in the
-        // target file. Augmentations of type-only interfaces (e.g. options bags
-        // like GLTFLoaderExtensionOptions) have no prototype, so referencing
-        // `<Name>.prototype` would be a TS "value used as type" error.
-        if (!fileDeclaresRuntimeClass(targetFile, block.interfaceName)) {
+        // Only emit stubs when the augmented entity is a runtime class. Augmentations
+        // of type-only interfaces (e.g. options bags like GLTFLoaderExtensionOptions)
+        // have no prototype, so referencing `<Name>.prototype` would be a TS
+        // "value used as type" error. When the stubs are redirected to a side-effectful
+        // wrapper, the class is declared in the sibling `.pure` module, so check that.
+        const classSourceFile = classImportModule ? purePath : targetFile;
+        if (!fileDeclaresRuntimeClass(classSourceFile, block.interfaceName)) {
             if (VERBOSE) {
-                console.log(`  SKIP: ${block.interfaceName} is not a runtime class in ${relative(ROOT, targetFile)} (type-only interface augmentation)`);
+                console.log(`  SKIP: ${block.interfaceName} is not a runtime class in ${relative(ROOT, classSourceFile)} (type-only interface augmentation)`);
             }
             continue;
+        }
+
+        if (classImportModule) {
+            classImportModuleByFile.set(targetFile, classImportModule);
         }
 
         if (!stubsByFile.has(targetFile)) {
@@ -299,11 +328,20 @@ for (const typesFile of typesFiles) {
 
 // ── Step 3.5: Prune child-class stubs inherited from a parent ───────────────
 
-// Build class hierarchy by scanning target files for `class X extends Y`
+// Build class hierarchy by scanning the class-defining source for `class X extends Y`.
+// When stubs are redirected to a side-effectful wrapper, the class is defined in the
+// sibling `.pure` module, so read that instead of the (declaration-free) wrapper.
 /** @type {Map<string, string>} className -> parentClassName */
 const classHierarchy = new Map();
 for (const [targetFile] of stubsByFile) {
-    const src = readFileSync(targetFile, "utf-8");
+    const classImportModule = classImportModuleByFile.get(targetFile);
+    const sourceFile = classImportModule ? resolve(dirname(targetFile), classImportModule + ".ts") : targetFile;
+    let src;
+    try {
+        src = readFileSync(sourceFile, "utf-8");
+    } catch {
+        src = readFileSync(targetFile, "utf-8");
+    }
     const classRe = /export\s+(?:abstract\s+)?class\s+(\w+)\s+extends\s+(\w+)/g;
     let m;
     while ((m = classRe.exec(src)) !== null) {
@@ -444,11 +482,36 @@ for (const [targetFile, classMap] of stubsByFile) {
         stubImportLine = `import { ${neededSymbols.join(", ")} } from "${relPath}";`;
     }
 
+    // When the stubs are redirected to a side-effectful wrapper, the augmented class is
+    // declared in the sibling `.pure` module and must be imported here. Merge into an
+    // existing import from that module (e.g. the wrapper's `RegisterFoo()` import) so we
+    // don't emit a second `import ... from "./foo.pure"` (import/no-duplicates).
+    const classImportModule = classImportModuleByFile.get(targetFile);
+    let classStubImportLine = "";
+    if (classImportModule) {
+        const classNames = [...classMap.keys()].sort();
+        const classImportRe = new RegExp(`import\\s*\\{([^}]*)\\}\\s*from\\s*["']${classImportModule.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']\\s*;`);
+        const existingClassImport = contentWithoutRegion.match(classImportRe);
+        if (existingClassImport) {
+            const existingSymbols = existingClassImport[1]
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+            const allSymbols = [...new Set([...existingSymbols, ...classNames])];
+            content = content.replace(existingClassImport[0], `import { ${allSymbols.join(", ")} } from "${classImportModule}";`);
+        } else {
+            classStubImportLine = `import { ${classNames.join(", ")} } from "${classImportModule}";`;
+        }
+    }
+
     // Build stub code lines
     const lines = [];
     lines.push(REGION_START);
     if (stubImportLine) {
         lines.push(stubImportLine);
+    }
+    if (classStubImportLine) {
+        lines.push(classStubImportLine);
     }
     lines.push("");
 

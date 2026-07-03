@@ -5,7 +5,7 @@ import { type IWebRequest } from "core/Misc/interfaces/iWebRequest";
 import { type WebRequest } from "core/Misc/webRequest";
 import { type IOfflineProvider } from "core/Offline/IOfflineProvider";
 import { type Nullable } from "core/types";
-import { LoadFile } from "core/Misc/fileTools.pure";
+import { _WarnImport } from "core/Misc/devTools";
 import { Constants } from "./constants";
 
 /**
@@ -50,9 +50,11 @@ export function _LoadFile(
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest
 ): IFileRequest {
-    const loadFileFn = injectedLoadFile || EngineFunctionContext.loadFile || LoadFile;
-    const request = loadFileFn(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
-    return request;
+    const loadFileFn = injectedLoadFile || EngineFunctionContext.loadFile;
+    if (loadFileFn) {
+        return loadFileFn(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+    }
+    throw _WarnImport("FileTools");
 }
 
 /**

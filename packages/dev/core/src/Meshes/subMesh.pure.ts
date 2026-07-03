@@ -781,9 +781,3 @@ export class SubMesh implements ICullable {
         return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh, createBoundingBox);
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect } from "../Misc/devTools";
-
-SubMesh.prototype.projectToRef ??= _MissingSideEffect("SubMesh", "projectToRef") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

@@ -5,5 +5,13 @@ export * from "./renderTargetTexture.types";
  */
 export * from "./renderTargetTexture.pure";
 
-import { RegisterRenderTargetTexture } from "./renderTargetTexture.pure";
+import { RegisterRenderTargetTexture, RenderTargetTexture } from "./renderTargetTexture.pure";
 RegisterRenderTargetTexture();
+
+// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
+import { _MissingSideEffectProperty } from "../../Misc/devTools";
+
+if (!Object.getOwnPropertyDescriptor(RenderTargetTexture.prototype, "noPrePassRenderer")) {
+    Object.defineProperty(RenderTargetTexture.prototype, "noPrePassRenderer", _MissingSideEffectProperty("RenderTargetTexture", "noPrePassRenderer"));
+}
+// #endregion GENERATED_SIDE_EFFECT_STUBS

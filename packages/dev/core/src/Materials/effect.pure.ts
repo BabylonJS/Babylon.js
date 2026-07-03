@@ -1584,11 +1584,3 @@ export class Effect implements IDisposable {
         Effect._BaseCache = {};
     }
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect } from "../Misc/devTools";
-
-Effect.prototype.setDepthStencilTexture ??= _MissingSideEffect("Effect", "setDepthStencilTexture") as any;
-Effect.prototype.setTextureFromPostProcess ??= _MissingSideEffect("Effect", "setTextureFromPostProcess") as any;
-Effect.prototype.setTextureFromPostProcessOutput ??= _MissingSideEffect("Effect", "setTextureFromPostProcessOutput") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

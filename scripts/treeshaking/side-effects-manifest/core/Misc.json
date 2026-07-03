@@ -7,7 +7,7 @@
         "Misc/dumpTools.ts": ["top-level-call"],
         "Misc/environmentTextureTools.ts": ["bare-import"],
         "Misc/equirectangularCapture.ts": ["bare-import"],
-        "Misc/fileTools.ts": ["top-level-call"],
+        "Misc/fileTools.ts": ["static-property-assignment", "top-level-call"],
         "Misc/minMaxReducer.ts": ["bare-import"],
         "Misc/observable.extensions.ts": ["top-level-call"],
         "Misc/observable.extensions.types.ts": ["declare-module"],
