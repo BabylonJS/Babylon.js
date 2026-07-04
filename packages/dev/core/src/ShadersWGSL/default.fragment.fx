@@ -540,8 +540,8 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 	}
 #endif
 
-#endif
-
 #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
 
 }

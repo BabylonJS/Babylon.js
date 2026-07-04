@@ -389,8 +389,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #include<pbrDebug>
 
-#endif
-
     #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
 
 }
