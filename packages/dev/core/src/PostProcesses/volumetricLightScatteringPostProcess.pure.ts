@@ -148,7 +148,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             ratio.postProcessRatio || ratio,
             camera,
             samplingMode,
-            engine,
+            selectedEngine,
             reusable,
             "#define NUM_SAMPLES " + samples,
             undefined,
