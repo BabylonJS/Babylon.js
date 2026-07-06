@@ -23,6 +23,7 @@ import {
     getVariantNames,
     getViewProjectionMatrix,
     goToFrame,
+    interpolateArcRotateCamera,
     loadEnvironment as liteLoadEnvironment,
     pauseAnimation as litePauseAnimation,
     playAnimation as litePlayAnimation,
@@ -181,6 +182,12 @@ export class Viewer extends ViewerBase implements IViewer {
     // Hot spots
     private _camerasAsHotSpots = false;
 
+    /**
+     * Aborts the in-flight camera interpolation (from {@link focusHotSpot}) when a new one starts or
+     * the viewer is disposed. Null when no interpolation is running.
+     */
+    private _cameraInterpolationAbort: Nullable<AbortController> = null;
+
     // Lifecycle
     private _defaultAlpha: number;
     private _defaultBeta: number;
@@ -326,6 +333,18 @@ export class Viewer extends ViewerBase implements IViewer {
     protected override _applyCameraAutoOrbitDelay(): void {}
 
     public resetCamera(reframe?: boolean): void {
+        // The public reset always animates the transition, matching the full Viewer's `resetCamera`.
+        this._resetCameraCore(reframe, true);
+    }
+
+    /**
+     * Shared implementation of camera reset. Resolves the reframe default (matching the full Viewer:
+     * reframe to model bounds when the selected animation differs from the default, otherwise return to
+     * the explicit default pose) and moves the camera there, optionally animating the transition.
+     * @param reframe Whether to reframe to model bounds; when undefined, decided from animation state.
+     * @param interpolate Whether to animate the camera to the reset pose.
+     */
+    private _resetCameraCore(reframe: boolean | undefined, interpolate: boolean): void {
         if (reframe === undefined) {
             // Match the full Viewer: when the selected animation differs from the default, the explicit
             // default pose likely won't frame the model (it may even be out of view), so reframe to the
@@ -334,48 +353,98 @@ export class Viewer extends ViewerBase implements IViewer {
         }
 
         if (reframe) {
-            this._frameCameraToModel();
+            this._frameCameraToModel(interpolate);
             return;
         }
 
-        this._camera.alpha = this._defaultAlpha;
-        this._camera.beta = this._defaultBeta;
-        this._camera.radius = this._defaultRadius;
-        // Mutate the existing target ObservableVec3 in place — replacing it with a plain object
-        // would silently lose Lite's ObservableVec3 dirty-tracking, which is what notifies the
-        // camera that its world matrix needs to recompute when target changes.
-        this._camera.target.x = this._defaultTarget.x;
-        this._camera.target.y = this._defaultTarget.y;
-        this._camera.target.z = this._defaultTarget.z;
+        // Non-reframe reset restores the "default" framing: the model bounds pose with any explicit
+        // cameraOrbit/cameraTarget option overrides applied. Mirrors the full Viewer's
+        // `_resetCamera` -> `_reframeCameraFromBounds`, so with no such options it returns to exactly the
+        // load-time framing (fixing "reset moves the camera"). Before any model is loaded there are no
+        // bounds, so fall back to the fixed default pose the camera was created with.
+        if (this._frameCameraToModel(interpolate, true)) {
+            return;
+        }
+
+        this._moveCameraTo(
+            {
+                alpha: this._defaultAlpha,
+                beta: this._defaultBeta,
+                radius: this._defaultRadius,
+                target: this._defaultTarget,
+            },
+            interpolate
+        );
     }
 
     public updateCamera(pose: { alpha?: number; beta?: number; radius?: number; targetX?: number; targetY?: number; targetZ?: number }): void {
-        if (pose.alpha !== undefined) {
-            this._camera.alpha = pose.alpha;
-        }
-        if (pose.beta !== undefined) {
-            this._camera.beta = pose.beta;
-        }
-        if (pose.radius !== undefined) {
-            this._camera.radius = pose.radius;
+        // Animate to the requested pose, matching the full Viewer's `updateCamera`
+        // (which routes through `interpolateTo`). Omitted fields keep the current value.
+        const target =
+            pose.targetX !== undefined || pose.targetY !== undefined || pose.targetZ !== undefined
+                ? {
+                      x: pose.targetX ?? this._camera.target.x,
+                      y: pose.targetY ?? this._camera.target.y,
+                      z: pose.targetZ ?? this._camera.target.z,
+                  }
+                : undefined;
+
+        this._moveCameraTo({ alpha: pose.alpha, beta: pose.beta, radius: pose.radius, target }, true);
+    }
+
+    /**
+     * Moves the camera to a goal pose, either by animating (via {@link interpolateArcRotateCamera}) or by
+     * snapping directly. Either way, any in-flight interpolation is first canceled so it can't fight the
+     * new pose. Omitted or NaN goal fields keep the camera's current value for that channel.
+     * @param goal The destination camera pose.
+     * @param interpolate Whether to animate the transition.
+     */
+    private _moveCameraTo(goal: { alpha?: number; beta?: number; radius?: number; target?: { x: number; y: number; z: number } }, interpolate: boolean): void {
+        if (interpolate) {
+            this._interpolateCameraTo(goal);
+            return;
         }
 
-        const target = this._camera.target;
-        if (pose.targetX !== undefined) {
-            target.x = pose.targetX;
+        // Snap: cancel any running interpolation, then write the pose directly.
+        this._cameraInterpolationAbort?.abort(new AbortError("Camera interpolation superseded."));
+        this._cameraInterpolationAbort = null;
+
+        if (goal.alpha !== undefined && !isNaN(goal.alpha)) {
+            this._camera.alpha = goal.alpha;
         }
-        if (pose.targetY !== undefined) {
-            target.y = pose.targetY;
+        if (goal.beta !== undefined && !isNaN(goal.beta)) {
+            this._camera.beta = goal.beta;
         }
-        if (pose.targetZ !== undefined) {
-            target.z = pose.targetZ;
+        if (goal.radius !== undefined && !isNaN(goal.radius)) {
+            this._camera.radius = goal.radius;
+        }
+        if (goal.target) {
+            // Mutate the existing target ObservableVec3 in place — replacing it with a plain object
+            // would silently lose Lite's ObservableVec3 dirty-tracking, which is what notifies the
+            // camera that its world matrix needs to recompute when target changes.
+            this._camera.target.x = goal.target.x;
+            this._camera.target.y = goal.target.y;
+            this._camera.target.z = goal.target.z;
         }
     }
 
-    private _frameCameraToModel(): void {
+    /**
+     * Frames the camera to the loaded model's bounds, matching the full Viewer's framing math. Near/far
+     * planes and zoom limits are applied immediately; the orbit pose is moved (snapped or animated) via
+     * {@link _moveCameraTo}.
+     *
+     * When `applyDefaultPoseOverrides` is true, the bounds-derived orbit pose is overridden per-channel by
+     * any explicit `cameraOrbit`/`cameraTarget` options — mirroring the full Viewer's
+     * `_resetCamera` -> `_reframeCameraFromBounds`. With no such options this equals the pure bounds
+     * framing used on model load, so a reset returns to exactly the load-time framing.
+     * @param interpolate Whether to animate the camera to the framing pose.
+     * @param applyDefaultPoseOverrides Whether to override the bounds pose with explicit camera options.
+     * @returns True if the model had bounds and the camera was framed; false if there is no model to frame.
+     */
+    private _frameCameraToModel(interpolate: boolean, applyDefaultPoseOverrides = false): boolean {
         const bounds = this._computeModelBounds();
         if (!bounds) {
-            return;
+            return false;
         }
 
         // Mirror the full Viewer's framing math (viewer.ts `_getCameraConfig` / `_reframeCameraFromBounds`)
@@ -386,26 +455,54 @@ export class Viewer extends ViewerBase implements IViewer {
             radius = 1;
         }
 
-        // Reset the orbit angles to the framing pose on every reframe, matching the full Viewer
-        // (its reframe always applies a fixed alpha/beta, independent of any cameraOrbit option).
-        // This keeps a consistent viewpoint across load and animation switches.
-        this._camera.alpha = FramingCameraAlpha;
-        this._camera.beta = FramingCameraBeta;
-        this._camera.radius = radius;
-
-        // Mutate the existing target ObservableVec3 in place — replacing it with a plain object
-        // would silently lose Lite's ObservableVec3 dirty-tracking, which is what notifies the
-        // camera that its world matrix needs to recompute when target changes.
-        this._camera.target.x = bounds.center[0];
-        this._camera.target.y = bounds.center[1];
-        this._camera.target.z = bounds.center[2];
-
         // Near/far planes and zoom limits scaled to the framing radius, matching the full Viewer
         // (near = radius * 0.001, far = radius * 1000, radius limits = radius * 0.001 .. radius * 5).
+        // These are always bounds-derived (never overridden) and applied immediately (not interpolated),
+        // matching the full Viewer's `_reframeCameraFromBounds`.
         this._camera.nearPlane = radius * 0.001;
         this._camera.farPlane = radius * 1000;
         this._camera.lowerRadiusLimit = radius * 0.001;
         this._camera.upperRadiusLimit = radius * 5;
+
+        // Default to the bounds framing pose, matching the full Viewer (its reframe always applies a fixed
+        // alpha/beta, independent of any cameraOrbit option). This keeps a consistent viewpoint across load
+        // and animation switches.
+        let alpha = FramingCameraAlpha;
+        let beta = FramingCameraBeta;
+        let radiusGoal = radius;
+        const target = { x: bounds.center[0], y: bounds.center[1], z: bounds.center[2] };
+
+        // For a "default pose" reset, override each channel with the explicit camera option when present,
+        // falling back to the bounds framing otherwise — matching the full Viewer's `_reframeCameraFromBounds`.
+        if (applyDefaultPoseOverrides) {
+            const orbit = this._options?.cameraOrbit;
+            if (orbit) {
+                if (orbit[0] != null && !isNaN(orbit[0])) {
+                    alpha = orbit[0];
+                }
+                if (orbit[1] != null && !isNaN(orbit[1])) {
+                    beta = orbit[1];
+                }
+                if (orbit[2] != null && !isNaN(orbit[2])) {
+                    radiusGoal = orbit[2];
+                }
+            }
+            const cameraTarget = this._options?.cameraTarget;
+            if (cameraTarget) {
+                if (cameraTarget[0] != null && !isNaN(cameraTarget[0])) {
+                    target.x = cameraTarget[0];
+                }
+                if (cameraTarget[1] != null && !isNaN(cameraTarget[1])) {
+                    target.y = cameraTarget[1];
+                }
+                if (cameraTarget[2] != null && !isNaN(cameraTarget[2])) {
+                    target.z = cameraTarget[2];
+                }
+            }
+        }
+
+        this._moveCameraTo({ alpha, beta, radius: radiusGoal, target }, interpolate);
+        return true;
     }
 
     /**
@@ -878,8 +975,9 @@ export class Viewer extends ViewerBase implements IViewer {
             addToScene(this._scene, container);
 
             // Frame the camera to the model BEFORE the first rendered frame, so the model never
-            // appears briefly at the previous (default) camera position.
-            this._frameCameraToModel();
+            // appears briefly at the previous (default) camera position. Snap (no interpolation) here,
+            // matching the full Viewer, which loads with `interpolateCamera: false`.
+            this._frameCameraToModel(false);
 
             // Setup shadows BEFORE the first rendered frame so the shadow ground's deferred GPU
             // builder is processed by the upcoming `registerScene` (Lite only runs deferred builders
@@ -971,9 +1069,9 @@ export class Viewer extends ViewerBase implements IViewer {
         // the cached bounds and reframe the camera to the newly-selected animation. Without this the
         // camera stays framed for the previously-selected clip and the model can animate out of view
         // — e.g. the acrobaticPlane/UFO "flight" clip travels far outside the "hover" bounds. Matches
-        // the full Viewer, whose `selectedAnimation` setter calls `_reframeCamera`.
+        // the full Viewer, whose `selectedAnimation` setter calls `_reframeCamera` (which interpolates).
         this._cachedModelBounds = null;
-        this._frameCameraToModel();
+        this._frameCameraToModel(true);
 
         this.onSelectedAnimationChanged.notifyObservers();
 
@@ -1189,24 +1287,43 @@ export class Viewer extends ViewerBase implements IViewer {
 
         observePromise(this.pauseAnimation());
 
-        // Move the camera to the hotspot's associated orbit pose (if any), always retargeting to the
-        // hotspot's world position. Lite's arc-rotate camera has no interpolation, so this snaps.
+        // Smoothly move the camera to the hotspot's associated orbit pose (if any), always retargeting
+        // to the hotspot's world position — mirroring the full Viewer's `focusHotSpot`, which calls
+        // `ArcRotateCamera.interpolateTo`. Omitted/NaN orbit components keep the camera's current value.
         const orbit = hotSpot.cameraOrbit;
-        if (orbit) {
-            if (orbit[0] !== undefined && !isNaN(orbit[0])) {
-                this._camera.alpha = orbit[0];
-            }
-            if (orbit[1] !== undefined && !isNaN(orbit[1])) {
-                this._camera.beta = orbit[1];
-            }
-            if (orbit[2] !== undefined && !isNaN(orbit[2])) {
-                this._camera.radius = orbit[2];
-            }
-        }
-        this._camera.target.x = result.worldPosition[0];
-        this._camera.target.y = result.worldPosition[1];
-        this._camera.target.z = result.worldPosition[2];
+        this._interpolateCameraTo({
+            alpha: orbit?.[0],
+            beta: orbit?.[1],
+            radius: orbit?.[2],
+            target: { x: result.worldPosition[0], y: result.worldPosition[1], z: result.worldPosition[2] },
+        });
         return true;
+    }
+
+    /**
+     * Starts a camera interpolation toward the given goal pose, canceling any interpolation already in
+     * flight. Lite's arc-rotate camera has no built-in interpolation, so this drives
+     * {@link interpolateArcRotateCamera} from the scene render loop. The returned promise is intentionally
+     * swallowed: it rejects when the transition is superseded, aborted, or interrupted by user input,
+     * none of which are error conditions here.
+     * @param goal The destination camera pose; omitted fields keep the current value.
+     */
+    private _interpolateCameraTo(goal: { alpha?: number; beta?: number; radius?: number; target?: { x: number; y: number; z: number } }): void {
+        this._cameraInterpolationAbort?.abort(new AbortError("Camera interpolation superseded."));
+        const abortController = new AbortController();
+        this._cameraInterpolationAbort = abortController;
+
+        void (async () => {
+            try {
+                await interpolateArcRotateCamera(this._camera, this._scene, goal, abortController.signal);
+            } catch {
+                // Superseded / aborted / interrupted by user input — all expected, not error conditions.
+            } finally {
+                if (this._cameraInterpolationAbort === abortController) {
+                    this._cameraInterpolationAbort = null;
+                }
+            }
+        })();
     }
 
     /**
@@ -1411,13 +1528,11 @@ export class Viewer extends ViewerBase implements IViewer {
 
     /**
      * @internal
-     * Lite currently does not support bounds-based reframing or interpolated camera transitions, so the
-     * `interpolate` parameter is ignored. Once Lite gains those capabilities, the canonical reset order
-     * inherited from `ViewerBase` will produce the same behavior as the full Viewer.
+     * Resets the camera to its default/framing pose, animating the transition when `interpolate` is true
+     * (e.g. a user-initiated reset) and snapping when false (e.g. an initial reset before the first frame).
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected override _resetCamera(interpolate: boolean): void {
-        this.resetCamera();
+        this._resetCameraCore(undefined, interpolate);
         this.cameraAutoOrbit = this._options?.cameraAutoOrbit
             ? {
                   enabled: this._options.cameraAutoOrbit.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
@@ -1465,6 +1580,10 @@ export class Viewer extends ViewerBase implements IViewer {
         // Detach camera controls
         this._detachControl?.();
         this._detachControl = null;
+
+        // Cancel any in-flight camera interpolation so its render-loop callback stops touching the scene.
+        this._cameraInterpolationAbort?.abort(new AbortError("Viewer disposed."));
+        this._cameraInterpolationAbort = null;
 
         // Clean up pointer listeners
         this._engine.canvas.removeEventListener("pointerdown", this._onPointerActivity);
