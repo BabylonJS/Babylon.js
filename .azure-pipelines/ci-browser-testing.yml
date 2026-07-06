@@ -11,7 +11,7 @@
 # Schedule: 1:00 AM PST daily (09:00 UTC), plus 3:00 AM PST Saturday (11:00 UTC)
 #
 # Variable groups:
-#   - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#   - Browserstack-Opensource (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
 # =============================================================================
 
 trigger: none
@@ -35,7 +35,7 @@ schedules:
       always: true
 
 variables:
-    - group: BabylonJS-BrowserStack
+    - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
     - name: system.debug
       value: false

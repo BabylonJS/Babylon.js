@@ -5,7 +5,7 @@
 # IMPORTANT SETUP NOTES:
 # 1. Link variable groups (see VARIABLE-GROUPS.md):
 #    - BabylonJS-CI-Infrastructure
-#    - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#    - Browserstack-Opensource (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
 #    - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 #
 # 2. Fork build settings (allow secrets, require comments for non-team members)
@@ -59,7 +59,7 @@ resources:
 
 variables:
     - group: BabylonJS-CI-Infrastructure
-    - group: BabylonJS-BrowserStack
+    - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
