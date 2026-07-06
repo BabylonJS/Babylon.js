@@ -33,6 +33,14 @@ export class WebXRWebGPUCompositionLayerWrapper extends WebXRLayerWrapper {
  */
 export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebXRWebGPURenderTargetTextureProvider {
     protected _lastSubImages = new Map<XREye, XRGPUSubImage>();
+    /**
+     * Per-eye render targets, indexed by eye (0 = left/none, 1 = right). Kept separate from the base
+     * `_renderTargetTextures` registry: that array is an append-only owned list (each entry is disposed once
+     * on provider dispose), whereas this map is a mutable per-eye slot. Reusing `_renderTargetTextures` as
+     * both would let a rebuilt eye target both stay in the registry (leaking / double-disposing the old one)
+     * and grow the registry unboundedly on repeated size changes.
+     */
+    protected _renderTargetTexturesByEye: RenderTargetTexture[] = [];
     private _compositionLayer: XRCompositionLayer;
     /**
      * Fires every time a new render target texture is created (either for eye, for view, or for the entire frame)
@@ -59,11 +67,17 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
 
         const depthStencilTexture = subImage.depthStencilTexture ?? null;
 
-        const existingRenderTarget = this._renderTargetTextures[eyeIndex];
+        const existingRenderTarget = this._renderTargetTexturesByEye[eyeIndex];
         const sizeChanged = !existingRenderTarget || lastSubImage?.colorTexture.width !== colorTextureWidth || lastSubImage?.colorTexture.height !== colorTextureHeight;
 
         if (sizeChanged) {
-            this._renderTargetTextures[eyeIndex] = this._createRenderTargetTextureFromGPUTextures(
+            if (existingRenderTarget) {
+                // A previous target for this eye exists (the sub-image size changed, e.g. a scale-factor or
+                // display-config change). Dispose it and remove it from the owned registry before creating the
+                // replacement so the registry does not accumulate stale entries or double-dispose on teardown.
+                this._destroyRenderTargetTexture(existingRenderTarget);
+            }
+            this._renderTargetTexturesByEye[eyeIndex] = this._createRenderTargetTextureFromGPUTextures(
                 colorTextureWidth,
                 colorTextureHeight,
                 colorTexture,
@@ -76,7 +90,7 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
                 framebufferWidth: colorTextureWidth,
                 framebufferHeight: colorTextureHeight,
             };
-            this.onRenderTargetTextureCreatedObservable.notifyObservers({ texture: this._renderTargetTextures[eyeIndex], eye });
+            this.onRenderTargetTextureCreatedObservable.notifyObservers({ texture: this._renderTargetTexturesByEye[eyeIndex], eye });
         } else {
             // Same size: repoint the wrapped textures at this frame's GPUTextures, preserving the
             // RenderTargetTexture / InternalTexture identity held by the XR camera's outputRenderTarget.
@@ -89,7 +103,7 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
         // (depthOrArrayLayers > 1). The sub-image's view descriptor carries the authoritative array-layer
         // index for this eye, so route it into the render target's bind so each eye renders into its own
         // layer. For non-layered textures this is 0 (unchanged behavior).
-        const renderTargetTexture = this._renderTargetTextures[eyeIndex];
+        const renderTargetTexture = this._renderTargetTexturesByEye[eyeIndex];
         renderTargetTexture._bindFrameBufferLayer = subImage.getViewDescriptor().baseArrayLayer ?? 0;
 
         return renderTargetTexture;

@@ -198,5 +198,49 @@ describe("WebXRWebGPUProjectionLayer", () => {
 
             expect(clearSpy).not.toHaveBeenCalled();
         });
+
+        it("the per-eye clear observer does not clear when scene.autoClear is disabled", () => {
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+            scene.autoClear = false;
+
+            const clearSpy = vi.spyOn(engine, "clear");
+            rtt!.onClearObservable.notifyObservers(engine);
+
+            expect(clearSpy).not.toHaveBeenCalled();
+        });
+
+        it("the per-eye clear observer clears color only once per frame (guarded by _cleared)", () => {
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+
+            const clearSpy = vi.spyOn(engine, "clear");
+            // First notification in the frame: color is cleared (RTT starts uncleared).
+            rtt!.onClearObservable.notifyObservers(engine);
+            expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, true, true, true);
+            // Second notification in the same frame (no per-frame reset): color clear is skipped, depth+stencil still cleared.
+            rtt!.onClearObservable.notifyObservers(engine);
+            expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, false, true, true);
+        });
+
+        it("disposes the previous per-eye render target on a size change without leaking registry entries", () => {
+            const binding: any = { getViewSubImage: vi.fn() };
+            binding.getViewSubImage.mockReturnValueOnce(createSubImage(512, 512)).mockReturnValueOnce(createSubImage(256, 256));
+            const layer: any = { textureWidth: 512, textureHeight: 512 };
+            const wrapper = new WebXRWebGPUProjectionLayerWrapper(layer, false, binding, "depth24plus-stencil8");
+            const provider = wrapper.createRenderTargetTextureProvider({ scene } as unknown as WebXRSessionManager);
+
+            const first = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+            const disposeSpy = vi.spyOn(first!, "dispose");
+            const second = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+
+            // The stale target is disposed on rebuild...
+            expect(disposeSpy).toHaveBeenCalledTimes(1);
+            expect(second).not.toBe(first);
+            // ...and the owned registry holds exactly the current target (no duplicate / leaked entries).
+            const registry = (provider as any)._renderTargetTextures as unknown[];
+            expect(registry.length).toBe(1);
+            expect(registry[0]).toBe(second);
+        });
     });
 });

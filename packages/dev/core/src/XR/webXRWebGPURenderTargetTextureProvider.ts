@@ -96,6 +96,12 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
      * every fragment (a black right eye). The scene notifies `onClearObservable` regardless of
      * `camera.isRightCamera`, so this observer clears both eyes' targets. WebGL providers never attach it,
      * so the WebGL path is unchanged.
+     *
+     * The observer mirrors the clear semantics of `Scene._clearFrameBuffer` (minus the right-eye skip): it
+     * only clears when the scene has `autoClear` enabled, clears color at most once per frame (guarded by
+     * `RenderTargetTexture._cleared`, which the scene resets per frame in `_checkCameraRenderTarget`), always
+     * clears depth+stencil, and honors `skipInitialClear`. This keeps the "clear once per RTT per frame"
+     * contract instead of clearing color on every notification.
      * @param renderTargetTexture the per-eye render target to clear each frame
      */
     private _attachPerEyeClearObserver(renderTargetTexture: RenderTargetTexture): void {
@@ -105,7 +111,15 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
                 return;
             }
             const scene = renderTargetTexture.getScene();
-            engine.clear(renderTargetTexture.clearColor ?? scene?.clearColor ?? null, true, true, true);
+            // When autoClear is disabled the scene does not clear render targets; match that so this observer
+            // does not force a clear the user opted out of.
+            if (scene && !scene.autoClear) {
+                return;
+            }
+            // Clear color only once per frame (!_cleared), always clear depth+stencil, then mark the target
+            // cleared for this frame so a second notification in the same frame does not re-clear color.
+            engine.clear(renderTargetTexture.clearColor ?? scene?.clearColor ?? null, !renderTargetTexture._cleared, true, true);
+            renderTargetTexture._cleared = true;
         });
     }
 
