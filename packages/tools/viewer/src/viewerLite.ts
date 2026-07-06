@@ -35,6 +35,7 @@ import {
     onBeforeRender,
     pickAsync,
     registerScene,
+    removeFromScene,
     resetVariant,
     selectVariant,
     setShadowTaskCasterMeshes,
@@ -653,14 +654,14 @@ export class Viewer extends ViewerBase implements IViewer {
                 );
             }
 
-            // Skybox-only addition with no lighting yet: Lite's env loader requires a lighting URL,
-            // and we cannot pick a default lighting silently — that would change a side the caller
-            // didn't ask to change.
-            if (!updateLighting && updateSkybox && this._currentLightingUrl === null) {
-                throw new Error("Babylon Lite cannot add a skybox before lighting has been loaded. " + "Load lighting first, or update lighting and skybox together.");
-            }
+            // Skybox-only addition with no lighting yet: Lite couples the skybox to the IBL cubemap — a
+            // single environment texture drives BOTH the background and the reflections/lighting. (This
+            // matches the full viewer's `environment-skybox`, where the model also reflects the skybox.)
+            // So a skybox requested with no lighting loaded is satisfied by loading the requested skybox
+            // URL AS the environment: it provides the skybox and, unavoidably in Lite, the IBL too.
+            const skyboxOnlyBecomesEnv = !updateLighting && updateSkybox && this._currentLightingUrl === null;
 
-            const effectiveLightingUrl = targetLightingUrl ?? "auto";
+            const effectiveLightingUrl = skyboxOnlyBecomesEnv ? (targetSkyboxUrl ?? "auto") : (targetLightingUrl ?? "auto");
             const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
             const ext = getExtension(resolvedLightingUrl, options.extension);
 
@@ -1029,10 +1030,47 @@ export class Viewer extends ViewerBase implements IViewer {
         this._wasPlaying = false;
         this._lastProgress = -1;
 
-        // Reset material variant
-        if (this._container && this._selectedMaterialVariant !== null) {
-            resetVariant(this._container);
-            this._selectedMaterialVariant = null;
+        if (this._container) {
+            // Reset material variant
+            if (this._selectedMaterialVariant !== null) {
+                resetVariant(this._container);
+                this._selectedMaterialVariant = null;
+            }
+
+            // Remove the model's renderables from the scene. `addToScene` adds the container's meshes but
+            // nothing removes them on unload, so without this the previous model stays rendered after a
+            // `clear model` (source removed) or `change model source`. `removeFromScene` fully tears down
+            // each mesh (renderables, frame-graph task bindings, GPU buffers) and bumps the renderable
+            // version, so the removal is reflected by the live render loop even when the scene is not
+            // re-registered (the model-cleared path does not re-register).
+            //
+            // TODO: Simplify once https://github.com/BabylonJS/Babylon-Lite/pull/337 is merged and picked
+            // up in the junctioned Lite build. That PR makes `removeFromScene` accept the same union as
+            // `addToScene` (including `AssetContainer`) and undoes the add field-by-field. The entire block
+            // below (stop animation groups, splice them out of `scene.animationGroups`, and remove each
+            // container mesh) collapses to a single symmetric call:
+            //     removeFromScene(this._scene, this._container);
+            // That PR also plugs a leak this manual teardown cannot reach: `addToScene` pushes an anonymous
+            // `_beforeRender` animation-tick closure with no removal handle. Stopping the groups here keeps
+            // it harmless (it ticks stopped clips), but the closure stays in `scene._beforeRender` across
+            // loads. The PR stores it as `AssetContainer._beforeRenderHook` so removal can splice it out.
+            const groups = this._container.animationGroups;
+            if (groups) {
+                // Stop the container's clips first so the animation tick callback `addToScene` registered
+                // for them does not keep advancing a model whose meshes are being removed.
+                for (const group of groups) {
+                    liteStopAnimation(group);
+                }
+                for (const group of groups) {
+                    const index = this._scene.animationGroups.indexOf(group);
+                    if (index >= 0) {
+                        this._scene.animationGroups.splice(index, 1);
+                    }
+                }
+            }
+            for (const mesh of getContainerMeshes(this._container)) {
+                removeFromScene(this._scene, mesh);
+            }
         }
 
         // Remove shadows

@@ -298,6 +298,56 @@ test("load model from URL", async ({ page }) => {
     await expectScreenshotMatch(page, "viewer-load-model-url.png");
 });
 
+test("change model source", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Change source to a different model.
+    await page.evaluate((viewerElement) => {
+        viewerElement.setAttribute("source", "https://assets.babylonjs.com/meshes/shoe_variants.glb");
+    }, viewerElementHandle);
+
+    await waitForModelLoaded(page);
+    // The shoe fills much more of the frame than the small boombox, so the tone-mapping divergence
+    // (see expectScreenshotMatch) covers ~12% of the image — hence the looser per-test tolerance.
+    await expectScreenshotMatch(page, "viewer-change-model-source.png", 0.15);
+});
+
+test("clear model", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Clear the model by removing the source attribute.
+    await page.evaluate((viewerElement) => {
+        viewerElement.removeAttribute("source");
+    }, viewerElementHandle);
+
+    // Wait for the model to be cleared.
+    await page.waitForFunction((viewerElement) => {
+        return (viewerElement as ViewerElement).viewer?.isModelLoaded === false;
+    }, viewerElementHandle);
+
+    await expectScreenshotMatch(page, "viewer-clear-model.png");
+});
+
 test("invalid model source fires modelerror", async ({ page }) => {
     // This test intentionally triggers a model loading error.
     expectConsoleErrors = true;
@@ -343,6 +393,33 @@ test("environment lighting with model", async ({ page }) => {
 
     await waitForModelLoaded(page);
     await expectScreenshotMatch(page, "viewer-env-lighting.png");
+});
+
+test("environment skybox", async ({ page }) => {
+    // Regression test for the previous behavior where requesting a skybox with no lighting loaded threw.
+    // ViewerLite now loads the requested skybox URL as the environment (Lite couples skybox + IBL to one
+    // cubemap). This is validated behaviorally rather than via a shared reference screenshot: the full
+    // viewer blurs the skybox by default (environmentConfig.blur = 0.3), a feature ViewerLite does not
+    // support yet, so the backgrounds diverge too much for pixel parity.
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // The skybox path resolved to a URL instead of throwing.
+    const skyboxUrl = await page.evaluate(() => {
+        const viewer = (document.querySelector("babylon-viewer") as ViewerElement).viewer as unknown as { _currentSkyboxUrl: string | null };
+        return viewer._currentSkyboxUrl;
+    });
+    expect(skyboxUrl).toBe("https://assets.babylonjs.com/environments/environmentSpecular.env");
 });
 
 // ============================================================
