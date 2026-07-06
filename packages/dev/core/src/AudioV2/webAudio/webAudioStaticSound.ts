@@ -413,10 +413,16 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             const elapsed = this._enginePauseTime;
 
             if (this._options.loop) {
-                // Web Audio loops over the whole buffer when `loopStart`/`loopEnd` do not describe a valid sub-range,
-                // so mirror that here to compute the correct resume position inside the loop region.
-                const loopEnd = this._options.loopEnd > 0 && this._options.loopEnd <= duration ? this._options.loopEnd : duration;
-                const loopStart = this._options.loopStart >= 0 && this._options.loopStart < loopEnd ? this._options.loopStart : 0;
+                // Web Audio only loops over `[loopStart, loopEnd)` when they describe a valid sub-range; otherwise it
+                // loops over the whole buffer. Mirror that here (matching the `AudioBufferSourceNode` playback algorithm)
+                // to compute the correct resume position inside the loop region.
+                let loopStart = 0;
+                let loopEnd = duration;
+
+                if (this._options.loopStart >= 0 && this._options.loopEnd > 0 && this._options.loopStart < this._options.loopEnd) {
+                    loopStart = this._options.loopStart;
+                    loopEnd = Math.min(this._options.loopEnd, duration);
+                }
 
                 // Time spent before the playback position first reaches `loopEnd` and wraps back to `loopStart`.
                 const timeToLoopEnd = loopEnd - startOffset;
