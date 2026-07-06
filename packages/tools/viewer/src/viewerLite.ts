@@ -986,8 +986,11 @@ export class Viewer extends ViewerBase implements IViewer {
 
             // Frame the camera to the model BEFORE the first rendered frame, so the model never
             // appears briefly at the previous (default) camera position. Snap (no interpolation) here,
-            // matching the full Viewer, which loads with `interpolateCamera: false`.
-            this._frameCameraToModel(false);
+            // matching the full Viewer, which loads with `interpolateCamera: false`. Apply the explicit
+            // cameraOrbit/cameraTarget option overrides on top of the bounds framing, mirroring the full
+            // Viewer's post-load `_reset(false, "camera")` (viewer.ts `_loadModelImpl`) — without this,
+            // an explicit `camera-orbit` is ignored on initial load.
+            this._frameCameraToModel(false, true);
 
             // Setup shadows BEFORE the first rendered frame so the shadow ground's deferred GPU
             // builder is processed by the upcoming `registerScene` (Lite only runs deferred builders
