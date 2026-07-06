@@ -59,7 +59,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             toAttribute: (color: Nullable<Color4>) => (color ? color.toHexString() : null),
         },
     })
-    public override clearColor: Nullable<Color4> = this._options.clearColor
+    public override accessor clearColor: Nullable<Color4> = this._options.clearColor
         ? new Color4(this._options.clearColor[0], this._options.clearColor[1], this._options.clearColor[2], this._options.clearColor[3] ?? 1)
         : null;
 
@@ -67,7 +67,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The engine to use for rendering.
      */
     @property({ converter: coerceEngineAttribute })
-    public engine: CanvasViewerOptions["engine"] = this._options.engine;
+    public accessor engine: CanvasViewerOptions["engine"] = this._options.engine;
 
     protected override _needsReload(changedProperties: Map<PropertyKey, unknown>): boolean {
         if (super._needsReload(changedProperties)) {
