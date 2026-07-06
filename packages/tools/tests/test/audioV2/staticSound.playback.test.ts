@@ -54,6 +54,29 @@ test.describe("StaticSound playback", () => {
         expect(pulses[Channel.L]).toEqual([1, 2, 2]);
     });
 
+    test("Play looping sound with `loopStart` and `loopEnd` options set, pause it, and resume it", async ({ page }) => {
+        const pulses = await EvaluatePulseCountsAsync(page, async () => {
+            await AudioV2Test.CreateAudioEngineAsync();
+            const sound = await AudioV2Test.CreateSoundAsync(audioTestConfig.pulsed3CountSoundFile, { loop: true, loopStart: 0, loopEnd: 2 });
+
+            sound.play();
+            await AudioV2Test.WaitAsync(2.5, () => {
+                sound.pause();
+            });
+            await AudioV2Test.WaitAsync(0.5, () => {
+                sound.resume();
+            });
+            await AudioV2Test.WaitAsync(2, () => {
+                sound.stop();
+            });
+        });
+
+        // The loop region [0, 2) alternates pulse group 1 (at 0s) and group 2 (at 1s). Pausing at a playback position of
+        // 0.5s and resuming must continue from that position, so group 2 plays next. Before the fix, resuming restarted
+        // the loop at `loopStart`, which would have produced `[1, 2, 1, 1, 2]` instead.
+        expect(pulses[Channel.L]).toEqual([1, 2, 1, 2, 1]);
+    });
+
     test("Create sound with `pitch` option set to 1200", async ({ page }) => {
         const pulses = await EvaluatePulseCountsAsync(page, async () => {
             await AudioV2Test.CreateAudioEngineAsync();

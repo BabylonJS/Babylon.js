@@ -409,8 +409,27 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         let startOffset = this._options.startOffset;
 
         if (this._state === SoundState.Paused) {
-            startOffset += this._enginePauseTime;
-            startOffset %= this._sound.buffer.duration;
+            const duration = this._sound.buffer.duration;
+            const elapsed = this._enginePauseTime;
+
+            if (this._options.loop) {
+                // Web Audio loops over the whole buffer when `loopStart`/`loopEnd` do not describe a valid sub-range,
+                // so mirror that here to compute the correct resume position inside the loop region.
+                const loopEnd = this._options.loopEnd > 0 && this._options.loopEnd <= duration ? this._options.loopEnd : duration;
+                const loopStart = this._options.loopStart >= 0 && this._options.loopStart < loopEnd ? this._options.loopStart : 0;
+
+                // Time spent before the playback position first reaches `loopEnd` and wraps back to `loopStart`.
+                const timeToLoopEnd = loopEnd - startOffset;
+
+                if (elapsed < timeToLoopEnd) {
+                    startOffset += elapsed;
+                } else {
+                    startOffset = loopStart + ((elapsed - timeToLoopEnd) % (loopEnd - loopStart));
+                }
+            } else {
+                startOffset += elapsed;
+                startOffset %= duration;
+            }
         }
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);
