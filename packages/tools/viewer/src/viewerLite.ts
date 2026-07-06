@@ -14,7 +14,9 @@ import {
     createEsmDirectionalShadowGenerator,
     createPbrMaterial,
     createSceneContext,
+    createGpuPicker,
     disposeEngine,
+    disposePicker,
     disposeScene,
     getCameraPosition,
     getContainerMeshes,
@@ -31,6 +33,7 @@ import {
     loadGltf,
     loadHdrEnvironment,
     onBeforeRender,
+    pickAsync,
     registerScene,
     resetVariant,
     selectVariant,
@@ -41,6 +44,7 @@ import {
     type ArcRotateCamera,
     type AssetContainer,
     type EngineContext,
+    type GpuPicker,
     type AnimationGroup as LiteAnimationGroup,
     type Mesh as LiteMesh,
     type ShadowGenerator as LiteShadowGenerator,
@@ -165,6 +169,8 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // Model
     private _container: AssetContainer | null = null;
+    /** GPU picker for double-click focus, created lazily on first double-click. Disposed with the viewer. */
+    private _picker: GpuPicker | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
     /** Cached animation-aware model bounds for the current model. Reset on unload. See {@link _computeModelBounds}. */
@@ -250,6 +256,10 @@ export class Viewer extends ViewerBase implements IViewer {
         this._engine.canvas.addEventListener("pointerdown", onPointerActivity);
         this._engine.canvas.addEventListener("pointermove", onPointerActivity);
         this._engine.canvas.addEventListener("wheel", onPointerActivity);
+
+        // Double-click to focus: on the model, focus the picked point; on the background, reframe.
+        // Mirrors the full Viewer's POINTERDOUBLETAP handler (viewer.ts).
+        (this._engine.canvas as HTMLCanvasElement).addEventListener("dblclick", this._onCanvasDoubleClick);
 
         // Clear color — initialize base field from options, then push to engine.
         this._clearColor.r = _options?.clearColor?.[0] ?? 0;
@@ -1589,6 +1599,13 @@ export class Viewer extends ViewerBase implements IViewer {
         this._engine.canvas.removeEventListener("pointerdown", this._onPointerActivity);
         this._engine.canvas.removeEventListener("pointermove", this._onPointerActivity);
         this._engine.canvas.removeEventListener("wheel", this._onPointerActivity);
+        (this._engine.canvas as HTMLCanvasElement).removeEventListener("dblclick", this._onCanvasDoubleClick);
+
+        // Dispose the GPU picker (if a double-click ever created it).
+        if (this._picker) {
+            disposePicker(this._picker);
+            this._picker = null;
+        }
 
         // Unload model
         this._unloadCurrentModel();
@@ -1608,6 +1625,78 @@ export class Viewer extends ViewerBase implements IViewer {
     private _onPointerActivity = (): void => {
         this._lastPointerTime = performance.now();
     };
+
+    /**
+     * Handles a canvas double-click: GPU-picks the model at the cursor and, on a hit, focuses the camera
+     * on the picked point; on a miss (background), reframes the camera. Mirrors the full Viewer's
+     * `POINTERDOUBLETAP` handler.
+     * @param event The double-click mouse event; its offset coordinates locate the pick on the canvas.
+     */
+    private _onCanvasDoubleClick = (event: MouseEvent): void => {
+        void this._handleDoubleClick(event.offsetX, event.offsetY);
+    };
+
+    /**
+     * Picks the model at the given canvas coordinates and either focuses the picked point (hit) or
+     * reframes the camera (miss). Only the loaded model's meshes are pickable, so Viewer-added meshes
+     * (e.g. the shadow-receiver disc) never swallow a pick or count as a "model" hit.
+     * @param x The canvas-relative CSS x coordinate of the double-click.
+     * @param y The canvas-relative CSS y coordinate of the double-click.
+     */
+    private async _handleDoubleClick(x: number, y: number): Promise<void> {
+        // With no loaded model there is nothing to pick; treat as a background double-click (reframe).
+        if (this._container) {
+            const pickables = new Set(getContainerMeshes(this._container));
+            this._picker ??= createGpuPicker(this._scene);
+            const pick = await pickAsync(this._picker, x, y, { filter: (mesh: LiteMesh) => pickables.has(mesh) });
+            if (this._isDisposed) {
+                return;
+            }
+            if (pick.hit && pick.pickedPoint) {
+                this._focusCameraOnPoint(pick.pickedPoint);
+                return;
+            }
+        }
+
+        // Background double-click: reframe the camera to the model bounds (animated).
+        this.resetCamera(true);
+    }
+
+    /**
+     * Focuses the camera on a world-space point, mirroring the full Viewer's double-tap-on-model behavior.
+     * The target and radius are first snapped so the point lies on the current view axis at its picked
+     * depth — this preserves the camera position and avoids a dolly along the view axis — then the target
+     * is interpolated to the actual point (orbit angles and radius held).
+     * @param point The world-space point to focus on.
+     */
+    private _focusCameraOnPoint(point: readonly [number, number, number]): void {
+        const position = getCameraPosition(this._camera);
+        const target = this._camera.target;
+
+        // Forward (view) direction of the ArcRotate camera: from the camera position toward the target.
+        let fx = target.x - position.x;
+        let fy = target.y - position.y;
+        let fz = target.z - position.z;
+        const length = Math.hypot(fx, fy, fz) || 1;
+        fx /= length;
+        fy /= length;
+        fz /= length;
+
+        // Distance to the picked point measured along the view axis.
+        const distance = (point[0] - position.x) * fx + (point[1] - position.y) * fy + (point[2] - position.z) * fz;
+
+        // Snap the target onto the view axis at the picked depth and set the radius to match. Because
+        // position = target - forward * radius, this leaves the camera position unchanged; only the
+        // subsequent target interpolation moves the camera. Mutate the ObservableVec3 in place to keep
+        // Lite's dirty-tracking. This must precede the interpolation so it starts from this pose.
+        target.x = position.x + fx * distance;
+        target.y = position.y + fy * distance;
+        target.z = position.z + fz * distance;
+        this._camera.radius = distance;
+
+        // Interpolate the target to the actual picked point (orbit angles and radius held).
+        this._interpolateCameraTo({ target: { x: point[0], y: point[1], z: point[2] } });
+    }
 
     private _updateAutoOrbit(deltaMs: number): void {
         if (!this._autoOrbitEnabled) {
