@@ -80,7 +80,33 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
     ): RenderTargetTexture {
         const color = this._wrapColorTexture(colorTexture);
         const depth = depthStencilTexture && depthStencilFormat ? this._wrapDepthTexture(depthStencilTexture, depthStencilFormat) : null;
-        return this._createRenderTargetTextureInternal(width, height, color, depth, multiview);
+        const renderTargetTexture = this._createRenderTargetTextureInternal(width, height, color, depth, multiview);
+        this._attachPerEyeClearObserver(renderTargetTexture);
+        return renderTargetTexture;
+    }
+
+    /**
+     * Ensures this render target is cleared every frame, including for the right eye.
+     *
+     * `Scene._clearFrameBuffer` skips clearing the right rig camera's framebuffer (`!camera.isRightCamera`).
+     * That is a valid optimization for WebGL2 stereo, where both eyes render into a single side-by-side
+     * texture and the left eye's full clear already covers the whole texture. WebGPU projection layers give
+     * each eye its OWN render target (a distinct array layer rendered in a separate render pass), so the
+     * right eye's color and — critically — depth would never be cleared, leaving its depth test to reject
+     * every fragment (a black right eye). The scene notifies `onClearObservable` regardless of
+     * `camera.isRightCamera`, so this observer clears both eyes' targets. WebGL providers never attach it,
+     * so the WebGL path is unchanged.
+     * @param renderTargetTexture the per-eye render target to clear each frame
+     */
+    private _attachPerEyeClearObserver(renderTargetTexture: RenderTargetTexture): void {
+        renderTargetTexture.onClearObservable.add((engine) => {
+            // Honor skipInitialClear so this observer preserves the default clear semantics it replaces.
+            if (renderTargetTexture.skipInitialClear) {
+                return;
+            }
+            const scene = renderTargetTexture.getScene();
+            engine.clear(renderTargetTexture.clearColor ?? scene?.clearColor ?? null, true, true, true);
+        });
     }
 
     /**

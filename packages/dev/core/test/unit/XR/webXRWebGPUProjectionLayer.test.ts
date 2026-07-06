@@ -165,5 +165,38 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(leftRtt!._bindFrameBufferLayer).toBe(0);
             expect(rightRtt!._bindFrameBufferLayer).toBe(1);
         });
+
+        it("attaches a clear observer to each created per-eye render target", () => {
+            // The scene skips clearing the right eye's framebuffer (Scene._clearFrameBuffer -> !isRightCamera),
+            // so each per-eye WebGPU render target carries an onClearObservable observer to clear itself. The
+            // scene notifies onClearObservable regardless of isRightCamera, so both eyes are cleared.
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+
+            expect(rtt).not.toBeNull();
+            expect(rtt!.onClearObservable.hasObservers()).toBe(true);
+        });
+
+        it("the per-eye clear observer clears color, depth and stencil with the scene clear color", () => {
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+
+            const clearSpy = vi.spyOn(engine, "clear");
+            rtt!.onClearObservable.notifyObservers(engine);
+
+            // color = scene.clearColor (the RTT has no per-target clearColor), plus depth and stencil.
+            expect(clearSpy).toHaveBeenCalledWith(scene.clearColor, true, true, true);
+        });
+
+        it("the per-eye clear observer honors skipInitialClear", () => {
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+            rtt!.skipInitialClear = true;
+
+            const clearSpy = vi.spyOn(engine, "clear");
+            rtt!.onClearObservable.notifyObservers(engine);
+
+            expect(clearSpy).not.toHaveBeenCalled();
+        });
     });
 });
