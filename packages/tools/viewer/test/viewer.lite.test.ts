@@ -29,6 +29,12 @@ test.beforeEach(({ page }) => {
             const text = message.text();
             // Only capture messages from Babylon.js (prefixed with "BJS -").
             if (text.includes("BJS -")) {
+                // Lite doesn't support the viewer's default "neutral" tone mapping and warns as it falls
+                // back to "aces". This is expected for every Lite model load, so it must not fail the
+                // console-error check. Real BJS errors still fail.
+                if (text.includes("Tone mapping 'neutral' is not supported by Babylon Lite")) {
+                    return;
+                }
                 consoleErrors.push(text);
             }
         }
@@ -123,12 +129,76 @@ async function attachViewerElement(page: Page, viewerHtml: string) {
     return viewerElementHandle!;
 }
 
-// This mirrors the full viewer's `camera-orbit="a b r"` screenshot test and validates against the SAME
-// committed reference image (viewer-camera-orbit.png). Separate, Lite-idiomatic test code; shared baseline.
+// ============================================================
+// These tests mirror the full viewer's viewer.test.ts and are kept in the SAME order for easy
+// side-by-side comparison. Test code is Lite-idiomatic: the full viewer reads state via
+// `element.viewerDetails.viewer`, while Lite exposes it directly as `element.viewer` (Lite has no
+// `viewerDetails`). Screenshot tests validate against the SAME committed reference images as the full
+// viewer (see expectScreenshotMatch for the shared-reference tolerance rationale).
+// ============================================================
+
+test("viewer available", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer>
+        </babylon-viewer>
+        `
+    );
+
+    const hasViewer = await page.waitForFunction((viewerElement) => {
+        return (viewerElement as ViewerElement).viewer != null;
+    }, viewerElementHandle);
+
+    expect(await hasViewer.jsonValue()).toBe(true);
+});
+
+test("animation-auto-play", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+            animation-auto-play
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const isAnimationPlaying = await page.waitForFunction((viewerElement) => {
+        return (viewerElement as ViewerElement).viewer?.isAnimationPlaying;
+    }, viewerElementHandle);
+
+    expect(await isAnimationPlaying.jsonValue()).toBeTruthy();
+});
+
+test('selected-animation="n"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+            selected-animation="1"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const selectedAnimation = await page.waitForFunction((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer;
+        return viewer?.isModelLoaded ? viewer.selectedAnimation : undefined;
+    }, viewerElementHandle);
+
+    expect(await selectedAnimation.jsonValue()).toEqual(1);
+});
+
+// This validates against the SAME committed reference image (viewer-camera-orbit.png) as the full
+// viewer's `camera-orbit="a b r"` test. Separate, Lite-idiomatic test code; shared baseline.
 test('camera-orbit="a b r"', async ({ page }) => {
-    // Lite doesn't support "neutral" tone mapping (the viewer default) and warns as it falls back to
-    // "aces". That warning is expected for Lite, so don't fail the console-error check on it.
-    expectConsoleErrors = true;
     await attachViewerElement(
         page,
         `
@@ -141,4 +211,280 @@ test('camera-orbit="a b r"', async ({ page }) => {
     );
 
     await expectScreenshotMatch(page, "viewer-camera-orbit.png");
+});
+
+test('camera-target="x y z"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            camera-target=" 1 2 3 "
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Lite has no public camera accessor on the element, so read the internal camera target directly.
+    const cameraTarget = await page.waitForFunction((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer as unknown as { _camera?: { target: { x: number; y: number; z: number } }; isModelLoaded: boolean } | undefined;
+        if (viewer?.isModelLoaded && viewer._camera) {
+            return [viewer._camera.target.x, viewer._camera.target.y, viewer._camera.target.z];
+        }
+        return undefined;
+    }, viewerElementHandle);
+
+    expect(await cameraTarget.jsonValue()).toEqual([1, 2, 3]);
+});
+
+test("invalid model source fires modelerror", async ({ page }) => {
+    // This test intentionally triggers a model loading error.
+    expectConsoleErrors = true;
+
+    await page.goto(viewerUrl, { waitUntil: "load" });
+
+    const errorFired = await page.evaluate(() => {
+        return new Promise<boolean>((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error("modelerror event not fired")), 15000);
+            const container = document.createElement("div");
+            container.innerHTML = '<babylon-viewer source="https://assets.babylonjs.com/meshes/nonexistent_model_12345.glb"></babylon-viewer>';
+            const viewer = container.querySelector("babylon-viewer")!;
+            viewer.addEventListener(
+                "modelerror",
+                () => {
+                    clearTimeout(timeout);
+                    resolve(true);
+                },
+                { once: true }
+            );
+            document.body.appendChild(container);
+        });
+    });
+
+    expect(errorFired).toBe(true);
+});
+
+// ============================================================
+// Camera
+// ============================================================
+
+test("camera-auto-orbit", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            camera-auto-orbit
+            camera-auto-orbit-speed="0.1"
+            camera-auto-orbit-delay="500"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const autoOrbit = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer;
+        return {
+            enabled: viewer?.cameraAutoOrbit.enabled,
+            speed: viewer?.cameraAutoOrbit.speed,
+            delay: viewer?.cameraAutoOrbit.delay,
+        };
+    }, viewerElementHandle);
+
+    expect(autoOrbit.enabled).toBe(true);
+    expect(autoOrbit.speed).toBe(0.1);
+    expect(autoOrbit.delay).toBe(500);
+});
+
+// ============================================================
+// Material Variants
+// ============================================================
+
+test("materialVariants list", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const variants = await page.evaluate((viewerElement) => {
+        return [...((viewerElement as ViewerElement).viewer?.materialVariants ?? [])];
+    }, viewerElementHandle);
+
+    expect(variants.length).toBeGreaterThan(0);
+    expect(variants).toContain("street");
+});
+
+// ============================================================
+// Animations
+// ============================================================
+
+test("toggleAnimation()", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Initially animation should not be playing.
+    const initiallyPlaying = await page.evaluate((viewerElement) => {
+        return (viewerElement as ViewerElement).viewer?.isAnimationPlaying;
+    }, viewerElementHandle);
+    expect(initiallyPlaying).toBe(false);
+
+    // Toggle animation on.
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).toggleAnimation();
+    }, viewerElementHandle);
+
+    const isPlayingAfterToggle = await page.evaluate((viewerElement) => {
+        return (viewerElement as ViewerElement).viewer?.isAnimationPlaying;
+    }, viewerElementHandle);
+    expect(isPlayingAfterToggle).toBe(true);
+
+    // Toggle animation off.
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).toggleAnimation();
+    }, viewerElementHandle);
+
+    await page.waitForFunction((viewerElement) => {
+        return !(viewerElement as ViewerElement).viewer?.isAnimationPlaying;
+    }, viewerElementHandle);
+});
+
+test("animation speed", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+            animation-speed="2"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const speed = await page.evaluate((viewerElement) => {
+        return (viewerElement as ViewerElement).viewer?.animationSpeed;
+    }, viewerElementHandle);
+    expect(speed).toBe(2);
+});
+
+test("animations list", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const animations = await page.evaluate((viewerElement) => {
+        return [...((viewerElement as ViewerElement).viewer?.animations ?? [])];
+    }, viewerElementHandle);
+
+    expect(animations.length).toBeGreaterThan(0);
+});
+
+// ============================================================
+// Events
+// ============================================================
+
+test("viewerready event", async ({ page }) => {
+    await page.goto(viewerUrl, { waitUntil: "load" });
+
+    const readyPromise = page.evaluate(() => {
+        return new Promise<boolean>((resolve) => {
+            const container = document.createElement("div");
+            container.innerHTML = "<babylon-viewer></babylon-viewer>";
+            const viewer = container.querySelector("babylon-viewer")!;
+            viewer.addEventListener("viewerready", () => resolve(true), { once: true });
+            document.body.appendChild(container);
+        });
+    });
+
+    expect(await readyPromise).toBe(true);
+});
+
+test("modelchange event", async ({ page }) => {
+    await page.goto(viewerUrl, { waitUntil: "load" });
+
+    const modelChangePromise = page.evaluate(() => {
+        return new Promise<string | null>((resolve) => {
+            const container = document.createElement("div");
+            container.innerHTML = '<babylon-viewer source="https://assets.babylonjs.com/meshes/boombox.glb"></babylon-viewer>';
+            const viewer = container.querySelector("babylon-viewer")!;
+            viewer.addEventListener("modelchange", ((e: CustomEvent) => resolve(e.detail)) as EventListener, { once: true });
+            document.body.appendChild(container);
+        });
+    });
+
+    const detail = await modelChangePromise;
+    expect(detail).toContain("boombox.glb");
+});
+
+test("selectedanimationchange event", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const eventFired = await page.evaluate((viewerElement) => {
+        return new Promise<boolean>((resolve) => {
+            viewerElement.addEventListener("selectedanimationchange", () => resolve(true), { once: true });
+            (viewerElement as ViewerElement).selectedAnimation = 1;
+        });
+    }, viewerElementHandle);
+
+    expect(eventFired).toBe(true);
+});
+
+test("animationplayingchange event", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/ufo.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const eventFired = await page.evaluate((viewerElement) => {
+        return new Promise<boolean>((resolve) => {
+            viewerElement.addEventListener("animationplayingchange", () => resolve(true), { once: true });
+            (viewerElement as ViewerElement).toggleAnimation();
+        });
+    }, viewerElementHandle);
+
+    expect(eventFired).toBe(true);
 });
