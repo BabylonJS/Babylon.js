@@ -82,11 +82,24 @@ async function waitForModelLoaded(page: Page) {
     console.log("Model loaded.");
 }
 
-async function expectScreenshotMatch(page: Page, name: string) {
+/**
+ * Waits until the viewer exists and no load (model or environment) is in flight. Unlike
+ * {@link waitForModelLoaded}, this does NOT require a model to be present, so it also works for
+ * environment-only scenes and for the model-cleared state.
+ */
+async function waitForLoadingComplete(page: Page) {
+    await page.waitForFunction(() => {
+        const viewer = (document.querySelector("babylon-viewer") as ViewerElement).viewer;
+        return viewer != null && viewer.loadingProgress === false;
+    });
+}
+
+async function expectScreenshotMatch(page: Page, name: string, maxDiffPixelRatio = 0.025) {
     // Lite renders continuously (no autoSuspend/isIdle yet), so "settled" is approximated by:
-    // model loaded (no load in flight), then a fixed burst of rendered frames to let deferred GPU
-    // work (skybox/ground builders, shadow map, material swaps) drain into a stable image.
-    await waitForModelLoaded(page);
+    // no load in flight, then a fixed burst of rendered frames to let deferred GPU work (skybox/ground
+    // builders, shadow map, material swaps) drain into a stable image. This intentionally does NOT
+    // require a model (environment-only and model-cleared scenes have none).
+    await waitForLoadingComplete(page);
     const before = await waitForFrameCount(page, 1);
     await waitForFrameCount(page, before + 30);
 
@@ -94,13 +107,15 @@ async function expectScreenshotMatch(page: Page, name: string) {
     // because Lite and the full viewer share the SAME committed reference image, and Lite currently
     // diverges from full on tone mapping: the viewer default "neutral" is unsupported in Lite, which
     // falls back to "aces". That produces a substantial per-pixel color shift across the lit model
-    // surface (raising the per-pixel `threshold` does not help — the differing pixels differ by a lot),
-    // so ~2% of the image differs. maxDiffPixelRatio 0.025 accommodates that while still catching pose
-    // errors, missing geometry, and other gross regressions. When Lite gains "neutral" tone mapping (or
-    // a shared reference is generated with a tone mapping both support), these can be tightened.
+    // surface (raising the per-pixel `threshold` does not help — the differing pixels differ by a lot).
+    // The magnitude scales with how much of the frame the lit model fills: a small model (e.g. the
+    // boombox) differs by ~2%, while a frame-filling model (e.g. the shoe) differs by ~12%. Callers pass
+    // a per-test `maxDiffPixelRatio` accordingly. It still catches pose errors, missing/wrong geometry,
+    // and other gross regressions. When Lite gains "neutral" tone mapping (or a shared reference is
+    // generated with a tone mapping both support), these can be tightened.
     await expect(page.locator("babylon-viewer")).toHaveScreenshot(name, {
         threshold: 0.1,
-        maxDiffPixelRatio: 0.025,
+        maxDiffPixelRatio,
     });
 }
 
@@ -237,6 +252,52 @@ test('camera-target="x y z"', async ({ page }) => {
     expect(await cameraTarget.jsonValue()).toEqual([1, 2, 3]);
 });
 
+test('material-variant="name"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
+            material-variant="street"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    const materialVariant = await page.waitForFunction((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer;
+        return viewer?.isModelLoaded ? viewer.selectedMaterialVariant : undefined;
+    }, viewerElementHandle);
+
+    expect(await materialVariant.jsonValue()).toEqual("street");
+
+    // The shoe fills much more of the frame than the small boombox, so the tone-mapping divergence
+    // (see expectScreenshotMatch) covers ~12% of the image — hence the looser per-test tolerance.
+    await expectScreenshotMatch(page, "viewer-material-variant.png", 0.15);
+});
+
+test("load model from URL", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const hasModel = await page.evaluate(() => {
+        const viewer = (document.querySelector("babylon-viewer") as ViewerElement).viewer;
+        return viewer?.isModelLoaded === true;
+    });
+    expect(hasModel).toBe(true);
+
+    await expectScreenshotMatch(page, "viewer-load-model-url.png");
+});
+
 test("invalid model source fires modelerror", async ({ page }) => {
     // This test intentionally triggers a model loading error.
     expectConsoleErrors = true;
@@ -262,6 +323,26 @@ test("invalid model source fires modelerror", async ({ page }) => {
     });
 
     expect(errorFired).toBe(true);
+});
+
+// ============================================================
+// Environment
+// ============================================================
+
+test("environment lighting with model", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-lighting="https://assets.babylonjs.com/environments/environmentSpecular.env"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-env-lighting.png");
 });
 
 // ============================================================
@@ -298,6 +379,28 @@ test("camera-auto-orbit", async ({ page }) => {
     expect(autoOrbit.delay).toBe(500);
 });
 
+test("resetCamera()", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            camera-orbit="2 auto auto"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Reset the camera.
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).resetCamera();
+    }, viewerElementHandle);
+
+    await expectScreenshotMatch(page, "viewer-reset-camera.png");
+});
+
 // ============================================================
 // Material Variants
 // ============================================================
@@ -321,6 +424,61 @@ test("materialVariants list", async ({ page }) => {
 
     expect(variants.length).toBeGreaterThan(0);
     expect(variants).toContain("street");
+});
+
+test("change material variant dynamically", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
+            material-variant="street"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Get available variants and switch to a different one.
+    const newVariant = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer;
+        if (viewer) {
+            const variants = viewer.materialVariants;
+            const other = variants.find((v) => v !== "street");
+            if (other) {
+                viewer.selectedMaterialVariant = other;
+                return other;
+            }
+        }
+        return null;
+    }, viewerElementHandle);
+
+    expect(newVariant).not.toBeNull();
+
+    // The shoe fills much more of the frame than the small boombox, so the tone-mapping divergence
+    // (see expectScreenshotMatch) covers ~12% of the image — hence the looser per-test tolerance.
+    await expectScreenshotMatch(page, "viewer-material-variant-changed.png", 0.15);
+});
+
+// ============================================================
+// Clear Color
+// ============================================================
+
+test('clear-color="red"', async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            clear-color="red"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-clear-color-red.png");
 });
 
 // ============================================================
@@ -487,4 +645,103 @@ test("animationplayingchange event", async ({ page }) => {
     }, viewerElementHandle);
 
     expect(eventFired).toBe(true);
+});
+
+// ============================================================
+// Element Lifecycle
+// ============================================================
+
+test("element removal and re-addition", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Remove the element from the DOM.
+    await page.evaluate((viewerElement) => {
+        viewerElement.remove();
+    }, viewerElementHandle);
+
+    // Wait a moment for cleanup.
+    await page.waitForTimeout(500);
+
+    // Re-add a new viewer element.
+    await page.evaluate(() => {
+        const container = document.createElement("div");
+        container.innerHTML = '<babylon-viewer source="https://assets.babylonjs.com/meshes/boombox.glb"></babylon-viewer>';
+        document.body.appendChild(container);
+    });
+
+    // Wait for the new element to be ready.
+    await page.waitForFunction(() => {
+        const viewer = (document.querySelector("babylon-viewer") as ViewerElement)?.viewer;
+        return viewer != null && viewer.loadingProgress === false && viewer.isModelLoaded;
+    });
+
+    await expectScreenshotMatch(page, "viewer-re-added.png");
+});
+
+test("reload()", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Call reload.
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).reload();
+    }, viewerElementHandle);
+
+    // Wait for the viewer to reinitialize.
+    await page.waitForFunction((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer;
+        return viewer != null && viewer.loadingProgress === false && viewer.isModelLoaded;
+    }, viewerElementHandle);
+
+    await expectScreenshotMatch(page, "viewer-reload.png");
+});
+
+// ============================================================
+// Reset Behavior
+// ============================================================
+
+test("reset() restores initial state", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    // Change camera position (zoom all the way in).
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).viewer?.updateCamera({ radius: 0.001 });
+    }, viewerElementHandle);
+
+    // Reset the viewer.
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).reset();
+    }, viewerElementHandle);
+
+    // Wait for reset to complete and the scene to settle.
+    await expectScreenshotMatch(page, "viewer-reset.png");
 });
