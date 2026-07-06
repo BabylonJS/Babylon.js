@@ -94,7 +94,7 @@ export class ChromaticAberrationPostProcess extends PostProcess {
         return "ChromaticAberrationPostProcess";
     }
 
-    protected override _effectWrapper: ThinChromaticAberrationPostProcess;
+    declare protected _effectWrapper: ThinChromaticAberrationPostProcess;
 
     /**
      * Creates a new instance ChromaticAberrationPostProcess

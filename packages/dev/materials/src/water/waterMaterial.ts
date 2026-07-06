@@ -107,7 +107,7 @@ export class WaterMaterial extends PushMaterial {
     @serializeAsTexture("bumpTexture")
     private _bumpTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: BaseTexture;
+    public accessor bumpTexture: BaseTexture;
 
     @serializeAsColor3()
     public diffuseColor = new Color3(1, 1, 1);
@@ -121,12 +121,12 @@ export class WaterMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     /**
      * Defines the wind force.
@@ -154,7 +154,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize("bumpSuperimpose")
     private _bumpSuperimpose = false;
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public bumpSuperimpose: boolean;
+    public accessor bumpSuperimpose: boolean;
 
     /**
      * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
@@ -162,7 +162,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize("fresnelSeparate")
     private _fresnelSeparate = false;
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public fresnelSeparate: boolean;
+    public accessor fresnelSeparate: boolean;
 
     /**
      * Defines wether or not bump Wwves modify the reflection.
@@ -170,7 +170,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize("bumpAffectsReflection")
     private _bumpAffectsReflection = false;
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public bumpAffectsReflection: boolean;
+    public accessor bumpAffectsReflection: boolean;
 
     /**
      * Defines the water color blended with the refraction (near).
@@ -224,7 +224,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize("useWorldCoordinatesForWaveDeformation")
     private _useWorldCoordinatesForWaveDeformation = false;
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useWorldCoordinatesForWaveDeformation: boolean;
+    public accessor useWorldCoordinatesForWaveDeformation: boolean;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
 

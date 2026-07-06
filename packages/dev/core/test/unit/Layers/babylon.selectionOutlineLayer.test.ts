@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
+import { GlowLayer } from "core/Layers/glowLayer";
 import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { type SubMesh } from "core/Meshes/subMesh";
@@ -112,6 +113,12 @@ describe("SelectionOutlineLayer", () => {
         // After adding a selection, shouldRender flips to true
         layer.addSelection(sphere);
         expect(layer.shouldRender()).toBe(true);
+    });
+
+    it("should preserve the thin effect layer assigned by the base constructor", () => {
+        const layer = new GlowLayer("glow", scene);
+
+        expect(layer.getEffectName()).toBe(GlowLayer.EffectName);
     });
 
     it("should bind a depth renderer for compose by default", () => {
