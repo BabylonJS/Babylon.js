@@ -8,7 +8,7 @@ struct Params {
     orthoMax: vec3f,
 };
 
-@group(0) @binding(0) var shadowMap : texture_2d<f32>;
+@group(0) @binding(0) var shadowMap : texture_depth_2d;
 @group(0) @binding(1) var<uniform> params : Params;
 @group(0) @binding(2) var<storage,read_write> positions : array<f32>;
 
@@ -27,7 +27,7 @@ fn updateFarPlaneVertices(@builtin(global_invocation_id) global_id : vec3u) {
     let stepY = floor(params.step * f32(coord.y));
     let depthCoord = vec2u(u32(floor(f32(coord.x) * params.step)), u32(stepY));
 
-    var depth = textureLoad(shadowMap, depthCoord, 0).r;
+    var depth = textureLoad(shadowMap, depthCoord, 0);
 #ifdef MOVE_FAR_DEPTH_TO_NEAR
     if (depth == 1.0) {
         depth = 0.0;
