@@ -10,6 +10,15 @@ for (const key in flags) {
     process.env[key] = flags[key];
 }
 
+// Absolute per-case growth caps (in bytes) applied in addition to the
+// percentage thresholds above. Some cases must stay minimal regardless of
+// their percentage headroom, so any single PR that grows them past the cap
+// fails the build. The thin engine is the strictest: it may not grow by more
+// than 2 KB in a single PR.
+const absoluteGrowthCaps = {
+    thinEngineOnly: 2000,
+};
+
 const sizes = {};
 glob.globSync("./dist/*").forEach((file) => {
     // ignore files, only operate on directories
@@ -71,15 +80,22 @@ https.get("https://cdn.babylonjs.com/fileSizes.json", (res) => {
                 loadedAsyncSize = fileSizes[filename].async;
             }
             if (loadedMainSize < currentMainSize) {
-                // check if increase is more than 10%
                 const errorThreshold = Number.parseFloat(process.env.errorThreshold || "1.1");
                 const warningThreshold = Number.parseFloat(process.env.warningThreshold || "1.05");
-                if (currentMainSize > fileSizes[filename] * errorThreshold) {
+                const growth = currentMainSize - loadedMainSize;
+                const absoluteCap = absoluteGrowthCaps[caseName];
+                if (absoluteCap !== undefined && growth > absoluteCap) {
+                    // This case has a hard per-PR byte budget that is stricter than the percentage thresholds.
+                    console.log(
+                        `##[error] File size for ${filename} has increased from ${loadedMainSize} to ${currentMainSize} - grew ${growth} bytes, more than the ${absoluteCap} byte cap for this case`
+                    );
+                    error = true;
+                } else if (currentMainSize > loadedMainSize * errorThreshold) {
                     console.log(
                         `##[error] File size for ${filename} has increased from ${loadedMainSize} to ${currentMainSize} - more than ${Math.floor((errorThreshold - 1) * 100)}%`
                     );
                     error = true;
-                } else if (currentMainSize > fileSizes[filename] * warningThreshold) {
+                } else if (currentMainSize > loadedMainSize * warningThreshold) {
                     console.log(
                         `##[warn] File size for ${filename} has increased from ${loadedMainSize} to ${currentMainSize} - more than ${Math.floor((warningThreshold - 1) * 100)}%`
                     );
