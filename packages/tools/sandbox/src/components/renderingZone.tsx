@@ -29,7 +29,7 @@ import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConf
 
 // Type-only import: the runtime implementation is resolved at call time from the
 // CDN INSPECTOR global (production) or a dev-only dynamic import, so the Inspector
-// internals are never statically bundled into the Sandbox app. See LoadProjectFileIntoSceneAsync.
+// internals are never statically bundled into the Sandbox app. See GetLoadProjectFileAsync.
 type LoadProjectFileAsyncType = typeof import("inspector/projects/projectFile").LoadProjectFileAsync;
 
 function GetFileExtension(str: string): string {
