@@ -93,11 +93,11 @@ jobs:
                 fetchDepth: 0
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - bash: |
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged]true"
@@ -304,11 +304,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
             parameters:
@@ -384,11 +384,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
             parameters:
@@ -453,11 +453,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
 
@@ -492,11 +492,11 @@ jobs:
                 fetchDepth: 0
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
 
@@ -543,11 +543,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
 
@@ -609,11 +609,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -687,11 +687,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -772,11 +772,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -979,11 +979,11 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
 
@@ -1085,11 +1085,11 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/cache-steps.yml
             parameters:
