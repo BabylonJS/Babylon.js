@@ -7,6 +7,8 @@ import { type WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
 import { WebXRProjectionLayerWrapper, DefaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
 import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
+import { WebXRWebGPUProjectionLayerWrapper, CreateDefaultXRGPUProjectionLayerInit } from "./Layers/WebXRWebGPUProjectionLayer";
+import { WebXRGraphicsBindingType, type WebXRWebGPUGraphicsBinding } from "../webXRGraphicsBinding";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { type DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { Color4 } from "../../Maths/math.color.pure";
@@ -52,6 +54,8 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
+    private _isWebGPU = false;
+    private _xrGPUBinding?: XRGPUBinding;
     private _isMultiviewEnabled = false;
     private _projectionLayerInitialized = false;
 
@@ -78,13 +82,26 @@ export class WebXRLayers extends WebXRAbstractFeature {
         }
 
         const engine = this._xrSessionManager.scene.getEngine();
-        this._glContext = (engine as ThinEngine)._gl;
-        this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers.length = 0;
+        this._isWebGPU = engine.isWebGPU;
 
-        const projectionLayerInit = { ...DefaultXRProjectionLayerInit, ...this._options.projectionLayerInit };
-        this._isMultiviewEnabled = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
-        this.createProjectionLayer(projectionLayerInit /*, projectionLayerMultiview*/);
+        if (this._isWebGPU) {
+            const binding = this._xrSessionManager._getGraphicsBinding();
+            if (binding.bindingType !== WebXRGraphicsBindingType.WebGPU) {
+                throw new Error("Expected a WebGPU graphics binding for a WebGPU engine.");
+            }
+            this._xrGPUBinding = (binding as WebXRWebGPUGraphicsBinding).binding;
+            // Multiview is not yet supported on the WebGPU XR path; force single-view (two sub-images).
+            this._isMultiviewEnabled = false;
+            this._createWebGPUProjectionLayer();
+        } else {
+            this._glContext = (engine as ThinEngine)._gl;
+            this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
+
+            const projectionLayerInit = { ...DefaultXRProjectionLayerInit, ...this._options.projectionLayerInit };
+            this._isMultiviewEnabled = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
+            this.createProjectionLayer(projectionLayerInit /*, projectionLayerMultiview*/);
+        }
         this._projectionLayerInitialized = true;
 
         return true;
@@ -146,6 +163,23 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
         const layer = new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
+        this.addXRSessionLayer(layer);
+        return layer;
+    }
+
+    /**
+     * Creates the base projection layer for the WebGPU (XRGPUBinding) backend.
+     * Single-view only for now (multiview is deferred); the color format is the binding's preferred format.
+     * @returns the WebGPU projection layer wrapper
+     */
+    private _createWebGPUProjectionLayer(): WebXRWebGPUProjectionLayerWrapper {
+        if (!this._xrSessionManager.inXRSession) {
+            throw new Error("Cannot create a layer outside of a WebXR session. Make sure the session has started before creating layers.");
+        }
+        const binding = this._xrGPUBinding!;
+        const init = CreateDefaultXRGPUProjectionLayerInit(binding.getPreferredColorFormat());
+        const projLayer = binding.createProjectionLayer(init);
+        const layer = new WebXRWebGPUProjectionLayerWrapper(projLayer, false, binding, init.depthStencilFormat);
         this.addXRSessionLayer(layer);
         return layer;
     }
@@ -335,7 +369,13 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     public override isCompatible(): boolean {
         // TODO (rgerd): Add native support.
-        return !this._xrSessionManager.isNative && typeof XRWebGLBinding !== "undefined" && !!XRWebGLBinding.prototype.createProjectionLayer;
+        if (this._xrSessionManager.isNative) {
+            return false;
+        }
+        if (this._xrSessionManager.scene.getEngine().isWebGPU) {
+            return typeof XRGPUBinding !== "undefined" && !!XRGPUBinding.prototype.createProjectionLayer;
+        }
+        return typeof XRWebGLBinding !== "undefined" && !!XRWebGLBinding.prototype.createProjectionLayer;
     }
 
     /**
