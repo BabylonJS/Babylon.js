@@ -421,7 +421,11 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     loadAssetFromUrl(assetUrl: string) {
         const rootUrl = Tools.GetFolderPath(assetUrl);
         const fileName = Tools.GetFilename(assetUrl);
-        const fileExtension = GetFileExtension(fileName);
+        // Strip any query string / hash fragment before detecting the extension and
+        // naming the bundled File. Signed asset URLs (e.g. "scene.babylonproj?sig=...")
+        // would otherwise defeat extension detection and produce awkward file names.
+        const cleanFileName = fileName.split(/[?#]/)[0] || fileName;
+        const fileExtension = GetFileExtension(cleanFileName);
 
         this._engine.clearInternalTexturesCache();
 
@@ -431,11 +435,11 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
               ? (async () => {
                     const response = await fetch(assetUrl);
                     if (!response.ok) {
-                        throw new Error(`Unable to load ${fileName}: ${response.statusText}`);
+                        throw new Error(`Unable to load ${cleanFileName}: ${response.statusText}`);
                     }
                     const projectBlob = await response.blob();
                     const scene = new Scene(this._engine);
-                    const projectFile = new File([projectBlob], fileName, { type: projectBlob.type || "application/zip" });
+                    const projectFile = new File([projectBlob], cleanFileName, { type: projectBlob.type || "application/zip" });
                     const loadProjectFileAsync = await GetLoadProjectFileAsync();
                     await loadProjectFileAsync(scene, projectFile);
                     return scene;

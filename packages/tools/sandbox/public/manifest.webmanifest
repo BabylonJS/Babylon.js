@@ -60,7 +60,8 @@
                 "model/obj": [".obj"],
                 "model/stl": [".stl"],
                 "application/x-ply": [".ply"],
-                "application/octet-stream": [".splat", ".spz", ".babylon", ".bvh", ".sog", ".fbx", ".babylonproj"]
+                "application/octet-stream": [".splat", ".spz", ".babylon", ".bvh", ".sog", ".fbx", ".babylonproj"],
+                "application/zip": [".babylonproj"]
             },
             "icons": [
                 {
