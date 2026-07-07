@@ -4,6 +4,7 @@ import { type Nullable, type Quaternion, type Vector3 } from "core/index";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useQuaternionProperty } from "../../hooks/compoundPropertyHooks";
+import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../services/globalSettings";
 import { BoundProperty, Property } from "./boundProperty";
@@ -18,6 +19,8 @@ export const TransformProperties: FunctionComponent<{ transform: Transform }> = 
     const [useDegrees] = useSetting(UseDegreesSettingDescriptor);
     const [useEuler] = useSetting(UseEulerSettingDescriptor);
 
+    const notifyPropertyChanged = usePropertyChangedNotifier();
+
     return (
         <>
             <BoundProperty component={Vector3PropertyLine} label="Position" target={transform} propertyKey="position" />
@@ -27,7 +30,14 @@ export const TransformProperties: FunctionComponent<{ transform: Transform }> = 
                     label="Rotation"
                     propertyPath="rotationQuaternion"
                     value={quatRotation}
-                    onChange={(val) => (transform.rotationQuaternion = val)}
+                    onChange={(val) => {
+                        const oldValue = transform.rotationQuaternion;
+                        transform.rotationQuaternion = val;
+                        // The plain Property component does not notify on its own, so
+                        // forward the change to the Inspector's property-change pipeline
+                        // (e.g. for override capture on .babylonproj projects).
+                        notifyPropertyChanged(transform, "rotationQuaternion", oldValue, val);
+                    }}
                     useDegrees={useDegrees}
                     useEuler={useEuler}
                 />

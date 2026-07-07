@@ -349,9 +349,30 @@ export function RenameOverrideValueReferences(scene: Scene, valueScheme: "ref" |
 export function ApplyAllOverrides(scene: Scene): void {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
-    for (const entry of internal.overrides) {
+    for (const entry of SortNameOverridesFirst(internal.overrides)) {
         ApplyOverrideEntry(manager, internal, entry);
     }
+}
+
+/**
+ * Returns a copy of the entries ordered so that `name` overrides are applied
+ * first. Renames must run before other overrides because targets (and
+ * reference values like `ref:<name>`) are resolved by name: applying a rename
+ * first ensures subsequent overrides resolve against the new names.
+ * @param entries - The override entries to order.
+ * @returns A new array with `name` overrides first, otherwise stable order.
+ */
+function SortNameOverridesFirst<T extends { propertyPath: string }>(entries: readonly T[]): T[] {
+    const nameOverrides: T[] = [];
+    const rest: T[] = [];
+    for (const entry of entries) {
+        if (entry.propertyPath === "name") {
+            nameOverrides.push(entry);
+        } else {
+            rest.push(entry);
+        }
+    }
+    return [...nameOverrides, ...rest];
 }
 
 // ── Serialization ──
@@ -377,7 +398,7 @@ export function DeserializeAndApplyOverrides(scene: Scene, data: IOverrideEntry[
         throw new Error("OverrideManager: Expected an array of override entries.");
     }
 
-    for (const entry of data) {
+    for (const entry of SortNameOverridesFirst(data)) {
         if (!entry.targetType || entry.targetName === undefined || typeof entry.targetIndex !== "number" || !entry.propertyPath || entry.value === undefined) {
             Logger.Warn("OverrideManager: Skipping invalid override entry.");
             continue;
@@ -552,6 +573,16 @@ function ResolveObjectReference(scene: Scene, name: string): unknown {
     const camera = scene.cameras.find((c) => c.name === name);
     if (camera) {
         return camera;
+    }
+    // Nodes (used for parent references). Transform nodes and meshes are both
+    // valid parents, so search both collections.
+    const transformNode = scene.transformNodes.find((t) => t.name === name);
+    if (transformNode) {
+        return transformNode;
+    }
+    const mesh = scene.meshes.find((m) => m.name === name);
+    if (mesh) {
+        return mesh;
     }
     Logger.Warn(`OverrideManager: Object reference "${name}" not found in scene.`);
     return undefined;
