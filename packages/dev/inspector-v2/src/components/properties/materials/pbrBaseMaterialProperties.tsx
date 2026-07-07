@@ -336,6 +336,8 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
 
     const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
+    const metallicTexture = useProperty(material, "_metallicTexture");
+
     return (
         <>
             <BoundProperty component={SyncedSliderPropertyLine} label="Metallic" target={material} propertyKey="_metallic" min={0} max={1} step={0.01} nullable defaultValue={0} />
@@ -401,6 +403,38 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
                 onLink={selectEntity}
                 defaultValue={null}
             />
+            <Collapse visible={!!metallicTexture}>
+                <>
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use AO from Red Channel"
+                        description="Interpret the metallic texture's red channel as ambient occlusion (glTF ORM packing)."
+                        target={material}
+                        propertyKey="_useAmbientOcclusionFromMetallicTextureRed"
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use Roughness from Green Channel"
+                        description="Interpret the metallic texture's green channel as roughness (glTF ORM packing). Requires 'Use Roughness from Alpha Channel' to be disabled."
+                        target={material}
+                        propertyKey="_useRoughnessFromMetallicTextureGreen"
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use Metallic from Blue Channel"
+                        description="Interpret the metallic texture's blue channel as metalness (glTF ORM packing)."
+                        target={material}
+                        propertyKey="_useMetallnessFromMetallicTextureBlue"
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use Roughness from Alpha Channel"
+                        description="Interpret the metallic texture's alpha channel as roughness (Babylon legacy default). Takes precedence over the green channel."
+                        target={material}
+                        propertyKey="_useRoughnessFromMetallicTextureAlpha"
+                    />
+                </>
+            </Collapse>
         </>
     );
 };
