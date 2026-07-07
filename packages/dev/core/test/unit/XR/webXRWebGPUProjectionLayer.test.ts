@@ -8,6 +8,7 @@ import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/
 import { Viewport } from "core/Maths/math.viewport";
 import { Scene } from "core/scene";
 import { CreateDefaultXRGPUProjectionLayerInit, WebXRWebGPUProjectionLayerWrapper } from "core/XR/features/Layers/WebXRWebGPUProjectionLayer";
+import { WebXRLayerRenderTargetTexture } from "core/XR/webXRLayerRenderTargetTexture";
 import { type WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -162,8 +163,25 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(leftRtt).not.toBeNull();
             expect(rightRtt).not.toBeNull();
             expect(leftRtt).not.toBe(rightRtt);
-            expect(leftRtt!._bindFrameBufferLayer).toBe(0);
-            expect(rightRtt!._bindFrameBufferLayer).toBe(1);
+            expect((leftRtt as any).layerIndex).toBe(0);
+            expect((rightRtt as any).layerIndex).toBe(1);
+        });
+
+        it("creates WebXRLayerRenderTargetTexture instances that bind their own array layer", () => {
+            // The per-eye array-layer index lives on the XR-area WebXRLayerRenderTargetTexture subclass (not on
+            // the general-purpose RenderTargetTexture); its _bindFrameBuffer override binds that layer when the
+            // scene binds the target with no explicit layer.
+            const provider = createProvider(createSubImage(512, 512, undefined, 1));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "right" } as XRView);
+
+            expect(rtt).toBeInstanceOf(WebXRLayerRenderTargetTexture);
+            expect((rtt as any).layerIndex).toBe(1);
+
+            const bindSpy = vi.spyOn(engine, "bindFramebuffer");
+            rtt!._bindFrameBuffer();
+            // engine.bindFramebuffer(renderTarget, faceIndex, requiredWidth, requiredHeight, forceFullscreen, lodLevel, layer)
+            expect(bindSpy).toHaveBeenCalledTimes(1);
+            expect(bindSpy.mock.calls[0][6]).toBe(1);
         });
 
         it("attaches a clear observer to each created per-eye render target", () => {

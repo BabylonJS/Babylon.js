@@ -3,6 +3,7 @@ import { type WebGPUEngine } from "../Engines/webgpuEngine";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Nullable } from "../types";
+import { WebXRLayerRenderTargetTexture } from "./webXRLayerRenderTargetTexture";
 import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 
 /**
@@ -60,6 +61,24 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
     }
 
     /**
+     * Builds the render target shell as a {@link WebXRLayerRenderTargetTexture} for the single-view path so
+     * each eye can bind its own array layer of a layered projection-layer texture. Multiview is not yet
+     * supported on this WebGPU path and is delegated to the base implementation.
+     * @param width the width of the render target
+     * @param height the height of the render target
+     * @param multiview whether the render target should be a multiview render target
+     * @returns the created (but not yet registered) render target texture
+     */
+    protected override _createRenderTargetTextureShell(width: number, height: number, multiview: boolean): RenderTargetTexture {
+        if (multiview) {
+            return super._createRenderTargetTextureShell(width, height, multiview);
+        }
+        const renderTargetTexture = new WebXRLayerRenderTargetTexture("XR renderTargetTexture", { width, height }, this._scene);
+        renderTargetTexture.renderTarget!._samples = renderTargetTexture.samples;
+        return renderTargetTexture;
+    }
+
+    /**
      * Wraps the sub-image's color (and optional depth/stencil) GPUTextures and builds a new render target
      * texture around them. Use this on first creation and whenever the sub-image texture size changes.
      * @param width the width of the render target
@@ -77,10 +96,11 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
         depthStencilTexture: Nullable<GPUTexture>,
         depthStencilFormat: GPUTextureFormat | undefined,
         multiview: boolean
-    ): RenderTargetTexture {
+    ): WebXRLayerRenderTargetTexture {
         const color = this._wrapColorTexture(colorTexture);
         const depth = depthStencilTexture && depthStencilFormat ? this._wrapDepthTexture(depthStencilTexture, depthStencilFormat) : null;
-        const renderTargetTexture = this._createRenderTargetTextureInternal(width, height, color, depth, multiview);
+        // Single-view (the only path here) always builds a WebXRLayerRenderTargetTexture via the shell override above.
+        const renderTargetTexture = this._createRenderTargetTextureInternal(width, height, color, depth, multiview) as WebXRLayerRenderTargetTexture;
         this._attachPerEyeClearObserver(renderTargetTexture);
         return renderTargetTexture;
     }

@@ -1,6 +1,7 @@
 import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { type Viewport } from "core/Maths/math.viewport";
 import { Observable } from "core/Misc/observable";
+import { type WebXRLayerRenderTargetTexture } from "core/XR/webXRLayerRenderTargetTexture";
 import { type WebXRLayerType, WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
 import { type WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
 import { WebXRWebGPURenderTargetTextureProvider } from "core/XR/webXRWebGPURenderTargetTextureProvider";
@@ -40,7 +41,7 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
      * both would let a rebuilt eye target both stay in the registry (leaking / double-disposing the old one)
      * and grow the registry unboundedly on repeated size changes.
      */
-    protected _renderTargetTexturesByEye: RenderTargetTexture[] = [];
+    protected _renderTargetTexturesByEye: WebXRLayerRenderTargetTexture[] = [];
     private _compositionLayer: XRCompositionLayer;
     /**
      * Fires every time a new render target texture is created (either for eye, for view, or for the entire frame)
@@ -104,7 +105,7 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
         // index for this eye, so route it into the render target's bind so each eye renders into its own
         // layer. For non-layered textures this is 0 (unchanged behavior).
         const renderTargetTexture = this._renderTargetTexturesByEye[eyeIndex];
-        renderTargetTexture._bindFrameBufferLayer = subImage.getViewDescriptor().baseArrayLayer ?? 0;
+        renderTargetTexture.layerIndex = subImage.getViewDescriptor().baseArrayLayer ?? 0;
 
         return renderTargetTexture;
     }

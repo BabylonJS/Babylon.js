@@ -1149,19 +1149,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * The default array layer index bound by {@link _bindFrameBuffer} when no explicit layer is passed.
-     * Defaults to 0 (backward compatible). It is set per eye by the WebGPU XR layer provider so that each
-     * eye renders into its own layer of a layered projection-layer texture array.
-     * @internal
-     */
-    public _bindFrameBufferLayer = 0;
-
-    /**
      * @internal
      * @param faceIndex face index to bind to if this is a cubetexture
      * @param layer defines the index of the texture to bind in the array
      */
-    public _bindFrameBuffer(faceIndex: number = 0, layer = this._bindFrameBufferLayer) {
+    public _bindFrameBuffer(faceIndex: number = 0, layer = 0) {
         const scene = this.getScene();
         if (!scene) {
             return;
