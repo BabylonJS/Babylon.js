@@ -43,6 +43,8 @@
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
+        "@fluentui/react-motion-components-preview": "^0.15.2",
+        "@fluentui/react-utilities": "^9.26.2",
         "react": ">=16.14.0 <20.0.0",
         "react-dom": ">=16.14.0 <20.0.0",
         "usehooks-ts": "^3.1.1"
