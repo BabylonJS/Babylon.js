@@ -27,6 +27,11 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
+// Type-only import: the runtime implementation is resolved at call time from the
+// CDN INSPECTOR global (production) or a dev-only dynamic import, so the Inspector
+// internals are never statically bundled into the Sandbox app. See LoadProjectFileIntoSceneAsync.
+type LoadProjectFileAsyncType = typeof import("inspector/projects/projectFile").LoadProjectFileAsync;
+
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
 }
@@ -44,6 +49,31 @@ function IsTextureAsset(extension: string): boolean {
     }
 
     return false;
+}
+
+function IsProjectAsset(extension: string): boolean {
+    return extension.toLowerCase() === "babylonproj";
+}
+
+/**
+ * Resolves the Inspector `LoadProjectFileAsync` implementation. In production the
+ * Inspector is loaded from the CDN and exposes it on the global INSPECTOR namespace.
+ * In dev we dynamically import it (aliased to the local inspector-v2 source) so the
+ * Inspector internals are not statically bundled into the Sandbox app.
+ * @returns The LoadProjectFileAsync function.
+ */
+async function GetLoadProjectFileAsync(): Promise<LoadProjectFileAsyncType> {
+    const inspector = (globalThis as any).INSPECTOR;
+    if (inspector?.LoadProjectFileAsync) {
+        return inspector.LoadProjectFileAsync;
+    }
+
+    if (import.meta.env.DEV) {
+        const projectFileModule = await import("inspector/projects/projectFile");
+        return projectFileModule.LoadProjectFileAsync;
+    }
+
+    throw new Error("Unable to load .babylonproj: Inspector is not available.");
 }
 
 interface IRenderingZoneProps {
@@ -146,7 +176,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         return false;
                     }
                     default: {
-                        if (IsTextureAsset(extension)) {
+                        if (IsTextureAsset(extension) || IsProjectAsset(extension)) {
                             setSceneFileToLoad(file);
                         }
 
@@ -159,6 +189,15 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         };
 
         filesInput.loadAsync = async (sceneFile, onProgress) => {
+            const sceneFileName = ((sceneFile as any).correctName as string | undefined) ?? sceneFile.name;
+            const sceneFileExtension = GetFileExtension(sceneFileName);
+            if (IsProjectAsset(sceneFileExtension)) {
+                const scene = new Scene(this._engine);
+                const loadProjectFileAsync = await GetLoadProjectFileAsync();
+                await loadProjectFileAsync(scene, sceneFile);
+                return scene;
+            }
+
             const filesToLoad = filesInput.filesToLoad;
             if (filesToLoad.length === 1) {
                 const fileName = (filesToLoad[0] as any).correctName as string;
@@ -386,7 +425,22 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this._engine.clearInternalTexturesCache();
 
-        const promise = IsTextureAsset(fileExtension) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
+        const promise = IsTextureAsset(fileExtension)
+            ? Promise.resolve(this.loadTextureAsset(assetUrl))
+            : IsProjectAsset(fileExtension)
+              ? (async () => {
+                    const response = await fetch(assetUrl);
+                    if (!response.ok) {
+                        throw new Error(`Unable to load ${fileName}: ${response.statusText}`);
+                    }
+                    const projectBlob = await response.blob();
+                    const scene = new Scene(this._engine);
+                    const projectFile = new File([projectBlob], fileName, { type: projectBlob.type || "application/zip" });
+                    const loadProjectFileAsync = await GetLoadProjectFileAsync();
+                    await loadProjectFileAsync(scene, projectFile);
+                    return scene;
+                })()
+              : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
 
         promise
             .then((scene) => {
