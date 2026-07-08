@@ -46,8 +46,9 @@ describe("ParticleSystem serialize/parse (texture settings)", () => {
         texture.hasAlpha = true;
         system.particleTexture = texture;
 
-        // Serialize without embedding the texture: it is referenced by name only.
-        const serialized = system.serialize(false);
+        // Round-trip through JSON to match a real .babylon save/load, where undefined fields are
+        // dropped and values are coerced through JSON.stringify / JSON.parse.
+        const serialized = JSON.parse(JSON.stringify(system.serialize(false)));
         expect(serialized.textureName).toBe("https://example.com/flare.png");
         expect(serialized.texture).toBeUndefined();
 
