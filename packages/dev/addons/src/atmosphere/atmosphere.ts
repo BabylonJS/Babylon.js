@@ -835,9 +835,24 @@ export class Atmosphere implements IDisposable {
 
         // Eagerly start loading the atmosphere material-plugin shader includes now, before any atmosphere-enabled
         // material exists, so that dynamically created meshes are far more likely to render in their creation frame.
-        void this.preloadMaterialPluginShaderIncludesAsync();
+        // Errors are swallowed here (best-effort): the plugin's isReadyForSubMesh owns retry and logging.
+        void this._eagerlyPreloadMaterialPluginShaderIncludesAsync();
 
         scene.addIsReadyCheck(this);
+    }
+
+    /**
+     * Fire-and-forget wrapper around {@link preloadMaterialPluginShaderIncludesAsync} used during construction.
+     * Swallows failures so a rejected preload does not surface as an unhandled promise rejection; the plugin's
+     * `isReadyForSubMesh` already retries and logs on failure.
+     * @returns A promise that always resolves.
+     */
+    private async _eagerlyPreloadMaterialPluginShaderIncludesAsync(): Promise<void> {
+        try {
+            await this.preloadMaterialPluginShaderIncludesAsync();
+        } catch {
+            // Intentionally ignored; readiness is re-attempted (with logging/backoff) from isReadyForSubMesh.
+        }
     }
 
     /**
