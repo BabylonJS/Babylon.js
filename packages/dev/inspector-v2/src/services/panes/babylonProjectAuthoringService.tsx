@@ -34,8 +34,8 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, SaveRegular } from "@fluentui/react-icons";
 
-import { ProjectLocalsKey, LoadProjectFileAsync, SaveProjectFileAsync } from "../../projects/projectFile";
-import { ApplyAllOverrides, GetOverrideManager, GetOverrides } from "../../projects/overrideManager";
+import { ProjectLocalsKey, LoadProjectFileAsync, SaveProjectFileAsync } from "shared-ui-components/projects/projectFile";
+import { ApplyAllOverrides, GetOverrideManager, GetOverrides } from "shared-ui-components/projects/overrideManager";
 
 const ProjectAuthoringPaneKey = "Project Authoring";
 

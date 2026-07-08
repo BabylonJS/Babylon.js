@@ -26,11 +26,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-
-// Type-only import: the runtime implementation is resolved at call time from the
-// CDN INSPECTOR global (production) or a dev-only dynamic import, so the Inspector
-// internals are never statically bundled into the Sandbox app. See GetLoadProjectFileAsync.
-type LoadProjectFileAsyncType = typeof import("inspector/projects/projectFile").LoadProjectFileAsync;
+import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -53,27 +49,6 @@ function IsTextureAsset(extension: string): boolean {
 
 function IsProjectAsset(extension: string): boolean {
     return extension.toLowerCase() === "babylonproj";
-}
-
-/**
- * Resolves the Inspector `LoadProjectFileAsync` implementation. In production the
- * Inspector is loaded from the CDN and exposes it on the global INSPECTOR namespace.
- * In dev we dynamically import it (aliased to the local inspector-v2 source) so the
- * Inspector internals are not statically bundled into the Sandbox app.
- * @returns The LoadProjectFileAsync function.
- */
-async function GetLoadProjectFileAsync(): Promise<LoadProjectFileAsyncType> {
-    const inspector = (globalThis as any).INSPECTOR;
-    if (inspector?.LoadProjectFileAsync) {
-        return inspector.LoadProjectFileAsync;
-    }
-
-    if (import.meta.env.DEV) {
-        const projectFileModule = await import("inspector/projects/projectFile");
-        return projectFileModule.LoadProjectFileAsync;
-    }
-
-    throw new Error("Unable to load .babylonproj: Inspector is not available.");
 }
 
 interface IRenderingZoneProps {
@@ -193,8 +168,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             const sceneFileExtension = GetFileExtension(sceneFileName);
             if (IsProjectAsset(sceneFileExtension)) {
                 const scene = new Scene(this._engine);
-                const loadProjectFileAsync = await GetLoadProjectFileAsync();
-                await loadProjectFileAsync(scene, sceneFile);
+                try {
+                    await LoadProjectFileAsync(scene, sceneFile);
+                } catch (error) {
+                    scene.dispose();
+                    throw error;
+                }
                 return scene;
             }
 
@@ -439,9 +418,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     }
                     const projectBlob = await response.blob();
                     const scene = new Scene(this._engine);
-                    const projectFile = new File([projectBlob], cleanFileName, { type: projectBlob.type || "application/zip" });
-                    const loadProjectFileAsync = await GetLoadProjectFileAsync();
-                    await loadProjectFileAsync(scene, projectFile);
+                    const projectFile = new File([projectBlob], cleanFileName, { type: projectBlob.type || "application/octet-stream" });
+                    try {
+                        await LoadProjectFileAsync(scene, projectFile);
+                    } catch (error) {
+                        scene.dispose();
+                        throw error;
+                    }
                     return scene;
                 })()
               : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
@@ -454,7 +437,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
                 this._scene = scene;
 
-                this.onSceneLoaded(fileName);
+                this.onSceneLoaded(cleanFileName);
             })
             .catch((reason) => {
                 this.props.globalState.onError.notifyObservers({ message: reason.message });

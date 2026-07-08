@@ -74,12 +74,6 @@ export { MakeModularBridge, type ModularBridgeToken, type ModularBridgeOptions }
 export { ConvertOptions, Inspector } from "./legacy/inspector";
 export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
-// Project file (.babylonproj) save/load. Exposed so headless hosts (e.g. the
-// Sandbox) can load and save `.babylonproj` bundles through the CDN INSPECTOR
-// global without statically bundling the Inspector internals.
-export { DeserializeProject, LoadProjectAsync, LoadProjectFileAsync, SaveProjectFileAsync, SerializeProject, ProjectLocalsKey } from "./projects/projectFile";
-export type { CompanionTextureBindings, IProjectBundle, ISerializedProject } from "./projects/projectFile";
-
 // Export the shared hooks that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/hooks/keyboardHooks";
 export * from "shared-ui-components/fluent/hooks/eventHooks";
