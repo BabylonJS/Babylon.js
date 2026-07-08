@@ -59,7 +59,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _writePointer = 0;
     private _emitIndex = 0;
     private _emitCount = 0;
-    private _emitRateControl: boolean;
     private _updateBuffer: UniformBufferEffectCommonAccessor;
 
     private _buffer0: Buffer;
@@ -173,16 +172,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Gets whether emit rate control is enabled.
+     * Gets or sets whether emit rate control is enabled.
      * When true, the GPU particle system limits the number of active particles
      * to approximately emitRate * maxLifeTime (matching CPU particle behavior)
      * and uses a circular buffer to recycle particle slots.
      * When false (default), all dead particles are recycled immediately,
      * which is the legacy GPU particle behavior.
+     * Changing the value takes effect on the next frame (the update and render effects are rebuilt
+     * automatically when their shader defines change; buffer allocation does not depend on it).
      */
-    public get emitRateControl(): boolean {
-        return this._emitRateControl;
-    }
+    public emitRateControl = false;
 
     /**
      * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
@@ -1028,7 +1027,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._maxActiveParticleCount = fullOptions.capacity;
         this._currentActiveCount = 0;
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
-        this._emitRateControl = !!options.emitRateControl;
+        this.emitRateControl = !!options.emitRateControl;
         this.maxAttractors = options.maxAttractors ?? 8;
 
         this.particleEmitterType = new BoxParticleEmitter();
@@ -1439,7 +1438,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define MAX_ATTRACTORS " + this.maxAttractors;
         }
 
-        if (this._emitRateControl) {
+        if (this.emitRateControl) {
             defines += "\n#define EMITRATECTRL";
         }
 
@@ -1648,7 +1647,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines.push("#define ANIMATESHEET");
         }
 
-        if (this._emitRateControl) {
+        if (this.emitRateControl) {
             defines.push("#define EMITRATECTRL");
         }
 
@@ -2228,7 +2227,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
-        if (this._emitRateControl) {
+        if (this.emitRateControl) {
             // Emit-rate-controlled mode: limits active particles to ~emitRate * maxLifeTime,
             // matching CPU particle behavior with circular buffer recycling.
 
@@ -2802,7 +2801,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         serializationObject.activeParticleCount = this.activeParticleCount;
         serializationObject.randomTextureSize = this._randomTextureSize;
-        serializationObject.emitRateControl = this._emitRateControl;
+        serializationObject.emitRateControl = this.emitRateControl;
         serializationObject.maxAttractors = this.maxAttractors;
         serializationObject.customShader = this.customShader;
 
