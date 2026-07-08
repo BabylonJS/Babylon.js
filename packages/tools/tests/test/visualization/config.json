@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting GLTF",
+            "playgroundId": "#WSAFDA#0",
+            "referenceImage": "gsplat-splat-gltf.png",
+            "dependsOn": ["GaussianSplatting", "glTF"]
+        },
+        {
             "title": "Gaussian Splatting LOD",
             "playgroundId": "#418POI#12",
             "renderCount": 15,
