@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -58,6 +58,25 @@ describe("ParticleSystem.clone", () => {
         system.dispose();
         expect(clone.particleTexture).toBeTruthy();
         expect(clone.particleTexture!.level).toBe(2);
+
+        clone.dispose();
+    });
+
+    it("falls back to reloading the texture by name when the source texture cannot be cloned", () => {
+        const system = new ParticleSystem("source", 100, scene);
+        system.emitter = new Vector3(0, 0, 0);
+        system.preventAutoStart = true;
+
+        const texture = new Texture("https://example.com/flare.png", scene);
+        // BaseTexture.clone() can legally return null; the clone must not silently drop the texture.
+        vi.spyOn(texture, "clone").mockReturnValue(null as unknown as Texture);
+        system.particleTexture = texture;
+
+        const clone = system.clone("clone", undefined);
+
+        // Since the texture could not be cloned, it is reloaded from its name instead of being lost.
+        expect(clone.particleTexture).toBeTruthy();
+        expect(clone.particleTexture!.name).toBe("https://example.com/flare.png");
 
         clone.dispose();
     });

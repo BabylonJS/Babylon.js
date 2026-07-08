@@ -1107,10 +1107,12 @@ export class ParticleSystem extends ThinParticleSystem {
         }
 
         const serialization = this.serialize(cloneTexture);
-        if (cloneTexture === false) {
-            // When the texture is not serialized it is stored by name only. Prevent Parse from
-            // reloading it from that name (which can resolve to a different image and resets texture
-            // settings like level) and copy the source texture faithfully below instead.
+        // When the texture is not serialized it is stored by name only, and Parse would reload it from
+        // that name (which can resolve to a different image and reset texture settings like level).
+        // Prefer a faithful copy of the source texture, and only skip the name-based reload when that
+        // copy is available (clone() can legally return null for textures that do not implement it).
+        const clonedTexture = cloneTexture === false && this.particleTexture ? this.particleTexture.clone() : null;
+        if (clonedTexture) {
             serialization.textureName = undefined;
         }
         const result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
@@ -1118,8 +1120,8 @@ export class ParticleSystem extends ThinParticleSystem {
         result.customShader = program;
         result._customWrappers = custom;
 
-        if (cloneTexture === false && this.particleTexture) {
-            result.particleTexture = this.particleTexture.clone();
+        if (clonedTexture) {
+            result.particleTexture = clonedTexture;
         }
 
         if (newEmitter === undefined) {
