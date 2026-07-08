@@ -2500,10 +2500,20 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         const serialization = this.serialize(cloneTexture);
+        if (cloneTexture === false) {
+            // When the texture is not serialized it is stored by name only. Prevent Parse from
+            // reloading it from that name (which can resolve to a different image and resets texture
+            // settings like level) and copy the source texture faithfully below instead.
+            serialization.textureName = undefined;
+        }
         const result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
         result._customWrappers = custom;
+
+        if (cloneTexture === false && this.particleTexture) {
+            result.particleTexture = this.particleTexture.clone();
+        }
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
