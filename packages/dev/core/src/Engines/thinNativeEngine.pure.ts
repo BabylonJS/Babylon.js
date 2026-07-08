@@ -579,9 +579,14 @@ export class ThinNativeEngine extends ThinEngine {
     public override clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         if (depth && this.useReverseDepthBuffer) {
             // Reverse-Z: the scene is rendered with a flipped projection (near maps to 1, far to 0), so the
-            // depth buffer is cleared to 0 and the comparison must accept greater values. Mirror the WebGL
-            // engine, which sets the depth-culling comparison to GEQUAL here and clears depth to 0.
+            // depth buffer is cleared to 0 and the comparison must accept greater values. The WebGL engine
+            // sets depthCullingState.depthFunc = GEQUAL here and relies on applyStates() running the depth
+            // comparison to the GL context before each draw. The native draw path does not call applyStates()
+            // (only depth-test enable/disable is reconciled in _flushDepthTestState()), so setting the shared
+            // state alone would never reach the backend. Route the comparison through the native command path
+            // as well -- mirroring the WebGPU engine's clear path, which calls setDepthFunctionToGreaterOrEqual().
             this._depthCullingState.depthFunc = Constants.GEQUAL;
+            this.setDepthFunction(Constants.GEQUAL);
         }
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_CLEAR);
