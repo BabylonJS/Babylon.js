@@ -76,7 +76,7 @@ describe("VolumetricLightScatteringPostProcess", () => {
             PostProcess.ForceGLSL = forceGLSL;
 
             const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
-            const gatherImports = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_gatherImports");
+            const gatherImports = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_gatherImports").mockImplementation((_useWebGPU, _list) => {});
 
             expect(() => {
                 postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene);
