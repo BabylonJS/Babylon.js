@@ -6,7 +6,7 @@ import { Scene } from "core/scene";
 // Side-effect import to register the WebGL2ParticleSystem class.
 import "core/Particles/webgl2ParticleSystem";
 
-describe("GPUParticleSystem.emitRateControl setter", () => {
+describe("GPUParticleSystem.emitRateControl", () => {
     let engine: NullEngine;
     let scene: Scene;
 
