@@ -60,6 +60,7 @@
         "glTF/2.0/Extensions/EXT_texture_avif.js",
         "glTF/2.0/Extensions/EXT_texture_webp.js",
         "glTF/2.0/Extensions/KHR_animation_pointer.js",
+        "glTF/2.0/Extensions/KHR_gaussian_splatting.js",
         "glTF/2.0/Extensions/KHR_interactivity.js",
         "glTF/2.0/Extensions/KHR_lights_punctual.js",
         "glTF/2.0/Extensions/KHR_materials_anisotropy.js",
