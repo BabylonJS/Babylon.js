@@ -2552,7 +2552,30 @@ export class ThinNativeEngine extends ThinEngine {
         // The native engine creates one framebuffer with all the color attachments (bgfx writes to every
         // attachment of the bound framebuffer, so there is no drawBuffers equivalent to issue per draw).
         if (colorHandles.length > 0) {
-            rtWrapper._framebuffer = this._engine.createMultiFrameBuffer(colorHandles, width, height, generateStencilBuffer, generateDepthBuffer || generateDepthTexture, samples);
+            if (this._engine.createMultiFrameBuffer) {
+                rtWrapper._framebuffer = this._engine.createMultiFrameBuffer(
+                    colorHandles,
+                    width,
+                    height,
+                    generateStencilBuffer,
+                    generateDepthBuffer || generateDepthTexture,
+                    samples
+                );
+            } else {
+                // Older Babylon Native binaries (predating multi render target support) do not expose createMultiFrameBuffer.
+                // Fall back to a single-attachment framebuffer bound to the first color target so the scene keeps rendering.
+                Logger.Warn(
+                    "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target."
+                );
+                rtWrapper._framebuffer = this._engine.createFrameBuffer(
+                    colorHandles[0],
+                    width,
+                    height,
+                    generateStencilBuffer,
+                    generateDepthBuffer || generateDepthTexture,
+                    samples
+                );
+            }
         }
 
         rtWrapper._generateDepthBuffer = generateDepthBuffer || generateDepthTexture;
