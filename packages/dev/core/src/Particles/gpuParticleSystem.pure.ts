@@ -173,15 +173,23 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Gets whether emit rate control is enabled.
+     * Gets or sets whether emit rate control is enabled.
      * When true, the GPU particle system limits the number of active particles
      * to approximately emitRate * maxLifeTime (matching CPU particle behavior)
      * and uses a circular buffer to recycle particle slots.
      * When false (default), all dead particles are recycled immediately,
      * which is the legacy GPU particle behavior.
+     * Changing the value recompiles the update and render effects on the next frame.
      */
     public get emitRateControl(): boolean {
         return this._emitRateControl;
+    }
+
+    public set emitRateControl(value: boolean) {
+        // The value only feeds shader defines (EMITRATECTRL) and the per-frame emission logic; the
+        // update and render effects are rebuilt automatically when their defines change, so simply
+        // updating the flag is enough. Buffer allocation does not depend on it.
+        this._emitRateControl = value;
     }
 
     /**
