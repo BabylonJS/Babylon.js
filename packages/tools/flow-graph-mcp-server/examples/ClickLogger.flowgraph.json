@@ -10,7 +10,7 @@
           "uniqueId": "fg-00000002",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000007",
+              "uniqueId": "fg-00000006",
               "name": "asset",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -21,7 +21,7 @@
               "optional": true
             },
             {
-              "uniqueId": "fg-00000008",
+              "uniqueId": "fg-00000007",
               "name": "pointerType",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -34,7 +34,7 @@
           ],
           "dataOutputs": [
             {
-              "uniqueId": "fg-00000009",
+              "uniqueId": "fg-00000008",
               "name": "pickedPoint",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -52,7 +52,7 @@
               }
             },
             {
-              "uniqueId": "fg-0000000a",
+              "uniqueId": "fg-00000009",
               "name": "pickOrigin",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -70,7 +70,7 @@
               }
             },
             {
-              "uniqueId": "fg-0000000b",
+              "uniqueId": "fg-0000000a",
               "name": "pointerId",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -81,7 +81,7 @@
               }
             },
             {
-              "uniqueId": "fg-0000000c",
+              "uniqueId": "fg-0000000b",
               "name": "pickedMesh",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -91,31 +91,24 @@
               }
             }
           ],
-          "signalInputs": [
-            {
-              "uniqueId": "fg-00000003",
-              "name": "in",
-              "_connectionType": 0,
-              "connectedPointIds": []
-            }
-          ],
+          "signalInputs": [],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000004",
+              "uniqueId": "fg-00000003",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-00000005",
+              "uniqueId": "fg-00000004",
               "name": "done",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-0000000e"
+                "fg-0000000d"
               ]
             },
             {
-              "uniqueId": "fg-00000006",
+              "uniqueId": "fg-00000005",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
@@ -130,10 +123,10 @@
           "config": {
             "message": "Clicked!"
           },
-          "uniqueId": "fg-0000000d",
+          "uniqueId": "fg-0000000c",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000011",
+              "uniqueId": "fg-00000010",
               "name": "message",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -145,7 +138,7 @@
               "defaultValue": "Clicked!"
             },
             {
-              "uniqueId": "fg-00000012",
+              "uniqueId": "fg-00000011",
               "name": "logType",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -159,7 +152,7 @@
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-0000000e",
+              "uniqueId": "fg-0000000d",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -167,13 +160,13 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-0000000f",
+              "uniqueId": "fg-0000000e",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-00000010",
+              "uniqueId": "fg-0000000f",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []

@@ -369,7 +369,6 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         outputs: [
             { name: "output", type: "Vector4" },
             { name: "xyz", type: "Vector3" },
-            { name: "w", type: "Float" },
         ],
         defaultSerializedProperties: { complementZ: 0, complementW: 1 },
     },
@@ -547,15 +546,15 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     ConditionalBlock: {
         className: "ConditionalBlock",
         category: "Logic",
-        description: "If/else conditional: outputs ifTrue or ifFalse based on comparing a and b.",
+        description: "If/else conditional: outputs 'true' or 'false' value based on comparing a and b.",
         target: "Neutral",
         inputs: [
             { name: "a", type: "Float" },
             { name: "b", type: "Float" },
-            { name: "ifTrue", type: "AutoDetect" },
-            { name: "ifFalse", type: "AutoDetect" },
+            { name: "true", type: "AutoDetect", isOptional: true },
+            { name: "false", type: "AutoDetect", isOptional: true },
         ],
-        outputs: [{ name: "output", type: "BasedOnInput" }],
+        outputs: [{ name: "output", type: "Float" }],
         properties: {
             condition: "ConditionalBlockConditions — Equal, NotEqual, LessThan, GreaterThan, LessOrEqual, GreaterOrEqual, Xor, Or, And",
         },
@@ -776,12 +775,16 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "normal", type: "Vector3" },
             { name: "tangent", type: "Vector4", isOptional: true },
             { name: "uv", type: "Vector2", isOptional: true },
+            { name: "uv2", type: "Vector2", isOptional: true },
+            { name: "color", type: "Color4", isOptional: true },
         ],
         outputs: [
             { name: "positionOutput", type: "Vector3" },
             { name: "normalOutput", type: "Vector3" },
             { name: "tangentOutput", type: "Vector4" },
             { name: "uvOutput", type: "Vector2" },
+            { name: "uv2Output", type: "Vector2" },
+            { name: "colorOutput", type: "Color4" },
         ],
     },
     LightInformationBlock: {
@@ -794,7 +797,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "direction", type: "Vector3" },
             { name: "color", type: "Color3" },
             { name: "intensity", type: "Float" },
-            { name: "shadowAttenuation", type: "Float" },
+            { name: "shadowBias", type: "Float" },
+            { name: "shadowNormalBias", type: "Float" },
+            { name: "shadowDepthScale", type: "Float" },
+            { name: "shadowDepthRange", type: "Vector2" },
         ],
     },
 
@@ -803,12 +809,14 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         className: "FragmentOutputBlock",
         category: "Output",
         description:
-            "The fragment shader output. Connect the final color here. Every material needs exactly one. " + "Has 'rgb' (Color3), 'rgba' (Color4), and 'a' (Float/alpha) inputs.",
+            "The fragment shader output. Connect the final color here. Every material needs exactly one. " +
+            "Has 'rgb' (Color3), 'rgba' (Color4), 'a' (Float/alpha), and 'glow' (Color3) inputs.",
         target: "Fragment",
         inputs: [
             { name: "rgba", type: "Color4", isOptional: true },
             { name: "rgb", type: "Color3", isOptional: true },
             { name: "a", type: "Float", isOptional: true },
+            { name: "glow", type: "Color3", isOptional: true },
         ],
         outputs: [],
     },
@@ -846,8 +854,11 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "uv", type: "Vector2" },
             { name: "normalMapColor", type: "Color3" },
             { name: "strength", type: "Float" },
-            { name: "viewDirection", type: "Vector3" },
+            { name: "viewDirection", type: "Vector3", isOptional: true },
+            { name: "parallaxScale", type: "Float", isOptional: true },
+            { name: "parallaxHeight", type: "Float", isOptional: true },
             { name: "TBN", type: "Object", isOptional: true },
+            { name: "world", type: "Matrix", isOptional: true },
         ],
         outputs: [
             { name: "output", type: "Vector4" },
@@ -911,7 +922,11 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "center", type: "Vector2" },
             { name: "offset", type: "Vector2" },
         ],
-        outputs: [{ name: "output", type: "Vector2" }],
+        outputs: [
+            { name: "output", type: "Vector2" },
+            { name: "x", type: "Float" },
+            { name: "y", type: "Float" },
+        ],
     },
     FragCoordBlock: {
         className: "FragCoordBlock",
@@ -934,20 +949,26 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Fragment",
         description: "Generates a shadow map output.",
         target: "Fragment",
-        inputs: [{ name: "worldPosition", type: "Vector4" }],
-        outputs: [
-            { name: "output", type: "Object" },
-            { name: "depth", type: "Float" },
+        inputs: [
+            { name: "worldPosition", type: "Vector4" },
+            { name: "viewProjection", type: "Matrix" },
+            { name: "worldNormal", type: "AutoDetect", isOptional: true },
         ],
+        outputs: [{ name: "depth", type: "Vector3" }],
     },
 
     // ─── Dual (Vertex + Fragment) ─────────────────────────────────────────
     TextureBlock: {
         className: "TextureBlock",
         category: "Texture",
-        description: "Samples a 2D texture. Provide a URL via the texture property.",
+        description: "Samples a 2D texture. Provide a URL via the texture property, or feed a shared ImageSourceBlock into the 'source' input instead of an embedded texture.",
         target: "VertexAndFragment",
-        inputs: [{ name: "uv", type: "AutoDetect" }],
+        inputs: [
+            { name: "uv", type: "AutoDetect" },
+            { name: "source", type: "Object", isOptional: true },
+            { name: "layer", type: "Float", isOptional: true },
+            { name: "lod", type: "Float", isOptional: true },
+        ],
         outputs: [
             { name: "rgba", type: "Color4" },
             { name: "rgb", type: "Color3" },
@@ -978,10 +999,11 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         ],
         outputs: [
             { name: "rgb", type: "Color3" },
+            { name: "rgba", type: "Color4" },
             { name: "r", type: "Float" },
             { name: "g", type: "Float" },
             { name: "b", type: "Float" },
-            { name: "hasTexture", type: "Float" },
+            { name: "a", type: "Float" },
         ],
     },
     LightBlock: {
@@ -1039,7 +1061,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description: "Provides a texture source that can be shared by multiple texture blocks.",
         target: "VertexAndFragment",
         inputs: [],
-        outputs: [{ name: "source", type: "Object" }],
+        outputs: [
+            { name: "source", type: "Object" },
+            { name: "dimensions", type: "Vector2" },
+        ],
         properties: {
             texture: "Texture — set via new Texture(url, scene)",
         },
@@ -1050,7 +1075,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description: "Samples the scene depth texture.",
         target: "VertexAndFragment",
         inputs: [{ name: "uv", type: "AutoDetect" }],
-        outputs: [{ name: "output", type: "Float" }],
+        outputs: [{ name: "depth", type: "Float" }],
     },
 
     // ─── PBR ─────────────────────────────────────────────────────────────
@@ -1140,6 +1165,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         inputs: [
             { name: "intensity", type: "Float", isOptional: true },
             { name: "tintAtDistance", type: "Float", isOptional: true },
+            { name: "volumeIndexOfRefraction", type: "Float", isOptional: true },
         ],
         outputs: [{ name: "refraction", type: "Object" }],
     },
@@ -1165,6 +1191,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "direction", type: "Vector2", isOptional: true },
             { name: "uv", type: "Vector2", isOptional: true },
             { name: "worldTangent", type: "Vector4", isOptional: true },
+            { name: "TBN", type: "Object", isOptional: true },
+            { name: "roughness", type: "Float", isOptional: true },
         ],
         outputs: [{ name: "anisotropy", type: "Object" }],
     },
@@ -1183,6 +1211,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "tintAtDistance", type: "Float", isOptional: true },
             { name: "tintThickness", type: "Float", isOptional: true },
             { name: "worldTangent", type: "Vector4", isOptional: true },
+            { name: "worldNormal", type: "AutoDetect", isOptional: true },
             { name: "TBN", type: "Object", isOptional: true },
         ],
         outputs: [{ name: "clearcoat", type: "Object" }],
@@ -1198,6 +1227,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "translucencyIntensity", type: "Float", isOptional: true },
             { name: "translucencyDiffusionDist", type: "Color3", isOptional: true },
             { name: "refraction", type: "Object", isOptional: true },
+            { name: "dispersion", type: "Float", isOptional: true },
         ],
         outputs: [{ name: "subsurface", type: "Object" }],
     },
@@ -1244,6 +1274,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "sharpness", type: "Float", isOptional: true },
             { name: "source", type: "Object", isOptional: true },
             { name: "sourceY", type: "Object", isOptional: true },
+            { name: "sourceZ", type: "Object", isOptional: true },
         ],
         outputs: [
             { name: "rgba", type: "Color4" },
@@ -1280,11 +1311,11 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     MeshAttributeExistsBlock: {
         className: "MeshAttributeExistsBlock",
         category: "Misc",
-        description: "Outputs ifYes or ifNo based on whether a mesh attribute (UV, color, etc.) exists.",
+        description: "Outputs 'input' or 'fallback' based on whether a mesh attribute (UV, color, etc.) exists.",
         target: "Neutral",
         inputs: [
-            { name: "ifYes", type: "AutoDetect" },
-            { name: "ifNo", type: "AutoDetect" },
+            { name: "input", type: "AutoDetect" },
+            { name: "fallback", type: "AutoDetect" },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
         properties: {
@@ -1523,7 +1554,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description: "Provides a depth texture from the scene's depth renderer as an image source.",
         target: "VertexAndFragment",
         inputs: [],
-        outputs: [{ name: "source", type: "Object" }],
+        outputs: [
+            { name: "source", type: "Object" },
+            { name: "dimensions", type: "Vector2" },
+        ],
     },
 
     // ─── Gaussian Splatting ──────────────────────────────────────────────
@@ -1574,7 +1608,12 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Output",
         description: "Fragment output for the Smart Filter Editor (SFE) framework. Outputs as nmeMain() function.",
         target: "Fragment",
-        inputs: [{ name: "rgba", type: "Color4" }],
+        inputs: [
+            { name: "rgba", type: "Color4", isOptional: true },
+            { name: "rgb", type: "Color3", isOptional: true },
+            { name: "a", type: "Float", isOptional: true },
+            { name: "glow", type: "Color3", isOptional: true },
+        ],
         outputs: [],
     },
     SmartFilterTextureBlock: {
