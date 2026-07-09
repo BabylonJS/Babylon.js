@@ -2615,8 +2615,10 @@ export class ThinNativeEngine extends ThinEngine {
         } else {
             // Older Babylon Native binaries (predating multi render target support) do not expose createMultiFrameBuffer.
             // Fall back to a single-attachment framebuffer bound to the first color target so the scene keeps rendering.
+            // Warn once (limit 1): the framebuffer can be rebuilt many times during attachment setup/swaps.
             Logger.Warn(
-                "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target."
+                "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target.",
+                1
             );
             rtWrapper._framebuffer = this._engine.createFrameBuffer(
                 colorHandles[0],
@@ -2676,10 +2678,48 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, _initializeBuffers = true): number {
-        // Native MSAA is configured at texture creation; just record the requested sample count.
-        if (rtWrapper) {
-            (rtWrapper as NativeRenderTargetWrapper)._samples = samples;
+        if (!rtWrapper || rtWrapper.samples === samples) {
+            return samples;
         }
+
+        const textures = rtWrapper.textures;
+        if (!textures) {
+            return rtWrapper.samples;
+        }
+
+        const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+
+        // bgfx couples MSAA to the texture creation flags (see updateRenderTargetTextureSampleCount), so
+        // changing the sample count after the fact requires reissuing every color attachment's underlying
+        // bgfx handle with the new MSAA flag. initializeTexture disposes the old handle and allocates a fresh
+        // one while preserving the InternalTexture / Graphics::Texture identity; only the internal bgfx handle
+        // rotates. Afterwards the framebuffer is recreated so its attachment list refers to the new handles.
+        for (const texture of textures) {
+            // Wrapped (External-source) textures own an opaque external handle (format=-1); reinitializing
+            // would destroy it and getNativeTextureFormat would throw, so leave those attachments untouched.
+            if (!texture?._hardwareTexture || texture.source === InternalTextureSource.External) {
+                continue;
+            }
+
+            const nativeTexture = texture._hardwareTexture.underlyingResource;
+            // See the bgfx-msaa-mips workaround in updateRenderTargetTextureSampleCount (BabylonNative#1714).
+            const hasMips = samples > 1 ? false : texture.generateMipMaps;
+            this._engine.initializeTexture(
+                nativeTexture,
+                texture.baseWidth,
+                texture.baseHeight,
+                hasMips,
+                getNativeTextureFormat(texture.format, texture.type),
+                /*renderTarget*/ true,
+                texture._useSRGBBuffer,
+                samples
+            );
+            texture.samples = samples;
+        }
+
+        nativeRTWrapper._samples = samples;
+        this._createMultiRenderTargetFramebuffer(nativeRTWrapper);
+
         return samples;
     }
 
