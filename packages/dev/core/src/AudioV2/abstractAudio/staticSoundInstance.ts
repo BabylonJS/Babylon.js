@@ -11,8 +11,10 @@ export interface IStaticSoundInstanceOptions extends IAbstractSoundInstanceOptio
 export abstract class _StaticSoundInstance extends _AbstractSoundInstance {
     protected abstract override readonly _options: IStaticSoundInstanceOptions;
 
-    public abstract pitch: number;
-    public abstract playbackRate: number;
+    public abstract set loopStart(value: number);
+    public abstract set loopEnd(value: number);
+    public abstract set pitch(value: number);
+    public abstract set playbackRate(value: number);
 
     public abstract override play(options: Partial<IStaticSoundPlayOptions>): void;
     public abstract override stop(options?: Partial<IStaticSoundStopOptions>): void;
