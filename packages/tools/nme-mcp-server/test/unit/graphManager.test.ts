@@ -347,6 +347,35 @@ describe("Node Material MCP Server – Graph Manager Validation", () => {
         expect(condBlock.condition).toBe(3); // GreaterThan = 3
     });
 
+    // ── ImageSourceBlock → TextureBlock.source wiring ────────────────────
+
+    it("wires an ImageSourceBlock.source output into a TextureBlock.source input", () => {
+        const mgr = new MaterialGraphManager();
+        mgr.createMaterial("sharedSource");
+
+        const imageSource = mgr.addBlock("sharedSource", "ImageSourceBlock", "sharedImage");
+        expect(typeof imageSource).not.toBe("string");
+        const texture = mgr.addBlock("sharedSource", "TextureBlock", "sampledTexture");
+        expect(typeof texture).not.toBe("string");
+
+        const getId = (r: any) => (typeof r !== "string" ? r.block.id : -1);
+
+        // The reported gap: TextureBlock previously exposed no "source" input,
+        // so this connection failed with "Input 'source' not found".
+        const result = mgr.connectBlocks("sharedSource", getId(imageSource), "source", getId(texture), "source");
+        expect(result).toBe("OK");
+
+        const json = mgr.exportJSON("sharedSource");
+        expect(json).toBeDefined();
+        const parsed = JSON.parse(json!);
+        const textureBlock = parsed.blocks.find((b: any) => b.name === "sampledTexture");
+        expect(textureBlock).toBeDefined();
+        const sourceInput = textureBlock.inputs.find((i: any) => i.name === "source");
+        expect(sourceInput).toBeDefined();
+        expect(sourceInput.targetBlockId).toBe(getId(imageSource));
+        expect(sourceInput.targetConnectionName).toBe("source");
+    });
+
     // ── clearAll ────────────────────────────────────────────────────────
 
     it("clearAll removes all materials and resets state", () => {
