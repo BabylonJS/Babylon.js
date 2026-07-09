@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "core/index";
+import { AsyncLock } from "core/Misc/asyncLock";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 
@@ -38,17 +39,23 @@ import {
     removeFromScene,
     resetVariant,
     selectVariant,
+    setSceneImageProcessing,
     setShadowTaskCasterMeshes,
     startEngine,
     stopEngine,
     unregisterScene,
+    AcesToneMapping,
+    NeutralToneMapping,
+    StandardToneMapping,
     type ArcRotateCamera,
     type AssetContainer,
     type EngineContext,
     type GpuPicker,
+    type ImageProcessingUpdate,
     type AnimationGroup as LiteAnimationGroup,
     type Mesh as LiteMesh,
     type ShadowGenerator as LiteShadowGenerator,
+    type ToneMapping as LiteToneMapping,
     type SceneContext,
 } from "@babylonjs/lite";
 
@@ -117,15 +124,20 @@ function getExtension(url: string, explicitExt?: string): string {
     return dotIdx >= 0 ? url.substring(dotIdx).toLowerCase() : "";
 }
 
-function toneMappingToLiteType(mode: ToneMapping): "standard" | "aces" | undefined {
+/**
+ * Map the Viewer's tone-mapping mode to a Babylon Lite {@link LiteToneMapping} value (or `undefined`
+ * when tone mapping should be disabled).
+ * @param mode - The Viewer tone-mapping mode.
+ * @returns The corresponding Lite tone mapping, or `undefined` to disable tone mapping.
+ */
+function toneMappingToLiteToneMapping(mode: ToneMapping): LiteToneMapping | undefined {
     switch (mode) {
         case "standard":
-            return "standard";
+            return StandardToneMapping;
         case "aces":
-            return "aces";
+            return AcesToneMapping;
         case "neutral":
-            Logger.Warn("Viewer: Tone mapping 'neutral' is not supported by Babylon Lite. Falling back to 'aces'.");
-            return "aces";
+            return NeutralToneMapping;
         case "none":
             return undefined;
     }
@@ -164,6 +176,9 @@ export class Viewer extends ViewerBase implements IViewer {
     private _contrast = this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast;
     private _exposure = this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure;
     private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
+    /** Serializes the async `setSceneImageProcessing` rebuilds so overlapping tone-mapping changes can't
+     *  run concurrent PBR-pipeline rebuilds (which race on the scene's renderable list and leak). */
+    private readonly _imageProcessingLock = new AsyncLock();
 
     // Shadows
     private _shadowGenerator: LiteShadowGenerator | null = null;
@@ -174,6 +189,15 @@ export class Viewer extends ViewerBase implements IViewer {
     private _picker: GpuPicker | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
+    /**
+     * True once the first model load has built its Lite material group (via `registerScene`). Because
+     * `_scene` is created once and never recreated, and glTF models all share Lite's singleton PBR group
+     * builder, later model loads reuse that already-built group: their meshes are enqueued into the
+     * per-frame material-swap queue and the running render loop materializes them, so those loads must
+     * NOT re-register the scene (re-registration clears the swap queue and would drop the model). See the
+     * (re-)registration decision in {@link _loadModelImpl}.
+     */
+    private _modelMaterialGroupBuilt = false;
     /** Cached animation-aware model bounds for the current model. Reset on unload. See {@link _computeModelBounds}. */
     private _cachedModelBounds: { min: [number, number, number]; max: [number, number, number]; center: [number, number, number]; radius: number } | null = null;
 
@@ -762,29 +786,53 @@ export class Viewer extends ViewerBase implements IViewer {
             changed = true;
         }
         if (changed) {
-            this._applyImageProcessingToScene();
+            // Apply the change to the running scene. Exposure/contrast are read live from the scene UBO
+            // each frame, but tone mapping (enabled state + algorithm) is baked into the PBR shaders at
+            // registration time, so a change there requires a pipeline rebuild. `setSceneImageProcessing`
+            // does both: it updates the config and rebuilds the affected PBR pipelines only when the tone
+            // mapping actually changed (and no-ops the rebuild before the scene is first registered).
+            this._applyImageProcessingDynamic();
             this.onPostProcessingChanged.notifyObservers();
         }
     }
 
     /**
-     * Push the Viewer's committed post-processing state (`_toneMapping`, `_exposure`,
-     * `_contrast`) into `scene.imageProcessing`. Called from the `postProcessing` setter
-     * whenever the user-facing state actually changes, and again after env loads (Lite's env
-     * loader overwrites `scene.imageProcessing` with its own defaults, so we have to re-push
-     * our values).
-     *
-     * SSAO has no `scene.imageProcessing` slot in Lite — it's tracked in `_ssaoOption` but
-     * doesn't render anything yet (Lite has no SSAO support).
+     * Apply the current committed post-processing state to the running scene via
+     * `setSceneImageProcessing`, serialized through {@link _imageProcessingLock} so overlapping calls
+     * never run concurrent PBR-pipeline rebuilds. Each queued apply re-reads the latest committed state
+     * when it runs, so a burst of rapid changes collapses to the final state (intermediate updates that
+     * no longer differ are no-ops).
+     */
+    private _applyImageProcessingDynamic(): void {
+        observePromise(this._imageProcessingLock.lockAsync(async () => await setSceneImageProcessing(this._scene, this._liteImageProcessingUpdate())));
+    }
+
+    /**
+     * Build the Babylon Lite {@link ImageProcessingUpdate} that mirrors the Viewer's committed
+     * post-processing state (`_toneMapping`, `_exposure`, `_contrast`). SSAO has no
+     * `scene.imageProcessing` slot in Lite — it's tracked in `_ssaoOption` but doesn't render anything
+     * yet (Lite has no SSAO support).
+     * @returns The Lite image-processing update mirroring the Viewer's committed state.
+     */
+    private _liteImageProcessingUpdate(): ImageProcessingUpdate {
+        const toneMapping = toneMappingToLiteToneMapping(this._toneMapping);
+        return {
+            toneMappingEnabled: toneMapping !== undefined,
+            toneMapping,
+            exposure: this._exposure,
+            contrast: this._contrast,
+        };
+    }
+
+    /**
+     * Push the Viewer's committed post-processing state directly into `scene.imageProcessing`. Used on
+     * paths where the scene is not yet registered or is about to be (re-)registered — construction, and
+     * after env loads (Lite's env loader overwrites `scene.imageProcessing` with its own defaults, so we
+     * re-push our values before re-registration bakes them into the shaders). The dynamic path (the
+     * `postProcessing` setter) instead uses `setSceneImageProcessing` for a targeted pipeline rebuild.
      */
     private _applyImageProcessingToScene(): void {
-        const liteType = toneMappingToLiteType(this._toneMapping);
-        this._scene.imageProcessing.toneMappingEnabled = liteType !== undefined;
-        if (liteType !== undefined) {
-            this._scene.imageProcessing.toneMappingType = liteType;
-        }
-        this._scene.imageProcessing.exposure = this._exposure;
-        this._scene.imageProcessing.contrast = this._contrast;
+        Object.assign(this._scene.imageProcessing, this._liteImageProcessingUpdate());
     }
 
     // ── Shadows ──
@@ -1000,7 +1048,42 @@ export class Viewer extends ViewerBase implements IViewer {
                 this._setupShadows();
             }
 
-            await this._beginRendering();
+            // Materialize the newly-added model. There are two paths, and using the wrong one drops the
+            // model:
+            //
+            // - First build of a material group (`addToScene` queued a deferred builder): the renderable
+            //   is built only by `registerScene` -> `buildScene`, and that first build also populates the
+            //   group's `_rebuildSingle` closure. This happens on the initial model load (the constructor
+            //   registers an empty scene, so the model's PBR group is new) and whenever a load introduces a
+            //   brand-new material family. Re-register to run the deferred builder.
+            //
+            // - Re-using an already-built group (`addToScene` only enqueued the meshes into the per-frame
+            //   material-swap queue): this is the model-swap case — the previous model was removed, but Lite
+            //   retains the (now-empty) group key, so the new meshes reuse it and get a swap-queue entry
+            //   instead of a deferred builder. The running render loop drains that queue every frame
+            //   (`processMaterialSwaps`), builds each renderable via the group's `_rebuildSingle`, and bumps
+            //   `_renderableVersion` so the frame graph re-buckets them. Re-registering here would be wrong:
+            //   `buildScene` clears the material-swap queue before the loop can drain it, dropping the model.
+            //
+            // So only (re-)register when the render loop isn't running yet or the model's material group
+            // has not been built before; otherwise let the running loop drain the swap queue.
+            //
+            // `this._scene` is created once in the constructor and never recreated (it is disposed only in
+            // `dispose()`), and the Viewer only loads glTF, whose meshes all share Lite's singleton PBR group
+            // builder. So the first successful model load builds that group (populating its per-mesh rebuild
+            // closure), and every later load — swap, reload, reset, or clear-then-load — reuses it via the
+            // swap queue. `_modelMaterialGroupBuilt` tracks that one-time transition.
+            //
+            // Shadows are excluded from the swap-queue path: `_setupShadows` re-adds a light + ground on every
+            // load and `_unloadCurrentModel` does not remove them, and the shadow frame-graph task is wired at
+            // registration time. For a shadow-enabled viewer we therefore keep the (documented, construction-time)
+            // re-registration behavior rather than draining the swap queue, so we don't accumulate duplicate
+            // shadow infrastructure or leave the shadow task stale. Shadow quality is fixed at construction
+            // (see `_updateShadowsImpl`), so this only affects the rarely-used shadow + model-swap combination.
+            if (!this._renderLoopRunning || this._shadowQuality !== "none" || !this._modelMaterialGroupBuilt) {
+                await this._beginRendering();
+            }
+            this._modelMaterialGroupBuilt = true;
 
             // Apply clear color from model if present
             if (container.clearColor) {

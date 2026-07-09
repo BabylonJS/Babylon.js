@@ -29,12 +29,6 @@ test.beforeEach(({ page }) => {
             const text = message.text();
             // Only capture messages from Babylon.js (prefixed with "BJS -").
             if (text.includes("BJS -")) {
-                // Lite doesn't support the viewer's default "neutral" tone mapping and warns as it falls
-                // back to "aces". This is expected for every Lite model load, so it must not fail the
-                // console-error check. Real BJS errors still fail.
-                if (text.includes("Tone mapping 'neutral' is not supported by Babylon Lite")) {
-                    return;
-                }
                 consoleErrors.push(text);
             }
         }
@@ -94,27 +88,40 @@ async function waitForLoadingComplete(page: Page) {
     });
 }
 
-async function expectScreenshotMatch(page: Page, name: string, maxDiffPixelRatio = 0.025) {
-    // Lite renders continuously (no autoSuspend/isIdle yet), so "settled" is approximated by:
-    // no load in flight, then a fixed burst of rendered frames to let deferred GPU work (skybox/ground
-    // builders, shadow map, material swaps) drain into a stable image. This intentionally does NOT
-    // require a model (environment-only and model-cleared scenes have none).
+/**
+ * Waits until no camera interpolation is in flight. `resetCamera()` (and hotspot focus) animate the
+ * camera over many frames toward the goal pose (exponential ease at factor 0.1, so full convergence can
+ * take ~60+ frames — more than the fixed frame burst below). The viewer holds an abort handle for the
+ * active interpolation and clears it on completion, so poll that: without this the screenshot can be
+ * captured mid-animation, producing a slightly-off framing and a flaky diff.
+ */
+async function waitForCameraSettled(page: Page) {
+    await page.waitForFunction(() => {
+        const element = document.querySelector("babylon-viewer") as ViewerElement | null;
+        const viewer = element?.viewer as unknown as { _cameraInterpolationAbort: unknown } | null | undefined;
+        return viewer != null && viewer._cameraInterpolationAbort === null;
+    });
+}
+
+async function expectScreenshotMatch(page: Page, name: string, maxDiffPixelRatio = 0.011) {
+    // Lite renders continuously (no autoSuspend/isIdle yet), so "settled" is approximated by: no load in
+    // flight, no camera interpolation in flight, then a fixed burst of rendered frames to let deferred GPU
+    // work (skybox/ground builders, shadow map, material swaps) drain into a stable image. This
+    // intentionally does NOT require a model (environment-only and model-cleared scenes have none).
     await waitForLoadingComplete(page);
+    await waitForCameraSettled(page);
     const before = await waitForFrameCount(page, 1);
     await waitForFrameCount(page, before + 30);
 
-    // These tolerances are looser than the full viewer's (threshold 0.035 / maxDiffPixelRatio 0.011)
-    // because Lite and the full viewer share the SAME committed reference image, and Lite currently
-    // diverges from full on tone mapping: the viewer default "neutral" is unsupported in Lite, which
-    // falls back to "aces". That produces a substantial per-pixel color shift across the lit model
-    // surface (raising the per-pixel `threshold` does not help — the differing pixels differ by a lot).
-    // The magnitude scales with how much of the frame the lit model fills: a small model (e.g. the
-    // boombox) differs by ~2%, while a frame-filling model (e.g. the shoe) differs by ~12%. Callers pass
-    // a per-test `maxDiffPixelRatio` accordingly. It still catches pose errors, missing/wrong geometry,
-    // and other gross regressions. When Lite gains "neutral" tone mapping (or a shared reference is
-    // generated with a tone mapping both support), these can be tightened.
+    // Lite and the full viewer share the SAME committed reference images, and now that Lite renders the
+    // viewer's default "neutral" tone mapping (matching full) these can use the full viewer's per-pixel
+    // `threshold` (0.035). Most scenes match within the full viewer's `maxDiffPixelRatio` (0.011). A few
+    // still exceed it for genuine renderer differences (not tone mapping): a small residual PBR/AA delta on
+    // a large lit surface (e.g. the zoomed boombox), and high-frequency sampling noise on fine textures
+    // (e.g. the shoe's woven mesh upper). Those callers pass a looser per-test `maxDiffPixelRatio`; the
+    // check still catches pose errors, missing/wrong geometry, and other gross regressions.
     await expect(page.locator("babylon-viewer")).toHaveScreenshot(name, {
-        threshold: 0.1,
+        threshold: 0.035,
         maxDiffPixelRatio,
     });
 }
@@ -225,7 +232,9 @@ test('camera-orbit="a b r"', async ({ page }) => {
         `
     );
 
-    await expectScreenshotMatch(page, "viewer-camera-orbit.png");
+    // Close-up (radius 0.1) framing of the boombox fills most of the frame, so a small residual PBR/AA
+    // delta between the Lite and full-viewer renderers covers a slightly larger pixel fraction here.
+    await expectScreenshotMatch(page, "viewer-camera-orbit.png", 0.03);
 });
 
 test('camera-target="x y z"', async ({ page }) => {
@@ -271,9 +280,9 @@ test('material-variant="name"', async ({ page }) => {
 
     expect(await materialVariant.jsonValue()).toEqual("street");
 
-    // The shoe fills much more of the frame than the small boombox, so the tone-mapping divergence
-    // (see expectScreenshotMatch) covers ~12% of the image — hence the looser per-test tolerance.
-    await expectScreenshotMatch(page, "viewer-material-variant.png", 0.15);
+    // The shoe's woven mesh upper is fine high-frequency texture that samples slightly differently between
+    // Lite and the full viewer, so a small fraction of pixels differ (not tone mapping / geometry).
+    await expectScreenshotMatch(page, "viewer-material-variant.png", 0.11);
 });
 
 test("load model from URL", async ({ page }) => {
@@ -311,15 +320,26 @@ test("change model source", async ({ page }) => {
 
     await waitForModelLoaded(page);
 
-    // Change source to a different model.
+    // Change source to a different model. Wait for the swap to actually commit before screenshotting:
+    // register a `modelchange` listener for the NEW source before mutating the attribute, then await it.
+    // `onModelChanged` fires only after the swapped model has loaded and its renderables have been built
+    // (viewerLite `_loadModelImpl`). `waitForModelLoaded` alone is racy here — right after the attribute
+    // change it can still observe the previously-loaded model and return early.
     await page.evaluate((viewerElement) => {
-        viewerElement.setAttribute("source", "https://assets.babylonjs.com/meshes/shoe_variants.glb");
+        return new Promise<void>((resolve) => {
+            viewerElement.addEventListener("modelchange", ((e: CustomEvent) => {
+                if (typeof e.detail === "string" && e.detail.includes("shoe_variants.glb")) {
+                    resolve();
+                }
+            }) as EventListener);
+            viewerElement.setAttribute("source", "https://assets.babylonjs.com/meshes/shoe_variants.glb");
+        });
     }, viewerElementHandle);
 
     await waitForModelLoaded(page);
-    // The shoe fills much more of the frame than the small boombox, so the tone-mapping divergence
-    // (see expectScreenshotMatch) covers ~12% of the image — hence the looser per-test tolerance.
-    await expectScreenshotMatch(page, "viewer-change-model-source.png", 0.15);
+    // The shoe's woven mesh upper is fine high-frequency texture that samples slightly differently between
+    // Lite and the full viewer, so a small fraction of pixels differ (not tone mapping / geometry).
+    await expectScreenshotMatch(page, "viewer-change-model-source.png", 0.11);
 });
 
 test("clear model", async ({ page }) => {
@@ -533,9 +553,7 @@ test("change material variant dynamically", async ({ page }) => {
 
     expect(newVariant).not.toBeNull();
 
-    // The shoe fills much more of the frame than the small boombox, so the tone-mapping divergence
-    // (see expectScreenshotMatch) covers ~12% of the image — hence the looser per-test tolerance.
-    await expectScreenshotMatch(page, "viewer-material-variant-changed.png", 0.15);
+    await expectScreenshotMatch(page, "viewer-material-variant-changed.png");
 });
 
 // ============================================================
