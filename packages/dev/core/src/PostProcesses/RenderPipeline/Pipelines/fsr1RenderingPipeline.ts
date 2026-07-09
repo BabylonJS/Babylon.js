@@ -1,5 +1,5 @@
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
@@ -35,7 +35,11 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
      * Returns true if FSR is supported by the running hardware
      */
     public override get isSupported(): boolean {
-        return this.engine.isWebGPU;
+        // FSR 1 needs integer texel fetch (texelFetch/textureSize) and bit-cast intrinsics.
+        // These are available on WebGPU, WebGL2 and Babylon Native (all report version >= 2 or isWebGPU),
+        // but not WebGL1. Note caps.texelFetch cannot be used here because Babylon Native reports it as
+        // false even though the underlying backend supports the required operations.
+        return this.engine.isWebGPU || this.engine.version >= 2;
     }
 
     private _samples = 4;
@@ -89,7 +93,7 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._sharpnessStops = stops;
-        this._thinSharpenPostProcess.updateConstants(this._sharpnessStops);
+        // The value is applied to the effect every frame in the sharpen post-process onApply callback.
     }
 
     /**
@@ -159,15 +163,16 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
 
     private _createUpscalePostProcess(): void {
         const postProcess = new PostProcess(this._thinUpscalePostProcess.name, ThinFSR1UpscalePostProcess.FragmentUrl, {
-            uniformBuffers: ThinFSR1UpscalePostProcess.UniformBuffers,
+            uniforms: ThinFSR1UpscalePostProcess.Uniforms,
             size: 1 / this._scaleFactor,
             engine: this.engine,
             effectWrapper: this._thinUpscalePostProcess,
         });
         postProcess.samples = this._samples;
 
-        postProcess.onApplyObservable.add(() => {
+        postProcess.onApplyObservable.add((effect) => {
             this._thinUpscalePostProcess.updateConstants(
+                effect,
                 postProcess.width,
                 postProcess.height,
                 postProcess.width,
@@ -188,11 +193,13 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _createSharpenPostProcess(): void {
-        this._thinSharpenPostProcess.updateConstants(this._sharpnessStops);
         this._sharpenPostProcess = new PostProcess(this._thinSharpenPostProcess.name, ThinFSR1SharpenPostProcess.FragmentUrl, {
-            uniformBuffers: ThinFSR1SharpenPostProcess.UniformBuffers,
+            uniforms: ThinFSR1SharpenPostProcess.Uniforms,
             engine: this.engine,
             effectWrapper: this._thinSharpenPostProcess,
+        });
+        this._sharpenPostProcess.onApplyObservable.add((effect) => {
+            this._thinSharpenPostProcess.updateConstants(effect, this._sharpnessStops);
         });
     }
 
