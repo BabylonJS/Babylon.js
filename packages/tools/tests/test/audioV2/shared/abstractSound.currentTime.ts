@@ -69,6 +69,26 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
             expect(result).toBeLessThanOrEqual(2.1);
         });
 
+        test("The `currentTime` property should equal the seeked time after pausing, resuming, then seeking", async ({ page }) => {
+            const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
+
+                sound.play();
+                await AudioV2Test.WaitAsync(0.5);
+                sound.pause();
+                await AudioV2Test.WaitAsync(0.5);
+                sound.play(); // resume
+                await AudioV2Test.WaitAsync(0.5);
+                sound.currentTime = 2; // seek while playing, after a pause/resume cycle
+
+                return sound.currentTime;
+            });
+
+            // Without the fix the paused duration leaks into `currentTime`, returning ~2.5 instead of 2.
+            expect(result).toBeCloseTo(2, 1);
+        });
+
         test("The `currentTime` property should equal the sound's `startOffset` option", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync("Realtime");

@@ -345,10 +345,10 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             this._state = SoundState.Stopped;
         }
 
-        if (this.state === SoundState.Paused) {
-            this._enginePauseTime = 0;
-        }
-
+        // Seeking sets an absolute position that is fully described by `startOffset`, so any playback time accumulated
+        // across previous pause/resume cycles must be cleared. Otherwise the stale value leaks into the `currentTime`
+        // getter and the next `pause()` calculation, offsetting them by the total paused duration.
+        this._enginePauseTime = 0;
         this._options.startOffset = value;
 
         if (restart) {
@@ -358,6 +358,15 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     public get _outNode(): Nullable<AudioNode> {
         return this._volumeNode;
+    }
+
+    /** @internal */
+    public set loop(value: boolean) {
+        this._options.loop = value;
+
+        if (this._sourceNode) {
+            this._sourceNode.loop = value;
+        }
     }
 
     /** @internal */
