@@ -4,6 +4,12 @@
 
 uniform sampler2D textureSampler;
 
+// Declared so the fragment shader input signature matches the post-process vertex shader
+// output (which emits vUV). Without it, D3D11 / Babylon Native reject the VS->PS linkage
+// (SV_Position lands in a mismatched register) and the draw faults; WebGL2 tolerates the
+// mismatch. The value is unused here because the output pixel comes from gl_FragCoord.
+varying vec2 vUV;
+
 // The constants are written as floats by the CPU side (setFloat4), so they are
 // consumed directly here as floats (the WGSL version reinterprets uint->float, which nets the same value).
 uniform vec4 con0;
