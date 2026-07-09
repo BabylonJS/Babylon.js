@@ -432,7 +432,7 @@ export class MaterialPluginManager {
                         while (match !== null) {
                             let newCode = injectedCode;
                             for (let i = 0; i < match.length; ++i) {
-                                newCode = newCode.replace("$" + i, match[i]);
+                                newCode = newCode.replaceAll("$" + i, match[i]);
                             }
                             code = code.replace(match[0], newCode);
                             match = rx.exec(sourceCode);
