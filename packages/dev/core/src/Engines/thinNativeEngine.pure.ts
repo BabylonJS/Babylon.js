@@ -2590,7 +2590,13 @@ export class ThinNativeEngine extends ThinEngine {
             }
         }
 
-        if (colorHandles.length === 0) {
+        // bgfx framebuffers use a dense, ordered attachment list, so only (re)build once every expected color
+        // attachment is present. Building from a partial set (e.g. attachments deferred via dontCreateTextures /
+        // targetTypes[i] === -1, or filled out of order) would compress the attachment indices -- attachment 2
+        // would become attachment 1, etc. -- and produce a framebuffer that does not match the MRT layout. The
+        // count match guarantees the collected handles are contiguous and in attachment order.
+        const expectedCount = rtWrapper._attachments ? rtWrapper._attachments.length : colorHandles.length;
+        if (colorHandles.length === 0 || colorHandles.length !== expectedCount) {
             return;
         }
 
