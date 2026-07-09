@@ -223,6 +223,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._state = SoundState.Stopped;
         }
 
+        // Seeking sets an absolute position that is fully described by `startOffset`, so any playback time accumulated
+        // across previous pause/resume cycles must be cleared. Otherwise the stale value leaks into the `currentTime`
+        // getter and the next `pause()` calculation, offsetting them by the total paused duration.
+        this._enginePauseTime = 0;
         this._options.startOffset = value;
 
         if (restart) {
