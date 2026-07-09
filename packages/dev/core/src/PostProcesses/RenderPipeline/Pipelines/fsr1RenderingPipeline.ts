@@ -1,0 +1,204 @@
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+
+import { PostProcessRenderEffect } from "../postProcessRenderEffect";
+import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
+import { PostProcess } from "../../postProcess";
+import { ThinFSR1UpscalePostProcess } from "../../thinFSR1UpscalePostProcess";
+import { ThinFSR1SharpenPostProcess } from "../../thinFSR1SharpenPostProcess";
+
+/**
+ * FideltyFX Super Resolution (FSR) 1 render pipeline.
+ * This can be used to render the scene at a lower resolution and upscale it.
+ */
+export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
+    /**
+     * AMD's recommended `scaleFactor` for an "Ultra Quality" preset (equal to 1.3)
+     */
+    public static readonly SCALE_ULTRA_QUALITY = 1.3;
+    /**
+     * AMD's recommended `scaleFactor` for a "Quality" preset (equal to 1.5)
+     */
+    public static readonly SCALE_QUALITY = 1.5;
+    /**
+     * AMD's recommended `scaleFactor` for a "Balanced" preset (equal to 1.7)
+     */
+    public static readonly SCALE_BALANCED = 1.7;
+    /**
+     * AMD's recommended `scaleFactor` for a "Performance" preset (equal to 2)
+     */
+    public static readonly SCALE_PERFORMANCE = 2;
+
+    private readonly _scene: Scene;
+
+    /**
+     * Returns true if FSR is supported by the running hardware
+     */
+    public override get isSupported(): boolean {
+        return this.engine.isWebGPU;
+    }
+
+    private _samples = 4;
+    /**
+     * MSAA sample count (default: 4).
+     * Disabling MSAA is not recommended since aliased edges will be exagerrated by the FSR pass.
+     * Always have atleast one AA solution enabled, wether that be MSAA with this setting or a post-process effect like FXAA or TAA.
+     */
+    public get samples(): number {
+        return this._samples;
+    }
+
+    public set samples(samples: number) {
+        if (this._samples === samples) {
+            return;
+        }
+        this._samples = samples;
+        if (this._upscalePostProcess) {
+            this._upscalePostProcess.samples = this._samples;
+        }
+    }
+
+    private _scaleFactor = FSR1RenderingPipeline.SCALE_QUALITY;
+    /**
+     * How much smaller to render the scene at (default: 1.5).
+     * For example, a value of 2 will render the scene at half resolution.
+     */
+    public get scaleFactor(): number {
+        return this._scaleFactor;
+    }
+
+    public set scaleFactor(factor: number) {
+        if (this._scaleFactor === factor) {
+            return;
+        }
+        this._scaleFactor = factor;
+        this._buildPipeline();
+    }
+
+    private _sharpnessStops = 0.2;
+    /**
+     * The number of stops (halving) of the reduction of sharpness (default: 0.2).
+     * A value of 0 indicates a maximum sharpness.
+     */
+    public get sharpnessStops(): number {
+        return this._sharpnessStops;
+    }
+
+    public set sharpnessStops(stops: number) {
+        if (this._sharpnessStops === stops) {
+            return;
+        }
+        this._sharpnessStops = stops;
+        this._thinSharpenPostProcess.updateConstants(this._sharpnessStops);
+    }
+
+    /**
+     * The FSR upscale PostProcess ID in the pipeline
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public FSR1UpscaleEffect = "FSR1UpscaleEffect";
+    private readonly _thinUpscalePostProcess: ThinFSR1UpscalePostProcess;
+    private _upscalePostProcess: Nullable<PostProcess>;
+
+    /**
+     * The FSR sharpen PostProcess ID in the pipeline
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public FSR1SharpenEffect = "FSR1SharpenEffect";
+    private readonly _thinSharpenPostProcess: ThinFSR1SharpenPostProcess;
+    private _sharpenPostProcess: PostProcess;
+
+    /**
+     * Creates a new FSR 1 rendering pipeline
+     * @param name The rendering pipeline name
+     * @param scene The scene linked to this pipeline
+     * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
+     */
+    constructor(name: string, scene: Scene, cameras = scene.cameras) {
+        super(scene.getEngine(), name);
+        this._scene = scene;
+        this._cameras = cameras.slice();
+
+        this._thinUpscalePostProcess = new ThinFSR1UpscalePostProcess(name + "Upscale", this.engine);
+        this._thinSharpenPostProcess = new ThinFSR1SharpenPostProcess(name + "Sharpen", this.engine);
+        this._createSharpenPostProcess();
+
+        if (this.isSupported) {
+            scene.postProcessRenderPipelineManager.addPipeline(this);
+            this._buildPipeline();
+        }
+    }
+
+    private _buildPipeline(): void {
+        if (!this.isSupported) {
+            return;
+        }
+        const cameras = this._cameras.slice();
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
+        this._reset();
+
+        this._disposeUpscalePostProcess();
+        this._createUpscalePostProcess();
+
+        this.addEffect(new PostProcessRenderEffect(this.engine, this.FSR1UpscaleEffect, () => this._upscalePostProcess));
+        this.addEffect(new PostProcessRenderEffect(this.engine, this.FSR1SharpenEffect, () => this._sharpenPostProcess));
+
+        this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
+    }
+
+    /**
+     * Disposes of the pipeline
+     */
+    public override dispose(): void {
+        this._disposeSharpenPostProcess();
+        this._thinSharpenPostProcess.dispose();
+        this._disposeUpscalePostProcess();
+        this._thinUpscalePostProcess.dispose();
+        super.dispose();
+    }
+
+    private _createUpscalePostProcess(): void {
+        const postProcess = new PostProcess(this._thinUpscalePostProcess.name, ThinFSR1UpscalePostProcess.FragmentUrl, {
+            uniformBuffers: ThinFSR1UpscalePostProcess.UniformBuffers,
+            size: 1 / this._scaleFactor,
+            engine: this.engine,
+            effectWrapper: this._thinUpscalePostProcess,
+        });
+        postProcess.samples = this._samples;
+
+        postProcess.onApplyObservable.add(() => {
+            this._thinUpscalePostProcess.updateConstants(
+                postProcess.width,
+                postProcess.height,
+                postProcess.width,
+                postProcess.height,
+                this.engine.getRenderWidth(),
+                this.engine.getRenderHeight()
+            );
+        });
+
+        this._upscalePostProcess = postProcess;
+    }
+
+    private _disposeUpscalePostProcess(): void {
+        for (const camera of this._cameras) {
+            this._upscalePostProcess?.dispose(camera);
+        }
+        this._upscalePostProcess = null;
+    }
+
+    private _createSharpenPostProcess(): void {
+        this._thinSharpenPostProcess.updateConstants(this._sharpnessStops);
+        this._sharpenPostProcess = new PostProcess(this._thinSharpenPostProcess.name, ThinFSR1SharpenPostProcess.FragmentUrl, {
+            uniformBuffers: ThinFSR1SharpenPostProcess.UniformBuffers,
+            engine: this.engine,
+            effectWrapper: this._thinSharpenPostProcess,
+        });
+    }
+
+    private _disposeSharpenPostProcess(): void {
+        for (const camera of this._cameras) {
+            this._sharpenPostProcess.dispose(camera);
+        }
+    }
+}
