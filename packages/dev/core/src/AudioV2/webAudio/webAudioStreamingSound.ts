@@ -241,6 +241,12 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     /** @internal */
+    public set loop(value: boolean) {
+        this._options.loop = value;
+        this._mediaElement.loop = value;
+    }
+
+    /** @internal */
     public get startTime(): number {
         if (this._state === SoundState.Stopped) {
             return 0;

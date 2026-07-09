@@ -361,6 +361,15 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     /** @internal */
+    public set loop(value: boolean) {
+        this._options.loop = value;
+
+        if (this._sourceNode) {
+            this._sourceNode.loop = value;
+        }
+    }
+
+    /** @internal */
     public set loopStart(value: number) {
         this._options.loopStart = value;
 

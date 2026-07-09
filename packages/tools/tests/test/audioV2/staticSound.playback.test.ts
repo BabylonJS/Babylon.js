@@ -29,6 +29,26 @@ test.describe("StaticSound playback", () => {
         expect(pulses[Channel.L]).toEqual([1, 2, 2, 3, 3]);
     });
 
+    test("Turn `loop` off while a looping sound is playing", async ({ page }) => {
+        const pulses = await EvaluatePulseCountsAsync(page, async () => {
+            await AudioV2Test.CreateAudioEngineAsync();
+            const sound = await AudioV2Test.CreateSoundAsync(audioTestConfig.pulsed3CountSoundFile, { loop: true });
+
+            sound.play();
+            await AudioV2Test.WaitAsync(2.5, () => {
+                sound.loop = false;
+            });
+            await AudioV2Test.WaitAsync(2, () => {
+                sound.stop();
+            });
+        });
+
+        // The sound loops over the whole buffer, emitting groups 1, 2, 3 during the first pass. Turning `loop` off at 2.5s
+        // must propagate to the playing instance so the buffer ends at ~3s without wrapping. Before the fix the setter only
+        // updated the sound's options, so the live loop kept going and groups 1, 2 played again after the wrap.
+        expect(pulses[Channel.L]).toEqual([1, 2, 3]);
+    });
+
     test("Play sound and call `stop` with `waitTime` parameter set to 1.8", async ({ page }) => {
         const pulses = await EvaluatePulseCountsAsync(page, async () => {
             await AudioV2Test.CreateAudioEngineAsync();
