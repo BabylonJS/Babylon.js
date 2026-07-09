@@ -31,6 +31,32 @@ import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { type FlowMap } from "./flowMap";
 import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
 
+// Names of the particle texture display settings persisted alongside `textureName` when the texture
+// pixels are serialized by reference (serializeTexture === false), so a serialize/parse round-trip
+// keeps the same appearance. `samplingMode` is handled separately (passed to the Texture constructor).
+const ParticleTextureSettingKeys = [
+    "level",
+    "hasAlpha",
+    "getAlphaFromRGB",
+    "gammaSpace",
+    "coordinatesIndex",
+    "coordinatesMode",
+    "wrapU",
+    "wrapV",
+    "wrapR",
+    "anisotropicFilteringLevel",
+    "uOffset",
+    "vOffset",
+    "uScale",
+    "vScale",
+    "uAng",
+    "vAng",
+    "wAng",
+    "uRotationCenter",
+    "vRotationCenter",
+    "wRotationCenter",
+] as const;
+
 /**
  * This represents a particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -349,13 +375,24 @@ export class ParticleSystem extends ThinParticleSystem {
             if (parsedParticleSystem.texture) {
                 particleSystem.particleTexture = internalClass.Parse(parsedParticleSystem.texture, scene, rootUrl) as BaseTexture;
             } else if (parsedParticleSystem.textureName) {
+                const textureSettings = parsedParticleSystem.textureSettings;
                 particleSystem.particleTexture = new internalClass(
                     rootUrl + parsedParticleSystem.textureName,
                     scene,
                     false,
-                    parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true
+                    parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true,
+                    textureSettings ? textureSettings.samplingMode : undefined
                 );
                 particleSystem.particleTexture!.name = parsedParticleSystem.textureName;
+
+                if (textureSettings) {
+                    const texture = particleSystem.particleTexture as any;
+                    for (const key of ParticleTextureSettingKeys) {
+                        if (textureSettings[key] !== undefined) {
+                            texture[key] = textureSettings[key];
+                        }
+                    }
+                }
             }
         }
 
@@ -797,8 +834,18 @@ export class ParticleSystem extends ThinParticleSystem {
             if (serializeTexture) {
                 serializationObject.texture = particleSystem.particleTexture.serialize();
             } else {
+                const particleTexture = particleSystem.particleTexture as any;
                 serializationObject.textureName = particleSystem.particleTexture.name;
-                serializationObject.invertY = !!(particleSystem.particleTexture as any)._invertY;
+                serializationObject.invertY = !!particleTexture._invertY;
+                // The texture pixels are referenced by name only, but its display settings would
+                // otherwise be lost on reload. Persist them so a serialize/parse round-trip keeps the
+                // same appearance.
+                const textureSettings: any = {};
+                for (const key of ParticleTextureSettingKeys) {
+                    textureSettings[key] = particleTexture[key];
+                }
+                textureSettings.samplingMode = particleTexture.samplingMode;
+                serializationObject.textureSettings = textureSettings;
             }
         }
 
@@ -1107,10 +1154,22 @@ export class ParticleSystem extends ThinParticleSystem {
         }
 
         const serialization = this.serialize(cloneTexture);
+        // When the texture is not serialized it is stored by name only, and Parse would reload it from
+        // that name (which can resolve to a different image and reset texture settings like level).
+        // Prefer a faithful copy of the source texture, and only skip the name-based reload when that
+        // copy is available (clone() can legally return null for textures that do not implement it).
+        const clonedTexture = cloneTexture === false && this.particleTexture ? this.particleTexture.clone() : null;
+        if (clonedTexture) {
+            serialization.textureName = undefined;
+        }
         const result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
         result._customWrappers = custom;
+
+        if (clonedTexture) {
+            result.particleTexture = clonedTexture;
+        }
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;

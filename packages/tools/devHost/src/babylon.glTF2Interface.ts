@@ -995,6 +995,18 @@ interface IKHRDracoMeshCompression {
 }
 
 /**
+ * Interfaces from the KHR_gaussian_splatting extension
+ */
+
+/** @internal */
+interface IKHRGaussianSplatting {
+    kernel: string;
+    colorSpace: string;
+    projection?: string;
+    sortingMethod?: string;
+}
+
+/**
  * Interfaces from the KHR_lights_punctual extension
  */
 

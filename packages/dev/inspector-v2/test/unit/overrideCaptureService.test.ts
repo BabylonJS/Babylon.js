@@ -7,8 +7,8 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 
 import { CreateCaptureState, HandleCapturedPropertyChange, RecordEntityPropertyOverride } from "../../src/services/overrideCapture";
-import { AddOverride, ApplyAllOverrides, DisposeOverrideManager, GetOverrideManager, GetOverrides } from "../../src/projects/overrideManager";
-import { type IOverrideEntry } from "../../src/projects/overrideEntry";
+import { AddOverride, ApplyAllOverrides, DisposeOverrideManager, GetOverrideManager, GetOverrides } from "shared-ui-components/projects/overrideManager";
+import { type IOverrideEntry } from "shared-ui-components/projects/overrideEntry";
 
 describe("OverrideCapture", () => {
     let engine: NullEngine;

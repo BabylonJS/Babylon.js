@@ -6,8 +6,8 @@ import { type Camera } from "core/Cameras/camera";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 import { FindSmartAssetKeyForObject } from "core/SmartAssets/smartAssetManager.pure";
 
-import { AddOverride, RemoveOverride, RenameOverrideTarget, RenameOverrideValueReferences } from "../projects/overrideManager";
-import { type OverrideTargetType } from "../projects/overrideEntry";
+import { AddOverride, RemoveOverride, RenameOverrideTarget, RenameOverrideValueReferences } from "shared-ui-components/projects/overrideManager";
+import { type OverrideTargetType } from "shared-ui-components/projects/overrideEntry";
 
 /**
  * Describes a property change captured from the Inspector (mirror of the
