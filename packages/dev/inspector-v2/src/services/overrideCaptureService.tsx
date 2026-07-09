@@ -2,7 +2,7 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./panes/properties/propertiesService";
 
-import { type CaptureState, CreateCaptureState, HandleCapturedPropertyChange } from "./overrideCapture";
+import { CreateCaptureState, HandleCapturedPropertyChange } from "./overrideCapture";
 import { type Scene } from "core/scene";
 import { type IObserver } from "core/Misc/observable";
 
@@ -28,7 +28,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
     factory: (sceneContext, propertiesService) => {
         // Per-scene identity tracking, re-created on each scene attach so
         // identities don't leak across scenes.
-        let captureState: CaptureState = CreateCaptureState();
+        let captureState = CreateCaptureState();
         let changeObserver: IObserver | null = null;
 
         function attachToScene(scene: Scene | null): void {

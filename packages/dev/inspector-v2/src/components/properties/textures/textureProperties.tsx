@@ -3,13 +3,13 @@ import { type Texture } from "core/index";
 import { type FunctionComponent } from "react";
 
 import { Constants } from "core/Engines/constants";
-import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberInputPropertyLine, TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
-import { BoundProperty } from "../boundProperty";
+import { usePropertyChangedNotifier } from "../../../contexts/propertyContext";
+import { BoundProperty, Property } from "../boundProperty";
 
 export const TexturePreviewProperties: FunctionComponent<{ texture: Texture }> = (props) => {
     const { texture } = props;
@@ -33,9 +33,30 @@ export const TexturePreviewProperties: FunctionComponent<{ texture: Texture }> =
 export const TextureGeneralProperties: FunctionComponent<{ texture: Texture }> = (props) => {
     const { texture } = props;
 
+    const invertY = useProperty(texture, "invertY");
+    const notifyPropertyChanged = usePropertyChangedNotifier();
+
     return (
         <>
-            <BooleanBadgePropertyLine label="Invert Y" description="If true, the texture is stored as inverted on Y" value={texture.invertY} />
+            <Property
+                component={SwitchPropertyLine}
+                label="Invert Y"
+                description="If true, the texture is stored as inverted on Y"
+                propertyPath="invertY"
+                value={invertY}
+                onChange={(value: boolean) => {
+                    const oldValue = texture.invertY;
+                    // invertY is baked into the uploaded texel data (via UNPACK_FLIP_Y_WEBGL), so changing it
+                    // requires re-uploading the texture rather than simply flipping a flag.
+                    texture._invertY = value;
+                    if (texture.url) {
+                        texture.updateURL(texture.url, texture._buffer);
+                    }
+                    // Property does not bind onChange, so forward the change to the Inspector's
+                    // property-change pipeline (e.g. for override capture on .babylonproj projects).
+                    notifyPropertyChanged(texture, "invertY", oldValue, value);
+                }}
+            />
         </>
     );
 };

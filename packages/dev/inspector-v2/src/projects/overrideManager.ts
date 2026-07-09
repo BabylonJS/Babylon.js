@@ -555,34 +555,20 @@ function ResolveOverrideValue(scene: Scene, value: OverrideValue): unknown {
 }
 
 /**
- * Resolves a "ref:name" value by looking up a material, light, or camera
- * in the scene by name.
+ * Resolves a "ref:name" value by looking up a scene object by name. Materials,
+ * lights, and cameras are searched first, then transform nodes and meshes
+ * (both valid parent references).
  * @param scene - The scene to search.
  * @param name - The object name to resolve.
- * @returns The matching material, light, or camera, or undefined if not found.
+ * @returns The matching object, or undefined if not found.
  */
 function ResolveObjectReference(scene: Scene, name: string): unknown {
-    const mat = scene.materials.find((m) => m.name === name);
-    if (mat) {
-        return mat;
-    }
-    const light = scene.lights.find((l) => l.name === name);
-    if (light) {
-        return light;
-    }
-    const camera = scene.cameras.find((c) => c.name === name);
-    if (camera) {
-        return camera;
-    }
-    // Nodes (used for parent references). Transform nodes and meshes are both
-    // valid parents, so search both collections.
-    const transformNode = scene.transformNodes.find((t) => t.name === name);
-    if (transformNode) {
-        return transformNode;
-    }
-    const mesh = scene.meshes.find((m) => m.name === name);
-    if (mesh) {
-        return mesh;
+    const collections: readonly (readonly { name: string }[])[] = [scene.materials, scene.lights, scene.cameras, scene.transformNodes, scene.meshes];
+    for (const collection of collections) {
+        const match = collection.find((item) => item.name === name);
+        if (match) {
+            return match;
+        }
     }
     Logger.Warn(`OverrideManager: Object reference "${name}" not found in scene.`);
     return undefined;

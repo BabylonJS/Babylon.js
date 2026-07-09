@@ -3,41 +3,32 @@ import { type FunctionComponent } from "react";
 import { type Nullable, type Quaternion, type Vector3 } from "core/index";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
-import { useQuaternionProperty } from "../../hooks/compoundPropertyHooks";
-import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../services/globalSettings";
-import { BoundProperty, Property } from "./boundProperty";
+import { BoundProperty } from "./boundProperty";
 
 export type Transform = { position: Vector3; rotation: Vector3; rotationQuaternion: Nullable<Quaternion>; scaling: Vector3 };
 
 export const TransformProperties: FunctionComponent<{ transform: Transform }> = (props) => {
     const { transform } = props;
 
-    const quatRotation = useQuaternionProperty(transform, "rotationQuaternion");
+    const quatRotation = useProperty(transform, "rotationQuaternion");
 
     const [useDegrees] = useSetting(UseDegreesSettingDescriptor);
     const [useEuler] = useSetting(UseEulerSettingDescriptor);
-
-    const notifyPropertyChanged = usePropertyChangedNotifier();
 
     return (
         <>
             <BoundProperty component={Vector3PropertyLine} label="Position" target={transform} propertyKey="position" />
             {quatRotation ? (
-                <Property
+                <BoundProperty
                     component={QuaternionPropertyLine}
                     label="Rotation"
+                    target={transform}
+                    propertyKey="rotationQuaternion"
                     propertyPath="rotationQuaternion"
-                    value={quatRotation}
-                    onChange={(val) => {
-                        const oldValue = transform.rotationQuaternion;
-                        transform.rotationQuaternion = val;
-                        // The plain Property component does not notify on its own, so
-                        // forward the change to the Inspector's property-change pipeline
-                        // (e.g. for override capture on .babylonproj projects).
-                        notifyPropertyChanged(transform, "rotationQuaternion", oldValue, val);
-                    }}
+                    defaultValue={null}
                     useDegrees={useDegrees}
                     useEuler={useEuler}
                 />

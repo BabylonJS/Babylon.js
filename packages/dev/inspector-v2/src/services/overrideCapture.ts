@@ -148,7 +148,8 @@ function HandleRename(scene: Scene, state: CaptureState, entity: unknown, oldVal
         return;
     }
 
-    const previous = state.previousIdentity.get(entity as object);
+    const entityObject = entity as object;
+    const previous = state.previousIdentity.get(entityObject);
     const oldName = typeof oldValue === "string" ? oldValue : previous?.name;
 
     if (oldName !== undefined && oldName !== newValue) {
@@ -163,10 +164,10 @@ function HandleRename(scene: Scene, state: CaptureState, entity: unknown, oldVal
         }
 
         // Record the rename as an override keyed on the entity's ORIGINAL name.
-        let original = state.originalIdentity.get(entity as object);
+        let original = state.originalIdentity.get(entityObject);
         if (!original) {
             original = { name: oldName, index: previous?.index ?? ComputeTargetIndex(scene, targetType, entity, oldName) };
-            state.originalIdentity.set(entity as object, original);
+            state.originalIdentity.set(entityObject, original);
         }
 
         if (original.name !== newValue) {
@@ -177,7 +178,7 @@ function HandleRename(scene: Scene, state: CaptureState, entity: unknown, oldVal
         }
     }
 
-    state.previousIdentity.set(entity as object, { name: newValue, index: ComputeTargetIndex(scene, targetType, entity, newValue) });
+    state.previousIdentity.set(entityObject, { name: newValue, index: ComputeTargetIndex(scene, targetType, entity, newValue) });
 }
 
 /**
