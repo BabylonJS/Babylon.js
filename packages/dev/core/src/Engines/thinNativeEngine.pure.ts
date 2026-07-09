@@ -2505,7 +2505,6 @@ export class ThinNativeEngine extends ThinEngine {
 
         const textures: InternalTexture[] = [];
         const attachments: number[] = [];
-        const colorHandles: NativeTexture[] = [];
 
         for (let i = 0; i < textureCount; i++) {
             const samplingMode = samplingModes[i] || Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
@@ -2550,37 +2549,7 @@ export class ThinNativeEngine extends ThinEngine {
             texture.label = labels[i] ?? rtWrapper.label + "-Texture" + i;
 
             textures[i] = texture;
-            colorHandles.push(nativeTexture);
             this._internalTexturesCache.push(texture);
-        }
-
-        // The native engine creates one framebuffer with all the color attachments (bgfx writes to every
-        // attachment of the bound framebuffer, so there is no drawBuffers equivalent to issue per draw).
-        if (colorHandles.length > 0) {
-            if (this._engine.createMultiFrameBuffer) {
-                rtWrapper._framebuffer = this._engine.createMultiFrameBuffer(
-                    colorHandles,
-                    width,
-                    height,
-                    generateStencilBuffer,
-                    generateDepthBuffer || generateDepthTexture,
-                    samples
-                );
-            } else {
-                // Older Babylon Native binaries (predating multi render target support) do not expose createMultiFrameBuffer.
-                // Fall back to a single-attachment framebuffer bound to the first color target so the scene keeps rendering.
-                Logger.Warn(
-                    "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target."
-                );
-                rtWrapper._framebuffer = this._engine.createFrameBuffer(
-                    colorHandles[0],
-                    width,
-                    height,
-                    generateStencilBuffer,
-                    generateDepthBuffer || generateDepthTexture,
-                    samples
-                );
-            }
         }
 
         rtWrapper._generateDepthBuffer = generateDepthBuffer || generateDepthTexture;
@@ -2591,7 +2560,67 @@ export class ThinNativeEngine extends ThinEngine {
         rtWrapper.setTextures(textures);
         rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
+        // The native engine creates one framebuffer with all the color attachments (bgfx writes to every
+        // attachment of the bound framebuffer, so there is no drawBuffers equivalent to issue per draw).
+        this._createMultiRenderTargetFramebuffer(rtWrapper);
+
         return rtWrapper;
+    }
+
+    /**
+     * Creates (or recreates) the native framebuffer of a multi render target from the color attachment
+     * textures currently held by the wrapper. bgfx binds a fixed attachment set when a framebuffer is
+     * created and cannot re-point an individual attachment the way GL's framebufferTexture2D can, so the
+     * whole framebuffer has to be recreated whenever an attachment is swapped after creation (e.g. the OIT
+     * depth-peeling renderer replaces every attachment via MultiRenderTarget.setInternalTexture).
+     * @param rtWrapper The multi render target wrapper to build the framebuffer for.
+     * @internal
+     */
+    public _createMultiRenderTargetFramebuffer(rtWrapper: NativeRenderTargetWrapper): void {
+        const textures = rtWrapper.textures;
+        if (!textures) {
+            return;
+        }
+
+        const colorHandles: NativeTexture[] = [];
+        for (const texture of textures) {
+            const handle = texture?._hardwareTexture?.underlyingResource;
+            if (handle) {
+                colorHandles.push(handle);
+            }
+        }
+
+        if (colorHandles.length === 0) {
+            return;
+        }
+
+        const width = rtWrapper.width;
+        const height = rtWrapper.height;
+
+        if (this._engine.createMultiFrameBuffer) {
+            rtWrapper._framebuffer = this._engine.createMultiFrameBuffer(
+                colorHandles,
+                width,
+                height,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                rtWrapper._samples
+            );
+        } else {
+            // Older Babylon Native binaries (predating multi render target support) do not expose createMultiFrameBuffer.
+            // Fall back to a single-attachment framebuffer bound to the first color target so the scene keeps rendering.
+            Logger.Warn(
+                "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target."
+            );
+            rtWrapper._framebuffer = this._engine.createFrameBuffer(
+                colorHandles[0],
+                width,
+                height,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer,
+                rtWrapper._samples
+            );
+        }
     }
 
     public override generateMipMapsForCubemap(_texture: InternalTexture, _unbind = true): void {
