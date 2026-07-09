@@ -145,12 +145,12 @@ function propagateConfigToInputDefaults(config: Record<string, unknown> | undefi
         return;
     }
     for (const di of dataInputs) {
-        if (di.name in config && config[di.name] !== undefined) {
+        if (Object.prototype.hasOwnProperty.call(config, di.name) && config[di.name] !== undefined) {
             di.defaultValue = config[di.name];
             continue;
         }
         for (const configKey of Object.keys(CONFIG_TO_INPUT_DEFAULT_ALIASES)) {
-            if (CONFIG_TO_INPUT_DEFAULT_ALIASES[configKey] === di.name && configKey in config && config[configKey] !== undefined) {
+            if (CONFIG_TO_INPUT_DEFAULT_ALIASES[configKey] === di.name && Object.prototype.hasOwnProperty.call(config, configKey) && config[configKey] !== undefined) {
                 di.defaultValue = config[configKey];
                 break;
             }
@@ -481,7 +481,14 @@ export class FlowGraphManager {
 
         // Normalize aliases before merging (Gap 35 fix)
         this._normalizeConfigAliases(config, block.typeInfo);
-        Object.assign(block.serialized.config, config);
+        // Merge explicitly and skip reserved names so a malicious/malformed config (e.g. an MCP
+        // client sending "__proto__") cannot pollute the target object's prototype via Object.assign.
+        for (const key of Object.keys(config)) {
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                continue;
+            }
+            block.serialized.config[key] = config[key];
+        }
         // Propagate the merged config onto matching data input defaults so later config
         // edits reach the input the engine/editor reads (e.g. targetMesh -> "asset").
         propagateConfigToInputDefaults(block.serialized.config, block.serialized.dataInputs);
