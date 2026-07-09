@@ -36,7 +36,7 @@ function isExtensionRegistered(extension: string): boolean {
 }
 
 /**
- * Guards the pre-9.15 behavior that importing only "\@babylonjs/loaders/glTF/2.0"
+ * Guards the pre-9.15 behavior that importing only `@babylonjs/loaders/glTF/2.0`
  * auto-registers the .gltf/.glb SceneLoader plugin, without dragging in the
  * legacy glTF 1.0 loader.
  */
