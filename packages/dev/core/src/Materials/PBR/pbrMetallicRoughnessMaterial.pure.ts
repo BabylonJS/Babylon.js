@@ -6,6 +6,7 @@ import { type Scene } from "../../scene.pure";
 import { type Color3 } from "../../Maths/math.color.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
+import { RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { type Nullable } from "../../types";
 import { RegisterClass } from "../../Misc/typeStore";
 
@@ -24,7 +25,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsColor3()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
-    public baseColor: Color3;
+    public accessor baseColor: Color3;
 
     /**
      * Base texture of the metallic workflow. It contains both the baseColor information in RGB as
@@ -32,7 +33,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
-    public baseTexture: Nullable<BaseTexture>;
+    public accessor baseTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the metallic scalar value of the material.
@@ -40,7 +41,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallic: number;
+    public accessor metallic: number;
 
     /**
      * Specifies the roughness scalar value of the material.
@@ -48,7 +49,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness: number;
+    public accessor roughness: number;
 
     /**
      * Texture containing both the metallic value in the B channel and the
@@ -56,7 +57,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_metallicTexture")
-    public metallicRoughnessTexture: Nullable<BaseTexture>;
+    public accessor metallicRoughnessTexture: Nullable<BaseTexture>;
 
     /**
      * Instantiates a new PBRMetalRoughnessMaterial instance.
@@ -171,6 +172,9 @@ export function RegisterPbrMetallicRoughnessMaterial(): void {
         return;
     }
     _Registered = true;
+
+    // PBRMetallicRoughnessMaterial serializes its image processing configuration, so the parser must be registered for clone/parse to work.
+    RegisterImageProcessingConfiguration();
 
     RegisterClass("BABYLON.PBRMetallicRoughnessMaterial", PBRMetallicRoughnessMaterial);
 }

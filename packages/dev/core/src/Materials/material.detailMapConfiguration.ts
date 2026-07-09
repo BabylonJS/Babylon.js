@@ -40,7 +40,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture("detailTexture")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<BaseTexture>;
+    public accessor texture: Nullable<BaseTexture>;
 
     /**
      * Defines how strongly the detail diffuse/albedo channel is blended with the regular diffuse/albedo texture
@@ -69,7 +69,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public normalBlendMethod: number;
+    public accessor normalBlendMethod: number;
 
     private _isEnabled = false;
     /**
@@ -77,7 +77,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;

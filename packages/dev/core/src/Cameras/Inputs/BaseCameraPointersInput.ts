@@ -135,7 +135,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     }
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
-                this.onDoubleTap(evt.pointerType);
+                this.onDoubleTap(evt.pointerType, evt);
             } else if (p.type === PointerEventTypes.POINTERUP && (this._currentMousePointerIdDown === evt.pointerId || isTouch)) {
                 try {
                     srcElement?.releasePointerCapture(evt.pointerId);
@@ -304,9 +304,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Called on pointer POINTERDOUBLETAP event.
      * Override this method to provide functionality on POINTERDOUBLETAP event.
      * @param type type of event
+     * @param evt the pointer event that triggered the double tap (carries button / buttons state)
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onDoubleTap(type: string) {}
+    public onDoubleTap(type: string, evt?: IPointerEvent) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     /**

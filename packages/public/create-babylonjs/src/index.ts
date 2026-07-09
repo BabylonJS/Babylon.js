@@ -8,6 +8,7 @@ import { generateIndexHtml } from "./generators/indexHtml";
 import { generateSceneCode } from "./generators/sceneCode";
 import { generateBundlerConfig } from "./generators/bundlerConfig";
 import { generateTsConfig } from "./generators/tsConfig";
+import { generateGitignore } from "./generators/gitignore";
 
 export type ModuleFormat = "es6" | "umd";
 export type Language = "ts" | "js";
@@ -113,6 +114,9 @@ async function main(): Promise<void> {
 
 function scaffoldProject(targetDir: string, options: ProjectOptions): void {
     fs.mkdirSync(targetDir, { recursive: true });
+
+    // All projects get a .gitignore
+    writeFile(targetDir, ".gitignore", generateGitignore(options));
 
     if (options.bundler === "none") {
         // CDN-only: just an HTML file

@@ -6,6 +6,7 @@ import { Texture } from "../Materials/Textures/texture.pure";
 import { PostProcess } from "./postProcess.pure";
 
 import { type Nullable } from "../types";
+import { RegisterEngineMultiview } from "../Engines/Extensions/engine.multiview.pure";
 
 /**
  * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
@@ -28,6 +29,8 @@ export class VRMultiviewToSingleviewPostProcess extends PostProcess {
      */
     constructor(name: string, camera: Nullable<Camera>, scaleFactor: number) {
         super(name, "vrMultiviewToSingleview", ["imageIndex"], ["multiviewSampler"], scaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
+
+        RegisterEngineMultiview();
 
         const cam = camera ?? this.getCamera();
         this.onSizeChangedObservable.add(() => {});

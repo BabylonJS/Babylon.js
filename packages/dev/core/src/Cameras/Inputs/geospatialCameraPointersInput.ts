@@ -1,4 +1,5 @@
 import { type GeospatialCamera } from "../../Cameras/geospatialCamera";
+import { type EasingFunction } from "../../Animations/easing";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { type PointerTouch } from "../../Events/pointerEvents";
 import { type Nullable } from "../../types";
@@ -72,6 +73,17 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      * in pinch mode.
      */
     public pinchToPanMax: number = 20;
+
+    /**
+     * Duration (in milliseconds) of the fly-to animation triggered by a double tap.
+     */
+    public doubleTapAnimationDurationMs: number = 1000;
+
+    /**
+     * Optional easing function applied to the double-tap fly-to animation.
+     * An EasingFunction instance can be created once and reused across double taps.
+     */
+    public doubleTapEasingFunction: Nullable<EasingFunction> = null;
 
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
@@ -177,10 +189,17 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         }
     }
 
-    public override onDoubleTap(type: string): void {
+    public override onDoubleTap(type: string, evt?: IPointerEvent): void {
+        // Only respond to a double tap from the primary pointer (left mouse button / primary touch).
+        // Ignore non-primary buttons (e.g. double right-click) and mixed combinations (e.g. left then right).
+        // Also ignore the double tap if any other button is still pressed (e.g. right-click held for
+        // rotation while double-tapping left), since `evt.buttons` is a bitmask of currently-pressed buttons.
+        if (evt && (evt.button !== 0 || evt.buttons !== 0)) {
+            return;
+        }
         const pickResult = this.camera._scene.pick(this.camera._scene.pointerX, this.camera._scene.pointerY, this.camera.movement.pickPredicate);
         if (pickResult.pickedPoint) {
-            void this.camera.flyToPointAsync(pickResult.pickedPoint);
+            void this.camera.flyToPointAsync(pickResult.pickedPoint, undefined, this.doubleTapAnimationDurationMs, this.doubleTapEasingFunction ?? undefined);
         }
     }
 

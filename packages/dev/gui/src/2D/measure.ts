@@ -1,5 +1,5 @@
 import { type Matrix2D } from "./math2D";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector.pure";
 
 const TmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 

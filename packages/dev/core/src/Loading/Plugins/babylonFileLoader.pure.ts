@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
 import { Logger } from "../../Misc/logger";
-import { Camera } from "../../Cameras/camera.pure";
+import { Camera, RegisterCamera } from "../../Cameras/camera.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { Geometry } from "../../Meshes/geometry";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 import { Material } from "../../Materials/material.pure";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
-import { CubeTexture } from "../../Materials/Textures/cubeTexture.pure";
+import { CubeTexture, CubeTextureCreateFromPrefilteredData, CubeTextureParse } from "../../Materials/Textures/cubeTexture.pure";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture.pure";
 import { AnimationGroupParse } from "../../Animations/animationGroup.pure";
 import { Light } from "../../Lights/light";
@@ -219,7 +219,7 @@ export const LoadAssetContainer = (
                 scene.environmentTexture = hdrTexture;
             } else {
                 if (typeof parsedData.environmentTexture === "object") {
-                    const environmentTexture = CubeTexture.Parse(parsedData.environmentTexture, scene, rootUrl);
+                    const environmentTexture = CubeTextureParse(parsedData.environmentTexture, scene, rootUrl);
                     scene.environmentTexture = environmentTexture;
                 } else if ((parsedData.environmentTexture as string).endsWith(".env")) {
                     const compressedTexture = new CubeTexture(
@@ -232,7 +232,7 @@ export const LoadAssetContainer = (
                     }
                     scene.environmentTexture = compressedTexture;
                 } else {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(
+                    const cubeTexture = CubeTextureCreateFromPrefilteredData(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
                         scene,
                         parsedData.environmentTextureForcedExtension
@@ -803,6 +803,13 @@ export function RegisterBabylonFileLoader(): void {
     }
     _Registered = true;
 
+    // The loader parses cameras through the Camera.Parse static, which is only
+    // installed by the render-time camera registration. Because this module imports
+    // camera.pure (side-effect free), pull the registration in here so a tree-shaken
+    // build that only imports the .babylon loader can still parse cameras. Without
+    // this, Camera.Parse throws mid-load and the scene ends up with no active camera.
+    RegisterCamera();
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
         if (!parsedData.materials) {
@@ -1335,6 +1342,13 @@ export function RegisterBabylonFileLoader(): void {
 
                 if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {
                     scene.setActiveCameraById(parsedData.activeCameraID);
+                }
+
+                // If no active camera has been resolved (e.g. the serialized activeCameraID
+                // does not match any loaded camera) but the scene does contain cameras,
+                // fall back to the first one so the scene can still be rendered.
+                if (!scene.activeCamera && scene.cameras.length > 0) {
+                    scene.activeCamera = scene.cameras[0];
                 }
 
                 // Finish

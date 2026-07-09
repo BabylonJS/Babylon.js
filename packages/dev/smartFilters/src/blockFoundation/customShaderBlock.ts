@@ -245,7 +245,8 @@ export class CustomShaderBlock extends ShaderBlock {
         const propertyType: PropertyTypeForEdition = constProperty.options ? PropertyTypeForEdition.List : PropertyTypeForEdition.Float;
 
         const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, propertyType, "PROPERTIES", editablePropertyOptions);
-        decoratorApplier(this, constProperty.friendlyName);
+        const metadata = (this.constructor as any)[Symbol.metadata] ?? ((this.constructor as any)[Symbol.metadata] = Object.create(null));
+        decoratorApplier(undefined, { name: constProperty.friendlyName, metadata });
     }
 
     /**

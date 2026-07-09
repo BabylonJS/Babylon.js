@@ -462,6 +462,8 @@ export class FluentButtonMaterial extends PushMaterial {
                             : async () => {
                                   if (this.shaderLanguage === ShaderLanguage.WGSL) {
                                       await Promise.all([import("./wgsl/fluentButton.vertex"), import("./wgsl/fluentButton.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./shaders/fluentButton.vertex"), import("./shaders/fluentButton.fragment")]);
                                   }
 
                                   this._shadersLoaded = true;

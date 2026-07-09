@@ -14,26 +14,18 @@ import { log, error } from "./buildToolsLogger.js";
 export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string, babylonCorePath?: string) {
     const stats = fs.statSync(shaderPath);
 
-    let shaderFiles: fs.Dirent[];
+    let shaderFiles: { name: string; dir: string }[];
 
     if (stats.isFile()) {
-        // If it's a file, create a Dirent-like object for consistency
-        const fileName = path.basename(shaderPath);
-        const dirPath = path.dirname(shaderPath);
-        shaderFiles = [
-            {
-                name: fileName,
-                parentPath: dirPath,
-                isFile: () => true,
-                isDirectory: () => false,
-            } as unknown as fs.Dirent,
-        ];
+        shaderFiles = [{ name: path.basename(shaderPath), dir: path.dirname(shaderPath) }];
     } else if (stats.isDirectory()) {
         // Get all files in the directory
         const allFiles = fs.readdirSync(shaderPath, { withFileTypes: true, recursive: true });
 
         // Find all shaders (files with .fragment.glsl or .block.glsl extensions)
-        shaderFiles = allFiles.filter((file) => file.isFile() && (file.name.endsWith(".fragment.glsl") || file.name.endsWith(".block.glsl")));
+        shaderFiles = allFiles
+            .filter((file) => file.isFile() && (file.name.endsWith(".fragment.glsl") || file.name.endsWith(".block.glsl")))
+            .map((file) => ({ name: file.name, dir: file.parentPath }));
     } else {
         error(`Error: ${shaderPath} is neither a file nor a directory.`);
         return;
@@ -41,7 +33,7 @@ export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string,
 
     // Convert all shaders
     for (const shaderFile of shaderFiles) {
-        const fullPathAndFileName = path.join(shaderFile.parentPath, shaderFile.name);
+        const fullPathAndFileName = path.join(shaderFile.dir, shaderFile.name);
         ConvertShader(fullPathAndFileName, smartFiltersCorePath, babylonCorePath);
     }
 }

@@ -16,6 +16,11 @@ import { type Nullable } from "core/types";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { type Scene } from "core/scene";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
+
+// Registers the Scene animation prototype methods (getAllAnimatablesByTarget, beginAnimation, stopAnimation) used by this component.
+// Without this side-effect import they remain missing-side-effect stubs (returning undefined) and getAllAnimatablesByTarget().length throws on first render.
+import "core/Animations/animatable";
+
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { CurveEditorButton } from "../../curveEditor/curveEditorButton";

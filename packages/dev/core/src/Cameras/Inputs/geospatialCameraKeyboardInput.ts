@@ -8,6 +8,7 @@ import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEven
 import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type KeyboardConditions } from "../inputMapper";
+import { Vector2 } from "../../Maths/math.vector.pure";
 
 /**
  * Manage the keyboard inputs to control the movement of a geospatial camera.
@@ -129,6 +130,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
     private _keyboardConditions: KeyboardConditions = { modifiers: this._keyboardModifiers };
 
+    /** Reused accumulator for the per-frame keyboard pan direction, to avoid per-frame allocations */
+    private _panDirection = new Vector2();
+
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -238,6 +242,13 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             this._keyboardModifiers.alt = this._altPressed;
             this._keyboardModifiers.shift = this._shiftPressed;
 
+            // Pan keys are accumulated into a single direction vector and applied once below, so that
+            // holding two directions at once (e.g. up + left) pans along a normalized diagonal at the
+            // same speed as a single direction, instead of the ~1.41x boost (sqrt(2)) that results from
+            // applying each pan key independently.
+            const panDirection = this._panDirection.set(0, 0);
+            let panSensitivity = 0;
+
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
 
@@ -264,25 +275,37 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                             input.handlers.rotate(0, sens);
                         }
                     } else if (resolved.interaction === "pan") {
-                        // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
-                        // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
-                        // but the picking logic (scene.pick via CreatePickingRayToRef) expects CSS pixels (it divides by hardwareScalingLevel internally).
-                        const hardwareScaling = this._engine.getHardwareScalingLevel();
-                        const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
-                        const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
-                        input.handlers.pan.start(centerX, centerY);
+                        // Accumulate a unit direction per pan key; the combined vector is normalized after the loop.
+                        // Aggregate sensitivity with max so the pan speed is independent of key insertion order
+                        // when keys resolve to different per-key sensitivities.
+                        panSensitivity = Math.max(panSensitivity, sens);
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX + sens, centerY);
+                            panDirection.x += 1;
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX - sens, centerY);
+                            panDirection.x -= 1;
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX, centerY + sens);
+                            panDirection.y += 1;
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            input.handlers.pan.update(centerX, centerY - sens);
+                            panDirection.y -= 1;
                         }
-                        input.handlers.pan.stop();
                     }
                 }
+            }
+
+            // Apply a single, normalized pan once all pan keys for this frame have been accumulated.
+            if (panDirection.x !== 0 || panDirection.y !== 0) {
+                // Normalize so a diagonal isn't faster than an axis-aligned pan (normalize() is a no-op on a zero-length vector).
+                panDirection.normalize().scaleInPlace(panSensitivity);
+
+                // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
+                // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
+                // but the picking logic (scene.pick via CreatePickingRayToRef) expects CSS pixels (it divides by hardwareScalingLevel internally).
+                const hardwareScaling = this._engine.getHardwareScalingLevel();
+                const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
+                const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
+                input.handlers.pan.start(centerX, centerY);
+                input.handlers.pan.update(centerX + panDirection.x, centerY + panDirection.y);
+                input.handlers.pan.stop();
             }
         }
     }

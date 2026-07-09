@@ -5,7 +5,7 @@
 # IMPORTANT SETUP NOTES:
 # 1. Link variable groups (see VARIABLE-GROUPS.md):
 #    - BabylonJS-CI-Infrastructure
-#    - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#    - Browserstack-Opensource (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
 #    - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 #
 # 2. Fork build settings (allow secrets, require comments for non-team members)
@@ -59,7 +59,7 @@ resources:
 
 variables:
     - group: BabylonJS-CI-Infrastructure
-    - group: BabylonJS-BrowserStack
+    - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
@@ -67,6 +67,14 @@ variables:
       value: "chrome@143:OSX Sonoma"
     - name: system.debug
       value: false
+    # Stable, cacheable locations (see templates/cache-steps.yml). Kept outside
+    # the repo working dir so Cache@2 can restore/save them across runs & reruns.
+    - name: npm_config_cache
+      value: $(Pipeline.Workspace)/.npm
+    - name: NX_CACHE_DIRECTORY
+      value: $(Pipeline.Workspace)/.nxcache
+    - name: PLAYWRIGHT_BROWSERS_PATH
+      value: $(Pipeline.Workspace)/.playwright
 
 pool:
     vmImage: ubuntu-latest
@@ -85,11 +93,11 @@ jobs:
                 fetchDepth: 0
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - bash: |
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged]true"
@@ -169,6 +177,10 @@ jobs:
                     *This build will release a new package on npm*
 
                     If that was unintentional please make sure to revert those changes or close this PR.
+
+          - template: templates/cache-steps.yml
+            parameters:
+                nx: true
 
           - script: npm install
             displayName: "npm install"
@@ -279,21 +291,28 @@ jobs:
                     https://sfe.babylonjs.com/?snapshot=$(BuildName)
 
     # ============================================================================
-    # ES6
-    # Builds ES6 modules and generates file size reports
+    # ES6 (libs + visualization)
+    # Builds only the ES6 lib packages (core/gui/loaders/…) that the ES6
+    # visualization tests consume, then runs those tests. The editor/tool
+    # builds, tree-shaking check, and file-size report run in parallel in the
+    # sibling ES6Tools job, keeping them off the visualization critical path.
     # No dependencies - runs immediately
     # ============================================================================
     - job: ES6
-      displayName: "ES6"
+      displayName: "ES6 (libs + visualization)"
       steps:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
+            parameters:
+                nx: true
 
           - script: npm install
             displayName: "npm install"
@@ -301,26 +320,16 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - task: Npm@1
-            displayName: "npm build es6"
-            inputs:
-                command: custom
-                customCommand: "run build:es6"
-
+          # Only the lib packages (core/gui/loaders/…) are needed for the
+          # visualization tests below. The editor/tool builds and the
+          # tree-shaking check run in parallel in the ES6Tools job.
           - bash: |
-                npx nx run-many --target=prepublishOnly --all
-            displayName: "Make sure es6 packages are ready"
-            continueOnError: true
+                npm run build:assets:smart-filters && npm run build:es6:libs
+            displayName: "npm build es6 libs"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
                 snapshotPath: "$(BuildName)/testResults/es6visplaywright"
-
-          - task: Npm@1
-            displayName: "Test ES6 packages"
-            inputs:
-                command: custom
-                customCommand: "run test:es6-packages -w @tools/tests"
 
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "ES6 visualization tests (BrowserStack)"
@@ -360,6 +369,54 @@ jobs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./junit.xml"
 
+    # ============================================================================
+    # ES6 TOOLS, TREE-SHAKING, AND FILE SIZES
+    # Runs the full ES6 build (editor/tool packages + check:treeshaking-all),
+    # validates publishability, and generates/uploads the file-size report.
+    # Split out of the ES6 job so this work runs in parallel with the ES6
+    # visualization tests instead of gating them. Blocking: tree-shaking and
+    # build failures fail the pipeline here just as they did in the ES6 job.
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: ES6Tools
+      displayName: "ES6 tools, tree-shaking, and file sizes"
+      steps:
+          - template: templates/checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
+            parameters:
+                nx: true
+
+          - script: npm install
+            displayName: "npm install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - task: Npm@1
+            displayName: "npm build es6"
+            inputs:
+                command: custom
+                customCommand: "run build:es6"
+
+          - bash: |
+                npx nx run-many --target=prepublishOnly --all
+            displayName: "Make sure es6 packages are ready"
+            continueOnError: true
+
+          - task: Npm@1
+            displayName: "Test ES6 packages"
+            inputs:
+                command: custom
+                customCommand: "run test:es6-packages -w @tools/tests"
+
           - task: Npm@1
             displayName: "npm build modules size"
             inputs:
@@ -396,11 +453,13 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
 
           - script: npm install
             displayName: "npm install"
@@ -433,11 +492,13 @@ jobs:
                 fetchDepth: 0
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
 
           - script: npm install
             displayName: "npm install"
@@ -466,22 +527,29 @@ jobs:
 
     # ============================================================================
     # UNIT TESTS
-    # Depends on: Build, FormatLint
+    # Depends on: FormatLint (fail-fast gate only).
+    # Intentionally does NOT depend on Build: the unit suite runs in-process
+    # (vitest) and needs no Build snapshot. The one CDN-dependent assertion
+    # (moduleFileSize.test.ts -> fileSizes.json) already self-skips when the
+    # file is absent, so dropping the Build dependency changes no test outcome
+    # while moving this job out of the post-Build "wave 2" (keeps peak agents
+    # per PR at <= 8).
     # ============================================================================
     - job: UnitTests
       displayName: "Unit tests"
       dependsOn:
-          - Build
           - FormatLint
       steps:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
 
           - task: Npm@1
             displayName: "npm install"
@@ -541,15 +609,19 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
                 snapshotPath: "$(BuildName)/testResults/interactionplaywright"
+
+          - template: templates/cache-steps.yml
+            parameters:
+                playwright: true
 
           - script: |
                 npm install
@@ -615,15 +687,17 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
                 snapshotPath: "$(BuildName)/testResults/webgl2playwright"
+
+          - template: templates/cache-steps.yml
 
           - script: |
                 npm install
@@ -698,15 +772,17 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
                 snapshotPath: "$(BuildName)/testResults/webgpuplaywright"
+
+          - template: templates/cache-steps.yml
 
           - script: |
                 npm install
@@ -827,12 +903,31 @@ jobs:
             displayName: "Update scripts from snapshot"
             retryCountOnTaskFailure: 5
 
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          # Babylon Native runs on Chakra, which consumes ES5-level script. The TC39 decorator
+          # migration forces the core UMD bundle to an ES2015 target (the `accessor` keyword requires
+          # it), so it must be downleveled to ES5 for BOTH the unit tests and the playground before
+          # either is executed.
+          - script: |
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets\babylon.max.js
+            displayName: "Downlevel core script for Native (unit tests)"
+
           - script: |
                 cd
                 cd ..\BabylonNativeNightlyUnitTests\RelWithDebInfo
                 UnitTests.exe
             displayName: "Run unit tests"
             retryCountOnTaskFailure: 3
+
+          - script: |
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\babylon.max.js
+            displayName: "Downlevel core script for Native (visualization)"
 
           - script: |
                 cd
@@ -884,11 +979,13 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
 
           - script: npm install
             displayName: "npm install"
@@ -951,71 +1048,32 @@ jobs:
     # ============================================================================
     # MEMORY LEAK TESTS
     # Depends on: Build, FormatLint
-    # Runs memlab (Puppeteer/Chromium) on the CI agent — heap snapshots require
-    # local Chrome DevTools Protocol access, so BrowserStack is not viable here.
-    # Non-blocking: failures do not fail the overall pipeline.
+    # Split into two parallel jobs (ci + packages suites) — see
+    # templates/memory-leak-job.yml. Each runs memlab locally (BrowserStack is
+    # not viable for heap snapshots) and is non-blocking. Running them in
+    # parallel instead of sequentially shortens the post-Build critical-path
+    # tail. UnitTests was moved out of "wave 2", so adding one job here keeps
+    # the peak parallel jobs per PR at <= 8.
     # ============================================================================
-    - job: MemoryLeakTests
-      displayName: "Memory leak tests"
-      dependsOn:
-          - Build
-          - FormatLint
-      continueOnError: true
-      timeoutInMinutes: 45
-      steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+    - template: templates/memory-leak-job.yml
+      parameters:
+          jobName: MemoryLeakTestsCI
+          displayName: "Memory leak tests (ci suite)"
+          npmScript: "test:memory-leaks"
+          suiteLabel: "ci suite"
+          # First-class PR-facing suite: always posts a single results comment.
+          alwaysComment: true
 
-          - task: UseNode@1
-            displayName: "Use Node 22.x"
-            continueOnError: true
-            retryCountOnTaskFailure: 1
-            inputs:
-                version: "22.x"
-
-          - script: npm install
-            displayName: "npm install"
-            retryCountOnTaskFailure: 1
-
-          - script: npm run test:memory-leaks -- --no-fail-fast
-            displayName: "Run memory leak tests (ci suite)"
-            continueOnError: true
-            env:
-                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
-
-          - script: npm run test:memory-leaks:packages -- --no-fail-fast
-            displayName: "Run memory leak tests (packages suite)"
-            continueOnError: true
-            env:
-                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
-
-          - bash: |
-                if [ -f "$(Build.ArtifactStagingDirectory)/memleak-comment.md" ]; then
-                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/memleak-comment.md")
-                    COMMENT="${COMMENT//'%'/'%25'}"
-                    COMMENT="${COMMENT//$'\n'/'%0A'}"
-                    COMMENT="${COMMENT//$'\r'/'%0D'}"
-                    echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
-                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
-                else
-                    echo "No memory leak comment file found"
-                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
-                fi
-            displayName: "Read memory leak comment"
-            condition: succeededOrFailed()
-
-          - task: GitHubComment@0
-            displayName: "Post memory leak results"
-            condition: and(succeededOrFailed(), eq(variables['HAS_MEMLEAK_COMMENT'], 'true'))
-            continueOnError: true
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    $(MEMLEAK_COMMENT)
+    - template: templates/memory-leak-job.yml
+      parameters:
+          jobName: MemoryLeakTestsPackages
+          displayName: "Memory leak tests (packages suite)"
+          npmScript: "test:memory-leaks:packages"
+          suiteLabel: "packages suite"
+          # Secondary suite: stays silent only on a clean pass, and still
+          # comments on any leak or runner error, so the common (clean) case
+          # keeps the PR to a single memory-leak comment without hiding failures.
+          alwaysComment: false
 
     # ============================================================================
     # VIEWER TESTS
@@ -1027,11 +1085,15 @@ jobs:
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                version: "22.x"
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
+            parameters:
+                playwright: true
 
           - task: Npm@1
             displayName: "npm install"
@@ -1060,7 +1122,7 @@ jobs:
 
     # ============================================================================
     # DEPLOY
-    # Depends on: Build, UnitTests, VisualizationWebGL2, ES6,
+    # Depends on: Build, UnitTests, VisualizationWebGL2, ES6, ES6Tools,
     #             VisualizationWebGPU, InteractionTests
     # Only runs on master/preview branch for Manual/ResourceTrigger/Schedule/
     # BuildCompletion builds
@@ -1072,6 +1134,7 @@ jobs:
           - UnitTests
           - VisualizationWebGL2
           - ES6
+          - ES6Tools
           - VisualizationWebGPU
           - InteractionTests
       condition: >-

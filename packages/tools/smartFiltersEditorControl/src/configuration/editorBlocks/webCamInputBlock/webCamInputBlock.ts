@@ -125,7 +125,9 @@ export class WebCamInputBlock extends InputBlock<ConnectionPointType.Texture> {
      */
     @editableInPropertyPage("Source", PropertyTypeForEdition.List, "PROPERTIES", {
         notifiers: { update: true },
-        options: WebCamInputBlock._WebCamSourceManager.onSourcesLoaded as Observable<IEditablePropertyListOption[]>,
+        get options() {
+            return WebCamInputBlock._WebCamSourceManager.onSourcesLoaded as Observable<IEditablePropertyListOption[]>;
+        },
         valuesAreStrings: true,
     })
     public set webcamSourceId(id: string) {

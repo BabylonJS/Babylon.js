@@ -348,6 +348,14 @@ export type ViewerBaseOptions = Partial<{
     source: string;
 
     /**
+     * The file extension to use for determining the loader plugin for the default source model (e.g. ".glb", ".obj").
+     * @remarks
+     * If not set, the extension is inferred from the source URL when possible. This is needed for sources whose
+     * extension cannot be inferred from the URL (e.g. data URLs or extension-less URLs).
+     */
+    pluginExtension: string;
+
+    /**
      * The default environment to load into the viewer for lighting (IBL).
      */
     environmentLighting: string;

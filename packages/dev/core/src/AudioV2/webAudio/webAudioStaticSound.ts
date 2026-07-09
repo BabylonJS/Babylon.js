@@ -361,6 +361,24 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     }
 
     /** @internal */
+    public set loopStart(value: number) {
+        this._options.loopStart = value;
+
+        if (this._sourceNode) {
+            this._sourceNode.loopStart = value;
+        }
+    }
+
+    /** @internal */
+    public set loopEnd(value: number) {
+        this._options.loopEnd = value;
+
+        if (this._sourceNode) {
+            this._sourceNode.loopEnd = value;
+        }
+    }
+
+    /** @internal */
     public set pitch(value: number) {
         this._pitch?.setTargetValue(value);
     }
@@ -409,8 +427,33 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         let startOffset = this._options.startOffset;
 
         if (this._state === SoundState.Paused) {
-            startOffset += this._enginePauseTime;
-            startOffset %= this._sound.buffer.duration;
+            const duration = this._sound.buffer.duration;
+            const elapsed = this._enginePauseTime;
+
+            if (this._options.loop) {
+                // Web Audio only loops over `[loopStart, loopEnd)` when they describe a valid sub-range; otherwise it
+                // loops over the whole buffer. Mirror that here (matching the `AudioBufferSourceNode` playback algorithm)
+                // to compute the correct resume position inside the loop region.
+                let loopStart = 0;
+                let loopEnd = duration;
+
+                if (this._options.loopStart >= 0 && this._options.loopEnd > 0 && this._options.loopStart < this._options.loopEnd) {
+                    loopStart = this._options.loopStart;
+                    loopEnd = Math.min(this._options.loopEnd, duration);
+                }
+
+                // Time spent before the playback position first reaches `loopEnd` and wraps back to `loopStart`.
+                const timeToLoopEnd = loopEnd - startOffset;
+
+                if (elapsed < timeToLoopEnd) {
+                    startOffset += elapsed;
+                } else {
+                    startOffset = loopStart + ((elapsed - timeToLoopEnd) % (loopEnd - loopStart));
+                }
+            } else {
+                startOffset += elapsed;
+                startOffset %= duration;
+            }
         }
 
         this._enginePlayTime = this.engine.currentTime + (options.waitTime ?? 0);

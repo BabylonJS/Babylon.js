@@ -154,29 +154,27 @@
         #endif
     }
 
-    #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
+    #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
         // _____________________________ Fuzz Layer IBL _______________________________________
         
         // From the LUT, the y component represents a slight skewing of the lobe. I'm using this to
         // bump the roughness up slightly.
-        float modifiedFuzzRoughness = clamp(fuzz_roughness * (1.0 - 0.5 * environmentFuzzBrdf.y), 0.0, 1.0);
+        float modifiedFuzzRoughness = clamp(fuzz_roughness * fuzz_roughness * (1.0 + 0.5 * environmentFuzzBrdf.y), 0.0, 1.0);
         
         // The x component of the LUT, represents the anisotropy of the lobe (0 being anisotropic, 1 being isotropic)
         // We'll do a simple approximation by sampling the environment multiple times around an imaginary fiber.
         // This will be scaled by the anisotropy value from the LUT so that, for isotropic fuzz, we just use the surface normal.
         vec3 fuzzEnvironmentLight = vec3(0.0);
-        float totalWeight = 0.0;
-        float fuzzIblFresnel = sqrt(environmentFuzzBrdf.z);
+        float fuzzIblFresnel = min(environmentFuzzBrdf.z * 2.0, 1.0);
+        // Generate a normal on the fiber cylinder evenly spaced around the side of the cylinder that we can see.
+        vec2 viewTangent = vec2(dot(viewDirectionW, fuzzTangent), dot(viewDirectionW, fuzzBitangent));
+        float centerAngle = atan(viewTangent.y, viewTangent.x);
         for (int i = 0; i < FUZZ_IBL_SAMPLES; ++i) {
-            float angle = (float(i) + noise.x) * (3.141592 * 2.0 / float(FUZZ_IBL_SAMPLES));
-            // Normal of the fiber is a simple rotation of the tangent and bitangent around the surface normal
+            // Sample only the visible ±90° of cylinder normals
+            float angle = centerAngle + (float(i) / float(FUZZ_IBL_SAMPLES) - 0.5 + noise.x / float(FUZZ_IBL_SAMPLES)) * 3.141592;
             vec3 fiberCylinderNormal = normalize(cos(angle) * fuzzTangent + sin(angle) * fuzzBitangent);
-            // Then, we mix it with the fuzz surface normal based on the anisotropy from the LUT and the fuzz
-            // roughness. When the fibers are more aligned, we get higher anisotropy.
-            float fiberBend = min(environmentFuzzBrdf.x * environmentFuzzBrdf.x * modifiedFuzzRoughness, 1.0);
-            fiberCylinderNormal = normalize(mix(fiberCylinderNormal, fuzzNormalW, fiberBend));
-            float sampleWeight = max(dot(viewDirectionW, fiberCylinderNormal), 0.0);
-            vec3 fuzzReflectionCoords = createReflectionCoords(vPositionW, fiberCylinderNormal);
+            vec3 fuzzReflectionCoords = vec3(reflectionMatrix * vec4(fiberCylinderNormal, 0));
+
             vec3 radianceSample = sampleRadiance(modifiedFuzzRoughness, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                 , fuzzGeoInfo
                 , reflectionSampler
@@ -185,12 +183,44 @@
                     , vReflectionFilteringInfo
                 #endif
             );
-            // As we get closer to bending the normal back towards the regular surface normal, the fuzz is
-            // also rougher, so we blend more towards the diffuse environment light.
-            fuzzEnvironmentLight += sampleWeight * mix(radianceSample, baseDiffuseEnvironmentLight, fiberBend);
-            totalWeight += sampleWeight;
+            fuzzEnvironmentLight += radianceSample;
         }
-        fuzzEnvironmentLight /= totalWeight;
+        fuzzEnvironmentLight /= float(FUZZ_IBL_SAMPLES);
+
+        // If coat is present and either coat or base normal maps are present, we will sample the irradiance for the diffuse component of the fuzz layer.
+        #if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL)
+            vec3 fuzzDiffuseEnvironmentLight = sampleIrradiance(
+                fuzzNormalW
+                #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                    , vEnvironmentIrradiance
+                #endif
+                #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                    , reflectionMatrix
+                #endif
+                #ifdef USEIRRADIANCEMAP
+                    , irradianceSampler
+                    #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                        , vReflectionDominantDirection
+                    #endif
+                #endif
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfSampler
+                    #endif
+                #endif
+                , vReflectionInfos
+                , viewDirectionW
+                , 0.0
+                , vec3(1.0)
+            );
+        #else
+            // Otherwise, the base diffuse environment light will be used for the diffuse component of the fuzz layer.
+            vec3 fuzzDiffuseEnvironmentLight = baseDiffuseEnvironmentLight;
+        #endif
+        // The fibers are modeled as cylinders at fuzz_roughness = 0. At fuzz_roughness = 1, the fibers are modeled as spheres.
+        // Therefore, we'll blend fuzz toward the diffuse environment light based on the modified roughness.
+        fuzzEnvironmentLight = mix(min(fuzzEnvironmentLight, fuzzDiffuseEnvironmentLight), fuzzDiffuseEnvironmentLight, modifiedFuzzRoughness);
     #endif
     // ______________________________ IBL Fresnel Reflectance ____________________________
 
@@ -306,7 +336,7 @@
         #endif
     }
 
-    #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
+    #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
         vec3 slab_fuzz_ibl = fuzzEnvironmentLight * vLightingIntensity.z;
     #endif
 
@@ -513,11 +543,5 @@
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (baseGeoInfo.NdotV);
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, black, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, black, coatIblFresnel, coatAbsorption, vec3(1.0));
-    // #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
-    //     slab_fuzz_ibl *= min(vec3(specular_ambient_occlusion), ambient_occlusion);
-    //     material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
-    // #else
-    //     material_surface_ibl = material_coated_base_ibl;
-    // #endif
     material_surface_ibl = material_coated_base_ibl;
 #endif

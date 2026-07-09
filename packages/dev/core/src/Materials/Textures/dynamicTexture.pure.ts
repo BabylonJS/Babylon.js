@@ -7,6 +7,7 @@ import { type ISize } from "../../Maths/math.size";
 import { type ITextureCreationOptions, Texture } from "../../Materials/Textures/texture.pure";
 import { Constants } from "../../Engines/constants";
 import { type ICanvas, type ICanvasRenderingContext } from "../../Engines/ICanvas";
+import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../Engines/Extensions/engine.dynamicTexture.pure";
 
 /**
  * Interface defining options used to create a dynamic texture
@@ -84,6 +85,8 @@ export class DynamicTexture extends Texture {
         const noMipmap = isScene ? !generateMipMaps : (sceneOrOptions as IDynamicTextureOptions);
 
         super(null, scene, noMipmap, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
+
+        RegisterEnginesExtensionsEngineDynamicTexture();
 
         this.name = name;
         this.wrapU = Texture.CLAMP_ADDRESSMODE;

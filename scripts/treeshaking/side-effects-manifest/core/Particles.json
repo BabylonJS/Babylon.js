@@ -58,7 +58,6 @@
         "Particles/particleSystem.ts": ["top-level-call"],
         "Particles/particleSystemComponent.ts": ["top-level-call"],
         "Particles/particleSystemComponent.types.ts": ["declare-module"],
-        "Particles/thinParticleSystem.ts": ["bare-import"],
         "Particles/webgl2ParticleSystem.ts": ["bare-import", "top-level-call"]
     }
 }

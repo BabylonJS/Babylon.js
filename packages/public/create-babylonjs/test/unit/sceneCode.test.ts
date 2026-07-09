@@ -2,7 +2,7 @@ import { generateSceneCode } from "../../src/generators/sceneCode";
 import type { ProjectOptions } from "../../src/index";
 
 describe("generateSceneCode", () => {
-    it("generates ES6 TypeScript scene with tree-shakeable imports and glTF loader", () => {
+    it("generates ES6 TypeScript scene with tree-shakeable imports and default box", () => {
         const options: ProjectOptions = {
             projectName: "app",
             moduleFormat: "es6",
@@ -14,8 +14,9 @@ describe("generateSceneCode", () => {
         expect(code).toContain('import { Scene } from "@babylonjs/core/scene"');
         expect(code).toContain("as HTMLCanvasElement");
         expect(code).toContain("@babylonjs/loaders/glTF");
-        expect(code).toContain("AppendSceneAsync");
+        expect(code).toContain("CreateBox");
         expect(code).toContain("createDefaultEnvironment");
+        expect(code).toContain("createDefaultLight");
         expect(code).toContain("@babylonjs/core/Loading/loadingScreen");
         expect(code).toContain("@babylonjs/core/Helpers/sceneHelpers");
         expect(code).toContain("@babylonjs/core/Materials/Textures/Loaders/envTextureLoader");
@@ -48,7 +49,7 @@ describe("generateSceneCode", () => {
         expect(code).toContain('import * as BABYLON from "babylonjs"');
         expect(code).toContain('import "babylonjs-loaders"');
         expect(code).toContain("BABYLON.Engine");
-        expect(code).toContain("BABYLON.AppendSceneAsync");
+        expect(code).toContain("BABYLON.CreateBox");
         expect(code).toContain("as BABYLON.ArcRotateCamera");
         expect(code).toContain("createDefaultEnvironment");
     });
@@ -62,14 +63,14 @@ describe("generateSceneCode", () => {
         };
         const code = generateSceneCode(options);
         expect(code).toContain("BABYLON.Engine");
-        expect(code).toContain("BABYLON.AppendSceneAsync");
+        expect(code).toContain("BABYLON.CreateBox");
         expect(code).toContain('import * as BABYLON from "babylonjs"');
         expect(code).toContain('import "babylonjs-loaders"');
         expect(code).not.toContain("as HTMLCanvasElement");
         expect(code).not.toContain("as BABYLON.ArcRotateCamera");
     });
 
-    it("always includes resize handler, render loop, environment, and auto-framing camera", () => {
+    it("always includes resize handler, render loop, camera, environment, and default light", () => {
         const combos: ProjectOptions[] = [
             { projectName: "a", moduleFormat: "es6", language: "ts", bundler: "vite" },
             { projectName: "b", moduleFormat: "umd", language: "js", bundler: "webpack" },
@@ -80,7 +81,7 @@ describe("generateSceneCode", () => {
             expect(code).toContain("engine.resize()");
             expect(code).toContain("createDefaultCamera(true, true, true)");
             expect(code).toContain("createDefaultEnvironment");
-            expect(code).toContain("boombox.glb");
+            expect(code).toContain("createDefaultLight");
         }
     });
 });

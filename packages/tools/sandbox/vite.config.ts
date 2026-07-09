@@ -13,6 +13,14 @@ const base = commonDevViteConfiguration({
         serializers: path.resolve("../../dev/serializers/dist"),
         materials: path.resolve("../../dev/materials/dist"),
         addons: path.resolve("../../dev/addons/dist"),
+        inspector: path.resolve("../../dev/inspector-v2/dist"),
+        // Inspector v2 lazily imports the node/GUI editors when those panels are opened.
+        // Alias them so Vite can resolve the dynamic imports in dev (loaded on demand only).
+        "gui-editor": path.resolve("../../tools/guiEditor/dist"),
+        "node-editor": path.resolve("../../tools/nodeEditor/dist"),
+        "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/dist"),
+        "node-particle-editor": path.resolve("../../tools/nodeParticleEditor/dist"),
+        "node-render-graph-editor": path.resolve("../../tools/nodeRenderGraphEditor/dist"),
     },
     productionExternals: {
         babylonjs: "BABYLON",

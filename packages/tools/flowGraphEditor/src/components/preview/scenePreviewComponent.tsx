@@ -11,6 +11,7 @@ import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
 import { ShowToast } from "../toast/toastComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
+import { CaptureFlowGraphSnippetId } from "./flowGraphSnippetCapture";
 import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { CheckmarkRegular } from "@fluentui/react-icons";
 
@@ -645,30 +646,6 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     }
 
     /**
-     * Scan a loaded playground's source for a flow graph snippet reference such
-     * as `ParseFlowGraphCoordinatorFromSnippetAsync("#ABC123#0", ...)`. When a
-     * playground builds its flow graph from a snippet, that snippet can be
-     * opened directly in the editor for editing.
-     * @param pgResult - the loaded playground snippet
-     * @returns the referenced flow graph snippet id, or null when none is found
-     */
-    private _detectFlowGraphSnippetId(pgResult: IPlaygroundSnippetResult): Nullable<string> {
-        // Matches Parse.../Get...FlowGraph...FromSnippetAsync("<id>") with any quote style.
-        const snippetCallRegex = /FlowGraph[A-Za-z]*FromSnippetAsync\s*\(\s*(["'`])([^"'`]+)\1/;
-        const sources = [pgResult.code, ...Object.values(pgResult.files ?? {})];
-        for (const source of sources) {
-            if (!source) {
-                continue;
-            }
-            const match = snippetCallRegex.exec(source);
-            if (match && match[2]) {
-                return match[2].trim();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Load a playground snippet, execute it, and populate the scene context.
      */
     async loadSnippetAsync() {
@@ -700,40 +677,56 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             // Initialize runtime dependencies (Havok, Ammo, Recast) if the snippet uses them
             await pgResult.initializeRuntimeAsync({ loadScripts: true });
 
-            // Create engine and scene using the snippet loader's ready-to-call functions
-            const engine = await pgResult.createEngine(canvas, {
-                engineOptions: { preserveDrawingBuffer: true, stencil: true },
-            });
+            // Wrap the global BABYLON `...FromSnippetAsync` loaders before the
+            // snippet runs so we capture the flow graph snippet id from a call
+            // that actually executes. This is installed before createEngine
+            // because TS snippets bind their `@babylonjs/core` imports (via the
+            // snippet loader's BABYLON proxy module) the first time createEngine
+            // triggers module evaluation; script snippets call the global
+            // directly at createScene time. A commented-out or string-literal
+            // loader never executes, so it is never captured.
+            const snippetCapture = CaptureFlowGraphSnippetId((globalThis as any).BABYLON);
 
-            const scene = await pgResult.createScene(engine, canvas);
+            let scene: Scene;
+            try {
+                // Create engine and scene using the snippet loader's ready-to-call functions
+                const engine = await pgResult.createEngine(canvas, {
+                    engineOptions: { preserveDrawingBuffer: true, stencil: true },
+                });
 
-            if (!scene || !scene.render) {
-                throw new Error("createScene() did not return a valid Scene");
+                scene = await pgResult.createScene(engine, canvas);
+
+                if (!scene || !scene.render) {
+                    throw new Error("createScene() did not return a valid Scene");
+                }
+
+                // Catch unhandled promise rejections from async operations started
+                // by the snippet (e.g. SceneLoader.Append that fires after
+                // createScene returns).  Mirror the Playground's approach of
+                // surfacing these errors in the log rather than crashing.
+                const rejectionHandler = (e: PromiseRejectionEvent) => {
+                    e.preventDefault();
+                    const msg = e.reason?.message || String(e.reason);
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Snippet error: ${msg}`, true));
+                };
+                window.addEventListener("unhandledrejection", rejectionHandler);
+
+                // Start the render loop with resize handling
+                this._setupEngineRenderLoop(scene, engine);
+
+                scene.onDisposeObservable.addOnce(() => {
+                    window.removeEventListener("unhandledrejection", rejectionHandler);
+                });
+
+                // Wait for the scene to finish loading all pending data (e.g.
+                // async SceneLoader.Append / ImportMesh calls inside the snippet)
+                // and for render targets to be ready (needed for pointer picking)
+                // before cataloguing objects and wiring the flow graph.
+                await scene.whenReadyAsync(true);
+            } finally {
+                // Restore the original loaders once the snippet has finished running.
+                snippetCapture.restore();
             }
-
-            // Catch unhandled promise rejections from async operations started
-            // by the snippet (e.g. SceneLoader.Append that fires after
-            // createScene returns).  Mirror the Playground's approach of
-            // surfacing these errors in the log rather than crashing.
-            const rejectionHandler = (e: PromiseRejectionEvent) => {
-                e.preventDefault();
-                const msg = e.reason?.message || String(e.reason);
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Snippet error: ${msg}`, true));
-            };
-            window.addEventListener("unhandledrejection", rejectionHandler);
-
-            // Start the render loop with resize handling
-            this._setupEngineRenderLoop(scene, engine);
-
-            scene.onDisposeObservable.addOnce(() => {
-                window.removeEventListener("unhandledrejection", rejectionHandler);
-            });
-
-            // Wait for the scene to finish loading all pending data (e.g.
-            // async SceneLoader.Append / ImportMesh calls inside the snippet)
-            // and for render targets to be ready (needed for pointer picking)
-            // before cataloguing objects and wiring the flow graph.
-            await scene.whenReadyAsync(true);
 
             // Build the scene context
             const sceneContext = this._publishSceneContext(scene, "snippet");
@@ -744,10 +737,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const langTag = pgResult.language === "TS" ? " [TypeScript]" : "";
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded snippet${langTag} with ${sceneContext.entries.length} scene objects`, false));
 
-            // If the playground builds its flow graph from a snippet, open that
-            // snippet in the editor so it becomes editable. Saving afterwards
-            // publishes a new version of that same flow graph snippet.
-            await this._tryLoadReferencedFlowGraphAsync(pgResult);
+            // If the playground built its flow graph from a snippet at runtime,
+            // open that snippet in the editor so it becomes editable. Saving
+            // afterwards publishes a new version of that same flow graph snippet.
+            await this._tryLoadReferencedFlowGraphAsync(snippetCapture.snippetId);
 
             // The playground's own code typically builds and starts a
             // FlowGraphCoordinator on the preview scene, so the graph would be
@@ -770,13 +763,12 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     }
 
     /**
-     * Detect a flow graph snippet referenced by the just-loaded playground and,
-     * when present, load it into the editor for editing. The loaded snippet id
-     * is remembered so the next save publishes a new version of it.
-     * @param pgResult - the loaded playground snippet
+     * When the just-run playground loaded a flow graph from a snippet at runtime,
+     * open that snippet in the editor for editing. The loaded snippet id is
+     * remembered so the next save publishes a new version of it.
+     * @param flowGraphSnippetId - the snippet id captured from the playground's live `...FromSnippetAsync` call, or null
      */
-    private async _tryLoadReferencedFlowGraphAsync(pgResult: IPlaygroundSnippetResult): Promise<void> {
-        const flowGraphSnippetId = this._detectFlowGraphSnippetId(pgResult);
+    private async _tryLoadReferencedFlowGraphAsync(flowGraphSnippetId: Nullable<string>): Promise<void> {
         if (!flowGraphSnippetId) {
             return;
         }
