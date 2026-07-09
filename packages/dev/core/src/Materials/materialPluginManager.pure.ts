@@ -430,11 +430,10 @@ export class MaterialPluginManager {
                         const rx = new RegExp(pointName, regexFlags);
                         let match = rx.exec(sourceCode);
                         while (match !== null) {
-                            let newCode = injectedCode;
-                            for (let i = 0; i < match.length; ++i) {
-                                newCode = newCode.replaceAll("$" + i, match[i]);
-                            }
-                            code = code.replace(match[0], newCode);
+                            const { index } = match;
+                            const newCode = replaceRegExpSubstitutions(injectedCode, match);
+                            code = code.substring(0, index) + newCode + code.substring(index + match[0].length);
+                            rx.lastIndex = index + newCode.length;
                             match = rx.exec(sourceCode);
                         }
                     } else {
@@ -525,4 +524,14 @@ export function UnregisterAllMaterialPlugins(): void {
     Inited = false;
     Material.OnEventObservable.remove(MaterialObserver);
     MaterialObserver = null;
+}
+
+/**
+ * Replace regex substitution patterns (e.g. $1, $2, etc.)
+ */
+function replaceRegExpSubstitutions(value: string, match: ReadonlyArray<string>) {
+    return value.replace(/\$(\d+)/g, (group0: string, group1: string): string => {
+        const index = Number(group1);
+        return index < match.length ? match[index] : "";
+    });
 }
