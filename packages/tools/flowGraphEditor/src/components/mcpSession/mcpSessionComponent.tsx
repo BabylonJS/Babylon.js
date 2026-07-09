@@ -34,6 +34,15 @@ async function LoadFlowGraphFromJsonAsync(globalState: GlobalState, json: unknow
     globalState.onClearUndoStack.notifyObservers();
     globalState.onBuiltObservable.notifyObservers();
     globalState.onZoomToFitRequiredObservable.notifyObservers();
+
+    // MCP documents carry runtime data only — no editor layout (block positions). When the
+    // incoming graph has no saved layout, auto-arrange it. build()'s own deferred auto-sort is
+    // cancelled here by the build-version guard (several rebuild-triggering observables fire during
+    // load), so request the sort explicitly, deferred past the current build. Graphs that already
+    // carry layout (_editorData) are left as-is so a user's manual arrangement is preserved.
+    if (!(globalState.flowGraph as any)?._editorData) {
+        setTimeout(() => globalState.onSortGraphRequiredObservable.notifyObservers(), 0);
+    }
 }
 
 /**

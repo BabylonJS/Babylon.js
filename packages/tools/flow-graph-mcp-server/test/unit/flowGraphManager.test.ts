@@ -353,6 +353,43 @@ describe("Flow Graph MCP Server – FlowGraphManager Validation", () => {
         expect(durationInput!.defaultValue).toBe(2000);
     });
 
+    it("propagates config values to aliased data input defaults", () => {
+        const mgr = new FlowGraphManager();
+        mgr.createGraph("g");
+
+        // MeshPickEvent wires config.targetMesh onto the "asset" data input in the engine.
+        const meshRef = { className: "Mesh", name: "sphere" };
+        const pickId = getBlockId(mgr.addBlock("g", "MeshPickEvent", "pick", { targetMesh: meshRef }));
+        // SetProperty wires config.target onto the "object" data input in the engine.
+        const setId = getBlockId(mgr.addBlock("g", "SetProperty", "set", { target: "box", propertyName: "position" }));
+        const graph = mgr.getGraph("g")!;
+
+        const pick = graph.blocks.find((b) => b.id === pickId)!;
+        const assetInput = pick.serialized.dataInputs.find((i) => i.name === "asset");
+        expect(assetInput).toBeDefined();
+        expect(assetInput!.defaultValue).toEqual(meshRef);
+
+        const set = graph.blocks.find((b) => b.id === setId)!;
+        const objectInput = set.serialized.dataInputs.find((i) => i.name === "object");
+        expect(objectInput).toBeDefined();
+        expect(objectInput!.defaultValue).toBe("box");
+    });
+
+    it("propagates aliased config onto input defaults when set via setBlockConfig", () => {
+        const mgr = new FlowGraphManager();
+        mgr.createGraph("g");
+
+        const pickId = getBlockId(mgr.addBlock("g", "MeshPickEvent", "pick", {}));
+        const meshRef = { className: "Mesh", name: "sphere" };
+        expect(mgr.setBlockConfig("g", pickId, { targetMesh: meshRef })).toBe("OK");
+
+        const graph = mgr.getGraph("g")!;
+        const pick = graph.blocks.find((b) => b.id === pickId)!;
+        const assetInput = pick.serialized.dataInputs.find((i) => i.name === "asset");
+        expect(assetInput).toBeDefined();
+        expect(assetInput!.defaultValue).toEqual(meshRef);
+    });
+
     // ── Test 20: Config key warning for unknown keys ────────────────────
 
     it("warns about unknown config keys", () => {
