@@ -70,6 +70,7 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
     afterEach(() => {
         NodeRenderGraphBlock.prototype.registerInput = originalRegisterInput;
         NodeRenderGraphBlock.prototype.registerOutput = originalRegisterOutput;
+        frameGraph.dispose();
         scene.dispose();
         engine.dispose();
     });

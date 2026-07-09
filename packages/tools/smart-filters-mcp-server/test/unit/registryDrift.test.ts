@@ -147,6 +147,8 @@ describe("Smart Filters MCP Server – Registry Drift", () => {
             problems.push(...diff("outputs", realOutputs, regOutputs).map((d) => `${key}: ${d}`));
         }
 
+        engine.dispose();
+
         expect(problems, `Registry drift detected:\n${problems.join("\n")}`).toEqual([]);
     });
 });

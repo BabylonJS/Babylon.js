@@ -3,10 +3,11 @@
  *
  * Constructs every real Babylon.js GUI control referenced by the MCP control catalog
  * and verifies that each property NAME declared in the catalog actually exists as a
- * settable member on the real control. Property names are the contract the AI agent
- * relies on (set_control_properties writes them into the serialized GUI JSON), so a
- * catalog property that does not exist on the real control is silently dropped on
- * parse — the agent believes it configured the control but nothing happened.
+ * member on the real control (own field or accessor anywhere up the prototype chain).
+ * Property names are the contract the AI agent relies on (set_control_properties writes
+ * them into the serialized GUI JSON), so a catalog property that does not exist on the
+ * real control is silently dropped on parse — the agent believes it configured the
+ * control but nothing happened.
  *
  * This test exists because the catalog is hand-maintained (see
  * .github/instructions/mcp-server-coverage.instructions.md) and previously drifted

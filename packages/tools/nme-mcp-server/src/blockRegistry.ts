@@ -554,7 +554,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "true", type: "AutoDetect", isOptional: true },
             { name: "false", type: "AutoDetect", isOptional: true },
         ],
-        outputs: [{ name: "output", type: "Float" }],
+        outputs: [{ name: "output", type: "BasedOnInput" }],
         properties: {
             condition: "ConditionalBlockConditions — Equal, NotEqual, LessThan, GreaterThan, LessOrEqual, GreaterOrEqual, Xor, Or, And",
         },
