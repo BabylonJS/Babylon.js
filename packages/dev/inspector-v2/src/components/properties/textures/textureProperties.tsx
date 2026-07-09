@@ -3,6 +3,7 @@ import { type Texture } from "core/index";
 import { type FunctionComponent } from "react";
 
 import { Constants } from "core/Engines/constants";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberInputPropertyLine, TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -34,29 +35,39 @@ export const TextureGeneralProperties: FunctionComponent<{ texture: Texture }> =
     const { texture } = props;
 
     const invertY = useProperty(texture, "invertY");
+    const url = useProperty(texture, "url");
     const notifyPropertyChanged = usePropertyChangedNotifier();
+
+    // invertY is applied at upload time (UNPACK_FLIP_Y), so changing it requires re-uploading the source
+    // image. That is only valid for a plain Texture loaded from a URL. Subclasses that reuse this section
+    // (VideoTexture, DynamicTexture, RenderTargetTexture, etc.) either report a different class name or have
+    // no source URL to reload, so for those invertY is surfaced as read-only.
+    const canToggleInvertY = texture.getClassName() === "Texture" && !!url;
 
     return (
         <>
-            <Property
-                component={SwitchPropertyLine}
-                label="Invert Y"
-                description="If true, the texture is stored as inverted on Y"
-                propertyPath="invertY"
-                value={invertY}
-                onChange={(value: boolean) => {
-                    const oldValue = texture.invertY;
-                    // invertY is baked into the uploaded texel data (via UNPACK_FLIP_Y_WEBGL), so changing it
-                    // requires re-uploading the texture rather than simply flipping a flag.
-                    texture._invertY = value;
-                    if (texture.url) {
-                        texture.updateURL(texture.url, texture._buffer);
-                    }
-                    // Property does not bind onChange, so forward the change to the Inspector's
-                    // property-change pipeline (e.g. for override capture on .babylonproj projects).
-                    notifyPropertyChanged(texture, "invertY", oldValue, value);
-                }}
-            />
+            {canToggleInvertY ? (
+                <Property
+                    component={SwitchPropertyLine}
+                    label="Invert Y"
+                    description="If true, the texture is stored as inverted on Y"
+                    propertyPath="invertY"
+                    value={invertY}
+                    onChange={(value: boolean) => {
+                        const oldValue = texture.invertY;
+                        // invertY is baked into the uploaded texel data, so re-upload the texture to apply it.
+                        // updateURL releases only the underlying GPU texture and reuses this same Texture
+                        // instance, so all scene references (materials, nodes) stay intact.
+                        texture._invertY = value;
+                        texture.updateURL(texture.url!, texture._buffer);
+                        // Property does not bind onChange, so forward the change to the Inspector's
+                        // property-change pipeline (e.g. for override capture on .babylonproj projects).
+                        notifyPropertyChanged(texture, "invertY", oldValue, value);
+                    }}
+                />
+            ) : (
+                <BooleanBadgePropertyLine label="Invert Y" description="If true, the texture is stored as inverted on Y" value={invertY} />
+            )}
         </>
     );
 };
