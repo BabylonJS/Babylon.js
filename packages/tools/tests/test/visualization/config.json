@@ -511,6 +511,15 @@
             "dependsOn": ["Materials", "PBR", "Shaders"]
         },
         {
+            "title": "needDepthPrePass extended material families",
+            "playgroundId": "#FKEO7V#1",
+            "renderCount": 60,
+            "errorRatio": 0.1,
+            "referenceImage": "needDepthPrePassExtendedMaterialFamilies.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Shaders"]
+        },
+        {
             "title": "Decal map PP",
             "playgroundId": "#9BVW2S#101",
             "referenceImage": "decal-map-pp.png",
