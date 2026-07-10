@@ -18,7 +18,8 @@
               "richType": {
                 "typeName": "any"
               },
-              "optional": true
+              "optional": true,
+              "defaultValue": "clickTarget"
             },
             {
               "uniqueId": "fg-00000007",

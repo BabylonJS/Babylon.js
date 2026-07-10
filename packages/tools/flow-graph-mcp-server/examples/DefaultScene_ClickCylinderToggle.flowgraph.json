@@ -5,12 +5,15 @@
         {
           "className": "FlowGraphMeshPickEventBlock",
           "config": {
-            "targetMesh": "box"
+            "targetMesh": {
+              "className": "Mesh",
+              "name": "cylinder"
+            }
           },
           "uniqueId": "fg-00000002",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000006",
+              "uniqueId": "fg-00000007",
               "name": "asset",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -19,10 +22,13 @@
                 "typeName": "any"
               },
               "optional": true,
-              "defaultValue": "box"
+              "defaultValue": {
+                "className": "Mesh",
+                "name": "cylinder"
+              }
             },
             {
-              "uniqueId": "fg-00000007",
+              "uniqueId": "fg-00000008",
               "name": "pointerType",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -35,7 +41,7 @@
           ],
           "dataOutputs": [
             {
-              "uniqueId": "fg-00000008",
+              "uniqueId": "fg-00000009",
               "name": "pickedPoint",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -53,7 +59,7 @@
               }
             },
             {
-              "uniqueId": "fg-00000009",
+              "uniqueId": "fg-0000000a",
               "name": "pickOrigin",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -71,7 +77,7 @@
               }
             },
             {
-              "uniqueId": "fg-0000000a",
+              "uniqueId": "fg-0000000b",
               "name": "pointerId",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -82,7 +88,7 @@
               }
             },
             {
-              "uniqueId": "fg-0000000b",
+              "uniqueId": "fg-0000000c",
               "name": "pickedMesh",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -92,44 +98,105 @@
               }
             }
           ],
-          "signalInputs": [],
-          "signalOutputs": [
+          "signalInputs": [
             {
               "uniqueId": "fg-00000003",
+              "name": "in",
+              "_connectionType": 0,
+              "connectedPointIds": []
+            }
+          ],
+          "signalOutputs": [
+            {
+              "uniqueId": "fg-00000004",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-00000004",
+              "uniqueId": "fg-00000005",
               "name": "done",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-0000000f"
+                "fg-0000000e"
               ]
             },
             {
-              "uniqueId": "fg-00000005",
+              "uniqueId": "fg-00000006",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
             }
           ],
           "metadata": {
-            "displayName": "onPick"
+            "displayName": "onPickCylinder"
           }
         },
         {
-          "className": "FlowGraphGetVariableBlock",
-          "config": {
-            "variable": "isVisible"
-          },
-          "uniqueId": "fg-0000000c",
+          "className": "FlowGraphFlipFlopBlock",
+          "config": {},
+          "uniqueId": "fg-0000000d",
           "dataInputs": [],
           "dataOutputs": [
             {
-              "uniqueId": "fg-0000000d",
+              "uniqueId": "fg-00000012",
               "name": "value",
+              "_connectionType": 1,
+              "connectedPointIds": [],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "boolean",
+                "defaultValue": false
+              }
+            }
+          ],
+          "signalInputs": [
+            {
+              "uniqueId": "fg-0000000e",
+              "name": "in",
+              "_connectionType": 0,
+              "connectedPointIds": []
+            }
+          ],
+          "signalOutputs": [
+            {
+              "uniqueId": "fg-0000000f",
+              "name": "onOn",
+              "_connectionType": 1,
+              "connectedPointIds": [
+                "fg-00000018"
+              ]
+            },
+            {
+              "uniqueId": "fg-00000010",
+              "name": "onOff",
+              "_connectionType": 1,
+              "connectedPointIds": [
+                "fg-00000020"
+              ]
+            },
+            {
+              "uniqueId": "fg-00000011",
+              "name": "error",
+              "_connectionType": 1,
+              "connectedPointIds": []
+            }
+          ],
+          "metadata": {
+            "displayName": "toggle"
+          }
+        },
+        {
+          "className": "FlowGraphConstantBlock",
+          "config": {
+            "value": 0
+          },
+          "uniqueId": "fg-00000013",
+          "dataInputs": [],
+          "dataOutputs": [
+            {
+              "uniqueId": "fg-00000014",
+              "name": "output",
               "_connectionType": 1,
               "connectedPointIds": [],
               "className": "FlowGraphDataConnection",
@@ -141,33 +208,95 @@
           "signalInputs": [],
           "signalOutputs": [],
           "metadata": {
-            "displayName": "getIsVisible"
+            "displayName": "hidden"
           }
         },
         {
-          "className": "FlowGraphBranchBlock",
-          "config": {},
-          "uniqueId": "fg-0000000e",
+          "className": "FlowGraphConstantBlock",
+          "config": {
+            "value": 1
+          },
+          "uniqueId": "fg-00000015",
+          "dataInputs": [],
+          "dataOutputs": [
+            {
+              "uniqueId": "fg-00000016",
+              "name": "output",
+              "_connectionType": 1,
+              "connectedPointIds": [],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "any"
+              }
+            }
+          ],
+          "signalInputs": [],
+          "signalOutputs": [],
+          "metadata": {
+            "displayName": "shown"
+          }
+        },
+        {
+          "className": "FlowGraphSetPropertyBlock",
+          "config": {
+            "propertyName": "visibility"
+          },
+          "uniqueId": "fg-00000017",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000013",
-              "name": "condition",
+              "uniqueId": "fg-0000001b",
+              "name": "object",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-0000000d"
+                "fg-0000000c"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
-                "typeName": "boolean",
-                "defaultValue": false
+                "typeName": "any"
               },
               "optional": false
+            },
+            {
+              "uniqueId": "fg-0000001c",
+              "name": "value",
+              "_connectionType": 0,
+              "connectedPointIds": [
+                "fg-00000014"
+              ],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "any"
+              },
+              "optional": false
+            },
+            {
+              "uniqueId": "fg-0000001d",
+              "name": "propertyName",
+              "_connectionType": 0,
+              "connectedPointIds": [],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "any"
+              },
+              "optional": true,
+              "defaultValue": "visibility"
+            },
+            {
+              "uniqueId": "fg-0000001e",
+              "name": "customSetFunction",
+              "_connectionType": 0,
+              "connectedPointIds": [],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "any"
+              },
+              "optional": true
             }
           ],
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-0000000f",
+              "uniqueId": "fg-00000018",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -175,125 +304,36 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000010",
-              "name": "onTrue",
-              "_connectionType": 1,
-              "connectedPointIds": [
-                "fg-00000015"
-              ]
-            },
-            {
-              "uniqueId": "fg-00000011",
-              "name": "onFalse",
-              "_connectionType": 1,
-              "connectedPointIds": [
-                "fg-0000001d"
-              ]
-            },
-            {
-              "uniqueId": "fg-00000012",
-              "name": "error",
+              "uniqueId": "fg-00000019",
+              "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
-            }
-          ],
-          "metadata": {
-            "displayName": "check"
-          }
-        },
-        {
-          "className": "FlowGraphSetPropertyBlock",
-          "config": {
-            "propertyPath": "box.visibility"
-          },
-          "uniqueId": "fg-00000014",
-          "dataInputs": [
-            {
-              "uniqueId": "fg-00000018",
-              "name": "object",
-              "_connectionType": 0,
-              "connectedPointIds": [],
-              "className": "FlowGraphDataConnection",
-              "richType": {
-                "typeName": "any"
-              },
-              "optional": false
-            },
-            {
-              "uniqueId": "fg-00000019",
-              "name": "value",
-              "_connectionType": 0,
-              "connectedPointIds": [],
-              "className": "FlowGraphDataConnection",
-              "richType": {
-                "typeName": "any"
-              },
-              "optional": false
             },
             {
               "uniqueId": "fg-0000001a",
-              "name": "propertyName",
-              "_connectionType": 0,
-              "connectedPointIds": [],
-              "className": "FlowGraphDataConnection",
-              "richType": {
-                "typeName": "any"
-              },
-              "optional": true
-            },
-            {
-              "uniqueId": "fg-0000001b",
-              "name": "customSetFunction",
-              "_connectionType": 0,
-              "connectedPointIds": [],
-              "className": "FlowGraphDataConnection",
-              "richType": {
-                "typeName": "any"
-              },
-              "optional": true
-            }
-          ],
-          "dataOutputs": [],
-          "signalInputs": [
-            {
-              "uniqueId": "fg-00000015",
-              "name": "in",
-              "_connectionType": 0,
-              "connectedPointIds": []
-            }
-          ],
-          "signalOutputs": [
-            {
-              "uniqueId": "fg-00000016",
-              "name": "out",
-              "_connectionType": 1,
-              "connectedPointIds": [
-                "fg-00000025"
-              ]
-            },
-            {
-              "uniqueId": "fg-00000017",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
             }
           ],
           "metadata": {
-            "displayName": "hide"
+            "displayName": "hideCylinder"
           }
         },
         {
           "className": "FlowGraphSetPropertyBlock",
           "config": {
-            "propertyPath": "box.visibility"
+            "propertyName": "visibility"
           },
-          "uniqueId": "fg-0000001c",
+          "uniqueId": "fg-0000001f",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000020",
+              "uniqueId": "fg-00000023",
               "name": "object",
               "_connectionType": 0,
-              "connectedPointIds": [],
+              "connectedPointIds": [
+                "fg-0000000c"
+              ],
               "className": "FlowGraphDataConnection",
               "richType": {
                 "typeName": "any"
@@ -301,10 +341,12 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-00000021",
+              "uniqueId": "fg-00000024",
               "name": "value",
               "_connectionType": 0,
-              "connectedPointIds": [],
+              "connectedPointIds": [
+                "fg-00000016"
+              ],
               "className": "FlowGraphDataConnection",
               "richType": {
                 "typeName": "any"
@@ -312,7 +354,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-00000022",
+              "uniqueId": "fg-00000025",
               "name": "propertyName",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -320,10 +362,11 @@
               "richType": {
                 "typeName": "any"
               },
-              "optional": true
+              "optional": true,
+              "defaultValue": "visibility"
             },
             {
-              "uniqueId": "fg-00000023",
+              "uniqueId": "fg-00000026",
               "name": "customSetFunction",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -337,7 +380,7 @@
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-0000001d",
+              "uniqueId": "fg-00000020",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -345,123 +388,27 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-0000001e",
+              "uniqueId": "fg-00000021",
               "name": "out",
               "_connectionType": 1,
-              "connectedPointIds": [
-                "fg-0000002a"
-              ]
+              "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-0000001f",
+              "uniqueId": "fg-00000022",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
             }
           ],
           "metadata": {
-            "displayName": "show"
-          }
-        },
-        {
-          "className": "FlowGraphSetVariableBlock",
-          "config": {
-            "variable": "isVisible"
-          },
-          "uniqueId": "fg-00000024",
-          "dataInputs": [
-            {
-              "uniqueId": "fg-00000028",
-              "name": "value",
-              "_connectionType": 0,
-              "connectedPointIds": [],
-              "className": "FlowGraphDataConnection",
-              "richType": {
-                "typeName": "any"
-              },
-              "optional": false
-            }
-          ],
-          "dataOutputs": [],
-          "signalInputs": [
-            {
-              "uniqueId": "fg-00000025",
-              "name": "in",
-              "_connectionType": 0,
-              "connectedPointIds": []
-            }
-          ],
-          "signalOutputs": [
-            {
-              "uniqueId": "fg-00000026",
-              "name": "out",
-              "_connectionType": 1,
-              "connectedPointIds": []
-            },
-            {
-              "uniqueId": "fg-00000027",
-              "name": "error",
-              "_connectionType": 1,
-              "connectedPointIds": []
-            }
-          ],
-          "metadata": {
-            "displayName": "setFalse"
-          }
-        },
-        {
-          "className": "FlowGraphSetVariableBlock",
-          "config": {
-            "variable": "isVisible"
-          },
-          "uniqueId": "fg-00000029",
-          "dataInputs": [
-            {
-              "uniqueId": "fg-0000002d",
-              "name": "value",
-              "_connectionType": 0,
-              "connectedPointIds": [],
-              "className": "FlowGraphDataConnection",
-              "richType": {
-                "typeName": "any"
-              },
-              "optional": false
-            }
-          ],
-          "dataOutputs": [],
-          "signalInputs": [
-            {
-              "uniqueId": "fg-0000002a",
-              "name": "in",
-              "_connectionType": 0,
-              "connectedPointIds": []
-            }
-          ],
-          "signalOutputs": [
-            {
-              "uniqueId": "fg-0000002b",
-              "name": "out",
-              "_connectionType": 1,
-              "connectedPointIds": []
-            },
-            {
-              "uniqueId": "fg-0000002c",
-              "name": "error",
-              "_connectionType": 1,
-              "connectedPointIds": []
-            }
-          ],
-          "metadata": {
-            "displayName": "setTrue"
+            "displayName": "showCylinder"
           }
         }
       ],
       "executionContexts": [
         {
           "uniqueId": "fg-00000001",
-          "_userVariables": {
-            "isVisible": true
-          },
+          "_userVariables": {},
           "_connectionValues": {}
         }
       ]
