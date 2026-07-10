@@ -166,7 +166,14 @@ function HandleRename(scene: Scene, state: CaptureState, entity: unknown, oldVal
         // Record the rename as an override keyed on the entity's ORIGINAL name.
         let original = state.originalIdentity.get(entityObject);
         if (!original) {
-            original = { name: oldName, index: previous?.index ?? ComputeTargetIndex(scene, targetType, entity, oldName) };
+            // First time we've seen this entity, and its first observed edit is a rename, so its
+            // pre-rename index among same-named siblings can't be read directly (it already carries
+            // `newValue`). Fall back to the count of siblings that still hold `oldName`, which places
+            // the entity last in that group — correct for the common case where duplicate names come
+            // from append-ordered imports (e.g. re-importing a glTF) and the renamed one was added
+            // last. When the entity was seen before its rename, `previous.index` is exact.
+            const originalIndex = previous?.index ?? CountEntitiesWithName(scene, targetType, oldName);
+            original = { name: oldName, index: originalIndex };
             state.originalIdentity.set(entityObject, original);
         }
 
@@ -263,6 +270,23 @@ function ComputeTargetIndex(scene: Scene, targetType: OverrideTargetType, entity
     const sameName = collection.filter((obj) => (obj as { name?: string }).name === name);
     const idx = sameName.indexOf(entity as object);
     return idx >= 0 ? idx : 0;
+}
+
+/**
+ * Counts how many entities in scene[targetType] currently have the given name.
+ * Used as a best-effort original index when an entity's first observed edit is
+ * a rename (its pre-rename position can no longer be read directly).
+ * @param scene - The scene to inspect.
+ * @param targetType - The target type / collection name.
+ * @param name - The name to count.
+ * @returns The number of same-named entities, or 0 if the collection is unknown.
+ */
+function CountEntitiesWithName(scene: Scene, targetType: OverrideTargetType, name: string): number {
+    const collection = GetCollection(scene, targetType);
+    if (!collection) {
+        return 0;
+    }
+    return collection.filter((obj) => (obj as { name?: string }).name === name).length;
 }
 
 /**

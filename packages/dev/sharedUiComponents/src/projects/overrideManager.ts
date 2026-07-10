@@ -350,7 +350,14 @@ export function ApplyAllOverrides(scene: Scene): void {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
     for (const entry of SortNameOverridesFirst(internal.overrides)) {
-        ApplyOverrideEntry(manager, internal, entry);
+        // Apply each override in isolation: a single failing entry (e.g. a
+        // stale property path, or a target whose shape changed) must not abort
+        // the remaining overrides.
+        try {
+            ApplyOverrideEntry(manager, internal, entry);
+        } catch (e) {
+            Logger.Warn(`OverrideManager: failed to apply override type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}": ${e}`);
+        }
     }
 }
 
@@ -677,6 +684,12 @@ function GetNestedProperty(obj: object, path: string): unknown {
  * `fromArray` method to mutate it in place — preserving the live instance
  * identity that consumers may already hold references to. Otherwise falls
  * back to direct property replacement.
+ *
+ * Getter-only accessors (e.g. `Texture.invertY`) cannot be assigned directly —
+ * doing so throws in strict mode. For those, the backing field (`_<name>`) is
+ * written instead when present, and load-time texture properties are re-applied
+ * via a re-upload (see {@link ReapplyLoadTimeTextureProperty}). Truly read-only
+ * properties with no backing field are skipped with a warning.
  * @param obj - The root object to mutate.
  * @param path - The dot-separated property path.
  * @param value - The new value to assign.
@@ -696,15 +709,76 @@ function SetNestedProperty(obj: object, path: string, value: unknown): void {
         return;
     }
 
+    const target = current as Record<string, unknown>;
     const lastPart = parts[parts.length - 1];
-    const existing = (current as Record<string, unknown>)[lastPart];
+    const existing = target[lastPart];
 
     if (Array.isArray(value) && existing && typeof existing === "object" && typeof (existing as any).fromArray === "function") {
         (existing as any).fromArray(value);
         return;
     }
 
-    (current as Record<string, unknown>)[lastPart] = value;
+    // Guard against getter-only accessors: assigning to one throws in strict
+    // mode (ES modules are strict), which would otherwise abort the whole apply
+    // batch. Write the backing field instead, then re-apply if it is a
+    // load-time texture property.
+    const accessor = FindAccessorDescriptor(target, lastPart);
+    if (accessor && accessor.get && !accessor.set) {
+        const backingField = `_${lastPart}`;
+        if (backingField in target) {
+            target[backingField] = value;
+            ReapplyLoadTimeTextureProperty(target, lastPart);
+        } else {
+            Logger.Warn(`OverrideManager: property "${lastPart}" is read-only and has no backing field; skipping.`);
+        }
+        return;
+    }
+
+    target[lastPart] = value;
+}
+
+/**
+ * Walks the prototype chain to find the property descriptor for `key`, so
+ * accessor (getter/setter) properties defined on a class prototype can be
+ * detected. Returns undefined if the property is a plain data field.
+ * @param obj - The object to inspect.
+ * @param key - The property name.
+ * @returns The property descriptor, or undefined if none is found.
+ */
+function FindAccessorDescriptor(obj: object, key: string): PropertyDescriptor | undefined {
+    let proto: object | null = obj;
+    while (proto) {
+        const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+        if (descriptor) {
+            return descriptor;
+        }
+        proto = Object.getPrototypeOf(proto);
+    }
+    return undefined;
+}
+
+/**
+ * Re-applies a texture property that only takes effect at upload time (such as
+ * `invertY`, which is baked into the GPU texel data via `UNPACK_FLIP_Y`).
+ * Writing the backing field alone does not re-flip an already-loaded texture,
+ * so this re-uploads the source via `updateURL`, which releases only the GPU
+ * texture and reuses the same texture instance (all scene references stay
+ * intact). Duck-typed so this module stays decoupled from the Texture class,
+ * and a no-op for anything that is not a URL-loaded texture.
+ * @param target - The object whose property was written.
+ * @param propertyName - The property that was written.
+ */
+function ReapplyLoadTimeTextureProperty(target: Record<string, unknown>, propertyName: string): void {
+    if (propertyName !== "invertY") {
+        return;
+    }
+    if (typeof target.updateURL === "function" && typeof target.url === "string" && target.url) {
+        try {
+            (target.updateURL as (url: string, buffer?: unknown) => void)(target.url, target._buffer ?? null);
+        } catch (e) {
+            Logger.Warn(`OverrideManager: failed to re-upload texture to apply "${propertyName}": ${e}`);
+        }
+    }
 }
 
 /**
