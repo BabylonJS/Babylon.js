@@ -227,6 +227,12 @@ function ClassifyEntity(entity: unknown, scene: Scene): OverrideTargetType | nul
     if (scene.meshes.includes(obj)) {
         return "meshes";
     }
+    // Pure TransformNodes (not meshes) are a separate scene collection and are common in glTF
+    // imports (pivots, empties, armature roots). Meshes are never added to scene.transformNodes,
+    // so this check is disjoint from the meshes check above.
+    if (scene.transformNodes.includes(obj)) {
+        return "transformNodes";
+    }
     if (scene.lights.includes(obj as Light)) {
         return "lights";
     }
@@ -299,6 +305,8 @@ function GetCollection(scene: Scene, targetType: OverrideTargetType): readonly u
     switch (targetType) {
         case "meshes":
             return scene.meshes;
+        case "transformNodes":
+            return scene.transformNodes;
         case "materials":
             return scene.materials;
         case "textures":

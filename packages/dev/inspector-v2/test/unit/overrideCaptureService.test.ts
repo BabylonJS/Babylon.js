@@ -153,6 +153,20 @@ describe("OverrideCapture", () => {
             const override = findOverride("parent");
             expect(override?.value).toBe("ref:Root");
         });
+
+        it("records an override on a pure TransformNode (not a mesh)", () => {
+            // Transform nodes that are not meshes are common in glTF imports (pivots, empties,
+            // armature roots); their edits must be captured too.
+            const node = new TransformNode("Pivot", scene);
+            node.position.x = 5;
+            RecordEntityPropertyOverride(scene, node, "position", node.position, new Vector3(0, 0, 0));
+
+            const override = findOverride("position");
+            expect(override).toBeDefined();
+            expect(override?.targetType).toBe("transformNodes");
+            expect(override?.targetName).toBe("Pivot");
+            expect(override?.value).toEqual([5, 0, 0]);
+        });
     });
 
     describe("node reference resolution round-trip", () => {

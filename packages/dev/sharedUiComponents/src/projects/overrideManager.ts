@@ -520,6 +520,8 @@ function GetCollection(scene: Scene, targetType: OverrideTargetType): readonly u
     switch (targetType) {
         case "meshes":
             return scene.meshes;
+        case "transformNodes":
+            return scene.transformNodes;
         case "materials":
             return scene.materials;
         case "textures":
