@@ -1,0 +1,157 @@
+name: Memory Leak Detection
+
+on:
+  pull_request:
+    paths:
+      - 'packages/dev/**'
+      - 'packages/tools/testsMemoryLeaks/**'
+      - '.github/workflows/memory-leak-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: memory-leak-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  memory-leak-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run memory leak detection (CI suite)
+        run: npm run test:memory-leaks -- --suite=ci --verbose
+        continue-on-error: true
+        id: ci_tests
+
+      - name: Upload CI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-leak-ci-results
+          path: packages/tools/testsMemoryLeaks/reports/
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const reportsDir = 'packages/tools/testsMemoryLeaks/reports';
+            
+            let comment = '## 🧪 Memory Leak Detection Results\n\n';
+            
+            if (fs.existsSync(reportsDir)) {
+              const files = fs.readdirSync(reportsDir);
+              if (files.length > 0) {
+                comment += '✅ Test artifacts generated:\n';
+                files.forEach(file => {
+                  comment += `- \`${file}\`\n`;
+                });
+              } else {
+                comment += '⚠️ No test results found.\n';
+              }
+            } else {
+              comment += '❌ Reports directory not found.\n';
+            }
+            
+            comment += '\n**Status:** ';
+            if ('${{ steps.ci_tests.outcome }}' === 'success') {
+              comment += '✅ All tests passed';
+            } else if ('${{ steps.ci_tests.outcome }}' === 'failure') {
+              comment += '❌ Some tests failed - check artifacts';
+            } else {
+              comment += '⚠️ Tests skipped or cancelled';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail if memory leaks detected
+        if: steps.ci_tests.outcome == 'failure'
+        run: |
+          echo "❌ Memory leaks detected in CI suite"
+          echo "Review artifacts for detailed analysis"
+          exit 1
+
+  memory-leak-extended:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run memory leak detection (Extended suite)
+        run: npm run test:memory-leaks -- --suite=extended --verbose
+        continue-on-error: true
+        id: extended_tests
+
+      - name: Upload Extended test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-leak-extended-results
+          path: packages/tools/testsMemoryLeaks/reports/
+          retention-days: 30
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## Memory Leak Detection Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**CI Suite:** ${{ steps.ci_tests.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Extended Suite:** ${{ steps.extended_tests.outcome }}" >> $GITHUB_STEP_SUMMARY
+
+summary:
+  name: Memory Leak Check
+  runs-on: ubuntu-latest
+  needs: [memory-leak-ci, memory-leak-extended]
+  if: always()
+  
+  steps:
+    - name: Check overall status
+      run: |
+        if [[ "${{ needs.memory-leak-ci.result }}" == "failure" ]]; then
+          echo "❌ Memory leak detection failed in CI suite"
+          exit 1
+        fi
+        echo "✅ Memory leak detection passed"
