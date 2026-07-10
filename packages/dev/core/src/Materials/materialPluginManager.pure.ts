@@ -430,7 +430,7 @@ export class MaterialPluginManager {
                         let match = rx.exec(code);
                         while (match !== null) {
                             const { index } = match;
-                            const newCode = replaceRegExpSubstitutions(injectedCode, match);
+                            const newCode = ReplaceRegExpSubstitutions(injectedCode, match);
                             code = code.substring(0, index) + newCode + code.substring(index + match[0].length);
                             rx.lastIndex = index + newCode.length;
                             match = rx.exec(code);
@@ -527,8 +527,11 @@ export function UnregisterAllMaterialPlugins(): void {
 
 /**
  * Replace regex substitution patterns (e.g. $1, $2, etc.)
+ * @param value The replacement string
+ * @param match The regex match array
+ * @returns Value having $X substitutions replaced with the equivalent `match[X]`
  */
-function replaceRegExpSubstitutions(value: string, match: ReadonlyArray<string>): string {
+function ReplaceRegExpSubstitutions(value: string, match: ReadonlyArray<string>): string {
     return value.replace(/\$(\d+)/g, (group0: string, group1: string): string => {
         const index = Number(group1);
         return index < match.length ? match[index] : "";
