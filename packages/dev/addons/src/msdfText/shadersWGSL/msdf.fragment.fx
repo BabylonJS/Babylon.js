@@ -5,6 +5,7 @@ uniform thickness: f32;
 uniform uStrokeColor: vec4f;
 uniform uStrokeInsetWidth: f32;
 uniform uStrokeOutsetWidth: f32;
+uniform uDepthWrite: f32;
 
 varying atlasUV: vec2f;
 
@@ -32,6 +33,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let inset = 1.0 - clamp(sigDistInset / afwidthInset + 0.5, 0.0, 1.0);
 
     let border = outset * inset;
+
+    // When writing to the depth buffer, discard the transparent background of the glyph quads so they do not occlude other geometry.
+    if (uniforms.uDepthWrite > 0.5 && max(alpha, border) < 0.5) {
+        discard;
+    }
 
     let filledFragColor = vec4<f32>(uniforms.uColor.rgb, alpha * uniforms.uColor.a);
     let strokedFragColor = vec4<f32>(uniforms.uStrokeColor.rgb, border * uniforms.uStrokeColor.a);

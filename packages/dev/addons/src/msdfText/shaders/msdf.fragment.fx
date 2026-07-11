@@ -8,6 +8,7 @@ uniform vec4 uStrokeColor;
 uniform float uStrokeInsetWidth;
 uniform float uStrokeOutsetWidth;
 uniform float thickness;
+uniform float uDepthWrite;
 
 varying vec2 atlasUV;
 
@@ -29,6 +30,11 @@ void main(void)
     float inset = 1.0 - clamp(sigDistInset / fwidth(sigDistInset) + 0.5, 0.0, 1.0);
 
     float border = outset * inset;
+
+    // When writing to the depth buffer, discard the transparent background of the glyph quads so they do not occlude other geometry.
+    if (uDepthWrite > 0.5 && max(alpha, border) < 0.5) {
+        discard;
+    }
 
     vec4 filledFragColor = vec4(uColor.rgb, alpha * uColor.a);
     vec4 strokedFragColor = vec4(uStrokeColor.rgb, border * uStrokeColor.a);
