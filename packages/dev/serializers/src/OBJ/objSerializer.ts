@@ -142,13 +142,14 @@ export class OBJExport {
     /**
      * Exports the material(s) of a mesh in .MTL file format (text)
      * @param mesh defines the mesh to extract the material from
+     * @param materialName defines the name of the material in the output
      * @returns the mtl content
      */
     //TODO: Export the materials of mesh array
-    public static MTL(mesh: Mesh): string {
+    public static MTL(mesh: Mesh, materialName: string = "mat1"): string {
         const output = [];
         const m = <StandardMaterial>mesh.material;
-        output.push("newmtl mat1");
+        output.push("newmtl " + materialName);
         output.push("  Ns " + m.specularPower.toFixed(4));
         output.push("  Ni 1.5000");
         output.push("  d " + m.alpha.toFixed(4));
