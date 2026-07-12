@@ -142,7 +142,7 @@ export class OBJExport {
     /**
      * Exports the material(s) of a mesh in .MTL file format (text)
      * @param mesh defines the mesh to extract the material from
-     * @param materialName defines the name of the material in the output
+     * @param materialName defines the name of the material in the output (default is 'mat1')
      * @returns the mtl content
      */
     //TODO: Export the materials of mesh array
