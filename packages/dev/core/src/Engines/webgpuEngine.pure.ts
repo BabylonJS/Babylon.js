@@ -3713,7 +3713,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this.setZOffsetUnits(zOffsetUnits);
 
         // Front face
-        const frontFace = reverseSide ? (this._currentRenderTarget ? 1 : 2) : this._currentRenderTarget ? 2 : 1;
+        // Render targets are drawn Y-flipped (see the InternalsUBO yFactor in _draw), so their triangle
+        // winding is reversed here to compensate and keep the same faces visible. XR projection-layer targets
+        // opt out of that flip (_disableEngineYFlip) because the compositor presents them directly, so they
+        // keep the main-framebuffer winding.
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        const frontFace = reverseSide ? (invertYRenderTarget ? 1 : 2) : invertYRenderTarget ? 2 : 1;
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
@@ -3747,7 +3752,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
+        // Render targets are rendered Y-flipped (yFactor = -1) so a later-sampled RTT matches the WebGL
+        // texture-space convention. XR projection-layer targets (_disableEngineYFlip) are presented directly by
+        // the compositor and must be rendered upright, so they use the non-inverting UBO like the canvas.
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        this.bindUniformBufferBase(invertYRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
         this._currentDrawContext.setVertexPulling(
             this._currentMaterialContext.useVertexPulling,
