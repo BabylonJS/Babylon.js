@@ -150,13 +150,17 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 }
             }
 
-            // Validate duration for interpolation animations: non-finite or negative values trigger the error flow.
-            // Only validate when animation is provided (interpolation case), not for general animation/start
-            // where the AnimationGroup's default to value may legitimately be negative.
-            if (!isFinite(to) || !isFinite(from)) {
+            // The start value (interpolation start frame / animation start time) must always be finite. For
+            // animation/start this also satisfies the spec requirement that a NaN or infinite start time
+            // activates the err flow.
+            if (!isFinite(from)) {
                 return this._reportError(context, "Invalid animation duration");
             }
-            if (animation && to < 0) {
+            // For interpolation the end value is the animation duration and must be a finite, non-negative number.
+            // Animation-group playback (animation/start) instead allows an infinite end time — it means "play to
+            // the natural end / loop" (see the `loop` computation below) — and its NaN end time was already
+            // rejected above, so the end value is only range-checked here for the interpolation case.
+            if (animation && (!isFinite(to) || to < 0)) {
                 return this._reportError(context, "Invalid animation duration");
             }
 

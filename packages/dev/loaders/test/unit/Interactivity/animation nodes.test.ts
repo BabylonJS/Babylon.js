@@ -208,6 +208,38 @@ describe("Interactivity/animation nodes", () => {
         expect(startSpy).not.toHaveBeenCalled();
     });
 
+    test("animation/start allows an infinite endTime (plays/loops, does not error)", async () => {
+        const ag = new AnimationGroup("test");
+        ag.to = 10;
+        const startSpy = vi.spyOn(ag, "start");
+        const gltf = {
+            animations: [{}, { _babylonAnimationGroup: ag }],
+        };
+
+        await generateSimpleNodeGraph(
+            gltf,
+            [{ op: "animation/start" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [1], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        // Per the KHR spec only a NaN or infinite START time errors; an infinite END time is valid
+                        // and means "play to the natural end / loop".
+                        endTime: { value: [Infinity], type: 1 },
+                    },
+                },
+            ],
+            [{ signature: "int" }, { signature: "float" }]
+        );
+
+        // The animation must still start (with loop = true because the end time is infinite).
+        expect(startSpy).toHaveBeenCalledTimes(1);
+        expect(startSpy).toHaveBeenCalledWith(true, 1, 0, expect.anything());
+    });
+
     // animation/stop
 
     test("animation/stop after a delay", async () => {
