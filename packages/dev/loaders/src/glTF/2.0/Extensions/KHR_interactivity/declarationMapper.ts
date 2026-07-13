@@ -778,6 +778,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
+    // Tait–Bryan intrinsic Euler angles (x/y/z, in radians) to a rotation quaternion. The rotation
+    // order is selected by the `order` configuration string (default `yxz`).
+    "math/quatFromAngles": {
+        blocks: [FlowGraphBlockNames.QuaternionFromAngles],
+        configuration: {
+            order: { name: "order", defaultValue: ["yxz"] },
+        },
+        inputs: {
+            values: {
+                x: { name: "a", gltfType: "number" },
+                y: { name: "b", gltfType: "number" },
+                z: { name: "c", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     "math/combine2x2": {
         blocks: [FlowGraphBlockNames.CombineMatrix2D],
         inputs: {

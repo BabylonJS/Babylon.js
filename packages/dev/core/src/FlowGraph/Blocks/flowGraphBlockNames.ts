@@ -142,6 +142,7 @@ export const enum FlowGraphBlockNames {
     AxisAngleFromQuaternion = "FlowGraphAxisAngleFromQuaternionBlock",
     QuaternionFromDirections = "FlowGraphQuaternionFromDirectionsBlock",
     QuaternionFromUpForward = "FlowGraphQuaternionFromUpForwardBlock",
+    QuaternionFromAngles = "FlowGraphQuaternionFromAnglesBlock",
     VectorSlerp = "FlowGraphVectorSlerpBlock",
     MatrixDecompose = "FlowGraphMatrixDecompose",
     MatrixCompose = "FlowGraphMatrixCompose",

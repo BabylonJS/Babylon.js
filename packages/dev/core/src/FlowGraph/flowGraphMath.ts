@@ -157,3 +157,53 @@ export function GetQuaternionFromUpForward(up: DeepImmutable<Vector3>, forward: 
     const matrix = Matrix.FromValues(s.x, s.y, s.z, 0, t.x, t.y, t.z, 0, r.x, r.y, r.z, 0, 0, 0, 0, 1);
     return Quaternion.FromRotationMatrix(matrix);
 }
+
+/**
+ * The rotation orders accepted by the KHR_interactivity `math/quatFromAngles` operation
+ * (and {@link GetQuaternionFromEulerAngles}). The default order is `yxz`.
+ */
+export const QuaternionEulerAngleOrders = ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"] as const;
+
+// Shared, read-only rotation axes for GetQuaternionFromEulerAngles. Never mutated
+// (Quaternion.RotationAxis only reads the axis), so they are safe to share.
+const EulerAxisX = new Vector3(1, 0, 0);
+const EulerAxisY = new Vector3(0, 1, 0);
+const EulerAxisZ = new Vector3(0, 0, 1);
+
+/**
+ * Builds a rotation quaternion from three Tait–Bryan intrinsic Euler angles applied in the
+ * specified order (KHR_interactivity `math/quatFromAngles`).
+ *
+ * Babylon only exposes the `yxz` order natively (via `Quaternion.RotationYawPitchRoll`), so the
+ * result is composed from the individual per-axis rotations to support every order. For an
+ * intrinsic order `o1o2o3` the result is the Hamilton product `q(o1) * q(o2) * q(o3)`, where each
+ * `q(axis)` is a rotation about that axis; this matches the corresponding reference intrinsic
+ * Tait–Bryan rotation matrices. NaN and infinite angle inputs propagate into the result.
+ * @param order the rotation order, one of {@link QuaternionEulerAngleOrders}; any other value uses the default `yxz`
+ * @param x rotation around the X axis, in radians
+ * @param y rotation around the Y axis, in radians
+ * @param z rotation around the Z axis, in radians
+ * @returns the composed rotation quaternion
+ */
+export function GetQuaternionFromEulerAngles(order: string, x: number, y: number, z: number): Quaternion {
+    const qx = Quaternion.RotationAxis(EulerAxisX, x);
+    const qy = Quaternion.RotationAxis(EulerAxisY, y);
+    const qz = Quaternion.RotationAxis(EulerAxisZ, z);
+    // `a.multiplyInPlace(b)` computes the Hamilton product `a * b` in place and returns `a`.
+    switch (order) {
+        case "xyz":
+            return qx.multiplyInPlace(qy).multiplyInPlace(qz);
+        case "xzy":
+            return qx.multiplyInPlace(qz).multiplyInPlace(qy);
+        case "yzx":
+            return qy.multiplyInPlace(qz).multiplyInPlace(qx);
+        case "zxy":
+            return qz.multiplyInPlace(qx).multiplyInPlace(qy);
+        case "zyx":
+            return qz.multiplyInPlace(qy).multiplyInPlace(qx);
+        case "yxz":
+        default:
+            // Default order per the spec.
+            return qy.multiplyInPlace(qx).multiplyInPlace(qz);
+    }
+}

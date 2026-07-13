@@ -23,7 +23,15 @@ import { type FlowGraphMatrix, type FlowGraphVector, _GetClassNameOf } from "cor
 import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
 import { type FlowGraphContext } from "../../../flowGraphContext";
 import { type Nullable } from "../../../../types";
-import { GetAngleBetweenQuaternions, GetQuaternionFromDirections, GetQuaternionFromUpForward, GetVector2Slerp, GetVector3Slerp } from "core/FlowGraph/flowGraphMath";
+import {
+    GetAngleBetweenQuaternions,
+    GetQuaternionFromDirections,
+    GetQuaternionFromEulerAngles,
+    GetQuaternionFromUpForward,
+    GetVector2Slerp,
+    GetVector3Slerp,
+    QuaternionEulerAngleOrders,
+} from "core/FlowGraph/flowGraphMath";
 import { RegisterClass } from "core/Misc/typeStore";
 
 const AxisCacheName = "cachedOperationAxis";
@@ -360,6 +368,47 @@ export class FlowGraphVectorSlerpBlock extends FlowGraphTernaryOperationBlock<Fl
     }
 }
 
+/**
+ * The configuration of the FlowGraphQuaternionFromAnglesBlock.
+ */
+export interface IFlowGraphQuaternionFromAnglesBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The intrinsic Tait–Bryan rotation order, one of `xyz`, `xzy`, `yxz`, `yzx`, `zxy`, `zyx`.
+     * Any other (or missing) value falls back to the spec default `yxz`.
+     */
+    order?: string;
+}
+
+/**
+ * Creates a rotation quaternion from three Tait–Bryan intrinsic Euler angles applied in a
+ * configurable order (KHR_interactivity `math/quatFromAngles`).
+ *
+ * Inputs `a`, `b`, `c` are the rotations (in radians) around the X, Y and Z axes respectively.
+ * The `order` configuration selects the intrinsic rotation order; NaN and infinite inputs
+ * propagate into the resulting quaternion components.
+ */
+export class FlowGraphQuaternionFromAnglesBlock extends FlowGraphTernaryOperationBlock<number, number, number, Quaternion> {
+    /**
+     * The validated intrinsic rotation order used to compose the quaternion.
+     */
+    private readonly _order: string;
+
+    constructor(config?: IFlowGraphQuaternionFromAnglesBlockConfiguration) {
+        super(
+            RichTypeNumber,
+            RichTypeNumber,
+            RichTypeNumber,
+            RichTypeQuaternion,
+            (a, b, c) => GetQuaternionFromEulerAngles(this._order, a, b, c),
+            FlowGraphBlockNames.QuaternionFromAngles,
+            config
+        );
+        const order = config?.order;
+        // Per the spec, a missing, non-string or unrecognized order MUST use the default `yxz`.
+        this._order = typeof order === "string" && (QuaternionEulerAngleOrders as readonly string[]).indexOf(order) !== -1 ? order : "yxz";
+    }
+}
+
 let _Registered = false;
 /**
  * Register side effects for flowGraphVectorMathBlocks.
@@ -385,5 +434,6 @@ export function RegisterFlowGraphVectorMathBlocks(): void {
     RegisterClass(FlowGraphBlockNames.AxisAngleFromQuaternion, FlowGraphAxisAngleFromQuaternionBlock);
     RegisterClass(FlowGraphBlockNames.QuaternionFromDirections, FlowGraphQuaternionFromDirectionsBlock);
     RegisterClass(FlowGraphBlockNames.QuaternionFromUpForward, FlowGraphQuaternionFromUpForwardBlock);
+    RegisterClass(FlowGraphBlockNames.QuaternionFromAngles, FlowGraphQuaternionFromAnglesBlock);
     RegisterClass(FlowGraphBlockNames.VectorSlerp, FlowGraphVectorSlerpBlock);
 }

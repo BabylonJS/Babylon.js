@@ -2173,6 +2173,141 @@ describe("Interactivity math nodes", () => {
         expect(resultArray).toEqual([0, 0, 0, 1]);
     });
 
+    // math/quatFromAngles
+
+    it("should use math/quatFromAngles with the default order (yxz)", async () => {
+        const x = 0.3;
+        const y = -0.7;
+        const z = 1.1;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromAngles" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        x: { type: 0, value: [x] },
+                        y: { type: 0, value: [y] },
+                        z: { type: 0, value: [z] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // The spec default order is yxz, which matches Babylon's Quaternion.FromEulerAngles(x, y, z).
+        const expected = roundArray3(Quaternion.FromEulerAngles(x, y, z).asArray());
+        expect(roundArray3(logItem!.payload.value.asArray())).toEqual(expected);
+    });
+
+    it("should apply the configured rotation order (xyz) for math/quatFromAngles", async () => {
+        const x = 0.3;
+        const y = 0.7;
+        const z = 1.1;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromAngles" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        x: { type: 0, value: [x] },
+                        y: { type: 0, value: [y] },
+                        z: { type: 0, value: [z] },
+                    },
+                    configuration: {
+                        order: { value: ["xyz"] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // Intrinsic xyz = q(x) * q(y) * q(z) (Hamilton product), built here from Babylon primitives.
+        const qx = Quaternion.RotationAxis(new Vector3(1, 0, 0), x);
+        const qy = Quaternion.RotationAxis(new Vector3(0, 1, 0), y);
+        const qz = Quaternion.RotationAxis(new Vector3(0, 0, 1), z);
+        const expected = roundArray3(qx.multiply(qy).multiply(qz).asArray());
+        expect(roundArray3(logItem!.payload.value.asArray())).toEqual(expected);
+        // Order matters: xyz differs from the default yxz for these non-commuting angles.
+        expect(roundArray3(Quaternion.FromEulerAngles(x, y, z).asArray())).not.toEqual(expected);
+    });
+
+    it("should reduce to a single-axis rotation regardless of order for math/quatFromAngles", async () => {
+        const angle = 0.9;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromAngles" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        x: { type: 0, value: [angle] },
+                        y: { type: 0, value: [0] },
+                        z: { type: 0, value: [0] },
+                    },
+                    configuration: {
+                        order: { value: ["zyx"] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // Only the X angle is non-zero, so the result is a pure rotation about X for any order.
+        const expected = roundArray3(Quaternion.RotationAxis(new Vector3(1, 0, 0), angle).asArray());
+        expect(roundArray3(logItem!.payload.value.asArray())).toEqual(expected);
+    });
+
+    it("should fall back to the default order for an invalid math/quatFromAngles order", async () => {
+        const x = 0.2;
+        const y = 0.5;
+        const z = -0.4;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromAngles" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        x: { type: 0, value: [x] },
+                        y: { type: 0, value: [y] },
+                        z: { type: 0, value: [z] },
+                    },
+                    configuration: {
+                        order: { value: ["not-a-valid-order"] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        // An unrecognized order must use the spec default yxz (== Quaternion.FromEulerAngles).
+        const expected = roundArray3(Quaternion.FromEulerAngles(x, y, z).asArray());
+        expect(roundArray3(logItem!.payload.value.asArray())).toEqual(expected);
+    });
+
+    it("should propagate NaN inputs for math/quatFromAngles", async () => {
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromAngles" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        x: { type: 0, value: [NaN] },
+                        y: { type: 0, value: [0] },
+                        z: { type: 0, value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = logItem!.payload.value.asArray() as number[];
+        expect(resultArray.some((v) => Number.isNaN(v))).toBe(true);
+    });
+
     // math/combine4x4 uses column-major input ordering (matching Babylon's column-major Matrix storage)
 
     it("should use math/combine4x4 with column-major ordering", async () => {

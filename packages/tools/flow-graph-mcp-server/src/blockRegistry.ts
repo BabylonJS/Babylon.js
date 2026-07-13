@@ -1127,6 +1127,23 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         ],
     },
 
+    SmoothStep: {
+        className: "FlowGraphSmoothStepBlock",
+        category: "Math",
+        description: "Smooth Hermite interpolation coefficient: for edges a (low) and b (high) and value c, returns t*t*(3-2t) with t = saturate((c - a) / (b - a)).",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "any", description: "Lower edge" },
+            { name: "b", type: "any", description: "Upper edge" },
+            { name: "c", type: "any", description: "Value to interpolate" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "any" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
     // ═══════════════════════════════════════════════════════════════════
     //  VECTOR / QUATERNION BLOCKS
     // ═══════════════════════════════════════════════════════════════════
@@ -1286,6 +1303,76 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         dataInputs: [
             { name: "a", type: "Vector3", description: "From direction" },
             { name: "b", type: "Vector3", description: "To direction" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "Quaternion" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    QuaternionFromUpForward: {
+        className: "FlowGraphQuaternionFromUpForwardBlock",
+        category: "Vector",
+        description: "Creates a rotation quaternion from the specified up and forward directions.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "Vector3", description: "Up direction" },
+            { name: "b", type: "Vector3", description: "Forward direction" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "Quaternion" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    QuaternionFromAngles: {
+        className: "FlowGraphQuaternionFromAnglesBlock",
+        category: "Vector",
+        description: "Creates a rotation quaternion from three Tait–Bryan intrinsic Euler angles (a=x, b=y, c=z, in radians) applied in the configured order.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "number", description: "Rotation around X, in radians" },
+            { name: "b", type: "number", description: "Rotation around Y, in radians" },
+            { name: "c", type: "number", description: "Rotation around Z, in radians" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "Quaternion" },
+            { name: "isValid", type: "boolean" },
+        ],
+        config: {
+            order: "string — intrinsic rotation order, one of xyz/xzy/yxz/yzx/zxy/zyx (default yxz)",
+        },
+    },
+
+    VectorSlerp: {
+        className: "FlowGraphVectorSlerpBlock",
+        category: "Vector",
+        description: "Spherical linear interpolation between two vectors (float2/float3). c is the interpolation coefficient.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "any", description: "First vector" },
+            { name: "b", type: "any", description: "Second vector" },
+            { name: "c", type: "number", description: "Interpolation coefficient" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "any" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    MathSlerp: {
+        className: "FlowGraphMathSlerpBlock",
+        category: "Vector",
+        description: "Spherical linear interpolation between two quaternions. c is the interpolation coefficient.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "Quaternion", description: "First quaternion" },
+            { name: "b", type: "Quaternion", description: "Second quaternion" },
+            { name: "c", type: "number", description: "Interpolation coefficient" },
         ],
         dataOutputs: [
             { name: "value", type: "Quaternion" },
