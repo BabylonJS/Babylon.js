@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import terser from "@rollup/plugin-terser";
 import { minifyTemplateLiterals } from "rollup-plugin-minify-template-literals";
+import Sonda from "sonda/rollup";
 
 const source = "dev";
 
