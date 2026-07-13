@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "../types";
 import { GetDirectStoreFromMetadata } from "./decorators.functions";
+import { SerializedFieldType } from "./decorators.serializationUtilities";
 import { _WarnImport } from "./devTools";
 
 /**
@@ -13,7 +14,7 @@ import { _WarnImport } from "./devTools";
  */
 type SerializableContext = { name: string | symbol; metadata: DecoratorMetadataObject | undefined };
 
-function generateSerializableMember(type: number, sourceName?: string) {
+function generateSerializableMember(type: SerializedFieldType, sourceName?: string) {
     return (_value: unknown, context: SerializableContext) => {
         if (!context.metadata) {
             return;
@@ -64,51 +65,51 @@ export function expandToProperty(callback: string, targetKey: Nullable<string> =
 }
 
 export function serialize(sourceName?: string) {
-    return generateSerializableMember(0, sourceName); // value member
+    return generateSerializableMember(SerializedFieldType.VALUE, sourceName);
 }
 
 export function serializeAsTexture(sourceName?: string) {
-    return generateSerializableMember(1, sourceName); // texture member
+    return generateSerializableMember(SerializedFieldType.TEXTURE, sourceName);
 }
 
 export function serializeAsColor3(sourceName?: string) {
-    return generateSerializableMember(2, sourceName); // color3 member
+    return generateSerializableMember(SerializedFieldType.COLOR3, sourceName);
 }
 
 export function serializeAsFresnelParameters(sourceName?: string) {
-    return generateSerializableMember(3, sourceName); // fresnel parameters member
+    return generateSerializableMember(SerializedFieldType.FRESNEL_PARAMETERS, sourceName);
 }
 
 export function serializeAsVector2(sourceName?: string) {
-    return generateSerializableMember(4, sourceName); // vector2 member
+    return generateSerializableMember(SerializedFieldType.VECTOR2, sourceName);
 }
 
 export function serializeAsVector3(sourceName?: string) {
-    return generateSerializableMember(5, sourceName); // vector3 member
+    return generateSerializableMember(SerializedFieldType.VECTOR3, sourceName);
 }
 
 export function serializeAsMeshReference(sourceName?: string) {
-    return generateSerializableMember(6, sourceName); // mesh reference member
+    return generateSerializableMember(SerializedFieldType.MESH, sourceName);
 }
 
 export function serializeAsColorCurves(sourceName?: string) {
-    return generateSerializableMember(7, sourceName); // color curves
+    return generateSerializableMember(SerializedFieldType.COLOR_CURVES, sourceName);
 }
 
 export function serializeAsColor4(sourceName?: string) {
-    return generateSerializableMember(8, sourceName); // color 4
+    return generateSerializableMember(SerializedFieldType.COLOR4, sourceName);
 }
 
 export function serializeAsImageProcessingConfiguration(sourceName?: string) {
-    return generateSerializableMember(9, sourceName); // image processing
+    return generateSerializableMember(SerializedFieldType.IMAGE_PROCESSING, sourceName);
 }
 
 export function serializeAsQuaternion(sourceName?: string) {
-    return generateSerializableMember(10, sourceName); // quaternion member
+    return generateSerializableMember(SerializedFieldType.QUATERNION, sourceName);
 }
 
 export function serializeAsMatrix(sourceName?: string) {
-    return generateSerializableMember(12, sourceName); // matrix member
+    return generateSerializableMember(SerializedFieldType.MATRIX, sourceName);
 }
 
 /**
@@ -117,7 +118,7 @@ export function serializeAsMatrix(sourceName?: string) {
  * @returns Property Decorator
  */
 export function serializeAsCameraReference(sourceName?: string) {
-    return generateSerializableMember(11, sourceName); // camera reference member
+    return generateSerializableMember(SerializedFieldType.CAMERA, sourceName);
 }
 
 /** @internal */
