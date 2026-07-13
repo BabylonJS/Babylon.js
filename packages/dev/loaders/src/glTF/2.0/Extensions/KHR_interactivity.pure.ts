@@ -11,6 +11,8 @@ import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interac
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
+import { type Camera } from "core/Cameras/camera";
+import { Constants } from "core/Engines/constants";
 import { type IAnimation } from "../glTFLoaderInterfaces";
 import { CompositePathToObjectConverter, type IPathConverterPrefixEntry } from "./compositePathToObjectConverter";
 import { BabylonScenePathToObjectConverter, BABYLON_SCENE_OBJECT_MODEL_PREFIX, CreateDefaultBabylonSceneObjectModelTree } from "./babylonScenePathToObjectConverter";
@@ -148,6 +150,90 @@ export function _AddInteractivityObjectModel(scene: Scene) {
             return pos;
         },
         type: "Vector3",
+        getTarget: () => scene.activeCamera,
+    });
+
+    // activeCamera projection properties. Per the spec these read-only values are NaN when there is no
+    // active camera, or when the active camera does not use the projection type of the requested pointer
+    // (all perspective properties are NaN for an orthographic camera, and vice-versa).
+    const getActivePerspectiveValue = (compute: (camera: Camera) => number): number => {
+        const camera = scene.activeCamera;
+        if (!camera || camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+            return NaN;
+        }
+        return compute(camera);
+    };
+    const getActiveOrthographicValue = (compute: (camera: Camera) => number): number => {
+        const camera = scene.activeCamera;
+        if (!camera || camera.mode !== Constants.ORTHOGRAPHIC_CAMERA) {
+            return NaN;
+        }
+        return compute(camera);
+    };
+
+    // perspective/aspectRatio (width over height)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/aspectRatio", {
+        get: () => getActivePerspectiveValue((camera) => camera.getEngine().getAspectRatio(camera)),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // perspective/yfov (vertical field of view, in radians)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/yfov", {
+        get: () =>
+            getActivePerspectiveValue((camera) => {
+                // Babylon stores the vertical fov when fovMode is vertical-fixed (the default and what the glTF
+                // loader sets). For a horizontal-fixed camera, convert the horizontal fov to vertical.
+                if (camera.fovMode === Constants.FOVMODE_VERTICAL_FIXED) {
+                    return camera.fov;
+                }
+                const aspectRatio = camera.getEngine().getAspectRatio(camera);
+                return aspectRatio ? 2 * Math.atan(Math.tan(camera.fov / 2) / aspectRatio) : camera.fov;
+            }),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // perspective/znear (distance to the near clipping plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/znear", {
+        get: () => getActivePerspectiveValue((camera) => camera.minZ),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // perspective/zfar (distance to the far clipping plane; Babylon uses maxZ === 0 to mean an infinite far plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/zfar", {
+        get: () => getActivePerspectiveValue((camera) => (camera.maxZ === 0 ? Infinity : camera.maxZ)),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/xmag (half the orthographic width)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/xmag", {
+        get: () =>
+            getActiveOrthographicValue((camera) => {
+                const halfWidth = camera.getEngine().getRenderWidth() / 2;
+                return ((camera.orthoRight ?? halfWidth) - (camera.orthoLeft ?? -halfWidth)) / 2;
+            }),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/ymag (half the orthographic height)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/ymag", {
+        get: () =>
+            getActiveOrthographicValue((camera) => {
+                const halfHeight = camera.getEngine().getRenderHeight() / 2;
+                return ((camera.orthoTop ?? halfHeight) - (camera.orthoBottom ?? -halfHeight)) / 2;
+            }),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/znear (distance to the near clipping plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/znear", {
+        get: () => getActiveOrthographicValue((camera) => camera.minZ),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/zfar (distance to the far clipping plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/zfar", {
+        get: () => getActiveOrthographicValue((camera) => camera.maxZ),
+        type: "number",
         getTarget: () => scene.activeCamera,
     });
 

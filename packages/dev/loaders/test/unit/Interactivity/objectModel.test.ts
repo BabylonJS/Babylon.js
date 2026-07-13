@@ -239,6 +239,77 @@ describe("glTF interactivity Object Model", () => {
         expect(lastCallValue.w).toBeCloseTo(0);
     });
 
+    // Helper: run a single pointer/get on a scalar (float) activeCamera pointer and return the logged value.
+    async function getActiveCameraScalar(pointer: string): Promise<number> {
+        log.mockClear();
+        await generateSimpleNodeGraph(
+            { extensions: { KHR_interactivity: {} } },
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 1, socket: "value" },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: [pointer] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+        return log.mock.calls[log.mock.calls.length - 1][0] as number;
+    }
+
+    // check activeCamera perspective projection properties
+    it("should get the active camera's perspective projection properties", async () => {
+        const camera = scene.activeCamera!;
+        camera.mode = 0; // perspective (default for ArcRotateCamera)
+        camera.fovMode = 0; // vertical fixed
+        camera.fov = 0.75;
+        camera.minZ = 0.5;
+        camera.maxZ = 100;
+
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/yfov")).toBeCloseTo(0.75);
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/znear")).toBeCloseTo(0.5);
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/zfar")).toBeCloseTo(100);
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/aspectRatio")).toBeCloseTo(scene.getEngine().getAspectRatio(camera));
+        // Orthographic pointers must be NaN for a perspective camera.
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/orthographic/xmag")).toBeNaN();
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/orthographic/ymag")).toBeNaN();
+    });
+
+    it("should report an infinite perspective far clipping plane as Infinity", async () => {
+        const camera = scene.activeCamera!;
+        camera.mode = 0;
+        camera.maxZ = 0; // Babylon uses maxZ === 0 to mean an infinite far plane
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/zfar")).toBe(Infinity);
+    });
+
+    // check activeCamera orthographic projection properties
+    it("should get the active camera's orthographic projection properties", async () => {
+        const camera = scene.activeCamera!;
+        camera.mode = 1; // orthographic
+        camera.orthoLeft = -3;
+        camera.orthoRight = 3; // xmag = (3 - (-3)) / 2 = 3
+        camera.orthoBottom = -2;
+        camera.orthoTop = 2; // ymag = (2 - (-2)) / 2 = 2
+        camera.minZ = 0.1;
+        camera.maxZ = 50;
+
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/orthographic/xmag")).toBeCloseTo(3);
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/orthographic/ymag")).toBeCloseTo(2);
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/orthographic/znear")).toBeCloseTo(0.1);
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/orthographic/zfar")).toBeCloseTo(50);
+        // Perspective pointers must be NaN for an orthographic camera.
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/yfov")).toBeNaN();
+        expect(await getActiveCameraScalar("/extensions/KHR_interactivity/activeCamera/perspective/aspectRatio")).toBeNaN();
+    });
+
     it("should set a pointer value and get it correctly", async () => {
         const mesh = new Mesh("mesh", scene);
         const mockGltf: any = {
