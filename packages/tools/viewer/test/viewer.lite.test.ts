@@ -415,6 +415,54 @@ test("environment lighting with model", async ({ page }) => {
     await expectScreenshotMatch(page, "viewer-env-lighting.png");
 });
 
+// Regression test: a model whose PBR pipeline is built BEFORE the environment finishes loading must
+// still be lit once the environment arrives. Lite bakes the environment (IBL) textures into the PBR
+// shaders at build time and `loadEnvironment` only updates `scene._envTextures` + the skybox — it does
+// not rebuild existing PBR groups — so without an explicit relight the model renders black while the
+// skybox still looks correct. The viewer forces a PBR rebuild after an environment load when a model is
+// present (see `_rebuildModelPbrForEnvironment`). Here we make the "model built first" ordering
+// deterministic: load the model with NO environment and render several frames so its pipeline is fully
+// built, THEN add the lighting.
+//
+// The relit result is compared against the same committed reference as the concurrent "environment
+// lighting with model" test, but with a looser tolerance: Lite builds a PBR pipeline slightly
+// differently when it is built WITHOUT an environment and then rebuilt WITH one, versus built with the
+// environment present from the start (the constructor now loads the environment before the model so the
+// common path is exact — see the constructor). The post-hoc relight is therefore a few percent off the
+// reference. That is well within this tolerance while an unlit (black) model — the bug this guards
+// against — differs from the reference by far more, so the test still reliably catches a regression.
+test("environment added after model is built relights the model", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment="none"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    // Render several frames so the model's PBR pipeline is fully built with no environment before we add
+    // one — this is what makes the "model built before environment" ordering deterministic (otherwise the
+    // model's async build can race the environment load and win or lose non-deterministically).
+    const before = await waitForFrameCount(page, 1);
+    await waitForFrameCount(page, before + 30);
+
+    // Add the environment lighting after the model is built, and wait for the load (and the relight it
+    // triggers) to finish: `environmentchange` fires at the end of the environment load, after the model
+    // has been rebuilt for the new lighting.
+    await page.evaluate((viewerElement) => {
+        return new Promise<void>((resolve) => {
+            viewerElement.addEventListener("environmentchange", () => resolve(), { once: true });
+            viewerElement.setAttribute("environment-lighting", "https://assets.babylonjs.com/environments/environmentSpecular.env");
+        });
+    }, viewerElementHandle);
+
+    await expectScreenshotMatch(page, "viewer-env-lighting.png");
+});
+
 test("environment skybox", async ({ page }) => {
     // Regression test for the previous behavior where requesting a skybox with no lighting loaded threw.
     // ViewerLite now loads the requested skybox URL as the environment (Lite couples skybox + IBL to one

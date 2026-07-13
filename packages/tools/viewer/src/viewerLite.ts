@@ -39,6 +39,7 @@ import {
     removeFromScene,
     resetVariant,
     selectVariant,
+    rebuildScenePbrPipelines,
     setSceneImageProcessing,
     setShadowTaskCasterMeshes,
     startEngine,
@@ -176,9 +177,10 @@ export class Viewer extends ViewerBase implements IViewer {
     private _contrast = this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast;
     private _exposure = this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure;
     private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
-    /** Serializes the async `setSceneImageProcessing` rebuilds so overlapping tone-mapping changes can't
-     *  run concurrent PBR-pipeline rebuilds (which race on the scene's renderable list and leak). */
-    private readonly _imageProcessingLock = new AsyncLock();
+    /** Serializes the async PBR-pipeline rebuilds triggered by image-processing updates
+     *  (`setSceneImageProcessing`) and environment relights (`rebuildScenePbrPipelines`), so overlapping
+     *  changes can't run concurrent rebuilds (which race on the scene's renderable list and leak). */
+    private readonly _pbrRebuildLock = new AsyncLock();
 
     // Shadows
     private _shadowGenerator: LiteShadowGenerator | null = null;
@@ -326,23 +328,37 @@ export class Viewer extends ViewerBase implements IViewer {
         const initialLightingUrl = _options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
         const initialSkyboxUrl = _options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
 
-        // If lighting and skybox URLs are the same, do one combined load. Otherwise do them separately.
-        if (initialLightingUrl === initialSkyboxUrl) {
-            if (initialLightingUrl !== "none") {
-                observePromise(this.loadEnvironment(initialLightingUrl));
-            }
-        } else {
-            if (initialLightingUrl !== "none") {
-                observePromise(this.loadEnvironment(initialLightingUrl, { lighting: true, skybox: false }));
-            }
-            if (initialSkyboxUrl !== "none") {
-                observePromise(this.loadEnvironment(initialSkyboxUrl, { lighting: false, skybox: true }));
-            }
-        }
+        // Initial environment + model loads. The model is loaded AFTER the environment so its PBR pipeline is
+        // built with the environment (IBL) present in one pass — Lite bakes the environment into the PBR
+        // shaders at build time. This is an optimization, not a correctness requirement: an environment added
+        // after a model is already built triggers a pixel-identical pipeline rebuild (see
+        // `_rebuildModelPbrForEnvironment`). Ordering the initial loads this way just avoids that extra rebuild
+        // (and the brief unlit frame before it) on the common path.
+        observePromise(
+            (async () => {
+                const envLoads: Promise<void>[] = [];
+                // If lighting and skybox URLs are the same, do one combined load. Otherwise do them separately.
+                if (initialLightingUrl === initialSkyboxUrl) {
+                    if (initialLightingUrl !== "none") {
+                        envLoads.push(this.loadEnvironment(initialLightingUrl));
+                    }
+                } else {
+                    if (initialLightingUrl !== "none") {
+                        envLoads.push(this.loadEnvironment(initialLightingUrl, { lighting: true, skybox: false }));
+                    }
+                    if (initialSkyboxUrl !== "none") {
+                        envLoads.push(this.loadEnvironment(initialSkyboxUrl, { lighting: false, skybox: true }));
+                    }
+                }
+                // Don't block (or fail) the model load if an environment load rejects (e.g. a bad URL) — the
+                // model should still appear. `allSettled` waits for the env textures to be in place first.
+                await Promise.allSettled(envLoads);
 
-        if (_options?.source) {
-            observePromise(this.loadModel(_options.source));
-        }
+                if (_options?.source) {
+                    await this.loadModel(_options.source);
+                }
+            })()
+        );
     }
 
     // ── Clear Color ──
@@ -742,6 +758,18 @@ export class Viewer extends ViewerBase implements IViewer {
                 await this._beginRendering();
             }
 
+            // Relight an already-built model. Lite bakes the environment (IBL) textures into the PBR
+            // shaders when the material group is BUILT; `loadEnvironment` only updates `scene._envTextures`
+            // + the skybox and does NOT rebuild existing PBR groups (and the re-registration above only runs
+            // deferred builders, not already-built ones). So when the environment finishes loading AFTER the
+            // model's pipeline was built — the common concurrent-load race where the model wins, or an
+            // environment explicitly added to an already-displayed model — the model keeps its previous
+            // (often absent) IBL and renders unlit/black while the skybox looks correct. Force a PBR rebuild
+            // so the model picks up the new lighting. No-op when no model is loaded.
+            if (this._renderLoopRunning && this._container) {
+                await this._rebuildModelPbrForEnvironment();
+            }
+
             throwIfAborted(abortSignal, compositeAbortSignal);
 
             this.onEnvironmentChanged.notifyObservers();
@@ -798,13 +826,32 @@ export class Viewer extends ViewerBase implements IViewer {
 
     /**
      * Apply the current committed post-processing state to the running scene via
-     * `setSceneImageProcessing`, serialized through {@link _imageProcessingLock} so overlapping calls
+     * `setSceneImageProcessing`, serialized through {@link _pbrRebuildLock} so overlapping calls
      * never run concurrent PBR-pipeline rebuilds. Each queued apply re-reads the latest committed state
      * when it runs, so a burst of rapid changes collapses to the final state (intermediate updates that
      * no longer differ are no-ops).
      */
     private _applyImageProcessingDynamic(): void {
-        observePromise(this._imageProcessingLock.lockAsync(async () => await setSceneImageProcessing(this._scene, this._liteImageProcessingUpdate())));
+        observePromise(this._pbrRebuildLock.lockAsync(async () => await setSceneImageProcessing(this._scene, this._liteImageProcessingUpdate())));
+    }
+
+    /**
+     * Force a rebuild of the loaded model's PBR pipelines so they pick up the scene's current environment
+     * (IBL) textures. Needed because Lite bakes the environment into the PBR shaders at build time and
+     * `loadEnvironment` doesn't rebuild existing PBR groups, so a model built before its environment loads
+     * renders unlit/black. Used when an environment is added or changed AFTER a model is already displayed.
+     *
+     * `rebuildScenePbrPipelines` re-runs the PBR group builder against the scene's current `_envTextures`,
+     * producing pipelines pixel-identical to a model built with the environment present from the start.
+     *
+     * Serialized through {@link _pbrRebuildLock} with the other image-processing updates (which also
+     * rebuild PBR pipelines) so the two can't race.
+     * @returns A promise that resolves once the model's PBR pipelines have been rebuilt.
+     */
+    private async _rebuildModelPbrForEnvironment(): Promise<void> {
+        await this._pbrRebuildLock.lockAsync(async () => {
+            await rebuildScenePbrPipelines(this._scene);
+        });
     }
 
     /**
