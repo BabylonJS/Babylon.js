@@ -14,6 +14,7 @@ export const enum SerializedFieldType {
     QUATERNION = 10,
     CAMERA = 11,
     MATRIX = 12,
+    VECTOR4 = 13,
 }
 
 /** @internal */

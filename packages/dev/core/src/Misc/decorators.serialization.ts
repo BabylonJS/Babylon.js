@@ -8,7 +8,7 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { Tags } from "./tags";
 import { Color3, Color4 } from "../Maths/math.color.pure";
-import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector.pure";
+import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
 import { SerializedFieldType } from "./decorators.serializationUtilities";
@@ -69,6 +69,7 @@ const CopySource = function <T>(creationFunction: () => T, source: T, instanciat
                 case SerializedFieldType.COLOR4:
                 case SerializedFieldType.QUATERNION:
                 case SerializedFieldType.MATRIX:
+                case SerializedFieldType.VECTOR4:
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
                     break;
             }
@@ -201,6 +202,9 @@ export class SerializationHelper {
                     case SerializedFieldType.MATRIX:
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;
+                    case SerializedFieldType.VECTOR4:
+                        serializationObject[targetPropertyName] = (<Vector4>sourceProperty).asArray();
+                        break;
                 }
             }
         }
@@ -275,6 +279,9 @@ export class SerializationHelper {
                         break;
                     case SerializedFieldType.MATRIX:
                         dest[property] = Matrix.FromArray(sourceProperty);
+                        break;
+                    case SerializedFieldType.VECTOR4:
+                        dest[property] = Vector4.FromArray(sourceProperty);
                         break;
                 }
             }

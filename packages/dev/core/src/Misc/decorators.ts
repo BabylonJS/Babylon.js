@@ -112,6 +112,10 @@ export function serializeAsMatrix(sourceName?: string) {
     return generateSerializableMember(SerializedFieldType.MATRIX, sourceName);
 }
 
+export function serializeAsVector4(sourceName?: string) {
+    return generateSerializableMember(SerializedFieldType.VECTOR4, sourceName);
+}
+
 /**
  * Decorator used to define property that can be serialized as reference to a camera
  * @param sourceName defines the name of the property to decorate
