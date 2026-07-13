@@ -72,7 +72,13 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "error", description: "Fires on error" },
         ],
         dataInputs: [],
-        dataOutputs: [],
+        dataOutputs: [
+            {
+                name: "event",
+                type: "string",
+                description: "KHR_interactivity event reference for this lifecycle event (stable string ref usable with ref/extractProperty and event equality)",
+            },
+        ],
     },
 
     SceneTickEvent: {
@@ -89,6 +95,11 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         dataOutputs: [
             { name: "timeSinceStart", type: "number", description: "Total time since the scene started (seconds)" },
             { name: "deltaTime", type: "number", description: "Time since last frame (seconds)" },
+            {
+                name: "event",
+                type: "string",
+                description: "KHR_interactivity event reference for this lifecycle event (stable string ref usable with ref/extractProperty and event equality)",
+            },
         ],
     },
 
@@ -323,11 +334,31 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "error" },
         ],
         dataInputs: [],
-        dataOutputs: [],
+        dataOutputs: [
+            {
+                name: "event",
+                type: "string",
+                description: "KHR_interactivity event reference for the received custom event (stable string ref usable with ref/extractProperty and event equality)",
+            },
+        ],
         config: {
             eventId: "string — must match the sender's eventId",
             eventData: "Record<string, { type: RichType }> — dynamic data outputs are created from this",
         },
+    },
+
+    StopEventPropagation: {
+        className: "FlowGraphStopEventPropagationBlock",
+        category: "Event",
+        description:
+            "Stops propagation of an in-flight custom event (KHR_interactivity event/stopPropagation). Skips the remaining handler nodes of the currently-dispatching event referenced by the `event` input.",
+        signalInputs: [{ name: "in" }],
+        signalOutputs: [{ name: "out" }, { name: "error" }],
+        dataInputs: [
+            { name: "event", type: "string", description: "Event reference (from an event block's `event` output) whose propagation should be stopped" },
+            { name: "stopImmediate", type: "boolean", description: "Also stop remaining immediate handlers (default: false)", isOptional: true },
+        ],
+        dataOutputs: [],
     },
 
     // ═══════════════════════════════════════════════════════════════════
