@@ -169,6 +169,45 @@ describe("Interactivity/animation nodes", () => {
         expect(stopSpy).not.toHaveBeenCalled();
     });
 
+    // animation/start input validation (KHR spec: err flow when speed/time inputs are invalid)
+
+    test.each([
+        ["speed 0", { speed: { value: [0], type: 1 } }],
+        ["speed -1", { speed: { value: [-1], type: 1 } }],
+        ["speed NaN", { speed: { value: [NaN], type: 1 } }],
+        ["speed +Infinity", { speed: { value: [Infinity], type: 1 } }],
+        ["endTime NaN", { endTime: { value: [NaN], type: 1 } }],
+        ["startTime NaN", { startTime: { value: [NaN], type: 1 } }],
+        ["startTime +Infinity", { startTime: { value: [Infinity], type: 1 } }],
+    ])("animation/start does not start the animation for invalid input: %s", async (_name, extraValues) => {
+        const ag = new AnimationGroup("test");
+        ag.to = 10;
+        const startSpy = vi.spyOn(ag, "start");
+        const gltf = {
+            animations: [{}, { _babylonAnimationGroup: ag }],
+        };
+
+        await generateSimpleNodeGraph(
+            gltf,
+            [{ op: "animation/start" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [1], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [2], type: 1 },
+                        ...(extraValues as any),
+                    },
+                },
+            ],
+            [{ signature: "int" }, { signature: "float" }]
+        );
+
+        expect(startSpy).not.toHaveBeenCalled();
+    });
+
     // animation/stop
 
     test("animation/stop after a delay", async () => {
@@ -240,6 +279,9 @@ describe("Interactivity/animation nodes", () => {
 
         expect(startSpy).toHaveBeenCalled();
         expect(stopSpy).toHaveBeenCalledTimes(1);
+        // The animation must be stopped while skipping the animation-end observable, so that stopping does not
+        // activate the originating animation/start operation's `done` flow (KHR_interactivity spec).
+        expect(stopSpy).toHaveBeenCalledWith(true);
     });
 
     // animation/stopAt

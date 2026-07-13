@@ -126,8 +126,29 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // not accepting 0
             const speed = this.speed.getValue(context) || 1;
             const from = this.from.getValue(context) ?? 0;
+            // Read the raw end time before it is defaulted to the animation group's natural end, so that an
+            // explicitly provided NaN end time can still be detected by the animation/start validation below.
+            const rawTo = this.to.getValue(context);
             // not accepting 0
-            const to = this.to.getValue(context) || animationGroupToUse.to;
+            const to = rawTo || animationGroupToUse.to;
+
+            // KHR_interactivity animation/start validation. Only applies to animation-group playback
+            // (animation/start); interpolation uses the `animation` input and has its own validation below.
+            // Per the spec the operation activates its `err` flow when the speed is NaN, infinite, or <= 0, or
+            // when the end time is NaN. A NaN or infinite start time is caught by the finite check on `from`.
+            if (!animation) {
+                if (isNaN(rawTo)) {
+                    return this._reportError(context, "Invalid animation end time");
+                }
+                // Only validate a speed that was explicitly provided; an unconnected speed keeps the engine
+                // default of 1 (matching the historical Babylon behavior for animation/start without a speed).
+                if (this.speed.isConnected() || context._hasConnectionValue(this.speed)) {
+                    const providedSpeed = this.speed.getValue(context);
+                    if (!isFinite(providedSpeed) || providedSpeed <= 0) {
+                        return this._reportError(context, "Invalid animation speed");
+                    }
+                }
+            }
 
             // Validate duration for interpolation animations: non-finite or negative values trigger the error flow.
             // Only validate when animation is provided (interpolation case), not for general animation/start
