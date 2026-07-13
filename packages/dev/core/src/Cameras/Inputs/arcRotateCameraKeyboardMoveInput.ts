@@ -8,6 +8,7 @@ import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEven
 import { Tools } from "../../Misc/tools.pure";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { type KeyboardConditions } from "../inputMapper";
+import { Vector2 } from "../../Maths/math.vector.pure";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -139,6 +140,10 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
     private _keyboardConditions: KeyboardConditions = { modifiers: this._keyboardModifiers };
 
+    /** Reused accumulators for the per-frame keyboard rotate/pan directions, to avoid per-frame allocations */
+    private _rotateDirection = new Vector2();
+    private _panDirection = new Vector2();
+
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -245,6 +250,15 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
             this._keyboardModifiers.ctrl = this._ctrlPressed;
             this._keyboardModifiers.alt = this._altPressed;
 
+            // Rotate and pan directions are accumulated across keys and applied once below (normalized), so
+            // holding two directions at once (e.g. up + left) moves along a normalized diagonal at the same
+            // speed as a single direction, instead of the ~1.41x boost (sqrt(2)) that results from applying
+            // each key independently. Zoom is one-dimensional and is applied per key.
+            const rotateDirection = this._rotateDirection.set(0, 0);
+            const panDirection = this._panDirection.set(0, 0);
+            let rotateSensitivity = 0;
+            let panSensitivity = 0;
+
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
 
@@ -261,15 +275,18 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         // legacy sensibility/angularSpeed properties over time). When `sensitivity` is
                         // undefined, fall back to the legacy properties for backward compatibility.
                         if (resolved.interaction === "pan") {
-                            const panSens = resolved.sensitivity ?? 1 / this.panningSensibility;
+                            // Accumulate a unit direction per pan key; the combined vector is normalized after the loop.
+                            // Aggregate sensitivity with max so the pan speed is independent of key insertion order
+                            // when keys resolve to different per-key sensitivities.
+                            panSensitivity = Math.max(panSensitivity, resolved.sensitivity ?? 1 / this.panningSensibility);
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(-panSens, 0);
+                                panDirection.x -= 1;
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(panSens, 0);
+                                panDirection.x += 1;
                             } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(0, panSens);
+                                panDirection.y += 1;
                             } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(0, -panSens);
+                                panDirection.y -= 1;
                             }
                         } else if (resolved.interaction === "zoom") {
                             const zoomSens = resolved.sensitivity ?? 1 / this.zoomingSensibility;
@@ -279,15 +296,18 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                                 input.handlers.zoom(-zoomSens);
                             }
                         } else if (resolved.interaction === "rotate") {
-                            const rotateSens = resolved.sensitivity ?? this.angularSpeed;
+                            // Accumulate a unit direction per rotate key; the combined vector is normalized after the loop.
+                            // Aggregate sensitivity with max so the rotate speed is independent of key insertion order
+                            // when keys resolve to different per-key sensitivities.
+                            rotateSensitivity = Math.max(rotateSensitivity, resolved.sensitivity ?? this.angularSpeed);
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(-rotateSens, 0);
+                                rotateDirection.x -= 1;
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(rotateSens, 0);
+                                rotateDirection.x += 1;
                             } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(0, -rotateSens);
+                                rotateDirection.y -= 1;
                             } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(0, rotateSens);
+                                rotateDirection.y += 1;
                             }
                         }
                     }
@@ -298,6 +318,16 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         camera.restoreState();
                     }
                 }
+            }
+
+            // Apply the accumulated rotate/pan once, normalized so a diagonal isn't faster than an axis-aligned move.
+            if (rotateDirection.x !== 0 || rotateDirection.y !== 0) {
+                rotateDirection.normalize().scaleInPlace(rotateSensitivity);
+                input.handlers.rotate(rotateDirection.x, rotateDirection.y);
+            }
+            if (panDirection.x !== 0 || panDirection.y !== 0) {
+                panDirection.normalize().scaleInPlace(panSensitivity);
+                input.handlers.pan(panDirection.x, panDirection.y);
             }
         }
     }

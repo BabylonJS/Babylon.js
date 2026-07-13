@@ -101,7 +101,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BooleanBadgePropertyLine label="Compressed" value={displayFormat?.compressed ?? false} />
             <BooleanBadgePropertyLine label="sRGB Buffers" value={useSRGBBuffer ?? false} />
             <BoundProperty component={BooleanBadgePropertyLine} label="Gamma Space" target={texture} propertyKey="gammaSpace" />
-            <BoundProperty component={BooleanBadgePropertyLine} label="Has Alpha" target={texture} propertyKey="hasAlpha" />
+            <BoundProperty component={SwitchPropertyLine} label="Has Alpha" target={texture} propertyKey="hasAlpha" />
             <BoundProperty component={SwitchPropertyLine} label="Alpha from RGB" target={texture} propertyKey="getAlphaFromRGB" />
             <BooleanBadgePropertyLine label="3D" value={texture.is3D} />
             <BooleanBadgePropertyLine label="2D Array" value={texture.is2DArray} />

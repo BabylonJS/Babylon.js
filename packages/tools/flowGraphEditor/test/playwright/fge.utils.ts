@@ -94,6 +94,19 @@ export class FlowGraphEditorPage {
     }
 
     /**
+     * Get the geometry ("d" attribute) of every visible SVG link path (excluding selection overlays).
+     * Useful for asserting that connections follow their nodes when the nodes are moved.
+     */
+    async getLinkPaths(): Promise<string[]> {
+        return await this.page.evaluate(() => {
+            const svg = document.getElementById("graph-svg-container");
+            if (!svg) throw new Error("graph-svg-container not found");
+            const paths = svg.querySelectorAll("path:not([class*='selection'])");
+            return Array.from(paths).map((p) => p.getAttribute("d") ?? "");
+        });
+    }
+
+    /**
      * Add a new graph tab and wait for the canvas to rebuild.
      */
     async addGraphTab(): Promise<void> {

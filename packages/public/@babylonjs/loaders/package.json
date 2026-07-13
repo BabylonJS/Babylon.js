@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/loaders",
-    "version": "9.14.0",
+    "version": "9.16.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,10 +18,10 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "9.14.0",
+        "@babylonjs/core": "9.16.1",
         "@dev/build-tools": "^1.0.0",
         "@dev/loaders": "^1.0.0",
-        "babylonjs-gltf2interface": "9.14.0"
+        "babylonjs-gltf2interface": "9.16.1"
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0",
@@ -60,6 +60,7 @@
         "glTF/2.0/Extensions/EXT_texture_avif.js",
         "glTF/2.0/Extensions/EXT_texture_webp.js",
         "glTF/2.0/Extensions/KHR_animation_pointer.js",
+        "glTF/2.0/Extensions/KHR_gaussian_splatting.js",
         "glTF/2.0/Extensions/KHR_interactivity.js",
         "glTF/2.0/Extensions/KHR_lights_punctual.js",
         "glTF/2.0/Extensions/KHR_materials_anisotropy.js",

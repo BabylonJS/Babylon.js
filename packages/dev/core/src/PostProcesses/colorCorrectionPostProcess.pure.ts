@@ -44,7 +44,7 @@ export class ColorCorrectionPostProcess extends PostProcess {
         return "ColorCorrectionPostProcess";
     }
 
-    protected override _effectWrapper: ThinColorCorrectionPostProcess;
+    declare protected _effectWrapper: ThinColorCorrectionPostProcess;
 
     constructor(
         name: string,

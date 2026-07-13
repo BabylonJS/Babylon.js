@@ -404,12 +404,14 @@ export class Sandbox extends React.Component<
      * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
      */
     private _getSupportedExtensions(): string {
-        const fallbackExtensions = "babylon, gltf, glb, fbx, obj, ply, sog, splat, spz or stl";
+        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz or stl";
 
         try {
             const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();
             let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
             extensions = extensions.filter((ext) => ext !== "json"); // The splat loader registers .json, but that is covered by the sog format and json files are too generic
+            extensions = [...new Set([...extensions, "babylonproj"])];
+            extensions.sort();
 
             if (extensions.length === 0) {
                 return fallbackExtensions;
@@ -427,7 +429,9 @@ export class Sandbox extends React.Component<
 
     public override render() {
         // In overlay mode, the titlebar shows the full title because the system only shows window controls, not the app name
-        const titleBarText = this.state.currentFileName ? `Babylon.js Sandbox - ${this.state.currentFileName}` : "Babylon.js Sandbox - View glTF, glb, obj and babylon files";
+        const titleBarText = this.state.currentFileName
+            ? `Babylon.js Sandbox - ${this.state.currentFileName}`
+            : "Babylon.js Sandbox - View glTF, glb, obj, babylon and babylonproj files";
 
         return (
             <div id="root">
@@ -620,7 +624,7 @@ export class Sandbox extends React.Component<
      * @param filename current filename
      */
     private _updateDocumentTitle(filename: string) {
-        const defaultDescription = "View glTF, glb, obj and babylon files";
+        const defaultDescription = "View glTF, glb, obj, babylon and babylonproj files";
         const isOverlay = window.matchMedia("(display-mode: window-controls-overlay)").matches;
         const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
 

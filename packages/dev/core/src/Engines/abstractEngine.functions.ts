@@ -5,12 +5,17 @@ import { type IWebRequest } from "core/Misc/interfaces/iWebRequest";
 import { type WebRequest } from "core/Misc/webRequest";
 import { type IOfflineProvider } from "core/Offline/IOfflineProvider";
 import { type Nullable } from "core/types";
-import { LoadFile } from "core/Misc/fileTools.pure";
+import { _WarnImport } from "core/Misc/devTools";
 import { Constants } from "./constants";
+import { type AbstractEngine } from "./abstractEngine";
 
 /**
- * @deprecated Use direct imports from fileTools.pure instead.
- * Kept for backwards compatibility — will be removed in a future version.
+ * Injection seam for file/image loading. The implementations live in
+ * `fileTools.pure` and are registered here as a side effect by `fileTools.ts`
+ * (via `RegisterFileTools`). Keeping them behind this mutable context object —
+ * instead of importing them directly into the always-loaded engine classes —
+ * lets bundlers tree-shake all file-loading code out of builds that never
+ * import the `fileTools` side effect (e.g. a minimal thin-engine build).
  * @internal
  */
 export const EngineFunctionContext: {
@@ -22,6 +27,15 @@ export const EngineFunctionContext: {
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest;
+    loadImage?: (
+        input: string | ArrayBuffer | ArrayBufferView | Blob,
+        onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+        onError: (message?: string, exception?: any) => void,
+        offlineProvider: Nullable<IOfflineProvider>,
+        mimeType?: string,
+        imageBitmapOptions?: ImageBitmapOptions,
+        engine?: Nullable<AbstractEngine>
+    ) => Nullable<HTMLImageElement>;
 } = {};
 
 /**
@@ -50,7 +64,11 @@ export function _LoadFile(
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest
 ): IFileRequest {
-    const loadFileFn = injectedLoadFile || EngineFunctionContext.loadFile || LoadFile;
+    const loadFileFn = injectedLoadFile || EngineFunctionContext.loadFile;
+    if (!loadFileFn) {
+        // The fileTools side effect was never imported, so no loader is registered.
+        throw _WarnImport("FileTools");
+    }
     const request = loadFileFn(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     return request;
 }

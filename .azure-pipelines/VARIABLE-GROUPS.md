@@ -61,7 +61,7 @@ Azure Front Door profile names used alongside the endpoints above.
 | `CDN_PROFILE_PLAYGROUND` | Profile for the playground endpoint                     |
 | `CDN_PROFILE_TOOLS`      | Profile for all editor tool and documentation endpoints |
 
-## Variable Group: `BabylonJS-BrowserStack`
+## Variable Group: `Browserstack-Opensource`
 
 BrowserStack credentials shared by pipelines that run browser tests.
 

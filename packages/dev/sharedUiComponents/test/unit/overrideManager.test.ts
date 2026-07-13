@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
+import { Texture } from "core/Materials/Textures/texture";
+import { TransformNode } from "core/Meshes/transformNode";
 import { GetSmartAssetManager, LoadSmartAssetAsync, ReloadSmartAssetAsync } from "core/SmartAssets/smartAssetManager.pure";
 import {
     AddOverride,
@@ -489,6 +491,61 @@ describe("OverrideManager", () => {
 
             const material = scene.materials.find((m) => m.name === "Material1");
             expect((material as any).wireframe).toBe(true);
+        });
+
+        it("should apply an override to a pure TransformNode target", () => {
+            const node = new TransformNode("Pivot", scene);
+
+            AddOverride(scene, {
+                targetType: "transformNodes",
+                targetName: "Pivot",
+                targetIndex: 0,
+                propertyPath: "position",
+                value: [1, 2, 3],
+            });
+
+            expect(node.position.asArray()).toEqual([1, 2, 3]);
+        });
+
+        it("should apply a getter-only property (invertY) without throwing and re-upload the texture", () => {
+            const texture = new Texture("data:invertytest", scene, { invertY: false });
+            texture.name = "invertYTexture";
+            // invertY is applied at upload time and has no setter; applying the override must not
+            // throw (which would abort the whole batch) and must re-upload so the change takes effect.
+            const updateSpy = vi.spyOn(texture, "updateURL").mockImplementation(() => texture);
+            expect(texture.invertY).toBe(false);
+
+            expect(() =>
+                AddOverride(scene, {
+                    targetType: "textures",
+                    targetName: "invertYTexture",
+                    targetIndex: 0,
+                    propertyPath: "invertY",
+                    value: true,
+                })
+            ).not.toThrow();
+
+            expect(texture._invertY).toBe(true);
+            expect(texture.invertY).toBe(true);
+            expect(updateSpy).toHaveBeenCalled();
+        });
+
+        it("should restore a getter-only property (invertY) without throwing when the override is removed", () => {
+            const texture = new Texture("data:invertyrestore", scene, { invertY: false });
+            texture.name = "invertYRestore";
+            vi.spyOn(texture, "updateURL").mockImplementation(() => texture);
+
+            AddOverride(scene, {
+                targetType: "textures",
+                targetName: "invertYRestore",
+                targetIndex: 0,
+                propertyPath: "invertY",
+                value: true,
+            });
+            expect(texture.invertY).toBe(true);
+
+            expect(() => RemoveOverride(scene, "textures", "invertYRestore", 0, "invertY")).not.toThrow();
+            expect(texture.invertY).toBe(false);
         });
     });
 

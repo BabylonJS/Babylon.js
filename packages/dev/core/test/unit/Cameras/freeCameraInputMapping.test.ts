@@ -132,6 +132,46 @@ describe("FreeCamera/FlyCamera input map wiring", () => {
         });
     });
 
+    describe("diagonal movement normalization", () => {
+        it("FreeCamera: a two-axis diagonal moves at the same speed as a single axis (no sqrt(2) boost)", () => {
+            const single = new FreeCamera("single", new Vector3(0, 0, 0), scene!);
+            single.attachControl();
+            pressKey(38); // forward
+            single._checkInputs();
+            const singleDist = single.position.length();
+            single.detachControl();
+
+            const diagonal = new FreeCamera("diagonal", new Vector3(0, 0, 0), scene!);
+            diagonal.attachControl();
+            pressKey(38); // forward
+            pressKey(37); // left strafe
+            diagonal._checkInputs();
+            const diagonalDist = diagonal.position.length();
+
+            expect(singleDist).toBeGreaterThan(0);
+            expect(diagonalDist).toBeCloseTo(singleDist, 5);
+        });
+
+        it("FlyCamera: a two-axis diagonal moves at the same speed as a single axis (no sqrt(2) boost)", () => {
+            const single = new FlyCamera("single", new Vector3(0, 0, 0), scene!);
+            single.attachControl();
+            pressKey(87); // forward
+            single._checkInputs();
+            const singleDist = single.position.length();
+            single.detachControl();
+
+            const diagonal = new FlyCamera("diagonal", new Vector3(0, 0, 0), scene!);
+            diagonal.attachControl();
+            pressKey(87); // forward
+            pressKey(65); // left strafe
+            diagonal._checkInputs();
+            const diagonalDist = diagonal.position.length();
+
+            expect(singleDist).toBeGreaterThan(0);
+            expect(diagonalDist).toBeCloseTo(singleDist, 5);
+        });
+    });
+
     describe("FreeCameraTouchInput", () => {
         const dragOneFinger = (input: FreeCameraTouchInput, dx: number, dy: number) => {
             const down = new PointerInfo(

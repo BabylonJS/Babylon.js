@@ -1,19 +1,48 @@
 import { type IXmlSerializerFormatOptions } from "./xml.serializer.format";
 
-/** */
+/** Describes an XML qualified name with an optional namespace. */
 export interface IQualifiedName {
-    /** */
+    /** The namespace URI or prefix. */
     ns?: string;
-    /** */
+    /** The local XML name. */
     name: string;
 }
 
-/** */
+/** Provides a fluent interface for writing XML content. */
 export interface IXmlBuilder {
+    /**
+     * Writes the XML declaration.
+     * @param version defines the XML version
+     * @param encoding defines the optional XML encoding
+     * @param standalone defines the optional standalone flag
+     * @returns the XML builder
+     */
     dec(version: string, encoding?: string, standalone?: boolean): IXmlBuilder;
+    /**
+     * Writes an XML attribute.
+     * @param ns defines the attribute namespace
+     * @param n defines the attribute name
+     * @param v defines the attribute value
+     * @returns the XML builder
+     */
     att(ns: string | null, n: string, v: string): IXmlBuilder;
+    /**
+     * Writes an XML element.
+     * @param ns defines the element namespace
+     * @param n defines the element name
+     * @returns the XML builder
+     */
     ele(ns: string | null, n: string): IXmlBuilder;
+    /**
+     * Writes text content.
+     * @param txt defines the text to write
+     * @returns the XML builder
+     */
     text(txt: string): IXmlBuilder;
+    /**
+     * Ends the current XML element.
+     * @returns the XML builder
+     */
     end(): IXmlBuilder;
 }
 
@@ -29,10 +58,13 @@ export type XmlName = string | IQualifiedName;
 
 type FieldKind = "attr" | "elem" | "none";
 
-/**
- *
- */
+/** Formats values for XML serialization. */
 export interface IFormatter<T = any> {
+    /**
+     * Converts a value to its XML string representation.
+     * @param value defines the value to format
+     * @returns the XML string representation
+     */
     toString(value: T): string;
 }
 
@@ -49,9 +81,11 @@ type FieldMeta = {
 const XML_CLASS_META = Symbol("__xml:meta$__");
 const XML_CLASS_NAME = Symbol("__xml:name$__");
 
-function AddXmlMeta(target: any, meta: FieldMeta) {
-    const ctor = target.constructor;
-    (ctor[XML_CLASS_META] ??= []).push(meta);
+function AddXmlMeta(context: { metadata: DecoratorMetadataObject }, meta: FieldMeta) {
+    if (!Object.prototype.hasOwnProperty.call(context.metadata, XML_CLASS_META)) {
+        context.metadata[XML_CLASS_META] = [];
+    }
+    (context.metadata[XML_CLASS_META] as FieldMeta[]).push(meta);
 }
 
 /**
@@ -59,7 +93,7 @@ function AddXmlMeta(target: any, meta: FieldMeta) {
  * @returns
  */
 export function XmlName(name: XmlName) {
-    return (ctor: Function) => {
+    return (ctor: Function, _context: ClassDecoratorContext) => {
         (ctor as any)[XML_CLASS_NAME] = name;
     };
 }
@@ -69,7 +103,8 @@ export function XmlName(name: XmlName) {
  * @returns
  */
 export function XmlIgnore() {
-    return (target: any, prop: string) => AddXmlMeta(target, { kind: "none", prop, ignore: true });
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) =>
+        AddXmlMeta(context, { kind: "none", prop: String(context.name), ignore: true });
 }
 
 /**
@@ -77,7 +112,7 @@ export function XmlIgnore() {
  * @returns
  */
 export function XmlAttr(opts?: { name: XmlName; formatter?: FormatterCtor<any> }) {
-    return (target: any, prop: string) => AddXmlMeta(target, { kind: "attr", prop, ...opts });
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => AddXmlMeta(context, { kind: "attr", prop: String(context.name), ...opts });
 }
 
 /**
@@ -86,7 +121,7 @@ export function XmlAttr(opts?: { name: XmlName; formatter?: FormatterCtor<any> }
  * @returns
  */
 export function XmlElem(opts?: { name: XmlName }) {
-    return (target: any, prop: string) => AddXmlMeta(target, { kind: "elem", prop, ...opts });
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => AddXmlMeta(context, { kind: "elem", prop: String(context.name), ...opts });
 }
 
 /**
@@ -95,7 +130,21 @@ export function XmlElem(opts?: { name: XmlName }) {
  * @returns
  */
 export function GetXmlFieldMeta(obj: any): FieldMeta[] {
-    return (obj?.constructor?.[XML_CLASS_META] ?? []) as FieldMeta[];
+    const ctor = typeof obj === "function" ? obj : obj?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[Symbol.metadata];
+    if (!metadata) {
+        return [];
+    }
+    // Walk metadata chain to collect all field metadata
+    const result: FieldMeta[] = [];
+    let currentMeta: any = metadata;
+    while (currentMeta) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, XML_CLASS_META)) {
+            result.push(...(currentMeta[XML_CLASS_META] as FieldMeta[]));
+        }
+        currentMeta = Object.getPrototypeOf(currentMeta);
+    }
+    return result;
 }
 
 /**

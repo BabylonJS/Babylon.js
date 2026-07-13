@@ -14,7 +14,7 @@ import { InputBlock } from "../Input/inputBlock.pure";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Constants } from "../../../../Engines/constants";
 
-import { CubeTexture } from "../../../Textures/cubeTexture.pure";
+import { CubeTextureParse, type CubeTexture } from "../../../Textures/cubeTexture.pure";
 import { Texture } from "../../../Textures/texture.pure";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -102,7 +102,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
     /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
     @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
-        notifiers: { rebuild: true, update: true, onValidation: ReflectionTextureBaseBlock._OnGenerateOnlyFragmentCodeChanged },
+        notifiers: { rebuild: true, update: true, onValidation: (block, prop) => ReflectionTextureBaseBlock._OnGenerateOnlyFragmentCodeChanged(block, prop) },
     })
     public generateOnlyFragmentCode = false;
 
@@ -627,7 +627,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             if (serializationObject.texture.isCube) {
-                this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
+                this.texture = CubeTextureParse(serializationObject.texture, scene, rootUrl);
             } else {
                 this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
             }

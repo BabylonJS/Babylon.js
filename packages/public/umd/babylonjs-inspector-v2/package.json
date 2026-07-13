@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-inspector",
-    "version": "9.14.0",
+    "version": "9.16.1",
     "main": "babylon.inspector-v2.bundle.js",
     "files": [
         "babylon.inspector-v2.*",
@@ -17,13 +17,13 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "9.14.0",
-        "babylonjs-addons": "9.14.0",
-        "babylonjs-gui": "9.14.0",
-        "babylonjs-gui-editor": "9.14.0",
-        "babylonjs-loaders": "9.14.0",
-        "babylonjs-materials": "9.14.0",
-        "babylonjs-serializers": "9.14.0"
+        "babylonjs": "9.16.1",
+        "babylonjs-addons": "9.16.1",
+        "babylonjs-gui": "9.16.1",
+        "babylonjs-gui-editor": "9.16.1",
+        "babylonjs-loaders": "9.16.1",
+        "babylonjs-materials": "9.16.1",
+        "babylonjs-serializers": "9.16.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

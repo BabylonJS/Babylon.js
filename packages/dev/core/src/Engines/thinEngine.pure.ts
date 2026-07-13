@@ -244,17 +244,6 @@ export class ThinEngine extends AbstractEngine {
         return false;
     }
 
-    protected _framebufferDimensionsObject: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
-
-    /**
-     * sets the object from which width and height will be taken from when getting render width and height
-     * Will fallback to the gl object
-     * @param dimensions the framebuffer width and height that will be used.
-     */
-    public set framebufferDimensionsObject(dimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>) {
-        this._framebufferDimensionsObject = dimensions;
-    }
-
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
      */
@@ -4716,16 +4705,3 @@ interface TexImageParameters {
     format: number;
     type: number;
 }
-
-// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect } from "../Misc/devTools";
-
-ThinEngine.prototype.startTimeQuery ??= _MissingSideEffect("ThinEngine", "startTimeQuery") as any;
-ThinEngine.prototype.endTimeQuery ??= _MissingSideEffect("ThinEngine", "endTimeQuery") as any;
-ThinEngine.prototype.createUniformBuffer ??= _MissingSideEffect("ThinEngine", "createUniformBuffer") as any;
-ThinEngine.prototype.createDynamicUniformBuffer ??= _MissingSideEffect("ThinEngine", "createDynamicUniformBuffer") as any;
-ThinEngine.prototype.updateUniformBuffer ??= _MissingSideEffect("ThinEngine", "updateUniformBuffer") as any;
-ThinEngine.prototype.bindUniformBuffer ??= _MissingSideEffect("ThinEngine", "bindUniformBuffer") as any;
-ThinEngine.prototype.bindUniformBufferBase ??= _MissingSideEffect("ThinEngine", "bindUniformBufferBase") as any;
-ThinEngine.prototype.bindUniformBlock ??= _MissingSideEffect("ThinEngine", "bindUniformBlock") as any;
-// #endregion GENERATED_SIDE_EFFECT_STUBS

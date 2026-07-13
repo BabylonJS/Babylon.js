@@ -318,7 +318,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         this._effectWrapper.fromLinearSpace = value;
     }
 
-    protected override _effectWrapper: ThinImageProcessingPostProcess;
+    declare protected _effectWrapper: ThinImageProcessingPostProcess;
 
     constructor(
         name: string,

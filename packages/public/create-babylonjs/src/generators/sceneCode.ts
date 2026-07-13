@@ -1,15 +1,15 @@
 import type { ProjectOptions } from "../index";
 
-const GLTF_MODEL_URL = "https://assets.babylonjs.com/meshes/boombox.glb";
-
 // ES6 scene code — tree-shakeable imports
 function es6Scene(language: "ts" | "js"): string {
     const canvasCast = language === "ts" ? " as HTMLCanvasElement" : "";
     const arcCamImport = language === "ts" ? '\nimport { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";' : "";
-    const alphaCast = language === "ts" ? "(scene.activeCamera as ArcRotateCamera)" : "scene.activeCamera";
+    const cameraCast = language === "ts" ? " as ArcRotateCamera" : "";
     return `import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
-import { AppendSceneAsync } from "@babylonjs/core/Loading/sceneLoader";${arcCamImport}
+import { AppendSceneAsync } from "@babylonjs/core/Loading/sceneLoader";
+import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";${arcCamImport}
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 
 // Side-effect imports: these register plugins and augment prototypes at load time
 import "@babylonjs/core/Loading/loadingScreen";
@@ -22,25 +22,40 @@ import "@babylonjs/loaders/glTF";
 const canvas = document.getElementById("renderCanvas")${canvasCast};
 const engine = new Engine(canvas, true);
 
-const createScene = async () => {
-    const scene = new Scene(engine);
+    const createScene = async () => {
+        const scene = new Scene(engine);
 
-    // Load a glTF model
-    await AppendSceneAsync("${GLTF_MODEL_URL}", scene);
+        try {
+            // Load a glTF model
+            await AppendSceneAsync("https://assets.babylonjs.com/meshes/boombox.glb", scene);
 
-    // Create a default camera that frames the loaded model
-    scene.createDefaultCamera(true, true, true);
-    // Rotate the camera to face the front of the model
-    ${alphaCast}.alpha += Math.PI;
+            // Create a default camera, and event caught by the controls will call preventdefault(),
+            // such as wheel event
+            scene.createDefaultCamera(true, true, true);
+            // Rotate the camera to face the front of the model
+            (scene.activeCamera${cameraCast}).alpha += Math.PI;
+        } catch {
+            // Fallback: when loading fails
+            // Create a default box mesh
+            CreateBox("box", {}, scene);
 
-    // Create a default environment (skybox + ground + environment lighting)
-    scene.createDefaultEnvironment({
-        createGround: true,
-        createSkybox: true,
-    });
+            scene.createDefaultCamera(true, true, true);
+            const camera = scene.activeCamera${cameraCast};
+            camera.setPosition(new Vector3(3, 3, 3));
+            camera.setTarget(new Vector3(0, 0, 0));
 
-    return scene;
-};
+            // Create a default light for the scene
+            scene.createDefaultLight(true);
+        }
+
+        // Create a default environment (skybox + ground + environment lighting)
+        scene.createDefaultEnvironment({
+            createGround: true,
+            createSkybox: true,
+        });
+
+        return scene;
+    };
 
 createScene().then((scene) => {
     engine.runRenderLoop(() => {
@@ -66,13 +81,28 @@ const engine = new BABYLON.Engine(canvas, true);
 const createScene = async (): Promise<BABYLON.Scene> => {
     const scene = new BABYLON.Scene(engine);
 
-    // Load a glTF model
-    await BABYLON.AppendSceneAsync("${GLTF_MODEL_URL}", scene);
+    try {
+        // Load a glTF model
+        await BABYLON.AppendSceneAsync("https://assets.babylonjs.com/meshes/boombox.glb", scene);
 
-    // Create a default camera that frames the loaded model
-    scene.createDefaultCamera(true, true, true);
-    // Rotate the camera to face the front of the model
-    (scene.activeCamera as BABYLON.ArcRotateCamera).alpha += Math.PI;
+        // Create a default camera, and event caught by the controls will call preventdefault(),
+        // such as wheel event
+        scene.createDefaultCamera(true, true, true);
+        // Rotate the camera to face the front of the model
+        (scene.activeCamera as BABYLON.ArcRotateCamera).alpha += Math.PI;
+    } catch {
+        // Fallback: when loading fails
+        // Create a default box mesh
+        BABYLON.CreateBox("box", {}, scene);
+
+        scene.createDefaultCamera(true, true, true);
+        const camera = scene.activeCamera as BABYLON.ArcRotateCamera;
+        camera.setPosition(new BABYLON.Vector3(3, 3, 3));
+        camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+
+        // Create a default light for the scene
+        scene.createDefaultLight(true);
+    }
 
     // Create a default environment (skybox + ground + environment lighting)
     scene.createDefaultEnvironment({
@@ -106,13 +136,28 @@ const engine = new BABYLON.Engine(canvas, true);
 const createScene = async () => {
     const scene = new BABYLON.Scene(engine);
 
-    // Load a glTF model
-    await BABYLON.AppendSceneAsync("${GLTF_MODEL_URL}", scene);
+    try {
+        // Load a glTF model
+        await BABYLON.AppendSceneAsync("https://assets.babylonjs.com/meshes/boombox.glb", scene);
 
-    // Create a default camera that frames the loaded model
-    scene.createDefaultCamera(true, true, true);
-    // Rotate the camera to face the front of the model
-    scene.activeCamera.alpha += Math.PI;
+        // Create a default camera, and event caught by the controls will call preventdefault(),
+        // such as wheel event
+        scene.createDefaultCamera(true, true, true);
+        // Rotate the camera to face the front of the model
+        scene.activeCamera.alpha += Math.PI;
+    } catch {
+        // Fallback: when loading fails
+        // Create a default box mesh
+        BABYLON.CreateBox("box", {}, scene);
+
+        scene.createDefaultCamera(true, true, true);
+        const camera = scene.activeCamera;
+        camera.setPosition(new BABYLON.Vector3(3, 3, 3));
+        camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+
+        // Create a default light for the scene
+        scene.createDefaultLight(true);
+    }
 
     // Create a default environment (skybox + ground + environment lighting)
     scene.createDefaultEnvironment({

@@ -5,12 +5,12 @@ import { type IDisposable, type Scene } from "../scene";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { type WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
-import { type Engine } from "../Engines/engine";
 import { type IWebXRRenderTargetTextureProvider, type WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 import { type Viewport } from "../Maths/math.viewport";
 import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
+import { type IWebXRGraphicsBinding, WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "./webXRGraphicsBinding";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 /**
@@ -18,10 +18,11 @@ import { type AbstractEngine } from "../Engines/abstractEngine";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRSessionManagers
  */
 export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextureProvider {
-    private _engine: Nullable<Engine>;
+    private _engine: Nullable<AbstractEngine>;
     private _referenceSpace: XRReferenceSpace;
     private _baseLayerWrapper: Nullable<WebXRLayerWrapper>;
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
+    private _graphicsBinding: Nullable<IWebXRGraphicsBinding> = null;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
     private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
@@ -120,7 +121,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         /** The scene which the session should be created for */
         public scene: Scene
     ) {
-        this._engine = scene.getEngine() as Engine;
+        this._engine = scene.getEngine();
         this._onEngineDisposedObserver = this._engine.onDisposeObservable.addOnce(() => {
             this._engine = null;
         });
@@ -223,6 +224,29 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     }
 
     /**
+     * Obtains the XR graphics binding for the current session, creating it lazily.
+     * This is the API-agnostic seam a future non-WebGL backend uses to provide its own binding
+     * (XRWebGLBinding vs a future XRGPUBinding); the XR features are migrated onto it in a later
+     * phase, so it is not consumed yet.
+     * @returns the XR graphics binding for the current session
+     * @internal
+     */
+    public _getGraphicsBinding(): IWebXRGraphicsBinding {
+        if (!this._engine) {
+            throw new Error("Cannot create the XR graphics binding: the engine has been disposed.");
+        }
+        if (!this.session) {
+            throw new Error("Cannot create the XR graphics binding before the XR session is initialized.");
+        }
+        if (!this._graphicsBinding) {
+            this._graphicsBinding = this._engine.isWebGPU
+                ? WebXRWebGPUGraphicsBinding.CreateFromEngine(this.session, this._engine)
+                : WebXRWebGLGraphicsBinding.CreateFromEngine(this.session, this._engine);
+        }
+        return this._graphicsBinding;
+    }
+
+    /**
      * Creates a WebXRRenderTarget object for the XR session
      * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
@@ -258,6 +282,19 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise which will resolve once the session has been initialized
      */
     public async initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+        // A WebGPU engine requires a WebGPU-compatible XR session (per the WebXR/WebGPU binding spec).
+        // The "webgpu" feature descriptor is requested as a *required* feature: a WebGPU engine cannot
+        // fall back to a WebGL-compatible session, so if the UA/device cannot provide one we let
+        // requestSession reject and surface that error to the caller rather than silently handing back
+        // an incompatible session. WebGL engines leave xrSessionInit untouched.
+        if (this._engine?.isWebGPU) {
+            const requiredFeatures = xrSessionInit.requiredFeatures ? [...xrSessionInit.requiredFeatures] : [];
+            if (!requiredFeatures.includes("webgpu")) {
+                requiredFeatures.push("webgpu");
+            }
+            xrSessionInit = { ...xrSessionInit, requiredFeatures };
+        }
+
         const session = await this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit);
 
         this.session = session;
@@ -296,6 +333,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 }
                 this._baseLayerRTTProvider = null;
                 this._baseLayerWrapper = null;
+                this._graphicsBinding = null;
             },
             { once: true }
         );

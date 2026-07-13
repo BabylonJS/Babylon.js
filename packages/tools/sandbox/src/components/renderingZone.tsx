@@ -26,6 +26,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -44,6 +45,10 @@ function IsTextureAsset(extension: string): boolean {
     }
 
     return false;
+}
+
+function IsProjectAsset(extension: string): boolean {
+    return extension.toLowerCase() === "babylonproj";
 }
 
 interface IRenderingZoneProps {
@@ -146,7 +151,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         return false;
                     }
                     default: {
-                        if (IsTextureAsset(extension)) {
+                        if (IsTextureAsset(extension) || IsProjectAsset(extension)) {
                             setSceneFileToLoad(file);
                         }
 
@@ -159,6 +164,19 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         };
 
         filesInput.loadAsync = async (sceneFile, onProgress) => {
+            const sceneFileName = ((sceneFile as any).correctName as string | undefined) ?? sceneFile.name;
+            const sceneFileExtension = GetFileExtension(sceneFileName);
+            if (IsProjectAsset(sceneFileExtension)) {
+                const scene = new Scene(this._engine);
+                try {
+                    await LoadProjectFileAsync(scene, sceneFile);
+                } catch (error) {
+                    scene.dispose();
+                    throw error;
+                }
+                return scene;
+            }
+
             const filesToLoad = filesInput.filesToLoad;
             if (filesToLoad.length === 1) {
                 const fileName = (filesToLoad[0] as any).correctName as string;
@@ -382,11 +400,34 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     loadAssetFromUrl(assetUrl: string) {
         const rootUrl = Tools.GetFolderPath(assetUrl);
         const fileName = Tools.GetFilename(assetUrl);
-        const fileExtension = GetFileExtension(fileName);
+        // Strip any query string / hash fragment before detecting the extension and
+        // naming the bundled File. Signed asset URLs (e.g. "scene.babylonproj?sig=...")
+        // would otherwise defeat extension detection and produce awkward file names.
+        const cleanFileName = fileName.split(/[?#]/)[0] || fileName;
+        const fileExtension = GetFileExtension(cleanFileName);
 
         this._engine.clearInternalTexturesCache();
 
-        const promise = IsTextureAsset(fileExtension) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
+        const promise = IsTextureAsset(fileExtension)
+            ? Promise.resolve(this.loadTextureAsset(assetUrl))
+            : IsProjectAsset(fileExtension)
+              ? (async () => {
+                    const response = await fetch(assetUrl);
+                    if (!response.ok) {
+                        throw new Error(`Unable to load ${cleanFileName}: ${response.statusText}`);
+                    }
+                    const projectBlob = await response.blob();
+                    const scene = new Scene(this._engine);
+                    const projectFile = new File([projectBlob], cleanFileName, { type: projectBlob.type || "application/octet-stream" });
+                    try {
+                        await LoadProjectFileAsync(scene, projectFile);
+                    } catch (error) {
+                        scene.dispose();
+                        throw error;
+                    }
+                    return scene;
+                })()
+              : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
 
         promise
             .then((scene) => {
@@ -396,7 +437,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
                 this._scene = scene;
 
-                this.onSceneLoaded(fileName);
+                this.onSceneLoaded(cleanFileName);
             })
             .catch((reason) => {
                 this.props.globalState.onError.notifyObservers({ message: reason.message });

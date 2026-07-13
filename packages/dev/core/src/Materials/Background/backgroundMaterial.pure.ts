@@ -249,7 +249,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Key light Color (multiply against the environment texture)
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public primaryColor = Color3.White();
+    public accessor primaryColor = Color3.White();
 
     @serializeAsColor3()
     protected __perceptualColor: Nullable<Color3>;
@@ -293,7 +293,6 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Defines the level of the highlights (highlight area of the reflection map) in order to help scaling the colors.
      * The primary color is used at the level chosen to define what the white area would look.
      */
-    @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public get primaryColorHighlightLevel(): float {
         return this._primaryColorHighlightLevel;
     }
@@ -310,7 +309,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Should be author in a specific way for the best result (refer to the documentation).
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionTexture: Nullable<BaseTexture> = null;
+    public accessor reflectionTexture: Nullable<BaseTexture> = null;
 
     @serialize()
     protected _reflectionBlur: float;
@@ -321,7 +320,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * texture twice.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionBlur: float = 0;
+    public accessor reflectionBlur: float = 0;
 
     @serializeAsTexture()
     protected _diffuseTexture: Nullable<BaseTexture>;
@@ -330,7 +329,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Should be author in a specific way for the best result (refer to the documentation).
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture: Nullable<BaseTexture> = null;
+    public accessor diffuseTexture: Nullable<BaseTexture> = null;
 
     protected _shadowLights: Nullable<IShadowLight[]> = null;
     /**
@@ -338,7 +337,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * All scene shadow lights will be included if null.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public shadowLights: Nullable<IShadowLight[]> = null;
+    public accessor shadowLights: Nullable<IShadowLight[]> = null;
 
     @serialize()
     protected _shadowLevel: float;
@@ -347,7 +346,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * 0 means black shadows and 1 means no shadows.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public shadowLevel: float = 0;
+    public accessor shadowLevel: float = 0;
 
     @serializeAsVector3()
     protected _sceneCenter: Vector3;
@@ -356,7 +355,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * It is usually zero but might be interesting to modify according to your setup.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public sceneCenter: Vector3 = Vector3.Zero();
+    public accessor sceneCenter: Vector3 = Vector3.Zero();
 
     @serialize()
     protected _opacityFresnel: boolean;
@@ -365,7 +364,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This helps ensuring a nice transition when the camera goes under the ground.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public opacityFresnel: boolean = true;
+    public accessor opacityFresnel: boolean = true;
 
     @serialize()
     protected _reflectionFresnel: boolean;
@@ -374,7 +373,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This helps adding a mirror texture on the ground.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionFresnel: boolean = false;
+    public accessor reflectionFresnel: boolean = false;
 
     @serialize()
     protected _reflectionFalloffDistance: number;
@@ -383,7 +382,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionFalloffDistance: number = 0.0;
+    public accessor reflectionFalloffDistance: number = 0.0;
 
     @serialize()
     protected _reflectionAmount: number;
@@ -391,7 +390,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This specifies the weight of the reflection against the background in case of reflection Fresnel.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionAmount: number = 1.0;
+    public accessor reflectionAmount: number = 1.0;
 
     @serialize()
     protected _reflectionReflectance0: number;
@@ -399,7 +398,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This specifies the weight of the reflection at grazing angle.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionReflectance0: number = 0.05;
+    public accessor reflectionReflectance0: number = 0.05;
 
     @serialize()
     protected _reflectionReflectance90: number;
@@ -407,7 +406,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This specifies the weight of the reflection at a perpendicular point of view.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionReflectance90: number = 0.5;
+    public accessor reflectionReflectance90: number = 0.5;
 
     /**
      * Sets the reflection reflectance fresnel values according to the default standard
@@ -433,7 +432,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Helps to directly use the maps channels instead of their level.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRGBColor: boolean = true;
+    public accessor useRGBColor: boolean = true;
 
     @serialize()
     protected _enableNoise: boolean;
@@ -441,7 +440,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * This helps reducing the banding effect that could occur on the background.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public enableNoise: boolean = false;
+    public accessor enableNoise: boolean = false;
 
     /**
      * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
@@ -470,7 +469,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Number of Simultaneous lights allowed on the material.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public maxSimultaneousLights: int = 4;
+    public accessor maxSimultaneousLights: int = 4;
 
     @serialize()
     private _shadowOnly: boolean = false;
@@ -478,7 +477,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Make the material only render shadows
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public shadowOnly: boolean = false;
+    public accessor shadowOnly: boolean = false;
 
     /**
      * Due to a bug in iOS10, video tags (which are using the background material) are in BGR and not RGB.
@@ -493,7 +492,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public enableGroundProjection: boolean = false;
+    public accessor enableGroundProjection: boolean = false;
 
     /**
      * Defines the radius of the projected ground if enableGroundProjection is true.
