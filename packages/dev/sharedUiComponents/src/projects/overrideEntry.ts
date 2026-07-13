@@ -28,7 +28,7 @@ export interface IOverrideEntry {
 /**
  * The types of scene objects that can be targeted by overrides.
  */
-export type OverrideTargetType = "meshes" | "materials" | "textures" | "lights" | "cameras" | "animationGroups" | "scene";
+export type OverrideTargetType = "meshes" | "transformNodes" | "materials" | "textures" | "lights" | "cameras" | "animationGroups" | "scene";
 
 /**
  * An override value. Supports scalars, color/vector arrays, object references,

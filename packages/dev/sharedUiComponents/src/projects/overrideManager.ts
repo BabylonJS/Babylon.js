@@ -349,9 +349,37 @@ export function RenameOverrideValueReferences(scene: Scene, valueScheme: "ref" |
 export function ApplyAllOverrides(scene: Scene): void {
     const manager = GetOverrideManager(scene);
     const internal = GetOverrideInternals(manager);
-    for (const entry of internal.overrides) {
-        ApplyOverrideEntry(manager, internal, entry);
+    for (const entry of SortNameOverridesFirst(internal.overrides)) {
+        // Apply each override in isolation: a single failing entry (e.g. a
+        // stale property path, or a target whose shape changed) must not abort
+        // the remaining overrides.
+        try {
+            ApplyOverrideEntry(manager, internal, entry);
+        } catch (e) {
+            Logger.Warn(`OverrideManager: failed to apply override type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}": ${e}`);
+        }
     }
+}
+
+/**
+ * Returns a copy of the entries ordered so that `name` overrides are applied
+ * first. Renames must run before other overrides because targets (and
+ * reference values like `ref:<name>`) are resolved by name: applying a rename
+ * first ensures subsequent overrides resolve against the new names.
+ * @param entries - The override entries to order.
+ * @returns A new array with `name` overrides first, otherwise stable order.
+ */
+function SortNameOverridesFirst<T extends { propertyPath: string }>(entries: readonly T[]): T[] {
+    const nameOverrides: T[] = [];
+    const rest: T[] = [];
+    for (const entry of entries) {
+        if (entry.propertyPath === "name") {
+            nameOverrides.push(entry);
+        } else {
+            rest.push(entry);
+        }
+    }
+    return [...nameOverrides, ...rest];
 }
 
 // ── Serialization ──
@@ -377,7 +405,7 @@ export function DeserializeAndApplyOverrides(scene: Scene, data: IOverrideEntry[
         throw new Error("OverrideManager: Expected an array of override entries.");
     }
 
-    for (const entry of data) {
+    for (const entry of SortNameOverridesFirst(data)) {
         if (!entry.targetType || entry.targetName === undefined || typeof entry.targetIndex !== "number" || !entry.propertyPath || entry.value === undefined) {
             Logger.Warn("OverrideManager: Skipping invalid override entry.");
             continue;
@@ -492,6 +520,8 @@ function GetCollection(scene: Scene, targetType: OverrideTargetType): readonly u
     switch (targetType) {
         case "meshes":
             return scene.meshes;
+        case "transformNodes":
+            return scene.transformNodes;
         case "materials":
             return scene.materials;
         case "textures":
@@ -534,24 +564,20 @@ function ResolveOverrideValue(scene: Scene, value: OverrideValue): unknown {
 }
 
 /**
- * Resolves a "ref:name" value by looking up a material, light, or camera
- * in the scene by name.
+ * Resolves a "ref:name" value by looking up a scene object by name. Materials,
+ * lights, and cameras are searched first, then transform nodes and meshes
+ * (both valid parent references).
  * @param scene - The scene to search.
  * @param name - The object name to resolve.
- * @returns The matching material, light, or camera, or undefined if not found.
+ * @returns The matching object, or undefined if not found.
  */
 function ResolveObjectReference(scene: Scene, name: string): unknown {
-    const mat = scene.materials.find((m) => m.name === name);
-    if (mat) {
-        return mat;
-    }
-    const light = scene.lights.find((l) => l.name === name);
-    if (light) {
-        return light;
-    }
-    const camera = scene.cameras.find((c) => c.name === name);
-    if (camera) {
-        return camera;
+    const collections: readonly (readonly { name: string }[])[] = [scene.materials, scene.lights, scene.cameras, scene.transformNodes, scene.meshes];
+    for (const collection of collections) {
+        const match = collection.find((item) => item.name === name);
+        if (match) {
+            return match;
+        }
     }
     Logger.Warn(`OverrideManager: Object reference "${name}" not found in scene.`);
     return undefined;
@@ -660,6 +686,12 @@ function GetNestedProperty(obj: object, path: string): unknown {
  * `fromArray` method to mutate it in place — preserving the live instance
  * identity that consumers may already hold references to. Otherwise falls
  * back to direct property replacement.
+ *
+ * Getter-only accessors (e.g. `Texture.invertY`) cannot be assigned directly —
+ * doing so throws in strict mode. For those, the backing field (`_<name>`) is
+ * written instead when present, and load-time texture properties are re-applied
+ * via a re-upload (see {@link ReapplyLoadTimeTextureProperty}). Truly read-only
+ * properties with no backing field are skipped with a warning.
  * @param obj - The root object to mutate.
  * @param path - The dot-separated property path.
  * @param value - The new value to assign.
@@ -679,15 +711,76 @@ function SetNestedProperty(obj: object, path: string, value: unknown): void {
         return;
     }
 
+    const target = current as Record<string, unknown>;
     const lastPart = parts[parts.length - 1];
-    const existing = (current as Record<string, unknown>)[lastPart];
+    const existing = target[lastPart];
 
     if (Array.isArray(value) && existing && typeof existing === "object" && typeof (existing as any).fromArray === "function") {
         (existing as any).fromArray(value);
         return;
     }
 
-    (current as Record<string, unknown>)[lastPart] = value;
+    // Guard against getter-only accessors: assigning to one throws in strict
+    // mode (ES modules are strict), which would otherwise abort the whole apply
+    // batch. Write the backing field instead, then re-apply if it is a
+    // load-time texture property.
+    const accessor = FindAccessorDescriptor(target, lastPart);
+    if (accessor && accessor.get && !accessor.set) {
+        const backingField = `_${lastPart}`;
+        if (backingField in target) {
+            target[backingField] = value;
+            ReapplyLoadTimeTextureProperty(target, lastPart);
+        } else {
+            Logger.Warn(`OverrideManager: property "${lastPart}" is read-only and has no backing field; skipping.`);
+        }
+        return;
+    }
+
+    target[lastPart] = value;
+}
+
+/**
+ * Walks the prototype chain to find the property descriptor for `key`, so
+ * accessor (getter/setter) properties defined on a class prototype can be
+ * detected. Returns undefined if the property is a plain data field.
+ * @param obj - The object to inspect.
+ * @param key - The property name.
+ * @returns The property descriptor, or undefined if none is found.
+ */
+function FindAccessorDescriptor(obj: object, key: string): PropertyDescriptor | undefined {
+    let proto: object | null = obj;
+    while (proto) {
+        const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+        if (descriptor) {
+            return descriptor;
+        }
+        proto = Object.getPrototypeOf(proto);
+    }
+    return undefined;
+}
+
+/**
+ * Re-applies a texture property that only takes effect at upload time (such as
+ * `invertY`, which is baked into the GPU texel data via `UNPACK_FLIP_Y`).
+ * Writing the backing field alone does not re-flip an already-loaded texture,
+ * so this re-uploads the source via `updateURL`, which releases only the GPU
+ * texture and reuses the same texture instance (all scene references stay
+ * intact). Duck-typed so this module stays decoupled from the Texture class,
+ * and a no-op for anything that is not a URL-loaded texture.
+ * @param target - The object whose property was written.
+ * @param propertyName - The property that was written.
+ */
+function ReapplyLoadTimeTextureProperty(target: Record<string, unknown>, propertyName: string): void {
+    if (propertyName !== "invertY") {
+        return;
+    }
+    if (typeof target.updateURL === "function" && typeof target.url === "string" && target.url) {
+        try {
+            (target.updateURL as (url: string, buffer?: unknown) => void)(target.url, target._buffer ?? null);
+        } catch (e) {
+            Logger.Warn(`OverrideManager: failed to re-upload texture to apply "${propertyName}": ${e}`);
+        }
+    }
 }
 
 /**

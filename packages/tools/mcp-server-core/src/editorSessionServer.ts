@@ -10,6 +10,9 @@ const DefaultPortRange = 10;
 const DefaultKeepAliveIntervalMs = 15_000;
 const DefaultIdleTimeoutMs = 15 * 60_000;
 const DefaultConflictPolicy = "last-writer-wins";
+// HTTPS origin host suffixes trusted in addition to local origins, so the hosted
+// Babylon.js editors (e.g. https://flowgraph.babylonjs.com) can reach a loopback session server.
+const DefaultTrustedOriginHostSuffixes = ["babylonjs.com"];
 
 /**
  * A live document session shared between an MCP server and an editor.
@@ -75,6 +78,12 @@ export interface IMcpEditorSessionServerOptions {
     corsOrigin?: string;
     /** Exact origins allowed when corsOrigin is omitted. Defaults to local localhost/127.0.0.1 origins. */
     allowedOrigins?: string[];
+    /**
+     * HTTPS origin host suffixes trusted in addition to local origins when neither `corsOrigin`
+     * nor `allowedOrigins` is set. Lets hosted editors (e.g. https://flowgraph.babylonjs.com) reach
+     * this loopback server. Defaults to ["babylonjs.com"]. Pass an empty array to allow local origins only.
+     */
+    trustedOriginHostSuffixes?: string[];
     /** Compatibility routes that should behave like /document, without leading slash. */
     legacyDocumentRoutes?: string[];
     /** Additional capability names reported from /health. */
@@ -377,6 +386,7 @@ export class McpEditorSessionServer {
     private readonly _idleTimeoutMs: number;
     private readonly _corsOrigin: string | undefined;
     private readonly _allowedOrigins: Set<string> | null;
+    private readonly _trustedOriginHostSuffixes: string[];
     private readonly _legacyDocumentRoutes: Set<string>;
     private readonly _capabilities: string[];
     private readonly _statusTitle: string;
@@ -409,6 +419,7 @@ export class McpEditorSessionServer {
         this._idleTimeoutMs = options.idleTimeoutMs ?? DefaultIdleTimeoutMs;
         this._corsOrigin = options.corsOrigin;
         this._allowedOrigins = options.allowedOrigins ? new Set(options.allowedOrigins) : null;
+        this._trustedOriginHostSuffixes = options.trustedOriginHostSuffixes ?? DefaultTrustedOriginHostSuffixes;
         this._legacyDocumentRoutes = new Set((options.legacyDocumentRoutes ?? []).map((route) => route.replace(/^\//, "")));
         this._capabilities = [
             "sse",
@@ -732,6 +743,11 @@ export class McpEditorSessionServer {
         if (allowedOrigin) {
             response.setHeader("Access-Control-Allow-Origin", allowedOrigin);
             response.setHeader("Vary", "Origin");
+            // Private Network Access: when a page on a public origin sends the PNA preflight probe
+            // before reaching this loopback server, echo the grant so the browser allows the request.
+            if (request.headers["access-control-request-private-network"] === "true") {
+                response.setHeader("Access-Control-Allow-Private-Network", "true");
+            }
         }
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -751,7 +767,22 @@ export class McpEditorSessionServer {
             return this._allowedOrigins.has(origin) ? origin : undefined;
         }
 
-        return this._isLocalOrigin(origin) ? origin : undefined;
+        return this._isLocalOrigin(origin) || this._isTrustedProductionOrigin(origin) ? origin : undefined;
+    }
+
+    private _isTrustedProductionOrigin(origin: string): boolean {
+        if (this._trustedOriginHostSuffixes.length === 0) {
+            return false;
+        }
+        try {
+            const url = new URL(origin);
+            if (url.protocol !== "https:") {
+                return false;
+            }
+            return this._trustedOriginHostSuffixes.some((suffix) => url.hostname === suffix || url.hostname.endsWith(`.${suffix}`));
+        } catch {
+            return false;
+        }
     }
 
     private _isLocalOrigin(origin: string): boolean {

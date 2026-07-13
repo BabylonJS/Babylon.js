@@ -258,10 +258,6 @@
         {
           "name": "xyz",
           "displayName": "xyz"
-        },
-        {
-          "name": "w",
-          "displayName": "w"
         }
       ],
       "complementZ": 0,
@@ -476,6 +472,10 @@
         {
           "name": "a",
           "displayName": "a"
+        },
+        {
+          "name": "glow",
+          "displayName": "glow"
         }
       ],
       "outputs": []
