@@ -33,6 +33,7 @@ export interface IFlowGraphEditorLaunchOptions {
     flowGraphEditorConfig?: {
         hostScene?: Scene;
         hostElement?: HTMLElement;
+        attachToLiveScene?: boolean;
     };
 }
 
@@ -699,6 +700,10 @@ export class FlowGraph {
         const editorConfig: any = {
             flowGraph: this,
             hostScene: this._scene,
+            // edit() always targets the developer's own live graph and scene, so the editor should
+            // attach to that scene instead of spinning up a throwaway preview scene. A caller can
+            // still override this via additionalConfig.
+            attachToLiveScene: true,
             ...additionalConfig,
         };
         this._BJSFLOWGRAPHEDITOR.FlowGraphEditor.Show(editorConfig);

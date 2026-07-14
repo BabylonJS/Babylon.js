@@ -1,4 +1,4 @@
-import { type Observer, Observable } from "core/Misc/observable";
+import { type Observer, type IReadonlyObservable, Observable } from "core/Misc/observable";
 import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
@@ -65,13 +65,19 @@ export class FlowGraphCoordinator {
      * Observable raised when a flow graph is added to any coordinator. Used by the inspector to keep
      * the flow graph list in sync. The payload is the newly added flow graph.
      */
-    public static readonly OnFlowGraphAddedObservable = new Observable<FlowGraph>();
+    public static get OnFlowGraphAddedObservable(): IReadonlyObservable<FlowGraph> {
+        return this._OnFlowGraphAddedObservable;
+    }
+    private static readonly _OnFlowGraphAddedObservable = new Observable<FlowGraph>();
 
     /**
      * Observable raised when a flow graph is removed from any coordinator. Used by the inspector to keep
      * the flow graph list in sync. The payload is the removed flow graph.
      */
-    public static readonly OnFlowGraphRemovedObservable = new Observable<FlowGraph>();
+    public static get OnFlowGraphRemovedObservable(): IReadonlyObservable<FlowGraph> {
+        return this._OnFlowGraphRemovedObservable;
+    }
+    private static readonly _OnFlowGraphRemovedObservable = new Observable<FlowGraph>();
 
     /**
      * When set to true (default) custom events will be dispatched synchronously.
@@ -137,7 +143,7 @@ export class FlowGraphCoordinator {
         const graphName = name ?? `Graph ${this._flowGraphs.length + 1}`;
         const graph = new FlowGraph({ scene: this.config.scene, coordinator: this, name: graphName });
         this._flowGraphs.push(graph);
-        FlowGraphCoordinator.OnFlowGraphAddedObservable.notifyObservers(graph);
+        FlowGraphCoordinator._OnFlowGraphAddedObservable.notifyObservers(graph);
         return graph;
     }
 
@@ -150,7 +156,7 @@ export class FlowGraphCoordinator {
         if (index !== -1) {
             graph.dispose();
             this._flowGraphs.splice(index, 1);
-            FlowGraphCoordinator.OnFlowGraphRemovedObservable.notifyObservers(graph);
+            FlowGraphCoordinator._OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
     }
 
@@ -169,7 +175,7 @@ export class FlowGraphCoordinator {
     public dispose() {
         for (const graph of this._flowGraphs) {
             graph.dispose();
-            FlowGraphCoordinator.OnFlowGraphRemovedObservable.notifyObservers(graph);
+            FlowGraphCoordinator._OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
         this._flowGraphs.length = 0;
         this._disposeObserver?.remove();
