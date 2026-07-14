@@ -34,21 +34,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     let border = outset * inset;
 
-    // In depth-write mode, hard-cut the coverage (alpha test) so glyphs sort like solid geometry:
-    // fully transparent pixels are discarded and the remaining pixels are made opaque, so no
-    // semi-transparent edge pixels write depth (which would halo geometry drawn behind them).
-    var fillCoverage = alpha;
-    var strokeCoverage = border;
-    if (uniforms.uDepthWrite > 0.5) {
-        if (max(alpha, border) < 0.5) {
-            discard;
-        }
-        fillCoverage = step(0.5, alpha);
-        strokeCoverage = step(0.5, border);
+    // When writing to the depth buffer, discard only the fully-transparent background of the glyph
+    // quads (so they don't occlude other geometry). Visible pixels keep their anti-aliased coverage.
+    if (uniforms.uDepthWrite > 0.5 && max(alpha, border) <= 0.0) {
+        discard;
     }
 
-    let filledFragColor = vec4<f32>(uniforms.uColor.rgb, fillCoverage * uniforms.uColor.a);
-    let strokedFragColor = vec4<f32>(uniforms.uStrokeColor.rgb, strokeCoverage * uniforms.uStrokeColor.a);
+    let filledFragColor = vec4<f32>(uniforms.uColor.rgb, alpha * uniforms.uColor.a);
+    let strokedFragColor = vec4<f32>(uniforms.uStrokeColor.rgb, border * uniforms.uStrokeColor.a);
 
-    fragmentOutputs.color = mix(filledFragColor, strokedFragColor, strokeCoverage);
+    fragmentOutputs.color = mix(filledFragColor, strokedFragColor, border);
 }
