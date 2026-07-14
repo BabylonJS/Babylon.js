@@ -1572,11 +1572,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * cheap per-node frustum test every frame so the off-screen LOD bias tracks camera rotation. The LOD
      * re-evaluation is throttled to at most every {@link _lodUpdateInterval} frames once the camera has
      * translated far enough, but also runs immediately whenever a node enters/leaves the frustum (so its
-     * detail upgrades/downgrades promptly), a node's post-switch cooldown just expired while a target/active
-     * mismatch is still pending (so a switch deferred purely by cooldown — e.g. the base layer's own initial
-     * promotion, which sets a fresh cooldown right before the very first camera-driven evaluation can run —
-     * gets retried without requiring the camera to move again), or a cap change forces it. Active ranges
-     * rebuild on any LOD change.
+     * detail upgrades/downgrades promptly), a node whose cooldown just expired still needs to switch LOD,
+     * or a cap change forces it. Active ranges rebuild on any LOD change.
+     *
+     * The cooldown-expiry trigger lets a node reach its already-computed target level as soon as its
+     * cooldown clears, rather than waiting for the camera to move. This matters right from load: a
+     * node's base-layer decode is itself applied as a switch (from no active level to the base one), so
+     * it starts the same cooldown a later switch would — this trigger is what lets the node progress past
+     * that base level promptly once it expires, even at a fixed camera pose.
      */
     private _onLodFrame(): void {
         if (this._disposed || !this._baseLayerReady) {
