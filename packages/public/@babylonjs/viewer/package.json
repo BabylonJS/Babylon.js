@@ -8,13 +8,14 @@
     "types": "lib/index.d.ts",
     "exports": {
         ".": {
-            "import": "./lib/index.js",
-            "types": "./lib/index.d.ts"
+            "types": "./lib/index.d.ts",
+            "default": "./lib/index.js"
         },
         "./lite": {
-            "import": "./lib/lite/index.js",
-            "types": "./lib/lite/index.d.ts"
-        }
+            "types": "./lib/lite/index.d.ts",
+            "default": "./lib/lite/index.js"
+        },
+        "./package.json": "./package.json"
     },
     "files": [
         "lib/**/*.js",
@@ -49,9 +50,6 @@
     },
     "peerDependenciesMeta": {
         "@babylonjs/lite": {
-            "optional": true
-        },
-        "@babylonjs/loaders": {
             "optional": true
         }
     },

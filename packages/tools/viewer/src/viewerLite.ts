@@ -17,6 +17,7 @@ import {
     createSceneContext,
     createGpuPicker,
     disposeEngine,
+    disposeMeshGpu,
     disposePicker,
     disposeScene,
     getCameraPosition,
@@ -50,6 +51,7 @@ import {
     StandardToneMapping,
     type ArcRotateCamera,
     type AssetContainer,
+    type DirectionalLight as LiteDirectionalLight,
     type EngineContext,
     type GpuPicker,
     type ImageProcessingUpdate,
@@ -184,6 +186,10 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // Shadows
     private _shadowGenerator: LiteShadowGenerator | null = null;
+    // The directional light and ground disc created by `_setupShadows`, tracked so `_unloadCurrentModel`
+    // can tear them down instead of accumulating a new light + ground on every model (re)load.
+    private _shadowLight: LiteDirectionalLight | null = null;
+    private _shadowGround: LiteMesh | null = null;
 
     // Model
     private _container: AssetContainer | null = null;
@@ -276,13 +282,14 @@ export class Viewer extends ViewerBase implements IViewer {
 
         this._detachControl = attachControl(this._camera, this._engine.canvas as HTMLCanvasElement, this._scene);
 
-        // Track pointer activity for auto-orbit idle detection
-        const onPointerActivity = () => {
-            this._lastPointerTime = performance.now();
-        };
-        this._engine.canvas.addEventListener("pointerdown", onPointerActivity);
-        this._engine.canvas.addEventListener("pointermove", onPointerActivity);
-        this._engine.canvas.addEventListener("wheel", onPointerActivity);
+        // Track pointer activity for auto-orbit idle detection. Use the instance method (not a local
+        // closure) so `dispose()` can remove the exact same listener references. Seed the last-activity
+        // time to now so auto-orbit waits the configured delay before starting rather than treating the
+        // freshly-constructed viewer (with `_lastPointerTime` at 0) as already idle.
+        this._lastPointerTime = performance.now();
+        this._engine.canvas.addEventListener("pointerdown", this._onPointerActivity);
+        this._engine.canvas.addEventListener("pointermove", this._onPointerActivity);
+        this._engine.canvas.addEventListener("wheel", this._onPointerActivity);
 
         // Double-click to focus: on the model, focus the picked point; on the background, reframe.
         // Mirrors the full Viewer's POINTERDOUBLETAP handler (viewer.ts).
@@ -961,6 +968,7 @@ export class Viewer extends ViewerBase implements IViewer {
         const light = createDirectionalLight(lightDir, 1);
         light.position.set(cx - (lightDir[0] / dirLen) * positionFactor, cy - (lightDir[1] / dirLen) * positionFactor, cz - (lightDir[2] / dirLen) * positionFactor);
         addToScene(this._scene, light);
+        this._shadowLight = light;
 
         // Shadow ground disc. Lite's PBR pipeline requires `baseColorTexture` and `ormTexture` on
         // every PBR material (even if unused), so we provide tiny 1×1 solid textures. The
@@ -991,6 +999,7 @@ export class Viewer extends ViewerBase implements IViewer {
             alphaBlend: true,
         });
         addToScene(this._scene, ground);
+        this._shadowGround = ground;
 
         // Shadow generator. Lite drives shadow rendering from `light.shadowGenerator`, not from a
         // separate scene-level list — so attaching to the light is the load-bearing step here.
@@ -1121,12 +1130,13 @@ export class Viewer extends ViewerBase implements IViewer {
             // closure), and every later load — swap, reload, reset, or clear-then-load — reuses it via the
             // swap queue. `_modelMaterialGroupBuilt` tracks that one-time transition.
             //
-            // Shadows are excluded from the swap-queue path: `_setupShadows` re-adds a light + ground on every
-            // load and `_unloadCurrentModel` does not remove them, and the shadow frame-graph task is wired at
-            // registration time. For a shadow-enabled viewer we therefore keep the (documented, construction-time)
-            // re-registration behavior rather than draining the swap queue, so we don't accumulate duplicate
-            // shadow infrastructure or leave the shadow task stale. Shadow quality is fixed at construction
-            // (see `_updateShadowsImpl`), so this only affects the rarely-used shadow + model-swap combination.
+            // Shadows are excluded from the swap-queue path: `_setupShadows` adds a fresh light + ground on
+            // every load (`_unloadCurrentModel` tears down the previous ones), and the shadow frame-graph task
+            // is wired at registration time. For a shadow-enabled viewer we therefore keep the (documented,
+            // construction-time) re-registration behavior rather than draining the swap queue, so the shadow
+            // task is rebuilt against the new light/ground instead of going stale. Shadow quality is fixed at
+            // construction (see `_updateShadowsImpl`), so this only affects the rarely-used shadow + model-swap
+            // combination.
             if (!this._renderLoopRunning || this._shadowQuality !== "none" || !this._modelMaterialGroupBuilt) {
                 await this._beginRendering();
             }
@@ -1203,7 +1213,23 @@ export class Viewer extends ViewerBase implements IViewer {
             }
         }
 
-        // Remove shadows
+        // Tear down the shadow infrastructure created by `_setupShadows` so a subsequent (re)load doesn't
+        // accumulate duplicate lights/ground discs. The ground disc is a mesh we can fully remove + free;
+        // the directional light is detached by removing it from the scene's light list. (Lite has no public
+        // shadow-generator dispose API yet — dropping our reference plus removing the light detaches it from
+        // the render path, and the shadow frame-graph task is rebuilt on the next `registerScene`.)
+        if (this._shadowGround) {
+            removeFromScene(this._scene, this._shadowGround);
+            disposeMeshGpu(this._shadowGround);
+            this._shadowGround = null;
+        }
+        if (this._shadowLight) {
+            const lightIndex = this._scene.lights.indexOf(this._shadowLight);
+            if (lightIndex >= 0) {
+                this._scene.lights.splice(lightIndex, 1);
+            }
+            this._shadowLight = null;
+        }
         this._shadowGenerator = null;
 
         this._container = null;
@@ -1664,7 +1690,6 @@ export class Viewer extends ViewerBase implements IViewer {
         return this._container !== null;
     }
 
-    /** @internal */
     /** @internal */
     protected override _resetEnvironment(): void {
         // Reset scalar env config to defaults (matches full Viewer's reset hook). The setter fires
