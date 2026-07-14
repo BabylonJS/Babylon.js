@@ -883,8 +883,14 @@ export class InputText extends Control {
             //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
-        const insertPosition = this._textWrapper.length - this._cursorOffset;
-        this._textWrapper.removePart(insertPosition, insertPosition, data);
+        if (this.isTextHighlightOn) {
+            this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex, data);
+            this._cursorOffset = this._textWrapper.length - (this._startHighlightIndex + data.length);
+            this.isTextHighlightOn = false;
+        } else {
+            const insertPosition = this._textWrapper.length - this._cursorOffset;
+            this._textWrapper.removePart(insertPosition, insertPosition, data);
+        }
         this._textHasChanged();
     }
 

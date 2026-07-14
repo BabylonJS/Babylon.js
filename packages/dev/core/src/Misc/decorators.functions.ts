@@ -5,6 +5,7 @@
  * required for `Symbol.metadata` lives in `symbolMetadataPolyfill.ts` and is applied at package
  * entry points.
  */
+import { type SerializedPropertyMetadataMap } from "./decorators.serializationUtilities";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __bjsSerializableKey = "__bjs_serializable__";
@@ -83,7 +84,7 @@ function GetOwnMetadata(ctor: any): any {
  * Used by the TC39 decorators, which receive `context.metadata` directly.
  * @internal
  */
-export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): Record<string, any> {
+export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): SerializedPropertyMetadataMap {
     if (!metadata) {
         // `metadata` is `context.metadata`, which is `void 0` when `Symbol.metadata` was not installed
         // before the class was evaluated. Referencing `MetadataSymbol` here (a) produces an actionable
@@ -98,7 +99,7 @@ export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): R
 }
 
 /** @internal */
-export function GetDirectStore(target: any): any {
+export function GetDirectStore(target: any): SerializedPropertyMetadataMap {
     const metadata = GetOwnMetadata(GetConstructor(target));
     if (!metadata) {
         return {};
@@ -113,7 +114,7 @@ export function GetDirectStore(target: any): any {
  * @returns the list of properties flagged as serializable
  * @param target host object
  */
-export function GetMergedStore(target: any): any {
+export function GetMergedStore(target: any): SerializedPropertyMetadataMap {
     const ctor = GetConstructor(target);
     const metadata = ctor ? ctor[MetadataSymbol] : undefined;
     if (!metadata) {
@@ -125,7 +126,7 @@ export function GetMergedStore(target: any): any {
         return cached;
     }
 
-    const store: any = {};
+    const store: SerializedPropertyMetadataMap = {};
     // Walk the metadata prototype chain (most derived first); parents overwrite children to match the
     // original class-name-keyed merge order.
     const chain: any[] = [];
@@ -136,7 +137,7 @@ export function GetMergedStore(target: any): any {
     }
     for (const meta of chain) {
         if (HasOwn(meta, __bjsSerializableKey)) {
-            const initialStore = meta[__bjsSerializableKey];
+            const initialStore = meta[__bjsSerializableKey] as SerializedPropertyMetadataMap;
             for (const property in initialStore) {
                 store[property] = initialStore[property];
             }

@@ -207,6 +207,84 @@ describe("editor session server", () => {
         }
     });
 
+    it("reflects hosted babylonjs.com origins and grants Private Network Access on preflight", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer({
+            serverName: "Test Session Server",
+            documentKind: "test-document",
+            getDocument: () => JSON.stringify({ value: 1 }),
+            setDocument: () => undefined,
+        });
+
+        try {
+            const listeningPort = await server.startAsync(port);
+            const response = await fetch(`http://localhost:${listeningPort}/health`, {
+                method: "OPTIONS",
+                headers: {
+                    Origin: "https://flowgraph.babylonjs.com",
+                    "Access-Control-Request-Method": "GET",
+                    "Access-Control-Request-Private-Network": "true",
+                },
+            });
+
+            expect(response.headers.get("access-control-allow-origin")).toBe("https://flowgraph.babylonjs.com");
+            expect(response.headers.get("access-control-allow-private-network")).toBe("true");
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
+    it("does not grant Private Network Access to untrusted origins", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer({
+            serverName: "Test Session Server",
+            documentKind: "test-document",
+            getDocument: () => JSON.stringify({ value: 1 }),
+            setDocument: () => undefined,
+        });
+
+        try {
+            const listeningPort = await server.startAsync(port);
+            const response = await fetch(`http://localhost:${listeningPort}/health`, {
+                method: "OPTIONS",
+                headers: {
+                    Origin: "https://evil.example.com",
+                    "Access-Control-Request-Method": "GET",
+                    "Access-Control-Request-Private-Network": "true",
+                },
+            });
+
+            expect(response.headers.get("access-control-allow-origin")).toBeNull();
+            expect(response.headers.get("access-control-allow-private-network")).toBeNull();
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
+    it("can disable trusted production origins via an empty suffix list", async () => {
+        const port = await GetFreePortAsync();
+        const server = new McpEditorSessionServer(
+            {
+                serverName: "Test Session Server",
+                documentKind: "test-document",
+                getDocument: () => JSON.stringify({ value: 1 }),
+                setDocument: () => undefined,
+            },
+            { defaultPort: port, trustedOriginHostSuffixes: [] }
+        );
+
+        try {
+            const listeningPort = await server.startAsync();
+            const response = await fetch(`http://localhost:${listeningPort}/health`, {
+                headers: { Origin: "https://flowgraph.babylonjs.com" },
+            });
+
+            expect(response.headers.get("access-control-allow-origin")).toBeNull();
+        } finally {
+            await server.stopAsync();
+        }
+    });
+
     it("supports explicit CORS origin overrides", async () => {
         const port = await GetFreePortAsync();
         const server = new McpEditorSessionServer(

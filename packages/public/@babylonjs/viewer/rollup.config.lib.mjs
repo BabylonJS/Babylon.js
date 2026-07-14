@@ -14,6 +14,11 @@ const commonConfig = {
     external: (id) => /^@babylonjs\/(core|loaders|materials)(\/|$)/.test(id),
 };
 
+const liteCommonConfig = {
+    input: "../../../tools/viewer/src/lite/index.ts",
+    external: (id) => /^@babylonjs\/(core|lite)(\/|$)/.test(id),
+};
+
 const jsConfig = {
     ...commonConfig,
     output: {
@@ -40,4 +45,29 @@ const dtsConfig = {
     plugins: [rewriteDevImports(devPackageMap), dts({ tsconfig: "tsconfig.build.lib.json" })],
 };
 
-export default [jsConfig, dtsConfig];
+const liteJsConfig = {
+    ...liteCommonConfig,
+    output: {
+        dir: "lib/lite",
+        sourcemap: true,
+        format: "es",
+        exports: "named",
+        paths: appendJsToExternalPaths,
+    },
+    plugins: [rewriteDevImports(devPackageMap), typescript({ tsconfig: "tsconfig.build.lib.lite.json" }), nodeResolve({ mainFields: ["browser", "module", "main"] })],
+    onwarn(warning, warn) {
+        throw new Error(warning.message);
+    },
+};
+
+const liteDtsConfig = {
+    ...liteCommonConfig,
+    output: {
+        file: "lib/lite/index.d.ts",
+        format: "es",
+        paths: appendJsToExternalPaths,
+    },
+    plugins: [rewriteDevImports(devPackageMap), dts({ tsconfig: "tsconfig.build.lib.lite.json" })],
+};
+
+export default [jsConfig, dtsConfig, liteJsConfig, liteDtsConfig];

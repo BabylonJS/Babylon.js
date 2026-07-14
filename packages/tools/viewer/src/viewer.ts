@@ -77,6 +77,8 @@ import {
     ViewerHotSpotResult,
     ViewerBase,
     DefaultViewerBaseOptions,
+    FramingCameraAlpha,
+    FramingCameraBeta,
     throwIfAborted,
     observePromise,
 } from "./viewerBase";
@@ -2634,8 +2636,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         targetZ?: number
     ): void {
         const goalTarget = Vector3.Zero();
-        let goalAlpha = Math.PI / 2;
-        let goalBeta = Math.PI / 2.4;
+        let goalAlpha = FramingCameraAlpha;
+        let goalBeta = FramingCameraBeta;
 
         const { radius: sceneRadius, target: sceneTarget, lowerRadiusLimit, upperRadiusLimit, minZ, maxZ } = this._getCameraConfig(models);
 
