@@ -83,4 +83,49 @@ describe("FlowGraphCoordinator", () => {
             expect(registered).toContain(coordinator2);
         });
     });
+
+    describe("Flow graph add/remove observables", () => {
+        it("should notify OnFlowGraphAddedObservable when a graph is created", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const added: unknown[] = [];
+            const observer = FlowGraphCoordinator.OnFlowGraphAddedObservable.add((graph) => added.push(graph));
+
+            const graph = coordinator.createGraph();
+
+            expect(added).toHaveLength(1);
+            expect(added[0]).toBe(graph);
+
+            observer.remove();
+        });
+
+        it("should notify OnFlowGraphRemovedObservable when a graph is removed", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+            const removed: unknown[] = [];
+            const observer = FlowGraphCoordinator.OnFlowGraphRemovedObservable.add((g) => removed.push(g));
+
+            coordinator.removeGraph(graph);
+
+            expect(removed).toHaveLength(1);
+            expect(removed[0]).toBe(graph);
+
+            observer.remove();
+        });
+
+        it("should notify OnFlowGraphRemovedObservable for each graph on dispose", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph1 = coordinator.createGraph();
+            const graph2 = coordinator.createGraph();
+            const removed: unknown[] = [];
+            const observer = FlowGraphCoordinator.OnFlowGraphRemovedObservable.add((g) => removed.push(g));
+
+            coordinator.dispose();
+
+            expect(removed).toHaveLength(2);
+            expect(removed).toContain(graph1);
+            expect(removed).toContain(graph2);
+
+            observer.remove();
+        });
+    });
 });

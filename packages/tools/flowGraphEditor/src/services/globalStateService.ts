@@ -40,6 +40,11 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
             const scene = options.hostScene ?? options.flowGraph.scene;
             const globalState = new GlobalState(scene);
 
+            // Set hostScene before assigning the coordinator/flowGraph below: those assignments run
+            // the graph-activation path (`set flowGraph`), which must know whether it is dealing with
+            // a live host graph so it does not stop the running application.
+            globalState.hostScene = options.hostScene;
+
             // If the flow graph belongs to a coordinator, use it for multi-graph support.
             // Otherwise the flowGraph setter will handle single-graph mode.
             const existingCoordinator = options.flowGraph.coordinator;
@@ -55,7 +60,6 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
 
             globalState.hostElement = hostElement;
             globalState.hostDocument = hostElement.ownerDocument!;
-            globalState.hostScene = options.hostScene;
             globalState.customSave = options.customSave;
             globalState.hostWindow = hostElement.ownerDocument.defaultView!;
             globalState.stateManager.hostDocument = globalState.hostDocument;

@@ -62,6 +62,18 @@ export class FlowGraphCoordinator {
     public static readonly SceneCoordinators: Map<Scene, FlowGraphCoordinator[]> = new Map();
 
     /**
+     * Observable raised when a flow graph is added to any coordinator. Used by the inspector to keep
+     * the flow graph list in sync. The payload is the newly added flow graph.
+     */
+    public static readonly OnFlowGraphAddedObservable = new Observable<FlowGraph>();
+
+    /**
+     * Observable raised when a flow graph is removed from any coordinator. Used by the inspector to keep
+     * the flow graph list in sync. The payload is the removed flow graph.
+     */
+    public static readonly OnFlowGraphRemovedObservable = new Observable<FlowGraph>();
+
+    /**
      * When set to true (default) custom events will be dispatched synchronously.
      * This means that the events will be dispatched immediately when they are triggered.
      */
@@ -125,6 +137,7 @@ export class FlowGraphCoordinator {
         const graphName = name ?? `Graph ${this._flowGraphs.length + 1}`;
         const graph = new FlowGraph({ scene: this.config.scene, coordinator: this, name: graphName });
         this._flowGraphs.push(graph);
+        FlowGraphCoordinator.OnFlowGraphAddedObservable.notifyObservers(graph);
         return graph;
     }
 
@@ -137,6 +150,7 @@ export class FlowGraphCoordinator {
         if (index !== -1) {
             graph.dispose();
             this._flowGraphs.splice(index, 1);
+            FlowGraphCoordinator.OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
     }
 
@@ -155,6 +169,7 @@ export class FlowGraphCoordinator {
     public dispose() {
         for (const graph of this._flowGraphs) {
             graph.dispose();
+            FlowGraphCoordinator.OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
         this._flowGraphs.length = 0;
         this._disposeObserver?.remove();

@@ -16,6 +16,25 @@ import { type FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPi
 import { _IsDescendantOf } from "./utils";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "./flowGraphValidator";
 import { RandomGUID } from "../Misc/guid";
+import { Tools } from "../Misc/tools.pure";
+import { AbstractEngine } from "../Engines/abstractEngine";
+
+// UMD global names for the flow graph editor bundle (mirrors nodeGeometry.ts / nodeRenderGraph.ts).
+declare let FLOWGRAPHEDITOR: any;
+declare let BABYLON: any;
+
+/**
+ * Interface used to configure the launch of the flow graph editor.
+ */
+export interface IFlowGraphEditorLaunchOptions {
+    /** Define the URL to load the flow graph editor script from */
+    editorURL?: string;
+    /** Additional configuration forwarded to `FlowGraphEditor.Show()` (e.g. hostScene, hostElement) */
+    flowGraphEditorConfig?: {
+        hostScene?: Scene;
+        hostElement?: HTMLElement;
+    };
+}
 
 export const enum FlowGraphState {
     /**
@@ -95,6 +114,34 @@ export class FlowGraph {
      * A unique identifier for this graph. Auto-generated if not provided.
      */
     public uniqueId: string;
+
+    /**
+     * Define the URL to load the flow graph editor script from.
+     */
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/flowGraphEditor/babylon.flowGraphEditor.js`;
+
+    private _BJSFLOWGRAPHEDITOR = this._getGlobalFlowGraphEditor();
+
+    /** @returns the flow graph editor from a UMD bundle or the BABYLON global, or undefined if not loaded */
+    private _getGlobalFlowGraphEditor(): any {
+        // UMD global name detection from bundle metadata. rollup-built UMD bundles may expose the
+        // editor class on `.default.FlowGraphEditor`, so unwrap that case before falling back to
+        // the BABYLON global emitted from the editor entry point.
+        if (typeof FLOWGRAPHEDITOR !== "undefined") {
+            if ((FLOWGRAPHEDITOR as any).FlowGraphEditor) {
+                return FLOWGRAPHEDITOR;
+            }
+            if ((FLOWGRAPHEDITOR as any).default?.FlowGraphEditor) {
+                return (FLOWGRAPHEDITOR as any).default;
+            }
+        }
+
+        if (typeof BABYLON !== "undefined" && typeof BABYLON.FlowGraphEditor !== "undefined") {
+            return BABYLON;
+        }
+
+        return undefined;
+    }
 
     /**
      * An observable that is triggered when the state of the graph changes.
@@ -616,5 +663,44 @@ export class FlowGraph {
             context.serialize(serializedContext, valueSerializeFunction);
             serializationObject.executionContexts.push(serializedContext);
         }
+    }
+
+    /**
+     * Launches the flow graph editor for this graph.
+     * The editor is lazy-loaded from {@link FlowGraph.EditorURL} the first time it is used.
+     * @param config defines the configuration of the editor
+     * @returns a promise fulfilled when the editor is visible
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async edit(config?: IFlowGraphEditorLaunchOptions): Promise<void> {
+        return await new Promise((resolve) => {
+            this._BJSFLOWGRAPHEDITOR = this._BJSFLOWGRAPHEDITOR || this._getGlobalFlowGraphEditor();
+            if (typeof this._BJSFLOWGRAPHEDITOR === "undefined") {
+                const editorUrl = config && config.editorURL ? config.editorURL : FlowGraph.EditorURL;
+
+                // Load the editor bundle and add it to the DOM.
+                Tools.LoadBabylonScript(editorUrl, () => {
+                    this._BJSFLOWGRAPHEDITOR = this._BJSFLOWGRAPHEDITOR || this._getGlobalFlowGraphEditor();
+                    this._createFlowGraphEditor(config?.flowGraphEditorConfig);
+                    resolve();
+                });
+            } else {
+                this._createFlowGraphEditor(config?.flowGraphEditorConfig);
+                resolve();
+            }
+        });
+    }
+
+    /**
+     * Creates the flow graph editor window.
+     * @param additionalConfig additional configuration forwarded to `FlowGraphEditor.Show()`
+     */
+    private _createFlowGraphEditor(additionalConfig?: any) {
+        const editorConfig: any = {
+            flowGraph: this,
+            hostScene: this._scene,
+            ...additionalConfig,
+        };
+        this._BJSFLOWGRAPHEDITOR.FlowGraphEditor.Show(editorConfig);
     }
 }
