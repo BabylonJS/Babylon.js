@@ -1572,15 +1572,23 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * cheap per-node frustum test every frame so the off-screen LOD bias tracks camera rotation. The LOD
      * re-evaluation is throttled to at most every {@link _lodUpdateInterval} frames once the camera has
      * translated far enough, but also runs immediately whenever a node enters/leaves the frustum (so its
-     * detail upgrades/downgrades promptly) or a cap change forces it. Active ranges rebuild on any LOD change.
+     * detail upgrades/downgrades promptly), a node's post-switch cooldown just expired while a target/active
+     * mismatch is still pending (so a switch deferred purely by cooldown — e.g. the base layer's own initial
+     * promotion, which sets a fresh cooldown right before the very first camera-driven evaluation can run —
+     * gets retried without requiring the camera to move again), or a cap change forces it. Active ranges
+     * rebuild on any LOD change.
      */
     private _onLodFrame(): void {
         if (this._disposed || !this._baseLayerReady) {
             return;
         }
+        let cooldownExpiredWithPendingSwitch = false;
         for (const node of this._leafNodes) {
             if (node.lodCooldown && node.lodCooldown > 0) {
                 node.lodCooldown--;
+                if (node.lodCooldown === 0 && node.targetLevel !== undefined && node.targetLevel !== node.activeLod) {
+                    cooldownExpiredWithPendingSwitch = true;
+                }
             }
         }
         // Tick eviction cooldowns: unreferenced files are freed once their cooldown elapses (budgeted streaming).
@@ -1594,7 +1602,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // not just the translation that gates the throttled LOD re-evaluation below.
         const frustumChanged = this._updateNodeFrustum();
 
-        let runLodEval = this._forceLodUpdate || frustumChanged;
+        let runLodEval = this._forceLodUpdate || frustumChanged || cooldownExpiredWithPendingSwitch;
         if (!runLodEval && ++this._framesSinceLodUpdate >= this._lodUpdateInterval) {
             const camera = this._scene.activeCamera;
             const threshold = this._lodUpdateDistance;
