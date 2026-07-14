@@ -31,13 +31,21 @@ void main(void)
 
     float border = outset * inset;
 
-    // When writing to the depth buffer, discard the transparent background of the glyph quads so they do not occlude other geometry.
-    if (uDepthWrite > 0.5 && max(alpha, border) < 0.5) {
-        discard;
+    // In depth-write mode, hard-cut the coverage (alpha test) so glyphs sort like solid geometry:
+    // fully transparent pixels are discarded and the remaining pixels are made opaque, so no
+    // semi-transparent edge pixels write depth (which would halo geometry drawn behind them).
+    float fillCoverage = alpha;
+    float strokeCoverage = border;
+    if (uDepthWrite > 0.5) {
+        if (max(alpha, border) < 0.5) {
+            discard;
+        }
+        fillCoverage = step(0.5, alpha);
+        strokeCoverage = step(0.5, border);
     }
 
-    vec4 filledFragColor = vec4(uColor.rgb, alpha * uColor.a);
-    vec4 strokedFragColor = vec4(uStrokeColor.rgb, border * uStrokeColor.a);
+    vec4 filledFragColor = vec4(uColor.rgb, fillCoverage * uColor.a);
+    vec4 strokedFragColor = vec4(uStrokeColor.rgb, strokeCoverage * uStrokeColor.a);
 
-    gl_FragColor = mix(filledFragColor, strokedFragColor, border);
+    gl_FragColor = mix(filledFragColor, strokedFragColor, strokeCoverage);
 }
