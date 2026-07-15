@@ -22,11 +22,13 @@ describe("AlphaState", () => {
         alphaState.apply(context);
         alphaState.apply(context);
 
-        expect(context.enable).toHaveBeenCalledExactlyOnceWith(context.SAMPLE_ALPHA_TO_COVERAGE);
+        expect(context.enable).toHaveBeenCalledTimes(1);
+        expect(context.enable).toHaveBeenCalledWith(context.SAMPLE_ALPHA_TO_COVERAGE);
 
         alphaState.alphaToCoverage = false;
         alphaState.apply(context);
 
-        expect(context.disable).toHaveBeenCalledExactlyOnceWith(context.SAMPLE_ALPHA_TO_COVERAGE);
+        expect(context.disable).toHaveBeenCalledTimes(1);
+        expect(context.disable).toHaveBeenCalledWith(context.SAMPLE_ALPHA_TO_COVERAGE);
     });
 });
