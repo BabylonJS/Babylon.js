@@ -2193,6 +2193,19 @@ export class ThinNativeEngine extends ThinEngine {
         const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
+        // Populate the standard depth/stencil texture metadata (mirrors ThinEngine._setupDepthStencilTexture).
+        // In particular `samples` must be set so consumers such as the FrameGraph texture manager report the
+        // correct sample count; leaving it at the InternalTexture default (0) breaks FrameGraph MSAA
+        // depth/output sample-count validation.
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = false;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
         const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
