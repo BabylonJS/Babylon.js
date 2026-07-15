@@ -1,34 +1,122 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const wgslShaderDirectory = fileURLToPath(new URL("../../../src/ShadersWGSL/", import.meta.url));
+type ShaderSource = {
+    name: string;
+    source: string;
+};
 
-function readShader(fileName: string): string {
-    return readFileSync(join(wgslShaderDirectory, fileName), "utf8");
+type Conditional = {
+    depthPrePassBranch: "defined" | "undefined" | null;
+    isElse: boolean;
+};
+
+const coreWgslShaderDirectory = fileURLToPath(new URL("../../../src/ShadersWGSL/", import.meta.url));
+const materialsDirectory = fileURLToPath(new URL("../../../../materials/src/", import.meta.url));
+
+function readShader(name: string, path: string): ShaderSource {
+    return { name, source: readFileSync(path, "utf8") };
+}
+
+function findDepthPrePassMaterialFragments(): ShaderSource[] {
+    const coreShaders = readdirSync(coreWgslShaderDirectory)
+        .filter((fileName) => fileName.endsWith(".fragment.fx"))
+        .map((fileName) => readShader(`core/${fileName}`, join(coreWgslShaderDirectory, fileName)));
+    const materialShaders = readdirSync(materialsDirectory, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .flatMap((entry) => {
+            const wgslDirectory = join(materialsDirectory, entry.name, "wgsl");
+            if (!existsSync(wgslDirectory)) {
+                return [];
+            }
+
+            return readdirSync(wgslDirectory)
+                .filter((fileName) => fileName.endsWith(".fragment.fx"))
+                .map((fileName) => readShader(`materials/${entry.name}/${fileName}`, join(wgslDirectory, fileName)));
+        });
+
+    return [...coreShaders, ...materialShaders]
+        .filter(({ source }) => source.includes("#include<depthPrePass>"))
+        .sort(({ name: left }, { name: right }) => left.localeCompare(right));
+}
+
+function findUnguardedTailLines(source: string): string[] {
+    const lines = source.split(/\r?\n/);
+    const depthPrePassLine = lines.findIndex((line) => line.includes("#include<depthPrePass>"));
+    const finalHookLine = lines.findIndex((line, index) => index > depthPrePassLine && line.includes("#define CUSTOM_FRAGMENT_MAIN_END"));
+    const conditionals: Conditional[] = [];
+    const unguardedLines: string[] = [];
+
+    expect(depthPrePassLine).toBeGreaterThanOrEqual(0);
+    expect(finalHookLine).toBeGreaterThan(depthPrePassLine);
+
+    for (let index = 0; index <= finalHookLine; index++) {
+        const line = lines[index];
+        const trimmedLine = line.trim();
+
+        if (/^#ifndef\s+DEPTHPREPASS\b/.test(trimmedLine)) {
+            conditionals.push({ depthPrePassBranch: "undefined", isElse: false });
+            continue;
+        }
+        if (/^#ifdef\s+DEPTHPREPASS\b/.test(trimmedLine)) {
+            conditionals.push({ depthPrePassBranch: "defined", isElse: false });
+            continue;
+        }
+        if (/^#if(n?def)?\b/.test(trimmedLine)) {
+            conditionals.push({ depthPrePassBranch: null, isElse: false });
+            continue;
+        }
+        if (/^#el(se|if)\b/.test(trimmedLine)) {
+            const conditional = conditionals.at(-1);
+            if (conditional) {
+                conditional.isElse = true;
+            }
+            continue;
+        }
+        if (/^#endif\b/.test(trimmedLine)) {
+            conditionals.pop();
+            continue;
+        }
+
+        if (index <= depthPrePassLine || trimmedLine.length === 0 || trimmedLine.startsWith("//")) {
+            continue;
+        }
+
+        const isExcludedFromDepthPrePass = conditionals.some(
+            ({ depthPrePassBranch, isElse }) => (depthPrePassBranch === "undefined" && !isElse) || (depthPrePassBranch === "defined" && isElse)
+        );
+        if (!isExcludedFromDepthPrePass) {
+            unguardedLines.push(`${index + 1}: ${trimmedLine}`);
+        }
+    }
+
+    return unguardedLines;
 }
 
 describe("WGSL depth prepass material fragment tails", () => {
-    const depthPrePassMaterialFragments = readdirSync(wgslShaderDirectory)
-        .filter((fileName) => fileName.endsWith(".fragment.fx"))
-        .filter((fileName) => readShader(fileName).includes("#include<depthPrePass>"))
-        .sort();
+    const depthPrePassMaterialFragments = findDepthPrePassMaterialFragments();
 
     it("tracks every material shader affected by the DEPTHPREPASS tail guard", () => {
-        expect(depthPrePassMaterialFragments).toEqual(["default.fragment.fx", "openpbr.fragment.fx", "pbr.fragment.fx"]);
+        expect(depthPrePassMaterialFragments.map(({ name }) => name)).toEqual([
+            "core/default.fragment.fx",
+            "core/openpbr.fragment.fx",
+            "core/pbr.fragment.fx",
+            "materials/cell/cell.fragment.fx",
+            "materials/fire/fire.fragment.fx",
+            "materials/fur/fur.fragment.fx",
+            "materials/gradient/gradient.fragment.fx",
+            "materials/lava/lava.fragment.fx",
+            "materials/mix/mix.fragment.fx",
+            "materials/normal/normal.fragment.fx",
+            "materials/simple/simple.fragment.fx",
+            "materials/terrain/terrain.fragment.fx",
+            "materials/triPlanar/triplanar.fragment.fx",
+        ]);
     });
 
-    it.each(depthPrePassMaterialFragments)("keeps the post-depth-prepass material tail out of DEPTHPREPASS for %s", (fileName) => {
-        const source = readShader(fileName);
-        const depthPrePassIndex = source.indexOf("#include<depthPrePass>");
-        const guardStart = source.indexOf("#ifndef DEPTHPREPASS", depthPrePassIndex);
-        const finalHook = source.indexOf("#define CUSTOM_FRAGMENT_MAIN_END", guardStart);
-
-        expect(depthPrePassIndex).toBeGreaterThanOrEqual(0);
-        expect(guardStart).toBeGreaterThan(depthPrePassIndex);
-        expect(finalHook).toBeGreaterThan(guardStart);
-        expect(source.slice(depthPrePassIndex, guardStart)).not.toContain("CUSTOM_FRAGMENT_MAIN_END");
-        expect(source.slice(finalHook)).toMatch(/#define CUSTOM_FRAGMENT_MAIN_END\s*#endif\s*}\s*$/);
+    it.each(depthPrePassMaterialFragments)("keeps every post-depth-prepass statement out of DEPTHPREPASS for $name", ({ source }) => {
+        expect(findUnguardedTailLines(source)).toEqual([]);
     });
 });

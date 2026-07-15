@@ -123,6 +123,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #include<depthPrePass>
 
+#ifndef DEPTHPREPASS
+
 	mixColor = vec4f(mixColor.rgb * uniforms.vTextureInfos.y, mixColor.a);
 
 	var diffuse1Color: vec4f = textureSample(diffuse1Sampler, diffuse1SamplerSampler, fragmentInputs.vTextureUV * uniforms.diffuse1Infos);
@@ -151,6 +153,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #endif
+
+#endif
+
+#ifndef DEPTHPREPASS
 
 #ifdef VERTEXCOLOR
 	finalMixColor = vec4f(finalMixColor.rgb * fragmentInputs.vColor.rgb, finalMixColor.a);
@@ -191,4 +197,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #include<imageProcessingCompatibility>
 
 #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
+
 }

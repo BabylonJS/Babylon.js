@@ -74,6 +74,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #include<depthPrePass>
 
+#ifndef DEPTHPREPASS
+
 #ifdef VERTEXCOLOR
 	baseColor = vec4f(baseColor.rgb * fragmentInputs.vColor.rgb, baseColor.a);
 #endif
@@ -116,4 +118,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #include<imageProcessingCompatibility>
 
 #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
+
 }

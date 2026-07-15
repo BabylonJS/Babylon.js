@@ -71,8 +71,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #include<depthPrePass>
 
+#ifndef DEPTHPREPASS
+
 	baseColor = vec4f(baseColor.rgb * uniforms.vDiffuseInfos.y, baseColor.a);
 #endif
+
+#endif
+
+#ifndef DEPTHPREPASS
 
 #ifdef NORMAL
     baseColor = mix(baseColor,  vec4f(fragmentInputs.vNormalW, 1.0), 0.5);
@@ -115,4 +121,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #include<imageProcessingCompatibility>
 
 #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
+
 }
