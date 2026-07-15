@@ -128,4 +128,28 @@ describe("FlowGraphCoordinator", () => {
             observer.remove();
         });
     });
+
+    describe("Graph disposal teardown", () => {
+        it("should tear down scene event observers when a never-started graph is removed", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const before = scene.onBeforeRenderObservable.observers.length;
+
+            // A freshly created graph is in the Stopped state but its scene event
+            // coordinator already attached per-frame/pointer/keyboard observers.
+            const graph = coordinator.createGraph();
+            expect(scene.onBeforeRenderObservable.observers.length).toBeGreaterThan(before);
+
+            // Removing it (without ever starting it) must dispose those observers.
+            coordinator.removeGraph(graph);
+            expect(scene.onBeforeRenderObservable.observers.length).toBe(before);
+        });
+
+        it("should be safe to dispose a graph twice", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+
+            graph.dispose();
+            expect(() => graph.dispose()).not.toThrow();
+        });
+    });
 });

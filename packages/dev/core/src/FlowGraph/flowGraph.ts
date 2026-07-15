@@ -207,6 +207,8 @@ export class FlowGraph {
      */
     private _state: FlowGraphState = FlowGraphState.Stopped;
 
+    private _disposed = false;
+
     /**
      * The state of the graph
      */
@@ -568,9 +570,10 @@ export class FlowGraph {
      * Disposes of the flow graph. Cancels any pending tasks and removes all event listeners.
      */
     public dispose() {
-        if (this.state === FlowGraphState.Stopped) {
+        if (this._disposed) {
             return;
         }
+        this._disposed = true;
         this.state = FlowGraphState.Stopped;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();
