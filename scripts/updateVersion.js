@@ -76,11 +76,18 @@ const updateSinceTag = (version) => {
     runCommand("npx prettier --write packages/public/**/package.json");
 };
 
+// Babylon-scoped packages that are versioned independently from the monorepo and must NOT be bumped
+// to the monorepo version. These are published from separate repositories on their own release cadence.
+const externalBabylonPackages = new Set(["@babylonjs/lite"]);
+
 // Update the babylon dependencies array (dep, dev, peer...) in place to the new version
 const updateDependencies = (version, dependencies) => {
     let changed = false;
     if (dependencies) {
         Object.keys(dependencies).forEach((dependency) => {
+            if (externalBabylonPackages.has(dependency)) {
+                return;
+            }
             if (dependency.startsWith("babylonjs") || dependency.startsWith("@babylonjs")) {
                 // Cheap targetted way for now to update when needed
                 const currentVersion = dependencies[dependency];
