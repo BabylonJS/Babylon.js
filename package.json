@@ -9,6 +9,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@babel/preset-env": "^7.29.7",
+        "@babylonjs/lite": "1.10.0",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
@@ -136,8 +137,8 @@
         "packages/**/src/**/*.{scss,css}": "prettier --write"
     },
     "engines": {
-        "node": "^20.19.0 || >=22.13.0 <23.0.0",
-        "npm": ">=8.0.0"
+        "node": "^20.19.0 || >=22.13.0 <23.0.0 || >=24.0.0 <25.0.0",
+        "npm": ">=11.18.0"
     },
     "changelog": {
         "nextVersion": "Unreleased",
@@ -146,6 +147,7 @@
     },
     "nx": {},
     "overrides": {
+        "@babylonjs/lite": "$@babylonjs/lite",
         "eslint-plugin-github": {
             "eslint": "^10.0.0"
         },
@@ -160,6 +162,10 @@
         },
         "eslint-plugin-tsdoc": {
             "@typescript-eslint/utils": "^8.58.2"
+        },
+        "@eslint/compat": {
+            ".": "^2.0.0",
+            "eslint": "$eslint"
         },
         "dompurify": "3.4.0"
     }

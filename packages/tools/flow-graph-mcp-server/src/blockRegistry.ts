@@ -65,7 +65,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphSceneReadyEventBlock",
         category: "Event",
         description: "Triggers when the scene is ready (all assets loaded). This is the most common entry point for a flow graph.",
-        signalInputs: [{ name: "in", description: "Inherited signal input (not typically used for events)" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (use for initialization logic)" },
             { name: "done", description: "Fires when the event actually triggers (scene ready). USE THIS for event-driven logic." },
@@ -79,7 +79,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphSceneTickEventBlock",
         category: "Event",
         description: "Triggers every frame (scene render loop). Provides elapsed time and delta time.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires every frame when the tick event occurs. USE THIS for per-frame logic." },
@@ -96,7 +96,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphMeshPickEventBlock",
         category: "Event",
         description: "Triggers when a mesh is picked (clicked) by the user.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization). NOT on each pick." },
             { name: "done", description: "Fires each time the mesh is picked. USE THIS to react to clicks." },
@@ -122,7 +122,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphPointerOverEventBlock",
         category: "Event",
         description: "Triggers when the pointer moves over a mesh.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the pointer enters the mesh. USE THIS for hover logic." },
@@ -140,7 +140,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphPointerOutEventBlock",
         category: "Event",
         description: "Triggers when the pointer moves off a mesh.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the pointer leaves the mesh. USE THIS for hover-out logic." },
@@ -161,7 +161,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphPointerDownEventBlock",
         category: "Event",
         description: "Triggers when a pointer button is pressed down on a mesh.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the pointer is pressed. USE THIS for press logic." },
@@ -180,7 +180,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphPointerUpEventBlock",
         category: "Event",
         description: "Triggers when a pointer button is released on a mesh.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the pointer is released. USE THIS for release logic." },
@@ -199,7 +199,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphPointerMoveEventBlock",
         category: "Event",
         description: "Triggers when the pointer moves over a mesh.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the pointer moves. USE THIS for move logic." },
@@ -218,7 +218,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphKeyDownEventBlock",
         category: "Event",
         description: "Triggers when a keyboard key is pressed down. Can optionally ignore auto-repeat events.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the matching key-down event occurs. USE THIS for keyboard logic." },
@@ -245,7 +245,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphKeyUpEventBlock",
         category: "Event",
         description: "Triggers when a keyboard key is released.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the matching key-up event occurs. USE THIS for keyboard logic." },
@@ -268,7 +268,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphPhysicsCollisionEventBlock",
         category: "Event",
         description: "Triggers when a physics body collides with another body.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time a collision occurs. USE THIS for collision logic." },
@@ -288,7 +288,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphSoundEndedEventBlock",
         category: "Event",
         description: "Triggers when a sound finishes playing.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the sound ends. USE THIS for sound-ended logic." },
@@ -316,7 +316,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         className: "FlowGraphReceiveCustomEventBlock",
         category: "Event",
         description: "Receives a custom event sent by SendCustomEvent blocks. Creates dynamic data outputs from eventData config.",
-        signalInputs: [{ name: "in" }],
+        signalInputs: [],
         signalOutputs: [
             { name: "out", description: "Fires once at graph startup (initialization)" },
             { name: "done", description: "Fires each time the custom event is received. USE THIS for event handling." },
@@ -758,6 +758,9 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "isValid", type: "boolean" },
             { name: "object", type: "any" },
             { name: "propertyName", type: "any" },
+            { name: "setFunction", type: "any", description: "Setter function for the resolved property (used internally by interpolation/animation)" },
+            { name: "getFunction", type: "any", description: "Getter function for the resolved property" },
+            { name: "generateAnimationsFunction", type: "any", description: "Builds animation property info for the resolved property" },
         ],
         config: { jsonPointer: "string — the JSON pointer path" },
     },

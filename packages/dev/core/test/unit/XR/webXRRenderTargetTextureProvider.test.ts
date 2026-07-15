@@ -54,5 +54,12 @@ describe("WebXRLayerRenderTargetTextureProvider", () => {
             // The multiview array path is not wired on the API-agnostic hook; it is owned by the WebGL provider.
             expect(() => provider.createInternal(true)).toThrow(/Multiview render targets are not yet supported/);
         });
+
+        it("does not attach a clear observer (the per-eye clear is WebGPU-only)", () => {
+            // The right-eye clear observer is attached only by the WebGPU provider. Render targets built via
+            // the shared API-agnostic hook (used by the WebGL path) must not get it, so WebGL2 stays unchanged.
+            const rtt = provider.createInternal(false);
+            expect(rtt.onClearObservable.hasObservers()).toBe(false);
+        });
     });
 });

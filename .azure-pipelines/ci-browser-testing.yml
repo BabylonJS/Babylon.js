@@ -11,7 +11,7 @@
 # Schedule: 1:00 AM PST daily (09:00 UTC), plus 3:00 AM PST Saturday (11:00 UTC)
 #
 # Variable groups:
-#   - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#   - Browserstack-Opensource (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
 # =============================================================================
 
 trigger: none
@@ -35,7 +35,7 @@ schedules:
       always: true
 
 variables:
-    - group: BabylonJS-BrowserStack
+    - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
     - name: system.debug
       value: false
@@ -59,9 +59,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -126,9 +126,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -197,9 +197,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -265,9 +265,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -332,9 +332,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - task: JavaToolInstaller@0
             displayName: "Use Java 21"
@@ -425,9 +425,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"

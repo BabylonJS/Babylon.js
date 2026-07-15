@@ -79,10 +79,11 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
                     <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "")}>
                         <input type="text" placeholder={searchPlaceholder} value={this.state.searchText} onChange={this.onChangeSearchText} />
                         {this.props.options
-                            .filter((o) => {
-                                return !this.state.searchText || o.toLowerCase().indexOf(this.state.searchText.toLowerCase().trim()) > -1;
+                            .map((o, i) => ({ option: o, index: i }))
+                            .filter(({ option }) => {
+                                return !this.state.searchText || option.toLowerCase().indexOf(this.state.searchText.toLowerCase().trim()) > -1;
                             })
-                            .map((o, i) => {
+                            .map(({ option: o, index: i }) => {
                                 return (
                                     <div title={o} key={o} onClick={() => this.clickOption(o, i)} className="dropup-content-line">
                                         <div

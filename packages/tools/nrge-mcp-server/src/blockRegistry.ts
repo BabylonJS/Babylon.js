@@ -178,7 +178,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "Generates all mip-map levels for a texture in-place after prior rendering has been done. " +
             "Required for techniques that sample lower mip levels (e.g. bloom, reflections).",
         inputs: [
-            { name: "source", type: "AutoDetect" },
+            { name: "target", type: "AutoDetect" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -244,6 +244,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "output", type: "BasedOnInput" },
             { name: "outputDepth", type: "BasedOnInput" },
             { name: "objectRenderer", type: "Object" },
+            { name: "geomIrradiance", type: "TextureIrradiance" },
             { name: "geomViewDepth", type: "TextureViewDepth" },
             { name: "geomNormViewDepth", type: "TextureNormalizedViewDepth" },
             { name: "geomScreenDepth", type: "TextureScreenDepth" },
@@ -276,17 +277,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "Renders the Babylon.js utility layer (gizmos, helpers) on top of the main colour attachment. Used when the inspector / gizmos should appear in the final output.",
         inputs: [
             { name: "target", type: "AutoDetect" },
-            { name: "depth", type: "AutoDetect", isOptional: true },
             { name: "camera", type: "Camera" },
-            { name: "objects", type: "ObjectList" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
-            { name: "shadowGenerators", type: "AutoDetect", isOptional: true },
         ],
-        outputs: [
-            { name: "output", type: "BasedOnInput" },
-            { name: "outputDepth", type: "BasedOnInput" },
-            { name: "objectRenderer", type: "Object" },
-        ],
+        outputs: [{ name: "output", type: "BasedOnInput" }],
         defaultAdditionalConstructionParameters: [true, true],
     },
 
@@ -295,14 +289,18 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Rendering",
         description:
             "Generates a shadow map for a directional, spot, or point light. " +
-            "Connect its `output` (ShadowGenerator) to the `shadowGenerators` port of an ObjectRendererBlock " +
+            "Connect its `generator` output (ShadowGenerator) to the `shadowGenerators` port of an ObjectRendererBlock " +
             "so rendered objects receive shadows from this light.",
         inputs: [
             { name: "light", type: "ShadowLight" },
             { name: "objects", type: "ObjectList" },
+            { name: "camera", type: "Camera" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
-        outputs: [{ name: "output", type: "ShadowGenerator" }],
+        outputs: [
+            { name: "generator", type: "ShadowGenerator" },
+            { name: "output", type: "Texture" },
+        ],
         properties: {
             mapSize: "number – shadow map resolution (default: 1024)",
             useExponentialShadowMap: "boolean",
@@ -323,14 +321,18 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description:
             "Generates a Cascaded Shadow Map (CSM) for a directional light. " +
             "CSM provides better quality close-up shadows with a smooth fade to lower quality at distance. " +
-            "Connect its `output` (ShadowGenerator) to the `shadowGenerators` port of an ObjectRendererBlock.",
+            "Connect its `generator` output (ShadowGenerator) to the `shadowGenerators` port of an ObjectRendererBlock.",
         inputs: [
             { name: "light", type: "ShadowLight" },
             { name: "objects", type: "ObjectList" },
             { name: "camera", type: "Camera" },
+            { name: "geomDepth", type: "AutoDetect", isOptional: true },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
-        outputs: [{ name: "output", type: "ShadowGenerator" }],
+        outputs: [
+            { name: "generator", type: "ShadowGenerator" },
+            { name: "output", type: "Texture" },
+        ],
         properties: {
             mapSize: "number – shadow map resolution per cascade (default: 1024)",
             numCascades: "number – number of cascades (default: 4; must be 2–4)",
@@ -556,13 +558,14 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "PostProcess",
         description:
             "Screen-Space Ambient Occlusion v2 (SSAO2). " +
-            "Requires `geomViewDepth` (TextureViewDepth) and optionally `geomViewNormal` (TextureViewNormal) " +
+            "Requires a Camera plus `geomDepth` (TextureViewDepth) and `geomNormal` (TextureViewNormal) " +
             "from a GeometryRendererBlock. additionalConstructionParameters=[ratio (number)].",
         inputs: [
             { name: "source", type: "AutoDetect" },
             { name: "target", type: "AutoDetect", isOptional: true },
-            { name: "geomViewDepth", type: "TextureViewDepth" },
-            { name: "geomViewNormal", type: "TextureViewNormal", isOptional: true },
+            { name: "camera", type: "Camera" },
+            { name: "geomDepth", type: "TextureViewDepth" },
+            { name: "geomNormal", type: "TextureViewNormal" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -583,11 +586,13 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "PostProcess",
         description:
             "Temporal Anti-Aliasing (TAA). Accumulates samples across frames for smooth anti-aliasing. " +
-            "Requires a Camera. additionalConstructionParameters=[samples (number), factor (number)].",
+            "Connect the `objectRenderer` output of an ObjectRendererBlock; optionally provide a `geomVelocity` " +
+            "(TextureLinearVelocity) texture. additionalConstructionParameters=[samples (number), factor (number)].",
         inputs: [
             { name: "source", type: "AutoDetect" },
             { name: "target", type: "AutoDetect", isOptional: true },
-            { name: "camera", type: "Camera" },
+            { name: "objectRenderer", type: "Object" },
+            { name: "geomVelocity", type: "TextureLinearVelocity", isOptional: true },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -601,13 +606,14 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
     NodeRenderGraphMotionBlurPostProcessBlock: {
         className: "NodeRenderGraphMotionBlurPostProcessBlock",
         category: "PostProcess",
-        description: "Applies motion blur based on per-pixel motion vectors. Requires `geomViewDepth` and `geomViewNormal`. Camera is also required.",
+        description:
+            "Applies motion blur based on per-pixel motion vectors. " +
+            "Optionally provide a `geomVelocity` (TextureVelocity) or `geomViewDepth` (TextureViewDepth) texture from a GeometryRendererBlock.",
         inputs: [
             { name: "source", type: "AutoDetect" },
             { name: "target", type: "AutoDetect", isOptional: true },
-            { name: "camera", type: "Camera" },
-            { name: "geomViewDepth", type: "TextureViewDepth" },
-            { name: "geomViewNormal", type: "TextureViewNormal" },
+            { name: "geomVelocity", type: "TextureVelocity", isOptional: true },
+            { name: "geomViewDepth", type: "TextureViewDepth", isOptional: true },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -683,6 +689,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         inputs: [
             { name: "source", type: "AutoDetect" },
             { name: "target", type: "AutoDetect", isOptional: true },
+            { name: "leftTexture", type: "AutoDetect" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -695,6 +702,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         inputs: [
             { name: "source", type: "AutoDetect" },
             { name: "target", type: "AutoDetect", isOptional: true },
+            { name: "geomViewNormal", type: "TextureViewNormal" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -762,11 +770,12 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "PostProcess",
         description: "Renders volumetric light shafts (god rays) emanating from a single light source.",
         inputs: [
-            { name: "source", type: "AutoDetect" },
-            { name: "target", type: "AutoDetect", isOptional: true },
-            { name: "geomViewDepth", type: "AutoDetect", isOptional: true },
+            { name: "target", type: "AutoDetect" },
+            { name: "depth", type: "AutoDetect" },
             { name: "camera", type: "Camera" },
-            { name: "objects", type: "ObjectList" },
+            { name: "lightingVolumeMesh", type: "ObjectList" },
+            { name: "light", type: "ShadowLight" },
+            { name: "lightingVolumeTexture", type: "AutoDetect", isOptional: true },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -831,9 +840,9 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description: "Draws a selection outline around the highlighted mesh. Typically used by the Babylon.js Inspector / gizmo system.",
         inputs: [
             { name: "target", type: "AutoDetect" },
+            { name: "layer", type: "AutoDetect", isOptional: true },
+            { name: "objectRenderer", type: "Object" },
             { name: "depth", type: "AutoDetect", isOptional: true },
-            { name: "camera", type: "Camera" },
-            { name: "objects", type: "ObjectList" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -912,10 +921,14 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "Use its output as the `dependencies` input of other blocks to express execution ordering " +
             "without a direct data-flow connection.",
         inputs: [
-            { name: "input0", type: "AutoDetect", isOptional: true },
-            { name: "input1", type: "AutoDetect", isOptional: true },
-            { name: "input2", type: "AutoDetect", isOptional: true },
-            { name: "input3", type: "AutoDetect", isOptional: true },
+            { name: "resource0", type: "AutoDetect", isOptional: true },
+            { name: "resource1", type: "AutoDetect", isOptional: true },
+            { name: "resource2", type: "AutoDetect", isOptional: true },
+            { name: "resource3", type: "AutoDetect", isOptional: true },
+            { name: "resource4", type: "AutoDetect", isOptional: true },
+            { name: "resource5", type: "AutoDetect", isOptional: true },
+            { name: "resource6", type: "AutoDetect", isOptional: true },
+            { name: "resource7", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "ResourceContainer" }],
     },
@@ -961,11 +974,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Utility",
         description: "Computes a lighting volume used by the volumetric lighting block for light contribution slicing.",
         inputs: [
-            { name: "camera", type: "Camera" },
-            { name: "objects", type: "ObjectList" },
+            { name: "shadowGenerator", type: "ShadowGenerator" },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
-        outputs: [{ name: "output", type: "AutoDetect" }],
+        outputs: [{ name: "output", type: "ObjectList" }],
     },
 };
 

@@ -1,28 +1,47 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "../types";
-import { GetDirectStore } from "./decorators.functions";
+import { GetDirectStoreFromMetadata } from "./decorators.functions";
+import { SerializedFieldType } from "./decorators.serializationUtilities";
 import { _WarnImport } from "./devTools";
 
-function generateSerializableMember(type: number, sourceName?: string) {
-    return (target: any, propertyKey: string | symbol) => {
-        const classStore = GetDirectStore(target);
+/**
+ * TC39 decorator context types that serialization decorators can be applied to.
+ * Serialization decorators can be applied to fields, getters, setters, and auto-accessors.
+ * `metadata` can be undefined at runtime when `Symbol.metadata` is not available (e.g. tree-shaken
+ * usage on a runtime that lacks native support and never triggered the polyfill); in that case the
+ * serialization metadata is simply not recorded.
+ */
+type SerializableContext = { name: string | symbol; metadata: DecoratorMetadataObject | undefined };
 
-        if (!classStore[propertyKey]) {
-            classStore[propertyKey] = { type: type, sourceName: sourceName };
+function generateSerializableMember(type: SerializedFieldType, sourceName?: string) {
+    return (_value: unknown, context: SerializableContext) => {
+        if (!context.metadata) {
+            return;
+        }
+        const propertyKey = String(context.name);
+        const store = GetDirectStoreFromMetadata(context.metadata);
+
+        if (!store[propertyKey]) {
+            store[propertyKey] = { type: type, sourceName: sourceName };
         }
     };
 }
 
 function generateExpandMember(setCallback: string, targetKey: Nullable<string> = null) {
-    return (target: any, propertyKey: string) => {
-        const key = targetKey || "_" + propertyKey;
-        Object.defineProperty(target, propertyKey, {
-            get: function (this: any) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return <This, V>(_value: ClassAccessorDecoratorTarget<This, V>, context: ClassAccessorDecoratorContext<This, V>): ClassAccessorDecoratorResult<This, V> => {
+        const key = targetKey || "_" + String(context.name);
+        return {
+            init(this: any, value: V) {
+                if (value !== undefined || !(key in this)) {
+                    this[key] = value;
+                }
+                return value;
+            },
+            get(this: any) {
                 return this[key];
             },
-            set: function (this: any, value) {
+            set(this: any, value: V) {
                 // does this object (i.e. vector3) has an equals function? use it!
                 // Note - not using "with epsilon" here, it is expected te behave like the internal cache does.
                 if (typeof this[key]?.equals === "function") {
@@ -35,11 +54,9 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
                 }
                 this[key] = value;
 
-                target[setCallback].apply(this);
+                this[setCallback]();
             },
-            enumerable: true,
-            configurable: true,
-        });
+        };
     };
 }
 
@@ -48,51 +65,55 @@ export function expandToProperty(callback: string, targetKey: Nullable<string> =
 }
 
 export function serialize(sourceName?: string) {
-    return generateSerializableMember(0, sourceName); // value member
+    return generateSerializableMember(SerializedFieldType.VALUE, sourceName);
 }
 
 export function serializeAsTexture(sourceName?: string) {
-    return generateSerializableMember(1, sourceName); // texture member
+    return generateSerializableMember(SerializedFieldType.TEXTURE, sourceName);
 }
 
 export function serializeAsColor3(sourceName?: string) {
-    return generateSerializableMember(2, sourceName); // color3 member
+    return generateSerializableMember(SerializedFieldType.COLOR3, sourceName);
 }
 
 export function serializeAsFresnelParameters(sourceName?: string) {
-    return generateSerializableMember(3, sourceName); // fresnel parameters member
+    return generateSerializableMember(SerializedFieldType.FRESNEL_PARAMETERS, sourceName);
 }
 
 export function serializeAsVector2(sourceName?: string) {
-    return generateSerializableMember(4, sourceName); // vector2 member
+    return generateSerializableMember(SerializedFieldType.VECTOR2, sourceName);
 }
 
 export function serializeAsVector3(sourceName?: string) {
-    return generateSerializableMember(5, sourceName); // vector3 member
+    return generateSerializableMember(SerializedFieldType.VECTOR3, sourceName);
 }
 
 export function serializeAsMeshReference(sourceName?: string) {
-    return generateSerializableMember(6, sourceName); // mesh reference member
+    return generateSerializableMember(SerializedFieldType.MESH, sourceName);
 }
 
 export function serializeAsColorCurves(sourceName?: string) {
-    return generateSerializableMember(7, sourceName); // color curves
+    return generateSerializableMember(SerializedFieldType.COLOR_CURVES, sourceName);
 }
 
 export function serializeAsColor4(sourceName?: string) {
-    return generateSerializableMember(8, sourceName); // color 4
+    return generateSerializableMember(SerializedFieldType.COLOR4, sourceName);
 }
 
 export function serializeAsImageProcessingConfiguration(sourceName?: string) {
-    return generateSerializableMember(9, sourceName); // image processing
+    return generateSerializableMember(SerializedFieldType.IMAGE_PROCESSING, sourceName);
 }
 
 export function serializeAsQuaternion(sourceName?: string) {
-    return generateSerializableMember(10, sourceName); // quaternion member
+    return generateSerializableMember(SerializedFieldType.QUATERNION, sourceName);
 }
 
 export function serializeAsMatrix(sourceName?: string) {
-    return generateSerializableMember(12, sourceName); // matrix member
+    return generateSerializableMember(SerializedFieldType.MATRIX, sourceName);
+}
+
+export function serializeAsVector4(sourceName?: string) {
+    return generateSerializableMember(SerializedFieldType.VECTOR4, sourceName);
 }
 
 /**
@@ -101,50 +122,64 @@ export function serializeAsMatrix(sourceName?: string) {
  * @returns Property Decorator
  */
 export function serializeAsCameraReference(sourceName?: string) {
-    return generateSerializableMember(11, sourceName); // camera reference member
+    return generateSerializableMember(SerializedFieldType.CAMERA, sourceName);
 }
 
 /** @internal */
 declare const _native: any;
 
 /**
- * Decorator used to redirect a function to a native implementation if available.
- * @internal
+ * Shared implementation for the {@link nativeOverride} decorator and its `.filter` variant.
+ * Both flavors install a wrapper that, on first invocation, resolves the function to use once:
+ * either the original JS function or (when running in a Babylon Native context) a native-aware
+ * function produced by `resolveNative`. The resolved function then replaces the wrapper on the
+ * target so subsequent calls skip this setup entirely.
+ * @param originalMethod - The decorated JS method.
+ * @param context - The TC39 method decorator context.
+ * @param resolveNative - Builds the function to use when a native override is present, given the
+ * native function and the original JS function.
+ * @returns The wrapper function that replaces the decorated method.
  */
-export function nativeOverride<T extends (...params: any[]) => boolean>(
-    target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => any>,
-    predicate?: T
-) {
-    // Cache the original JS function for later.
-    const jsFunc = descriptor.value!;
+function ApplyNativeOverride<This, Args extends any[], Return>(
+    originalMethod: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+    resolveNative: (nativeFunc: (this: This, ...args: Args) => Return, jsFunc: (this: This, ...args: Args) => Return) => (this: This, ...args: Args) => Return
+): (this: This, ...args: Args) => Return {
+    const propertyKey = String(context.name);
+    let resolvedFunc: ((this: This, ...args: Args) => Return) | null = null;
 
-    // Override the JS function to check for a native override on first invocation. Setting descriptor.value overrides the function at the early stage of code being loaded/imported.
-    descriptor.value = (...params: Parameters<T>): unknown => {
-        // Assume the resolved function will be the original JS function, then we will check for the Babylon Native context.
-        let func = jsFunc;
+    const wrapper = function (this: This, ...params: Args): Return {
+        if (resolvedFunc === null) {
+            // Default to the original JS function.
+            resolvedFunc = originalMethod;
 
-        // Check if we are executing in a Babylon Native context (e.g. check the presence of the _native global property) and if so also check if a function override is available.
-        if (typeof _native !== "undefined" && _native[propertyKey]) {
-            const nativeFunc = _native[propertyKey] as (...params: Parameters<T>) => unknown;
-            // If a predicate was provided, then we'll need to invoke the predicate on each invocation of the underlying function to determine whether to call the native function or the JS function.
-            if (predicate) {
-                // The resolved function will execute the predicate and then either execute the native function or the JS function.
-                func = (...params: Parameters<T>) => (predicate(...params) ? nativeFunc(...params) : jsFunc(...params));
-            } else {
-                // The resolved function will directly execute the native function.
-                func = nativeFunc;
+            // Check if we are executing in a Babylon Native context and if so, check for a function override.
+            if (typeof _native !== "undefined" && _native[propertyKey]) {
+                resolvedFunc = resolveNative(_native[propertyKey] as (this: This, ...args: Args) => Return, originalMethod);
+            }
+
+            const target = (this && (context.static ? this : Object.getPrototypeOf(this))) as any;
+            if (target?.[propertyKey] === wrapper) {
+                target[propertyKey] = resolvedFunc;
             }
         }
 
-        // Override the JS function again with the final resolved target function.
-        target[propertyKey] = func;
-
-        // The JS function has now been overridden based on whether we're executing in the context of Babylon Native, but we still need to invoke that function.
-        // Future invocations of the function will just directly invoke the final overridden function, not any of the decorator setup logic above.
-        return func(...params);
+        return resolvedFunc.apply(this, params);
     };
+
+    return wrapper;
+}
+
+/**
+ * Decorator used to redirect a function to a native implementation if available.
+ * @internal
+ */
+export function nativeOverride<This, Args extends any[], Return>(
+    originalMethod: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+): (this: This, ...args: Args) => Return {
+    // When a native override exists, use it directly.
+    return ApplyNativeOverride(originalMethod, context, (nativeFunc) => nativeFunc);
 }
 
 /**
@@ -155,26 +190,39 @@ export function nativeOverride<T extends (...params: any[]) => boolean>(
  * @internal
  */
 nativeOverride.filter = function <T extends (...params: any) => boolean>(predicate: T) {
-    return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) =>
-        nativeOverride(target, propertyKey, descriptor, predicate);
+    return <This, Args extends any[], Return>(
+        originalMethod: (this: This, ...args: Args) => Return,
+        context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+    ): ((this: This, ...args: Args) => Return) => {
+        // When a native override exists, evaluate the predicate on each call to choose between the native and JS function.
+        return ApplyNativeOverride(originalMethod, context, (nativeFunc, jsFunc) => {
+            return function (this: This, ...args: Args): Return {
+                if (predicate(...(args as unknown as Parameters<T>))) {
+                    // The native function is invoked without a `this` binding, matching the original behavior.
+                    return (nativeFunc as (...args: Args) => Return)(...args);
+                }
+                return jsFunc.apply(this, args);
+            };
+        });
+    };
 };
 
 /**
  * Adds accessors for a material property.
+ * Applied to an auto-accessor field. Reads/writes from a private backing field named by sourceKey (default: "_" + property name).
+ * The backing field is expected to have a `.value` property.
  * @param setCallback - The name of the callback function to call when the property is set.
- * @param targetKey - The key to use for the target property (defaults to the original property key).
- * @returns A property decorator.
+ * @param sourceKey - The name of the private field that stores the value (defaults to "_" + accessor name).
+ * @returns An accessor decorator.
  */
-export function addAccessorsForMaterialProperty(setCallback: string, targetKey: Nullable<string> = null) {
-    return (target: any, propertyKey: string) => {
-        const key = propertyKey;
-        const newKey = targetKey || "";
-        Object.defineProperty(target, newKey, {
-            get: function (this: any) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                return this[key].value;
+export function addAccessorsForMaterialProperty(setCallback: string, sourceKey: Nullable<string> = null) {
+    return <This, V>(_value: ClassAccessorDecoratorTarget<This, V>, context: ClassAccessorDecoratorContext<This, V>): ClassAccessorDecoratorResult<This, V> => {
+        const key = sourceKey || "_" + String(context.name);
+        return {
+            get(this: any) {
+                return this[key]?.value;
             },
-            set: function (this: any, value) {
+            set(this: any, value: V) {
                 // does this object (i.e. vector3) has an equals function? use it!
                 // Note - not using "with epsilon" here, it is expected te behave like the internal cache does.
                 if (typeof this[key]?.value?.equals === "function") {
@@ -187,10 +235,8 @@ export function addAccessorsForMaterialProperty(setCallback: string, targetKey: 
                 }
                 this[key].value = value;
 
-                target[setCallback].apply(this);
+                this[setCallback]();
             },
-            enumerable: true,
-            configurable: true,
-        });
+        };
     };
 }

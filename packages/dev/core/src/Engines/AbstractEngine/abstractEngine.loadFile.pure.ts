@@ -2,6 +2,7 @@
 
 import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { AbstractEngine } from "../../Engines/abstractEngine.pure";
+import { RegisterFileTools } from "../../Misc/fileTools.pure";
 
 let _Registered = false;
 /**
@@ -13,6 +14,14 @@ export function RegisterAbstractEngineLoadFile(): void {
         return;
     }
     _Registered = true;
+
+    // File loading requires the fileTools implementation (LoadFile / LoadImage).
+    // These are injected lazily through EngineFunctionContext so that engines
+    // that never load files (e.g. the minimal thin engine) do not force-link
+    // fileTools. Any consumer of the loadFile extension — the full Engine
+    // side-effect wrapper and RegisterStandardEngineExtensions — reaches this
+    // registration, which wires the fileTools loaders in.
+    RegisterFileTools();
 
     AbstractEngine.prototype._loadFileAsync = async function (url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<any> {
         return await new Promise<string | ArrayBuffer>((resolve, reject) => {

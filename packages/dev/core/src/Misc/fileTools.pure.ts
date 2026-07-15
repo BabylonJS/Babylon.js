@@ -11,6 +11,8 @@ import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
 import { EngineStore } from "../Engines/engineStore";
+import { EngineFunctionContext } from "../Engines/abstractEngine.functions";
+import { _FunctionContainer } from "../Engines/Processors/shaderProcessor";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import { GetBlobBufferSource } from "../Buffers/bufferUtils";
@@ -1049,4 +1051,11 @@ export function RegisterFileTools(): void {
         RequestFile,
         SetCorsBehavior
     );
+
+    // Register the file/image loaders on the engine injection seam so the
+    // always-loaded engine classes can load files/images without importing
+    // fileTools directly (which would defeat tree-shaking).
+    EngineFunctionContext.loadFile = LoadFile;
+    EngineFunctionContext.loadImage = LoadImage;
+    _FunctionContainer.loadFile = LoadFile;
 }

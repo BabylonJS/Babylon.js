@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { transformWithEsbuild } from "vite";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -16,7 +17,9 @@ const convertPathsToAliases = () => {
     for (const key in paths) {
         // Convert glob patterns to regex-compatible aliases
         const aliasKey = key.replace("/*", "");
-        const aliasValue = path.resolve(__dirname, "packages", paths[key][0].replace("/*", ""));
+        // tsconfig `paths` values are repo-root-relative (e.g. "./packages/dev/core/src/*"),
+        // so resolve them against __dirname directly rather than prepending "packages".
+        const aliasValue = path.resolve(__dirname, paths[key][0].replace("/*", ""));
         aliases[aliasKey] = aliasValue;
     }
     return aliases;
@@ -56,7 +59,39 @@ const createProjectConfig = (type: string) => {
     };
 };
 
+// TC39 decorators migration: with experimentalDecorators removed, the source uses TC39 Stage 3
+// decorators plus the `accessor` keyword. Vite 8 transforms via Oxc (through Rolldown), but Oxc only
+// lowers *legacy* (experimental) decorators — with TC39 Stage 3 decorators it leaves
+// `@decorator`/`accessor` untransformed, which Node cannot parse ("SyntaxError: Invalid or unexpected
+// token"). esbuild does lower TC39 decorators, so we disable Oxc (`oxc: false`) and run a `pre`
+// plugin that transforms every TS/TSX source with esbuild before Rolldown processes it.
+// `useDefineForClassFields: false` keeps assignment (not define) class-field semantics so type-only
+// field redeclarations do not clobber values that a base constructor assigned.
+const esbuildTransformOptions = {
+    target: "es2021" as const,
+    tsconfigRaw: {
+        compilerOptions: {
+            useDefineForClassFields: false,
+        },
+    },
+};
+
+const esbuildDecoratorPlugin = {
+    name: "babylon-esbuild-tc39-decorators",
+    enforce: "pre" as const,
+    async transform(code: string, id: string) {
+        const filePath = id.split("?")[0];
+        if (!/\.tsx?$/.test(filePath) || filePath.includes("/node_modules/")) {
+            return null;
+        }
+        const result = await transformWithEsbuild(code, id, esbuildTransformOptions);
+        return { code: result.code, map: result.map };
+    },
+};
+
 export default defineConfig({
+    oxc: false,
+    plugins: [esbuildDecoratorPlugin],
     resolve: {
         alias: {
             ...aliases,
@@ -71,6 +106,8 @@ export default defineConfig({
         outputFile: process.env.CI ? { junit: "./junit.xml" } : undefined,
         projects: [
             {
+                oxc: false,
+                plugins: [esbuildDecoratorPlugin],
                 test: createProjectConfig("unit"),
                 resolve: {
                     alias: {

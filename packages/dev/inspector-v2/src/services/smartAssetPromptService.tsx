@@ -18,7 +18,7 @@ type PendingMissingAsset = {
     resolve: (value: string | File | null) => void;
 };
 
-const SceneFileExtensions = [".glb", ".gltf", ".babylon", ".obj"];
+const SceneFileExtensions = [".glb", ".gltf", ".babylon", ".obj", ".fbx"];
 const PromptAcceptString = [...SceneFileExtensions, ...Array.from(GetSmartAssetTextureExtensions())].join(",");
 
 const useStyles = makeStyles({

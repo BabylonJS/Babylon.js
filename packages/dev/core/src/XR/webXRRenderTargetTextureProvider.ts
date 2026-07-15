@@ -48,7 +48,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
     protected _engine: AbstractEngine;
 
     constructor(
-        private readonly _scene: Scene,
+        protected readonly _scene: Scene,
         public readonly layerWrapper: WebXRLayerWrapper
     ) {
         this._engine = _scene.getEngine();
