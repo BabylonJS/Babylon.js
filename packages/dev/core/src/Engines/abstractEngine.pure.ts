@@ -561,6 +561,30 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * Gets a boolean indicating if alpha-to-coverage is enabled
+     * @returns true if alpha-to-coverage is enabled
+     */
+    public getAlphaToCoverage(): boolean {
+        return this._alphaState.alphaToCoverage;
+    }
+
+    /**
+     * Enable or disable alpha-to-coverage
+     * @param enable defines the state to set
+     */
+    public setAlphaToCoverage(enable: boolean): void {
+        this._alphaState.alphaToCoverage = enable;
+    }
+
+    /**
+     * Gets the number of samples used by the current render target
+     * @returns the current sample count, or 1 when multisampling is disabled
+     */
+    public get currentSampleCount(): number {
+        return this._currentRenderTarget?.samples ?? 1;
+    }
+
+    /**
      * Gets the depth culling state manager
      */
     public get depthCullingState(): DepthCullingState {
