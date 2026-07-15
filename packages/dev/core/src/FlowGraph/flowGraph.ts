@@ -207,8 +207,6 @@ export class FlowGraph {
      */
     private _state: FlowGraphState = FlowGraphState.Stopped;
 
-    private _disposed = false;
-
     /**
      * The state of the graph
      */
@@ -570,10 +568,19 @@ export class FlowGraph {
      * Disposes of the flow graph. Cancels any pending tasks and removes all event listeners.
      */
     public dispose() {
-        if (this._disposed) {
+        // Always release the scene-event wiring, even for a stopped or never-started graph.
+        // The scene event coordinator attaches per-frame, pointer and keyboard observers to the
+        // scene in its constructor, so a graph that is removed from its coordinator (or disposed)
+        // while stopped would otherwise leak those observers and keep incurring per-frame overhead.
+        this._detachEventObserver();
+        this._sceneEventCoordinator.dispose();
+        if (this.state === FlowGraphState.Stopped) {
+            // Nothing is executing, so there is no run state to clear. Authored blocks are left
+            // intact on purpose: the editor re-points a stopped graph across preview scenes via
+            // setScene(), and each preview scene disposal raises a SceneDispose event that calls
+            // dispose() here. Wiping the blocks would destroy the user's graph on every reset.
             return;
         }
-        this._disposed = true;
         this.state = FlowGraphState.Stopped;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();
@@ -584,8 +591,6 @@ export class FlowGraph {
             this._eventBlocks[type as FlowGraphEventType].length = 0;
         }
         this._allBlocks.length = 0;
-        this._detachEventObserver();
-        this._sceneEventCoordinator.dispose();
     }
 
     /**

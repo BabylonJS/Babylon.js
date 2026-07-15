@@ -1,5 +1,6 @@
 import { type Engine, NullEngine } from "core/Engines";
 import { FlowGraphCoordinator } from "core/FlowGraph";
+import { FlowGraphConsoleLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock";
 import { Scene } from "core/scene";
 
 describe("FlowGraphCoordinator", () => {
@@ -142,6 +143,23 @@ describe("FlowGraphCoordinator", () => {
             // Removing it (without ever starting it) must dispose those observers.
             coordinator.removeGraph(graph);
             expect(scene.onBeforeRenderObservable.observers.length).toBe(before);
+        });
+
+        it("should preserve authored blocks when a stopped graph is disposed", () => {
+            // The editor re-points a stopped graph across preview scenes; each preview scene
+            // disposal raises a SceneDispose event that calls dispose(). That must release the
+            // scene wiring without destroying the user's authored blocks.
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+            graph.addBlock(new FlowGraphConsoleLogBlock());
+            expect(graph.getAllBlocks().length).toBe(1);
+
+            const before = scene.onBeforeRenderObservable.observers.length;
+            graph.dispose();
+
+            // Scene wiring released, but the authored block survives.
+            expect(scene.onBeforeRenderObservable.observers.length).toBeLessThan(before);
+            expect(graph.getAllBlocks().length).toBe(1);
         });
 
         it("should be safe to dispose a graph twice", () => {
