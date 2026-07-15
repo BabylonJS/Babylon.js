@@ -55,7 +55,7 @@
     },
     "devDependencies": {
         "@babylonjs/core": "9.16.2",
-        "@babylonjs/lite": "^9.16.2",
+        "@babylonjs/lite": "^1.10.0",
         "@babylonjs/loaders": "9.16.2",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",

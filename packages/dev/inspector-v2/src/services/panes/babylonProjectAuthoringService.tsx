@@ -39,7 +39,7 @@ import { ApplyAllOverrides, GetOverrideManager, GetOverrides } from "shared-ui-c
 
 const ProjectAuthoringPaneKey = "Project Authoring";
 
-const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
+const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj", ".fbx"];
 const TextureFileAccept = Array.from(GetSmartAssetTextureExtensions());
 const AllAcceptString = [...SceneFileAccept, ...TextureFileAccept].join(",");
 
