@@ -791,7 +791,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const frontFace = this._frontFace;
         const cullMode = this._cullEnabled ? this._cullFace : 0;
         const clampDepth = this._clampDepth ? 1 : 0;
-        const alphaToCoverage = this._alphaToCoverageEnabled ? 1 : 0;
+        const alphaToCoverage = this._alphaToCoverageEnabled && sampleCount > 1 ? 1 : 0;
         const rasterizationState = frontFace - 1 + (cullMode << 1) + (clampDepth << 3) + (alphaToCoverage << 4) + (topology << 5) + (sampleCount << 8);
 
         if (this._rasterizationState !== rasterizationState) {
@@ -1177,8 +1177,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
             multisample: {
                 count: sampleCount,
-                /*mask,
-                alphaToCoverageEnabled,*/
+                alphaToCoverageEnabled: this._alphaToCoverageEnabled && sampleCount > 1,
             },
             depthStencil:
                 this._webgpuDepthStencilFormat === undefined

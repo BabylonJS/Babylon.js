@@ -98,6 +98,45 @@ describe("WebGPUCacheRenderPipeline", () => {
 
             expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
         });
+
+        it("should enable alpha-to-coverage in multisampled pipelines", () => {
+            cache.setAlphaToCoverage(true);
+
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 4, 0);
+
+            expect(device.createRenderPipeline).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    multisample: {
+                        count: 4,
+                        alphaToCoverageEnabled: true,
+                    },
+                })
+            );
+        });
+
+        it("should create a new pipeline when alpha-to-coverage changes", () => {
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 4, 0);
+            cache.setAlphaToCoverage(true);
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 4, 0);
+
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
+        });
+
+        it("should ignore alpha-to-coverage for single-sample pipelines", () => {
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+            cache.setAlphaToCoverage(true);
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);
+            expect(device.createRenderPipeline).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    multisample: {
+                        count: 1,
+                        alphaToCoverageEnabled: false,
+                    },
+                })
+            );
+        });
     });
 
     describe("preWarmPipeline", () => {
