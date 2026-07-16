@@ -29,6 +29,16 @@ To use the `HTML3DElement` you can import the `@babylonjs/viewer` module and the
 </html>
 ```
 
+## Using the Lite Viewer
+
+A lighter-weight, WebGPU-first variant is available by switching your import path from `@babylonjs/viewer` to `@babylonjs/viewer/lite`:
+
+```js
+import "@babylonjs/viewer/lite";
+```
+
+The `<babylon-viewer>` element works the same way. This variant is built on [`@babylonjs/lite`](https://www.npmjs.com/package/@babylonjs/lite) (install it alongside the viewer), which is a much smaller engine but is **not yet feature complete**, so some viewer capabilities may be unavailable.
+
 ## Using Directly in a Browser
 
 If you want to use the viewer directly in a browser without any build tools, you can use the self-contained ESM bundle (which includes all dependencies) through a CDN such as [jsDelivr](https://www.jsdelivr.com/), [UNPKG](https://unpkg.com/), or your own CDN like this:

@@ -479,6 +479,23 @@ export const DefaultViewerBaseOptions = {
 } as const satisfies ViewerBaseOptions;
 
 /**
+ * @internal
+ * Orbit angle (radians) applied to the arc-rotate camera on every automatic reframe (model load
+ * and animation switch). Shared by the full Viewer and ViewerLite so both frame to the same default
+ * viewpoint. Exported from `viewerBase` for internal sharing only — intentionally not re-exported
+ * from the package index, so it is not part of the public API.
+ */
+export const FramingCameraAlpha = Math.PI / 2;
+
+/**
+ * @internal
+ * Elevation angle (radians) applied to the arc-rotate camera on every automatic reframe. Shared by
+ * the full Viewer and ViewerLite. Exported from `viewerBase` for internal sharing only —
+ * intentionally not re-exported from the package index, so it is not part of the public API.
+ */
+export const FramingCameraBeta = Math.PI / 2.4;
+
+/**
  * The subset of the Viewer API that ViewerElementBase depends on.
  * Both the full Babylon.js Viewer and ViewerLite implement this contract.
  */

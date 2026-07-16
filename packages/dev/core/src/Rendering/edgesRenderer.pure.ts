@@ -503,9 +503,9 @@ export class EdgesRenderer implements IEdgesRenderer {
         if (useFastVertexMerger) {
             const mapVertices: { [key: string]: number } = {};
             for (let v1 = 0; v1 < positions.length; v1 += 3) {
-                const x1 = positions[v1 + 0],
-                    y1 = positions[v1 + 1],
-                    z1 = positions[v1 + 2];
+                const x1: number = positions[v1 + 0],
+                    y1: number = positions[v1 + 1],
+                    z1: number = positions[v1 + 2];
 
                 const key = x1.toFixed(epsVertexMerge) + "|" + y1.toFixed(epsVertexMerge) + "|" + z1.toFixed(epsVertexMerge);
 

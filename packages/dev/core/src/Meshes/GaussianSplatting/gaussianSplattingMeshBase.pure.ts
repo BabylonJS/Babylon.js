@@ -56,6 +56,19 @@ interface ISogPackInternal {
     positions: Float32Array;
 }
 
+/**
+ * Safe-orbit camera limits embedded in a Gaussian Splatting file's metadata (Adobe safe-orbit
+ * extension). Exposed on the loaded mesh via {@link GaussianSplattingMeshBase.safeOrbitCameraLimits}
+ * so consumers can read/apply the limits independently of the scene's active camera — the loader's
+ * automatic application only affects an active ArcRotateCamera at load time.
+ */
+export interface ISafeOrbitCameraLimits {
+    /** Minimum safe orbit radius (distance from the camera to its target), if the file specifies one. */
+    radiusMin?: number;
+    /** Safe elevation range as `[minElevation, maxElevation]` in radians, if the file specifies one. */
+    elevationMinMax?: [number, number];
+}
+
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
 interface IDelayedTextureUpdate {
@@ -484,6 +497,14 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Off by default; intended for performance investigation only.
      */
     public static LogSortPerformance = false;
+
+    /**
+     * Safe-orbit camera limits parsed from the source file's metadata, or `null` when the file
+     * carries none. The loader also auto-applies these to an active ArcRotateCamera at load time
+     * (unless `disableAutoCameraLimits` is set); this field exposes the raw values so they can be
+     * applied or tracked regardless of the active camera type. See {@link ISafeOrbitCameraLimits}.
+     */
+    public safeOrbitCameraLimits: Nullable<ISafeOrbitCameraLimits> = null;
 
     /** @internal */
     public _vertexCount = 0;

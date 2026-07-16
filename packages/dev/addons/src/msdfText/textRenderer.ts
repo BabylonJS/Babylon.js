@@ -143,6 +143,15 @@ export class TextRenderer implements IDisposable {
      */
     public ignoreDepthBuffer = false;
 
+    /**
+     * Gets or sets if the text renderer should write to the depth buffer (default is false).
+     * When enabled, transparent pixels are discarded so that separate text renderers (and other meshes)
+     * occlude each other according to their position in the 3D scene instead of their render order.
+     * On multisampled framebuffers, alpha-to-coverage is used to preserve anti-aliased edges.
+     * This has no effect when ignoreDepthBuffer is true.
+     */
+    public writeToDepthBuffer = false;
+
     private constructor(engine: AbstractEngine, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
         this._shaderLanguage = shaderLanguage;
@@ -198,7 +207,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "mode", "transform"],
+            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "mode", "transform", "uDepthWrite"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -318,6 +327,9 @@ export class TextRenderer implements IDisposable {
         effect.setFloat("uStrokeInsetWidth", this.strokeInsetWidth);
         effect.setFloat("uStrokeOutsetWidth", this.strokeOutsetWidth);
 
+        const writeDepth = this.writeToDepthBuffer && !this.ignoreDepthBuffer;
+        effect.setFloat("uDepthWrite", writeDepth ? 1.0 : 0.0);
+
         const instanceCount = this._charMatrices.length / 16;
 
         // Need update?
@@ -342,13 +354,31 @@ export class TextRenderer implements IDisposable {
             engine.bindBuffers(this._vertexBuffers, null, effect);
         }
 
-        engine.setAlphaMode(Constants.ALPHA_COMBINE);
-        engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
-        engine.unbindInstanceAttributes();
-        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        const useAlphaToCoverage = writeDepth && engine.currentSampleCount > 1;
+        const previousAlphaToCoverage = engine.getAlphaToCoverage();
 
-        if (this.ignoreDepthBuffer) {
-            engine.setDepthBuffer(true);
+        // Alpha-to-coverage converts the MSDF alpha into per-sample coverage, allowing smooth edges to write depth correctly.
+        if (useAlphaToCoverage) {
+            engine.setAlphaToCoverage(true);
+        }
+
+        try {
+            // When writing to the depth buffer, keep depth writes enabled (setAlphaMode would otherwise disable them for the ALPHA_COMBINE mode).
+            engine.setAlphaMode(useAlphaToCoverage ? Constants.ALPHA_DISABLE : Constants.ALPHA_COMBINE, writeDepth);
+            if (writeDepth) {
+                engine.setDepthWrite(true);
+            }
+            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
+        } finally {
+            if (useAlphaToCoverage) {
+                engine.setAlphaToCoverage(previousAlphaToCoverage);
+            }
+            engine.unbindInstanceAttributes();
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+            if (this.ignoreDepthBuffer) {
+                engine.setDepthBuffer(true);
+            }
         }
     }
 

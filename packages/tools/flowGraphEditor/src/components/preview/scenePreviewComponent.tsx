@@ -161,7 +161,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         // When a reload is requested (e.g. from the Reset button), re-run the current snippet
         this._onReloadSnippetRequestedObserver = this.props.globalState.onReloadSnippetRequested.add(() => {
             const sceneSource = this.props.globalState.sceneSource;
-            if ((sceneSource === "snippet" || (!sceneSource && this.state.snippetId)) && this.state.snippetId) {
+            if (sceneSource === "host") {
+                this._attachToHostScene();
+            } else if ((sceneSource === "snippet" || (!sceneSource && this.state.snippetId)) && this.state.snippetId) {
                 void this.loadSnippetAsync();
             } else if (sceneSource === "default" || (!sceneSource && !this.state.snippetId)) {
                 void this._createDefaultSceneAsync();
@@ -183,21 +185,35 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         // the editor's snippet selection.
         const ctx = this.props.globalState.sceneContext;
         const canvas = this._canvasRef.current;
-        const canvasMismatch = !!ctx && !!canvas && ctx.engine.getRenderingCanvas() !== canvas;
         const pendingSnippetId = this.props.globalState.snippetId;
+        const hasHostScene = !!this.props.globalState.hostScene;
+        // A host context borrows the application's canvas and engine, so the "canvas moved" rebuild
+        // path below (which only applies to editor-owned scenes) must not fire for it.
+        const isHostCtx = !!ctx && !ctx.ownsScene;
+        const canvasMismatch = !!ctx && ctx.ownsScene && !!canvas && ctx.engine.getRenderingCanvas() !== canvas;
         if (canvasMismatch) {
             this._disposeCurrentScene();
             if (pendingSnippetId) {
                 this.setState({ snippetId: pendingSnippetId }, () => {
                     void this.loadSnippetAsync();
                 });
+            } else if (hasHostScene) {
+                this._attachToHostScene();
             } else {
                 void this._createDefaultSceneAsync();
             }
+        } else if (isHostCtx) {
+            // Popup pane re-mounted while attached to a still-live host scene — rewire the context
+            // (and its observers) against that scene rather than tearing it down.
+            this._attachToHostScene();
         } else if (!ctx && !pendingSnippetId) {
-            // First mount with no prior state — create a default scene so the editor is usable
-            // without a snippet.
-            void this._createDefaultSceneAsync();
+            // First mount with no prior state — attach to the host scene when one was supplied,
+            // otherwise create a default scene so the editor is usable without a snippet.
+            if (hasHostScene) {
+                this._attachToHostScene();
+            } else {
+                void this._createDefaultSceneAsync();
+            }
         }
     }
 
@@ -231,9 +247,13 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _disposeCurrentScene() {
         const oldCtx = this.props.globalState.sceneContext;
         if (oldCtx) {
-            oldCtx.engine.stopRenderLoop();
-            oldCtx.scene.dispose();
-            oldCtx.engine.dispose();
+            // Never tear down a live host scene/engine — the editor only borrows it. Ownership is
+            // tracked on the context so attach-to-host mode leaves the running application intact.
+            if (oldCtx.ownsScene) {
+                oldCtx.engine.stopRenderLoop();
+                oldCtx.scene.dispose();
+                oldCtx.engine.dispose();
+            }
             oldCtx.dispose();
             this.props.globalState.sceneContext = null;
             this.props.globalState.sceneSource = null;
@@ -283,15 +303,38 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * Build a SceneContext and publish it to the editor.
      * @param scene - the scene to wrap in a SceneContext
      * @param source - the source used to create the preview scene
+     * @param ownsScene - whether the editor owns the scene/engine lifecycle (false for a live host scene)
      * @returns the newly created SceneContext
      */
-    private _publishSceneContext(scene: Scene, source: "default" | "snippet" | "file") {
-        const sceneContext = new SceneContext(scene);
+    private _publishSceneContext(scene: Scene, source: "default" | "snippet" | "file" | "host", ownsScene: boolean = true) {
+        const sceneContext = new SceneContext(scene, ownsScene);
         this.props.globalState.sceneContext = sceneContext;
         this.props.globalState.sceneSource = source;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
+    }
+
+    /**
+     * Attach the preview to the live host scene supplied to the editor (e.g. when launched from
+     * the Inspector against a running application). The host scene is catalogued and wired to the
+     * flow graph, but its engine/canvas belong to the application, so the preview does not create
+     * an engine or render loop and never disposes the scene.
+     * @returns true when a host scene was present and attached
+     */
+    private _attachToHostScene(): boolean {
+        const hostScene = this.props.globalState.hostScene;
+        if (!hostScene) {
+            return false;
+        }
+        this._disposeCurrentScene();
+        const sceneContext = this._publishSceneContext(hostScene, "host", false);
+        this.props.globalState.snippetId = "";
+        this.setState({ snippetId: "" });
+        this.props.globalState.onLogRequiredObservable.notifyObservers(
+            new LogEntry(`Connected to the live application scene (${sceneContext.entries.length} objects). The graph runs against this scene directly.`, false)
+        );
+        return true;
     }
 
     /**
@@ -826,6 +869,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const { classes } = this.props;
         const { snippetId, isLoading, error, sceneObjectCount } = this.state;
         const ctx = this.props.globalState.sceneContext;
+        const isHostMode = this.props.globalState.sceneSource === "host";
 
         return (
             <div className={classes.container}>
@@ -858,6 +902,22 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 </div>
                 <div className={classes.canvasContainer} onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
                     <canvas ref={this._canvasRef} className={classes.canvas} tabIndex={0} />
+                    {isHostMode && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                inset: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                textAlign: "center",
+                                padding: "16px",
+                                pointerEvents: "none",
+                            }}
+                        >
+                            <Body1>Connected to the live application scene. The graph runs directly against it — no preview render is shown.</Body1>
+                        </div>
+                    )}
                 </div>
                 {ctx && <div className={classes.summary}>{this._renderCategorySummary(ctx)}</div>}
             </div>

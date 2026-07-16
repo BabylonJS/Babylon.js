@@ -61,3 +61,39 @@ describe("InputText processKey", () => {
         expect(evt.preventDefault).not.toHaveBeenCalled();
     });
 });
+
+function createPasteEvent(data: string): ClipboardEvent {
+    return {
+        clipboardData: {
+            types: ["text/plain"],
+            getData: () => data,
+        },
+    } as unknown as ClipboardEvent;
+}
+
+describe("InputText _onPasteText", () => {
+    it("replaces the highlighted selection with the pasted text", () => {
+        const input = new InputText("test", "123456");
+        // Highlight "56" (indices 4..6).
+        const internal = input as any;
+        internal._isTextHighlightOn = true;
+        internal._startHighlightIndex = 4;
+        internal._endHighlightIndex = 6;
+
+        internal._onPasteText(createPasteEvent("23"));
+
+        expect(input.text).toBe("123423");
+        expect(input.isTextHighlightOn).toBe(false);
+    });
+
+    it("inserts the pasted text at the cursor when nothing is highlighted", () => {
+        const input = new InputText("test", "123456");
+        const internal = input as any;
+        // Cursor at the end (offset 0) means append.
+        internal._cursorOffset = 0;
+
+        internal._onPasteText(createPasteEvent("78"));
+
+        expect(input.text).toBe("12345678");
+    });
+});

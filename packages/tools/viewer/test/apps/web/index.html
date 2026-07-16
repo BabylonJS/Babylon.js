@@ -190,28 +190,38 @@
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
 
+            // Helper: viewerDetails / inspector are only available on the full Viewer.
+            // Use this to guard calls that depend on the underlying Babylon Scene/Engine.
+            function getViewer() {
+                return viewerElement.viewerDetails?.viewer;
+            }
+            function warnFullOnly(feature) {
+                console.warn(`[test app] ${feature} is only available with the full Viewer (current build may be Lite).`);
+            }
+
             setInterval(() => {
                 // viewerElement.cameraAutoOrbit = !viewerElement.cameraAutoOrbit;
-                // viewerElement.viewerDetails.viewer.cameraAutoOrbit = !viewerElement.viewerDetails.viewer.cameraAutoOrbit;
-                // const color = viewerElement.viewerDetails.scene.clearColor.clone();
-                // color.r = Math.random();
-                // viewerElement.viewerDetails.scene.clearColor = color;
+                // const color = viewerElement.viewerDetails?.scene?.clearColor.clone();
+                // if (color) {
+                //     color.r = Math.random();
+                //     viewerElement.viewerDetails.scene.clearColor = color;
+                // }
                 // console.log(viewerElement.clearColor);
                 // viewerElement.selectedAnimation = 1;
             }, 3000);
 
-            let currentSource = viewerElement.source;
-            let viewerDetails = viewerElement.viewerDetails;
-            viewerElement.addEventListener("viewerready", (event) => {
-                viewerDetails = viewerElement.viewerDetails;
-                viewerDetails.viewer.showDebugLogs = true;
-
-                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
-
-                console.log(`Viewer ready.`, viewerDetails);
+            viewerElement.addEventListener("viewerready", () => {
+                const engineButton = document.querySelector("#engine-button");
+                if (typeof viewerElement.engine === "string") {
+                    engineButton.innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
+                } else {
+                    // Lite viewer is WebGPU-only and doesn't expose an engine selector.
+                    engineButton.style.display = "none";
+                }
+                console.log(`Viewer ready.`);
             });
             viewerElement.addEventListener("modelchange", (event) => {
-                console.log(`Model changed.`, viewerDetails);
+                console.log(`Model changed.`);
             });
             let isViewerConnected = true;
             let hotspotVisible = false;
@@ -239,24 +249,12 @@
                 //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
-            function getLoadModelOptions() {
-                return { useOpenPBR: document.querySelector("#materialSelect").value === "openpbr" };
-            }
-
             globalThis.onDrop = async (event) => {
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-                    if (extension === ".hdr" || extension === ".env") {
-                        // blob: URLs have no extension, so pass it explicitly
-                        const url = URL.createObjectURL(file);
-                        await viewerDetails.viewer.loadEnvironment(url, { lighting: true, skybox: true, extension });
-                    } else {
-                        currentSource = file;
-                        await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
-                    }
+                    viewerElement.source = URL.createObjectURL(file);
                 }
             };
 
@@ -311,8 +309,7 @@
                 });
 
                 if (file) {
-                    currentSource = file;
-                    await viewerDetails.viewer.loadModel(file, getLoadModelOptions());
+                    viewerElement.source = URL.createObjectURL(file);
                 }
             };
 
@@ -323,6 +320,10 @@
             };
 
             globalThis.onToggleEngine = () => {
+                if (typeof viewerElement.engine !== "string") {
+                    warnFullOnly("engine selection");
+                    return;
+                }
                 document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine} engine`;
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             };
@@ -339,15 +340,18 @@
 
             let inspectorToken = null;
             globalThis.onToggleInspector = async () => {
+                const scene = viewerElement.viewerDetails?.scene;
+                if (!scene) {
+                    warnFullOnly("Inspector");
+                    return;
+                }
                 const { ShowInspector } = await import("inspector/inspector");
                 console.log("toggle inspector");
                 if (inspectorToken) {
                     inspectorToken.dispose();
                     inspectorToken = null;
                 } else {
-                    console.log(viewerDetails != null);
-                    console.log(viewerDetails?.scene != null);
-                    inspectorToken = ShowInspector(viewerDetails.scene, {
+                    inspectorToken = ShowInspector(scene, {
                         // containerElement: document.body,
                     });
                 }
@@ -369,7 +373,12 @@
 
             const suspensions = [];
             globalThis.onSuspendRendering = () => {
-                suspensions.push(viewerElement.viewerDetails.suspendRendering());
+                const details = viewerElement.viewerDetails;
+                if (!details?.suspendRendering) {
+                    warnFullOnly("suspendRendering");
+                    return;
+                }
+                suspensions.push(details.suspendRendering());
             };
 
             globalThis.onResumeRendering = () => {
@@ -377,46 +386,45 @@
             };
 
             globalThis.onMarkSceneMutated = () => {
-                viewerElement.viewerDetails.markSceneMutated();
+                const details = viewerElement.viewerDetails;
+                if (!details?.markSceneMutated) {
+                    warnFullOnly("markSceneMutated");
+                    return;
+                }
+                details.markSceneMutated();
             };
 
             globalThis.resetModel = () => {
                 console.log("reset model");
-                viewerElement.viewerDetails.viewer.resetModel();
+                const viewer = getViewer();
+                if (!viewer) {
+                    warnFullOnly("resetModel");
+                    return;
+                }
+                viewer.resetModel();
             };
 
             globalThis.onEnvironmentIntensity = () => {
-                const value = document.querySelector("#environmentIntensityInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { intensity: value };
+                viewerElement.environmentIntensity = parseFloat(document.querySelector("#environmentIntensityInput").value);
             };
             globalThis.onEnvironmentRotation = () => {
-                const degreValue = document.querySelector("#environmentRotationInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { rotation: parseFloat(degreValue) };
+                viewerElement.environmentRotation = parseFloat(document.querySelector("#environmentRotationInput").value);
             };
             globalThis.onEnvironmentBlur = () => {
-                const value = document.querySelector("#environmentBlurInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { blur: value };
+                viewerElement.skyboxBlur = parseFloat(document.querySelector("#environmentBlurInput").value);
             };
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
-                const viewer = viewerElement.viewerDetails.viewer;
-                checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+                viewerElement.environmentSkybox = checked ? "auto" : null;
             };
             globalThis.onSSAO = () => {
-                const value = document.querySelector("#ssaoSelect").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.postProcessing = { ssao: value };
+                viewerElement.ssao = document.querySelector("#ssaoSelect").value;
             };
             globalThis.onShadowQuality = () => {
-                const value = document.querySelector("#shadowQualityInput").value;
-                const viewer = viewerElement.viewerDetails.viewer;
-                viewer.updateShadows({ quality: value });
+                viewerElement.shadowQuality = document.querySelector("#shadowQualityInput").value;
             };
             globalThis.onMaterial = () => {
-                viewerDetails?.viewer.loadModel(currentSource, getLoadModelOptions());
+                viewerElement.useOpenPBR = document.querySelector("#materialSelect").value === "openpbr";
             };
         </script>
     </body>

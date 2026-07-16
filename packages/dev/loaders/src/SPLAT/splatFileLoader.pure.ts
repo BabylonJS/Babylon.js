@@ -10,6 +10,7 @@ import {
 } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type ISafeOrbitCameraLimits } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure";
 import { GaussianSplattingStream } from "./gaussianSplattingStream";
 import { AssetContainer } from "core/assetContainer";
 import { type Scene } from "core/scene";
@@ -262,6 +263,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             }
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
+            // Expose any parsed safe-orbit limits (SOG does not auto-apply them to the camera).
+            gaussianSplatting.safeOrbitCameraLimits = SPLATFileLoader._ExtractSafeOrbitLimits(parsedSOG);
             scene._blockEntityCollection = false;
         };
 
@@ -342,6 +345,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     break;
                             }
                             gaussianSplatting.computeWorldMatrix(true);
+                            gaussianSplatting.safeOrbitCameraLimits = SPLATFileLoader._ExtractSafeOrbitLimits(parsedPLY);
                         }
                         break;
                     case Mode.PointCloud:
@@ -370,7 +374,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         throw new Error("Unsupported Splat mode");
                 }
                 scene._blockEntityCollection = false;
-                this.applyAutoCameraLimits(parsedPLY, scene);
+                this.applyAutoCameraLimits(SPLATFileLoader._ExtractSafeOrbitLimits(parsedPLY), scene);
                 resolve(babylonMeshesArray);
             });
         };
@@ -402,7 +406,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 gaussianSplatting.computeWorldMatrix(true);
             }
             scene._blockEntityCollection = false;
-            this.applyAutoCameraLimits(parsedSPZ, scene);
+            const safeOrbitLimits = SPLATFileLoader._ExtractSafeOrbitLimits(parsedSPZ);
+            gaussianSplatting.safeOrbitCameraLimits = safeOrbitLimits;
+            this.applyAutoCameraLimits(safeOrbitLimits, scene);
             resolve(babylonMeshesArray);
         };
 
@@ -459,23 +465,43 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     }
 
     /**
-     * Applies camera limits based on parsed meta data
+     * Extracts the safe-orbit camera limits from parsed splat metadata, or null when the file
+     * carries none. Exposed on the loaded mesh (GaussianSplattingMeshBase.safeOrbitCameraLimits)
+     * so consumers can apply/track them regardless of the active camera type.
      * @param meta parsed splat meta data
+     * @returns the parsed safe-orbit limits, or null
+     */
+    private static _ExtractSafeOrbitLimits(meta: IParsedSplat): Nullable<ISafeOrbitCameraLimits> {
+        if (meta.safeOrbitCameraRadiusMin === undefined && meta.safeOrbitCameraElevationMinMax === undefined) {
+            return null;
+        }
+        return {
+            radiusMin: meta.safeOrbitCameraRadiusMin,
+            elevationMinMax: meta.safeOrbitCameraElevationMinMax,
+        };
+    }
+
+    /**
+     * Applies safe-orbit camera limits parsed from the file metadata to the scene's active
+     * ArcRotateCamera. No-op when no limits are present, `disableAutoCameraLimits` is set, or the
+     * active camera is not an ArcRotateCamera — in which case consumers can still read the limits
+     * from the loaded mesh's `safeOrbitCameraLimits` and apply them themselves.
+     * @param limits parsed safe-orbit limits (see _ExtractSafeOrbitLimits)
      * @param scene
      */
-    private applyAutoCameraLimits(meta: IParsedSplat, scene: Scene): void {
-        if (this._loadingOptions.disableAutoCameraLimits) {
+    private applyAutoCameraLimits(limits: Nullable<ISafeOrbitCameraLimits>, scene: Scene): void {
+        if (this._loadingOptions.disableAutoCameraLimits || !limits) {
             return;
         }
-        if ((meta.safeOrbitCameraRadiusMin !== undefined || meta.safeOrbitCameraElevationMinMax !== undefined) && scene.activeCamera?.getClassName() === "ArcRotateCamera") {
+        if (scene.activeCamera?.getClassName() === "ArcRotateCamera") {
             const arcCam = scene.activeCamera as ArcRotateCamera;
-            if (meta.safeOrbitCameraElevationMinMax) {
-                arcCam.lowerBetaLimit = Math.PI * 0.5 - meta.safeOrbitCameraElevationMinMax[1];
-                arcCam.upperBetaLimit = Math.PI * 0.5 - meta.safeOrbitCameraElevationMinMax[0];
+            if (limits.elevationMinMax) {
+                arcCam.lowerBetaLimit = Math.PI * 0.5 - limits.elevationMinMax[1];
+                arcCam.upperBetaLimit = Math.PI * 0.5 - limits.elevationMinMax[0];
             }
 
-            if (meta.safeOrbitCameraRadiusMin) {
-                arcCam.lowerRadiusLimit = meta.safeOrbitCameraRadiusMin;
+            if (limits.radiusMin) {
+                arcCam.lowerRadiusLimit = limits.radiusMin;
             }
         }
     }
