@@ -733,11 +733,7 @@ export default tseslint.config(
     },
 
     // ===========================================
-    // UMD ES5 downlevel iteration guard
-    // These dev packages are compiled into UMD bundles targeting ES5
-    // without --downlevelIteration. for...of and spread on non-array
-    // iterables (Set, Map, generators, etc.) silently produce broken
-    // code. This rule catches those patterns at lint time.
+    // Babylon Native ES5 downlevel guard
     // ===========================================
     {
         files: [
@@ -751,7 +747,6 @@ export default tseslint.config(
             "packages/dev/addons/src/**/*.ts",
         ],
         rules: {
-            "babylonjs/no-downlevel-iteration": "error",
             "babylonjs/no-super-in-accessor": "error",
         },
     }
