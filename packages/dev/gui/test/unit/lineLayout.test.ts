@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { Line } from "../../src/2D/controls/line";
 import { Rectangle } from "../../src/2D/controls/rectangle";
 import { Measure } from "../../src/2D/measure";
 
 class TestLine extends Line {
     public prepareMeasure(parentMeasure: Measure): void {
-        this._preMeasure(parentMeasure, {} as ICanvasRenderingContext);
+        this._preMeasure(parentMeasure);
     }
 }
 
