@@ -27,6 +27,7 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
+import { DataStorage } from "core/Misc/dataStorage";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -379,8 +380,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 texture.wrapU = Texture.CLAMP_ADDRESSMODE;
                 texture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-                scene.debugLayer.show();
-                scene.debugLayer.select(texture, "PREVIEW");
+                if (scene.debugLayer) {
+                    scene.debugLayer.show(); // eslint-disable-line @typescript-eslint/no-floating-promises
+                    scene.debugLayer.select(texture, "PREVIEW");
+                }
             },
             onError: (message, exception) => {
                 this.props.globalState.onError.notifyObservers({ scene: scene, message: message || exception.message || "Failed to load texture" });
@@ -471,6 +474,19 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 loader.transparencyAsCoverage = this.props.globalState.commerceMode;
 
                 loader.validate = true;
+
+                // Apply glTF loader options persisted by the inspector (e.g. useOpenPBR).
+                // The inspector's GLTFLoaderOptionsService applies these via its own
+                // OnPluginActivatedObservable subscription, but that subscription is only
+                // registered when the inspector is first opened. This read ensures persisted
+                // settings are applied even on the initial page load before the inspector opens.
+                // Key format mirrors SettingsStore: Babylon/<namespace>/<settingKey>.
+                const inspectorLoaderOptions = DataStorage.ReadJson<Record<string, unknown>>("Babylon/Inspector/glTFLoaderOptions", {});
+                for (const [key, value] of Object.entries(inspectorLoaderOptions)) {
+                    if (value !== null) {
+                        (loader as unknown as Record<string, unknown>)[key] = value;
+                    }
+                }
 
                 loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
                     this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
