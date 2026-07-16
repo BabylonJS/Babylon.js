@@ -212,6 +212,10 @@ export class Line extends Control {
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
     }
 
+    protected override _preMeasure(parentMeasure: Measure): void {
+        this._cachedParentMeasure.copyFrom(parentMeasure);
+    }
+
     public override _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (this._connectedControl) {
             // If we have a connected control, we need to let it layout first so we can ensure our layout math uses its latest position
