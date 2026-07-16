@@ -328,7 +328,7 @@ export class ThinNativeEngine extends ThinEngine {
             maxVaryingVectors: 16,
             maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
-            maxVertexUniformVectors: 16,
+            maxVertexUniformVectors: 256,
             shaderFloatPrecision: 23, // TODO: is this correct?
             standardDerivatives: true,
             astc: null,
