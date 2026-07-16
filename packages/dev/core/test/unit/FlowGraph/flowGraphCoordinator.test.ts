@@ -1,5 +1,6 @@
 import { type Engine, NullEngine } from "core/Engines";
 import { FlowGraphCoordinator } from "core/FlowGraph";
+import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
 import { Scene } from "core/scene";
 
 describe("FlowGraphCoordinator", () => {
@@ -81,6 +82,52 @@ describe("FlowGraphCoordinator", () => {
             const registered = FlowGraphCoordinator.SceneCoordinators.get(scene);
             expect(registered).toHaveLength(1);
             expect(registered).toContain(coordinator2);
+        });
+    });
+
+    describe("custom event propagation", () => {
+        it("should keep activating immediate handlers when stopImmediate is false", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const eventId = "test";
+            const calls: string[] = [];
+            const observable = coordinator.getCustomEventObservable(eventId);
+
+            observable.add((_data, state) => {
+                calls.push("A");
+                coordinator._beginEventDispatch(eventId, state);
+                try {
+                    coordinator.stopEventPropagation(GetEventReference(eventId), false);
+                } finally {
+                    coordinator._endEventDispatch();
+                }
+            });
+            observable.add(() => calls.push("B"));
+
+            coordinator.notifyCustomEvent(eventId, {}, false);
+
+            expect(calls).toEqual(["A", "B"]);
+        });
+
+        it("should stop remaining immediate handlers when stopImmediate is true", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const eventId = "test";
+            const calls: string[] = [];
+            const observable = coordinator.getCustomEventObservable(eventId);
+
+            observable.add((_data, state) => {
+                calls.push("A");
+                coordinator._beginEventDispatch(eventId, state);
+                try {
+                    coordinator.stopEventPropagation(GetEventReference(eventId), true);
+                } finally {
+                    coordinator._endEventDispatch();
+                }
+            });
+            observable.add(() => calls.push("B"));
+
+            coordinator.notifyCustomEvent(eventId, {}, false);
+
+            expect(calls).toEqual(["A"]);
         });
     });
 });

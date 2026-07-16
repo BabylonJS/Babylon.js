@@ -209,10 +209,10 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const thisMatrix = this._m;
         const r = result._m;
         // other * this
-        r[0] = otherMatrix[0] * thisMatrix[0] + otherMatrix[1] * thisMatrix[2];
-        r[1] = otherMatrix[0] * thisMatrix[1] + otherMatrix[1] * thisMatrix[3];
-        r[2] = otherMatrix[2] * thisMatrix[0] + otherMatrix[3] * thisMatrix[2];
-        r[3] = otherMatrix[2] * thisMatrix[1] + otherMatrix[3] * thisMatrix[3];
+        r[0] = thisMatrix[0] * otherMatrix[0] + thisMatrix[1] * otherMatrix[2];
+        r[1] = thisMatrix[0] * otherMatrix[1] + thisMatrix[1] * otherMatrix[3];
+        r[2] = thisMatrix[2] * otherMatrix[0] + thisMatrix[3] * otherMatrix[2];
+        r[3] = thisMatrix[2] * otherMatrix[1] + thisMatrix[3] * otherMatrix[3];
 
         return result;
     }
@@ -344,17 +344,17 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
         const thisMatrix = this._m;
         const r = result.m;
 
-        r[0] = otherMatrix[0] * thisMatrix[0] + otherMatrix[1] * thisMatrix[3] + otherMatrix[2] * thisMatrix[6];
-        r[1] = otherMatrix[0] * thisMatrix[1] + otherMatrix[1] * thisMatrix[4] + otherMatrix[2] * thisMatrix[7];
-        r[2] = otherMatrix[0] * thisMatrix[2] + otherMatrix[1] * thisMatrix[5] + otherMatrix[2] * thisMatrix[8];
+        r[0] = thisMatrix[0] * otherMatrix[0] + thisMatrix[1] * otherMatrix[3] + thisMatrix[2] * otherMatrix[6];
+        r[1] = thisMatrix[0] * otherMatrix[1] + thisMatrix[1] * otherMatrix[4] + thisMatrix[2] * otherMatrix[7];
+        r[2] = thisMatrix[0] * otherMatrix[2] + thisMatrix[1] * otherMatrix[5] + thisMatrix[2] * otherMatrix[8];
 
-        r[3] = otherMatrix[3] * thisMatrix[0] + otherMatrix[4] * thisMatrix[3] + otherMatrix[5] * thisMatrix[6];
-        r[4] = otherMatrix[3] * thisMatrix[1] + otherMatrix[4] * thisMatrix[4] + otherMatrix[5] * thisMatrix[7];
-        r[5] = otherMatrix[3] * thisMatrix[2] + otherMatrix[4] * thisMatrix[5] + otherMatrix[5] * thisMatrix[8];
+        r[3] = thisMatrix[3] * otherMatrix[0] + thisMatrix[4] * otherMatrix[3] + thisMatrix[5] * otherMatrix[6];
+        r[4] = thisMatrix[3] * otherMatrix[1] + thisMatrix[4] * otherMatrix[4] + thisMatrix[5] * otherMatrix[7];
+        r[5] = thisMatrix[3] * otherMatrix[2] + thisMatrix[4] * otherMatrix[5] + thisMatrix[5] * otherMatrix[8];
 
-        r[6] = otherMatrix[6] * thisMatrix[0] + otherMatrix[7] * thisMatrix[3] + otherMatrix[8] * thisMatrix[6];
-        r[7] = otherMatrix[6] * thisMatrix[1] + otherMatrix[7] * thisMatrix[4] + otherMatrix[8] * thisMatrix[7];
-        r[8] = otherMatrix[6] * thisMatrix[2] + otherMatrix[7] * thisMatrix[5] + otherMatrix[8] * thisMatrix[8];
+        r[6] = thisMatrix[6] * otherMatrix[0] + thisMatrix[7] * otherMatrix[3] + thisMatrix[8] * otherMatrix[6];
+        r[7] = thisMatrix[6] * otherMatrix[1] + thisMatrix[7] * otherMatrix[4] + thisMatrix[8] * otherMatrix[7];
+        r[8] = thisMatrix[6] * otherMatrix[2] + thisMatrix[7] * otherMatrix[5] + thisMatrix[8] * otherMatrix[8];
 
         return result;
     }

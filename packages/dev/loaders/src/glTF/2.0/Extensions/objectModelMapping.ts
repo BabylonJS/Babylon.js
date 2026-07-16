@@ -448,11 +448,8 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             length: {
                 type: "number",
                 get: (node: INode) => {
-                    // KHR_interactivity treats /nodes/<N>/weights.length as always-valid.
-                    // Resolve via Babylon scene graph (direct or descendant) and fall back
-                    // to 0 when nothing is reachable so the pointer/get reports isValid=true.
                     const found = _findNodeMorphTargets(node);
-                    return found ? found.mtm.numTargets : 0;
+                    return found ? found.mtm.numTargets : node?.mesh !== undefined ? 0 : undefined;
                 },
                 getTarget: (node: INode) => node?._babylonTransformNode,
                 getPropertyName: [() => "length"],
@@ -464,12 +461,6 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     const found = _findNodeMorphTargets(node);
                     if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
                         return _roundFloat32Artifact(found.mtm.getTarget(index).influence);
-                    }
-                    // KHR_interactivity treats /nodes/<N>/weights/<i> as valid (returning the
-                    // type's default of 0) when the node has its own mesh or has reachable
-                    // morph targets, and as invalid only when no mesh is reachable at all.
-                    if (node?.mesh !== undefined || found) {
-                        return 0;
                     }
                     return undefined;
                 },

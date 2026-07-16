@@ -1281,12 +1281,12 @@ describe("Interactivity math nodes", () => {
         expect(logItem).toBeDefined();
         // round result to 3 decimals
         const resultArray = roundArray3(logItem!.payload.value.asArray());
-        // row major matrix
+        // glTF matrices are column-major: value = a * b.
         const expected = roundArray3([
-            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[2],
-            randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[3],
-            randomMatrix1[2] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[2],
-            randomMatrix1[2] * randomMatrix2[1] + randomMatrix1[3] * randomMatrix2[3],
+            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[2] * randomMatrix2[1],
+            randomMatrix1[1] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[1],
+            randomMatrix1[0] * randomMatrix2[2] + randomMatrix1[2] * randomMatrix2[3],
+            randomMatrix1[1] * randomMatrix2[2] + randomMatrix1[3] * randomMatrix2[3],
         ]);
         expect(resultArray).toEqual(expected);
     });
@@ -1318,17 +1318,17 @@ describe("Interactivity math nodes", () => {
         expect(logItem).toBeDefined();
         // round result to 3 decimals
         const resultArray = roundArray3(logItem!.payload.value.asArray());
-        // row-major matrix
+        // glTF matrices are column-major: value = a * b.
         const expected = roundArray3([
-            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[3] + randomMatrix1[2] * randomMatrix2[6],
-            randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[4] + randomMatrix1[2] * randomMatrix2[7],
-            randomMatrix1[0] * randomMatrix2[2] + randomMatrix1[1] * randomMatrix2[5] + randomMatrix1[2] * randomMatrix2[8],
-            randomMatrix1[3] * randomMatrix2[0] + randomMatrix1[4] * randomMatrix2[3] + randomMatrix1[5] * randomMatrix2[6],
-            randomMatrix1[3] * randomMatrix2[1] + randomMatrix1[4] * randomMatrix2[4] + randomMatrix1[5] * randomMatrix2[7],
-            randomMatrix1[3] * randomMatrix2[2] + randomMatrix1[4] * randomMatrix2[5] + randomMatrix1[5] * randomMatrix2[8],
-            randomMatrix1[6] * randomMatrix2[0] + randomMatrix1[7] * randomMatrix2[3] + randomMatrix1[8] * randomMatrix2[6],
-            randomMatrix1[6] * randomMatrix2[1] + randomMatrix1[7] * randomMatrix2[4] + randomMatrix1[8] * randomMatrix2[7],
-            randomMatrix1[6] * randomMatrix2[2] + randomMatrix1[7] * randomMatrix2[5] + randomMatrix1[8] * randomMatrix2[8],
+            randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[1] + randomMatrix1[6] * randomMatrix2[2],
+            randomMatrix1[1] * randomMatrix2[0] + randomMatrix1[4] * randomMatrix2[1] + randomMatrix1[7] * randomMatrix2[2],
+            randomMatrix1[2] * randomMatrix2[0] + randomMatrix1[5] * randomMatrix2[1] + randomMatrix1[8] * randomMatrix2[2],
+            randomMatrix1[0] * randomMatrix2[3] + randomMatrix1[3] * randomMatrix2[4] + randomMatrix1[6] * randomMatrix2[5],
+            randomMatrix1[1] * randomMatrix2[3] + randomMatrix1[4] * randomMatrix2[4] + randomMatrix1[7] * randomMatrix2[5],
+            randomMatrix1[2] * randomMatrix2[3] + randomMatrix1[5] * randomMatrix2[4] + randomMatrix1[8] * randomMatrix2[5],
+            randomMatrix1[0] * randomMatrix2[6] + randomMatrix1[3] * randomMatrix2[7] + randomMatrix1[6] * randomMatrix2[8],
+            randomMatrix1[1] * randomMatrix2[6] + randomMatrix1[4] * randomMatrix2[7] + randomMatrix1[7] * randomMatrix2[8],
+            randomMatrix1[2] * randomMatrix2[6] + randomMatrix1[5] * randomMatrix2[7] + randomMatrix1[8] * randomMatrix2[8],
         ]);
         expect(resultArray).toEqual(expected);
     });
@@ -2092,6 +2092,45 @@ describe("Interactivity math nodes", () => {
         const resultArray = roundArray3(logItem!.payload.value.asArray());
         const expected = roundArray3(GetQuaternionFromDirections(randomDirection1, randomDirection2).asArray());
         expect(resultArray).toEqual(expected);
+    });
+
+    it("should return identity for parallel directions in math/quatFromDirections", async () => {
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromDirections" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [1, 0, 0] },
+                        b: { type: 0, value: [1, 0, 0] },
+                    },
+                },
+            ],
+            [{ signature: "float3" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        expect(roundArray3(logItem!.payload.value.asArray())).toEqual([0, 0, 0, 1]);
+    });
+
+    it("should rotate the first direction to an antiparallel direction in math/quatFromDirections", async () => {
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromDirections" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [1, 0, 0] },
+                        b: { type: 0, value: [-1, 0, 0] },
+                    },
+                },
+            ],
+            [{ signature: "float3" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const rotated = new Vector3(1, 0, 0).applyRotationQuaternion(logItem!.payload.value);
+        expect(roundArray3(rotated.asArray())).toEqual([-1, 0, 0]);
     });
 
     // math/slerp (vector spherical linear interpolation)

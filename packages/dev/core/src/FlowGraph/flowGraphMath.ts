@@ -65,9 +65,20 @@ export function GetQuaternionFromDirections<T extends Vector3>(a: DeepImmutable<
  * @returns the target quaternion
  */
 export function GetQuaternionFromDirectionsToRef<T extends Vector3, ResultT extends Quaternion>(a: DeepImmutable<T>, b: DeepImmutable<T>, result: ResultT): ResultT {
-    const axis = Vector3.Cross(a, b);
-    const angle = Math.acos(Clamp(Vector3Dot(a, b), -1, 1));
-    Quaternion.RotationAxisToRef(axis, angle, result);
+    const dot = Vector3Dot(a, b);
+    if (Number.isFinite(dot) && dot > 1 - SlerpEpsilon) {
+        result.copyFromFloats(0, 0, 0, 1);
+        return result;
+    }
+    if (Number.isFinite(dot) && dot < -1 + SlerpEpsilon) {
+        const axis = GetAnyPerpendicularVector(a);
+        result.copyFromFloats(axis.x, axis.y, axis.z, 0);
+        return result;
+    }
+
+    const axis = Vector3.Cross(a, b).normalize();
+    const axisScale = Math.sqrt(0.5 - 0.5 * dot);
+    result.copyFromFloats(axis.x * axisScale, axis.y * axisScale, axis.z * axisScale, Math.sqrt(0.5 + 0.5 * dot));
     return result;
 }
 

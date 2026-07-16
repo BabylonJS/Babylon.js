@@ -12,6 +12,9 @@ import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_in
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { Mesh } from "core/Meshes/mesh";
+import { TransformNode } from "core/Meshes/transformNode";
+import { MorphTarget } from "core/Morph/morphTarget";
+import { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 /**
  * These tests will check the connection between interactivity's object model and pointers to the flow graph.
@@ -121,6 +124,329 @@ describe("glTF interactivity Object Model", () => {
         );
 
         expect(log).toHaveBeenCalledWith(new Vector3(1, 2, 3));
+    });
+
+    it("should report node weights.length as invalid when the node has no mesh", async () => {
+        const node = new TransformNode("node", scene);
+        const mockGltf: any = {
+            nodes: [{ _babylonTransformNode: node }],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 1, socket: "isValid" },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights.length"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        expect(log).toHaveBeenCalledWith(false);
+    });
+
+    it("should report a node weight as invalid when the node has no mesh", async () => {
+        const node = new TransformNode("node", scene);
+        const mockGltf: any = {
+            nodes: [{ _babylonTransformNode: node }],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 1, socket: "isValid" },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights/0"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        expect(log).toHaveBeenCalledWith(false);
+    });
+
+    it("should report a node weight as invalid when its mesh has no morph targets", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const mockGltf: any = {
+            nodes: [
+                {
+                    mesh: 0,
+                    _babylonTransformNode: mesh,
+                    _primitiveBabylonMeshes: [mesh],
+                },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 1, socket: "isValid" },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights/0"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        expect(log).toHaveBeenCalledWith(false);
+    });
+
+    it("should report weights.length as valid and zero when a node's mesh has no morph targets", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const mockGltf: any = {
+            nodes: [
+                {
+                    mesh: 0,
+                    _babylonTransformNode: mesh,
+                    _primitiveBabylonMeshes: [mesh],
+                },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 2, socket: "isValid" },
+                    },
+                    flows: {
+                        out: { node: 1, socket: "in" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 2, socket: "value" },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights.length"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        expect(log.mock.calls.map((call) => call[0])).toEqual([true, 0]);
+    });
+
+    it("should read morph-target length, validity, and static weight values from a node mesh", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const manager = new MorphTargetManager(scene);
+        manager.addTarget(new MorphTarget("target0", 0.1, scene));
+        manager.addTarget(new MorphTarget("target1", 0.2, scene));
+        mesh.morphTargetManager = manager;
+        const mockGltf: any = {
+            nodes: [
+                {
+                    mesh: 0,
+                    _babylonTransformNode: mesh,
+                    _primitiveBabylonMeshes: [mesh],
+                },
+            ],
+        };
+
+        const getOutput = async (pointer: string, socket: "isValid" | "value"): Promise<any> => {
+            log.mockClear();
+            await generateSimpleNodeGraph(
+                mockGltf,
+                [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+                [
+                    {
+                        declaration: 1,
+                        values: {
+                            message: { node: 1, socket },
+                        },
+                    },
+                    {
+                        declaration: 0,
+                        configuration: {
+                            pointer: { value: [pointer] },
+                            type: { value: [0] },
+                        },
+                    },
+                ],
+                [{ signature: "float" }]
+            );
+            return log.mock.calls[log.mock.calls.length - 1][0];
+        };
+
+        expect(await getOutput("/nodes/0/weights.length", "isValid")).toBe(true);
+        expect(await getOutput("/nodes/0/weights.length", "value")).toBe(2);
+        expect(await getOutput("/nodes/0/weights/0", "isValid")).toBe(true);
+        expect(await getOutput("/nodes/0/weights/0", "value")).toBeCloseTo(0.1);
+    });
+
+    it("should read non-static morph weights from a descendant mesh", async () => {
+        const node = new TransformNode("node", scene);
+        const mesh = new Mesh("mesh", scene);
+        mesh.parent = node;
+        const manager = new MorphTargetManager(scene);
+        manager.addTarget(new MorphTarget("target0", 0.5, scene));
+        manager.addTarget(new MorphTarget("target1", 0.25, scene));
+        mesh.morphTargetManager = manager;
+        const mockGltf: any = {
+            nodes: [{ _babylonTransformNode: node }],
+        };
+
+        const getOutput = async (pointer: string, socket: "isValid" | "value"): Promise<any> => {
+            log.mockClear();
+            await generateSimpleNodeGraph(
+                mockGltf,
+                [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+                [
+                    {
+                        declaration: 1,
+                        values: {
+                            message: { node: 1, socket },
+                        },
+                    },
+                    {
+                        declaration: 0,
+                        configuration: {
+                            pointer: { value: [pointer] },
+                            type: { value: [0] },
+                        },
+                    },
+                ],
+                [{ signature: "float" }]
+            );
+            return log.mock.calls[log.mock.calls.length - 1][0];
+        };
+
+        expect(await getOutput("/nodes/0/weights.length", "value")).toBe(2);
+        expect(await getOutput("/nodes/0/weights/0", "isValid")).toBe(true);
+        expect(await getOutput("/nodes/0/weights/0", "value")).toBe(0.5);
+    });
+
+    it("should expose a node-overridden morph weight", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const manager = new MorphTargetManager(scene);
+        manager.addTarget(new MorphTarget("target0", 0.6, scene));
+        manager.addTarget(new MorphTarget("target1", 0.2, scene));
+        mesh.morphTargetManager = manager;
+        const mockGltf: any = {
+            nodes: [
+                {
+                    mesh: 0,
+                    weights: [0.6, 0.2],
+                    _babylonTransformNode: mesh,
+                    _primitiveBabylonMeshes: [mesh],
+                },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 1,
+                    values: {
+                        message: { node: 1, socket: "value" },
+                    },
+                },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights/0"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        expect(log).toHaveBeenCalledWith(0.6);
+    });
+
+    it("should set a morph weight and read it back", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const manager = new MorphTargetManager(scene);
+        manager.addTarget(new MorphTarget("target0", 0.1, scene));
+        mesh.morphTargetManager = manager;
+        const mockGltf: any = {
+            nodes: [
+                {
+                    mesh: 0,
+                    _babylonTransformNode: mesh,
+                    _primitiveBabylonMeshes: [mesh],
+                },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/set" }, { op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights/0"] },
+                    },
+                    values: {
+                        value: { type: 0, value: [0.9] },
+                    },
+                    flows: {
+                        out: { node: 2, socket: "in" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/weights/0"] },
+                        type: { value: [0] },
+                    },
+                },
+                {
+                    declaration: 2,
+                    values: {
+                        message: { node: 1, socket: "value" },
+                    },
+                },
+            ],
+            [{ signature: "float" }]
+        );
+
+        expect(log).toHaveBeenCalledWith(0.9);
+        expect(manager.getTarget(0).influence).toBe(0.9);
     });
 
     // use variables to store the pointer

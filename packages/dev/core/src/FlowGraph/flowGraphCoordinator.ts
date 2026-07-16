@@ -277,16 +277,14 @@ export class FlowGraphCoordinator {
      * operation (see {@link IsEventReference}). If it does not reference an event
      * that is currently being dispatched, this is a no-op.
      *
-     * In the Babylon runtime all handlers of a given custom event share a single
-     * Observable dispatch chain, so the `stopImmediate` distinction from the spec
-     * (transitive-only vs. also-immediate) collapses: stopping propagation always
-     * skips the remaining handlers of the current dispatch. The flag is accepted
-     * for spec/forward compatibility.
+     * Babylon custom events have no scene-graph propagation layer, so there are
+     * no transitive activations to cancel when `stopImmediate` is false. When it
+     * is true, the remaining handlers in the Observable dispatch are skipped.
      * @param event the event reference to stop propagation for
-     * @param _stopImmediate whether to also stop remaining immediate handlers (see remarks)
+     * @param stopImmediate whether to also stop remaining immediate handlers
      */
-    public stopEventPropagation(event: string, _stopImmediate: boolean): void {
-        if (!IsEventReference(event)) {
+    public stopEventPropagation(event: string, stopImmediate: boolean): void {
+        if (!IsEventReference(event) || !stopImmediate) {
             return;
         }
         const eventId = event.substring(EventReferencePrefix.length);
