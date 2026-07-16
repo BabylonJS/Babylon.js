@@ -156,12 +156,12 @@ export class Line extends Control {
 
     /** @internal */
     public get _effectiveX2(): number {
-        return (this._connectedControl ? this._connectedControl.centerX : 0) + this._x2.getValue(this._host);
+        return (this._connectedControl ? this._connectedControl.centerX - this._cachedParentMeasure.left : 0) + this._x2.getValue(this._host);
     }
 
     /** @internal */
     public get _effectiveY2(): number {
-        return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
+        return (this._connectedControl ? this._connectedControl.centerY - this._cachedParentMeasure.top : 0) + this._y2.getValue(this._host);
     }
 
     /**
