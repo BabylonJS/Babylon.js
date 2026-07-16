@@ -122,6 +122,12 @@ export class GlobalState {
         if (!this.sceneContext) {
             return;
         }
+        // In host mode the engine belongs to the running application. Patching its getDeltaTime
+        // or replacing customAnimationFrameRequester would permanently alter the live app's render
+        // loop (there is no restore path), so never touch a borrowed engine's timing.
+        if (!this.sceneContext.ownsScene) {
+            return;
+        }
         const engine = this.sceneContext.engine;
         // Store original only once per engine instance
         if (!this._originalGetDeltaTime) {
@@ -388,6 +394,20 @@ export class GlobalState {
         if (this._validationDebounceTimer !== null) {
             clearTimeout(this._validationDebounceTimer);
             this._validationDebounceTimer = null;
+        }
+    }
+
+    /**
+     * Undo any mutations the editor applied to the live flow graph so it is left in the same shape
+     * it had before the editor opened. Critical for host mode, where the graph belongs to a running
+     * application: without this, the editor's `createContext` wrapper would outlive the editor and
+     * keep re-injecting editor snapshot data into contexts the application creates later.
+     * Call this during teardown.
+     */
+    public restoreLiveGraph(): void {
+        if (this._originalCreateContext && this._flowGraph) {
+            this._flowGraph.createContext = this._originalCreateContext;
+            this._originalCreateContext = null;
         }
     }
 
@@ -880,7 +900,7 @@ export class GlobalState {
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
     /** The source used to create the current preview scene, if known. */
-    sceneSource: "default" | "snippet" | "file" | null = null;
+    sceneSource: "default" | "snippet" | "file" | "host" | null = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
     onSceneContextChanged = new Observable<Nullable<SceneContext>>();
 
@@ -954,6 +974,16 @@ export class GlobalState {
     }
 
     /**
+     * Whether the given graph lives on the live host scene supplied to the editor. Such graphs
+     * belong to a running application, so the editor must not stop or otherwise disrupt them.
+     * @param graph - the graph to test
+     * @returns true when the graph runs on the host scene
+     */
+    private _isHostGraph(graph: Nullable<FlowGraph>): boolean {
+        return !!graph && !!this.hostScene && graph.scene === this.hostScene;
+    }
+
+    /**
      * Sets the current flow graph and wires the scene-context ↔ assets-context bridge.
      * When a SceneContext is set (via snippet load), all existing and future
      * FlowGraphContext execution contexts will have their assetsContext updated
@@ -973,7 +1003,8 @@ export class GlobalState {
         // Stop the old graph to detach its event observer from the scene
         // coordinator.  Without this, the old graph's SceneDispose handler
         // could fire unexpectedly when the preview scene is reloaded.
-        if (this._flowGraph && this._flowGraph !== flowGraph) {
+        // Never stop a live host graph — it belongs to the running application.
+        if (this._flowGraph && this._flowGraph !== flowGraph && !this._isHostGraph(this._flowGraph)) {
             if (this._flowGraph.state !== FlowGraphState.Stopped) {
                 this._flowGraph.stop();
             }
@@ -985,19 +1016,16 @@ export class GlobalState {
             return;
         }
 
-        // The editor always starts in Stopped state — the user must explicitly
-        // press Start or Reset.  The graph may arrive already started when
-        // opened from KHR_interactivity or another runtime path.
-        if (flowGraph.state === FlowGraphState.Started || flowGraph.state === FlowGraphState.Paused) {
-            // Snapshot user variables before stop() clears execution contexts.
-            // These variables (e.g. pickedMesh_0 from KHR_interactivity) are
-            // set during parsing and would be lost when stop() empties contexts.
-            this._snapshotUserVariablesFrom(flowGraph);
+        // Snapshot user variables so Start/Reset can restore them regardless of run state.
+        // These variables (e.g. pickedMesh_0 from KHR_interactivity) are set during parsing and
+        // would otherwise be lost when stop() empties execution contexts.
+        this._snapshotUserVariablesFrom(flowGraph);
+
+        // The editor normally forces a Stopped graph so it exclusively drives execution (the user
+        // must press Start or Reset). A live host graph is exempt: halting it would freeze the
+        // running application, and closing the editor would leave it permanently stopped.
+        if (!this._isHostGraph(flowGraph) && (flowGraph.state === FlowGraphState.Started || flowGraph.state === FlowGraphState.Paused)) {
             flowGraph.stop();
-        } else {
-            // Graph is already stopped but may still have parsed contexts with
-            // variables that we need to preserve for when start() is called.
-            this._snapshotUserVariablesFrom(flowGraph);
         }
 
         // Wire the observer: when scene context changes, update all execution contexts
@@ -1007,6 +1035,14 @@ export class GlobalState {
             const assetsContainer: IAssetContainer | undefined = ctx?.scene;
             this._applyAssetsContextToGraph(assetsContainer);
             if (ctx?.scene) {
+                // When attached to a live host scene, the graph is already authored against this
+                // exact scene: its contexts, asset references, and engine belong to the running
+                // application. Re-pointing/remapping or patching the host engine's timing would
+                // corrupt the live graph, so only refresh the assets context above and stop here.
+                if (this.sceneSource === "host") {
+                    return;
+                }
+
                 // Patch the new engine's getDeltaTime to respect the current time scale
                 this._originalGetDeltaTime = null; // reset so _applyEngineTimeScale stores the new engine's original
                 this._applyEngineTimeScale();
@@ -1110,17 +1146,21 @@ export class GlobalState {
         // If a scene context is already loaded, apply it immediately
         if (this.sceneContext) {
             this._applyAssetsContextToGraph(this.sceneContext.scene);
-            // Remap asset references (animation groups, meshes, etc.) that
-            // couldn't be resolved during parsing because the graph was parsed
-            // against the editor's host scene, not the preview scene.
-            this._remapAssetReferences(this.sceneContext.scene);
-            this._cacheSceneIdToNameMap(this.sceneContext.scene);
-            if (typeof flowGraph.setScene === "function") {
-                flowGraph.setScene(this.sceneContext.scene);
+            // A live host scene owns the graph already; skip remapping/re-pointing (see the
+            // scene-context observer above for the rationale) and only refresh the assets context.
+            if (this.sceneSource !== "host") {
+                // Remap asset references (animation groups, meshes, etc.) that
+                // couldn't be resolved during parsing because the graph was parsed
+                // against the editor's host scene, not the preview scene.
+                this._remapAssetReferences(this.sceneContext.scene);
+                this._cacheSceneIdToNameMap(this.sceneContext.scene);
+                if (typeof flowGraph.setScene === "function") {
+                    flowGraph.setScene(this.sceneContext.scene);
+                }
+                // Re-create contexts from snapshots so the editor UI has live
+                // contexts to display (variables panel, context selector, etc.)
+                this._restoreContextsFromSnapshots(flowGraph);
             }
-            // Re-create contexts from snapshots so the editor UI has live
-            // contexts to display (variables panel, context selector, etc.)
-            this._restoreContextsFromSnapshots(flowGraph);
         }
 
         // Re-subscribe debug observers if debug mode is active

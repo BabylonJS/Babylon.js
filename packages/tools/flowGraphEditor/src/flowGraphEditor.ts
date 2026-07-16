@@ -26,6 +26,14 @@ export interface IFlowGraphEditorOptions {
     flowGraph: FlowGraph;
     /** Optional host scene (defaults to the flow graph's scene) */
     hostScene?: Scene;
+    /**
+     * When true, the editor attaches directly to {@link hostScene} as a live application scene:
+     * it catalogs that scene, drives the flow graph against it, and never creates a throwaway
+     * preview scene or disposes the host. Set by `FlowGraph.edit()` and the Inspector. The
+     * standalone editor leaves this unset and keeps its own editable preview scene, even though it
+     * passes a `hostScene` to own the coordinator.
+     */
+    attachToLiveScene?: boolean;
     /** Optional host element to render the editor into (a popup is created if omitted) */
     hostElement?: HTMLElement;
     /** Optional custom save configuration with a label and async action */
@@ -141,8 +149,10 @@ export class FlowGraphEditor {
             };
             capturedPopup.addEventListener("unload", onPopupUnload, { once: true });
 
-            // Close the popup window when the host scene is disposed (if one was provided).
-            if (options.hostScene) {
+            // Close the popup window when a live host scene is disposed. Only applies to
+            // attach-to-live-scene launches; the standalone editor's throwaway hostScene must not
+            // tear down the editor.
+            if (options.attachToLiveScene && options.hostScene) {
                 options.hostScene.onDisposeObservable.addOnce(() => {
                     if (!capturedPopup.closed) {
                         capturedPopup.close();

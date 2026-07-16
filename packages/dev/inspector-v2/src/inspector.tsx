@@ -25,6 +25,7 @@ import { CameraPropertiesServiceDefinition } from "./services/panes/properties/c
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
 import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
+import { FlowGraphPropertiesServiceDefinition } from "./services/panes/properties/flowGraphPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { MetadataPropertiesServiceDefinition } from "./services/panes/properties/metadataPropertiesService";
@@ -45,6 +46,7 @@ import { AudioV2ExplorerServiceDefinition } from "./services/panes/scene/audioV2
 import { DisposableCommandServiceDefinition } from "./services/panes/scene/disposableCommandService";
 import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
+import { FlowGraphExplorerServiceDefinition } from "./services/panes/scene/flowGraphExplorerService";
 import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeExplorerServiceDefinition } from "./services/panes/scene/nodeExplorerService";
@@ -329,6 +331,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             AnimationGroupExplorerServiceDefinition,
             GuiExplorerServiceDefinition,
             FrameGraphExplorerServiceDefinition,
+            FlowGraphExplorerServiceDefinition,
             AtmosphereExplorerServiceDefinition,
             SoundExplorerServiceDefinition,
             AudioV2ExplorerServiceDefinition,
@@ -353,6 +356,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             RenderingPipelinePropertiesServiceDefinition,
             EffectLayerPropertiesServiceDefinition,
             FrameGraphPropertiesServiceDefinition,
+            FlowGraphPropertiesServiceDefinition,
             AnimationGroupPropertiesServiceDefinition,
             MetadataPropertiesServiceDefinition,
             AtmospherePropertiesServiceDefinition,
