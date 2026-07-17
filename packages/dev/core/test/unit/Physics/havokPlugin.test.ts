@@ -4,6 +4,11 @@ import { PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { type PhysicsBody } from "core/Physics/v2/physicsBody";
 import { PhysicsRaycastResult } from "core/Physics/physicsRaycastResult";
+import { ProximityCastResult } from "core/Physics/proximityCastResult";
+import { ShapeCastResult } from "core/Physics/shapeCastResult";
+import { type IPhysicsPointProximityQuery } from "core/Physics/physicsPointProximityQuery";
+import { type IPhysicsShapeProximityCastQuery } from "core/Physics/physicsShapeProximityCastQuery";
+import { type IPhysicsShapeCastQuery } from "core/Physics/physicsShapeCastQuery";
 import { FloatingOriginCurrentScene } from "core/Materials/floatingOriginMatrixOverrides";
 import { type Scene } from "core/scene";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -200,5 +205,50 @@ describe("HavokPlugin queries with no available world region", () => {
 
         expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result, { ignoreBody })).not.toThrow();
         expect(result.hasHit).toBe(false);
+    });
+
+    // The same disposal guard exists in pointProximity/shapeProximity/shapeCast. The mock hknp defines none of the
+    // native query/collector functions, so if any of these methods reached the Havok call it would throw. Not
+    // throwing (with and without a stale ignoreBody) proves each one bails out and leaves its result(s) in no-hit state.
+    it("does not query Havok in pointProximity when world regions are empty", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const result = new ProximityCastResult();
+
+        const baseQuery = { position: new Vector3(0, 0, 0), maxDistance: 10, shouldHitTriggers: false };
+        expect(() => plugin.pointProximity(baseQuery as unknown as IPhysicsPointProximityQuery, result)).not.toThrow();
+        expect(result.hasHit).toBe(false);
+
+        expect(() => plugin.pointProximity({ ...baseQuery, ignoreBody } as unknown as IPhysicsPointProximityQuery, result)).not.toThrow();
+        expect(result.hasHit).toBe(false);
+    });
+
+    it("does not query Havok in shapeProximity when world regions are empty", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const inputShapeResult = new ProximityCastResult();
+        const hitShapeResult = new ProximityCastResult();
+
+        const baseQuery = { shape: { _pluginData: 0 }, position: new Vector3(0, 0, 0), maxDistance: 10, shouldHitTriggers: false };
+        expect(() => plugin.shapeProximity(baseQuery as unknown as IPhysicsShapeProximityCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(() => plugin.shapeProximity({ ...baseQuery, ignoreBody } as unknown as IPhysicsShapeProximityCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(inputShapeResult.hasHit).toBe(false);
+        expect(hitShapeResult.hasHit).toBe(false);
+    });
+
+    it("does not query Havok in shapeCast when world regions are empty", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const inputShapeResult = new ShapeCastResult();
+        const hitShapeResult = new ShapeCastResult();
+
+        const baseQuery = { shape: { _pluginData: 0 }, startPosition: new Vector3(0, 0, 0), endPosition: new Vector3(0, 0, 10), shouldHitTriggers: false };
+        expect(() => plugin.shapeCast(baseQuery as unknown as IPhysicsShapeCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(() => plugin.shapeCast({ ...baseQuery, ignoreBody } as unknown as IPhysicsShapeCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(inputShapeResult.hasHit).toBe(false);
+        expect(hitShapeResult.hasHit).toBe(false);
     });
 });
