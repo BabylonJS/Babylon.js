@@ -1,5 +1,6 @@
 import { type Engine, NullEngine } from "core/Engines";
 import { FlowGraphCoordinator } from "core/FlowGraph";
+import { FlowGraphConsoleLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock";
 import { Scene } from "core/scene";
 
 describe("FlowGraphCoordinator", () => {
@@ -81,6 +82,92 @@ describe("FlowGraphCoordinator", () => {
             const registered = FlowGraphCoordinator.SceneCoordinators.get(scene);
             expect(registered).toHaveLength(1);
             expect(registered).toContain(coordinator2);
+        });
+    });
+
+    describe("Flow graph add/remove observables", () => {
+        it("should notify OnFlowGraphAddedObservable when a graph is created", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const added: unknown[] = [];
+            const observer = FlowGraphCoordinator.OnFlowGraphAddedObservable.add((graph) => added.push(graph));
+
+            const graph = coordinator.createGraph();
+
+            expect(added).toHaveLength(1);
+            expect(added[0]).toBe(graph);
+
+            observer.remove();
+        });
+
+        it("should notify OnFlowGraphRemovedObservable when a graph is removed", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+            const removed: unknown[] = [];
+            const observer = FlowGraphCoordinator.OnFlowGraphRemovedObservable.add((g) => removed.push(g));
+
+            coordinator.removeGraph(graph);
+
+            expect(removed).toHaveLength(1);
+            expect(removed[0]).toBe(graph);
+
+            observer.remove();
+        });
+
+        it("should notify OnFlowGraphRemovedObservable for each graph on dispose", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph1 = coordinator.createGraph();
+            const graph2 = coordinator.createGraph();
+            const removed: unknown[] = [];
+            const observer = FlowGraphCoordinator.OnFlowGraphRemovedObservable.add((g) => removed.push(g));
+
+            coordinator.dispose();
+
+            expect(removed).toHaveLength(2);
+            expect(removed).toContain(graph1);
+            expect(removed).toContain(graph2);
+
+            observer.remove();
+        });
+    });
+
+    describe("Graph disposal teardown", () => {
+        it("should tear down scene event observers when a never-started graph is removed", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const before = scene.onBeforeRenderObservable.observers.length;
+
+            // A freshly created graph is in the Stopped state but its scene event
+            // coordinator already attached per-frame/pointer/keyboard observers.
+            const graph = coordinator.createGraph();
+            expect(scene.onBeforeRenderObservable.observers.length).toBeGreaterThan(before);
+
+            // Removing it (without ever starting it) must dispose those observers.
+            coordinator.removeGraph(graph);
+            expect(scene.onBeforeRenderObservable.observers.length).toBe(before);
+        });
+
+        it("should preserve authored blocks when a stopped graph is disposed", () => {
+            // The editor re-points a stopped graph across preview scenes; each preview scene
+            // disposal raises a SceneDispose event that calls dispose(). That must release the
+            // scene wiring without destroying the user's authored blocks.
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+            graph.addBlock(new FlowGraphConsoleLogBlock());
+            expect(graph.getAllBlocks().length).toBe(1);
+
+            const before = scene.onBeforeRenderObservable.observers.length;
+            graph.dispose();
+
+            // Scene wiring released, but the authored block survives.
+            expect(scene.onBeforeRenderObservable.observers.length).toBeLessThan(before);
+            expect(graph.getAllBlocks().length).toBe(1);
+        });
+
+        it("should be safe to dispose a graph twice", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+
+            graph.dispose();
+            expect(() => graph.dispose()).not.toThrow();
         });
     });
 });

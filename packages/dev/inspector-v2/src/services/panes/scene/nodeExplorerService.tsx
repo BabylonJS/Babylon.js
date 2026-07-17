@@ -286,9 +286,18 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getCommand: (camera) => {
                 const scene = camera.getScene();
                 const onChangeObservable = new Observable<void>();
-                const activeCameraChangedObserver = scene.onActiveCameraChanged.add(() => {
-                    onChangeObservable.notifyObservers();
-                });
+
+                // Render target rendering transiently reassigns scene.activeCamera (potentially every frame), so defer
+                // the check to a microtask (letting mid-frame swaps settle) and only notify on real active-state changes.
+                let lastIsActive = getActiveCamera() === camera;
+                const notifyIfActiveStateChanged = () => {
+                    const isActive = getActiveCamera() === camera;
+                    if (isActive !== lastIsActive) {
+                        lastIsActive = isActive;
+                        onChangeObservable.notifyObservers();
+                    }
+                };
+                const activeCameraChangedObserver = scene.onActiveCameraChanged.add(() => queueMicrotask(notifyIfActiveStateChanged));
 
                 return {
                     type: "toggle",
@@ -319,7 +328,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                                     if (updated) {
                                         activeCamera?.detachControl();
                                         camera.attachControl(true);
-                                        onChangeObservable.notifyObservers();
+                                        notifyIfActiveStateChanged();
                                     }
                                 })(scene.frameGraph);
                             } else {
