@@ -10,6 +10,12 @@ import { RawTexture2DArray } from "./rawTexture2DArray";
  * - WebGL2:  import "core/Engines/Extensions/engine.texture2DArrayImageSource";
  * - WebGPU:  import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";
  * (the full Engine build does not register it by default to keep it out of every engine bundle).
+ *
+ * Consuming the result: the built-in way to sample a chosen layer is Node Material's Texture block,
+ * which exposes a `layer` input (feed it a Float) and samples the array at that layer for you — no
+ * custom shader code required. If you instead write your own shader, declare a `sampler2DArray`
+ * (GLSL) / `texture_2d_array<f32>` (WGSL) uniform and sample it with an explicit integer layer index;
+ * the classic StandardMaterial / PBRMaterial texture slots are plain 2D and cannot read an array layer.
  */
 
 /**
