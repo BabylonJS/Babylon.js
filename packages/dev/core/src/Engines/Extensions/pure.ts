@@ -19,3 +19,4 @@ export * from "./engine.dynamicBuffer.pure";
 export * from "./engine.readTexture.pure";
 export * from "./engine.computeShader.pure";
 export * from "./engine.textureSelector.pure";
+export * from "./engine.texture2DArrayImageSource.pure";

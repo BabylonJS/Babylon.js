@@ -53,6 +53,7 @@
         "**/*renderTargetCube.js",
         "**/*renderTargetTexture.js",
         "**/*sphereBuilder.js",
+        "**/*texture2DArrayImageSource.js",
         "**/*textureSelector.js",
         "**/*videoTexture.js",
         "**/allBlocks.js",
