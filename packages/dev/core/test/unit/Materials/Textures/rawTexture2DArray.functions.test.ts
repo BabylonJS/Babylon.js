@@ -68,6 +68,16 @@ describe("rawTexture2DArray.functions", () => {
             const { texture } = createFakeTexture({ hasScene: false });
             expect(() => UploadImageToTexture2DArrayLayer(texture, createFakeBitmap(), 0)).toThrow(/not attached to a scene/);
         });
+
+        it("throws a helpful error when the engine extension is not registered", () => {
+            // Engine without the opt-in updateTextureArrayLayerFromImageSource method.
+            const texture = {
+                depth: 4,
+                getInternalTexture: () => ({ uniqueId: 1 }),
+                getScene: () => ({ getEngine: () => ({}) }),
+            } as unknown as RawTexture2DArray;
+            expect(() => UploadImageToTexture2DArrayLayer(texture, createFakeBitmap(), 0)).toThrow(/not registered on the engine/);
+        });
     });
 
     describe("LoadImageToTexture2DArrayLayer", () => {
@@ -123,7 +133,8 @@ describe("rawTexture2DArray.functions", () => {
             expect(call).toBeTypeOf("function");
         });
 
-        it("throws when the images do not share dimensions", async () => {            const bitmaps = [createFakeBitmap(8, 8), createFakeBitmap(16, 8)];
+        it("throws when the images do not share dimensions", async () => {
+            const bitmaps = [createFakeBitmap(8, 8), createFakeBitmap(16, 8)];
             let call = 0;
             vi.stubGlobal(
                 "fetch",

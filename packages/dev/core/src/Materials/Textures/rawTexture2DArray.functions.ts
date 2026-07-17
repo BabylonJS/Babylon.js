@@ -65,7 +65,17 @@ export function UploadImageToTexture2DArrayLayer(texture: RawTexture2DArray, sou
         throw new Error("Cannot upload to a 2D array texture that is not attached to a scene.");
     }
 
-    scene.getEngine().updateTextureArrayLayerFromImageSource(internalTexture, source, layer, options?.invertY ?? false, options?.premultiplyAlpha ?? false);
+    const engine = scene.getEngine();
+    // updateTextureArrayLayerFromImageSource is an opt-in engine extension. When the consumer never
+    // imported it, the augmented method is undefined and would crash with a generic "is not a function"
+    // error, so fail early with a message that names the required import for each backend.
+    if (typeof (engine as unknown as Record<string, unknown>).updateTextureArrayLayerFromImageSource !== "function") {
+        throw new Error(
+            'updateTextureArrayLayerFromImageSource is not registered on the engine. Import the opt-in extension for your backend before use: WebGL2 -> "core/Engines/Extensions/engine.texture2DArrayImageSource", WebGPU -> "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource".'
+        );
+    }
+
+    engine.updateTextureArrayLayerFromImageSource(internalTexture, source, layer, options?.invertY ?? false, options?.premultiplyAlpha ?? false);
 }
 
 /**
@@ -161,7 +171,20 @@ export async function CreateTexture2DArrayFromImageUrls(
             premultiplyAlpha: options?.premultiplyAlpha ?? false,
         };
 
+        // updateTextureArrayLayerFromImageSource rebuilds the whole mip chain on each upload when mips
+        // are enabled. Uploading N layers that way is O(N) redundant mip generation, so suppress it
+        // per-layer and let only the final upload regenerate the mips once — a single generateMipmap
+        // covers every layer of the array.
+        const internalTexture = texture.getInternalTexture();
+        const generateMipMaps = internalTexture?.generateMipMaps ?? false;
+        if (internalTexture && generateMipMaps) {
+            internalTexture.generateMipMaps = false;
+        }
+
         for (let layer = 0; layer < bitmaps.length; layer++) {
+            if (internalTexture && generateMipMaps && layer === bitmaps.length - 1) {
+                internalTexture.generateMipMaps = true;
+            }
             UploadImageToTexture2DArrayLayer(texture, bitmaps[layer], layer, uploadOptions);
         }
 
