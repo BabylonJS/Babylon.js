@@ -66,7 +66,7 @@ import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBl
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass, AreLightsTexturesReady } from "../materialHelper.functions";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
-import { RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
+import { ImageProcessingConfiguration, RegisterImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type LoopBlock } from "./Blocks/loopBlock.pure";
@@ -2423,6 +2423,20 @@ export class NodeMaterial extends NodeMaterialBase {
         }
     }
 
+    private static _DefaultImageProcessingConfigurationSerialized: string;
+
+    /**
+     * Determines whether a parsed image processing configuration only holds default values.
+     * @param configuration the configuration to test
+     * @returns true if the configuration matches a freshly created default configuration
+     */
+    private static _IsDefaultImageProcessingConfiguration(configuration: ImageProcessingConfiguration): boolean {
+        if (!NodeMaterial._DefaultImageProcessingConfigurationSerialized) {
+            NodeMaterial._DefaultImageProcessingConfigurationSerialized = JSON.stringify(new ImageProcessingConfiguration().serialize());
+        }
+        return JSON.stringify(configuration.serialize()) === NodeMaterial._DefaultImageProcessingConfigurationSerialized;
+    }
+
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
@@ -2447,7 +2461,14 @@ export class NodeMaterial extends NodeMaterialBase {
         if (hasSerializedImageProcessingConfiguration) {
             this._imageProcessingConfiguration = previousImageProcessingConfiguration;
             this._imageProcessingObserver = previousImageProcessingObserver;
-            this._attachImageProcessingConfiguration(parsedImageProcessingConfiguration);
+            // A serialized configuration that only holds default values (the common case for Node Material
+            // snippets that never customized image processing) must not detach the material from the scene
+            // configuration. A detached private configuration is never updated by full-screen post-processes
+            // (e.g. the HDR DefaultRenderingPipeline sets applyByPostProcess on the scene configuration only),
+            // so image processing would end up applied both in the material shader and in the post-process.
+            // Only honor a genuinely customized configuration; otherwise fall back to the scene configuration.
+            const useParsedConfiguration = parsedImageProcessingConfiguration && !NodeMaterial._IsDefaultImageProcessingConfiguration(parsedImageProcessingConfiguration);
+            this._attachImageProcessingConfiguration(useParsedConfiguration ? parsedImageProcessingConfiguration : null);
         }
 
         this.id = id;
