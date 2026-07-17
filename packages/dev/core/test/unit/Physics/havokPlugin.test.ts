@@ -187,4 +187,18 @@ describe("HavokPlugin queries with no available world region", () => {
         expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result)).not.toThrow();
         expect(result.hasHit).toBe(false);
     });
+
+    // After dispose() the worlds are released and _worldRegions is cleared, but a body kept alive by the caller
+    // still holds a stale worldRegion reference. Passing it as ignoreBody must NOT be used to query Havok, or we
+    // would call into an already-released world handle. The mock hknp has no HP_World_CastRayWithCollector, so
+    // reaching the native query would throw - not throwing proves we bailed out before touching Havok.
+    it("does not query Havok when world regions are empty but ignoreBody carries a stale region", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const result = new PhysicsRaycastResult();
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result, { ignoreBody })).not.toThrow();
+        expect(result.hasHit).toBe(false);
+    });
 });
