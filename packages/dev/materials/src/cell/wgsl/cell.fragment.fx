@@ -99,6 +99,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     }
 #endif
 
+#define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
 
 #ifndef DEPTHPREPASS

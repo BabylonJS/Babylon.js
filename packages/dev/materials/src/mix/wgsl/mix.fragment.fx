@@ -121,6 +121,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifdef DIFFUSE
 	var mixColor: vec4f = textureSample(mixMap1Sampler, mixMap1SamplerSampler, fragmentInputs.vTextureUV);
 
+#define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
 
 #ifndef DEPTHPREPASS

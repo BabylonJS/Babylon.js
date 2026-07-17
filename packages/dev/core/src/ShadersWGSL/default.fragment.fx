@@ -146,6 +146,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
+#define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
 
 #ifndef DEPTHPREPASS

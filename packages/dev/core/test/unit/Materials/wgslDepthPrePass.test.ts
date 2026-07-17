@@ -15,6 +15,7 @@ type Conditional = {
 
 const coreWgslShaderDirectory = fileURLToPath(new URL("../../../src/ShadersWGSL/", import.meta.url));
 const materialsDirectory = fileURLToPath(new URL("../../../../materials/src/", import.meta.url));
+const depthPrePassInclude = readFileSync(join(coreWgslShaderDirectory, "ShadersInclude/depthPrePass.fx"), "utf8");
 
 function readShader(name: string, path: string): ShaderSource {
     return { name, source: readFileSync(path, "utf8") };
@@ -98,6 +99,10 @@ function findUnguardedTailLines(source: string): string[] {
 describe("WGSL depth prepass material fragment tails", () => {
     const depthPrePassMaterialFragments = findDepthPrePassMaterialFragments();
 
+    it("preserves the early return unless a consumer opts into a guarded tail", () => {
+        expect(depthPrePassInclude).toMatch(/#ifndef\s+DEPTHPREPASS_SKIP_EARLY_RETURN\s+return fragmentOutputs;\s+#endif/);
+    });
+
     it("tracks every material shader affected by the DEPTHPREPASS tail guard", () => {
         expect(depthPrePassMaterialFragments.map(({ name }) => name)).toEqual([
             "core/default.fragment.fx",
@@ -118,5 +123,13 @@ describe("WGSL depth prepass material fragment tails", () => {
 
     it.each(depthPrePassMaterialFragments)("keeps every post-depth-prepass statement out of DEPTHPREPASS for $name", ({ source }) => {
         expect(findUnguardedTailLines(source)).toEqual([]);
+    });
+
+    it.each(depthPrePassMaterialFragments)("opts into the guarded tail before including depthPrePass for $name", ({ source }) => {
+        const optInLine = source.indexOf("#define DEPTHPREPASS_SKIP_EARLY_RETURN");
+        const depthPrePassLine = source.indexOf("#include<depthPrePass>");
+
+        expect(optInLine).toBeGreaterThanOrEqual(0);
+        expect(optInLine).toBeLessThan(depthPrePassLine);
     });
 });

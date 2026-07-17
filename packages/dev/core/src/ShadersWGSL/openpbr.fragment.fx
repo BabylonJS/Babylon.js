@@ -101,6 +101,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
+    #define DEPTHPREPASS_SKIP_EARLY_RETURN
     #include<depthPrePass>
 
 #ifndef DEPTHPREPASS
