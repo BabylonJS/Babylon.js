@@ -3,6 +3,7 @@ import { type TransformNode } from "core/Meshes/transformNode";
 import { PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { type PhysicsBody } from "core/Physics/v2/physicsBody";
+import { PhysicsRaycastResult } from "core/Physics/physicsRaycastResult";
 import { FloatingOriginCurrentScene } from "core/Materials/floatingOriginMatrixOverrides";
 import { type Scene } from "core/scene";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -146,5 +147,44 @@ describe("HavokPlugin world region lifecycle", () => {
         expect(hknp.HP_World_Release).toHaveBeenCalledWith(previousRegion.world);
         expect(worldRegions).toEqual([defaultRegion, destinationRegion]);
         expect(body._pluginData.worldRegion).toBe(destinationRegion);
+    });
+});
+
+describe("HavokPlugin queries with no available world region", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    // Reproduces https://forum.babylonjs.com/t/havok-crash-in-raycast-worldregion-floatingorigin/63815
+    // When the world regions array is empty (e.g. a query is issued after the plugin has been disposed,
+    // which clears _worldRegions), reading `this._worldRegions[0].floatingOrigin` used to crash.
+    it("does not crash when raycasting while the world regions array is empty", () => {
+        const { plugin, hknp } = createPlugin([], new Map());
+        const result = new PhysicsRaycastResult();
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result)).not.toThrow();
+
+        expect(result.hasHit).toBe(false);
+        expect(hknp.HP_World_Release).not.toHaveBeenCalled();
+    });
+
+    it("populates every result of a multi-raycast with no hit when there is no world region", () => {
+        const { plugin } = createPlugin([], new Map());
+        const results = [new PhysicsRaycastResult(), new PhysicsRaycastResult()];
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), results)).not.toThrow();
+
+        expect(results.every((r) => !r.hasHit)).toBe(true);
+    });
+
+    it("does not crash when a disposed plugin is raycasted", () => {
+        const worldRegions = [{ world: 1n, floatingOrigin: Vector3.Zero(), gravity: [0, 0, 0] }];
+        const { plugin } = createPlugin(worldRegions, new Map());
+        // dispose() empties _worldRegions, mirroring the real teardown path.
+        worldRegions.length = 0;
+        const result = new PhysicsRaycastResult();
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result)).not.toThrow();
+        expect(result.hasHit).toBe(false);
     });
 });

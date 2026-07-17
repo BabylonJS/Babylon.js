@@ -2601,6 +2601,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query?.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        // The world regions array can be empty (e.g. a raycast issued after dispose(), which clears it),
+        // in which case there is nothing to cast against. Bail out early with an empty (no-hit) result.
+        if (!worldRegion) {
+            return;
+        }
         const offset = worldRegion.floatingOrigin;
         const world = worldRegion.world;
         const offsetFrom = this._bVecToV3WithOffset(from, offset);
@@ -2665,6 +2670,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        if (!worldRegion) {
+            return;
+        }
         const offset = worldRegion.floatingOrigin;
         const world = worldRegion.world;
 
@@ -2692,6 +2700,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        if (!worldRegion) {
+            return;
+        }
         const offset = worldRegion.floatingOrigin;
         const world = worldRegion.world;
 
@@ -2723,6 +2734,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        if (!worldRegion) {
+            return;
+        }
         const offset = worldRegion.floatingOrigin;
         const world = worldRegion.world;
 
