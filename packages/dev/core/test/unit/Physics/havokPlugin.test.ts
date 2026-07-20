@@ -3,6 +3,12 @@ import { type TransformNode } from "core/Meshes/transformNode";
 import { PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { type PhysicsBody } from "core/Physics/v2/physicsBody";
+import { PhysicsRaycastResult } from "core/Physics/physicsRaycastResult";
+import { ProximityCastResult } from "core/Physics/proximityCastResult";
+import { ShapeCastResult } from "core/Physics/shapeCastResult";
+import { type IPhysicsPointProximityQuery } from "core/Physics/physicsPointProximityQuery";
+import { type IPhysicsShapeProximityCastQuery } from "core/Physics/physicsShapeProximityCastQuery";
+import { type IPhysicsShapeCastQuery } from "core/Physics/physicsShapeCastQuery";
 import { FloatingOriginCurrentScene } from "core/Materials/floatingOriginMatrixOverrides";
 import { type Scene } from "core/scene";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -146,5 +152,103 @@ describe("HavokPlugin world region lifecycle", () => {
         expect(hknp.HP_World_Release).toHaveBeenCalledWith(previousRegion.world);
         expect(worldRegions).toEqual([defaultRegion, destinationRegion]);
         expect(body._pluginData.worldRegion).toBe(destinationRegion);
+    });
+});
+
+describe("HavokPlugin queries with no available world region", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    // Reproduces https://forum.babylonjs.com/t/havok-crash-in-raycast-worldregion-floatingorigin/63815
+    // When the world regions array is empty (e.g. a query is issued after the plugin has been disposed,
+    // which clears _worldRegions), reading `this._worldRegions[0].floatingOrigin` used to crash.
+    it("does not crash when raycasting while the world regions array is empty", () => {
+        const { plugin, hknp } = createPlugin([], new Map());
+        const result = new PhysicsRaycastResult();
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result)).not.toThrow();
+
+        expect(result.hasHit).toBe(false);
+        expect(hknp.HP_World_Release).not.toHaveBeenCalled();
+    });
+
+    it("populates every result of a multi-raycast with no hit when there is no world region", () => {
+        const { plugin } = createPlugin([], new Map());
+        const results = [new PhysicsRaycastResult(), new PhysicsRaycastResult()];
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), results)).not.toThrow();
+
+        expect(results.every((r) => !r.hasHit)).toBe(true);
+    });
+
+    it("does not crash when a disposed plugin is raycasted", () => {
+        const worldRegions = [{ world: 1n, floatingOrigin: Vector3.Zero(), gravity: [0, 0, 0] }];
+        const { plugin } = createPlugin(worldRegions, new Map());
+        // dispose() empties _worldRegions, mirroring the real teardown path.
+        worldRegions.length = 0;
+        const result = new PhysicsRaycastResult();
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result)).not.toThrow();
+        expect(result.hasHit).toBe(false);
+    });
+
+    // After dispose() the worlds are released and _worldRegions is cleared, but a body kept alive by the caller
+    // still holds a stale worldRegion reference. Passing it as ignoreBody must NOT be used to query Havok, or we
+    // would call into an already-released world handle. The mock hknp has no HP_World_CastRayWithCollector, so
+    // reaching the native query would throw - not throwing proves we bailed out before touching Havok.
+    it("does not query Havok when world regions are empty but ignoreBody carries a stale region", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const result = new PhysicsRaycastResult();
+
+        expect(() => plugin.raycast(new Vector3(0, 0, 0), new Vector3(0, 0, 10), result, { ignoreBody })).not.toThrow();
+        expect(result.hasHit).toBe(false);
+    });
+
+    // The same disposal guard exists in pointProximity/shapeProximity/shapeCast. The mock hknp defines none of the
+    // native query/collector functions, so if any of these methods reached the Havok call it would throw. Not
+    // throwing (with and without a stale ignoreBody) proves each one bails out and leaves its result(s) in no-hit state.
+    it("does not query Havok in pointProximity when world regions are empty", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const result = new ProximityCastResult();
+
+        const baseQuery = { position: new Vector3(0, 0, 0), maxDistance: 10, shouldHitTriggers: false };
+        expect(() => plugin.pointProximity(baseQuery as unknown as IPhysicsPointProximityQuery, result)).not.toThrow();
+        expect(result.hasHit).toBe(false);
+
+        expect(() => plugin.pointProximity({ ...baseQuery, ignoreBody } as unknown as IPhysicsPointProximityQuery, result)).not.toThrow();
+        expect(result.hasHit).toBe(false);
+    });
+
+    it("does not query Havok in shapeProximity when world regions are empty", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const inputShapeResult = new ProximityCastResult();
+        const hitShapeResult = new ProximityCastResult();
+
+        const baseQuery = { shape: { _pluginData: 0 }, position: new Vector3(0, 0, 0), maxDistance: 10, shouldHitTriggers: false };
+        expect(() => plugin.shapeProximity(baseQuery as unknown as IPhysicsShapeProximityCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(() => plugin.shapeProximity({ ...baseQuery, ignoreBody } as unknown as IPhysicsShapeProximityCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(inputShapeResult.hasHit).toBe(false);
+        expect(hitShapeResult.hasHit).toBe(false);
+    });
+
+    it("does not query Havok in shapeCast when world regions are empty", () => {
+        const staleRegion = { world: 99n, floatingOrigin: new Vector3(1, 2, 3), gravity: [0, 0, 0] };
+        const { plugin } = createPlugin([], new Map());
+        const ignoreBody = { _pluginData: { hpBodyId: [7n], worldRegion: staleRegion } } as unknown as PhysicsBody;
+        const inputShapeResult = new ShapeCastResult();
+        const hitShapeResult = new ShapeCastResult();
+
+        const baseQuery = { shape: { _pluginData: 0 }, startPosition: new Vector3(0, 0, 0), endPosition: new Vector3(0, 0, 10), shouldHitTriggers: false };
+        expect(() => plugin.shapeCast(baseQuery as unknown as IPhysicsShapeCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(() => plugin.shapeCast({ ...baseQuery, ignoreBody } as unknown as IPhysicsShapeCastQuery, inputShapeResult, hitShapeResult)).not.toThrow();
+        expect(inputShapeResult.hasHit).toBe(false);
+        expect(hitShapeResult.hasHit).toBe(false);
     });
 });
