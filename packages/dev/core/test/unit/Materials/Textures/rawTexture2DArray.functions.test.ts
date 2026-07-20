@@ -109,7 +109,7 @@ describe("rawTexture2DArray.functions", () => {
                 getInternalTexture: () => ({ uniqueId: 1 }),
                 getScene: () => ({ getEngine: () => ({}) }),
             } as unknown as RawTexture2DArray;
-            expect(() => UploadImageToTexture2DArrayLayer(texture, createFakeBitmap(), 0)).toThrow(/not registered on the engine/);
+            expect(() => UploadImageToTexture2DArrayLayer(texture, createFakeBitmap(), 0)).toThrow(/needs to be imported/);
         });
     });
 

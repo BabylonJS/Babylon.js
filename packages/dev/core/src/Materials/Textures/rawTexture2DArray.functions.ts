@@ -1,6 +1,7 @@
 import { type ImageSource } from "../../types";
 import { type Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
+import { _IsSideEffectImplemented, _WarnImport } from "../../Misc/devTools";
 import { RawTexture2DArray } from "./rawTexture2DArray";
 
 /**
@@ -67,12 +68,10 @@ export function UploadImageToTexture2DArrayLayer(texture: RawTexture2DArray, sou
 
     const engine = scene.getEngine();
     // updateTextureArrayLayerFromImageSource is an opt-in engine extension. When the consumer never
-    // imported it, the augmented method is undefined and would crash with a generic "is not a function"
-    // error, so fail early with a message that names the required import for each backend.
-    if (typeof (engine as unknown as Record<string, unknown>).updateTextureArrayLayerFromImageSource !== "function") {
-        throw new Error(
-            'updateTextureArrayLayerFromImageSource is not registered on the engine. Import the opt-in extension for your backend before use: WebGL2 -> "core/Engines/Extensions/engine.texture2DArrayImageSource", WebGPU -> "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource".'
-        );
+    // imported it, the augmented method is missing, so fail early with the standard side-effect import
+    // message (matching the engine.rawTexture family) instead of a generic "is not a function" error.
+    if (!_IsSideEffectImplemented(engine.updateTextureArrayLayerFromImageSource)) {
+        throw _WarnImport("engine.texture2DArrayImageSource");
     }
 
     engine.updateTextureArrayLayerFromImageSource(internalTexture, source, layer, options?.invertY ?? false, options?.premultiplyAlpha ?? false);
