@@ -221,7 +221,7 @@ export class ToolsTabComponent extends PaneComponent {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-        Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then((value) => {
+        Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh/terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then((value) => {
             this._gifWorkerBlob = new Blob([value], {
                 type: "application/javascript",
             });
