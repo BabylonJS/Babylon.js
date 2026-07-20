@@ -1,7 +1,7 @@
 {
     "version": 1,
     "files": {
-        "Loading/Plugins/babylonFileLoader.ts": ["top-level-call"],
+        "Loading/Plugins/babylonFileLoader.ts": ["bare-import", "top-level-call"],
         "Loading/loadingScreen.ts": ["top-level-call"]
     }
 }
