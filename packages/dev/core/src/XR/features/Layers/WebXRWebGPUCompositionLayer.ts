@@ -1,6 +1,8 @@
+import { type Camera } from "core/Cameras/camera";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { type Viewport } from "core/Maths/math.viewport";
-import { Observable } from "core/Misc/observable";
+import { Observable, type Observer } from "core/Misc/observable";
 import { type WebXRLayerRenderTargetTexture } from "core/XR/webXRLayerRenderTargetTexture";
 import { type WebXRLayerType, WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
 import { type WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
@@ -44,6 +46,16 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
     protected _renderTargetTexturesByEye: WebXRLayerRenderTargetTexture[] = [];
     private _compositionLayer: XRCompositionLayer;
     /**
+     * WebGPU compositor sub-image textures are drawn from a small rotating pool, and the compositor reads each
+     * eye's slot shortly after it is rendered. Babylon's default flow records both eyes into the single shared
+     * render command encoder and submits it once, late, at endFrame; on the rotating pool that late submit can
+     * land after the slot has been recycled, so the eye never presents. To match the compositor's expectation
+     * (and the behavior of the reference WebXR/WebGPU sample), this observer submits each eye's recorded work
+     * immediately after that eye is rendered, before the compositor recycles the slot. WebGPU-XR only; the
+     * WebGL2 XR path uses a different provider and is unaffected. @internal
+     */
+    private _perEyeSubmitObserver: Nullable<Observer<Camera>> = null;
+    /**
      * Fires every time a new render target texture is created (either for eye, for view, or for the entire frame)
      */
     public onRenderTargetTextureCreatedObservable = new Observable<{ texture: RenderTargetTexture; eye?: XREye }>();
@@ -56,6 +68,42 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
     ) {
         super(_xrSessionManager.scene, layerWrapper);
         this._compositionLayer = layerWrapper.layer;
+        // onAfterCameraRenderObservable is notified once per rig camera (per eye) inside _renderForCamera,
+        // after that eye's scene has been rendered into its sub-image render target. Submit it immediately.
+        this._perEyeSubmitObserver = this._scene.onAfterCameraRenderObservable.add((camera) => this._submitEyeEarly(camera));
+    }
+
+    /**
+     * Submits the current eye's recorded GPU work as soon as that eye has finished rendering, rather than
+     * letting it accumulate into Babylon's single late endFrame submit. This ensures the compositor reads a
+     * fully-submitted sub-image slot before it is recycled from the rotating pool. Only acts for cameras whose
+     * output render target is one of this provider's per-eye targets. @internal
+     * @param camera the rig camera that was just rendered
+     */
+    private _submitEyeEarly(camera: Camera): void {
+        const rtt = camera.outputRenderTarget;
+        if (!rtt) {
+            return;
+        }
+        if (!this._renderTargetTexturesByEye.some((target) => target === rtt)) {
+            return;
+        }
+        const engine = this._engine as WebGPUEngine;
+        // Guard on a live WebGPU device: NullEngine (used by unit tests) has no `_device`, so this is a pure
+        // passthrough there and the WebGL2 XR path (a different provider) is never affected.
+        if (!engine._device) {
+            return;
+        }
+        // flushFramebuffer() ends the current (eye) render pass with its baseline storeOp:Store, finishes and
+        // submits the upload + render encoders, then opens fresh encoders for the next eye. It is already used
+        // mid-frame elsewhere in the engine, so per-eye use here is a supported pattern.
+        engine.flushFramebuffer();
+    }
+
+    public override dispose(): void {
+        this._scene.onAfterCameraRenderObservable.remove(this._perEyeSubmitObserver);
+        this._perEyeSubmitObserver = null;
+        super.dispose();
     }
 
     protected _getRenderTargetForSubImage(subImage: XRGPUSubImage, eye: XREye = "none") {
