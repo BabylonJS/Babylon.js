@@ -317,6 +317,9 @@ export class AlphaState {
             case Constants.ALPHA_DUAL_SRC0_ADD_SRC1xDST:
                 this.setAlphaBlendFunctionParameters(1, Constants.GL_ALPHA_FUNCTION_SRC1_COLOR, 0, 1, targetIndex);
                 break;
+            case Constants.ALPHA_REPLACE_COLOR:
+                this.setAlphaBlendFunctionParameters(1, 0, 1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, targetIndex);
+                break;
         }
 
         this.setAlphaEquationParameters(equation, equation, targetIndex);

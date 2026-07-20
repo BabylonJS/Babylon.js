@@ -95,6 +95,11 @@ export class Constants {
      */
     public static readonly ALPHA_DUAL_SRC0_ADD_SRC1xDST = 20;
 
+    /**
+     * Defines that alpha blending is COLOR=SRC, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA
+     */
+    public static readonly ALPHA_REPLACE_COLOR = 21;
+
     /** Defines that alpha blending equation a SUM */
     public static readonly ALPHA_EQUATION_ADD = 0;
     /** Defines that alpha blending equation a SUBSTRACTION */
