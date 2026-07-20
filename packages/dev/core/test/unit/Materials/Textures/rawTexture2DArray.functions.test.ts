@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CreateTexture2DArrayFromImageUrls, LoadImageToTexture2DArrayLayer, UploadImageToTexture2DArrayLayer } from "core/Materials/Textures/rawTexture2DArray.functions";
+import { CreateTexture2DArrayFromImageUrlsAsync, LoadImageToTexture2DArrayLayerAsync, UploadImageToTexture2DArrayLayer } from "core/Materials/Textures/rawTexture2DArray.functions";
 import { type RawTexture2DArray } from "core/Materials/Textures/rawTexture2DArray";
 
 // Registry of RawTexture2DArray instances constructed during a test, so a test can assert dispose()
 // was called. The mocked class's engine upload always throws, which lets us exercise the
-// dispose-on-error path in CreateTexture2DArrayFromImageUrls without a real engine.
+// dispose-on-error path in CreateTexture2DArrayFromImageUrlsAsync without a real engine.
 const mockState = vi.hoisted(() => {
     return { instances: [] as { dispose: ReturnType<typeof vi.fn> }[] };
 });
@@ -113,7 +113,7 @@ describe("rawTexture2DArray.functions", () => {
         });
     });
 
-    describe("LoadImageToTexture2DArrayLayer", () => {
+    describe("LoadImageToTexture2DArrayLayerAsync", () => {
         let bitmap: ImageBitmap;
 
         beforeEach(() => {
@@ -135,7 +135,7 @@ describe("rawTexture2DArray.functions", () => {
         it("fetches, uploads and closes the bitmap", async () => {
             const { texture, update } = createFakeTexture({ depth: 5 });
 
-            await LoadImageToTexture2DArrayLayer(texture, "https://example.com/a.png", 3, { invertY: true });
+            await LoadImageToTexture2DArrayLayerAsync(texture, "https://example.com/a.png", 3, { invertY: true });
 
             expect(fetch).toHaveBeenCalledWith("https://example.com/a.png");
             expect(update).toHaveBeenCalledWith(expect.anything(), bitmap, 3, true, false);
@@ -149,12 +149,12 @@ describe("rawTexture2DArray.functions", () => {
             );
             const { texture, update } = createFakeTexture();
 
-            await expect(LoadImageToTexture2DArrayLayer(texture, "https://example.com/missing.png", 0)).rejects.toThrow(/Failed to fetch/);
+            await expect(LoadImageToTexture2DArrayLayerAsync(texture, "https://example.com/missing.png", 0)).rejects.toThrow(/Failed to fetch/);
             expect(update).not.toHaveBeenCalled();
         });
     });
 
-    describe("CreateTexture2DArrayFromImageUrls", () => {
+    describe("CreateTexture2DArrayFromImageUrlsAsync", () => {
         afterEach(() => {
             vi.unstubAllGlobals();
         });
@@ -162,7 +162,7 @@ describe("rawTexture2DArray.functions", () => {
         it("requires at least one url at compile time", () => {
             // The tuple parameter type enforces a non-empty url list, so an empty array is a type error.
             // @ts-expect-error - at least one url is required
-            const call = () => CreateTexture2DArrayFromImageUrls({} as any, []);
+            const call = () => CreateTexture2DArrayFromImageUrlsAsync({} as any, []);
             expect(call).toBeTypeOf("function");
         });
 
@@ -178,7 +178,7 @@ describe("rawTexture2DArray.functions", () => {
                 vi.fn(async () => bitmaps[call++])
             );
 
-            await expect(CreateTexture2DArrayFromImageUrls({} as any, ["a.png", "b.png"])).rejects.toThrow(/same dimensions/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync({} as any, ["a.png", "b.png"])).rejects.toThrow(/same dimensions/);
             // Both fetched bitmaps must be released even on validation failure.
             expect(bitmaps[0].close).toHaveBeenCalledTimes(1);
             expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
@@ -202,7 +202,7 @@ describe("rawTexture2DArray.functions", () => {
                 })
             );
 
-            await expect(CreateTexture2DArrayFromImageUrls({} as any, ["a.png", "b.png"])).rejects.toThrow(/decode failed/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync({} as any, ["a.png", "b.png"])).rejects.toThrow(/decode failed/);
             // The layer that decoded before the failure must not leak.
             expect(good.close).toHaveBeenCalledTimes(1);
         });
@@ -222,7 +222,7 @@ describe("rawTexture2DArray.functions", () => {
 
             // The mocked RawTexture2DArray's engine upload always throws, so this exercises the
             // dispose-on-error path after the texture has already been allocated.
-            await expect(CreateTexture2DArrayFromImageUrls({} as any, ["a.png", "b.png"])).rejects.toThrow(/upload boom/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync({} as any, ["a.png", "b.png"])).rejects.toThrow(/upload boom/);
             expect(mockState.instances).toHaveLength(1);
             expect(mockState.instances[0].dispose).toHaveBeenCalledTimes(1);
             // Bitmaps are still released on the error path.

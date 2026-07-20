@@ -85,7 +85,12 @@ export function UploadImageToTexture2DArrayLayer(texture: RawTexture2DArray, sou
  * @param options defines optional upload settings (invertY, premultiplyAlpha)
  * @returns a promise resolved once the layer has been uploaded
  */
-export async function LoadImageToTexture2DArrayLayer(texture: RawTexture2DArray, url: string, layer: number, options?: IUploadImageToTexture2DArrayLayerOptions): Promise<void> {
+export async function LoadImageToTexture2DArrayLayerAsync(
+    texture: RawTexture2DArray,
+    url: string,
+    layer: number,
+    options?: IUploadImageToTexture2DArrayLayerOptions
+): Promise<void> {
     const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
@@ -107,7 +112,7 @@ export async function LoadImageToTexture2DArrayLayer(texture: RawTexture2DArray,
  * @param options defines optional creation and upload settings
  * @returns a promise resolved with the created RawTexture2DArray
  */
-export async function CreateTexture2DArrayFromImageUrls(
+export async function CreateTexture2DArrayFromImageUrlsAsync(
     scene: Scene,
     urls: readonly [string, ...string[]],
     options?: ICreateTexture2DArrayFromImageUrlsOptions
