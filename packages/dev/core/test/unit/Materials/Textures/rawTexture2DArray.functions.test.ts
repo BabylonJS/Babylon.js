@@ -3,6 +3,39 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CreateTexture2DArrayFromImageUrls, LoadImageToTexture2DArrayLayer, UploadImageToTexture2DArrayLayer } from "core/Materials/Textures/rawTexture2DArray.functions";
 import { type RawTexture2DArray } from "core/Materials/Textures/rawTexture2DArray";
 
+// Registry of RawTexture2DArray instances constructed during a test, so a test can assert dispose()
+// was called. The mocked class's engine upload always throws, which lets us exercise the
+// dispose-on-error path in CreateTexture2DArrayFromImageUrls without a real engine.
+const mockState = vi.hoisted(() => {
+    return { instances: [] as { dispose: ReturnType<typeof vi.fn> }[] };
+});
+
+vi.mock("core/Materials/Textures/rawTexture2DArray", () => {
+    return {
+        RawTexture2DArray: class {
+            public dispose = vi.fn();
+            public depth: number;
+            private _internal = { generateMipMaps: false };
+            constructor(_data: unknown, _width: number, _height: number, depth: number) {
+                this.depth = depth;
+                mockState.instances.push(this);
+            }
+            public getInternalTexture() {
+                return this._internal;
+            }
+            public getScene() {
+                return {
+                    getEngine: () => ({
+                        updateTextureArrayLayerFromImageSource: () => {
+                            throw new Error("upload boom");
+                        },
+                    }),
+                };
+            }
+        },
+    };
+});
+
 type UpdateSpy = ReturnType<typeof vi.fn>;
 
 function createFakeTexture(options?: { depth?: number; hasInternal?: boolean; hasScene?: boolean }): { texture: RawTexture2DArray; update: UpdateSpy } {
@@ -172,6 +205,29 @@ describe("rawTexture2DArray.functions", () => {
             await expect(CreateTexture2DArrayFromImageUrls({} as any, ["a.png", "b.png"])).rejects.toThrow(/decode failed/);
             // The layer that decoded before the failure must not leak.
             expect(good.close).toHaveBeenCalledTimes(1);
+        });
+
+        it("disposes the created texture and closes bitmaps when a layer upload fails", async () => {
+            mockState.instances.length = 0;
+            const bitmaps = [createFakeBitmap(8, 8), createFakeBitmap(8, 8)];
+            let call = 0;
+            vi.stubGlobal(
+                "fetch",
+                vi.fn(async () => ({ ok: true, status: 200, statusText: "OK", blob: async () => ({}) }))
+            );
+            vi.stubGlobal(
+                "createImageBitmap",
+                vi.fn(async () => bitmaps[call++])
+            );
+
+            // The mocked RawTexture2DArray's engine upload always throws, so this exercises the
+            // dispose-on-error path after the texture has already been allocated.
+            await expect(CreateTexture2DArrayFromImageUrls({} as any, ["a.png", "b.png"])).rejects.toThrow(/upload boom/);
+            expect(mockState.instances).toHaveLength(1);
+            expect(mockState.instances[0].dispose).toHaveBeenCalledTimes(1);
+            // Bitmaps are still released on the error path.
+            expect(bitmaps[0].close).toHaveBeenCalledTimes(1);
+            expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
         });
     });
 });

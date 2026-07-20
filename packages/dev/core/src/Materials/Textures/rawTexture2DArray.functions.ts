@@ -166,29 +166,36 @@ export async function CreateTexture2DArrayFromImageUrls(
             options?.textureType
         );
 
-        const uploadOptions: IUploadImageToTexture2DArrayLayerOptions = {
-            invertY: options?.invertY ?? false,
-            premultiplyAlpha: options?.premultiplyAlpha ?? false,
-        };
+        try {
+            const uploadOptions: IUploadImageToTexture2DArrayLayerOptions = {
+                invertY: options?.invertY ?? false,
+                premultiplyAlpha: options?.premultiplyAlpha ?? false,
+            };
 
-        // updateTextureArrayLayerFromImageSource rebuilds the whole mip chain on each upload when mips
-        // are enabled. Uploading N layers that way is O(N) redundant mip generation, so suppress it
-        // per-layer and let only the final upload regenerate the mips once — a single generateMipmap
-        // covers every layer of the array.
-        const internalTexture = texture.getInternalTexture();
-        const generateMipMaps = internalTexture?.generateMipMaps ?? false;
-        if (internalTexture && generateMipMaps) {
-            internalTexture.generateMipMaps = false;
-        }
-
-        for (let layer = 0; layer < bitmaps.length; layer++) {
-            if (internalTexture && generateMipMaps && layer === bitmaps.length - 1) {
-                internalTexture.generateMipMaps = true;
+            // updateTextureArrayLayerFromImageSource rebuilds the whole mip chain on each upload when mips
+            // are enabled. Uploading N layers that way is O(N) redundant mip generation, so suppress it
+            // per-layer and let only the final upload regenerate the mips once — a single generateMipmap
+            // covers every layer of the array.
+            const internalTexture = texture.getInternalTexture();
+            const generateMipMaps = internalTexture?.generateMipMaps ?? false;
+            if (internalTexture && generateMipMaps) {
+                internalTexture.generateMipMaps = false;
             }
-            UploadImageToTexture2DArrayLayer(texture, bitmaps[layer], layer, uploadOptions);
-        }
 
-        return texture;
+            for (let layer = 0; layer < bitmaps.length; layer++) {
+                if (internalTexture && generateMipMaps && layer === bitmaps.length - 1) {
+                    internalTexture.generateMipMaps = true;
+                }
+                UploadImageToTexture2DArrayLayer(texture, bitmaps[layer], layer, uploadOptions);
+            }
+
+            return texture;
+        } catch (error) {
+            // A layer upload can throw (out-of-range layer, missing engine extension, backend upload
+            // failure). Dispose the freshly allocated GPU texture so it does not leak, then rethrow.
+            texture.dispose();
+            throw error;
+        }
     } finally {
         for (let index = 0; index < bitmaps.length; index++) {
             bitmaps[index].close();
