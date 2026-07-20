@@ -2599,6 +2599,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             raycastResult.reset(from, to);
         }
 
+        // If there are no world regions (e.g. after dispose(), which releases every world and clears the array),
+        // there is nothing valid to cast against. Bail out with an empty (no-hit) result rather than dereferencing
+        // an undefined region or using a stale worldRegion from ignoreBody that points at an already-released world.
+        if (this._worldRegions.length === 0) {
+            return;
+        }
+
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query?.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2663,6 +2670,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         result.reset();
 
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2690,6 +2700,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         hitShapeResult.reset();
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2721,6 +2734,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
