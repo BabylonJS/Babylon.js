@@ -2423,7 +2423,7 @@ export class NodeMaterial extends NodeMaterialBase {
         }
     }
 
-    private static _DefaultImageProcessingConfigurationSerialized: string;
+    private static _DefaultImageProcessingConfigurationSerialized?: string;
 
     /**
      * Determines whether a parsed image processing configuration only holds default values.
