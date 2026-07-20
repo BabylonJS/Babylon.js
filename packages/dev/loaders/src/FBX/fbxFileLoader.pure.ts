@@ -1999,6 +1999,20 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
 
         const animGroup = new AnimationGroup(animStack.name, scene);
+        const animatedBoneTargetProperties = new Map<Bone | TransformNode, Set<string>>();
+        const addBoneAnimation = (animation: Animation, bone: Bone): void => {
+            const target = bone.getTransformNode() ?? bone;
+            let targetProperties = animatedBoneTargetProperties.get(target);
+            if (!targetProperties) {
+                targetProperties = new Set<string>();
+                animatedBoneTargetProperties.set(target, targetProperties);
+            } else if (targetProperties.has(animation.targetProperty)) {
+                return;
+            }
+
+            targetProperties.add(animation.targetProperty);
+            animGroup.addTargetedAnimation(animation, target);
+        };
 
         // Build a map from model ID to resolved rig bones. A single FBX model ID
         // should only appear once per resolved rig, but keeping an array preserves
@@ -2081,7 +2095,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 animStack.stopTime
             )) {
                 for (const animation of animations) {
-                    animGroup.addTargetedAnimation(animation, bone.getTransformNode() ?? bone);
+                    addBoneAnimation(animation, bone);
                 }
             }
         }
@@ -2107,7 +2121,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     this._bindRestBones.has(bone) ? bone.getBindMatrix() : undefined
                 );
                 for (const animation of animations) {
-                    animGroup.addTargetedAnimation(animation, bone.getTransformNode() ?? bone);
+                    addBoneAnimation(animation, bone);
                 }
             }
         }
