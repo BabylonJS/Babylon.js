@@ -142,10 +142,24 @@ export class _IblShadowsVoxelTracingPass {
         this._voxelDirectionBias = value;
     }
 
+    private _enabled: boolean = true;
+
     /**
      * Is the effect enabled
      */
-    public enabled: boolean = true;
+    public get enabled(): boolean {
+        return this._enabled;
+    }
+
+    public set enabled(value: boolean) {
+        this._enabled = value;
+        // _render() already gates on `enabled`, but also disable the underlying ProceduralTexture
+        // directly so it can't be rendered through any other path (e.g. Babylon's generic
+        // per-frame ProceduralTexture refresh loop) while the pass is toggled off.
+        if (this._outputTexture) {
+            this._outputTexture.isEnabled = value;
+        }
+    }
 
     /**
      * The number of directions to sample for the voxel tracing.
