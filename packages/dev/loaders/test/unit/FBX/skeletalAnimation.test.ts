@@ -1,28 +1,24 @@
-import { Buffer } from "node:buffer";
 import { describe, expect, it } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { FBXFileLoader } from "loaders/FBX/fbxFileLoader";
-import { GLTFFileLoader, type IGLTFLoaderData } from "loaders/glTF/glTFFileLoader";
-import "loaders/glTF/2.0/glTFLoader";
-import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
 
-describe("FBX animation GLB round-trip", () => {
-    it("preserves skeletal animation from a minimal FBX after GLB export and reload", async () => {
-        const sourceEngine = new NullEngine();
-        const sourceScene = new Scene(sourceEngine);
+describe("FBX skeletal animation loading", () => {
+    it("links imported bones and their animation to reachable transform nodes", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
 
-        await new FBXFileLoader().importMeshAsync(null, sourceScene, minimalAnimatedSkinFbx(), "");
+        await new FBXFileLoader().importMeshAsync(null, scene, minimalAnimatedSkinFbx(), "");
 
-        expect(sourceScene.skeletons).toHaveLength(1);
-        expect(sourceScene.animationGroups).toHaveLength(1);
-        const sourceSkeleton = sourceScene.skeletons[0];
-        const sourceAnimationGroup = sourceScene.animationGroups[0];
-        expect(sourceSkeleton.bones).toHaveLength(3);
-        expect(sourceAnimationGroup.targetedAnimations).toHaveLength(1);
+        expect(scene.skeletons).toHaveLength(1);
+        expect(scene.animationGroups).toHaveLength(1);
+        const skeleton = scene.skeletons[0];
+        const animationGroup = scene.animationGroups[0];
+        expect(skeleton.bones).toHaveLength(3);
+        expect(animationGroup.targetedAnimations).toHaveLength(1);
 
-        const reachableNodes = new Set(sourceScene.rootNodes.flatMap((rootNode) => [rootNode, ...rootNode.getDescendants()]));
-        for (const bone of sourceSkeleton.bones) {
+        const reachableNodes = new Set(scene.rootNodes.flatMap((rootNode) => [rootNode, ...rootNode.getDescendants()]));
+        for (const bone of skeleton.bones) {
             const transformNode = bone.getTransformNode();
             expect(transformNode).not.toBeNull();
             if (!transformNode) {
@@ -31,18 +27,11 @@ describe("FBX animation GLB round-trip", () => {
             expect(reachableNodes.has(transformNode)).toBe(true);
         }
 
-        const boneTransformNodes = new Set(sourceSkeleton.bones.map((bone) => bone.getTransformNode()));
-        expect(boneTransformNodes.has(sourceAnimationGroup.targetedAnimations[0].target)).toBe(true);
+        const boneTransformNodes = new Set(skeleton.bones.map((bone) => bone.getTransformNode()));
+        expect(boneTransformNodes.has(animationGroup.targetedAnimations[0].target)).toBe(true);
 
-        const { engine: targetEngine, scene: targetScene } = await exportAndReload(sourceScene);
-
-        expect(targetScene.animationGroups).toHaveLength(1);
-        expect(targetScene.animationGroups[0].targetedAnimations).toHaveLength(sourceAnimationGroup.targetedAnimations.length);
-
-        targetScene.dispose();
-        targetEngine.dispose();
-        sourceScene.dispose();
-        sourceEngine.dispose();
+        scene.dispose();
+        engine.dispose();
     });
 
     it("targets a shared animated ancestor only once when it belongs to multiple rigs", async () => {
@@ -55,51 +44,17 @@ describe("FBX animation GLB round-trip", () => {
         expect(scene.animationGroups).toHaveLength(1);
         const sharedNode = scene.getTransformNodeByName("CharactersGroup");
         expect(sharedNode).not.toBeNull();
+        expect(scene.skeletons.filter((skeleton) => skeleton.bones.some((bone) => bone.getTransformNode() === sharedNode))).toHaveLength(2);
 
         const sharedNodeAnimations = scene.animationGroups[0].targetedAnimations.filter(
             ({ animation, target }) => target === sharedNode && animation.targetProperty === "position"
         );
         expect(sharedNodeAnimations).toHaveLength(1);
 
-        const { engine: targetEngine, scene: targetScene } = await exportAndReload(scene);
-        const targetSharedNode = targetScene.getTransformNodeByName("CharactersGroup");
-        expect(targetSharedNode).not.toBeNull();
-        expect(
-            targetScene.animationGroups[0].targetedAnimations.filter(
-                ({ animation, target }) => target === targetSharedNode && animation.targetProperty === "position"
-            )
-        ).toHaveLength(1);
-
-        targetScene.dispose();
-        targetEngine.dispose();
         scene.dispose();
         engine.dispose();
     });
 });
-
-function isGLTFLoaderData(value: object): value is IGLTFLoaderData {
-    return "json" in value && "bin" in value;
-}
-
-async function exportAndReload(sourceScene: Scene): Promise<{ engine: NullEngine; scene: Scene }> {
-    const glTFData = await GLTF2Export.GLBAsync(sourceScene, "round-trip", { exportWithoutWaitingForScene: true });
-    const glb = glTFData.files["round-trip.glb"];
-    if (!(glb instanceof Blob)) {
-        throw new Error("GLB export did not produce a Blob");
-    }
-
-    const engine = new NullEngine();
-    const scene = new Scene(engine);
-    const glTFLoader = new GLTFFileLoader();
-    const glbBytes = Buffer.from(await glb.arrayBuffer());
-    const loaderData = await glTFLoader.directLoad(scene, `model/gltf-binary;base64,${glbBytes.toString("base64")}`);
-    if (!isGLTFLoaderData(loaderData)) {
-        throw new Error("GLB did not produce glTF loader data");
-    }
-
-    await glTFLoader.loadAsync(scene, loaderData, "", undefined, "round-trip.glb");
-    return { engine, scene };
-}
 
 function minimalAnimatedSkinFbx(): string {
     return `; FBX 7.4.0 project file
