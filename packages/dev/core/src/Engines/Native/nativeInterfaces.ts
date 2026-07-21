@@ -307,6 +307,7 @@ interface INativeEngineConstructor {
     readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
     readonly ALPHA_INTERPOLATE: number;
     readonly ALPHA_SCREENMODE: number;
+    readonly ALPHA_REPLACE_COLOR?: number;
 
     readonly STENCIL_TEST_LESS: number;
     readonly STENCIL_TEST_LEQUAL: number;

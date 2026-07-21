@@ -364,7 +364,7 @@ export class TextRenderer implements IDisposable {
 
         try {
             // When writing to the depth buffer, keep depth writes enabled (setAlphaMode would otherwise disable them for the ALPHA_COMBINE mode).
-            engine.setAlphaMode(useAlphaToCoverage ? Constants.ALPHA_DISABLE : Constants.ALPHA_COMBINE, writeDepth);
+            engine.setAlphaMode(useAlphaToCoverage ? Constants.ALPHA_REPLACE_COLOR : Constants.ALPHA_COMBINE, writeDepth);
             if (writeDepth) {
                 engine.setDepthWrite(true);
             }
