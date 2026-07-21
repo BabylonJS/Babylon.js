@@ -115,10 +115,17 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     }
 #endif
 
+#define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
+
+#ifndef DEPTHPREPASS
 
 	baseColor = vec4f(baseColor.rgb * uniforms.vDiffuseInfos.y, baseColor.a);
 #endif
+
+#endif
+
+#ifndef DEPTHPREPASS
 
 #ifdef VERTEXCOLOR
 	baseColor = vec4f(baseColor.rgb * fragmentInputs.vColor.rgb, baseColor.a);
@@ -167,4 +174,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #include<imageProcessingCompatibility>
 
 #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
+
 }
