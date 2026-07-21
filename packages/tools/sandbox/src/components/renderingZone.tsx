@@ -475,6 +475,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
                 loader.validate = true;
 
+                // This intentionally relies on an internal Inspector storage contract. Sandbox
+                // and Inspector are separate bundles, so they cannot currently share the service
+                // that applies these options. Keep this in sync with GLTFLoaderOptionsServiceDefinition
+                // and do not replicate this cross-bundle coupling elsewhere without careful consideration.
                 // Apply glTF loader options persisted by the inspector (e.g. useOpenPBR).
                 // The inspector's GLTFLoaderOptionsService applies these via its own
                 // OnPluginActivatedObservable subscription, but that subscription is only
