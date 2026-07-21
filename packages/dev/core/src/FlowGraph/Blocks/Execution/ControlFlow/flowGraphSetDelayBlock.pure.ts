@@ -10,7 +10,7 @@ import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
-import { MarkDelayActive, MarkDelayInactive } from "core/FlowGraph/flowGraphDelayReference";
+import { IsDelayActive, MarkDelayActive, MarkDelayInactive } from "core/FlowGraph/flowGraphDelayReference";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
@@ -81,14 +81,17 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
 
     public override _cancelPendingTasks(context: FlowGraphContext): void {
         const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
+        const globalTimers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
         for (let index = 0; index < timers.length; index++) {
             const timer = timers[index];
             if (timer) {
                 timer.dispose();
                 // The delay is no longer scheduled, so drop it from the active set.
                 MarkDelayInactive(context, index);
+                delete globalTimers[index];
             }
         }
+        context._setGlobalContextVariable("pendingDelays", globalTimers);
         context._deleteExecutionVariable(this, "pendingDelays");
         this.lastDelayIndex.setValue(new FlowGraphInteger(-1), context);
         this._updateGlobalTimers(context);
@@ -112,7 +115,10 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
         const index = timers.indexOf(timer);
         if (index !== -1) {
-            timers.splice(index, 1);
+            delete timers[index];
+            const globalTimers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
+            delete globalTimers[index];
+            context._setGlobalContextVariable("pendingDelays", globalTimers);
             // The delay has fired and is no longer scheduled.
             MarkDelayInactive(context, index);
         } else {
@@ -129,7 +135,8 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         const globalTimers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
         // there should NEVER be the same index in the global and local timers, unless they are equal
         for (let i = 0; i < timers.length; i++) {
-            if (!timers[i]) {
+            if (!timers[i] || !IsDelayActive(context, i)) {
+                delete globalTimers[i];
                 continue;
             }
             const timer = timers[i];

@@ -938,9 +938,12 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_anisotropy: {
                 anisotropyStrength: {
                     type: "number",
-                    get: (material, index?, payload?) => GetMaterial(material, index, payload).anisotropy.intensity,
+                    get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.intensity,
                     set: (value: number, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).anisotropy.intensity = value;
+                        const mat = GetMaterial(material, index, payload);
+                        if (mat) {
+                            mat.anisotropy.intensity = value;
+                        }
                     },
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.intensity"],
@@ -1489,16 +1492,21 @@ function _gltfTextureTransform(material: IMaterial, gltfPath: IGltfTextureTransf
     if (!material) {
         return undefined;
     }
-    if (createMissing && !material.extensions) {
-        (material as any).extensions = {};
+    let extensions = material.extensions;
+    if (!extensions) {
+        if (!createMissing) {
+            return undefined;
+        }
+        extensions = {};
+        material.extensions = extensions;
     }
-    let cursor: any = material.extensions?.[gltfPath.extensionKey];
+    let cursor: any = extensions[gltfPath.extensionKey];
     if (!cursor) {
         if (!createMissing) {
             return undefined;
         }
         cursor = {};
-        (material as any).extensions[gltfPath.extensionKey] = cursor;
+        extensions[gltfPath.extensionKey] = cursor;
     }
     for (const key of gltfPath.texturePath) {
         let next = cursor[key];

@@ -24,13 +24,13 @@ function GetAnyPerpendicularVector(v: DeepImmutable<Vector3>): Vector3 {
     const absY = Math.abs(v.y);
     const absZ = Math.abs(v.z);
     // Cross with whichever cardinal axis is least aligned with `v` to avoid a degenerate cross product.
-    let other: Vector3;
+    let other: DeepImmutable<Vector3>;
     if (absX <= absY && absX <= absZ) {
-        other = new Vector3(1, 0, 0);
+        other = Vector3.RightReadOnly;
     } else if (absY <= absZ) {
-        other = new Vector3(0, 1, 0);
+        other = Vector3.UpReadOnly;
     } else {
-        other = new Vector3(0, 0, 1);
+        other = Vector3.LeftHandedForwardReadOnly;
     }
     return Vector3.Cross(v, other).normalize();
 }
@@ -175,12 +175,6 @@ export function GetQuaternionFromUpForward(up: DeepImmutable<Vector3>, forward: 
  */
 export const QuaternionEulerAngleOrders = ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"] as const;
 
-// Shared, read-only rotation axes for GetQuaternionFromEulerAngles. Never mutated
-// (Quaternion.RotationAxis only reads the axis), so they are safe to share.
-const EulerAxisX = new Vector3(1, 0, 0);
-const EulerAxisY = new Vector3(0, 1, 0);
-const EulerAxisZ = new Vector3(0, 0, 1);
-
 /**
  * Builds a rotation quaternion from three Tait–Bryan intrinsic Euler angles applied in the
  * specified order (KHR_interactivity `math/quatFromAngles`).
@@ -197,9 +191,9 @@ const EulerAxisZ = new Vector3(0, 0, 1);
  * @returns the composed rotation quaternion
  */
 export function GetQuaternionFromEulerAngles(order: string, x: number, y: number, z: number): Quaternion {
-    const qx = Quaternion.RotationAxis(EulerAxisX, x);
-    const qy = Quaternion.RotationAxis(EulerAxisY, y);
-    const qz = Quaternion.RotationAxis(EulerAxisZ, z);
+    const qx = Quaternion.RotationAxis(Vector3.RightReadOnly, x);
+    const qy = Quaternion.RotationAxis(Vector3.UpReadOnly, y);
+    const qz = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, z);
     // `a.multiplyInPlace(b)` computes the Hamilton product `a * b` in place and returns `a`.
     switch (order) {
         case "xyz":

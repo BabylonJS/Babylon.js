@@ -5,7 +5,7 @@ import { Vector3, Vector2 } from "core/Maths/math.vector.pure";
  */
 export interface IFlowGraphMatrix<VectorType> {
     /**
-     * The matrix elements stored in a row-major order.
+     * The matrix elements stored in column-major order.
      */
     m: number[];
 
@@ -181,8 +181,8 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     }
 
     public transformVectorToRef(v: Vector2, result: Vector2): Vector2 {
-        result.x = v.x * this._m[0] + v.y * this._m[1];
-        result.y = v.x * this._m[2] + v.y * this._m[3];
+        result.x = v.x * this._m[0] + v.y * this._m[2];
+        result.y = v.x * this._m[1] + v.y * this._m[3];
         return result;
     }
 
@@ -333,9 +333,9 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
 
     public transformVectorToRef(v: Vector3, result: Vector3): Vector3 {
         const m = this._m;
-        result.x = v.x * m[0] + v.y * m[1] + v.z * m[2];
-        result.y = v.x * m[3] + v.y * m[4] + v.z * m[5];
-        result.z = v.x * m[6] + v.y * m[7] + v.z * m[8];
+        result.x = v.x * m[0] + v.y * m[3] + v.z * m[6];
+        result.y = v.x * m[1] + v.y * m[4] + v.z * m[7];
+        result.z = v.x * m[2] + v.y * m[5] + v.z * m[8];
         return result;
     }
 

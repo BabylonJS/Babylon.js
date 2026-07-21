@@ -859,8 +859,8 @@ describe("Interactivity math nodes", () => {
 
     // math/transform
 
-    it("should use math/transform correctly - vector2", async () => {
-        const randomMatrix = Array.from({ length: 4 }, () => Math.random() - 0.5);
+    it("should use math/transform with a column-major float2x2 matrix", async () => {
+        const matrix = [1, 2, 3, 4];
         const graph = await generateSimpleNodeGraph(
             [{ op: "math/transform" }],
             [
@@ -870,12 +870,12 @@ describe("Interactivity math nodes", () => {
                         // matrix2d
                         b: {
                             type: 1,
-                            value: randomMatrix,
+                            value: matrix,
                         },
                         // vector to transform
                         a: {
                             type: 0,
-                            value: [1, 1],
+                            value: [5, 6],
                         },
                     },
                 },
@@ -884,15 +884,11 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        // round result to 3 decimals
-        const resultArray = roundArray3(logItem!.payload.value.asArray());
-        // row-major matrix
-        const expected = roundArray3([1 * randomMatrix[0] + 1 * randomMatrix[1], 1 * randomMatrix[2] + 1 * randomMatrix[3]]);
-        expect(resultArray).toEqual(expected);
+        expect(logItem!.payload.value.asArray()).toEqual([23, 34]);
     });
 
-    it("should use math/transform correctly - vector3", async () => {
-        const randomMatrix = Array.from({ length: 9 }, () => Math.random() - 0.5);
+    it("should use math/transform with a column-major float3x3 matrix", async () => {
+        const matrix = [1, 2, 3, 4, 5, 6, 7, 8, 10];
         const graph = await generateSimpleNodeGraph(
             [{ op: "math/transform" }],
             [
@@ -902,12 +898,12 @@ describe("Interactivity math nodes", () => {
                         // matrix2d
                         b: {
                             type: 1,
-                            value: randomMatrix,
+                            value: matrix,
                         },
                         // vector to transform
                         a: {
                             type: 0,
-                            value: [1, 1, 1],
+                            value: [2, 3, 5],
                         },
                     },
                 },
@@ -916,15 +912,7 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        // round result to 3 decimals
-        const resultArray = roundArray3(logItem!.payload.value.asArray());
-        // row-major matrix!
-        const expected = roundArray3([
-            1 * randomMatrix[0] + 1 * randomMatrix[1] + 1 * randomMatrix[2],
-            1 * randomMatrix[3] + 1 * randomMatrix[4] + 1 * randomMatrix[5],
-            1 * randomMatrix[6] + 1 * randomMatrix[7] + 1 * randomMatrix[8],
-        ]);
-        expect(resultArray).toEqual(expected);
+        expect(logItem!.payload.value.asArray()).toEqual([49, 59, 74]);
     });
 
     it("should use math/transform correctly - vector4", async () => {

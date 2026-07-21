@@ -1381,14 +1381,14 @@ export class FlowGraphOneBitsCounterBlock extends FlowGraphUnaryOperationBlock<F
 
 /**
  * Converts a linear sRGB color to OkLCh (the polar form of the Oklab color space).
- * Uses the canonical matrices from Björn Ottosson's Oklab definition (also adopted by CSS Color 4).
+ * Uses the single-precision matrices listed by KHR_interactivity.
  * The RGB inputs are treated as linear; hue is returned in radians.
  * @param r linear red component
  * @param g linear green component
  * @param b linear blue component
  * @returns the OkLCh lightness (l), chroma (c) and hue (h, radians)
  */
-function _RgbToOkLch(r: number, g: number, b: number): { l: number; c: number; h: number } {
+function RgbToOkLch(r: number, g: number, b: number): { l: number; c: number; h: number } {
     // Linear sRGB -> LMS cone responses.
     const long = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
     const medium = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
@@ -1405,13 +1405,13 @@ function _RgbToOkLch(r: number, g: number, b: number): { l: number; c: number; h
 }
 
 /**
- * Converts an OkLCh color to linear sRGB. Inverse of {@link _RgbToOkLch}; hue is in radians.
+ * Converts an OkLCh color to linear sRGB. Inverse of {@link RgbToOkLch}; hue is in radians.
  * @param l OkLCh lightness
  * @param c OkLCh chroma
  * @param h OkLCh hue in radians
  * @returns the linear sRGB red (r), green (g) and blue (b) components
  */
-function _OkLchToRgb(l: number, c: number, h: number): { r: number; g: number; b: number } {
+function OkLchToRgb(l: number, c: number, h: number): { r: number; g: number; b: number } {
     // OkLCh -> Oklab.
     const okA = c * Math.cos(h);
     const okB = c * Math.sin(h);
@@ -1470,7 +1470,7 @@ export class FlowGraphRGBToOkLChBlock extends FlowGraphBlock {
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
-        const { l, c, h } = _RgbToOkLch(this.r.getValue(context), this.g.getValue(context), this.b.getValue(context));
+        const { l, c, h } = RgbToOkLch(this.r.getValue(context), this.g.getValue(context), this.b.getValue(context));
         this.l.setValue(l, context);
         this.c.setValue(c, context);
         this.h.setValue(h, context);
@@ -1521,7 +1521,7 @@ export class FlowGraphRGBFromOkLChBlock extends FlowGraphBlock {
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
-        const { r, g, b } = _OkLchToRgb(this.l.getValue(context), this.c.getValue(context), this.h.getValue(context));
+        const { r, g, b } = OkLchToRgb(this.l.getValue(context), this.c.getValue(context), this.h.getValue(context));
         this.r.setValue(r, context);
         this.g.setValue(g, context);
         this.b.setValue(b, context);

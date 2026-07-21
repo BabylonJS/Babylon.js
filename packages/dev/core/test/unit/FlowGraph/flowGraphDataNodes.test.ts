@@ -66,7 +66,7 @@ describe("Flow Graph Data Nodes", () => {
     it("RGB <-> OkLCh conversion blocks", () => {
         const toOkLCh = new FlowGraphRGBToOkLChBlock();
 
-        // Pure (linear) sRGB red -> OkLCh, hue in radians (Ottosson / CSS Color 4 reference values).
+        // Pure (linear) sRGB red -> OkLCh, hue in radians (KHR_interactivity listed values).
         toOkLCh.r.setValue(1, flowGraphContext);
         toOkLCh.g.setValue(0, flowGraphContext);
         toOkLCh.b.setValue(0, flowGraphContext);

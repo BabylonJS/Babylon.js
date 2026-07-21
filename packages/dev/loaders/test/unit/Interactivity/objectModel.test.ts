@@ -86,6 +86,65 @@ describe("glTF interactivity Object Model", () => {
     });
 
     // basic JSON Pointer tests
+    it("should reject a relative JSON pointer even when a ref value could prefix it", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const mockGltf: any = {
+            nodes: [
+                {
+                    _babylonTransformNode: mesh,
+                },
+            ],
+        };
+
+        await expect(
+            generateSimpleNodeGraph(
+                mockGltf,
+                [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+                [
+                    {
+                        declaration: 1,
+                        values: {
+                            message: {
+                                node: 1,
+                                socket: "value",
+                            },
+                        },
+                    },
+                    {
+                        declaration: 0,
+                        configuration: {
+                            pointer: { value: ["translation"] },
+                            type: { value: [0] },
+                        },
+                        values: {
+                            nodeRef: {
+                                value: ["/nodes/0/"],
+                                type: 1,
+                            },
+                        },
+                    },
+                ],
+                [{ signature: "float3" }, { signature: "ref" }]
+            )
+        ).rejects.toThrow();
+    });
+
+    it("should ignore anisotropy strength access when the Babylon material is unavailable", () => {
+        const converter = GetPathToObjectConverter({
+            materials: [
+                {
+                    extensions: {
+                        KHR_materials_anisotropy: {},
+                    },
+                },
+            ],
+        } as any);
+        const accessor = converter.convert("/materials/0/extensions/KHR_materials_anisotropy/anisotropyStrength");
+
+        expect(accessor.info.get(accessor.object)).toBeUndefined();
+        expect(() => accessor.info.set?.(0.5, accessor.object)).not.toThrow();
+    });
+
     it("should find a node's translation", async () => {
         const mesh = new Mesh("mesh", scene);
         mesh.position.set(1, 2, 3);

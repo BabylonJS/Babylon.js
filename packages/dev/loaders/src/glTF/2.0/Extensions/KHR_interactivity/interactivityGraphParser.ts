@@ -54,9 +54,8 @@ export const gltfTypeToBabylonType: {
  * the serialized FlowGraph form consumed by {@link ParseFlowGraphAsync}.
  *
  * The class walks the interactivity types, declarations, variables, events
- * and nodes in order, applies any importer-side transforms (e.g. the
- * relative-pointer-prefix bake) and emits an {@link ISerializedFlowGraph}
- * via {@link serializeToFlowGraph}.
+ * and nodes in order and emits an {@link ISerializedFlowGraph} via
+ * {@link serializeToFlowGraph}.
  */
 export class InteractivityGraphToFlowGraphParser {
     /**
@@ -243,10 +242,6 @@ export class InteractivityGraphToFlowGraphParser {
                     throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
             }
-            // Bake any static ref-typed value sockets into pointer templates that
-            // were authored as "relative" (no leading slash). See
-            // _bakeRelativePointerPrefix for full rationale.
-            this._bakeRelativePointerPrefix(node, mapping.fullOperationName);
             const blocks: ISerializedFlowGraphBlock[] = [];
             // create block(s) for this node using the mapping
             for (const blockType of mapping.flowGraphMapping.blocks) {
@@ -255,90 +250,6 @@ export class InteractivityGraphToFlowGraphParser {
                 blocks.push(block);
             }
             this._nodes.push({ blocks, fullOperationName: mapping.fullOperationName });
-        }
-    }
-
-    /**
-     * KHR_interactivity test assets such as `Calculator.glb` author
-     * `pointer/get` and `pointer/set` nodes whose `pointer` configuration value
-     * is a *relative* JSON Pointer (no leading slash), e.g.
-     * `extensions/KHR_node_visibility/visible`, paired with a static ref-typed
-     * value socket like `nodeRef = "/nodes/22/"` that supplies the absolute
-     * prefix. The standard spec algorithm only substitutes `{name}`/`[name]`
-     * template parameters and would leave the relative path untouched, so the
-     * effective JSON Pointer ends up invalid and the `nodeRef` socket has
-     * nowhere to land on the FlowGraph block (causing
-     * "Could not find data input with name nodeRef" failures at parse time).
-     *
-     * To support this convention we splice a static ref value into the
-     * pointer template at parse time, dropping the now-baked socket from the
-     * node's `values` map so the connection wiring step ignores it. Only
-     * literal/static refs are baked here; refs that come from an upstream
-     * connection (`{ node, socket }` shape) are left untouched, since we have
-     * no way to know their value at parse time. Such cases would still
-     * surface as the same parse-time error and need a richer runtime
-     * substitution strategy.
-     * @param node The interactivity node to patch in place.
-     * @param fullOperationName The fully qualified op name (e.g. `pointer/get`).
-     */
-    private _bakeRelativePointerPrefix(node: IKHRInteractivity_Node, fullOperationName: string): void {
-        if (!fullOperationName.startsWith("pointer/")) {
-            return;
-        }
-        const pointerCfg = node.configuration?.pointer;
-        const template = pointerCfg?.value?.[0];
-        if (typeof template !== "string" || template.startsWith("/")) {
-            return;
-        }
-        if (!node.values) {
-            return;
-        }
-        for (const name of Object.keys(node.values)) {
-            const socket = node.values[name] as IKHRInteractivity_Variable & { node?: number; socket?: string };
-            // Skip non-ref-typed inputs. By KHR_interactivity convention the ref
-            // socket of a `pointer/*` op is named after the ref it carries
-            // (``nodeRef``, ``materialRef``, ``meshRef``, etc.) and never
-            // ``value`` — `value` is the data being read or written by the
-            // pointer op, not the pointer prefix. Only consider sockets whose
-            // declared type is ``ref`` (a literal whose serialized type maps to
-            // FlowGraphTypes.String) or whose name follows the *Ref convention.
-            const literal = socket?.value?.[0];
-            const declaredType = (socket as any)?.type;
-            const isLiteralRef = typeof literal === "string" && literal.startsWith("/");
-            const isTypedRef = typeof declaredType === "number" && this._types[declaredType]?.flowGraphType === FlowGraphTypes.String;
-            const isNamedRef = name.endsWith("Ref");
-            if (!isLiteralRef && !isTypedRef && !isNamedRef) {
-                continue;
-            }
-            // Static-literal case: the socket has a hardcoded JSON-Pointer ref
-            // value (e.g. ``"/nodes/22/"``). Splice the literal into the template
-            // and drop the socket entirely so the connection-wiring step ignores
-            // it. This is the Calculator.glb pattern.
-            if (isLiteralRef) {
-                const trimmedRef = (literal as string).replace(/\/+$/, "");
-                (pointerCfg!.value as any[])[0] = trimmedRef + "/" + template;
-                delete (node.values as any)[name];
-                break;
-            }
-            // Dynamic-ref case: the socket is connected to an upstream output
-            // (``{ node, socket }``). We can't bake the value at parse time, so
-            // instead we rewrite the template so the existing template-parameter
-            // substitution machinery substitutes the runtime ref. For a socket
-            // named ``nodeRef`` and a relative template like
-            // ``extensions/KHR_node_visibility/visible``, rewrite to
-            // ``/nodes/{nodeRef}/extensions/KHR_node_visibility/visible``. The
-            // FlowGraphPathConverterComponent will register a ``nodeRef`` data
-            // input on the block and the connection-wiring step will hook it
-            // up to the upstream output. At runtime the runtime substitution
-            // logic extracts the matching JSON-Pointer segment from the ref
-            // string delivered by that connection.
-            // This is the MagicBall.glb pattern.
-            if (typeof socket?.node === "number") {
-                (pointerCfg!.value as any[])[0] = `/nodes/{${name}}/${template}`;
-                // Leave the value socket entry as is — it is now the data input
-                // that the substitution machinery will consume.
-                break;
-            }
         }
     }
 
