@@ -2020,14 +2020,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.17.0";
+        return "babylonjs@9.17.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.17.0";
+        return "9.17.1";
     }
 
     /**
