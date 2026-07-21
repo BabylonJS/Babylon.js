@@ -669,6 +669,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * | 18 | ALPHA_MIN | Defines that alpha blending is COLOR=MIN(SRC, DEST), ALPHA=MIN(SRC_ALPHA, DEST_ALPHA) |
      * | 19 | ALPHA_MAX | Defines that alpha blending is COLOR=MAX(SRC, DEST), ALPHA=MAX(SRC_ALPHA, DEST_ALPHA) |
      * | 20 | ALPHA_DUAL_SRC0_ADD_SRC1xDST | Defines that alpha blending uses dual source blending and is COLOR=SRC + SRC1 * DEST, ALPHA=DST_ALPHA |
+     * | 21 | ALPHA_REPLACE_COLOR | Defines that alpha blending is COLOR=SRC, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA |
      *
      */
     public set alphaMode(value: number) {
