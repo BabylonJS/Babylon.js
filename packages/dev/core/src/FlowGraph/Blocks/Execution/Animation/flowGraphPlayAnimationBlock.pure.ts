@@ -89,11 +89,31 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @internal
      * @param context
      */
-    public override _preparePendingTasks(context: FlowGraphContext): void {
+    public override _startPendingTasks(context: FlowGraphContext): void {
+        if (context._getExecutionVariable(this, "_initialized", false)) {
+            this._cancelPendingTasks(context);
+            this._resetAfterCanceled(context);
+        }
+
+        if (!this._preparePendingTasks(context)) {
+            return;
+        }
+        context._addPendingBlock(this);
+        this.out._activateSignal(context);
+        context._setExecutionVariable(this, "_initialized", true);
+    }
+
+    /**
+     * @internal
+     * @param context
+     * @returns whether the animation was prepared and started successfully
+     */
+    public override _preparePendingTasks(context: FlowGraphContext): boolean {
         const ag = this.animationGroup.getValue(context);
         const animation = this.animation.getValue(context);
         if (!ag && !animation) {
-            return this._reportError(context, "No animation or animation group provided");
+            this._reportError(context, "No animation or animation group provided");
+            return false;
         } else {
             // if an animation group was already created, dispose it and create a new one
             const currentAnimationGroup = this.currentAnimationGroup.getValue(context);
@@ -108,7 +128,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (animation && !animationGroupToUse) {
                 const target = this.object.getValue(context);
                 if (!target) {
-                    return this._reportError(context, "No target object provided");
+                    this._reportError(context, "No target object provided");
+                    return false;
                 }
                 const animationsArray = Array.isArray(animation) ? animation : [animation];
                 const name = animationsArray[0].name;
@@ -138,14 +159,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // when the end time is NaN. A NaN or infinite start time is caught by the finite check on `from`.
             if (!animation) {
                 if (isNaN(rawTo)) {
-                    return this._reportError(context, "Invalid animation end time");
+                    this._reportError(context, "Invalid animation end time");
+                    return false;
                 }
                 // Only validate a speed that was explicitly provided; an unconnected speed keeps the engine
                 // default of 1 (matching the historical Babylon behavior for animation/start without a speed).
                 if (this.speed.isConnected() || context._hasConnectionValue(this.speed)) {
                     const providedSpeed = this.speed.getValue(context);
                     if (!isFinite(providedSpeed) || providedSpeed <= 0) {
-                        return this._reportError(context, "Invalid animation speed");
+                        this._reportError(context, "Invalid animation speed");
+                        return false;
                     }
                 }
             }
@@ -154,25 +177,37 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // animation/start this also satisfies the spec requirement that a NaN or infinite start time
             // activates the err flow.
             if (!isFinite(from)) {
-                return this._reportError(context, "Invalid animation duration");
+                this._reportError(context, "Invalid animation duration");
+                return false;
             }
             // For interpolation the end value is the animation duration and must be a finite, non-negative number.
             // Animation-group playback (animation/start) instead allows an infinite end time — it means "play to
             // the natural end / loop" (see the `loop` computation below) — and its NaN end time was already
             // rejected above, so the end value is only range-checked here for the interpolation case.
             if (animation && (!isFinite(to) || to < 0)) {
-                return this._reportError(context, "Invalid animation duration");
+                this._reportError(context, "Invalid animation duration");
+                return false;
             }
 
-            // Validate easing function: NaN bezier control points trigger the error flow
+            // CSS cubic-bezier control points must be finite, and the X components must be in [0, 1].
             if (animation) {
                 const animationsArray = Array.isArray(animation) ? animation : [animation];
                 for (const anim of animationsArray) {
                     const easing = anim.getEasingFunction?.();
                     if (easing && "x1" in easing) {
                         const bezier = easing as unknown as { x1: number; y1: number; x2: number; y2: number };
-                        if (isNaN(bezier.x1) || isNaN(bezier.y1) || isNaN(bezier.x2) || isNaN(bezier.y2)) {
-                            return this._reportError(context, "Invalid bezier curve control points");
+                        if (
+                            !Number.isFinite(bezier.x1) ||
+                            !Number.isFinite(bezier.y1) ||
+                            !Number.isFinite(bezier.x2) ||
+                            !Number.isFinite(bezier.y2) ||
+                            bezier.x1 < 0 ||
+                            bezier.x1 > 1 ||
+                            bezier.x2 < 0 ||
+                            bezier.x2 > 1
+                        ) {
+                            this._reportError(context, "Invalid bezier curve control points");
+                            return false;
                         }
                     }
                 }
@@ -203,7 +238,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
             } catch (e) {
                 this._reportError(context, e);
+                return false;
             }
+            return true;
         }
     }
 

@@ -783,6 +783,52 @@ describe("glTF interactivity Object Model", () => {
         log.mockImplementation(() => {});
     });
 
+    it("should activate err for pointer/interpolate CSS control points outside the valid X range", async () => {
+        const mesh = new Mesh("mesh", scene);
+        const mockGltf: any = {
+            nodes: [{ _babylonTransformNode: mesh }],
+        };
+
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/interpolate" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/nodes/0/translation"] },
+                        type: { value: [0] },
+                    },
+                    values: {
+                        value: { type: 0, value: [2, 3, 4] },
+                        duration: { type: 2, value: [1] },
+                        p1: { type: 1, value: [-0.01, 0] },
+                        p2: { type: 1, value: [1, 1] },
+                    },
+                    flows: {
+                        err: { node: 1, socket: "in" },
+                        out: { node: 2, socket: "in" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { type: 2, value: [1] },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { type: 2, value: [2] },
+                    },
+                },
+            ],
+            [{ signature: "float3" }, { signature: "float2" }, { signature: "float" }]
+        );
+
+        expect(log.mock.calls.map((call) => call[0])).toEqual([1]);
+    });
+
     // A concurrent invalid pointer/interpolate (bad duration) must not cancel a running interpolation on the same target.
     it("should not let an invalid pointer/interpolate cancel a running one", async () => {
         const mesh = new Mesh("mesh", scene);

@@ -1044,6 +1044,98 @@ describe("Flow Nodes", () => {
         log.mockImplementation(() => {});
     });
 
+    test.each([
+        ["p1.x below zero", [-0.01, 0], [1, 1]],
+        ["p1.x above one", [1.01, 0], [1, 1]],
+        ["p2.x below zero", [0, 0], [-0.01, 1]],
+        ["p2.x above one", [0, 0], [1.01, 1]],
+        ["p1.y infinite", [0, Infinity], [1, 1]],
+        ["p2.y negative infinite", [0, 0], [1, -Infinity]],
+    ])("variable/interpolate activates err for invalid CSS control points: %s", async (_name, p1, p2) => {
+        await generateSimpleNodeGraph(
+            [{ op: "variable/interpolate" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        variable: { value: [0] },
+                        useSlerp: { value: [false] },
+                    },
+                    values: {
+                        value: { type: 0, value: [1] },
+                        duration: { type: 0, value: [1] },
+                        p1: { type: 1, value: p1 },
+                        p2: { type: 1, value: p2 },
+                    },
+                    flows: {
+                        err: { node: 1, socket: "in" },
+                        out: { node: 2, socket: "in" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { type: 0, value: [1] },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { type: 0, value: [2] },
+                    },
+                },
+            ],
+            [{ signature: "float" }, { signature: "float2" }],
+            [{ type: 0, value: [0] }]
+        );
+
+        expect(log.mock.calls.map((call) => call[0])).toEqual([1]);
+    });
+
+    test.each([
+        ["inclusive X boundaries", [0, 0], [1, 1]],
+        ["finite Y overshoot", [0.25, -2], [0.75, 3]],
+    ])("variable/interpolate accepts valid CSS control points: %s", async (_name, p1, p2) => {
+        await generateSimpleNodeGraph(
+            [{ op: "variable/interpolate" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        variable: { value: [0] },
+                        useSlerp: { value: [false] },
+                    },
+                    values: {
+                        value: { type: 0, value: [1] },
+                        duration: { type: 0, value: [1] },
+                        p1: { type: 1, value: p1 },
+                        p2: { type: 1, value: p2 },
+                    },
+                    flows: {
+                        err: { node: 1, socket: "in" },
+                        out: { node: 2, socket: "in" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { type: 0, value: [1] },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        message: { type: 0, value: [2] },
+                    },
+                },
+            ],
+            [{ signature: "float" }, { signature: "float2" }],
+            [{ type: 0, value: [0] }]
+        );
+
+        expect(log.mock.calls.map((call) => call[0])).toEqual([2]);
+    });
+
     // now we have variable get/set we can test while loop
     test("flow/while", async () => {
         // a while loop that increments an integer (setting a variable). condition is using math/gt

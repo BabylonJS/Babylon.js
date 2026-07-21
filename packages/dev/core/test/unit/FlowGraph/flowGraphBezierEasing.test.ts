@@ -10,14 +10,10 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
  * Coverage for the cubic Bézier easing produced by FlowGraphBezierCurveEasingBlock,
  * which backs KHR_interactivity `variable/interpolate` / `pointer/interpolate`.
  *
- * Per the KHR_interactivity spec the eased output progress is the cubic Bézier Y
- * coordinate (implicit endpoints P0=(0,0), P3=(1,1)) evaluated with the input
- * progress used directly as the curve parameter — NOT the CSS-style "solve for X"
- * easing. For control points P1=P2=(1,1) this yields q(0.5)=0.875 (the Khronos
- * `variable/interpolate` asset expects an interpolated value of 8.75 over a 0..10
- * range), whereas the CSS easing would yield q(0.5)=0.5.
+ * KHR_interactivity follows CSS cubic-bezier semantics: for input progress t,
+ * solve Bx(u)=t and return By(u), using implicit endpoints P0=(0,0), P3=(1,1).
  */
-describe("FlowGraph BezierCurveEasing (KHR_interactivity parametric)", () => {
+describe("FlowGraph BezierCurveEasing (KHR_interactivity CSS semantics)", () => {
     let engine: NullEngine;
     let scene: Scene;
     let context: FlowGraphContext;
@@ -43,31 +39,32 @@ describe("FlowGraph BezierCurveEasing (KHR_interactivity parametric)", () => {
         return block.easingFunction.getValue(context) as EasingFunction;
     }
 
-    it("evaluates the cubic Bézier Y at parameter = t (P1=P2=(1,1) => q(0.5)=0.875)", () => {
+    it("solves X before reading Y (P1=P2=(1,1) => q(0.5)=0.5)", () => {
         const easing = easeFor(new Vector2(1, 1), new Vector2(1, 1));
         expect(easing.ease(0)).toBeCloseTo(0, 6);
-        expect(easing.ease(0.5)).toBeCloseTo(0.875, 6);
+        expect(easing.ease(0.5)).toBeCloseTo(0.5, 6);
         expect(easing.ease(1)).toBeCloseTo(1, 6);
     });
 
-    it("matches the closed-form 3(1-t)^2 t p1y + 3(1-t) t^2 p2y + t^3", () => {
-        const p1y = 0.25;
-        const p2y = 0.9;
-        const easing = easeFor(new Vector2(0.3, p1y), new Vector2(0.7, p2y));
-        for (const t of [0.1, 0.25, 0.5, 0.75, 0.9]) {
-            const u = 1 - t;
-            const expected = 3 * u * u * t * p1y + 3 * u * t * t * p2y + t * t * t;
-            expect(easing.ease(t)).toBeCloseTo(expected, 6);
-        }
+    it("matches the CSS ease-in curve at the midpoint", () => {
+        const easing = easeFor(new Vector2(0.42, 0), new Vector2(1, 1));
+        expect(easing.ease(0.5)).toBeCloseTo(0.315357, 5);
     });
 
-    it("uses only the Y components of the control points for the curve", () => {
-        const a = easeFor(new Vector2(0.2, 1), new Vector2(0.8, 1));
-        const b = easeFor(new Vector2(1, 1), new Vector2(0.0, 1));
-        expect(a.ease(0.5)).toBeCloseTo(b.ease(0.5), 6);
+    it("uses the X components to determine output progress", () => {
+        const early = easeFor(new Vector2(0, 0), new Vector2(0, 1));
+        const late = easeFor(new Vector2(1, 0), new Vector2(1, 1));
+        expect(early.ease(0.5)).toBeGreaterThan(0.8);
+        expect(late.ease(0.5)).toBeLessThan(0.2);
     });
 
-    it("retains x1/y1/x2/y2 components so downstream NaN validation still works", () => {
+    it("handles a valid stationary derivative without producing NaN", () => {
+        const easing = easeFor(new Vector2(1, 1), new Vector2(0, 1));
+        expect(easing.ease(0.5)).toBeCloseTo(0.875, 6);
+        expect(easing.ease(1)).toBe(1);
+    });
+
+    it("retains x1/y1/x2/y2 components for downstream validation", () => {
         const easing = easeFor(new Vector2(NaN, 1), new Vector2(1, 1)) as unknown as { x1: number; y1: number; x2: number; y2: number };
         expect("x1" in easing).toBe(true);
         expect(isNaN(easing.x1)).toBe(true);
