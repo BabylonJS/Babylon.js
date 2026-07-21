@@ -368,12 +368,12 @@ export class WebXRLayers extends WebXRAbstractFeature {
     }
 
     public override isCompatible(): boolean {
-        // TODO (rgerd): Add native support.
-        if (this._xrSessionManager.isNative) {
-            return false;
-        }
         if (this._xrSessionManager.scene.getEngine().isWebGPU) {
             return typeof XRGPUBinding !== "undefined" && !!XRGPUBinding.prototype.createProjectionLayer;
+        }
+        // Native WebGL continues to use NativeXRRenderTarget instead of WebXR Layers.
+        if (this._xrSessionManager.isNative) {
+            return false;
         }
         return typeof XRWebGLBinding !== "undefined" && !!XRWebGLBinding.prototype.createProjectionLayer;
     }
