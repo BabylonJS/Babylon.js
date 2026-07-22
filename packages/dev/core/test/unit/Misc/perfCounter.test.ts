@@ -27,4 +27,24 @@ describe("PerfCounter", () => {
         expect(counter.min).toBe(-20);
         expect(counter.max).toBe(-10);
     });
+
+    it("initializes extrema from the first recorded value after disabled frames", () => {
+        const counter = new PerfCounter();
+        const enabled = PerfCounter.Enabled;
+
+        try {
+            PerfCounter.Enabled = false;
+            counter.fetchNewFrame();
+            counter.addCount(10, true);
+
+            PerfCounter.Enabled = true;
+            counter.fetchNewFrame();
+            counter.addCount(20, true);
+
+            expect(counter.min).toBe(20);
+            expect(counter.max).toBe(20);
+        } finally {
+            PerfCounter.Enabled = enabled;
+        }
+    });
 });
