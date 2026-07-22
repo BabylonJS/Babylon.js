@@ -70,6 +70,7 @@ export class PerfCounter {
         this._startMonitoringTime = 0;
         this._min = 0;
         this._max = 0;
+        this._hasResult = false;
         this._average = 0;
         this._lastSecAverage = 0;
         this._current = 0;
@@ -150,12 +151,13 @@ export class PerfCounter {
         this._lastSecAccumulated += this._current;
 
         // Min/Max update
-        if (this._totalValueCount === 1) {
-            this._min = this._current;
-            this._max = this._current;
-        } else {
+        if (this._hasResult) {
             this._min = Math.min(this._min, this._current);
             this._max = Math.max(this._max, this._current);
+        } else if (this._totalValueCount > 0) {
+            this._min = this._current;
+            this._max = this._current;
+            this._hasResult = true;
         }
         this._average = this._totalAccumulated / this._totalValueCount;
 
@@ -172,6 +174,7 @@ export class PerfCounter {
     private _startMonitoringTime: number;
     private _min: number;
     private _max: number;
+    private _hasResult: boolean;
     private _average: number;
     private _current: number;
     private _totalValueCount: number;
