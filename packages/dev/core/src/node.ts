@@ -33,6 +33,7 @@ class _InternalNodeDataInfo {
     public _isParentEnabled = true;
     public _isReady = true;
     public _onEnabledStateChangedObservable = new Observable<boolean>();
+    public _onParentEnabledStateChangedObservable = new Observable<boolean>();
     public _onClonedObservable = new Observable<Node>();
     public _inheritVisibility = false;
     public _isVisible = true;
@@ -368,6 +369,13 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
+     * An event triggered when the enabled state of any ancestor of th node changes
+     */
+    public get onParentEnabledStateChangedObservable(): Observable<boolean> {
+        return this._nodeDataStorage._onParentEnabledStateChangedObservable;
+    }
+
+    /**
      * An event triggered when the node is cloned
      */
     public get onClonedObservable(): Observable<Node> {
@@ -628,12 +636,17 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @internal */
     protected _syncParentEnabledState() {
+        const prevValue = this._nodeDataStorage._isParentEnabled;
         this._nodeDataStorage._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
         if (this._children) {
             for (const c of this._children) {
                 c._syncParentEnabledState(); // Force children to update accordingly
             }
+        }
+
+        if (prevValue != this._nodeDataStorage._isParentEnabled) {
+            this._nodeDataStorage._onParentEnabledStateChangedObservable.notifyObservers(this._nodeDataStorage._isParentEnabled);
         }
     }
 
@@ -967,6 +980,7 @@ export class Node implements IBehaviorAware<Node> {
         this.onDisposeObservable.clear();
 
         this.onEnabledStateChangedObservable.clear();
+        this.onParentEnabledStateChangedObservable.clear();
         this.onClonedObservable.clear();
 
         // Behaviors
