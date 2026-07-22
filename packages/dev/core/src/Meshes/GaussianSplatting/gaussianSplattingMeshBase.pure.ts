@@ -2618,6 +2618,19 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             this._postToWorker(true);
         } else {
+            // Full rebuild: the texture size changed (or this is a size-changing reload), so the existing
+            // GPU textures cannot be reused. Dispose them before recreating to avoid leaking the old ones.
+            this._covariancesATexture?.dispose();
+            this._covariancesBTexture?.dispose();
+            this._centersTexture?.dispose();
+            this._colorsTexture?.dispose();
+            if (this._shTextures) {
+                for (const shTexture of this._shTextures) {
+                    shTexture.dispose();
+                }
+                this._shTextures = null;
+            }
+
             this._textureSize = textureSize;
             this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._covariancesBTexture = createTextureFromDataF16(
