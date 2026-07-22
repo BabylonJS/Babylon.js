@@ -150,8 +150,13 @@ export class PerfCounter {
         this._lastSecAccumulated += this._current;
 
         // Min/Max update
-        this._min = Math.min(this._min, this._current);
-        this._max = Math.max(this._max, this._current);
+        if (this._totalValueCount === 1) {
+            this._min = this._current;
+            this._max = this._current;
+        } else {
+            this._min = Math.min(this._min, this._current);
+            this._max = Math.max(this._max, this._current);
+        }
         this._average = this._totalAccumulated / this._totalValueCount;
 
         // Reset last sec?
