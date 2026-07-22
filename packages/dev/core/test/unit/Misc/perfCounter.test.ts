@@ -1,6 +1,19 @@
 import { PerfCounter } from "core/Misc/perfCounter";
 
 describe("PerfCounter", () => {
+    it("keeps statistics stable before the first frame", () => {
+        const counter = new PerfCounter();
+
+        counter._fetchResult();
+
+        expect(counter.min).toBe(0);
+        expect(counter.max).toBe(0);
+        expect(counter.average).toBe(0);
+        expect(counter.lastSecAverage).toBe(0);
+        expect(counter.total).toBe(0);
+        expect(counter.count).toBe(0);
+    });
+
     it("tracks the minimum for positive values", () => {
         const counter = new PerfCounter();
 
