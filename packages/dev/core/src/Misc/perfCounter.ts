@@ -86,6 +86,9 @@ export class PerfCounter {
      * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
      */
     public fetchNewFrame() {
+        if (!PerfCounter.Enabled) {
+            return;
+        }
         this._totalValueCount++;
         this._current = 0;
         this._lastSecValueCount++;
@@ -147,6 +150,9 @@ export class PerfCounter {
 
     /** @internal */
     public _fetchResult() {
+        if (!PerfCounter.Enabled) {
+            return;
+        }
         this._totalAccumulated += this._current;
         this._lastSecAccumulated += this._current;
 
