@@ -151,19 +151,20 @@ export class PerfCounter {
 
     /** @internal */
     public _fetchResult() {
+        if (!this._hasCurrentValue) {
+            return;
+        }
         this._totalAccumulated += this._current;
         this._lastSecAccumulated += this._current;
 
         // Min/Max update
-        if (this._hasCurrentValue) {
-            if (this._hasResult) {
-                this._min = Math.min(this._min, this._current);
-                this._max = Math.max(this._max, this._current);
-            } else {
-                this._min = this._current;
-                this._max = this._current;
-                this._hasResult = true;
-            }
+        if (this._hasResult) {
+            this._min = Math.min(this._min, this._current);
+            this._max = Math.max(this._max, this._current);
+        } else {
+            this._min = this._current;
+            this._max = this._current;
+            this._hasResult = true;
         }
         this._average = this._totalAccumulated / this._totalValueCount;
 
