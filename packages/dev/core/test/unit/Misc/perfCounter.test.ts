@@ -47,4 +47,27 @@ describe("PerfCounter", () => {
             PerfCounter.Enabled = enabled;
         }
     });
+
+    it("ignores a disabled frame finalized before the next WebGPU frame", () => {
+        const counter = new PerfCounter();
+        const enabled = PerfCounter.Enabled;
+
+        try {
+            PerfCounter.Enabled = false;
+            counter._fetchResult();
+            counter.fetchNewFrame();
+            counter.addCount(10, false);
+
+            PerfCounter.Enabled = true;
+            counter._fetchResult();
+            counter.fetchNewFrame();
+            counter.addCount(20, false);
+            counter._fetchResult();
+
+            expect(counter.min).toBe(20);
+            expect(counter.max).toBe(20);
+        } finally {
+            PerfCounter.Enabled = enabled;
+        }
+    });
 });
