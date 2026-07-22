@@ -71,6 +71,7 @@ export class PerfCounter {
         this._min = 0;
         this._max = 0;
         this._hasResult = false;
+        this._hasCurrentValue = false;
         this._average = 0;
         this._lastSecAverage = 0;
         this._current = 0;
@@ -86,11 +87,9 @@ export class PerfCounter {
      * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
      */
     public fetchNewFrame() {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
         this._totalValueCount++;
         this._current = 0;
+        this._hasCurrentValue = PerfCounter.Enabled;
         this._lastSecValueCount++;
     }
 
@@ -104,6 +103,7 @@ export class PerfCounter {
             return;
         }
         this._current += newCount;
+        this._hasCurrentValue = true;
         if (fetchResult) {
             this._fetchResult();
         }
@@ -134,6 +134,7 @@ export class PerfCounter {
 
         const currentTime = PrecisionDate.Now;
         this._current = currentTime - this._startMonitoringTime;
+        this._hasCurrentValue = true;
 
         if (newFrame) {
             this._fetchResult();
@@ -150,20 +151,19 @@ export class PerfCounter {
 
     /** @internal */
     public _fetchResult() {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
         this._totalAccumulated += this._current;
         this._lastSecAccumulated += this._current;
 
         // Min/Max update
-        if (this._hasResult) {
-            this._min = Math.min(this._min, this._current);
-            this._max = Math.max(this._max, this._current);
-        } else if (this._totalValueCount > 0) {
-            this._min = this._current;
-            this._max = this._current;
-            this._hasResult = true;
+        if (this._hasCurrentValue) {
+            if (this._hasResult) {
+                this._min = Math.min(this._min, this._current);
+                this._max = Math.max(this._max, this._current);
+            } else {
+                this._min = this._current;
+                this._max = this._current;
+                this._hasResult = true;
+            }
         }
         this._average = this._totalAccumulated / this._totalValueCount;
 
@@ -181,6 +181,7 @@ export class PerfCounter {
     private _min: number;
     private _max: number;
     private _hasResult: boolean;
+    private _hasCurrentValue: boolean;
     private _average: number;
     private _current: number;
     private _totalValueCount: number;
