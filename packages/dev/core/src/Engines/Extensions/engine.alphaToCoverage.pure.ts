@@ -14,12 +14,19 @@ export function RegisterEnginesExtensionsEngineAlphaToCoverage(): void {
     _Registered = true;
 
     const alphaToCoverageState = new WeakMap<ThinEngine, boolean>();
+    const alphaToCoverageContext = new WeakMap<ThinEngine, WebGLRenderingContext>();
+    const mainPassSampleCount = new WeakMap<ThinEngine, number>();
+    const mainPassSampleCountContext = new WeakMap<ThinEngine, WebGLRenderingContext>();
 
     ThinEngine.prototype.getAlphaToCoverage = function (): boolean {
         return alphaToCoverageState.get(this) ?? false;
     };
 
     ThinEngine.prototype.setAlphaToCoverage = function (enable: boolean): void {
+        if (alphaToCoverageState.get(this) === enable && (!this._gl || alphaToCoverageContext.get(this) === this._gl)) {
+            return;
+        }
+
         alphaToCoverageState.set(this, enable);
 
         if (!this._gl) {
@@ -31,6 +38,7 @@ export function RegisterEnginesExtensionsEngineAlphaToCoverage(): void {
         } else {
             this._gl.disable(this._gl.SAMPLE_ALPHA_TO_COVERAGE);
         }
+        alphaToCoverageContext.set(this, this._gl);
     };
 
     Object.defineProperty(ThinEngine.prototype, "currentSampleCount", {
@@ -43,7 +51,12 @@ export function RegisterEnginesExtensionsEngineAlphaToCoverage(): void {
                 return 1;
             }
 
-            return this._gl.getContextAttributes()?.antialias ? Math.max(1, this._gl.getParameter(this._gl.SAMPLES)) : 1;
+            if (mainPassSampleCountContext.get(this) !== this._gl) {
+                mainPassSampleCount.set(this, this._gl.getContextAttributes()?.antialias ? Math.max(1, this._gl.getParameter(this._gl.SAMPLES)) : 1);
+                mainPassSampleCountContext.set(this, this._gl);
+            }
+
+            return mainPassSampleCount.get(this)!;
         },
         enumerable: false,
         configurable: true,

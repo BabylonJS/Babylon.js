@@ -27,6 +27,11 @@ export function RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage(): void {
     };
 
     ThinWebGPUEngine.prototype.setAlphaToCoverage = function (enable: boolean): void {
+        const pipelineCache = this._cacheRenderPipeline as unknown as IWebGPUCacheRenderPipelineInternals;
+        if ((alphaToCoverageState.get(this) ?? false) === enable && pipelineCache._alphaToCoverageEnabled === enable) {
+            return;
+        }
+
         alphaToCoverageState.set(this, enable);
         this._cacheRenderPipeline.setAlphaToCoverage(enable);
     };

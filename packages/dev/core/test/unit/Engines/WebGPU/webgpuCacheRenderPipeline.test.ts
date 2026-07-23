@@ -127,11 +127,12 @@ describe("WebGPUCacheRenderPipeline", () => {
 
         it("should disable alpha-to-coverage in single-sample pipeline descriptors", () => {
             RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
-            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
             cache.setAlphaToCoverage(true);
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+            cache.setAlphaToCoverage(false);
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
 
-            expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);
             expect(device.createRenderPipeline).toHaveBeenCalledWith(
                 expect.objectContaining({
                     multisample: {

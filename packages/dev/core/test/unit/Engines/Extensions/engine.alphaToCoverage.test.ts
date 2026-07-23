@@ -16,6 +16,8 @@ describe("engine.alphaToCoverage", () => {
         const engine = new ThinEngine(null);
         const enable = vi.fn();
         const disable = vi.fn();
+        const getContextAttributes = vi.fn(() => ({ antialias: true }));
+        const getParameter = vi.fn(() => 4);
         expect(engine.currentSampleCount).toBe(1);
 
         engine._gl = {
@@ -23,24 +25,40 @@ describe("engine.alphaToCoverage", () => {
             SAMPLES: 0x80a9,
             enable,
             disable,
-            getContextAttributes: () => ({ antialias: true }),
-            getParameter: () => 4,
+            getContextAttributes,
+            getParameter,
         } as unknown as WebGL2RenderingContext;
 
         try {
             expect(engine.getAlphaToCoverage()).toBe(false);
             expect(engine.currentSampleCount).toBe(4);
+            expect(engine.currentSampleCount).toBe(4);
+            expect(getContextAttributes).toHaveBeenCalledTimes(1);
+            expect(getParameter).toHaveBeenCalledTimes(1);
 
+            engine.setAlphaToCoverage(true);
             engine.setAlphaToCoverage(true);
             expect(engine.getAlphaToCoverage()).toBe(true);
             expect(enable).toHaveBeenCalledExactlyOnceWith(engine._gl.SAMPLE_ALPHA_TO_COVERAGE);
 
+            engine.setAlphaToCoverage(false);
             engine.setAlphaToCoverage(false);
             expect(engine.getAlphaToCoverage()).toBe(false);
             expect(disable).toHaveBeenCalledExactlyOnceWith(engine._gl.SAMPLE_ALPHA_TO_COVERAGE);
 
             engine._currentRenderTarget = { samples: 8 } as unknown as RenderTargetWrapper;
             expect(engine.currentSampleCount).toBe(8);
+
+            engine._currentRenderTarget = null;
+            const restoredContextGetParameter = vi.fn(() => 2);
+            engine._gl = {
+                ...engine._gl,
+                getContextAttributes: () => ({ antialias: true }),
+                getParameter: restoredContextGetParameter,
+            } as unknown as WebGL2RenderingContext;
+            expect(engine.currentSampleCount).toBe(2);
+            expect(engine.currentSampleCount).toBe(2);
+            expect(restoredContextGetParameter).toHaveBeenCalledTimes(1);
         } finally {
             (engine as unknown as { _gl?: WebGL2RenderingContext })._gl = undefined;
             engine.dispose();
@@ -53,16 +71,25 @@ describe("engine.alphaToCoverage", () => {
         RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
 
         const engine = Object.create(ThinWebGPUEngine.prototype) as ThinWebGPUEngine;
-        const setAlphaToCoverage = vi.fn();
-        engine._cacheRenderPipeline = { setAlphaToCoverage } as unknown as ThinWebGPUEngine["_cacheRenderPipeline"];
+        const pipelineCache = {
+            _alphaToCoverageEnabled: false,
+            setAlphaToCoverage: vi.fn((enable: boolean) => {
+                pipelineCache._alphaToCoverageEnabled = enable;
+            }),
+        };
+        engine._cacheRenderPipeline = pipelineCache as unknown as ThinWebGPUEngine["_cacheRenderPipeline"];
 
         expect(engine.getAlphaToCoverage()).toBe(false);
 
         engine.setAlphaToCoverage(true);
+        engine.setAlphaToCoverage(true);
 
         expect(engine.getAlphaToCoverage()).toBe(true);
+        pipelineCache._alphaToCoverageEnabled = false;
+        engine.setAlphaToCoverage(true);
+        engine.setAlphaToCoverage(false);
         engine.setAlphaToCoverage(false);
         expect(engine.getAlphaToCoverage()).toBe(false);
-        expect(setAlphaToCoverage.mock.calls).toEqual([[true], [false]]);
+        expect(pipelineCache.setAlphaToCoverage.mock.calls).toEqual([[true], [true], [false]]);
     });
 });
