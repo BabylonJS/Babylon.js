@@ -1,5 +1,6 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 /* eslint-disable import/export */
+export * from "./engine.alphaToCoverage.pure";
 export * from "./engine.alpha.pure";
 export * from "./engine.debugging.pure";
 export * from "./engine.query.pure";

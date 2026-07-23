@@ -1,3 +1,4 @@
+import "./engine.alphaToCoverage";
 import "./engine.alpha";
 import "./engine.computeShader";
 import "./engine.cubeTexture";

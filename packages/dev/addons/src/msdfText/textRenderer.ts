@@ -2,6 +2,7 @@ import { type VertexBuffer, Buffer } from "core/Buffers/buffer";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
 import { type ThinEngine } from "core/Engines/thinEngine";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type IDisposable } from "core/scene";
@@ -19,6 +20,8 @@ import {
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
 import { type IColor4Like, type IMatrixLike } from "core/Maths/math.like";
+import { RegisterEnginesExtensionsEngineAlphaToCoverage } from "core/Engines/Extensions/engine.alphaToCoverage.pure";
+import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
 
 /**
  * Abstract Node class from Babylon.js
@@ -354,31 +357,30 @@ export class TextRenderer implements IDisposable {
             engine.bindBuffers(this._vertexBuffers, null, effect);
         }
 
-        const useAlphaToCoverage = writeDepth && engine.currentSampleCount > 1;
-        const previousAlphaToCoverage = engine.getAlphaToCoverage();
+        const alphaToCoverageEngine = engine as ThinEngine | WebGPUEngine;
+        const useAlphaToCoverage = writeDepth && alphaToCoverageEngine.currentSampleCount > 1;
+        const previousAlphaToCoverage = alphaToCoverageEngine.getAlphaToCoverage();
 
         // Alpha-to-coverage converts the MSDF alpha into per-sample coverage, allowing smooth edges to write depth correctly.
         if (useAlphaToCoverage) {
-            engine.setAlphaToCoverage(true);
+            alphaToCoverageEngine.setAlphaToCoverage(true);
         }
 
-        try {
-            // When writing to the depth buffer, keep depth writes enabled (setAlphaMode would otherwise disable them for the ALPHA_COMBINE mode).
-            engine.setAlphaMode(useAlphaToCoverage ? Constants.ALPHA_REPLACE_COLOR : Constants.ALPHA_COMBINE, writeDepth);
-            if (writeDepth) {
-                engine.setDepthWrite(true);
-            }
-            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
-        } finally {
-            if (useAlphaToCoverage) {
-                engine.setAlphaToCoverage(previousAlphaToCoverage);
-            }
-            engine.unbindInstanceAttributes();
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        // When writing to the depth buffer, keep depth writes enabled (setAlphaMode would otherwise disable them for the ALPHA_COMBINE mode).
+        engine.setAlphaMode(useAlphaToCoverage ? Constants.ALPHA_REPLACE_COLOR : Constants.ALPHA_COMBINE, writeDepth);
+        if (writeDepth) {
+            engine.setDepthWrite(true);
+        }
+        engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
 
-            if (this.ignoreDepthBuffer) {
-                engine.setDepthBuffer(true);
-            }
+        if (useAlphaToCoverage) {
+            alphaToCoverageEngine.setAlphaToCoverage(previousAlphaToCoverage);
+        }
+        engine.unbindInstanceAttributes();
+        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        if (this.ignoreDepthBuffer) {
+            engine.setDepthBuffer(true);
         }
     }
 
@@ -414,6 +416,12 @@ export class TextRenderer implements IDisposable {
      * @returns a promise that resolves to the created TextRenderer instance
      */
     public static async CreateTextRendererAsync(font: FontAsset, engine: AbstractEngine) {
+        if (engine.isWebGPU) {
+            RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
+        } else {
+            RegisterEnginesExtensionsEngineAlphaToCoverage();
+        }
+
         if (!engine.getCaps().instancedArrays || !engine._features.supportSpriteInstancing) {
             throw new Error("Instanced arrays are required for MSDF text rendering.");
         }

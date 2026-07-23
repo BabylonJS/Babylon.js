@@ -13,8 +13,6 @@ export class AlphaState {
     public _alphaBlend = Array(8).fill(false);
     public _numTargetEnabled = 0;
 
-    private _alphaToCoverage = false;
-    private _isAlphaToCoverageDirty = false;
     private _isAlphaBlendDirty = false;
     private _isBlendFunctionParametersDirty = false;
     private _isBlendEquationParametersDirty = false;
@@ -28,20 +26,7 @@ export class AlphaState {
     }
 
     public get isDirty(): boolean {
-        return this._isAlphaToCoverageDirty || this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty || this._isBlendEquationParametersDirty;
-    }
-
-    public get alphaToCoverage(): boolean {
-        return this._alphaToCoverage;
-    }
-
-    public set alphaToCoverage(value: boolean) {
-        if (this._alphaToCoverage === value) {
-            return;
-        }
-
-        this._alphaToCoverage = value;
-        this._isAlphaToCoverageDirty = true;
+        return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty || this._isBlendEquationParametersDirty;
     }
 
     public get alphaBlend(): boolean {
@@ -114,7 +99,6 @@ export class AlphaState {
     }
 
     public reset() {
-        this._alphaToCoverage = false;
         this._alphaBlend.fill(false);
         this._numTargetEnabled = 0;
         this._blendFunctionParameters.fill(null);
@@ -125,7 +109,6 @@ export class AlphaState {
         this._blendConstants[2] = null;
         this._blendConstants[3] = null;
 
-        this._isAlphaToCoverageDirty = true;
         this._isAlphaBlendDirty = true;
         this._isBlendFunctionParametersDirty = false;
         this._isBlendEquationParametersDirty = false;
@@ -136,8 +119,6 @@ export class AlphaState {
         if (!this.isDirty) {
             return;
         }
-
-        this.applyAlphaToCoverage(gl);
 
         // Constants
         if (this._isBlendConstantsDirty) {
@@ -212,21 +193,6 @@ export class AlphaState {
                 gl2.blendEquationSeparateIndexed(i, <number>this._blendEquationParameters[offset + 0], <number>this._blendEquationParameters[offset + 1]);
             }
             this._isBlendEquationParametersDirty = false;
-        }
-    }
-
-    /**
-     * Applies the alpha-to-coverage state when it has changed.
-     * @param gl defines the WebGL context to use
-     */
-    public applyAlphaToCoverage(gl: WebGLRenderingContext): void {
-        if (this._isAlphaToCoverageDirty) {
-            if (this._alphaToCoverage) {
-                gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-            } else {
-                gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-            }
-            this._isAlphaToCoverageDirty = false;
         }
     }
 
