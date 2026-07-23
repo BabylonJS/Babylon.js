@@ -1,7 +1,7 @@
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type Effect } from "core/Materials/effect";
-import { Engine } from "core/Engines/engine";
-import { EffectWrapper, type EffectWrapperCreationOptions } from "core/Materials/effectRenderer";
+import { EngineStore } from "core/Engines/engineStore";
+import { EffectWrapper, type EffectWrapperCreationOptions } from "core/Materials/effectRenderer.pure";
 import { type Nullable } from "core/types";
 
 /**
@@ -25,7 +25,7 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
      * @param options Options to configure the effect
      */
     constructor(name: string, engine?: Nullable<AbstractEngine>, options?: EffectWrapperCreationOptions) {
-        engine ??= Engine.LastCreatedEngine!;
+        engine ??= EngineStore.LastCreatedEngine!;
         super({
             ...options,
             name,

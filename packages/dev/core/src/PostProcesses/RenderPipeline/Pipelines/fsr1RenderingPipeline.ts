@@ -3,7 +3,7 @@ import { type Nullable } from "core/types";
 
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
-import { PostProcess } from "../../postProcess";
+import { PostProcess } from "../../postProcess.pure";
 import { ThinFSR1UpscalePostProcess } from "../../thinFSR1UpscalePostProcess";
 import { ThinFSR1SharpenPostProcess } from "../../thinFSR1SharpenPostProcess";
 
