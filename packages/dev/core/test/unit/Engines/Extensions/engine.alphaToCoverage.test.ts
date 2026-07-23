@@ -1,7 +1,10 @@
 import { ThinEngine } from "core/Engines/thinEngine.pure";
+import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { RegisterEnginesExtensionsEngineAlphaToCoverage } from "core/Engines/Extensions/engine.alphaToCoverage.pure";
 import type {} from "core/Engines/Extensions/engine.alphaToCoverage.types";
+import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
+import type {} from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.types";
 import { describe, expect, it, vi } from "vitest";
 
 describe("engine.alphaToCoverage", () => {
@@ -42,5 +45,24 @@ describe("engine.alphaToCoverage", () => {
             (engine as unknown as { _gl?: WebGL2RenderingContext })._gl = undefined;
             engine.dispose();
         }
+    });
+
+    it("applies WebGPU state to the render pipeline cache after registration", () => {
+        expect(Object.prototype.hasOwnProperty.call(ThinWebGPUEngine.prototype, "setAlphaToCoverage")).toBe(false);
+
+        RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
+
+        const engine = Object.create(ThinWebGPUEngine.prototype) as ThinWebGPUEngine;
+        const setAlphaToCoverage = vi.fn();
+        engine._cacheRenderPipeline = { setAlphaToCoverage } as unknown as ThinWebGPUEngine["_cacheRenderPipeline"];
+
+        expect(engine.getAlphaToCoverage()).toBe(false);
+
+        engine.setAlphaToCoverage(true);
+
+        expect(engine.getAlphaToCoverage()).toBe(true);
+        engine.setAlphaToCoverage(false);
+        expect(engine.getAlphaToCoverage()).toBe(false);
+        expect(setAlphaToCoverage.mock.calls).toEqual([[true], [false]]);
     });
 });
