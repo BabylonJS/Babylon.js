@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui",
-    "version": "9.17.1",
+    "version": "9.18.0",
     "main": "babylon.gui.min.js",
     "types": "babylon.gui.module.d.ts",
     "files": [
@@ -16,7 +16,7 @@
         "test:escheck": "es-check es6 ./babylon.gui.js"
     },
     "dependencies": {
-        "babylonjs": "9.17.1"
+        "babylonjs": "9.18.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

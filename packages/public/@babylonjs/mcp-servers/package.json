@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/mcp-servers",
-    "version": "9.17.1",
+    "version": "9.18.0",
     "description": "Bundled Model Context Protocol servers for Babylon.js authoring workflows",
     "type": "module",
     "bin": {
