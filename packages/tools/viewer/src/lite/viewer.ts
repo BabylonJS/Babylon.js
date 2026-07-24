@@ -81,7 +81,7 @@ import {
     FramingCameraBeta,
     throwIfAborted,
     observePromise,
-} from "./viewerBase";
+} from "../viewerBase";
 
 /**
  * The options for the Lite Viewer.
@@ -714,7 +714,7 @@ export class Viewer extends ViewerBase implements IViewer {
             const skyboxOnlyBecomesEnv = !updateLighting && updateSkybox && this._currentLightingUrl === null;
 
             const effectiveLightingUrl = skyboxOnlyBecomesEnv ? (targetSkyboxUrl ?? "auto") : (targetLightingUrl ?? "auto");
-            const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
+            const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("../defaultEnvironment")).default : effectiveLightingUrl;
             const ext = getExtension(resolvedLightingUrl, options.extension);
 
             // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
@@ -735,7 +735,7 @@ export class Viewer extends ViewerBase implements IViewer {
                 this._currentLightingUrl = effectiveLightingUrl;
                 this._currentSkyboxUrl = effectiveLightingUrl;
             } else {
-                const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
+                const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("../defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
                 // Note: when skybox-only is requested but lighting already exists, we still call
                 // liteLoadEnvironment with the existing lighting URL — this re-fetches and re-uploads
                 // the cubemap (wasteful) but correctly builds the requested skybox. Per the contract
@@ -953,7 +953,7 @@ export class Viewer extends ViewerBase implements IViewer {
         // for the morph-target or skeletal bounds providers.
         const hasMorphTargets = casterMeshes.some((mesh) => !!mesh.morphTargets);
         const hasSkeletons = casterMeshes.some((mesh) => !!mesh.skeleton);
-        const deformableShadows = hasMorphTargets || hasSkeletons ? await import("./viewerLiteShadows") : undefined;
+        const deformableShadows = hasMorphTargets || hasSkeletons ? await import("./viewerShadows") : undefined;
         throwIfAborted(abortSignal, internalAbortSignal);
 
         // Bounds for ground placement, ground sizing, and shadow light positioning. Falls back

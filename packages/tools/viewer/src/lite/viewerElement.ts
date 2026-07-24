@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { customElement } from "lit/decorators.js";
-import { ViewerElementBase } from "./viewerElementBase";
-import { type CanvasViewerOptions, type Viewer, CreateViewerForCanvas } from "./viewerLite";
+import { ViewerElementBase } from "../viewerElementBase";
+import { type CanvasViewerOptions, type Viewer, CreateViewerForCanvas } from "./viewer";
 
 /**
  * Viewer custom element backed by the Babylon Lite engine (WebGPU-only).

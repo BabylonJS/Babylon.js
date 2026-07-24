@@ -7,7 +7,7 @@ const source = "dev";
 
 export function createConfig(outDir) {
     return {
-        input: "src/index.ts",
+        input: "src/full/index.ts",
         output: {
             dir: outDir,
             // No need for source maps for size analysis

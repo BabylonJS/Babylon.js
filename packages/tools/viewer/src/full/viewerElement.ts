@@ -2,7 +2,7 @@
 import { type Nullable } from "core/index";
 import { type ViewerDetails, Viewer } from "./viewer";
 import { type CanvasViewerOptions, CreateViewerForCanvas } from "./viewerFactory";
-import { ViewerElementBase, parseColor } from "./viewerElementBase";
+import { ViewerElementBase, parseColor } from "../viewerElementBase";
 
 import { customElement, property } from "lit/decorators.js";
 
