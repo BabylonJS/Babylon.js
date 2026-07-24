@@ -1,3 +1,5 @@
+import "core/Misc/symbolMetadataPolyfill";
+
 import { type ViewerElement, type ViewerOptions } from "viewer/full/index";
 
 import { makeStyles } from "@fluentui/react-components";
