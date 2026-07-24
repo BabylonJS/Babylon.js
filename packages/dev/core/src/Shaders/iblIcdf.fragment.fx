@@ -98,8 +98,10 @@ void main(void) {
   // Compute the luminance of the current pixel, normalize it and store it in the blue channel.
   // We sample the highest mip, which represents the average luminance.
   vec2 size = vec2(textureSize(scaledLuminanceSampler, 0));
-  float highestMip = floor(log2(size.x));
-  float normalization = texture(scaledLuminanceSampler, vUV, highestMip).r;
+  // The average luminance == the CDF grand total / texel count. On Native/bgfx (D3D11) the
+  // R32F highest-mip auto-generation is unavailable, so texture(...,highestMip) reads 0 and
+  // pdf becomes Inf (black). Use the grand total from cdfx instead; identical on WebGL.
+  float normalization = fetchCDFx(cdfWidth - 1) / (size.x * size.y);
   float pixelLuminance = fetchLuminance(vUV);
   outputColor.z = pixelLuminance / (2.0 * PI * normalization);
 

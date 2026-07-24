@@ -27,7 +27,11 @@ float fetchPanoramic(ivec2 Coords, float envmapHeight) {
 #endif
 
 void main(void) {
-  ivec2 coords = ivec2(gl_FragCoord.x, gl_FragCoord.y);
+  // Native/bgfx (D3D11) flips gl_FragCoord.y for render-to-texture, which reverses
+  // this cumulative-sum's row orientation and zeroes the last (column-totals) row.
+  // Derive the row from the (unflipped) vUV varying instead. On WebGL this is identical:
+  // int(vUV.y * (iblHeight+1)) == int(gl_FragCoord.y) for every texel.
+  ivec2 coords = ivec2(gl_FragCoord.x, int(vUV.y * float(iblHeight + 1)));
   float cdfy = 0.0;
   for (int y = 1; y <= coords.y; y++) {
 #ifdef IBL_USE_CUBE_MAP
