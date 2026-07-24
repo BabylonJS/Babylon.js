@@ -37,6 +37,7 @@ const abbreviations = [
     "SMAA",
     "RT",
     "TAA",
+    "FSR",
     "PT",
     "PP",
     "GI",
