@@ -1,4 +1,4 @@
-import "./engine.alphaToCoverage";
+export { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "./engine.alphaToCoverage";
 import "./engine.alpha";
 import "./engine.computeShader";
 import "./engine.cubeTexture";

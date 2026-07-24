@@ -1,5 +1,5 @@
 /** Pure barrel — re-exports only side-effect-free modules */
-export * from "./engine.alphaToCoverage.pure";
+export { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "./engine.alphaToCoverage.pure";
 export * from "./engine.alpha.pure";
 export * from "./engine.computeShader.pure";
 export * from "./engine.cubeTexture.pure";
