@@ -31,6 +31,7 @@
     "scripts": {
         "start": "npm run serve -- --open test/apps/web/index.html",
         "start:prod": "serve . --listen 1343",
+        "start:prod:brotli": "node serve.brotli-max.mjs",
         "serve": "vite",
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
@@ -45,7 +46,7 @@
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0",
-        "@babylonjs/lite": "^1.10.0",
+        "@babylonjs/lite": "^1.14.0",
         "@babylonjs/loaders": "^9.0.0"
     },
     "peerDependenciesMeta": {
@@ -55,7 +56,7 @@
     },
     "devDependencies": {
         "@babylonjs/core": "9.16.2",
-        "@babylonjs/lite": "^1.10.0",
+        "@babylonjs/lite": "^1.14.0",
         "@babylonjs/loaders": "9.16.2",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
