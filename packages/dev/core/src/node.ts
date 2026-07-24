@@ -33,6 +33,8 @@ class _InternalNodeDataInfo {
     public _isParentEnabled = true;
     public _isReady = true;
     public _onEnabledStateChangedObservable = new Observable<boolean>();
+    // Lazily allocated so nodes that never observe effective enabled changes pay no allocation cost.
+    public _onEffectiveEnabledStateChangedObservable: Nullable<Observable<boolean>> = null;
     public _onClonedObservable = new Observable<Node>();
     public _inheritVisibility = false;
     public _isVisible = true;
@@ -361,10 +363,21 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * An event triggered when the enabled state of the node changes
+     * An event triggered when the enabled state of the node changes.
+     * This only reflects changes to the node's own enabled flag (as set via {@link setEnabled}), not changes inherited from an ancestor.
+     * Use {@link onEffectiveEnabledStateChangedObservable} to also be notified when an ancestor's enabled state changes the effective enabled state.
      */
     public get onEnabledStateChangedObservable(): Observable<boolean> {
         return this._nodeDataStorage._onEnabledStateChangedObservable;
+    }
+
+    /**
+     * An event triggered when the effective enabled state of the node changes, i.e. whenever the value returned by {@link isEnabled} changes.
+     * Unlike {@link onEnabledStateChangedObservable}, this fires for changes caused by an ancestor's enabled state as well as this node's own state.
+     * The observable is created on first access, so no cost is incurred for nodes that never observe it.
+     */
+    public get onEffectiveEnabledStateChangedObservable(): Observable<boolean> {
+        return (this._nodeDataStorage._onEffectiveEnabledStateChangedObservable ??= new Observable<boolean>());
     }
 
     /**
@@ -613,6 +626,9 @@ export class Node implements IBehaviorAware<Node> {
      * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true
      * @param checkAncestors indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors
      * @returns whether this node (and its parent) is enabled
+     * @remarks
+     * To observe changes to the value returned when calling this with `checkAncestors` set to true (the default, i.e. the effective enabled state), subscribe to {@link onEffectiveEnabledStateChangedObservable}.
+     * To observe changes to the value returned when calling this with `checkAncestors` set to false (i.e. this node's own enabled state only), subscribe to {@link onEnabledStateChangedObservable}.
      */
     public isEnabled(checkAncestors: boolean = true): boolean {
         if (checkAncestors === false) {
@@ -626,13 +642,38 @@ export class Node implements IBehaviorAware<Node> {
         return this._nodeDataStorage._isParentEnabled;
     }
 
+    /**
+     * Whether the effective enabled observable exists and has at least one observer.
+     * Used to skip the extra work of tracking effective enabled transitions when nobody is listening.
+     * @returns true if the effective enabled observable exists and has at least one observer, false otherwise
+     */
+    private _hasEffectiveEnabledStateObservers(): boolean {
+        const observable = this._nodeDataStorage._onEffectiveEnabledStateChangedObservable;
+        return !!observable && observable.hasObservers();
+    }
+
     /** @internal */
     protected _syncParentEnabledState() {
+        // Only track the effective enabled transition when a listener is attached to this specific node.
+        // When untracked, the previous state is null to make it clear it is not a real enabled value.
+        const notify = this._hasEffectiveEnabledStateObservers();
+        const wasEnabled = notify ? this.isEnabled() : null;
+
         this._nodeDataStorage._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
         if (this._children) {
             for (const c of this._children) {
                 c._syncParentEnabledState(); // Force children to update accordingly
+            }
+        }
+
+        // An ancestor's enabled change (or a re-parent) can change this node's effective enabled state
+        // without its own flag changing. Notify observers of that inherited transition here. The direct
+        // setEnabled case is handled in setEnabled itself, so it does not double-fire from here.
+        if (notify) {
+            const isEnabled = this.isEnabled();
+            if (isEnabled !== wasEnabled) {
+                this._nodeDataStorage._onEffectiveEnabledStateChangedObservable!.notifyObservers(isEnabled);
             }
         }
     }
@@ -645,9 +686,22 @@ export class Node implements IBehaviorAware<Node> {
         if (this._nodeDataStorage._isEnabled === value) {
             return;
         }
+        // Capture the effective state before mutating so we can report if the current node's effective
+        // enabled state changed as a result of this direct change.
+        // When untracked, the previous state is null to make it clear it is not a real enabled value.
+        const notifyEffective = this._hasEffectiveEnabledStateObservers();
+        const wasEffectivelyEnabled = notifyEffective ? this.isEnabled() : null;
+
         this._nodeDataStorage._isEnabled = value;
         this._syncParentEnabledState();
         this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
+
+        if (notifyEffective) {
+            const isEnabled = this.isEnabled();
+            if (isEnabled !== wasEffectivelyEnabled) {
+                this._nodeDataStorage._onEffectiveEnabledStateChangedObservable!.notifyObservers(isEnabled);
+            }
+        }
     }
 
     /**
@@ -967,6 +1021,8 @@ export class Node implements IBehaviorAware<Node> {
         this.onDisposeObservable.clear();
 
         this.onEnabledStateChangedObservable.clear();
+        // Access the backing field directly to avoid lazily allocating the observable during disposal.
+        this._nodeDataStorage._onEffectiveEnabledStateChangedObservable?.clear();
         this.onClonedObservable.clear();
 
         // Behaviors
