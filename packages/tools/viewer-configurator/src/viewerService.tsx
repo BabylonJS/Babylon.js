@@ -1,5 +1,5 @@
 import { type IDisposable, type IReadonlyObservable } from "core/index";
-import { type ViewerElement, type ViewerOptions } from "viewer/index";
+import { type ViewerElement, type ViewerOptions } from "viewer/full/index";
 
 import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";

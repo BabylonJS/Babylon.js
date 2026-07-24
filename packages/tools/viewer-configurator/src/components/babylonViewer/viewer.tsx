@@ -1,10 +1,11 @@
-import { type ViewerElement, type ViewerOptions } from "viewer/index";
+import "core/Misc/symbolMetadataPolyfill";
+
+import { type ViewerElement, type ViewerOptions } from "viewer/full/index";
 
 import { makeStyles } from "@fluentui/react-components";
 import { Logger } from "core/Misc/logger";
 import { useEffect, type FunctionComponent } from "react";
-import { ConfigureCustomViewerElement } from "viewer/viewerElement";
-import "viewer";
+import { ConfigureCustomViewerElement } from "viewer/full/viewerElement";
 
 const useStyles = makeStyles({
     viewerElement: {

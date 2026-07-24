@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
-import type { ViewerElement } from "viewer/viewerElementLite";
+import type { ViewerElement } from "viewer/lite/viewerElement";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
@@ -323,7 +323,7 @@ test("change model source", async ({ page }) => {
     // Change source to a different model. Wait for the swap to actually commit before screenshotting:
     // register a `modelchange` listener for the NEW source before mutating the attribute, then await it.
     // `onModelChanged` fires only after the swapped model has loaded and its renderables have been built
-    // (viewerLite `_loadModelImpl`). `waitForModelLoaded` alone is racy here — right after the attribute
+    // (Lite Viewer `_loadModelImpl`). `waitForModelLoaded` alone is racy here — right after the attribute
     // change it can still observe the previously-loaded model and return early.
     await page.evaluate((viewerElement) => {
         return new Promise<void>((resolve) => {

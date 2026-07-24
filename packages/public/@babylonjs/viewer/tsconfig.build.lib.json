@@ -1,13 +1,11 @@
 {
     "extends": "../../../../tsconfig.build.json",
     "compilerOptions": {
-        "outDir": "./lib",
+        "outDir": "./lib/full",
         "rootDir": "../../../",
         "declaration": false,
         "target": "ES2020",
         "importHelpers": true
     },
-    "include": [
-        "../../../tools/viewer/src/**/*"
-    ]
+    "include": ["../../../tools/viewer/src/**/*"]
 }
