@@ -4,7 +4,6 @@ import { makeStyles } from "@fluentui/react-components";
 import { Logger } from "core/Misc/logger";
 import { useEffect, type FunctionComponent } from "react";
 import { ConfigureCustomViewerElement } from "viewer/full/viewerElement";
-import "viewer";
 
 const useStyles = makeStyles({
     viewerElement: {
