@@ -89,11 +89,31 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @internal
      * @param context
      */
-    public override _preparePendingTasks(context: FlowGraphContext): void {
+    public override _startPendingTasks(context: FlowGraphContext): void {
+        if (context._getExecutionVariable(this, "_initialized", false)) {
+            this._cancelPendingTasks(context);
+            this._resetAfterCanceled(context);
+        }
+
+        if (!this._preparePendingTasks(context)) {
+            return;
+        }
+        context._addPendingBlock(this);
+        this.out._activateSignal(context);
+        context._setExecutionVariable(this, "_initialized", true);
+    }
+
+    /**
+     * @internal
+     * @param context
+     * @returns whether the animation was prepared and started successfully
+     */
+    public override _preparePendingTasks(context: FlowGraphContext): boolean {
         const ag = this.animationGroup.getValue(context);
         const animation = this.animation.getValue(context);
         if (!ag && !animation) {
-            return this._reportError(context, "No animation or animation group provided");
+            this._reportError(context, "No animation or animation group provided");
+            return false;
         } else {
             // if an animation group was already created, dispose it and create a new one
             const currentAnimationGroup = this.currentAnimationGroup.getValue(context);
@@ -101,16 +121,19 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 currentAnimationGroup.dispose();
             }
             let animationGroupToUse = ag;
+            let isInterpolation = false;
+            let interpolationAnimationsArray: Animation[] | undefined;
+            let interpolationTarget: any;
             // check which animation to use. If no animationGroup was defined and an animation was provided, use the animation
             if (animation && !animationGroupToUse) {
                 const target = this.object.getValue(context);
                 if (!target) {
-                    return this._reportError(context, "No target object provided");
+                    this._reportError(context, "No target object provided");
+                    return false;
                 }
                 const animationsArray = Array.isArray(animation) ? animation : [animation];
                 const name = animationsArray[0].name;
                 animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
-                let isInterpolation = false;
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
                 for (const anim of animationsArray) {
                     animationGroupToUse.addTargetedAnimation(anim, target);
@@ -118,16 +141,85 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                         isInterpolation = true;
                     }
                 }
-
-                if (isInterpolation) {
-                    this._checkInterpolationDuplications(context, animationsArray, target);
-                }
+                interpolationAnimationsArray = animationsArray;
+                interpolationTarget = target;
             }
             // not accepting 0
             const speed = this.speed.getValue(context) || 1;
             const from = this.from.getValue(context) ?? 0;
+            // Read the raw end time before it is defaulted to the animation group's natural end, so that an
+            // explicitly provided NaN end time can still be detected by the animation/start validation below.
+            const rawTo = this.to.getValue(context);
             // not accepting 0
-            const to = this.to.getValue(context) || animationGroupToUse.to;
+            const to = rawTo || animationGroupToUse.to;
+
+            // KHR_interactivity animation/start validation. Only applies to animation-group playback
+            // (animation/start); interpolation uses the `animation` input and has its own validation below.
+            // Per the spec the operation activates its `err` flow when the speed is NaN, infinite, or <= 0, or
+            // when the end time is NaN. A NaN or infinite start time is caught by the finite check on `from`.
+            if (!animation) {
+                if (isNaN(rawTo)) {
+                    this._reportError(context, "Invalid animation end time");
+                    return false;
+                }
+                // Only validate a speed that was explicitly provided; an unconnected speed keeps the engine
+                // default of 1 (matching the historical Babylon behavior for animation/start without a speed).
+                if (this.speed.isConnected() || context._hasConnectionValue(this.speed)) {
+                    const providedSpeed = this.speed.getValue(context);
+                    if (!isFinite(providedSpeed) || providedSpeed <= 0) {
+                        this._reportError(context, "Invalid animation speed");
+                        return false;
+                    }
+                }
+            }
+
+            // The start value (interpolation start frame / animation start time) must always be finite. For
+            // animation/start this also satisfies the spec requirement that a NaN or infinite start time
+            // activates the err flow.
+            if (!isFinite(from)) {
+                this._reportError(context, "Invalid animation duration");
+                return false;
+            }
+            // For interpolation the end value is the animation duration and must be a finite, non-negative number.
+            // Animation-group playback (animation/start) instead allows an infinite end time — it means "play to
+            // the natural end / loop" (see the `loop` computation below) — and its NaN end time was already
+            // rejected above, so the end value is only range-checked here for the interpolation case.
+            if (animation && (!isFinite(to) || to < 0)) {
+                this._reportError(context, "Invalid animation duration");
+                return false;
+            }
+
+            // CSS cubic-bezier control points must be finite, and the X components must be in [0, 1].
+            if (animation) {
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                for (const anim of animationsArray) {
+                    const easing = anim.getEasingFunction?.();
+                    if (easing && "x1" in easing) {
+                        const bezier = easing as unknown as { x1: number; y1: number; x2: number; y2: number };
+                        if (
+                            !Number.isFinite(bezier.x1) ||
+                            !Number.isFinite(bezier.y1) ||
+                            !Number.isFinite(bezier.x2) ||
+                            !Number.isFinite(bezier.y2) ||
+                            bezier.x1 < 0 ||
+                            bezier.x1 > 1 ||
+                            bezier.x2 < 0 ||
+                            bezier.x2 > 1
+                        ) {
+                            this._reportError(context, "Invalid bezier curve control points");
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // Stop any interpolation already running on the same target/property, but only after validation has
+            // passed. An invalid interpolation (bad duration or NaN control points) must report [err] without
+            // disturbing an interpolation that is already running on the same target.
+            if (isInterpolation && interpolationAnimationsArray && interpolationTarget !== undefined) {
+                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget);
+            }
+
             const loop = !isFinite(to) || this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
 
@@ -146,7 +238,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
             } catch (e) {
                 this._reportError(context, e);
+                return false;
             }
+            return true;
         }
     }
 

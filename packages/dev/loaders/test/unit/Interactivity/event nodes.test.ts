@@ -2,6 +2,9 @@ import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3 } from "core/Maths";
+import { Mesh } from "core/Meshes";
+import { PickingInfo } from "core/Collisions";
+import { PointerEventTypes, PointerInfo } from "core/Events";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
@@ -9,6 +12,7 @@ import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import "loaders/glTF/2.0/Extensions/KHR_interactivity";
+import "loaders/glTF/2.0/Extensions/KHR_node_selectability";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import {
     IKHRInteractivity_Declaration,
@@ -106,6 +110,88 @@ describe("Interactivity event nodes", () => {
                 [{ signature: "int" }]
             )
         ).rejects.toThrow();
+    });
+
+    it("event/onSelect fires the flow when its configured node mesh is picked", async () => {
+        // The node at glTF index 0 is backed by this mesh; picking it must fire the event.
+        const mesh = new Mesh("selectMe", scene);
+        const gltf: any = { nodes: [{ _babylonTransformNode: mesh }] };
+
+        const ig: IKHRInteractivity_Graph = {
+            declarations: [
+                { op: "event/onSelect", extension: "KHR_node_selectability" },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            types: [{ signature: "int" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { nodeIndex: { value: [0] } },
+                    flows: { out: { node: 1, socket: "in" } },
+                },
+                { declaration: 1, values: { message: { type: 0, value: [42] } } },
+            ],
+            variables: [],
+            events: [],
+        };
+
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, gltf);
+        const json = i2fg.serializeToFlowGraph();
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const localPathConverter = GetPathToObjectConverter(gltf);
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter: localPathConverter });
+        coordinator.start();
+
+        // Not fired before any pick.
+        expect(log).not.toHaveBeenCalledWith({ value: 42 });
+
+        // Simulate clicking the mesh.
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = mesh;
+        pickInfo.pickedPoint = new Vector3();
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, {} as any, pickInfo));
+
+        expect(log).toHaveBeenCalledWith({ value: 42 });
+    });
+
+    it("event/onSelect does not fire when a different mesh is picked", async () => {
+        const target = new Mesh("target", scene);
+        const other = new Mesh("other", scene);
+        const gltf: any = { nodes: [{ _babylonTransformNode: target }] };
+
+        const ig: IKHRInteractivity_Graph = {
+            declarations: [
+                { op: "event/onSelect", extension: "KHR_node_selectability" },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            types: [{ signature: "int" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { nodeIndex: { value: [0] } },
+                    flows: { out: { node: 1, socket: "in" } },
+                },
+                { declaration: 1, values: { message: { type: 0, value: [7] } } },
+            ],
+            variables: [],
+            events: [],
+        };
+
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, gltf);
+        const json = i2fg.serializeToFlowGraph();
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const localPathConverter = GetPathToObjectConverter(gltf);
+        await ParseFlowGraphAsync(json, { coordinator, pathConverter: localPathConverter });
+        coordinator.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = other;
+        pickInfo.pickedPoint = new Vector3();
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, {} as any, pickInfo));
+
+        expect(log).not.toHaveBeenCalledWith({ value: 7 });
     });
 
     it("should send an event with id", async () => {

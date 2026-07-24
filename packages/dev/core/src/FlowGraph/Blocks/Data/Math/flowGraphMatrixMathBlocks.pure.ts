@@ -15,10 +15,17 @@ import {
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
+import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 import { type FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { type FlowGraphMatrix } from "core/FlowGraph/utils";
 import { RegisterClass } from "core/Misc/typeStore";
+
+/**
+ * Threshold below which the determinant of the normalized 3x3 of a matrix is treated as zero, indicating a
+ * degenerate (non-decomposable) matrix whose columns are linearly dependent.
+ */
+const MatrixDecomposeDegenerateEpsilon = 1e-6;
 
 /**
  * Configuration for the matrix blocks.
@@ -64,19 +71,35 @@ export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<Flow
 /**
  * Inverts a matrix.
  */
-export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<FlowGraphMatrix, FlowGraphMatrix> {
+export class FlowGraphInvertMatrixBlock extends FlowGraphCachedOperationBlock<FlowGraphMatrix> {
+    /**
+     * The matrix to invert.
+     */
+    public readonly a: FlowGraphDataConnection<FlowGraphMatrix>;
+
     /**
      * Creates a new instance of the inverse block.
      * @param config the configuration of the block
      */
     constructor(config?: IFlowGraphMatrixBlockConfiguration) {
-        super(
-            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
-            getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix),
-            (a) => ((a as FlowGraphMatrix2D).inverse ? (a as FlowGraphMatrix2D).inverse() : Matrix.Invert(a as Matrix)),
-            FlowGraphBlockNames.InvertMatrix,
-            config
-        );
+        super(getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix), config);
+        this.a = this.registerDataInput("a", getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix));
+    }
+
+    public override _doOperation(context: FlowGraphContext): FlowGraphMatrix | undefined {
+        const a = this.a.getValue(context);
+        // Per the KHR_interactivity spec, math/inverse is only valid when the determinant is a finite, non-zero
+        // number. For a zero, NaN, or infinite determinant the matrix is not invertible: returning undefined makes
+        // the cached base report isValid = false.
+        const determinant = a.determinant();
+        if (determinant === 0 || !Number.isFinite(determinant)) {
+            return undefined;
+        }
+        return (a as FlowGraphMatrix2D).inverse ? (a as FlowGraphMatrix2D).inverse() : Matrix.Invert(a as Matrix);
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.InvertMatrix;
     }
 }
 
@@ -138,43 +161,90 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
     }
 
     public override _updateOutputs(context: FlowGraphContext) {
-        const cachedExecutionId = context._getExecutionVariable(this, "executionId", -1);
-        const cachedPosition = context._getExecutionVariable(this, "cachedPosition", null);
-        const cachedRotation = context._getExecutionVariable(this, "cachedRotation", null);
-        const cachedScaling = context._getExecutionVariable(this, "cachedScaling", null);
-        if (cachedExecutionId === context.executionId && cachedPosition && cachedRotation && cachedScaling) {
-            this.position.setValue(cachedPosition, context);
-            this.rotationQuaternion.setValue(cachedRotation, context);
-            this.scaling.setValue(cachedScaling, context);
-        } else {
-            const matrix = this.input.getValue(context);
-            const position = cachedPosition || new Vector3();
-            const rotation = cachedRotation || new Quaternion();
-            const scaling = cachedScaling || new Vector3();
-            // check matrix last column components should be 0,0,0,1
-            // round them to 4 decimal places
-            const m3 = Math.round(matrix.m[3] * 10000) / 10000;
-            const m7 = Math.round(matrix.m[7] * 10000) / 10000;
-            const m11 = Math.round(matrix.m[11] * 10000) / 10000;
-            const m15 = Math.round(matrix.m[15] * 10000) / 10000;
-            if (m3 !== 0 || m7 !== 0 || m11 !== 0 || m15 !== 1) {
-                this.isValid.setValue(false, context);
-                this.position.setValue(Vector3.Zero(), context);
-                this.rotationQuaternion.setValue(Quaternion.Identity(), context);
-                this.scaling.setValue(Vector3.One(), context);
-                return;
-            }
-            // make the checks for validity
-            const valid = matrix.decompose(scaling, rotation, position);
-            this.isValid.setValue(valid, context);
-            this.position.setValue(position, context);
-            this.rotationQuaternion.setValue(rotation, context);
-            this.scaling.setValue(scaling, context);
-            context._setExecutionVariable(this, "cachedPosition", position);
-            context._setExecutionVariable(this, "cachedRotation", rotation);
-            context._setExecutionVariable(this, "cachedScaling", scaling);
-            context._setExecutionVariable(this, "executionId", context.executionId);
+        const matrix = this.input.getValue(context);
+        const m = matrix.m;
+
+        // Per the KHR_interactivity matDecompose algorithm the fourth row of the matrix is ignored: the translation
+        // comes from the first three elements of the fourth column, the scale from the lengths of the first three
+        // columns of the upper-left 3x3, and the rotation from that 3x3 once normalized.
+        const translationX = m[12];
+        const translationY = m[13];
+        const translationZ = m[14];
+        let scaleX = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+        const scaleY = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
+        const scaleZ = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
+
+        const allFinite =
+            Number.isFinite(translationX) &&
+            Number.isFinite(translationY) &&
+            Number.isFinite(translationZ) &&
+            Number.isFinite(scaleX) &&
+            Number.isFinite(scaleY) &&
+            Number.isFinite(scaleZ);
+
+        // A non-finite matrix (NaN/Infinity propagated from the input) is not decomposable: emit the type-default TRS.
+        if (!allFinite) {
+            this.isValid.setValue(false, context);
+            this.position.setValue(Vector3.Zero(), context);
+            this.rotationQuaternion.setValue(Quaternion.Identity(), context);
+            this.scaling.setValue(Vector3.One(), context);
+            return;
         }
+
+        if (scaleX === 0 || scaleY === 0 || scaleZ === 0) {
+            // A zero scale component leaves the rotation undefined and the matrix non-decomposable, but the
+            // translation and (degenerate) scale are still well-defined, so they are reported as-is.
+            this.isValid.setValue(false, context);
+            this.position.setValue(new Vector3(translationX, translationY, translationZ), context);
+            this.rotationQuaternion.setValue(Quaternion.Identity(), context);
+            this.scaling.setValue(new Vector3(scaleX, scaleY, scaleZ), context);
+            return;
+        }
+
+        // The determinant of the upper-left 3x3 (the fourth row is ignored) gives the handedness; dividing by the
+        // product of the scales yields the determinant of the normalized 3x3, which is (close to) zero only when the
+        // columns are linearly dependent — a degenerate matrix that cannot represent a rotation.
+        const determinant = m[0] * (m[5] * m[10] - m[6] * m[9]) - m[4] * (m[1] * m[10] - m[2] * m[9]) + m[8] * (m[1] * m[6] - m[2] * m[5]);
+        const normalizedDeterminant = determinant / (scaleX * scaleY * scaleZ);
+        if (Math.abs(normalizedDeterminant) < MatrixDecomposeDegenerateEpsilon) {
+            this.isValid.setValue(false, context);
+            this.position.setValue(Vector3.Zero(), context);
+            this.rotationQuaternion.setValue(Quaternion.Identity(), context);
+            this.scaling.setValue(Vector3.One(), context);
+            return;
+        }
+
+        // Negate the first scale component for a left-handed matrix so the rotation stays right-handed, mirroring
+        // the normalized first column.
+        if (determinant < 0) {
+            scaleX = -scaleX;
+        }
+        const invScaleX = 1 / scaleX;
+        const invScaleY = 1 / scaleY;
+        const invScaleZ = 1 / scaleZ;
+        const rotationMatrix = Matrix.FromValues(
+            m[0] * invScaleX,
+            m[1] * invScaleX,
+            m[2] * invScaleX,
+            0,
+            m[4] * invScaleY,
+            m[5] * invScaleY,
+            m[6] * invScaleY,
+            0,
+            m[8] * invScaleZ,
+            m[9] * invScaleZ,
+            m[10] * invScaleZ,
+            0,
+            0,
+            0,
+            0,
+            1
+        );
+
+        this.isValid.setValue(true, context);
+        this.position.setValue(new Vector3(translationX, translationY, translationZ), context);
+        this.rotationQuaternion.setValue(Quaternion.FromRotationMatrix(rotationMatrix), context);
+        this.scaling.setValue(new Vector3(scaleX, scaleY, scaleZ), context);
     }
 
     public override getClassName(): string {

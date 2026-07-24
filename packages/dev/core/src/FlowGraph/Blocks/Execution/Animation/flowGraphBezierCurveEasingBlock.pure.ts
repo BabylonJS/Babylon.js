@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type EasingFunction, BezierCurveEase } from "core/Animations/easing";
+import { BezierCurveEase, type EasingFunction } from "core/Animations/easing";
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
@@ -10,7 +10,15 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
- * An easing block that generates a BezierCurveEase easingFunction object based on the data provided.
+ * Cubic Bézier easing used by the KHR_interactivity `variable/interpolate` and
+ * `pointer/interpolate` operations.
+ *
+ * KHR_interactivity follows CSS cubic-bezier semantics: for input progress `t`,
+ * solve the curve parameter where X equals `t`, then use the corresponding Y
+ * coordinate as the eased output progress.
+ */
+/**
+ * An easing block that generates a cubic Bézier easing function based on the data provided.
  */
 export class FlowGraphBezierCurveEasingBlock extends FlowGraphBlock {
     /**

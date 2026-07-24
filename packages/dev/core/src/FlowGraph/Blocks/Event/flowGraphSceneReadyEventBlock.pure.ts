@@ -2,8 +2,11 @@
 
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
 import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block that triggers when a scene is ready.
@@ -13,7 +16,21 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
 
     public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneReady;
 
+    /**
+     * Output: the KHR_interactivity event reference for this lifecycle event.
+     * Per spec (event/onStart) all instances of this operation return the same,
+     * non-null event reference. We use a stable string ref so `ref/eq` of two
+     * onStart `event` outputs compares equal.
+     */
+    public readonly eventRef: FlowGraphDataConnection<string>;
+
+    constructor() {
+        super();
+        this.eventRef = this.registerDataOutput("event", RichTypeString, GetEventReference("onStart"));
+    }
+
     public override _executeEvent(context: FlowGraphContext, _payload: any): boolean {
+        this.eventRef.setValue(GetEventReference("onStart"), context);
         this._execute(context);
         return true;
     }

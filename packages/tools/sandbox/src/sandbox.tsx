@@ -16,6 +16,7 @@ import { Color3, Color4 } from "core/Maths/math";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 
 import "./scss/main.scss";
+import "core/Loading/loadingScreen";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";

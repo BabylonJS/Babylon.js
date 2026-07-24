@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { type TransformNode } from "core/Meshes/transformNode";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type MorphTargetManager } from "core/Morph/morphTargetManager";
 import {
     type IAnimation,
     type ICamera,
@@ -9,7 +11,10 @@ import {
     type IEXTLightsArea_Light,
     type IMaterial,
     type IMesh,
+    type IMeshPrimitive,
     type INode,
+    type IScene,
+    type ISkin,
 } from "../glTFLoaderInterfaces";
 import { type Vector3, Matrix, Quaternion, Vector2 } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";
@@ -27,34 +32,42 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type RectAreaLight } from "core/Lights/rectAreaLight";
 
 /**
- * Describes the object model tree that maps glTF pointer paths to their corresponding Babylon objects.
+ * Top-level shape of the glTF Object Model accessor tree. Each property
+ * describes a navigable section of the JSON-Pointer namespace (e.g. `/nodes`,
+ * `/materials`, `/scenes`) that KHR_interactivity, KHR_animation_pointer and
+ * other extensions consume via {@link GetMappingForKey}.
  */
 export interface IGLTFObjectModelTree {
-    /** Mapping for the glTF cameras collection. */
+    /** Read-only accessor for the active scene index (`/scene`). */
+    scene: { __target__: boolean } & IObjectAccessor<number | undefined, any, number>;
+    /** Accessor tree for `/cameras`. */
     cameras: IGLTFObjectModelTreeCamerasObject;
-    /** Mapping for the glTF nodes collection. */
+    /** Accessor tree for `/nodes`. */
     nodes: IGLTFObjectModelTreeNodesObject;
-    /** Mapping for the glTF materials collection. */
+    /** Accessor tree for `/materials`. */
     materials: IGLTFObjectModelTreeMaterialsObject;
-    /** Mapping for the glTF extensions. */
+    /** Accessor tree for `/extensions` (root-level glTF extensions). */
     extensions: IGLTFObjectModelTreeExtensionsObject;
-    /** Mapping for the glTF animations collection. */
+    /** Accessor tree for `/animations`. */
     animations: {
         length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
         __array__: {};
     };
-    /** Mapping for the glTF meshes collection. */
-    meshes: {
-        length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
-        __array__: {};
-    };
+    /** Accessor tree for `/meshes`. */
+    meshes: IGLTFObjectModelTreeMeshesObject;
+    /** Accessor tree for `/scenes`. */
+    scenes: IGLTFObjectModelTreeScenesObject;
+    /** Accessor tree for `/skins`. */
+    skins: IGLTFObjectModelTreeSkinsObject;
 }
 
 /**
- * Describes the mapping of glTF node properties to their corresponding Babylon transform node properties.
+ * Accessor tree describing the `/nodes` section of the glTF Object Model.
+ * Exposes per-node TRS, ref-typed parent/children/camera/mesh/skin links,
+ * morph-target weights and node-extension properties.
  */
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
-    /** Accessor for the number of nodes. */
+    /** Number of nodes in the array. */
     length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], number>;
     __array__: {
         __target__: boolean;
@@ -63,9 +76,22 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         scale: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
         matrix: IObjectAccessor<GLTFTargetType, BabylonTargetType, Matrix>;
         globalMatrix: IObjectAccessor<GLTFTargetType, BabylonTargetType, Matrix>;
+        camera: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        mesh: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        skin: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        parent: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        children: {
+            length: IObjectAccessor<number[], any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
+        };
         weights: {
+            /** When true, the path converter skips objectTree traversal for this property, keeping the parent target. */
+            __passThroughTarget__?: boolean;
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
-            __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
+            // The per-element target alternates between TransformNode (when the index is
+            // out of range or no morph host is reachable) and MorphTarget (when it is),
+            // so we widen the BabylonTargetType to `any` here.
+            __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, any, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
         extensions: {
             EXT_lights_ies?: {
@@ -80,9 +106,12 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
 }
 
 /**
- * Describes the mapping of glTF camera properties to their corresponding Babylon camera properties.
+ * Accessor tree describing the `/cameras` section of the glTF Object Model.
+ * Exposes orthographic and perspective camera properties.
  */
 export interface IGLTFObjectModelTreeCamerasObject {
+    /** Number of cameras in the array. */
+    length: IObjectAccessor<ICamera[], any, number>;
     __array__: {
         __target__: boolean;
         orthographic: {
@@ -101,11 +130,16 @@ export interface IGLTFObjectModelTreeCamerasObject {
 }
 
 /**
- * Describes the mapping of glTF material properties to their corresponding Babylon material properties.
+ * Accessor tree describing the `/materials` section of the glTF Object Model.
+ * Covers core PBR properties as well as the family of KHR_materials_* extensions.
  */
 export interface IGLTFObjectModelTreeMaterialsObject {
+    /** Number of materials in the array. */
+    length: IObjectAccessor<IMaterial[], PBRMaterial[], number>;
     __array__: {
         __target__: boolean;
+        doubleSided: IObjectAccessor<IMaterial, PBRMaterial, boolean>;
+        alphaCutoff: IObjectAccessor<IMaterial, PBRMaterial, number>;
         pbrMetallicRoughness: {
             baseColorFactor: IObjectAccessor<IMaterial, PBRMaterial, Color4>;
             metallicFactor: IObjectAccessor<IMaterial, PBRMaterial, Nullable<number>>;
@@ -265,15 +299,69 @@ interface ITextureDefinition {
 }
 
 /**
- * Describes the mapping of glTF mesh properties to their corresponding Babylon mesh properties.
+ * Accessor tree describing the `/meshes` section of the glTF Object Model.
+ * Exposes per-mesh primitives (and their material refs) and the mesh-level
+ * morph-target weights array.
  */
-export interface IGLTFObjectModelTreeMeshesObject {}
+export interface IGLTFObjectModelTreeMeshesObject {
+    /** Number of meshes in the array. */
+    length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
+    __array__: {
+        __target__: boolean;
+        primitives: {
+            length: IObjectAccessor<IMeshPrimitive[], any, number>;
+            __array__: {
+                __target__: boolean;
+                material: IObjectAccessor<any, any, string | undefined>;
+            };
+        };
+        weights: {
+            length: IObjectAccessor<number[], any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, number>;
+        };
+    };
+}
 
 /**
- * Describes the mapping of glTF extension properties to their corresponding Babylon properties.
+ * Accessor tree describing the `/scenes` section of the glTF Object Model.
+ * Per-scene root-node refs are exposed under `nodes/{i}`.
+ */
+export interface IGLTFObjectModelTreeScenesObject {
+    /** Number of scenes in the array. */
+    length: IObjectAccessor<IScene[], any, number>;
+    __array__: {
+        __target__: boolean;
+        nodes: {
+            length: IObjectAccessor<number[], any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
+        };
+    };
+}
+
+/**
+ * Accessor tree describing the `/skins` section of the glTF Object Model.
+ * Joint and skeleton properties are exposed as JSON-Pointer refs.
+ */
+export interface IGLTFObjectModelTreeSkinsObject {
+    /** Number of skins in the array. */
+    length: IObjectAccessor<ISkin[], any, number>;
+    __array__: {
+        __target__: boolean;
+        joints: {
+            length: IObjectAccessor<number[], any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
+        };
+        skeleton: IObjectAccessor<ISkin, any, string | undefined>;
+    };
+}
+
+/**
+ * Accessor tree describing root-level glTF extensions exposed through the
+ * Object Model. Currently covers the punctual / area / IES / image-based
+ * light extension families.
  */
 export interface IGLTFObjectModelTreeExtensionsObject {
-    /** Mapping for the KHR_lights_punctual extension. */
+    /** Accessor tree for `/extensions/KHR_lights_punctual`. */
     KHR_lights_punctual: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
@@ -289,7 +377,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
-    /** Mapping for the EXT_lights_area extension. */
+    /** Accessor tree for `/extensions/EXT_lights_area`. */
     EXT_lights_area: {
         lights: {
             length: IObjectAccessor<IEXTLightsArea_Light[], Light[], number>;
@@ -304,13 +392,13 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
-    /** Mapping for the EXT_lights_ies extension. */
+    /** Accessor tree for `/extensions/EXT_lights_ies`. */
     EXT_lights_ies: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
         };
     };
-    /** Mapping for the EXT_lights_image_based extension. */
+    /** Accessor tree for `/extensions/EXT_lights_image_based`. */
     EXT_lights_image_based: {
         lights: {
             __array__: {
@@ -354,24 +442,65 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             getPropertyName: [() => "scaling"],
         },
         weights: {
+            // Skip glTF objectTree traversal — weights may be undefined on the glTF node
+            // but accessible via the Babylon MorphTargetManager on the INode's meshes
+            __passThroughTarget__: true,
             length: {
                 type: "number",
-                get: (node: INode) => node._numMorphTargets,
-                getTarget: (node: INode) => node._babylonTransformNode,
-                getPropertyName: [() => "influence"],
+                get: (node: INode) => {
+                    const found = _findNodeMorphTargets(node);
+                    return found ? found.mtm.numTargets : node?.mesh !== undefined ? 0 : undefined;
+                },
+                getTarget: (node: INode) => node?._babylonTransformNode,
+                getPropertyName: [() => "length"],
             },
             __array__: {
                 __target__: true,
                 type: "number",
-                get: (node: INode, index?: number) => (index !== undefined ? node._primitiveBabylonMeshes?.[0].morphTargetManager?.getTarget(index).influence : undefined),
-                // set: (value: number, node: INode, index?: number) => node._babylonTransformNode?.getMorphTargetManager()?.getTarget(index)?.setInfluence(value),
-                getTarget: (node: INode) => node._babylonTransformNode,
+                get: (node: INode, index?: number) => {
+                    const found = _findNodeMorphTargets(node);
+                    if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
+                        return _roundFloat32Artifact(found.mtm.getTarget(index).influence);
+                    }
+                    return undefined;
+                },
+                set: (value: any, node: INode, index?: number) => {
+                    const numValue = typeof value === "number" ? value : typeof value?.value === "number" ? value.value : value;
+                    const found = _findNodeMorphTargets(node);
+                    if (!found || index === undefined || index < 0 || index >= found.mtm.numTargets) {
+                        return;
+                    }
+                    // Fan out to every mesh that shares this morph target manager so
+                    // multi-primitive meshes stay in sync.
+                    for (const mesh of found.meshes) {
+                        const target = mesh.morphTargetManager?.getTarget(index);
+                        if (target) {
+                            target.influence = numValue;
+                        }
+                    }
+                },
+                getTarget: (node: INode, index?: number) => {
+                    const found = _findNodeMorphTargets(node);
+                    if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
+                        return found.mtm.getTarget(index);
+                    }
+                    return node?._babylonTransformNode;
+                },
                 getPropertyName: [() => "influence"],
             },
             type: "number[]",
-            get: (node: INode, index?: number) => [0], // TODO: get the weights correctly
-            // set: (value: number, node: INode, index?: number) => node._babylonTransformNode?.getMorphTargetManager()?.getTarget(index)?.setInfluence(value),
-            getTarget: (node: INode) => node._babylonTransformNode,
+            get: (node: INode) => {
+                const found = _findNodeMorphTargets(node);
+                if (!found) {
+                    return [];
+                }
+                const weights: number[] = [];
+                for (let i = 0; i < found.mtm.numTargets; i++) {
+                    weights.push(_roundFloat32Artifact(found.mtm.getTarget(i).influence));
+                }
+                return weights;
+            },
+            getTarget: (node: INode) => node?._babylonTransformNode,
             getPropertyName: [() => "influence"],
         },
         // readonly!
@@ -406,6 +535,51 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             },
             getTarget: (node: INode) => node._babylonTransformNode,
             isReadOnly: true,
+        },
+        camera: {
+            type: "string",
+            // Per KHR_interactivity Object Model: read-only ref pointing to the
+            // attached camera, encoded as a JSON Pointer string. Empty string
+            // when no camera is attached (the spec's null-ref convention).
+            get: (node: INode) => (node.camera !== undefined ? `/cameras/${node.camera}/` : ""),
+            getTarget: (node: INode) => node,
+            isReadOnly: true,
+        },
+        mesh: {
+            type: "string",
+            get: (node: INode) => (node.mesh !== undefined ? `/meshes/${node.mesh}/` : ""),
+            getTarget: (node: INode) => node,
+            isReadOnly: true,
+        },
+        skin: {
+            type: "string",
+            get: (node: INode) => (node.skin !== undefined ? `/skins/${node.skin}/` : ""),
+            getTarget: (node: INode) => node,
+            isReadOnly: true,
+        },
+        parent: {
+            type: "string",
+            get: (node: INode) => (node.parent && node.parent.index !== undefined ? `/nodes/${node.parent.index}/` : ""),
+            getTarget: (node: INode) => node,
+            isReadOnly: true,
+        },
+        children: {
+            length: {
+                type: "number",
+                get: (children: number[]) => children?.length ?? 0,
+                getTarget: (children: number[]) => children ?? [],
+                getPropertyName: [() => "length"],
+            },
+            __array__: {
+                __target__: true,
+                type: "string",
+                // The wrapping converter passes the indexed child value (an
+                // INode index) as `childIndex`; convert it to a JSON Pointer
+                // ref string so ref/eq comparisons work as authored.
+                get: (childIndex: any) => (typeof childIndex === "number" ? `/nodes/${childIndex}/` : ""),
+                getTarget: () => ({ __nodeIndex: true }),
+                isReadOnly: true,
+            },
         },
         extensions: {
             EXT_lights_ies: {
@@ -465,20 +639,74 @@ const animationsTree = {
         getTarget: (animations: IAnimation[]) => animations.map((animation) => animation._babylonAnimationGroup!),
         getPropertyName: [() => "length"],
     },
-    __array__: {},
+    __array__: {
+        // Indexed access to the animation. KHR_interactivity Opaque-Reference
+        // spec defines the trailing-slash form ``/animations/<i>/`` as a ref
+        // to the animation itself; we surface that here as a JSON-Pointer ref
+        // string so blocks like ``animation/start`` can consume it directly.
+        // Use the animation's own ``index`` property (populated by the loader's
+        // ArrayItem.Assign step) so the ref is resolved without needing a
+        // separate index payload from the path converter.
+        __target__: true,
+        type: "string",
+        get: (animation: IAnimation) => (animation && typeof animation.index === "number" ? `/animations/${animation.index}/` : ""),
+        getTarget: (animation: IAnimation) => animation._babylonAnimationGroup,
+        isReadOnly: true,
+    },
 };
 
-const meshesTree = {
+const meshesTree: IGLTFObjectModelTreeMeshesObject = {
     length: {
         type: "number",
         get: (meshes: IMesh[]) => meshes.length,
         getTarget: (meshes: IMesh[]) => meshes.map((mesh) => mesh.primitives[0]._instanceData?.babylonSourceMesh),
         getPropertyName: [() => "length"],
     },
-    __array__: {},
+    __array__: {
+        __target__: true,
+        primitives: {
+            length: {
+                type: "number",
+                get: (primitives: IMeshPrimitive[]) => primitives?.length ?? 0,
+                getTarget: (primitives: IMeshPrimitive[]) => primitives ?? [],
+                getPropertyName: [() => "length"],
+            },
+            __array__: {
+                __target__: true,
+                material: {
+                    type: "string",
+                    // Read-only ref to the assigned material, JSON Pointer encoded.
+                    get: (primitive: IMeshPrimitive) => (primitive.material !== undefined ? `/materials/${primitive.material}/` : ""),
+                    getTarget: (primitive: IMeshPrimitive) => primitive,
+                    isReadOnly: true,
+                },
+            },
+        },
+        weights: {
+            length: {
+                type: "number",
+                get: (weights: number[]) => weights?.length ?? 0,
+                getTarget: (weights: number[]) => weights ?? [],
+                getPropertyName: [() => "length"],
+            },
+            __array__: {
+                __target__: true,
+                type: "number",
+                get: (weightValue: any) => weightValue,
+                getTarget: () => ({ __weightValue: true }),
+                isReadOnly: true,
+            },
+        },
+    },
 };
 
 const camerasTree: IGLTFObjectModelTreeCamerasObject = {
+    length: {
+        type: "number",
+        get: (cameras: ICamera[]) => cameras.length,
+        getTarget: (cameras: ICamera[]) => cameras.map((camera) => camera._babylonCamera!),
+        getPropertyName: [() => "length"],
+    },
     __array__: {
         __target__: true,
         orthographic: {
@@ -577,8 +805,38 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
 };
 
 const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
+    length: {
+        type: "number",
+        get: (materials: IMaterial[]) => materials.length,
+        getTarget: (materials: IMaterial[]) => materials.map((material) => material._data?.[Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial),
+        getPropertyName: [() => "length"],
+    },
     __array__: {
         __target__: true,
+        doubleSided: {
+            type: "boolean",
+            get: (material, index?, payload?) => !GetMaterial(material, index, payload)?.backFaceCulling,
+            set: (value: boolean, material, index?, payload?) => {
+                const mat = GetMaterial(material, index, payload);
+                if (mat) {
+                    mat.backFaceCulling = !value;
+                }
+            },
+            getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
+            getPropertyName: [() => "backFaceCulling"],
+        },
+        alphaCutoff: {
+            type: "number",
+            get: (material, index?, payload?) => GetMaterial(material, index, payload)?.alphaCutOff,
+            set: (value: number, material, index?, payload?) => {
+                const mat = GetMaterial(material, index, payload);
+                if (mat) {
+                    mat.alphaCutOff = value;
+                }
+            },
+            getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
+            getPropertyName: [() => "alphaCutOff"],
+        },
         emissiveFactor: {
             type: "Color3",
             get: (material, index?, payload?) => GetMaterial(material, index, payload).emissiveColor,
@@ -680,18 +938,24 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_anisotropy: {
                 anisotropyStrength: {
                     type: "number",
-                    get: (material, index?, payload?) => GetMaterial(material, index, payload).anisotropy.intensity,
+                    get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.intensity,
                     set: (value: number, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).anisotropy.intensity = value;
+                        const mat = GetMaterial(material, index, payload);
+                        if (mat) {
+                            mat.anisotropy.intensity = value;
+                        }
                     },
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.intensity"],
                 },
                 anisotropyRotation: {
                     type: "number",
-                    get: (material, index?, payload?) => GetMaterial(material, index, payload).anisotropy.angle,
+                    get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.angle,
                     set: (value: number, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).anisotropy.angle = value;
+                        const mat = GetMaterial(material, index, payload);
+                        if (mat) {
+                            mat.anisotropy.angle = value;
+                        }
                     },
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.angle"],
@@ -823,7 +1087,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 sheenRoughnessTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("sheen", "thicknessTexture"),
+                        KHR_texture_transform: GenerateTextureMap("sheen", "textureRoughness"),
                     },
                 },
             },
@@ -863,7 +1127,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 transmissionTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "refractionIntensityTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "refractionIntensityTexture", {
+                            extensionKey: "KHR_materials_transmission",
+                            texturePath: ["transmissionTexture"],
+                        }),
                     },
                 },
             },
@@ -876,7 +1143,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 diffuseTransmissionTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyIntensityTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyIntensityTexture", {
+                            extensionKey: "KHR_materials_diffuse_transmission",
+                            texturePath: ["diffuseTransmissionTexture"],
+                        }),
                     },
                 },
                 diffuseTransmissionColorFactor: {
@@ -887,7 +1157,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 diffuseTransmissionColorTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyColorTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyColorTexture", {
+                            extensionKey: "KHR_materials_diffuse_transmission",
+                            texturePath: ["diffuseTransmissionColorTexture"],
+                        }),
                     },
                 },
             },
@@ -912,7 +1185,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 thicknessTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "thicknessTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "thicknessTexture", { extensionKey: "KHR_materials_volume", texturePath: ["thicknessTexture"] }),
                     },
                 },
             },
@@ -1074,7 +1347,196 @@ function GetTexture(material: IMaterial, payload: any, textureType: keyof PBRMat
 function GetMaterial(material: IMaterial, _index?: number, payload?: any) {
     return material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial;
 }
-function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string): ITextureDefinition {
+function _getNodeMorphTargetManager(node: INode): any {
+    const tn = node?._babylonTransformNode;
+    if (!tn) {
+        return undefined;
+    }
+    // Single primitive: transform node IS the mesh with morphTargetManager
+    if ((tn as any).morphTargetManager) {
+        return (tn as any).morphTargetManager;
+    }
+    // Multiple primitives: check each primitive mesh and its source
+    const primMeshes = node._primitiveBabylonMeshes;
+    if (primMeshes) {
+        for (const mesh of primMeshes) {
+            if (mesh?.morphTargetManager) {
+                return mesh.morphTargetManager;
+            }
+            // Check source mesh for instanced meshes
+            if ((mesh as any)?.sourceMesh?.morphTargetManager) {
+                return (mesh as any).sourceMesh.morphTargetManager;
+            }
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Result of a morph-target lookup: the active manager plus every Babylon mesh
+ * that shares it, so writes (set) can fan out across all primitives.
+ */
+interface IMorphTargetLookup {
+    mtm: MorphTargetManager;
+    meshes: AbstractMesh[];
+}
+
+/**
+ * KHR_interactivity test assets routinely use a glTF hierarchy where the
+ * **parent** node has no `mesh` but a descendant does. The Khronos morph-weight
+ * tests query `/nodes/<parent>/weights/*` and expect the result to come from
+ * the morph targets of the first descendant mesh. To support this we walk the
+ * Babylon-side scene graph below the queried INode looking for a Mesh that has
+ * a morphTargetManager.
+ *
+ * For multi-primitive meshes (one INode → several Babylon meshes parented to a
+ * wrapper TransformNode) we also collect the sibling primitives so a `set`
+ * touches every mesh that shares the manager.
+ * @param node the glTF node to start the lookup from
+ * @returns the active morph target manager and every Babylon mesh that shares
+ * it, or `undefined` when no morph target manager is reachable from the node.
+ */
+function _findNodeMorphTargets(node: INode): IMorphTargetLookup | undefined {
+    const tn = node?._babylonTransformNode;
+    if (!tn) {
+        return undefined;
+    }
+    // Direct: this node's own mesh has a morph target manager.
+    const directMtm: MorphTargetManager | undefined = _getNodeMorphTargetManager(node);
+    if (directMtm && node._primitiveBabylonMeshes && node._primitiveBabylonMeshes.length > 0) {
+        return { mtm: directMtm, meshes: node._primitiveBabylonMeshes as AbstractMesh[] };
+    }
+    // Fallback: search descendants in the Babylon scene graph for the first
+    // mesh that has a morph target manager, then collect every sibling mesh
+    // that shares it (covers the multi-primitive case).
+    const descendants = tn.getDescendants(false);
+    for (const desc of descendants) {
+        const candidate = desc as AbstractMesh;
+        const mtm: MorphTargetManager | undefined = (candidate as any).morphTargetManager ?? (candidate as any).sourceMesh?.morphTargetManager;
+        if (!mtm) {
+            continue;
+        }
+        const meshes: AbstractMesh[] = [];
+        const parent = candidate.parent;
+        if (parent) {
+            for (const sib of parent.getChildMeshes(true)) {
+                const sibMtm: MorphTargetManager | undefined = (sib as any).morphTargetManager ?? (sib as any).sourceMesh?.morphTargetManager;
+                if (sibMtm === mtm) {
+                    meshes.push(sib);
+                }
+            }
+        }
+        if (meshes.length === 0) {
+            meshes.push(candidate);
+        }
+        return { mtm, meshes };
+    }
+    return undefined;
+}
+
+/**
+ * Collapse float32-precision artifacts back to the closest "clean" double.
+ *
+ * glTF stores numbers as JSON, but tools usually serialize float32 morph weights
+ * with their full double-precision text — `0.1` becomes `0.10000000149011612`.
+ * KHR_interactivity tests then compare the read-back weight via strict `math/eq`
+ * against literals like `0.1`, which fails because the two doubles aren't bitwise
+ * equal. Rounding the value to 7 significant figures (the precision of a float32)
+ * recovers the original "clean" double for any value that survived a float32
+ * round-trip while leaving genuinely high-precision doubles essentially intact.
+ * @param v the value to round
+ * @returns the rounded value, or the input unchanged if it is not finite
+ */
+function _roundFloat32Artifact(v: number): number {
+    if (!Number.isFinite(v)) {
+        return v;
+    }
+    return parseFloat(v.toPrecision(7));
+}
+/**
+ * Coordinate where a Babylon `Texture` lives on a PBRMaterial vs where its
+ * KHR_texture_transform definition lives in the source glTF JSON. Used by
+ * {@link GenerateTextureMap} to provide a glTF-side fallback when the loader
+ * extension that owns the texture decided not to materialise it on the
+ * Babylon material (e.g. KHR_materials_volume early-returns when there is no
+ * `thicknessFactor`, leaving `subSurface.thicknessTexture` null even though
+ * the glTF JSON has the texture+transform fully defined).
+ *
+ * The fallback gives KHR_interactivity `pointer/get` and `pointer/set` a
+ * place to read/write the transform values so round-trip tests succeed even
+ * when the texture is not yet active in the renderer. If/when the loader
+ * later activates the texture, the seeded values can be picked up from the
+ * glTF JSON.
+ */
+interface IGltfTextureTransformPath {
+    /**
+     * The path of nested keys under `material.extensions.<ext>` to reach the
+     * texture-info object. For example `["thicknessTexture"]` for
+     * `KHR_materials_volume.thicknessTexture`.
+     */
+    extensionKey: string;
+    texturePath: string[];
+}
+
+/**
+ * Read the KHR_texture_transform object stored in the source glTF JSON for a
+ * texture-info that lives under one of the material's extensions, creating
+ * empty parent objects on demand so callers can write through it. Returns
+ * `undefined` when the input shape is incompatible.
+ * @param material the source IMaterial owning the extension
+ * @param gltfPath the path describing where the texture-info lives
+ * @param createMissing when true, create missing parent objects so writes succeed
+ * @returns the glTF-side KHR_texture_transform object, or undefined
+ */
+function _gltfTextureTransform(material: IMaterial, gltfPath: IGltfTextureTransformPath, createMissing: boolean): any | undefined {
+    if (!material) {
+        return undefined;
+    }
+    let extensions = material.extensions;
+    if (!extensions) {
+        if (!createMissing) {
+            return undefined;
+        }
+        extensions = {};
+        material.extensions = extensions;
+    }
+    let cursor: any = extensions[gltfPath.extensionKey];
+    if (!cursor) {
+        if (!createMissing) {
+            return undefined;
+        }
+        cursor = {};
+        extensions[gltfPath.extensionKey] = cursor;
+    }
+    for (const key of gltfPath.texturePath) {
+        let next = cursor[key];
+        if (!next) {
+            if (!createMissing) {
+                return undefined;
+            }
+            next = {};
+            cursor[key] = next;
+        }
+        cursor = next;
+    }
+    if (!cursor.extensions) {
+        if (!createMissing) {
+            return undefined;
+        }
+        cursor.extensions = {};
+    }
+    let xform = cursor.extensions.KHR_texture_transform;
+    if (!xform) {
+        if (!createMissing) {
+            return undefined;
+        }
+        xform = {};
+        cursor.extensions.KHR_texture_transform = xform;
+    }
+    return xform;
+}
+
+function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string, gltfPath?: IGltfTextureTransformPath): ITextureDefinition {
     return {
         offset: {
             componentsCount: 2,
@@ -1082,12 +1544,29 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             type: "Vector2",
             get: (material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                return new Vector2(texture?.uOffset, texture?.vOffset);
+                if (texture) {
+                    return new Vector2(texture.uOffset, texture.vOffset);
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, false);
+                    const o = xform?.offset;
+                    return new Vector2(o?.[0] ?? 0, o?.[1] ?? 0);
+                }
+                return new Vector2(0, 0);
             },
             getTarget: GetMaterial,
             set: (value, material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                ((texture.uOffset = value.x), (texture.vOffset = value.y));
+                if (texture) {
+                    texture.uOffset = value.x;
+                    texture.vOffset = value.y;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, true);
+                    if (xform) {
+                        xform.offset = [value.x, value.y];
+                    }
+                }
             },
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
@@ -1096,9 +1575,30 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
         },
         rotation: {
             type: "number",
-            get: (material, _index?, payload?) => GetTexture(material, payload, textureType, textureInObject)?.wAng,
+            get: (material, _index?, payload?) => {
+                const texture = GetTexture(material, payload, textureType, textureInObject);
+                if (texture) {
+                    return texture.wAng;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, false);
+                    return xform?.rotation ?? 0;
+                }
+                return 0;
+            },
             getTarget: GetMaterial,
-            set: (value, material, _index?, payload?) => (GetTexture(material, payload, textureType, textureInObject).wAng = value),
+            set: (value, material, _index?, payload?) => {
+                const texture = GetTexture(material, payload, textureType, textureInObject);
+                if (texture) {
+                    texture.wAng = value;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, true);
+                    if (xform) {
+                        xform.rotation = value;
+                    }
+                }
+            },
             getPropertyName: [() => `${textureType}${textureInObject ? "." + textureInObject : ""}.wAng`],
         },
         scale: {
@@ -1106,12 +1606,29 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             type: "Vector2",
             get: (material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                return new Vector2(texture?.uScale, texture?.vScale);
+                if (texture) {
+                    return new Vector2(texture.uScale, texture.vScale);
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, false);
+                    const s = xform?.scale;
+                    return new Vector2(s?.[0] ?? 1, s?.[1] ?? 1);
+                }
+                return new Vector2(1, 1);
             },
             getTarget: GetMaterial,
             set: (value, material, index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                ((texture.uScale = value.x), (texture.vScale = value.y));
+                if (texture) {
+                    texture.uScale = value.x;
+                    texture.vScale = value.y;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, true);
+                    if (xform) {
+                        xform.scale = [value.x, value.y];
+                    }
+                }
             },
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,
@@ -1121,13 +1638,91 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
     };
 }
 
+const scenesTree: IGLTFObjectModelTreeScenesObject = {
+    length: {
+        type: "number",
+        get: (scenes: IScene[]) => scenes.length,
+        getTarget: (scenes: IScene[]) => scenes,
+        getPropertyName: [() => "length"],
+    },
+    __array__: {
+        __target__: true,
+        nodes: {
+            length: {
+                type: "number",
+                get: (nodes: number[]) => nodes?.length ?? 0,
+                getTarget: (nodes: number[]) => nodes ?? [],
+                getPropertyName: [() => "length"],
+            },
+            __array__: {
+                __target__: true,
+                type: "string",
+                // Indexed scene root: the underlying value is the INode index;
+                // KHR_interactivity expects a ref-typed JSON Pointer string.
+                get: (nodeIndex: any) => (typeof nodeIndex === "number" ? `/nodes/${nodeIndex}/` : ""),
+                getTarget: () => ({ __nodeIndex: true }),
+                isReadOnly: true,
+            },
+        },
+    },
+};
+
+const skinsTree: IGLTFObjectModelTreeSkinsObject = {
+    length: {
+        type: "number",
+        get: (skins: ISkin[]) => skins.length,
+        getTarget: (skins: ISkin[]) => skins.map((skin) => skin._data?.babylonSkeleton),
+        getPropertyName: [() => "length"],
+    },
+    __array__: {
+        __target__: true,
+        joints: {
+            length: {
+                type: "number",
+                get: (joints: number[]) => joints?.length ?? 0,
+                getTarget: (joints: number[]) => joints ?? [],
+                getPropertyName: [() => "length"],
+            },
+            __array__: {
+                __target__: true,
+                type: "string",
+                // Indexed skin joint: returns a ref to the joint node.
+                get: (jointIndex: any) => (typeof jointIndex === "number" ? `/nodes/${jointIndex}/` : ""),
+                getTarget: () => ({ __nodeIndex: true }),
+                isReadOnly: true,
+            },
+        },
+        skeleton: {
+            type: "string",
+            // Skin's skeleton root: returns a ref to the root node, or empty
+            // (null ref) when no skeleton root is declared.
+            get: (skin: ISkin) => {
+                const skeleton = (skin as any).skeleton;
+                return typeof skeleton === "number" ? `/nodes/${skeleton}/` : "";
+            },
+            getTarget: (skin: ISkin) => skin,
+            isReadOnly: true,
+        },
+    },
+};
+
 const objectModelMapping: IGLTFObjectModelTree = {
+    scene: {
+        __target__: true,
+        type: "number",
+        get: (sceneIndex: any) => sceneIndex ?? 0,
+        getTarget: () => ({ __gltfRoot: true }),
+        isReadOnly: true,
+        getPropertyName: [() => "scene"],
+    },
     cameras: camerasTree,
     nodes: nodesTree,
     materials: materialsTree,
     extensions: extensionsTree,
     animations: animationsTree,
     meshes: meshesTree,
+    scenes: scenesTree,
+    skins: skinsTree,
 };
 
 /**

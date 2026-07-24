@@ -88,6 +88,7 @@
         "test:visualization:devhost": "playwright test -c ./playwright.devhost.config.ts",
         "test:visualization:devhost:ui": "playwright test -c ./playwright.devhost.config.ts --ui",
         "test:integration": "playwright test -c ./playwright.config.ts --project=integration && npm run test -w @tools/memory-leak-tests",
+        "test:khr-interactivity": "vitest run --project=unit FlowGraph Interactivity && node ./scripts/runKHRInteractivityAssetTests.mjs",
         "test:memory-leaks": "npm run test -w @tools/memory-leak-tests",
         "test:memory-leaks:unit": "npm run test:unit -w @tools/memory-leak-tests",
         "test:memory-leaks:all": "npm run test:all -w @tools/memory-leak-tests",

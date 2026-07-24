@@ -18,6 +18,7 @@ import {
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { IsDelayActive } from "core/FlowGraph/flowGraphDelayReference";
 import { Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -234,6 +235,33 @@ describe("Flow Graph Execution Nodes", () => {
         scene.render();
 
         expect(Logger.Log).not.toHaveBeenCalledWith("done");
+    });
+
+    it("keeps global delay identities stable when delays are cancelled and fired", () => {
+        const delay = new FlowGraphSetDelayBlock();
+        delay.duration.setValue(0, flowGraphContext);
+
+        delay._preparePendingTasks(flowGraphContext);
+        delay._preparePendingTasks(flowGraphContext);
+        delay._preparePendingTasks(flowGraphContext);
+
+        expect(IsDelayActive(flowGraphContext, 0)).toBe(true);
+        expect(IsDelayActive(flowGraphContext, 1)).toBe(true);
+        expect(IsDelayActive(flowGraphContext, 2)).toBe(true);
+
+        const cancel = new FlowGraphCancelDelayBlock();
+        cancel.delayIndex.setValue(new FlowGraphInteger(1), flowGraphContext);
+        cancel._execute(flowGraphContext, cancel.in);
+
+        scene.render();
+
+        expect(IsDelayActive(flowGraphContext, 0)).toBe(false);
+        expect(IsDelayActive(flowGraphContext, 1)).toBe(false);
+        expect(IsDelayActive(flowGraphContext, 2)).toBe(false);
+        const pendingDelays = flowGraphContext._getGlobalContextVariable("pendingDelays", []);
+        expect(pendingDelays[0]).toBeUndefined();
+        expect(pendingDelays[1]).toBeUndefined();
+        expect(pendingDelays[2]).toBeUndefined();
     });
 
     it("Flip Flop Block", () => {

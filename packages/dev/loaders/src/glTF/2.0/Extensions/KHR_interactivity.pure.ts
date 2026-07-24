@@ -11,7 +11,16 @@ import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interac
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
+import { type Camera } from "core/Cameras/camera";
+import { Constants } from "core/Engines/constants";
 import { type IAnimation } from "../glTFLoaderInterfaces";
+import { CompositePathToObjectConverter, type IPathConverterPrefixEntry } from "./compositePathToObjectConverter";
+import { BabylonScenePathToObjectConverter, BABYLON_SCENE_OBJECT_MODEL_PREFIX, CreateDefaultBabylonSceneObjectModelTree } from "./babylonScenePathToObjectConverter";
+import { InteractivityRefPathToObjectConverter } from "./interactivityRefPathToObjectConverter";
+import { EventReferencePrefix } from "core/FlowGraph/flowGraphEventReference";
+import { DelayReferencePrefix } from "core/FlowGraph/flowGraphDelayReference";
+import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 
 const NAME = "KHR_interactivity";
 
@@ -28,7 +37,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
+    private _gltfPathConverter?: GLTFPathToObjectConverter<any, any, any>;
+    private _pathConverter?: CompositePathToObjectConverter<IObjectAccessor>;
 
     /**
      * @internal
@@ -36,13 +46,38 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = GetPathToObjectConverter(this._loader.gltf);
+        this._gltfPathConverter = GetPathToObjectConverter(this._loader.gltf);
+        const scene = _loader.babylonScene;
+        if (this._gltfPathConverter) {
+            // Build a composite that handles both:
+            //   - The Babylon-scene namespace (`/extensions/BABYLON_scene_objects/...`),
+            //     used by ref values that point at scene objects not described by the
+            //     source glTF (e.g. refs emitted by engine-side event blocks).
+            //   - The standard glTF object model (everything else), via the existing
+            //     glTF converter as a fallback.
+            const initialPrefixes: IPathConverterPrefixEntry<IObjectAccessor>[] = [];
+            if (scene) {
+                initialPrefixes.push({
+                    prefix: BABYLON_SCENE_OBJECT_MODEL_PREFIX,
+                    converter: new BabylonScenePathToObjectConverter(scene, CreateDefaultBabylonSceneObjectModelTree()),
+                });
+            }
+            // KHR_interactivity ref-validity pointers (`/extensions/KHR_interactivity/events/{}`
+            // and `/extensions/KHR_interactivity/delays/{}`) are virtual: they validate an opaque
+            // event/delay reference rather than addressing a glTF object, so route them to a
+            // dedicated converter instead of the glTF fallback.
+            const refConverter = new InteractivityRefPathToObjectConverter();
+            initialPrefixes.push({ prefix: EventReferencePrefix, converter: refConverter });
+            initialPrefixes.push({ prefix: DelayReferencePrefix, converter: refConverter });
+            this._pathConverter = new CompositePathToObjectConverter<IObjectAccessor>(
+                initialPrefixes,
+                this._gltfPathConverter as unknown as IPathToObjectConverter<IObjectAccessor>
+            );
+        }
         // avoid starting animations automatically.
         _loader._skipStartAnimationStep = true;
 
         // Update object model with new pointers
-
-        const scene = _loader.babylonScene;
         if (scene) {
             _AddInteractivityObjectModel(scene);
         }
@@ -50,6 +85,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
     public dispose() {
         (this._loader as any) = null;
+        delete this._gltfPathConverter;
         delete this._pathConverter;
     }
 
@@ -114,6 +150,90 @@ export function _AddInteractivityObjectModel(scene: Scene) {
             return pos;
         },
         type: "Vector3",
+        getTarget: () => scene.activeCamera,
+    });
+
+    // activeCamera projection properties. Per the spec these read-only values are NaN when there is no
+    // active camera, or when the active camera does not use the projection type of the requested pointer
+    // (all perspective properties are NaN for an orthographic camera, and vice-versa).
+    const getActivePerspectiveValue = (compute: (camera: Camera) => number): number => {
+        const camera = scene.activeCamera;
+        if (!camera || camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+            return NaN;
+        }
+        return compute(camera);
+    };
+    const getActiveOrthographicValue = (compute: (camera: Camera) => number): number => {
+        const camera = scene.activeCamera;
+        if (!camera || camera.mode !== Constants.ORTHOGRAPHIC_CAMERA) {
+            return NaN;
+        }
+        return compute(camera);
+    };
+
+    // perspective/aspectRatio (width over height)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/aspectRatio", {
+        get: () => getActivePerspectiveValue((camera) => camera.getEngine().getAspectRatio(camera)),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // perspective/yfov (vertical field of view, in radians)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/yfov", {
+        get: () =>
+            getActivePerspectiveValue((camera) => {
+                // Babylon stores the vertical fov when fovMode is vertical-fixed (the default and what the glTF
+                // loader sets). For a horizontal-fixed camera, convert the horizontal fov to vertical.
+                if (camera.fovMode === Constants.FOVMODE_VERTICAL_FIXED) {
+                    return camera.fov;
+                }
+                const aspectRatio = camera.getEngine().getAspectRatio(camera);
+                return aspectRatio ? 2 * Math.atan(Math.tan(camera.fov / 2) / aspectRatio) : camera.fov;
+            }),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // perspective/znear (distance to the near clipping plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/znear", {
+        get: () => getActivePerspectiveValue((camera) => camera.minZ),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // perspective/zfar (distance to the far clipping plane; Babylon uses maxZ === 0 to mean an infinite far plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/zfar", {
+        get: () => getActivePerspectiveValue((camera) => (camera.maxZ === 0 ? Infinity : camera.maxZ)),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/xmag (half the orthographic width)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/xmag", {
+        get: () =>
+            getActiveOrthographicValue((camera) => {
+                const halfWidth = camera.getEngine().getRenderWidth() / 2;
+                return ((camera.orthoRight ?? halfWidth) - (camera.orthoLeft ?? -halfWidth)) / 2;
+            }),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/ymag (half the orthographic height)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/ymag", {
+        get: () =>
+            getActiveOrthographicValue((camera) => {
+                const halfHeight = camera.getEngine().getRenderHeight() / 2;
+                return ((camera.orthoTop ?? halfHeight) - (camera.orthoBottom ?? -halfHeight)) / 2;
+            }),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/znear (distance to the near clipping plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/znear", {
+        get: () => getActiveOrthographicValue((camera) => camera.minZ),
+        type: "number",
+        getTarget: () => scene.activeCamera,
+    });
+    // orthographic/zfar (distance to the far clipping plane)
+    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/zfar", {
+        get: () => getActiveOrthographicValue((camera) => camera.maxZ),
+        type: "number",
         getTarget: () => scene.activeCamera,
     });
 

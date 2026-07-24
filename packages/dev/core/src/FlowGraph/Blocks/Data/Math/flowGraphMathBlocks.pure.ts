@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphTypes, getRichTypeByFlowGraphType, RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes.pure";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
@@ -332,6 +332,15 @@ export class FlowGraphEBlock extends FlowGraphConstantOperationBlock<number> {
 export class FlowGraphPiBlock extends FlowGraphConstantOperationBlock<number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeNumber, () => Math.PI, FlowGraphBlockNames.PI, config);
+    }
+}
+
+/**
+ * Tau constant (2 * Pi), the ratio of a circle's circumference to its radius.
+ */
+export class FlowGraphTauBlock extends FlowGraphConstantOperationBlock<number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, () => 2 * Math.PI, FlowGraphBlockNames.Tau, config);
     }
 }
 
@@ -669,6 +678,21 @@ function Interpolate(a: number, b: number, c: number) {
 }
 
 /**
+ * Smooth step (Hermite interpolation) per KHR_interactivity `math/smoothStep`.
+ * Given the edges `a`/`b` and the value `c`, computes the smooth interpolation
+ * coefficient `t * t * (3 - 2 * t)` where `t = saturate((c - min(a, b)) / |b - a|)`.
+ * Note that this returns the coefficient in [0, 1]; it does not interpolate between `a` and `b`.
+ * @param a first edge
+ * @param b second edge
+ * @param c value to interpolate
+ * @returns the smooth-step interpolation coefficient
+ */
+function SmoothStep(a: number, b: number, c: number) {
+    const t = Saturate((c - Math.min(a, b)) / Math.abs(b - a));
+    return t * t * (3 - 2 * t);
+}
+
+/**
  * Interpolate block.
  */
 export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBlock<
@@ -687,6 +711,42 @@ export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBl
 }
 
 /**
+ * Spherical linear interpolation between two unit quaternions, matching the
+ * KHR_interactivity `math/quatSlerp` operation. The two inputs are treated as
+ * Babylon `Quaternion` values regardless of their concrete class (the spec
+ * defines them as `float4`), and the output is a `Quaternion`.
+ *
+ * The underlying implementation is `Quaternion.Slerp`, whose algorithm matches
+ * the spec step-for-step (dot product, conditional sign-flip on `b`, sin-based
+ * weighting, and a near-identity short-circuit to a linear blend).
+ */
+export class FlowGraphMathSlerpBlock extends FlowGraphTernaryOperationBlock<Quaternion, Quaternion, number, Quaternion> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, RichTypeNumber, RichTypeAny, (a, b, c) => Quaternion.Slerp(a, b, c), FlowGraphBlockNames.MathSlerp, config);
+    }
+}
+
+/**
+ * Smooth-step block, backing the KHR_interactivity `math/smoothStep` operation.
+ * Operates component-wise over floatN inputs (the two edges `a`/`b` and the
+ * value `c`).
+ */
+export class FlowGraphMathSmoothStepBlock extends FlowGraphTernaryOperationBlock<
+    FlowGraphMathOperationType,
+    FlowGraphMathOperationType,
+    FlowGraphMathOperationType,
+    FlowGraphMathOperationType
+> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, RichTypeAny, RichTypeAny, (a, b, c) => this._polymorphicSmoothStep(a, b, c), FlowGraphBlockNames.SmoothStep, config);
+    }
+
+    private _polymorphicSmoothStep(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType, c: FlowGraphMathOperationType) {
+        return ComponentWiseTernaryOperation(a, b, c, SmoothStep);
+    }
+}
+
+/**
  * Equals block.
  */
 export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, boolean> {
@@ -697,14 +757,38 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicEq(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
-        if (typeof a !== typeof b) {
-            return false;
+        // KHR_interactivity has no dedicated quaternion type: rotations are float4 values. Treat Quaternion and
+        // Vector4 (both four-component) as comparable so that, for example, a decomposed rotation can be compared
+        // against a float4 literal.
+        const isFourComponent = (className?: string) => className === FlowGraphTypes.Vector4 || className === FlowGraphTypes.Quaternion;
+        if (isFourComponent(aClassName) && isFourComponent(bClassName)) {
+            return (a as Vector4).equals(b as Vector4);
         }
         if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             return (a as Vector3).equals(b as Vector3);
-        } else {
-            return a === b;
         }
+        // Handle mixed number/FlowGraphInteger comparison
+        if (isNumeric(a) && isNumeric(b)) {
+            return getNumericValue(a as FlowGraphNumber) === getNumericValue(b as FlowGraphNumber);
+        }
+        if (typeof a !== typeof b) {
+            return false;
+        }
+        // Both sides are JSON-Pointer-like ref strings ("/foo/0", "/foo/0/", ...).
+        // KHR_interactivity ref/eq is defined as "refers to the same object",
+        // so normalise trailing slashes before comparing — different asset
+        // authors emit refs with and without the trailing slash for the same
+        // object (e.g. /nodes/420 vs /nodes/420/).
+        if (typeof a === "string" && typeof b === "string") {
+            const aStr: string = a;
+            const bStr: string = b;
+            if (aStr.length > 0 && aStr[0] === "/" && bStr.length > 0 && bStr[0] === "/") {
+                const ar = aStr.endsWith("/") ? aStr.slice(0, -1) : aStr;
+                const br = bStr.endsWith("/") ? bStr.slice(0, -1) : bStr;
+                return ar === br;
+            }
+        }
+        return a === b;
     }
 }
 
@@ -1295,6 +1379,159 @@ export class FlowGraphOneBitsCounterBlock extends FlowGraphUnaryOperationBlock<F
     }
 }
 
+/**
+ * Converts a linear sRGB color to OkLCh (the polar form of the Oklab color space).
+ * Uses the single-precision matrices listed by KHR_interactivity.
+ * The RGB inputs are treated as linear; hue is returned in radians.
+ * @param r linear red component
+ * @param g linear green component
+ * @param b linear blue component
+ * @returns the OkLCh lightness (l), chroma (c) and hue (h, radians)
+ */
+function RgbToOkLch(r: number, g: number, b: number): { l: number; c: number; h: number } {
+    // Linear sRGB -> LMS cone responses.
+    const long = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+    const medium = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+    const short = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+    // Non-linearity (cube root) then LMS' -> Oklab.
+    const lRoot = Math.cbrt(long);
+    const mRoot = Math.cbrt(medium);
+    const sRoot = Math.cbrt(short);
+    const okL = 0.2104542553 * lRoot + 0.793617785 * mRoot - 0.0040720468 * sRoot;
+    const okA = 1.9779984951 * lRoot - 2.428592205 * mRoot + 0.4505937099 * sRoot;
+    const okB = 0.0259040371 * lRoot + 0.7827717662 * mRoot - 0.808675766 * sRoot;
+    // Oklab -> OkLCh (polar form).
+    return { l: okL, c: Math.hypot(okA, okB), h: Math.atan2(okB, okA) };
+}
+
+/**
+ * Converts an OkLCh color to linear sRGB. Inverse of {@link RgbToOkLch}; hue is in radians.
+ * @param l OkLCh lightness
+ * @param c OkLCh chroma
+ * @param h OkLCh hue in radians
+ * @returns the linear sRGB red (r), green (g) and blue (b) components
+ */
+function OkLchToRgb(l: number, c: number, h: number): { r: number; g: number; b: number } {
+    // OkLCh -> Oklab.
+    const okA = c * Math.cos(h);
+    const okB = c * Math.sin(h);
+    // Oklab -> LMS' then cube to LMS.
+    const lPrime = l + 0.3963377774 * okA + 0.2158037573 * okB;
+    const mPrime = l - 0.1055613458 * okA - 0.0638541728 * okB;
+    const sPrime = l - 0.0894841775 * okA - 1.291485548 * okB;
+    const long = lPrime * lPrime * lPrime;
+    const medium = mPrime * mPrime * mPrime;
+    const short = sPrime * sPrime * sPrime;
+    // LMS -> linear sRGB.
+    return {
+        r: 4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short,
+        g: -1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short,
+        b: -0.0041960863 * long - 0.7034186147 * medium + 1.707614701 * short,
+    };
+}
+
+/**
+ * Block that converts a linear sRGB color (r, g, b) to OkLCh (l, c, h). Hue is in radians.
+ */
+export class FlowGraphRGBToOkLChBlock extends FlowGraphBlock {
+    /**
+     * Input connection: the linear red component.
+     */
+    public readonly r: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: the linear green component.
+     */
+    public readonly g: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: the linear blue component.
+     */
+    public readonly b: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: the OkLCh lightness.
+     */
+    public readonly l: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: the OkLCh chroma.
+     */
+    public readonly c: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: the OkLCh hue, in radians.
+     */
+    public readonly h: FlowGraphDataConnection<number>;
+
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        this.r = this.registerDataInput("r", RichTypeNumber, 0);
+        this.g = this.registerDataInput("g", RichTypeNumber, 0);
+        this.b = this.registerDataInput("b", RichTypeNumber, 0);
+        this.l = this.registerDataOutput("l", RichTypeNumber, 0);
+        this.c = this.registerDataOutput("c", RichTypeNumber, 0);
+        this.h = this.registerDataOutput("h", RichTypeNumber, 0);
+    }
+
+    public override _updateOutputs(context: FlowGraphContext): void {
+        const { l, c, h } = RgbToOkLch(this.r.getValue(context), this.g.getValue(context), this.b.getValue(context));
+        this.l.setValue(l, context);
+        this.c.setValue(c, context);
+        this.h.setValue(h, context);
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.RGBToOkLCh;
+    }
+}
+
+/**
+ * Block that converts an OkLCh color (l, c, h) to linear sRGB (r, g, b). Hue is in radians.
+ */
+export class FlowGraphRGBFromOkLChBlock extends FlowGraphBlock {
+    /**
+     * Input connection: the OkLCh lightness.
+     */
+    public readonly l: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: the OkLCh chroma.
+     */
+    public readonly c: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: the OkLCh hue, in radians.
+     */
+    public readonly h: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: the linear red component.
+     */
+    public readonly r: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: the linear green component.
+     */
+    public readonly g: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: the linear blue component.
+     */
+    public readonly b: FlowGraphDataConnection<number>;
+
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        this.l = this.registerDataInput("l", RichTypeNumber, 0);
+        this.c = this.registerDataInput("c", RichTypeNumber, 0);
+        this.h = this.registerDataInput("h", RichTypeNumber, 0);
+        this.r = this.registerDataOutput("r", RichTypeNumber, 0);
+        this.g = this.registerDataOutput("g", RichTypeNumber, 0);
+        this.b = this.registerDataOutput("b", RichTypeNumber, 0);
+    }
+
+    public override _updateOutputs(context: FlowGraphContext): void {
+        const { r, g, b } = OkLchToRgb(this.l.getValue(context), this.c.getValue(context), this.h.getValue(context));
+        this.r.setValue(r, context);
+        this.g.setValue(g, context);
+        this.b.setValue(b, context);
+    }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.RGBFromOkLCh;
+    }
+}
+
 let _Registered = false;
 /**
  * Register side effects for flowGraphMathBlocks.
@@ -1313,6 +1550,7 @@ export function RegisterFlowGraphMathBlocks(): void {
     RegisterClass(FlowGraphBlockNames.Random, FlowGraphRandomBlock);
     RegisterClass(FlowGraphBlockNames.E, FlowGraphEBlock);
     RegisterClass(FlowGraphBlockNames.PI, FlowGraphPiBlock);
+    RegisterClass(FlowGraphBlockNames.Tau, FlowGraphTauBlock);
     RegisterClass(FlowGraphBlockNames.Inf, FlowGraphInfBlock);
     RegisterClass(FlowGraphBlockNames.NaN, FlowGraphNaNBlock);
     RegisterClass(FlowGraphBlockNames.Abs, FlowGraphAbsBlock);
@@ -1329,6 +1567,10 @@ export function RegisterFlowGraphMathBlocks(): void {
     RegisterClass(FlowGraphBlockNames.Clamp, FlowGraphClampBlock);
     RegisterClass(FlowGraphBlockNames.Saturate, FlowGraphSaturateBlock);
     RegisterClass(FlowGraphBlockNames.MathInterpolation, FlowGraphMathInterpolationBlock);
+    RegisterClass(FlowGraphBlockNames.MathSlerp, FlowGraphMathSlerpBlock);
+    RegisterClass(FlowGraphBlockNames.SmoothStep, FlowGraphMathSmoothStepBlock);
+    RegisterClass(FlowGraphBlockNames.RGBToOkLCh, FlowGraphRGBToOkLChBlock);
+    RegisterClass(FlowGraphBlockNames.RGBFromOkLCh, FlowGraphRGBFromOkLChBlock);
     RegisterClass(FlowGraphBlockNames.Equality, FlowGraphEqualityBlock);
     RegisterClass(FlowGraphBlockNames.LessThan, FlowGraphLessThanBlock);
     RegisterClass(FlowGraphBlockNames.LessThanOrEqual, FlowGraphLessThanOrEqualBlock);

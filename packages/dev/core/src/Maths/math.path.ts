@@ -30,20 +30,36 @@ export class BezierCurve {
         if (t === 0) {
             return 0;
         }
+        if (t === 1) {
+            return 1;
+        }
         // Extract X (which is equal to time here)
         const f0 = 1 - 3 * x2 + 3 * x1;
         const f1 = 3 * x2 - 6 * x1;
         const f2 = 3 * x1;
 
+        let lowerBound = 0;
+        let upperBound = 1;
         let refinedT = t;
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 8; i++) {
             const refinedT2 = refinedT * refinedT;
             const refinedT3 = refinedT2 * refinedT;
 
             const x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
-            const slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
-            refinedT -= (x - t) * slope;
-            refinedT = Math.min(1, Math.max(0, refinedT));
+            const error = x - t;
+            if (Math.abs(error) < 1e-7) {
+                break;
+            }
+
+            if (error > 0) {
+                upperBound = refinedT;
+            } else {
+                lowerBound = refinedT;
+            }
+
+            const derivative = 3 * f0 * refinedT2 + 2 * f1 * refinedT + f2;
+            const newtonT = Math.abs(derivative) > 1e-7 ? refinedT - error / derivative : NaN;
+            refinedT = Number.isFinite(newtonT) && newtonT > lowerBound && newtonT < upperBound ? newtonT : (lowerBound + upperBound) * 0.5;
         }
 
         // Resolve cubic bezier for the given x

@@ -2,6 +2,7 @@
 export * from "./flowGraphMeshPickEventBlock.pure";
 export * from "./flowGraphSceneReadyEventBlock.pure";
 export * from "./flowGraphReceiveCustomEventBlock.pure";
+export * from "./flowGraphStopEventPropagationBlock.pure";
 export * from "./flowGraphSendCustomEventBlock.pure";
 export * from "./flowGraphSceneTickEventBlock.pure";
 export * from "./flowGraphPointerOutEventBlock.pure";
