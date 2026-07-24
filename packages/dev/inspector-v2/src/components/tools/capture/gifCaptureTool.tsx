@@ -30,7 +30,7 @@ export const GIFCaptureTool = MakeLazyComponent(
         const gif = (await import("gif.js.optimized")).default;
 
         // TODO: Figure out how to grab this from NPM package instead of CDN
-        const workerContent = await Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js");
+        const workerContent = await Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh/terikon/gif.js.optimized@0.1.6/dist/gif.worker.js");
         const workerBlob = new Blob([workerContent], { type: "application/javascript" });
         const workerUrl = URL.createObjectURL(workerBlob);
 

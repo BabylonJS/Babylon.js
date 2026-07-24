@@ -147,6 +147,7 @@ export class TextRenderer implements IDisposable {
      * Gets or sets if the text renderer should write to the depth buffer (default is false).
      * When enabled, transparent pixels are discarded so that separate text renderers (and other meshes)
      * occlude each other according to their position in the 3D scene instead of their render order.
+     * On multisampled framebuffers, alpha-to-coverage is used to preserve anti-aliased edges.
      * This has no effect when ignoreDepthBuffer is true.
      */
     public writeToDepthBuffer = false;
@@ -353,17 +354,31 @@ export class TextRenderer implements IDisposable {
             engine.bindBuffers(this._vertexBuffers, null, effect);
         }
 
-        // When writing to the depth buffer, keep depth writes enabled (setAlphaMode would otherwise disable them for the ALPHA_COMBINE mode).
-        engine.setAlphaMode(Constants.ALPHA_COMBINE, writeDepth);
-        if (writeDepth) {
-            engine.setDepthWrite(true);
-        }
-        engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
-        engine.unbindInstanceAttributes();
-        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        const useAlphaToCoverage = writeDepth && engine.currentSampleCount > 1;
+        const previousAlphaToCoverage = engine.getAlphaToCoverage();
 
-        if (this.ignoreDepthBuffer) {
-            engine.setDepthBuffer(true);
+        // Alpha-to-coverage converts the MSDF alpha into per-sample coverage, allowing smooth edges to write depth correctly.
+        if (useAlphaToCoverage) {
+            engine.setAlphaToCoverage(true);
+        }
+
+        try {
+            // When writing to the depth buffer, keep depth writes enabled (setAlphaMode would otherwise disable them for the ALPHA_COMBINE mode).
+            engine.setAlphaMode(useAlphaToCoverage ? Constants.ALPHA_REPLACE_COLOR : Constants.ALPHA_COMBINE, writeDepth);
+            if (writeDepth) {
+                engine.setDepthWrite(true);
+            }
+            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
+        } finally {
+            if (useAlphaToCoverage) {
+                engine.setAlphaToCoverage(previousAlphaToCoverage);
+            }
+            engine.unbindInstanceAttributes();
+            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+            if (this.ignoreDepthBuffer) {
+                engine.setDepthBuffer(true);
+            }
         }
     }
 

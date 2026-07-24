@@ -220,6 +220,7 @@ export class PhysicsCharacterController {
     private _body: PhysicsBody;
     private _transformNode: TransformNode;
     private _ownShape: boolean;
+    private _shapeOptions: CharacterShapeOptions;
     private _manifold: IContact[] = [];
     private _stepUpSavedManifold: IContact[] = [];
     private _lastDisplacement: Vector3;
@@ -365,6 +366,7 @@ export class PhysicsCharacterController {
         this._tmpVecs[0].set(0, h * 0.5 - r, 0);
         this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
         this._ownShape = !characterShapeOptions.shape;
+        this._shapeOptions = characterShapeOptions;
         this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(this._tmpVecs[0], this._tmpVecs[1], r, scene);
         this._transformNode = new TransformNode("CCTransformNode", scene);
         this._transformNode.position.copyFrom(this._position);
@@ -410,12 +412,55 @@ export class PhysicsCharacterController {
      * Set shape used for collision
      */
     public set shape(value: PhysicsShape) {
-        this._body.shape = this._shape;
+        this._body.shape = value;
         if (this._ownShape) {
             this._shape.dispose();
         }
         this._shape = value;
         this._ownShape = false;
+    }
+
+    /**
+     * Get the shape options used to build the collision shape
+     */
+    public get shapeOptions(): CharacterShapeOptions {
+        return this._shapeOptions;
+    }
+
+    /**
+     * Set new shape options and rebuild the collision shape accordingly.
+     * When the options provide an explicit `shape`, it is used directly; otherwise
+     * a capsule is created from the `capsuleHeight` / `capsuleRadius` values. The
+     * resulting shape is assigned through the shape setter, which releases the
+     * previously owned shape.
+     * @param characterShapeOptions character physics shape options
+     * @param preserveFootPosition when true (default), the controller position is adapted so the
+     * world-space foot position (center - up * footOffset) is kept fixed as the height changes; when
+     * false, the position is left unchanged.
+     */
+    public setShapeOptions(characterShapeOptions: CharacterShapeOptions, preserveFootPosition = true) {
+        this._shapeOptions = characterShapeOptions;
+        const r = characterShapeOptions.capsuleRadius ?? 0.6;
+        const h = characterShapeOptions.capsuleHeight ?? 1.8;
+        const newFootOffset = h * 0.5;
+
+        if (preserveFootPosition) {
+            // Compute the current world-space foot position (center - up * footOffset), then move the
+            // center so the feet stay fixed for the new half-height: center = foot + up * newFootOffset.
+            const foot = this._tmpVecs[2];
+            this.up.scaleToRef(this.footOffset, foot);
+            this._position.subtractToRef(foot, foot);
+            this.up.scaleToRef(newFootOffset, this._tmpVecs[3]);
+            foot.addToRef(this._tmpVecs[3], this._position);
+            this._transformNode.position.copyFrom(this._position);
+        }
+
+        this.footOffset = newFootOffset;
+        this._tmpVecs[0].set(0, h * 0.5 - r, 0);
+        this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
+        const ownShape = !characterShapeOptions.shape;
+        this.shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(this._tmpVecs[0], this._tmpVecs[1], r, this._scene);
+        this._ownShape = ownShape;
     }
 
     /**

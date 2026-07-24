@@ -45,6 +45,7 @@ import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { IsGaussianSplattingClassName } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { Mesh } from "core/Meshes/mesh";
 import { computeMaxExtents, RemoveUnreferencedVerticesData } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
@@ -152,7 +153,7 @@ type ShadowState = {
 
 function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
     const className = mesh.getClassName();
-    return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
+    return IsGaussianSplattingClassName(className) || className === "GaussianSplattingPartProxyMesh";
 }
 
 function IsPBRMaterial(material: Material): boolean {

@@ -341,6 +341,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 cullingMaterialCloneCache
             );
         }
+        this._linkSkeletonsToTransformNodes(fbxScene.rigs, skeletonByRigId, modelIdToNode, transformNodes, scene);
 
         // Link non-skinned child meshes/nodes to their parent bones so they
         // follow skeletal animation. Preserve their current world matrix when
@@ -351,9 +352,15 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 continue;
             }
 
-            const boneModelIds = new Set(rig.bones.map((b) => b.modelId));
             const skinnedMesh = meshes.find((m) => m.skeleton === skeleton) ?? null;
             const boneReferenceNode = skinnedMesh ?? rootNode;
+            const boneTransformNodes = new Set<TransformNode>();
+            for (const skeletonBone of skeleton.bones) {
+                const transformNode = skeletonBone.getTransformNode();
+                if (transformNode) {
+                    boneTransformNodes.add(transformNode);
+                }
+            }
 
             for (const boneData of rig.bones) {
                 if (!boneData.isCluster) {
@@ -369,15 +376,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 // Find direct children of this bone's TransformNode that aren't bones themselves
                 for (const child of [...boneNode.getChildren()]) {
                     const childTransform = child as TransformNode;
-                    // Check if this child is itself a bone — if so, skip it
-                    let childIsBone = false;
-                    for (const [modelId, node] of Array.from(modelIdToNode)) {
-                        if (node === childTransform && boneModelIds.has(modelId)) {
-                            childIsBone = true;
-                            break;
-                        }
-                    }
-                    if (!childIsBone) {
+                    if (!boneTransformNodes.has(childTransform)) {
                         const childWorld = childTransform.computeWorldMatrix(true).clone();
                         const boneReferenceWorld = FBXFileLoader._getBoneReferenceWorldMatrix(skeleton, bone, boneReferenceNode, skinnedMesh);
                         const boneReferenceWorldInv = new Matrix();
@@ -669,6 +668,44 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     cullingConflictMaterialIds,
                     cullingMaterialCloneCache
                 );
+            }
+        }
+    }
+
+    private _linkSkeletonsToTransformNodes(
+        rigs: FBXRigData[],
+        skeletonByRigId: Map<string, Skeleton>,
+        modelIdToNode: Map<number, TransformNode>,
+        transformNodes: TransformNode[],
+        scene: Scene
+    ): void {
+        for (const rig of rigs) {
+            const skeleton = skeletonByRigId.get(rig.id);
+            if (!skeleton) {
+                continue;
+            }
+
+            for (const boneData of rig.bones) {
+                const bone = this._getSourceBone(skeleton, boneData.index);
+                const boneNode = modelIdToNode.get(boneData.modelId);
+                if (!bone || !boneNode) {
+                    continue;
+                }
+
+                const scaleCompensationHelper = this._getScaleCompensationHelper(skeleton, boneData.index);
+                if (scaleCompensationHelper) {
+                    const helperNode = new TransformNode(scaleCompensationHelper.name, scene);
+                    helperNode.parent = boneNode.parent;
+                    boneNode.parent = helperNode;
+                    FBXFileLoader._applyMatrixToTransform(helperNode, scaleCompensationHelper.getLocalMatrix());
+                    FBXFileLoader._applyMatrixToTransform(boneNode, bone.getLocalMatrix());
+                    scaleCompensationHelper.linkTransformNode(helperNode);
+                    transformNodes.push(helperNode);
+                } else {
+                    FBXFileLoader._applyMatrixToTransform(boneNode, bone.getLocalMatrix());
+                }
+
+                bone.linkTransformNode(boneNode);
             }
         }
     }
@@ -1962,6 +1999,20 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
 
         const animGroup = new AnimationGroup(animStack.name, scene);
+        const animatedBoneTargetProperties = new Map<Bone | TransformNode, Set<string>>();
+        const addBoneAnimation = (animation: Animation, bone: Bone): void => {
+            const target = bone.getTransformNode() ?? bone;
+            let targetProperties = animatedBoneTargetProperties.get(target);
+            if (!targetProperties) {
+                targetProperties = new Set<string>();
+                animatedBoneTargetProperties.set(target, targetProperties);
+            } else if (targetProperties.has(animation.targetProperty)) {
+                return;
+            }
+
+            targetProperties.add(animation.targetProperty);
+            animGroup.addTargetedAnimation(animation, target);
+        };
 
         // Build a map from model ID to resolved rig bones. A single FBX model ID
         // should only appear once per resolved rig, but keeping an array preserves
@@ -2044,7 +2095,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 animStack.stopTime
             )) {
                 for (const animation of animations) {
-                    animGroup.addTargetedAnimation(animation, bone);
+                    addBoneAnimation(animation, bone);
                 }
             }
         }
@@ -2070,7 +2121,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     this._bindRestBones.has(bone) ? bone.getBindMatrix() : undefined
                 );
                 for (const animation of animations) {
-                    animGroup.addTargetedAnimation(animation, bone);
+                    addBoneAnimation(animation, bone);
                 }
             }
         }

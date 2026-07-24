@@ -390,6 +390,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     private _worldRegions: PhysicsWorldRegion[] = [];
     /**
+     * World regions that may have become empty while removing bodies.
+     * They are released after collision and trigger notifications have completed.
+     */
+    private readonly _worldRegionsPendingRelease = new Set<PhysicsWorldRegion>();
+    /**
      * Stored gravity value to apply to new world regions.
      */
     private _currentGravity: number[] = [0, -9.81, 0];
@@ -519,17 +524,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         pluginData.worldRegion = newRegion;
         pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(pluginData.hpBodyId)[1];
 
-        // Garbage-collect the old region if it has no bodies left and it's not the default world
-        if (currentRegion !== this._worldRegions[0]) {
-            const bodyCount = this._hknp.HP_World_GetNumBodies(currentRegion.world)[1];
-            if (bodyCount === 0) {
-                this._hknp.HP_World_Release(currentRegion.world);
-                const idx = this._worldRegions.indexOf(currentRegion);
-                if (idx > 0) {
-                    this._worldRegions.splice(idx, 1);
-                }
-            }
-        }
+        this._releaseWorldRegionIfEmpty(currentRegion);
     }
 
     /**
@@ -550,6 +545,31 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             }
         }
         return null;
+    }
+
+    /**
+     * Releases a non-default world region when it no longer contains any bodies.
+     * @param worldRegion - The world region to release if empty
+     */
+    private _releaseWorldRegionIfEmpty(worldRegion: PhysicsWorldRegion): void {
+        const regionIndex = this._worldRegions.indexOf(worldRegion);
+        if (regionIndex <= 0 || this._hknp.HP_World_GetNumBodies(worldRegion.world)[1] !== 0) {
+            return;
+        }
+
+        this._hknp.HP_World_Release(worldRegion.world);
+        this._worldRegions.splice(regionIndex, 1);
+    }
+
+    /**
+     * Releases world regions that became candidates for removal while bodies were being removed.
+     * This must run after collision and trigger notifications to avoid releasing a world while its native events are being read.
+     */
+    private _releasePendingWorldRegions(): void {
+        for (const worldRegion of this._worldRegionsPendingRelease) {
+            this._releaseWorldRegionIfEmpty(worldRegion);
+        }
+        this._worldRegionsPendingRelease.clear();
     }
 
     /**
@@ -745,6 +765,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             this._notifyCollisions(region.world);
             this._notifyTriggers(region.world);
         }
+
+        this._releasePendingWorldRegions();
     }
 
     /**
@@ -822,12 +844,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 this._bodyCollisionObservable.delete(instance.hpBodyId[0]);
                 this._hknp.HP_World_RemoveBody(instance.worldRegion.world, instance.hpBodyId);
                 this._bodies.delete(instance.hpBodyId[0]);
+                this._worldRegionsPendingRelease.add(instance.worldRegion);
             }
         }
         if (body._pluginData) {
             this._bodyCollisionObservable.delete(body._pluginData.hpBodyId[0]);
             this._hknp.HP_World_RemoveBody(body._pluginData.worldRegion.world, body._pluginData.hpBodyId);
             this._bodies.delete(body._pluginData.hpBodyId[0]);
+            this._worldRegionsPendingRelease.add(body._pluginData.worldRegion);
         }
     }
 
@@ -939,6 +963,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const hkbody = body._pluginDataInstances.pop();
                 this._bodies.delete(hkbody.hpBodyId[0]);
                 this._hknp.HP_World_RemoveBody(hkbody.worldRegion.world, hkbody.hpBodyId);
+                this._worldRegionsPendingRelease.add(hkbody.worldRegion);
                 this._hknp.HP_Body_Release(hkbody.hpBodyId);
             }
             this._createOrUpdateBodyInstances(body, motionType, matrixData, 0, instancesCount, true);
@@ -1593,6 +1618,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                             // Update region reference and cached world transform offset
                             pluginData.worldRegion = newRegion;
                             pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(pluginData.hpBodyId)[1];
+
+                            this._releaseWorldRegionIfEmpty(currentRegion);
                         }
                     }
                 }
@@ -2572,6 +2599,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             raycastResult.reset(from, to);
         }
 
+        // If there are no world regions (e.g. after dispose(), which releases every world and clears the array),
+        // there is nothing valid to cast against. Bail out with an empty (no-hit) result rather than dereferencing
+        // an undefined region or using a stale worldRegion from ignoreBody that points at an already-released world.
+        if (this._worldRegions.length === 0) {
+            return;
+        }
+
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query?.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2636,6 +2670,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         result.reset();
 
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2663,6 +2700,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         hitShapeResult.reset();
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2694,6 +2734,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2945,6 +2988,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             }
         }
         this._worldRegions.length = 0;
+        this._worldRegionsPendingRelease.clear();
         this.world = undefined;
     }
 

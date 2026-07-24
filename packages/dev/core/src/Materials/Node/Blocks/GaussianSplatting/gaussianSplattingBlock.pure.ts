@@ -6,7 +6,7 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { VertexBuffer } from "core/Meshes/buffer";
-import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
@@ -137,7 +137,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (mesh.getClassName() == "GaussianSplattingMesh") {
+        if (IsGaussianSplattingClassName(mesh.getClassName())) {
             defines.setValue("SH_DEGREE", (<GaussianSplattingMesh>mesh).shDegree, true);
         }
     }

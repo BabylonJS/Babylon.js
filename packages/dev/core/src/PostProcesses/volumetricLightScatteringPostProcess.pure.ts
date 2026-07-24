@@ -25,6 +25,7 @@ import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttrib
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { RegisterClass } from "../Misc/typeStore";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
@@ -137,6 +138,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         reusable?: boolean,
         scene?: Scene
     ) {
+        const selectedEngine = engine ?? camera?.getScene().getEngine() ?? scene?.getEngine();
+        const shaderLanguage = selectedEngine?.isWebGPU && !PostProcess.ForceGLSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
         super(
             name,
             "volumetricLightScattering",
@@ -145,9 +148,15 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             ratio.postProcessRatio || ratio,
             camera,
             samplingMode,
-            engine,
+            selectedEngine,
             reusable,
-            "#define NUM_SAMPLES " + samples
+            "#define NUM_SAMPLES " + samples,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            shaderLanguage
         );
         scene = camera?.getScene() ?? scene ?? this._scene; // parameter "scene" can be null.
 
@@ -177,6 +186,29 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             effect.setFloat("density", this.density);
             effect.setVector2("meshPositionOnScreen", this._screenCoordinates);
         });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(
+                Promise.all([
+                    import("../ShadersWGSL/volumetricLightScattering.fragment"),
+                    import("../ShadersWGSL/volumetricLightScatteringPass.vertex"),
+                    import("../ShadersWGSL/volumetricLightScatteringPass.fragment"),
+                ])
+            );
+        } else {
+            list.push(
+                Promise.all([
+                    import("../Shaders/volumetricLightScattering.fragment"),
+                    import("../Shaders/volumetricLightScatteringPass.vertex"),
+                    import("../Shaders/volumetricLightScatteringPass.fragment"),
+                ])
+            );
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**
@@ -291,6 +323,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const engine = mesh.getScene().getEngine();
             const uniforms = [
                 "world",
                 "mBones",
@@ -309,24 +342,22 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             const samplers = ["diffuseSampler", "morphTargets", "boneSampler", "bakedVertexAnimationTexture"];
 
             drawWrapper.setEffect(
-                mesh
-                    .getScene()
-                    .getEngine()
-                    .createEffect(
-                        "volumetricLightScatteringPass",
-                        <IEffectCreationOptions>{
-                            attributes: attribs,
-                            uniformsNames: uniforms,
-                            uniformBuffersNames: [],
-                            samplers: samplers,
-                            defines: join,
-                            fallbacks: fallbacks,
-                            onCompiled: null,
-                            onError: null,
-                            indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
-                        },
-                        mesh.getScene().getEngine()
-                    ),
+                engine.createEffect(
+                    "volumetricLightScatteringPass",
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: [],
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: null,
+                        onError: null,
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: engine.isWebGPU && !PostProcess.ForceGLSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                    },
+                    engine
+                ),
                 join
             );
         }

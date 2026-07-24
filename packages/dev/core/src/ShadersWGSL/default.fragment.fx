@@ -146,7 +146,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
+#define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
+
+#ifndef DEPTHPREPASS
 
 #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	baseColor = vec4f(baseColor.rgb * fragmentInputs.vColor.rgb, baseColor.a);
@@ -539,5 +542,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 #endif
 
 #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
 
 }

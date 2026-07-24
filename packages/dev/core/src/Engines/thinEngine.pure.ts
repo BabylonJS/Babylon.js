@@ -239,6 +239,7 @@ export class ThinEngine extends AbstractEngine {
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
     private _maxMSAASamplesOverride: Nullable<number> = null;
+    private _mainPassSampleCount = 1;
 
     protected get _supportsHardwareTextureRescaling() {
         return false;
@@ -482,6 +483,8 @@ export class ThinEngine extends AbstractEngine {
     }
 
     protected _initGLContext(): void {
+        this._mainPassSampleCount = this._gl.getContextAttributes()?.antialias ? Math.max(1, this._gl.getParameter(this._gl.SAMPLES)) : 1;
+
         // Caps
         this._caps = {
             maxTexturesImageUnits: this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS),
@@ -931,6 +934,25 @@ export class ThinEngine extends AbstractEngine {
         }
 
         return this._framebufferDimensionsObject ? this._framebufferDimensionsObject.framebufferHeight : this._gl.drawingBufferHeight;
+    }
+
+    /**
+     * Gets the number of samples used by the current render target
+     * @returns the current sample count, or 1 when multisampling is disabled
+     */
+    public override get currentSampleCount(): number {
+        return this._currentRenderTarget?.samples ?? this._mainPassSampleCount;
+    }
+
+    /**
+     * Enable or disable alpha-to-coverage
+     * @param enable defines the state to set
+     */
+    public override setAlphaToCoverage(enable: boolean): void {
+        super.setAlphaToCoverage(enable);
+        if (this._gl) {
+            this._alphaState.applyAlphaToCoverage(this._gl);
+        }
     }
 
     /**

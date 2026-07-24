@@ -22,6 +22,7 @@ export * from "./Procedurals/index";
 export * from "./rawCubeTexture";
 export * from "./rawTexture";
 export * from "./rawTexture2DArray";
+export * from "./rawTexture2DArray.functions";
 export * from "./rawTexture3D";
 export * from "./refractionTexture";
 export * from "./renderTargetTexture";

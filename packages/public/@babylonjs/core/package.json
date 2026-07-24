@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.16.2",
+    "version": "9.18.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -53,6 +53,7 @@
         "**/*renderTargetCube.js",
         "**/*renderTargetTexture.js",
         "**/*sphereBuilder.js",
+        "**/*texture2DArrayImageSource.js",
         "**/*textureSelector.js",
         "**/*videoTexture.js",
         "**/allBlocks.js",
