@@ -7315,6 +7315,20 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         return this;
     }
 
+    /**
+     * Converts this projection matrix's clip-space depth range from the OpenGL/WebGL convention (NDC z in [-1, 1]) to
+     * the WebGPU/D3D convention (NDC z in [0, 1]) in place, by post-multiplying with the standard half-Z conversion
+     * matrix. This is the same conversion the perspective/orthographic builders apply internally when their
+     * `halfZRange` flag is set; it is exposed here for callers (e.g. the WebXR path) that receive a projection matrix
+     * verbatim from an external source and must range-correct it for a `isNDCHalfZRange` engine.
+     * @internal
+     * @returns the current updated matrix
+     */
+    public convertProjectionToHalfZRangeInPlace(): this {
+        this.multiplyToRef(mtxConvertNDCToHalfZRange, this);
+        return this;
+    }
+
     // Statics
     /**
      * Creates a matrix from an array

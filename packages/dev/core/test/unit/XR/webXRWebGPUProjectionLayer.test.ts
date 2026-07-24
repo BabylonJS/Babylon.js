@@ -105,6 +105,22 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(depthTexture).toBeDefined();
         });
 
+        it("marks the per-eye render target to skip the engine's render-target Y-flip", () => {
+            // XR projection-layer textures are presented directly by the XR compositor (top-left origin, never
+            // re-sampled), so the provider opts them out of the WebGPU engine's render-target Y-flip / winding
+            // compensation via the _disableEngineYFlip wrapper flag. Non-XR render targets must leave it false.
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+
+            expect(rtt).not.toBeNull();
+            expect((rtt!.renderTarget as any)._disableEngineYFlip).toBe(true);
+
+            // A plain render target created directly by the engine must not carry the flag.
+            const plainRtt = scene.getEngine().createRenderTargetTexture(256, { generateDepthBuffer: true, generateStencilBuffer: false });
+            expect((plainRtt as any)._disableEngineYFlip).toBeFalsy();
+            plainRtt.dispose();
+        });
+
         it("repoints the wrapped textures instead of rebuilding when the size is unchanged", () => {
             const provider = createProvider(createSubImage(512, 512));
             const first = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);

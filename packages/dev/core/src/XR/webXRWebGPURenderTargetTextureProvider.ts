@@ -1,5 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { type WebGPUEngine } from "../Engines/webgpuEngine";
+import { type WebGPURenderTargetWrapper } from "../Engines/WebGPU/webgpuRenderTargetWrapper";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Nullable } from "../types";
@@ -75,6 +76,10 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
         }
         const renderTargetTexture = new WebXRLayerRenderTargetTexture("XR renderTargetTexture", { width, height }, this._scene);
         renderTargetTexture.renderTarget!._samples = renderTargetTexture.samples;
+        // The projection-layer texture is presented directly by the XR compositor (top-left origin, never
+        // re-sampled by Babylon), so opt this target out of the engine's render-target Y-flip / winding
+        // compensation and render it upright, matching the WebXR/WebGPU spec's plain render pass.
+        (renderTargetTexture.renderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip = true;
         return renderTargetTexture;
     }
 

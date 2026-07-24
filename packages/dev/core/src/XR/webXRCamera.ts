@@ -322,6 +322,33 @@ export class WebXRCamera extends FreeCamera {
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
+            // WebGPU uses a [0, 1] clip-space depth range (engine.isNDCHalfZRange === true) whereas WebGL/OpenGL uses
+            // [-1, 1]. The rig cameras freeze their projection (see _updateNumberOfRigCameras) and take the XR binding's
+            // projection matrix verbatim, bypassing the engine's range-aware projection builders. If the binding hands
+            // back a [-1, 1]-convention matrix while the engine clips at [0, 1], every fragment with NDC z in [-1, 0)
+            // is clipped and all geometry disappears. On a half-Z engine we therefore detect the convention the binding
+            // actually used and convert a [-1, 1] matrix to [0, 1]. Detection is empirical (coefficient inspection is
+            // provably ambiguous): project the view-space near-plane point through the raw matrix, before the hand
+            // toggle. WebXR view space is right-handed (-Z forward), so the near point is (0, 0, -near); a [-1, 1] matrix
+            // maps it to NDC z ~= -1, a [0, 1] matrix to ~= 0. Assumes a non-reverse-Z projection (near -> 0 or -1),
+            // which UA-provided XR matrices are. WebGL2 (isNDCHalfZRange === false) never enters this block, so its path
+            // is byte-identical.
+            if (this._scene.getEngine().isNDCHalfZRange) {
+                const near = this.minZ;
+                let needsHalfZConversion: boolean;
+                if (near > 0) {
+                    const ndc = Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -near, currentRig._projectionMatrix, TmpVectors.Vector3[0]);
+                    needsHalfZConversion = ndc.z < -0.5;
+                } else {
+                    // depthNear must be > 0 per the WebXR spec; if it is not, the near-plane probe would divide by zero,
+                    // so default to converting (matches the [-1, 1] range current XRGPUBinding implementations return).
+                    needsHalfZConversion = true;
+                }
+                if (needsHalfZConversion) {
+                    currentRig._projectionMatrix.convertProjectionToHalfZRangeInPlace();
+                }
+            }
+
             if (!this._scene.useRightHandedSystem) {
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
