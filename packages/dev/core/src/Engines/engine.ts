@@ -1,6 +1,7 @@
 export * from "./engine.pure";
 
 import "./Extensions/engine.alpha";
+import "./Extensions/engine.alphaToCoverage";
 import "./Extensions/engine.rawTexture";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";

@@ -13,6 +13,7 @@ import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";
 import "../Audio/audioEngine";
 import "./WebGPU/Extensions/engine.alpha";
+import "./WebGPU/Extensions/engine.alphaToCoverage";
 import "./WebGPU/Extensions/engine.rawTexture";
 import "./WebGPU/Extensions/engine.readTexture";
 import "./WebGPU/Extensions/engine.cubeTexture";
