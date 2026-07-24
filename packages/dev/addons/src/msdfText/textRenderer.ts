@@ -20,8 +20,6 @@ import {
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
 import { type IColor4Like, type IMatrixLike } from "core/Maths/math.like";
-import { RegisterEnginesExtensionsEngineAlphaToCoverage } from "core/Engines/Extensions/engine.alphaToCoverage.pure";
-import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
 
 /**
  * Abstract Node class from Babylon.js
@@ -417,8 +415,10 @@ export class TextRenderer implements IDisposable {
      */
     public static async CreateTextRendererAsync(font: FontAsset, engine: AbstractEngine) {
         if (engine.isWebGPU) {
+            const { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } = await import("core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure");
             RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
         } else {
+            const { RegisterEnginesExtensionsEngineAlphaToCoverage } = await import("core/Engines/Extensions/engine.alphaToCoverage.pure");
             RegisterEnginesExtensionsEngineAlphaToCoverage();
         }
 
