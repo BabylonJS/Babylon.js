@@ -605,7 +605,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Gets the number of samples used by the current render target
      * @returns the current sample count, or 1 when multisampling is disabled
      */
-    public override get currentSampleCount(): number {
+    public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
     }
 
@@ -1378,7 +1378,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
             this._alphaState.reset();
             this._resetAlphaMode();
-            this._cacheRenderPipeline.setAlphaToCoverage(this._alphaState.alphaToCoverage);
             this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
             this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
 
@@ -1405,15 +1404,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override getColorWrite(): boolean {
         return this._colorWriteLocal;
-    }
-
-    /**
-     * Enable or disable alpha-to-coverage
-     * @param enable defines the state to set
-     */
-    public override setAlphaToCoverage(enable: boolean): void {
-        super.setAlphaToCoverage(enable);
-        this._cacheRenderPipeline.setAlphaToCoverage(enable);
     }
 
     //------------------------------------------------------------------------------

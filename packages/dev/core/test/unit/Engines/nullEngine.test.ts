@@ -1,5 +1,4 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
@@ -94,23 +93,6 @@ describe("NullEngine", () => {
         it("returns a NullEngine", () => {
             const nullEngine = new NullEngine();
             expect(nullEngine).toBeInstanceOf(NullEngine);
-        });
-
-        it("tracks alpha-to-coverage and the current sample count", () => {
-            const nullEngine = new NullEngine();
-
-            try {
-                expect(nullEngine.getAlphaToCoverage()).toBe(false);
-                expect(nullEngine.currentSampleCount).toBe(1);
-
-                nullEngine.setAlphaToCoverage(true);
-                expect(nullEngine.getAlphaToCoverage()).toBe(true);
-
-                nullEngine._currentRenderTarget = { samples: 4 } as unknown as RenderTargetWrapper;
-                expect(nullEngine.currentSampleCount).toBe(4);
-            } finally {
-                nullEngine.dispose();
-            }
         });
     });
 

@@ -40,6 +40,7 @@
         "Shaders/**",
         "ShadersWGSL/**",
         "**/*SceneComponent.types.js",
+        "**/*alphaToCoverage.js",
         "**/*computeShader.js",
         "**/*cubeTexture.js",
         "**/*debugging.js",

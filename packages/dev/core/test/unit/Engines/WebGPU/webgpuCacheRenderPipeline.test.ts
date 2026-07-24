@@ -4,6 +4,7 @@ import { Constants } from "core/Engines/constants";
 import { type Effect } from "core/Materials/effect";
 import { type VertexBuffer } from "core/Buffers/buffer";
 import { type WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
+import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
 
 // Minimal mock types for the pipeline cache tests
 function createMockDevice(): GPUDevice {
@@ -100,6 +101,7 @@ describe("WebGPUCacheRenderPipeline", () => {
         });
 
         it("should enable alpha-to-coverage in multisampled pipelines", () => {
+            RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
             cache.setAlphaToCoverage(true);
 
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 4, 0);
@@ -115,6 +117,7 @@ describe("WebGPUCacheRenderPipeline", () => {
         });
 
         it("should create a new pipeline when alpha-to-coverage changes", () => {
+            RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 4, 0);
             cache.setAlphaToCoverage(true);
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 4, 0);
@@ -122,9 +125,11 @@ describe("WebGPUCacheRenderPipeline", () => {
             expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
         });
 
-        it("should ignore alpha-to-coverage for single-sample pipelines", () => {
-            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+        it("should disable alpha-to-coverage in single-sample pipeline descriptors", () => {
+            RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage();
             cache.setAlphaToCoverage(true);
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+            cache.setAlphaToCoverage(false);
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
 
             expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);

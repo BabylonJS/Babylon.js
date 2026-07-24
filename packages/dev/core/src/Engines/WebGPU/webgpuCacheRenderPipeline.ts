@@ -1177,7 +1177,6 @@ export abstract class WebGPUCacheRenderPipeline {
 
             multisample: {
                 count: sampleCount,
-                alphaToCoverageEnabled: this._alphaToCoverageEnabled && sampleCount > 1,
             },
             depthStencil:
                 this._webgpuDepthStencilFormat === undefined
