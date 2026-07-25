@@ -111,8 +111,19 @@ export class HDRFiltering {
             [new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)], // NegativeZ
         ];
 
+        // The GGX convolution picks a source mip per sample (see radiance() in hdrFilteringFunctions) to keep the
+        // sample count low. gl.generateMipmap() is only defined for formats that are both colour-renderable and
+        // texture-filterable, so it is a no-op for the float / half-float cubes an HDR environment loads as: on
+        // WebGL that source therefore only ever has level 0 and every sample silently falls back to it. Backends
+        // that *can* supply a full chain for those formats (Babylon Native builds one on the CPU, since bgfx will
+        // not auto-generate mips for a non-render-target texture) would otherwise read progressively blurrier
+        // levels and prefilter rough reflections visibly brighter. Cap the convolution at level 0 for those
+        // formats so every backend produces the same prefiltered cube.
+        const sourceType = texture.textureType;
+        const sourceHasUsableMips = sourceType !== Constants.TEXTURETYPE_FLOAT && sourceType !== Constants.TEXTURETYPE_HALF_FLOAT;
+
         effect.setFloat("hdrScale", this.hdrScale);
-        effect.setFloat2("vFilteringInfo", texture.getSize().width, mipmapsCount);
+        effect.setFloat2("vFilteringInfo", texture.getSize().width, sourceHasUsableMips ? mipmapsCount : 0);
         effect.setTexture("inputTexture", texture);
 
         for (let face = 0; face < 6; face++) {
