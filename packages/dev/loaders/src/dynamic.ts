@@ -8,6 +8,7 @@ import { GLTFFileLoaderMetadata } from "./glTF/glTFFileLoader.metadata";
 import { OBJFileLoaderMetadata } from "./OBJ/objFileLoader.metadata";
 import { SPLATFileLoaderMetadata } from "./SPLAT/splatFileLoader.metadata";
 import { STLFileLoaderMetadata } from "./STL/stlFileLoader.metadata";
+import { USDFileLoaderMetadata } from "./USD/usdFileLoader.metadata";
 
 import { registerBuiltInGLTFExtensions } from "./glTF/2.0/Extensions/dynamic";
 
@@ -70,6 +71,15 @@ export function registerBuiltInLoaders() {
         createPlugin: async () => {
             const { STLFileLoader } = await import("./STL/stlFileLoader");
             return new STLFileLoader();
+        },
+    } satisfies ISceneLoaderPluginFactory);
+
+    // Register the USD loader.
+    RegisterSceneLoaderPlugin({
+        ...USDFileLoaderMetadata,
+        createPlugin: async (options: SceneLoaderPluginOptions) => {
+            const { USDFileLoader } = await import("./USD/usdFileLoader");
+            return new USDFileLoader(options[USDFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
 }

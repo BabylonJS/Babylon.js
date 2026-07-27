@@ -5483,6 +5483,13 @@
             "dependsOn": ["Loaders", "Meshes"]
         },
         {
+            "title": "USD loader - geometry corpus",
+            "playgroundId": "#BXRGOA#0",
+            "referenceImage": "usd-loader-geometry-corpus.png",
+            "renderCount": 1,
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
             "title": "CSG2 Right-Handed glTF winding",
             "playgroundId": "#1HYT9N#0",
             "referenceImage": "csg2-righthanded-gltf-winding.png",

@@ -51,6 +51,7 @@
         "SPLAT/sog.js",
         "SPLAT/splatFileLoader.js",
         "STL/stlFileLoader.js",
+        "USD/usdFileLoader.js",
         "glTF/1.0/glTFBinaryExtension.js",
         "glTF/1.0/glTFMaterialsCommonExtension.js",
         "glTF/2.0/Extensions/EXT_lights_area.js",
