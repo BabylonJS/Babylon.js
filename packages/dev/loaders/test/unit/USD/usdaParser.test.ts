@@ -286,3 +286,198 @@ def Xform "Root" { # trailing hash comment
         expect(() => ParseUsda(`#foo 1.0\ndef Xform "Root" {\n}\n`, "memory:not-usda.usda")).toThrow("not a valid USDA document");
     });
 });
+
+function parseBody(body: string): ReturnType<typeof ParseUsdaWithDiagnostics> {
+    return ParseUsdaWithDiagnostics(`#usda 1.0\ndef Xform "Root"\n{\n${body}\n}\n`, "memory:typed-values.usda");
+}
+
+function parseMetadata(metadataBody: string): ReturnType<typeof ParseUsdaWithDiagnostics> {
+    return ParseUsdaWithDiagnostics(`#usda 1.0\ndef Xform "Root" (\n${metadataBody}\n)\n{\n}\n`, "memory:typed-values.usda");
+}
+
+function attributeDefault(result: ReturnType<typeof ParseUsdaWithDiagnostics>, name: string) {
+    const property = result.layer.rootPrims[0].properties[name];
+    return property && property.kind === "attribute" ? property.default : undefined;
+}
+
+function relationship(result: ReturnType<typeof ParseUsdaWithDiagnostics>, name: string) {
+    const property = result.layer.rootPrims[0].properties[name];
+    return property && property.kind === "relationship" ? property : undefined;
+}
+
+describe("USDA typed values", () => {
+    describe("strict numeric scalars", () => {
+        const validCases: { declaration: string; expected: unknown }[] = [
+            { declaration: "int value = 5", expected: { type: "int", value: 5 } },
+            { declaration: "int value = -2147483648", expected: { type: "int", value: -2147483648 } },
+            { declaration: "int value = 2147483647", expected: { type: "int", value: 2147483647 } },
+            { declaration: "uint value = 0", expected: { type: "uint", value: 0 } },
+            { declaration: "uint value = 4294967295", expected: { type: "uint", value: 4294967295 } },
+            { declaration: "int64 value = -9007199254740993", expected: { type: "int64", value: -9007199254740993n } },
+            { declaration: "uint64 value = 18446744073709551615", expected: { type: "uint64", value: 18446744073709551615n } },
+            { declaration: "float value = 1.5", expected: { type: "float", value: 1.5 } },
+            { declaration: "double value = -0.25", expected: { type: "double", value: -0.25 } },
+            { declaration: "half value = 2", expected: { type: "half", value: 2 } },
+            { declaration: "float value = inf", expected: { type: "float", value: Number.POSITIVE_INFINITY } },
+            { declaration: "float value = -inf", expected: { type: "float", value: Number.NEGATIVE_INFINITY } },
+            { declaration: "double value = nan", expected: { type: "double", value: Number.NaN } },
+        ];
+
+        it.each(validCases)("parses $declaration", ({ declaration, expected }) => {
+            const result = parseBody(`    ${declaration}`);
+            expect(attributeDefault(result, "value")).toEqual(expected);
+            expect(result.diagnostics).toEqual([]);
+        });
+
+        const invalidCases: string[] = [
+            "int value = 1.5",
+            "int value = 3000000000",
+            "int value = inf",
+            'int value = "5"',
+            "uint value = -1",
+            "uint value = 5000000000",
+            "int64 value = 1.5",
+            "int64 value = 99999999999999999999",
+            "uint64 value = -1",
+            "float value = abc",
+            "float value = 1e400",
+            "double value = -1e400",
+        ];
+
+        it.each(invalidCases)("rejects %s without coercing to zero", (declaration) => {
+            const result = parseBody(`    ${declaration}`);
+            // The attribute is still declared, but the invalid value is dropped rather than coerced to 0.
+            expect(result.layer.rootPrims[0].properties.value?.kind).toBe("attribute");
+            expect(attributeDefault(result, "value")).toBeUndefined();
+            expect(result.diagnostics.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe("fixed-size tuple arity", () => {
+        const validCases: { declaration: string; expected: unknown }[] = [
+            { declaration: "float3 value = (1, 2, 3)", expected: { type: "vec3f", value: [1, 2, 3] } },
+            { declaration: "double2 value = (4, 5)", expected: { type: "vec2d", value: [4, 5] } },
+            { declaration: "quatf value = (1, 0, 0, 0)", expected: { type: "quatf", value: [0, 0, 0, 1] } },
+            {
+                declaration: "matrix4d value = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1) )",
+                expected: { type: "matrix4d", value: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] },
+            },
+        ];
+
+        it.each(validCases)("parses $declaration", ({ declaration, expected }) => {
+            const result = parseBody(`    ${declaration}`);
+            expect(attributeDefault(result, "value")).toEqual(expected);
+            expect(result.diagnostics).toEqual([]);
+        });
+
+        const invalidCases: string[] = ["float3 value = (1, 2)", "float3 value = (1, 2, 3, 4)", "float3 value = (1, x, 3)", "quatf value = (1, 0, 0)"];
+
+        it.each(invalidCases)("rejects %s without padding or truncating", (declaration) => {
+            const result = parseBody(`    ${declaration}`);
+            expect(attributeDefault(result, "value")).toBeUndefined();
+            expect(result.diagnostics.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe("None value blocks", () => {
+        const blockCases: string[] = ["float value = None", "float[] value = None", "token value = None", "int[] value = None"];
+
+        it.each(blockCases)("represents %s as a deliberate value block", (declaration) => {
+            const result = parseBody(`    ${declaration}`);
+            expect(attributeDefault(result, "value")).toEqual({ type: "block", value: null });
+            expect(result.diagnostics).toEqual([]);
+        });
+    });
+
+    describe("typed dictionaries", () => {
+        it("preserves authored member types, nested dictionaries, and value blocks", () => {
+            const result = parseMetadata(
+                `    customData = {
+        string author = "me"
+        float ratio = 0.5
+        int version = 2
+        double scaleValue = 3
+        dictionary nested = {
+            double innerScale = 2
+            token label = "hi"
+        }
+        float blocked = None
+    }`
+            );
+
+            expect(result.layer.rootPrims[0].metadata?.customData).toEqual({
+                type: "dictionary",
+                value: {
+                    author: { type: "string", value: "me" },
+                    ratio: { type: "float", value: 0.5 },
+                    version: { type: "int", value: 2 },
+                    scaleValue: { type: "double", value: 3 },
+                    nested: {
+                        type: "dictionary",
+                        value: {
+                            innerScale: { type: "double", value: 2 },
+                            label: { type: "token", value: "hi" },
+                        },
+                    },
+                    blocked: { type: "block", value: null },
+                },
+            });
+            expect(result.diagnostics).toEqual([]);
+        });
+
+        it("drops an explicitly typed member whose value is invalid instead of retyping it", () => {
+            const result = parseMetadata(
+                `    customData = {
+        int good = 2
+        int bad = 1.5
+    }`
+            );
+
+            // `bad` is invalid for its declared `int` type, so it is dropped entirely rather than
+            // falling back to structural inference (which would silently retype it to a double).
+            expect(result.layer.rootPrims[0].metadata?.customData).toEqual({
+                type: "dictionary",
+                value: {
+                    good: { type: "int", value: 2 },
+                },
+            });
+            expect(result.diagnostics.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe("diagnostic limits", () => {
+        it("caps conversion diagnostics at the parser maximum", () => {
+            const invalidCount = 400;
+            const body = Array.from({ length: invalidCount }, (_, index) => `    int a${index} = 1.5`).join("\n");
+            const result = parseBody(body);
+
+            // Conversion diagnostics honor the MaxUsdaDiagnostics cap (256); the array must not grow
+            // unbounded even when every authored attribute is invalid.
+            expect(result.diagnostics.length).toBeGreaterThan(0);
+            expect(result.diagnostics.length).toBeLessThan(invalidCount);
+            expect(result.diagnostics.length).toBeLessThanOrEqual(256);
+        });
+    });
+
+    describe("custom relationships", () => {
+        it("parses custom rel, plain rel, target-less rel, and relationship metadata", () => {
+            const result = parseBody(
+                `    custom rel r = </World/A>
+    rel plain = </World/B>
+    rel proxyPrim
+    custom rel withMeta = </World/C> (
+        bindMaterialAs = "weakerThanDescendants"
+    )`
+            );
+
+            expect(relationship(result, "r")?.targets.explicit).toEqual(["/World/A"]);
+            expect(relationship(result, "plain")?.targets.explicit).toEqual(["/World/B"]);
+            expect(relationship(result, "proxyPrim")?.targets.explicit).toEqual([]);
+
+            const withMeta = relationship(result, "withMeta");
+            expect(withMeta?.targets.explicit).toEqual(["/World/C"]);
+            expect(withMeta?.metadata?.bindMaterialAs).toEqual({ type: "string", value: "weakerThanDescendants" });
+            expect(result.diagnostics).toEqual([]);
+        });
+    });
+});

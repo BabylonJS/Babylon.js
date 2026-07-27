@@ -40,9 +40,10 @@ const MaxEarClippingChecks = 1_000_000;
  * Maps a Mesh prim into a resolved mesh with triangulated topology and expanded primvars.
  * @param prim Mesh prim to map
  * @param context mapping context used for diagnostics and subset material resolution
+ * @param inheritedPrimvars constant primvars inherited from ancestor prims, used when the mesh does not author its own
  * @returns resolved mesh, or undefined when required topology is missing
  */
-export function ResolveMesh(prim: ISdfPrimSpec, context: IStageMappingContext): IResolvedMesh | undefined {
+export function ResolveMesh(prim: ISdfPrimSpec, context: IStageMappingContext, inheritedPrimvars: IInheritedPrimvars = EmptyInheritedPrimvars): IResolvedMesh | undefined {
     const points = AsVec3Array(GetAttributeValue(GetAttribute(prim, "points")));
     const faceVertexCounts = AsNumberArray(GetAttributeValue(GetAttribute(prim, "faceVertexCounts")));
     const faceVertexIndices = AsNumberArray(GetAttributeValue(GetAttribute(prim, "faceVertexIndices")));
@@ -60,12 +61,16 @@ export function ResolveMesh(prim: ISdfPrimSpec, context: IStageMappingContext): 
     const faceCount = faceVertexCounts.length;
     const cornerCount = faceVertexIndices.length;
     const topology = TriangulateTopology(points, faceVertexCounts, faceVertexIndices, prim.path, context);
+    const displayColorAttribute = GetAttribute(prim, "primvars:displayColor");
+    const displayOpacityAttribute = GetAttribute(prim, "primvars:displayOpacity");
     const normalSource = ValidatePrimvar(ResolveVec3Primvar(prim, "normals", pointCount, faceCount, cornerCount), prim.path, pointCount, faceCount, cornerCount, context);
-    const uvSources = ResolveUvSources(prim, pointCount, faceCount, cornerCount).filter(
+    const uvSources = ResolveUvSources(prim, pointCount, faceCount, cornerCount, inheritedPrimvars.uvSets).filter(
         (source) => ValidatePrimvar(source, prim.path, pointCount, faceCount, cornerCount, context) !== undefined
     );
     const displayColorSource = ValidatePrimvar(
-        ResolveVec3Primvar(prim, "primvars:displayColor", pointCount, faceCount, cornerCount),
+        displayColorAttribute
+            ? ResolveVec3Primvar(prim, "primvars:displayColor", pointCount, faceCount, cornerCount)
+            : ConstantPrimvarSource("primvars:displayColor", inheritedPrimvars.displayColor),
         prim.path,
         pointCount,
         faceCount,
@@ -73,7 +78,9 @@ export function ResolveMesh(prim: ISdfPrimSpec, context: IStageMappingContext): 
         context
     );
     const displayOpacitySource = ValidatePrimvar(
-        ResolveNumberPrimvar(prim, "primvars:displayOpacity", pointCount, faceCount, cornerCount),
+        displayOpacityAttribute
+            ? ResolveNumberPrimvar(prim, "primvars:displayOpacity", pointCount, faceCount, cornerCount)
+            : ConstantPrimvarSource("primvars:displayOpacity", inheritedPrimvars.displayOpacity),
         prim.path,
         pointCount,
         faceCount,
@@ -464,11 +471,29 @@ function Cross2D(first: ProjectedPoint, second: ProjectedPoint, third: Projected
     return (second[0] - first[0]) * (third[1] - first[1]) - (second[1] - first[1]) * (third[0] - first[0]);
 }
 
-function ResolveUvSources(prim: ISdfPrimSpec, pointCount: number, faceCount: number, faceVertexCount: number): IPrimvarSource<Vec2>[] {
-    return Object.keys(prim.properties)
-        .filter((name) => /^primvars:st\d*$/.test(name))
+function ResolveUvSources(
+    prim: ISdfPrimSpec,
+    pointCount: number,
+    faceCount: number,
+    faceVertexCount: number,
+    inheritedUvSets: ReadonlyMap<string, Vec2> | undefined
+): IPrimvarSource<Vec2>[] {
+    const names = new Set<string>();
+    for (const name of Object.keys(prim.properties)) {
+        if (/^primvars:st\d*$/.test(name)) {
+            names.add(name);
+        }
+    }
+    if (inheritedUvSets) {
+        for (const name of inheritedUvSets.keys()) {
+            names.add(name);
+        }
+    }
+    return [...names]
         .sort(CompareUvPrimvarNames)
-        .map((name) => ResolveVec2Primvar(prim, name, pointCount, faceCount, faceVertexCount))
+        .map((name) =>
+            GetAttribute(prim, name) ? ResolveVec2Primvar(prim, name, pointCount, faceCount, faceVertexCount) : ConstantPrimvarSource(name, inheritedUvSets?.get(name))
+        )
         .filter((source): source is IPrimvarSource<Vec2> => source !== undefined);
 }
 
@@ -519,6 +544,118 @@ function InferInterpolation(valueCount: number, pointCount: number, faceCount: n
         return "uniform";
     }
     return "constant";
+}
+
+/**
+ * Constant-interpolation primvars inherited down namespace to descendant meshes.
+ *
+ * USD inherits only `constant` primvars through namespace; this carries the small subset the
+ * UsdPreviewSurface / polygonal-mesh profile consumes (`displayColor`, `displayOpacity`, UV sets) so
+ * a mesh that omits them can fall back to an ancestor's authored constant value.
+ */
+export interface IInheritedPrimvars {
+    /** Inherited constant `primvars:displayColor`, if any ancestor authors one. */
+    readonly displayColor?: Vec3;
+    /** Inherited constant `primvars:displayOpacity`, if any ancestor authors one. */
+    readonly displayOpacity?: number;
+    /** Inherited constant UV primvars keyed by primvar name (e.g. `primvars:st`). */
+    readonly uvSets?: ReadonlyMap<string, Vec2>;
+}
+
+/** Shared empty inherited-primvar set so prims with no inheritable ancestors avoid an allocation. */
+export const EmptyInheritedPrimvars: IInheritedPrimvars = {};
+
+/**
+ * Computes the constant primvars a prim contributes to its descendants.
+ *
+ * USD only inherits primvars authored with `constant` interpolation; a primvar authored with any
+ * other interpolation shadows (blocks) an inherited one for the subtree. A primvar with unauthored
+ * interpolation is treated as constant only when it holds a single value, the unambiguous constant
+ * form, so a mesh's per-vertex/per-face array is never misread as inheritable.
+ * @param prim prim whose authored primvars may override or block the inherited set
+ * @param parent constant primvars inherited from ancestors
+ * @returns the constant primvars visible to this prim's descendants
+ */
+export function CollectInheritablePrimvars(prim: ISdfPrimSpec, parent: IInheritedPrimvars): IInheritedPrimvars {
+    const displayColor = ResolveInheritedPrimvar(prim, "primvars:displayColor", parent.displayColor, ReadConstantVec3);
+    const displayOpacity = ResolveInheritedPrimvar(prim, "primvars:displayOpacity", parent.displayOpacity, ReadConstantNumber);
+    const uvSets = ResolveInheritedUvSets(prim, parent.uvSets);
+    if (displayColor === undefined && displayOpacity === undefined && uvSets === undefined) {
+        return EmptyInheritedPrimvars;
+    }
+    return { displayColor, displayOpacity, uvSets };
+}
+
+function ResolveInheritedPrimvar<T>(prim: ISdfPrimSpec, name: string, parentValue: T | undefined, read: (attribute: ISdfAttributeSpec) => T | undefined): T | undefined {
+    const attribute = GetAttribute(prim, name);
+    // Not authored here: keep inheriting the ancestor's value. Authored: this prim's constant value,
+    // or undefined which blocks inheritance because a non-constant primvar cannot propagate.
+    return attribute ? read(attribute) : parentValue;
+}
+
+function ResolveInheritedUvSets(prim: ISdfPrimSpec, parentUvSets: ReadonlyMap<string, Vec2> | undefined): ReadonlyMap<string, Vec2> | undefined {
+    const names = new Set<string>();
+    for (const name of Object.keys(prim.properties)) {
+        if (/^primvars:st\d*$/.test(name)) {
+            names.add(name);
+        }
+    }
+    if (parentUvSets) {
+        for (const name of parentUvSets.keys()) {
+            names.add(name);
+        }
+    }
+    const resolved = new Map<string, Vec2>();
+    for (const name of names) {
+        const value = ResolveInheritedPrimvar(prim, name, parentUvSets?.get(name), ReadConstantVec2);
+        if (value) {
+            resolved.set(name, value);
+        }
+    }
+    return resolved.size > 0 ? resolved : undefined;
+}
+
+function ReadConstantVec3(attribute: ISdfAttributeSpec): Vec3 | undefined {
+    if (!IsConstantInterpolation(attribute.interpolation)) {
+        return undefined;
+    }
+    const value = GetAttributeValue(attribute);
+    return AsVec3(value) ?? SingleConstantElement(AsVec3Array(value), attribute.interpolation);
+}
+
+function ReadConstantVec2(attribute: ISdfAttributeSpec): Vec2 | undefined {
+    if (!IsConstantInterpolation(attribute.interpolation)) {
+        return undefined;
+    }
+    const value = GetAttributeValue(attribute);
+    return AsVec2(value) ?? SingleConstantElement(AsVec2Array(value), attribute.interpolation);
+}
+
+function ReadConstantNumber(attribute: ISdfAttributeSpec): number | undefined {
+    if (!IsConstantInterpolation(attribute.interpolation)) {
+        return undefined;
+    }
+    const value = GetAttributeValue(attribute);
+    const bare = AsNumber(value);
+    return bare !== undefined ? bare : SingleConstantElement(AsNumberArray(value), attribute.interpolation);
+}
+
+// Only `constant` (or unauthored) interpolation permits primvar inheritance down namespace.
+function IsConstantInterpolation(interpolation: SdfInterpolation | undefined): boolean {
+    return interpolation === undefined || interpolation === "constant";
+}
+
+function SingleConstantElement<T>(array: T[] | undefined, interpolation: SdfInterpolation | undefined): T | undefined {
+    if (!array || array.length === 0 || (interpolation !== undefined && interpolation !== "constant")) {
+        return undefined;
+    }
+    // Explicit constant takes element 0; unauthored interpolation only qualifies as constant when a
+    // single value is present so a per-vertex/per-face array is never misread as inheritable.
+    return interpolation === "constant" || array.length === 1 ? array[0] : undefined;
+}
+
+function ConstantPrimvarSource<T>(name: string, value: T | undefined): IPrimvarSource<T> | undefined {
+    return value === undefined ? undefined : { name, values: [value], interpolation: "constant" };
 }
 
 function BuildVertexKey(

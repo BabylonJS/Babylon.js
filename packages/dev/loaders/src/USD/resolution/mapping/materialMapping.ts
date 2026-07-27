@@ -7,6 +7,7 @@ import {
     AsBoolean,
     AsNumber,
     AsToken,
+    AsVec2,
     AsVec3,
     AsVec4,
     GetAttribute,
@@ -115,7 +116,10 @@ function BuildMaterialFromPrim(materialPrim: ISdfPrimSpec, context: IStageMappin
         return BuildDefaultMaterial(materialPrim.name, fallbackBaseColor ?? [1, 1, 1]);
     }
 
-    const material = BuildDefaultMaterial(materialPrim.name, fallbackBaseColor ?? [1, 1, 1]);
+    // A bound UsdPreviewSurface seeds from the schema's own input defaults (e.g. unauthored
+    // diffuseColor is 0.18 gray), not the mesh displayColor hint, so unauthored inputs match a
+    // reference UsdPreviewSurface renderer rather than the geometry's fallback color.
+    const material = BuildPreviewSurfaceMaterial(materialPrim.name);
     for (const mapping of PreviewInputMappings) {
         ApplyPreviewInput(material, surfaceShader, mapping, context);
     }
@@ -134,11 +138,52 @@ function ResolvePreviewSurfaceShader(materialPrim: ISdfPrimSpec, context: IStage
     for (const connection of GetConnectionTargets(surfaceOutput)) {
         const target = SplitPropertyPath(connection);
         const shaderPrim = target ? context.primByPath.get(target.primPath) : undefined;
-        if (shaderPrim && GetShaderId(shaderPrim) === "UsdPreviewSurface") {
+        if (!shaderPrim) {
+            context.diagnostics.push({
+                severity: "warning",
+                path: surfaceOutput?.path ?? materialPrim.path,
+                message: `Material surface output connection '${connection}' could not be resolved to a prim.`,
+            });
+            continue;
+        }
+        if (GetShaderId(shaderPrim) === "UsdPreviewSurface") {
             return shaderPrim;
         }
     }
     return materialPrim.children.find((child) => child.typeName === "Shader" && GetShaderId(child) === "UsdPreviewSurface");
+}
+
+interface IResolvedConnection {
+    readonly prim: ISdfPrimSpec;
+    readonly propertyName: string;
+}
+
+/**
+ * Resolves the first authored connection on an input to its target prim and property.
+ *
+ * A missing connection returns undefined silently (the input is simply unconnected), while an
+ * authored connection whose target prim cannot be found pushes a warning so a broken shading-network
+ * path is diagnosed rather than dropped, then returns undefined so callers fall back to defaults.
+ * @param input shader input attribute that may author a connection
+ * @param context mapping context used for prim lookup and diagnostics
+ * @returns the resolved target prim and property name, or undefined
+ */
+function ResolveConnectionTarget(input: ISdfAttributeSpec | undefined, context: IStageMappingContext): IResolvedConnection | undefined {
+    const connection = GetConnectionTargets(input)[0];
+    if (!connection) {
+        return undefined;
+    }
+    const target = SplitPropertyPath(connection);
+    const prim = target ? context.primByPath.get(target.primPath) : undefined;
+    if (!prim || !target) {
+        context.diagnostics.push({
+            severity: "warning",
+            path: input?.path ?? connection,
+            message: `Shader connection target '${connection}' could not be resolved to a prim and was ignored.`,
+        });
+        return undefined;
+    }
+    return { prim, propertyName: target.propertyName };
 }
 
 function ApplyPreviewInput(material: IResolvedMaterial, shaderPrim: ISdfPrimSpec, mapping: IPreviewInputMapping, context: IStageMappingContext): void {
@@ -180,16 +225,33 @@ function ResolveConnectedTexture(
     slot: ResolvedTextureSlot,
     defaultChannel?: IResolvedTexture["channel"]
 ): IResolvedTexture | undefined {
-    const connection = GetConnectionTargets(input)[0];
-    const target = connection ? SplitPropertyPath(connection) : undefined;
-    const texturePrim = target ? context.primByPath.get(target.primPath) : undefined;
-    if (!texturePrim || GetShaderId(texturePrim) !== "UsdUVTexture") {
+    const target = ResolveConnectionTarget(input, context);
+    if (!target) {
+        return undefined;
+    }
+    const texturePrim = target.prim;
+    if (GetShaderId(texturePrim) !== "UsdUVTexture") {
+        // Existing-but-wrong target type: the connection resolves to a prim that is not a texture, so
+        // no image can be sampled for this input. Diagnose it rather than dropping it silently.
+        context.diagnostics.push({
+            severity: "warning",
+            path: texturePrim.path,
+            message: `Texture input connection resolves to '${GetShaderId(texturePrim) || "an untyped prim"}' instead of a UsdUVTexture; no texture was applied for this input.`,
+        });
         return undefined;
     }
 
     const file = AsAssetPath(GetAttributeValue(GetAttribute(texturePrim, "inputs:file")));
     if (!file) {
         context.diagnostics.push({ severity: "warning", path: texturePrim.path, message: "UsdUVTexture is missing inputs:file and was ignored." });
+        return undefined;
+    }
+    if (IsUsdLayerAsset(file)) {
+        context.diagnostics.push({
+            severity: "warning",
+            path: texturePrim.path,
+            message: `UsdUVTexture references a USD layer '${StripAssetDelimiters(file)}' as an image, which is not a supported texture source; the texture was skipped.`,
+        });
         return undefined;
     }
 
@@ -201,27 +263,64 @@ function ResolveConnectedTexture(
         colorSpace: ResolveTextureColorSpace(texturePrim, slot),
         scale: AsVec4(GetAttributeValue(GetAttribute(texturePrim, "inputs:scale"))) ?? AsVec4FromVec3(GetAttributeValue(GetAttribute(texturePrim, "inputs:scale"))),
         bias: AsVec4(GetAttributeValue(GetAttribute(texturePrim, "inputs:bias"))) ?? AsVec4FromVec3(GetAttributeValue(GetAttribute(texturePrim, "inputs:bias"))),
-        channel: ResolveTextureChannel(target?.propertyName, defaultChannel),
+        channel: ResolveTextureChannel(target.propertyName, defaultChannel),
     };
 }
 
 function ResolveTextureUvSet(texturePrim: ISdfPrimSpec, context: IStageMappingContext): number {
-    const stTarget = SplitPropertyPath(GetConnectionTargets(GetAttribute(texturePrim, "inputs:st"))[0] ?? "");
-    const readerPrim = stTarget ? FindPrimvarReader(stTarget.primPath, context) : undefined;
+    const stTarget = ResolveConnectionTarget(GetAttribute(texturePrim, "inputs:st"), context);
+    const readerPrim = stTarget ? FindPrimvarReader(stTarget.prim, context) : undefined;
     const varname = readerPrim ? AsToken(GetAttributeValue(GetAttribute(readerPrim, "inputs:varname"))) : undefined;
     return UvSetNameToIndex(varname ?? "st");
 }
 
-function FindPrimvarReader(primPath: string, context: IStageMappingContext): ISdfPrimSpec | undefined {
-    const prim = context.primByPath.get(primPath);
-    if (!prim) {
-        return undefined;
+function FindPrimvarReader(prim: ISdfPrimSpec, context: IStageMappingContext): ISdfPrimSpec | undefined {
+    // UsdTransform2d and similar pass-through shaders forward the primvar through inputs:in, so walk
+    // the connection chain to reach the underlying reader. The walk is iterative with a visited set so
+    // a cyclic network cannot recurse without bound. No UV transform is applied because visuals are out
+    // of scope for this slice; only the source UV set is resolved.
+    const visited = new Set<string>();
+    let current: ISdfPrimSpec | undefined = prim;
+    while (current) {
+        if (GetShaderId(current).startsWith("UsdPrimvarReader")) {
+            return current;
+        }
+        if (visited.has(current.path)) {
+            context.diagnostics.push({
+                severity: "warning",
+                path: current.path,
+                message: "Cyclic shader inputs:in connection chain detected while resolving a texture UV set; defaulting to UV set 0.",
+            });
+            return undefined;
+        }
+        visited.add(current.path);
+        if (GetShaderId(current) === "UsdTransform2d" && HasNonDefaultTransform2d(current)) {
+            context.diagnostics.push({
+                severity: "warning",
+                path: current.path,
+                message: "UsdTransform2d authors a non-default UV transform (scale/rotation/translation) which is not applied; the underlying UV set is used unchanged.",
+            });
+        }
+        const nested = ResolveConnectionTarget(GetAttribute(current, "inputs:in"), context);
+        current = nested?.prim;
     }
-    if (GetShaderId(prim).startsWith("UsdPrimvarReader")) {
-        return prim;
+    return undefined;
+}
+
+function HasNonDefaultTransform2d(prim: ISdfPrimSpec): boolean {
+    const rotation = AsNumber(GetAttributeValue(GetAttribute(prim, "inputs:rotation")));
+    if (rotation !== undefined && rotation !== 0) {
+        return true;
     }
-    const nestedInput = SplitPropertyPath(GetConnectionTargets(GetAttribute(prim, "inputs:in"))[0] ?? "");
-    return nestedInput ? FindPrimvarReader(nestedInput.primPath, context) : undefined;
+    const scale = AsVec2(GetAttributeValue(GetAttribute(prim, "inputs:scale")));
+    if (scale && (scale[0] !== 1 || scale[1] !== 1)) {
+        return true;
+    }
+    const translation = AsVec2(GetAttributeValue(GetAttribute(prim, "inputs:translation")));
+    if (translation && (translation[0] !== 0 || translation[1] !== 0)) {
+        return true;
+    }
+    return false;
 }
 
 function UvSetNameToIndex(varname: string): number {
@@ -259,6 +358,22 @@ function StripAssetDelimiters(path: string): string {
     return path.length >= 2 && path.startsWith("@") && path.endsWith("@") ? path.slice(1, -1) : path;
 }
 
+const UsdLayerExtensions = [".usd", ".usda", ".usdc", ".usdz"];
+
+/**
+ * Determines whether a texture asset path points at a USD layer rather than an image.
+ *
+ * A UsdUVTexture must reference an image; an authored `inputs:file` that targets a USD layer (for
+ * example a stale reference or an unsupported nested-stage workflow) cannot be sampled as a texture,
+ * so it is rejected with a diagnostic instead of being resolved.
+ * @param path authored asset path, possibly wrapped in `@...@` delimiters and with a query/fragment
+ * @returns true when the path's extension is a USD layer format
+ */
+function IsUsdLayerAsset(path: string): boolean {
+    const clean = StripAssetDelimiters(path).split("?")[0].split("#")[0].trim().toLowerCase();
+    return UsdLayerExtensions.some((ext) => clean.endsWith(ext));
+}
+
 function MapWrapMode(mode: string | undefined): IResolvedTexture["wrapU"] {
     if (mode === "clamp" || mode === "mirror" || mode === "black") {
         return mode;
@@ -284,6 +399,38 @@ function BuildDefaultMaterial(name: string, baseColor: Vec3): IResolvedMaterial 
         clearcoatRoughness: 0,
         useSpecularWorkflow: false,
         specularColor: [1, 1, 1],
+        textures: {},
+    };
+}
+
+/**
+ * UsdPreviewSurface input defaults that differ from {@link BuildDefaultMaterial}.
+ *
+ * These match the UsdPreviewSurface schema so a bound material with unauthored inputs resolves to the
+ * same values a reference renderer would use, most notably the 0.18 gray diffuse color.
+ */
+const UsdPreviewSurfaceDefaults = {
+    diffuseColor: [0.18, 0.18, 0.18] as Vec3,
+    specularColor: [0, 0, 0] as Vec3,
+    clearcoatRoughness: 0.01,
+} as const;
+
+function BuildPreviewSurfaceMaterial(name: string): IResolvedMaterial {
+    const diffuse = UsdPreviewSurfaceDefaults.diffuseColor;
+    const specular = UsdPreviewSurfaceDefaults.specularColor;
+    return {
+        name,
+        baseColor: [diffuse[0], diffuse[1], diffuse[2]],
+        opacity: 1,
+        metallic: 0,
+        roughness: 0.5,
+        emissiveColor: [0, 0, 0],
+        ior: 1.5,
+        occlusion: 1,
+        clearcoat: 0,
+        clearcoatRoughness: UsdPreviewSurfaceDefaults.clearcoatRoughness,
+        useSpecularWorkflow: false,
+        specularColor: [specular[0], specular[1], specular[2]],
         textures: {},
     };
 }

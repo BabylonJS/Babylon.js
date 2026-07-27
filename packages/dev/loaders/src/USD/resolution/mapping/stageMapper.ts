@@ -14,7 +14,7 @@ import { ResolveGeometricPrimitive } from "./geometricPrimitiveMapping";
 import { ResolveLight } from "./lightMapping";
 import { ResolveMaterialIndex, GetMaterialBindingPath, GetDisplayColorFallback } from "./materialMapping";
 import { type IStageMappingContext } from "./mappingContext";
-import { BuildMeshPoolKey, ResolveMesh } from "./meshMapping";
+import { BuildMeshPoolKey, CollectInheritablePrimvars, EmptyInheritedPrimvars, ResolveMesh, type IInheritedPrimvars } from "./meshMapping";
 import { ResolvePointInstancer } from "./pointInstancerMapping";
 import { ResolveSkeletonIndex, ResolveSkinning } from "./skeletonMapping";
 import { IdentityTransform, ResolveTransform } from "./transformMapping";
@@ -53,7 +53,7 @@ export function MapLayerToResolvedStage(layer: ISdfLayer): IResolvedStage {
         kind: "transform",
         transform: IdentityTransform(),
         visible: true,
-        children: layer.rootPrims.map((prim) => MapPrim(prim, true, metadata, context, undefined)),
+        children: layer.rootPrims.map((prim) => MapPrim(prim, true, metadata, context, undefined, EmptyInheritedPrimvars)),
     };
 
     return {
@@ -112,7 +112,14 @@ function ResolveTimeCodesPerSecond(layer: ISdfLayer, diagnostics: IResolvedDiagn
     return fallback;
 }
 
-function MapPrim(primSpec: ISdfPrimSpec, parentVisible: boolean, metadata: IStageMetadata, context: StageMapperContext, inheritedMaterialPath: string | undefined): IResolvedPrim {
+function MapPrim(
+    primSpec: ISdfPrimSpec,
+    parentVisible: boolean,
+    metadata: IStageMetadata,
+    context: StageMapperContext,
+    inheritedMaterialPath: string | undefined,
+    inheritedPrimvars: IInheritedPrimvars
+): IResolvedPrim {
     const visible = parentVisible && ResolveVisibility(primSpec);
     DiagnoseUnsupportedPurpose(primSpec, context.diagnostics);
     const prim: IResolvedPrim = {
@@ -128,7 +135,7 @@ function MapPrim(primSpec: ISdfPrimSpec, parentVisible: boolean, metadata: IStag
     // overrides the inherited one and becomes the binding seen by its whole subtree.
     const effectiveMaterialPath = GetMaterialBindingPath(primSpec) ?? inheritedMaterialPath;
 
-    ApplySchemaPayload(prim, primSpec, metadata, context, effectiveMaterialPath);
+    ApplySchemaPayload(prim, primSpec, metadata, context, effectiveMaterialPath, inheritedPrimvars);
     const animation = ResolvePrimAnimation(primSpec, context.layer, metadata, context.diagnostics);
     if (animation) {
         const tracks = animation.tracks.filter((track) => track.target !== "visibility" || prim.kind === "mesh" || prim.kind === "instance");
@@ -139,11 +146,21 @@ function MapPrim(primSpec: ISdfPrimSpec, parentVisible: boolean, metadata: IStag
             prim.animation = { tracks };
         }
     }
-    prim.children = prim.kind === "pointInstancer" ? [] : primSpec.children.map((child) => MapPrim(child, visible, metadata, context, effectiveMaterialPath));
+    // Constant primvars inherit down namespace, so descendants that omit them fall back to this
+    // subtree's authored constants merged over the set inherited from ancestors.
+    const childPrimvars = CollectInheritablePrimvars(primSpec, inheritedPrimvars);
+    prim.children = prim.kind === "pointInstancer" ? [] : primSpec.children.map((child) => MapPrim(child, visible, metadata, context, effectiveMaterialPath, childPrimvars));
     return prim;
 }
 
-function ApplySchemaPayload(prim: IResolvedPrim, primSpec: ISdfPrimSpec, metadata: IStageMetadata, context: StageMapperContext, materialPath: string | undefined): void {
+function ApplySchemaPayload(
+    prim: IResolvedPrim,
+    primSpec: ISdfPrimSpec,
+    metadata: IStageMetadata,
+    context: StageMapperContext,
+    materialPath: string | undefined,
+    inheritedPrimvars: IInheritedPrimvars
+): void {
     const light = ResolveLight(primSpec, context);
     if (light) {
         prim.kind = "light";
@@ -177,7 +194,7 @@ function ApplySchemaPayload(prim: IResolvedPrim, primSpec: ISdfPrimSpec, metadat
         return;
     }
 
-    const mesh = primSpec.typeName === "Mesh" ? ResolveMesh(primSpec, context) : ResolveGeometricPrimitive(primSpec);
+    const mesh = primSpec.typeName === "Mesh" ? ResolveMesh(primSpec, context, inheritedPrimvars) : ResolveGeometricPrimitive(primSpec);
     if (!mesh) {
         ApplyUnsupportedSchemaDiagnostics(primSpec, context);
         return;

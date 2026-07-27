@@ -13,19 +13,36 @@ import {
     type SdfVariability,
 } from "../../sdf/sdfSpec";
 import { type SdfArrayValueType, type SdfMetadata, type SdfScalarValueType, type SdfValue, type SdfValueType } from "../../sdf/sdfValue";
-import { UsdResourceLimitError } from "../../../usdErrors";
+import { UsdResourceLimitError, ValidateResourceLimit } from "../../../usdErrors";
 
 const DiagnosticMetadataKey = "parser:diagnostics";
 
 type TokenKind = "identifier" | "number" | "string" | "asset" | "path" | "symbol" | "eof";
 type ListOperation = "prepend" | "append" | "add" | "delete" | "reorder";
-type RawValue = boolean | number | string | IRawNumber | IRawAsset | IRawPath | IRawDictionary | RawValue[];
+type RawValue = boolean | number | string | IRawNumber | IRawAsset | IRawPath | IRawDictionary | IRawValueBlock | RawValue[];
 const MaxUsdaDiagnostics = 256;
 // Shared cap on structural nesting (prim bodies and variant bodies) and on value nesting
 // (arrays/tuples/dictionaries). Both bound untrusted input so pathological depth is rejected with a
 // typed parser error instead of a native RangeError, without penalizing wide (sibling-heavy) stages.
 const MaxNestingDepth = 256;
 const MaxValueNestingDepth = 256;
+
+/** Configurable, validated resource ceilings for the USDA text parser. All are finite, non-negative safe integers. */
+export interface IUsdaParserLimits {
+    /** Maximum decoded USDA text size, measured as UTF-8 bytes. */
+    maxInputBytes: number;
+    /** Maximum number of non-EOF lexer tokens the source may produce. */
+    maxTokenCount: number;
+    /** Maximum number of token-consumption steps the parser may spend building the layer. */
+    maxParserWork: number;
+}
+
+/** Safe default parser resource limits. Sized so any well-formed in-profile USDA text parses, while adversarial input is rejected with a typed {@link UsdResourceLimitError}. */
+export const DefaultUsdaParserLimits: IUsdaParserLimits = {
+    maxInputBytes: 256 * 1024 * 1024,
+    maxTokenCount: 5_000_000,
+    maxParserWork: 10_000_000,
+};
 
 interface IToken {
     kind: TokenKind;
@@ -52,6 +69,15 @@ interface IRawPath {
 interface IRawDictionary {
     kind: "dictionary";
     value: Record<string, RawValue>;
+    // Members authored with an explicit type (e.g. `float ratio = 1`) are resolved to their tagged
+    // Sdf value at parse time so downstream inference does not silently re-type them.
+    resolved?: Record<string, SdfValue>;
+}
+
+// A `None` value block authored for an attribute, relationship target list, or dictionary member.
+// Represents a deliberately absent opinion rather than a zero/empty coercion.
+interface IRawValueBlock {
+    kind: "block";
 }
 
 /** Recoverable USDA parse diagnostic emitted while building the Sdf layer. */
@@ -64,12 +90,24 @@ export interface IUsdaParseDiagnostic {
     column: number;
 }
 
+/** Measured resource usage of a successful parse. Exposed for tests and boundary tuning; not public API. @internal */
+export interface IUsdaParseAccounting {
+    /** Decoded text size in UTF-8 bytes. */
+    inputBytes: number;
+    /** Non-EOF tokens produced by the lexer. */
+    tokenCount: number;
+    /** Token-consumption steps spent by the parser. */
+    parserWork: number;
+}
+
 /** Result shape for callers that need recoverable diagnostics separately from the parsed layer. */
 export interface IUsdaParseResult {
     /** Parsed Sdf layer. */
     layer: ISdfLayer;
     /** Recoverable parse diagnostics. Fatal header errors are thrown instead. */
     diagnostics: IUsdaParseDiagnostic[];
+    /** Measured resource usage of the successful parse. */
+    accounting: IUsdaParseAccounting;
 }
 
 interface IBodyTarget extends ISdfCompositionFields {
@@ -87,10 +125,11 @@ interface IBodyTarget extends ISdfCompositionFields {
  * the diagnostics should be consumed out-of-band.
  * @param text USDA source text.
  * @param identifier Layer identifier to store on the returned Sdf layer.
+ * @param limits optional validated resource ceilings, defaulting to {@link DefaultUsdaParserLimits}.
  * @returns Parsed Sdf layer.
  */
-export function ParseUsda(text: string, identifier: string): ISdfLayer {
-    const result = ParseUsdaWithDiagnostics(text, identifier);
+export function ParseUsda(text: string, identifier: string, limits?: Partial<IUsdaParserLimits>): ISdfLayer {
+    const result = ParseUsdaWithDiagnostics(text, identifier, limits);
     if (result.diagnostics.length > 0) {
         result.layer.metadata = result.layer.metadata ?? {};
         result.layer.metadata[DiagnosticMetadataKey] = DiagnosticsToMetadata(result.diagnostics);
@@ -106,9 +145,19 @@ export function ParseUsda(text: string, identifier: string): ISdfLayer {
  * @internal
  * @param text USDA source text.
  * @param identifier Layer identifier to store on the returned Sdf layer.
+ * @param limits optional validated resource ceilings, defaulting to {@link DefaultUsdaParserLimits}.
  * @returns Parsed Sdf layer plus recoverable diagnostics.
  */
-export function ParseUsdaWithDiagnostics(text: string, identifier: string): IUsdaParseResult {
+export function ParseUsdaWithDiagnostics(text: string, identifier: string, limits?: Partial<IUsdaParserLimits>): IUsdaParseResult {
+    const effectiveLimits = ResolveUsdaParserLimits(limits);
+    const inputBytes = Utf8ByteLength(text);
+    if (inputBytes > effectiveLimits.maxInputBytes) {
+        throw new UsdResourceLimitError("input-bytes", effectiveLimits.maxInputBytes, `USDA parser: input size exceeds the ${effectiveLimits.maxInputBytes}-byte resource cap.`, {
+            actual: inputBytes,
+            path: identifier,
+        });
+    }
+
     const header = /^\uFEFF?\s*#usda\s+(\d+)\.(\d+)(?:\.(\d+))?(?:\s|$)/.exec(text);
     if (!header) {
         throw new Error("USD: not a valid USDA document (missing '#usda 1.0' header).");
@@ -122,10 +171,51 @@ export function ParseUsdaWithDiagnostics(text: string, identifier: string): IUsd
         throw new Error(`USD: unsupported USDA version '${version}'; only '#usda 1.0' is supported.`);
     }
 
-    const lexer = new UsdaLexer(text, header[0].length);
+    const lexer = new UsdaLexer(text, header[0].length, effectiveLimits.maxTokenCount, identifier);
     const { tokens, diagnostics } = lexer.scan();
-    const parser = new UsdaParser(tokens, identifier, diagnostics);
-    return parser.parseLayer();
+    const parser = new UsdaParser(tokens, identifier, effectiveLimits.maxParserWork, diagnostics);
+    const result = parser.parseLayer();
+    return {
+        layer: result.layer,
+        diagnostics: result.diagnostics,
+        accounting: { inputBytes, tokenCount: tokens.length - 1, parserWork: parser.work },
+    };
+}
+
+function ResolveUsdaParserLimits(limits?: Partial<IUsdaParserLimits>): IUsdaParserLimits {
+    return {
+        maxInputBytes: limits?.maxInputBytes !== undefined ? ValidateResourceLimit(limits.maxInputBytes, "maxInputBytes") : DefaultUsdaParserLimits.maxInputBytes,
+        maxTokenCount: limits?.maxTokenCount !== undefined ? ValidateResourceLimit(limits.maxTokenCount, "maxTokenCount") : DefaultUsdaParserLimits.maxTokenCount,
+        maxParserWork: limits?.maxParserWork !== undefined ? ValidateResourceLimit(limits.maxParserWork, "maxParserWork") : DefaultUsdaParserLimits.maxParserWork,
+    };
+}
+
+// Computes the exact UTF-8 byte length of a UTF-16 JS string without allocating an encoded copy, so the
+// input-bytes cap and its reported `actual` reflect real bytes; allocating a second full TextEncoder
+// buffer would itself defeat the allocation the cap is meant to bound. Lone surrogates count as 3 bytes,
+// matching TextEncoder's U+FFFD replacement. A full pass (not early-exit) is used so the exact byte count
+// is available for both accounting and the error's `actual`.
+function Utf8ByteLength(text: string): number {
+    let bytes = 0;
+    for (let index = 0; index < text.length; index++) {
+        const code = text.charCodeAt(index);
+        if (code <= 0x7f) {
+            bytes += 1;
+        } else if (code <= 0x7ff) {
+            bytes += 2;
+        } else if (code >= 0xd800 && code <= 0xdbff && index + 1 < text.length) {
+            const next = text.charCodeAt(index + 1);
+            if (next >= 0xdc00 && next <= 0xdfff) {
+                bytes += 4;
+                index++;
+            } else {
+                bytes += 3;
+            }
+        } else {
+            bytes += 3;
+        }
+    }
+    return bytes;
 }
 
 class UsdaLexer {
@@ -136,7 +226,9 @@ class UsdaLexer {
 
     public constructor(
         private readonly _text: string,
-        startIndex: number
+        startIndex: number,
+        private readonly _maxTokenCount: number,
+        private readonly _identifier: string
     ) {
         this._position = 0;
         while (this._position < startIndex) {
@@ -146,10 +238,19 @@ class UsdaLexer {
 
     public scan(): { tokens: IToken[]; diagnostics: IUsdaParseDiagnostic[] } {
         const tokens: IToken[] = [];
+        let tokenCount = 0;
         while (!this._isAtEnd()) {
             this._skipWhitespaceAndComments();
             if (this._isAtEnd()) {
                 break;
+            }
+
+            tokenCount++;
+            if (tokenCount > this._maxTokenCount) {
+                throw new UsdResourceLimitError("token-count", this._maxTokenCount, `USDA parser: token count exceeds the ${this._maxTokenCount}-token resource cap.`, {
+                    actual: tokenCount,
+                    path: this._identifier,
+                });
             }
 
             const line = this._line;
@@ -354,17 +455,23 @@ class UsdaParser {
     private _nestingDepth = 0;
     private _valueDepth = 0;
     private _position = 0;
+    private _work = 0;
     private readonly _diagnostics: IUsdaParseDiagnostic[];
 
     public constructor(
         private readonly _tokens: IToken[],
         private readonly _identifier: string,
+        private readonly _maxParserWork: number,
         lexerDiagnostics: IUsdaParseDiagnostic[] = []
     ) {
         this._diagnostics = [...lexerDiagnostics];
     }
 
-    public parseLayer(): IUsdaParseResult {
+    public get work(): number {
+        return this._work;
+    }
+
+    public parseLayer(): { layer: ISdfLayer; diagnostics: IUsdaParseDiagnostic[] } {
         const layer: ISdfLayer = {
             identifier: this._identifier,
             subLayers: [],
@@ -563,6 +670,12 @@ class UsdaParser {
             }
 
             const listOperation = this._tryConsumeListOperation();
+            // A relationship may be authored with a leading `custom` qualifier (`custom rel foo = ...`).
+            // Consume it so the declaration routes to the relationship parser instead of being
+            // misread as an attribute whose type name is `rel`.
+            if (this._peek().value === "custom" && this._peek(1).value === "rel") {
+                this._consume();
+            }
             if (this._peek().value === "rel") {
                 const relationship = this._parseRelationship(ownerPath, listOperation);
                 if (relationship) {
@@ -713,15 +826,20 @@ class UsdaParser {
             this._diagnose("Relationship is missing a name.");
             return undefined;
         }
-        const metadata = this._peek().value === "(" ? this._parseSimpleMetadataBlock() : undefined;
-        if (!this._expectSymbol("=")) {
-            return undefined;
+        let metadata = this._peek().value === "(" ? this._parseSimpleMetadataBlock() : undefined;
+        // Targets are optional: a relationship may be declared without an assignment (`rel proxyPrim`)
+        // or blocked with `None`. Either case yields an empty explicit target list.
+        const targets = this._matchSymbol("=") ? this._parsePathItems() : [];
+        // USD canonically authors relationship metadata after the target list, e.g.
+        // `rel r = </x> ( bindMaterialAs = "..." )`. Merge any trailing block over a pre-target one.
+        if (this._peek().value === "(") {
+            metadata = { ...(metadata ?? {}), ...this._parseSimpleMetadataBlock() };
         }
         const relationship: ISdfRelationshipSpec = {
             kind: "relationship",
             name,
             path: `${ownerPath}.${name}`,
-            targets: BuildListOp(this._parsePathItems(), listOperation),
+            targets: BuildListOp(targets, listOperation),
         };
         if (metadata && Object.keys(metadata).length > 0) {
             relationship.metadata = metadata;
@@ -762,7 +880,13 @@ class UsdaParser {
             } else if (suffix === "connect") {
                 nextAttribute.connections = MergeListOps(nextAttribute.connections, BuildListOp(this._parsePathItems(), listOperation));
             } else {
-                nextAttribute.default = ParseSdfValue(typeName, this._parseRawValue(), this._diagnostics, this._peek());
+                // Capture the value's start token before consuming it so an invalid-value diagnostic
+                // points at the authored value rather than whatever follows it.
+                const valueToken = this._peek();
+                const parsed = ParseSdfValue(typeName, this._parseRawValue(), this._diagnostics, valueToken);
+                if (parsed !== undefined) {
+                    nextAttribute.default = parsed;
+                }
             }
         }
 
@@ -836,10 +960,17 @@ class UsdaParser {
             .map(([time, value]) => ({ time: Number(time), value }))
             .filter((entry) => !Number.isNaN(entry.time))
             .sort((left, right) => left.time - right.time);
-        return {
-            times: entries.map((entry) => entry.time),
-            values: entries.map((entry) => ParseSdfValue(typeName, entry.value, this._diagnostics, this._peek())),
-        };
+        const times: number[] = [];
+        const values: SdfValue[] = [];
+        for (const entry of entries) {
+            const value = ParseSdfValue(typeName, entry.value, this._diagnostics, this._peek());
+            // Drop samples whose value fails strict conversion so `times` and `values` stay aligned.
+            if (value !== undefined) {
+                times.push(entry.time);
+                values.push(value);
+            }
+        }
+        return { times, values };
     }
 
     private _parseVariantSelections(): Record<string, string> {
@@ -941,6 +1072,10 @@ class UsdaParser {
 
     private _parsePathItems(): string[] {
         const raw = this._parseRawValue();
+        // A `None` value block clears the target list rather than producing a bogus path.
+        if (IsRawValueBlock(raw)) {
+            return [];
+        }
         if (Array.isArray(raw)) {
             return raw.map((item) => RawToPath(item));
         }
@@ -1035,6 +1170,9 @@ class UsdaParser {
                 if (token.value === "false") {
                     return false;
                 }
+                if (token.value === "None") {
+                    return { kind: "block" };
+                }
                 return token.value;
             default:
                 return token.value;
@@ -1063,33 +1201,77 @@ class UsdaParser {
         }
     }
 
+    private _tryConsumeDictionaryMemberType(): string | undefined {
+        // A typed dictionary member is authored as `<type> <name> =` or `<type>[] <name> =`.
+        // Only consume the leading type when the shape matches and the separator is `=`; a `:`
+        // separator is reserved for time-sample keys, which are untyped.
+        if (this._peek().kind !== "identifier") {
+            return undefined;
+        }
+        let offset = 1;
+        let arraySuffix = "";
+        if (this._peek(offset).value === "[" && this._peek(offset + 1).value === "]") {
+            arraySuffix = "[]";
+            offset += 2;
+        }
+        const nameKind = this._peek(offset).kind;
+        if ((nameKind !== "identifier" && nameKind !== "string") || this._peek(offset + 1).value !== "=") {
+            return undefined;
+        }
+        const typeName = this._consume().value;
+        if (arraySuffix) {
+            this._consume();
+            this._consume();
+        }
+        return `${typeName}${arraySuffix}`;
+    }
+
     private _parseRawDictionary(): IRawDictionary {
         this._enterValue();
         try {
             const value: Record<string, RawValue> = {};
+            const resolved: Record<string, SdfValue> = {};
             while (!this._isAtEnd() && this._peek().value !== "}") {
                 this._skipDelimiters();
                 if (this._peek().value === "}") {
                     break;
                 }
+                const memberType = this._tryConsumeDictionaryMemberType();
                 let key = this._consumeKey();
                 if (!key) {
                     this._consume();
                     continue;
                 }
-                if (this._peek().value !== ":" && this._peek().value !== "=" && (this._peek(1).value === ":" || this._peek(1).value === "=")) {
+                if (!memberType && this._peek().value !== ":" && this._peek().value !== "=" && (this._peek(1).value === ":" || this._peek(1).value === "=")) {
                     key = this._consumeKey() ?? key;
                 }
                 if (this._matchSymbol(":") || this._matchSymbol("=")) {
+                    const valueToken = this._peek();
                     const rawValue = this._parseRawValue();
                     if (rawValue !== undefined) {
-                        value[key] = rawValue;
+                        if (memberType) {
+                            // Resolve authored member types eagerly so `float ratio = 1` stays a float
+                            // instead of being re-inferred as an int by untyped metadata inference. A
+                            // member whose value is invalid for its declared type is dropped entirely
+                            // rather than retained and later retyped by structural inference.
+                            const converted = ParseSdfValue(memberType, rawValue, this._diagnostics, valueToken);
+                            if (converted !== undefined) {
+                                value[key] = rawValue;
+                                resolved[key] = converted;
+                            }
+                        } else {
+                            value[key] = rawValue;
+                        }
                     }
                 }
                 this._matchSymbol(",");
             }
             this._expectSymbol("}");
-            return { kind: "dictionary", value };
+            const dictionary: IRawDictionary = { kind: "dictionary", value };
+            if (Object.keys(resolved).length > 0) {
+                dictionary.resolved = resolved;
+            }
+            return dictionary;
         } finally {
             this._exitValue();
         }
@@ -1166,6 +1348,13 @@ class UsdaParser {
     }
 
     private _consume(): IToken {
+        this._work++;
+        if (this._work > this._maxParserWork) {
+            throw new UsdResourceLimitError("parser-work", this._maxParserWork, `USDA parser: parser work exceeds the ${this._maxParserWork}-unit resource cap.`, {
+                actual: this._work,
+                path: this._identifier,
+            });
+        }
         const token = this._peek();
         if (!this._isAtEnd()) {
             this._position++;
@@ -1186,7 +1375,20 @@ class UsdaParser {
     }
 }
 
-function ParseSdfValue(typeName: string, raw: RawValue | undefined, diagnostics: IUsdaParseDiagnostic[], token: IToken): SdfValue {
+function PushDiagnostic(diagnostics: IUsdaParseDiagnostic[], message: string, token: IToken): void {
+    // Honor the same recoverable-diagnostic cap as the parser's instance-level _diagnose so a
+    // pathological document cannot grow the module-level conversion diagnostics without bound.
+    if (diagnostics.length >= MaxUsdaDiagnostics) {
+        return;
+    }
+    diagnostics.push({ message, line: token.line, column: token.column });
+}
+
+function ParseSdfValue(typeName: string, raw: RawValue | undefined, diagnostics: IUsdaParseDiagnostic[], token: IToken): SdfValue | undefined {
+    // A `None` value block is authored the same way regardless of the declared type.
+    if (IsRawValueBlock(raw)) {
+        return { type: "block", value: null };
+    }
     const tag = GetSdfValueTag(typeName, diagnostics, token);
     if (tag === "dictionary") {
         return { type: "dictionary", value: RawToMetadata(raw) };
@@ -1194,19 +1396,36 @@ function ParseSdfValue(typeName: string, raw: RawValue | undefined, diagnostics:
     if (IsArrayValueTag(tag)) {
         const elementTag = tag.slice(0, -2) as SdfScalarValueType;
         const rawItems = Array.isArray(raw) ? raw : raw === undefined ? [] : [raw];
-        return { type: tag, value: rawItems.map((item) => ConvertScalarPayload(elementTag, item)) } as SdfValue;
+        const converted: unknown[] = [];
+        for (const item of rawItems) {
+            const element = ConvertScalarPayload(elementTag, item);
+            if (element === InvalidValue) {
+                PushDiagnostic(diagnostics, `Invalid '${elementTag}' element in '${typeName}' value; dropping the authored default.`, token);
+                return undefined;
+            }
+            converted.push(element);
+        }
+        return { type: tag, value: converted } as SdfValue;
     }
-    return { type: tag, value: ConvertScalarPayload(tag, raw) } as SdfValue;
+    const scalar = ConvertScalarPayload(tag, raw);
+    if (scalar === InvalidValue) {
+        PushDiagnostic(diagnostics, `Invalid '${tag}' value; dropping the authored default.`, token);
+        return undefined;
+    }
+    return { type: tag, value: scalar } as SdfValue;
 }
 
-function GetSdfValueTag(typeName: string, diagnostics: IUsdaParseDiagnostic[], token: IToken): SdfValueType {
+function GetSdfValueTag(typeName: string, diagnostics: IUsdaParseDiagnostic[], token: IToken): Exclude<SdfValueType, "block"> {
+    if (typeName === "dictionary") {
+        return "dictionary";
+    }
     const isArray = typeName.endsWith("[]");
     const elementType = isArray ? typeName.slice(0, -2) : typeName;
     const normalizedElement = NormalizeScalarTypeName(elementType);
     if (normalizedElement) {
-        return (isArray ? `${normalizedElement}[]` : normalizedElement) as SdfValueType;
+        return (isArray ? `${normalizedElement}[]` : normalizedElement) as SdfScalarValueType | SdfArrayValueType;
     }
-    diagnostics.push({ message: `Unsupported Sdf value type '${typeName}', preserving payload as token${isArray ? "[]" : ""}.`, line: token.line, column: token.column });
+    PushDiagnostic(diagnostics, `Unsupported Sdf value type '${typeName}', preserving payload as token${isArray ? "[]" : ""}.`, token);
     return isArray ? "token[]" : "token";
 }
 
@@ -1266,15 +1485,17 @@ function ConvertScalarPayload(tag: SdfScalarValueType, raw: RawValue | undefined
         case "bool":
             return RawToBoolean(raw);
         case "int":
+            return ParseStrictInteger(raw, Int32Range);
         case "uint":
-            return Math.trunc(RawToNumber(raw));
+            return ParseStrictInteger(raw, Uint32Range);
         case "int64":
+            return ParseStrictBigInt(raw, Int64Range);
         case "uint64":
-            return RawToBigInt(raw);
+            return ParseStrictBigInt(raw, Uint64Range);
         case "half":
         case "float":
         case "double":
-            return RawToNumber(raw);
+            return ParseStrictFloat(raw);
         case "string":
         case "token":
             return RawToString(raw);
@@ -1284,28 +1505,31 @@ function ConvertScalarPayload(tag: SdfScalarValueType, raw: RawValue | undefined
             return RawToPath(raw);
         case "vec2f":
         case "vec2d":
-            return ToNumberTuple(raw, 2);
+            return ParseNumberTuple(raw, 2);
         case "vec3f":
         case "vec3d":
         case "point3f":
         case "point3d":
         case "normal3f":
         case "color3f":
-            return ToNumberTuple(raw, 3);
+            return ParseNumberTuple(raw, 3);
         case "vec4f":
         case "vec4d":
-            return ToNumberTuple(raw, 4);
+            return ParseNumberTuple(raw, 4);
         case "quatf":
         case "quatd": {
-            const tuple = ToNumberTuple(raw, 4);
-            return [tuple[1], tuple[2], tuple[3], tuple[0]];
+            const tuple = ParseNumberTuple(raw, 4);
+            return tuple === InvalidValue ? InvalidValue : [tuple[1], tuple[2], tuple[3], tuple[0]];
         }
         case "matrix4d":
-            return ToNumberTuple(raw, 16);
+            return ParseNumberTuple(raw, 16);
     }
 }
 
 function InferSdfValue(raw: RawValue | undefined): SdfValue {
+    if (IsRawValueBlock(raw)) {
+        return { type: "block", value: null };
+    }
     if (IsRawDictionary(raw)) {
         return { type: "dictionary", value: RawToMetadata(raw) };
     }
@@ -1338,7 +1562,9 @@ function RawToMetadata(raw: RawValue | undefined): SdfMetadata {
     const metadata: SdfMetadata = {};
     if (IsRawDictionary(raw)) {
         for (const [key, value] of Object.entries(raw.value)) {
-            metadata[key] = InferSdfValue(value);
+            // Prefer the type resolved at parse time so authored member types survive; fall back to
+            // structural inference for members declared without an explicit type.
+            metadata[key] = raw.resolved?.[key] ?? InferSdfValue(value);
         }
     }
     return metadata;
@@ -1419,23 +1645,125 @@ function AddMetadata(target: { metadata?: SdfMetadata }, key: string, value: Sdf
     target.metadata[key] = value;
 }
 
-function ToNumberTuple(raw: RawValue | undefined, length: number): number[] {
-    const numbers = FlattenNumbers(raw);
-    while (numbers.length < length) {
-        numbers.push(0);
-    }
-    return numbers.slice(0, length);
+// Sentinel returned by strict conversion when authored text cannot be represented in the declared
+// type. Callers drop the value (and emit a diagnostic) instead of silently coercing it.
+const InvalidValue = Symbol("invalid-sdf-value");
+
+interface INumberRange {
+    min: number;
+    max: number;
 }
 
-function FlattenNumbers(raw: RawValue | undefined): number[] {
-    if (Array.isArray(raw)) {
-        return raw.flatMap((item) => FlattenNumbers(item));
+interface IBigIntRange {
+    min: bigint;
+    max: bigint;
+}
+
+const Int32Range: INumberRange = { min: -2147483648, max: 2147483647 };
+const Uint32Range: INumberRange = { min: 0, max: 4294967295 };
+const Int64Range: IBigIntRange = { min: -9223372036854775808n, max: 9223372036854775807n };
+const Uint64Range: IBigIntRange = { min: 0n, max: 18446744073709551615n };
+
+function ParseSpecialFloat(text: string): number | undefined {
+    switch (text) {
+        case "inf":
+        case "+inf":
+            return Number.POSITIVE_INFINITY;
+        case "-inf":
+            return Number.NEGATIVE_INFINITY;
+        case "nan":
+        case "-nan":
+            return Number.NaN;
+    }
+    return undefined;
+}
+
+function ParseStrictFloat(raw: RawValue | undefined): number | typeof InvalidValue {
+    if (IsRawNumber(raw)) {
+        const value = Number(raw.value);
+        // Reject finite literals that overflow to +/-Infinity (e.g. `1e400`). Intentional
+        // `inf`/`-inf`/`nan` lex as identifiers and are preserved by the string branch below.
+        return Number.isFinite(value) ? value : InvalidValue;
     }
     if (typeof raw === "number") {
-        return [raw];
+        return raw;
     }
-    const value = Number(RawToString(raw));
-    return Number.isNaN(value) ? [] : [value];
+    // `inf`/`-inf`/`nan` lex as identifiers, so they arrive as bare strings.
+    if (typeof raw === "string") {
+        const special = ParseSpecialFloat(raw);
+        if (special !== undefined) {
+            return special;
+        }
+    }
+    return InvalidValue;
+}
+
+function ParseStrictInteger(raw: RawValue | undefined, range: INumberRange): number | typeof InvalidValue {
+    if (!IsRawNumber(raw) || !/^[+-]?\d+$/.test(raw.value)) {
+        return InvalidValue;
+    }
+    const value = Number(raw.value);
+    if (!Number.isInteger(value) || value < range.min || value > range.max) {
+        return InvalidValue;
+    }
+    return value;
+}
+
+function ParseStrictBigInt(raw: RawValue | undefined, range: IBigIntRange): bigint | typeof InvalidValue {
+    if (!IsRawNumber(raw) || !/^[+-]?\d+$/.test(raw.value)) {
+        return InvalidValue;
+    }
+    const value = BigInt(raw.value);
+    if (value < range.min || value > range.max) {
+        return InvalidValue;
+    }
+    return value;
+}
+
+function ParseNumberTuple(raw: RawValue | undefined, length: number): number[] | typeof InvalidValue {
+    const numbers = CollectTupleNumbers(raw);
+    if (numbers === undefined || numbers.length !== length) {
+        return InvalidValue;
+    }
+    return numbers;
+}
+
+function CollectTupleNumbers(raw: RawValue | undefined): number[] | undefined {
+    if (!Array.isArray(raw)) {
+        return undefined;
+    }
+    const numbers: number[] = [];
+    for (const item of raw) {
+        if (Array.isArray(item)) {
+            const nested = CollectTupleNumbers(item);
+            if (nested === undefined) {
+                return undefined;
+            }
+            numbers.push(...nested);
+            continue;
+        }
+        const value = CoerceComponentNumber(item);
+        if (value === undefined) {
+            return undefined;
+        }
+        numbers.push(value);
+    }
+    return numbers;
+}
+
+function CoerceComponentNumber(raw: RawValue): number | undefined {
+    if (typeof raw === "number") {
+        return raw;
+    }
+    if (IsRawNumber(raw)) {
+        const value = Number(raw.value);
+        // Reject tuple components that overflow to +/-Infinity; intentional inf/nan arrive as strings.
+        return Number.isFinite(value) ? value : undefined;
+    }
+    if (typeof raw === "string") {
+        return ParseSpecialFloat(raw);
+    }
+    return undefined;
 }
 
 function RawToNumber(raw: RawValue | undefined): number {
@@ -1447,13 +1775,6 @@ function RawToNumber(raw: RawValue | undefined): number {
     }
     const value = Number(RawToString(raw));
     return Number.isNaN(value) ? 0 : value;
-}
-
-function RawToBigInt(raw: RawValue | undefined): bigint {
-    if (IsRawNumber(raw)) {
-        return BigInt(raw.value);
-    }
-    return BigInt(Math.trunc(RawToNumber(raw)));
 }
 
 function RawToBoolean(raw: RawValue | undefined): boolean {
@@ -1514,6 +1835,10 @@ function IsRawPath(raw: RawValue | undefined): raw is IRawPath {
 
 function IsRawDictionary(raw: RawValue | undefined): raw is IRawDictionary {
     return typeof raw === "object" && raw !== null && !Array.isArray(raw) && raw.kind === "dictionary";
+}
+
+function IsRawValueBlock(raw: RawValue | undefined): raw is IRawValueBlock {
+    return typeof raw === "object" && raw !== null && !Array.isArray(raw) && raw.kind === "block";
 }
 
 function IsArrayValueTag(tag: SdfValueType): tag is SdfArrayValueType {

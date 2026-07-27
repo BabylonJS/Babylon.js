@@ -175,7 +175,7 @@ def Mesh "Overflow"
     uniform token subdivisionScheme = "none"
     int[] faceVertexCounts = [3]
     int[] faceVertexIndices = [0, 1, 2]
-    point3f[] points = [(1e400, 0, 0), (1, 0, 0), (0, 1, 0)]
+    point3f[] points = [(inf, 0, 0), (1, 0, 0), (0, 1, 0)]
 }
 `);
 
@@ -286,7 +286,7 @@ def Mesh "InfNormals"
     int[] faceVertexCounts = [4]
     int[] faceVertexIndices = [0, 1, 2, 3]
     point3f[] points = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0)]
-    normal3f[] normals = [(1e400, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)] (interpolation = "faceVarying")
+    normal3f[] normals = [(inf, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)] (interpolation = "faceVarying")
 }
 `);
 

@@ -67,7 +67,7 @@ export type SdfArrayElementValueType = SdfScalarValueType;
 export type SdfArrayValueType = `${SdfArrayElementValueType}[]`;
 
 /** All value type tags supported by the Sdf value model. */
-export type SdfValueType = SdfScalarValueType | SdfArrayValueType | "dictionary";
+export type SdfValueType = SdfScalarValueType | SdfArrayValueType | "dictionary" | "block";
 
 /**
  * Generic tagged value wrapper used by every concrete Sdf value alias.
@@ -235,6 +235,12 @@ export type SdfMetadata = Record<string, SdfValue>;
 /** Tagged USD dictionary value. */
 export type SdfDictionaryValue = ISdfTypedValue<"dictionary", SdfMetadata>;
 
+/**
+ * Tagged USD value block, authored as `None`. Represents a deliberately absent opinion.
+ * The payload is always `null` so consumers can distinguish it from a zero-valued default.
+ */
+export type SdfValueBlockValue = ISdfTypedValue<"block", null>;
+
 /** Tagged union of all Sdf value payloads supported by the parser-composition seam. */
 export type SdfValue =
     | SdfBooleanValue
@@ -287,7 +293,8 @@ export type SdfValue =
     | SdfQuaternionDoubleArrayValue
     | SdfMatrix4DoubleArrayValue
     | SdfColor3FloatArrayValue
-    | SdfDictionaryValue;
+    | SdfDictionaryValue
+    | SdfValueBlockValue;
 
 /**
  * Ordered time-sample table for one authored attribute.

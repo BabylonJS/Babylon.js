@@ -5,11 +5,11 @@ import { FreezeResolvedStage, type IResolvedStage, type IResolvedDiagnostic, typ
 import { type ISdfLayer } from "./sdf/index";
 import { ReadListOpItems } from "./sdf/sdfListOp";
 import { type ISdfCompositionFields, type ISdfPrimSpec } from "./sdf/sdfSpec";
-import { ParseUsda, ParseUsdaWithDiagnostics, type IUsdaParseDiagnostic } from "./parser/usda/usdaParser";
+import { ParseUsda, ParseUsdaWithDiagnostics, DefaultUsdaParserLimits, type IUsdaParseDiagnostic, type IUsdaParserLimits } from "./parser/usda/usdaParser";
 import { ComposeLayerStack, type ICompositionDiagnostic, type IComposeLayerStackOptions } from "./composition/composeLayerStack";
 import { MapLayerToResolvedStage } from "./mapping/stageMapper";
 import { ParseCrate } from "./parser/crate/crateReader";
-import { ValidateResourceLimit, UsdUnsupportedFormatError } from "../usdErrors";
+import { UsdResourceLimitError, UsdUnsupportedFormatError, ValidateResourceLimit } from "../usdErrors";
 import { ResolveAssetIdentifier } from "./assetPath";
 
 /** The concrete on-disk USD container format, sniffed from magic bytes rather than the file extension. */
@@ -95,8 +95,22 @@ export async function ResolveUsdStageWithFetcherAsync(
 ): Promise<IResolvedStage> {
     const diagnostics: IResolvedDiagnostic[] = [];
     const compositionOptions = ResolveCompositionOptions(options);
-    const detected = DetectUsdFormat(data);
+    const parserLimits = ResolveParserLimits(options);
     const rootIdentifier = `${rootUrl ?? ""}${fileName ?? "stage.usda"}`;
+
+    // Reject an oversized raw buffer by byteLength before DetectUsdFormat/TextDecoder allocates a decoded
+    // copy, so the input-bytes cap actually bounds the expensive allocation it promises to bound.
+    if (typeof data !== "string") {
+        const maxInputBytes = parserLimits.maxInputBytes ?? DefaultUsdaParserLimits.maxInputBytes;
+        if (data.byteLength > maxInputBytes) {
+            throw new UsdResourceLimitError("input-bytes", maxInputBytes, `USD: input size exceeds the ${maxInputBytes}-byte resource cap.`, {
+                actual: data.byteLength,
+                path: rootIdentifier,
+            });
+        }
+    }
+
+    const detected = DetectUsdFormat(data);
 
     // Only single-layer USDA text is supported. Binary crate and USDZ package bytes are sniffed from
     // their magic bytes and rejected here, before the text parser, so they can never be decoded as text.
@@ -107,7 +121,7 @@ export async function ResolveUsdStageWithFetcherAsync(
         throw new UsdUnsupportedFormatError("usdz", "USD: USDZ package data is not supported; only single-layer USDA text can be loaded.");
     }
 
-    const rootLayer = ParseRootUsdaLayer(detected.text ?? "", rootIdentifier, diagnostics);
+    const rootLayer = ParseRootUsdaLayer(detected.text ?? "", rootIdentifier, diagnostics, parserLimits);
     return FreezeResolvedStage(await ComposeAndMapStageAsync(rootLayer, fetchAsset, compositionOptions, diagnostics));
 }
 
@@ -128,6 +142,23 @@ function ResolveCompositionOptions(options: Readonly<USDLoadingOptions>): ICompo
     return composition;
 }
 
+// Extracts and validates the parser resource limits from the loader options at the public boundary so
+// an invalid configuration fails fast (typed UsdConfigurationError) before any parsing. The parser
+// validates again defensively at its own entry point. Only the surviving single-layer root parse is
+// wired here; external/USDZ layers are out of the narrowed loader's scope and use the safe defaults.
+function ResolveParserLimits(options: Readonly<USDLoadingOptions>): Partial<IUsdaParserLimits> {
+    const limits: Partial<IUsdaParserLimits> = {};
+    if (options.maxInputBytes !== undefined) {
+        limits.maxInputBytes = ValidateResourceLimit(options.maxInputBytes, "maxInputBytes");
+    }
+    if (options.maxTokenCount !== undefined) {
+        limits.maxTokenCount = ValidateResourceLimit(options.maxTokenCount, "maxTokenCount");
+    }
+    if (options.maxParserWork !== undefined) {
+        limits.maxParserWork = ValidateResourceLimit(options.maxParserWork, "maxParserWork");
+    }
+    return limits;
+}
 // Pre-fetches the external layer stack, composes it with LIVERPS strength ordering, and maps the
 // flattened result into a resolved stage, once the root USDA layer has been parsed.
 async function ComposeAndMapStageAsync(
@@ -290,8 +321,8 @@ function ToResolvedDiagnostic(diagnostic: ICompositionDiagnostic): IResolvedDiag
 // list, so a source that only parsed after error recovery is surfaced on the resolved stage instead of
 // staying hidden in opaque layer metadata. Fatal parse failures (missing/invalid header, resource-limit
 // breaches) are thrown by the parser and reject the load rather than being recorded as diagnostics.
-function ParseRootUsdaLayer(text: string, identifier: string, diagnostics: IResolvedDiagnostic[]): ISdfLayer {
-    const result = ParseUsdaWithDiagnostics(text, identifier);
+function ParseRootUsdaLayer(text: string, identifier: string, diagnostics: IResolvedDiagnostic[], limits?: Partial<IUsdaParserLimits>): ISdfLayer {
+    const result = ParseUsdaWithDiagnostics(text, identifier, limits);
     for (const parserDiagnostic of result.diagnostics) {
         diagnostics.push(ToResolvedParserDiagnostic(parserDiagnostic, identifier));
     }
