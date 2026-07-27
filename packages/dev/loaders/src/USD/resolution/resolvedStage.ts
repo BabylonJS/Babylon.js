@@ -107,7 +107,7 @@ export interface IStageMetadata {
     upAxis: "Y" | "Z";
     /** Meters represented by one stage unit (USD `metersPerUnit`, default 0.01). */
     metersPerUnit: number;
-    /** Time codes per second (USD `timeCodesPerSecond`, default 24). */
+    /** Time codes per second (USD `timeCodesPerSecond`, default 24). Always resolved to a positive, finite rate. */
     timeCodesPerSecond: number;
     /** Start time code of the stage, in time codes. */
     startTimeCode: number;

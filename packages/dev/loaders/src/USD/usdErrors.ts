@@ -64,6 +64,35 @@ export class UsdConfigurationError extends Error {
     }
 }
 
+/** The kind of unsupported binary USD container rejected at the loader's front door. Doubles as a stable programmatic code. */
+export type UsdUnsupportedFormatKind = "usdc" | "usdz";
+
+/**
+ * Error thrown when the loader is handed a binary USD container it deliberately does not support: a
+ * binary crate (`PXR-USDC`) file or a USDZ/ZIP package. The loader accepts only single-layer USDA text,
+ * so these formats are detected from their magic bytes and rejected up front rather than being partially
+ * or misleadingly decoded.
+ *
+ * Carries the detected {@link format} so callers can tell crate and package input apart programmatically.
+ */
+export class UsdUnsupportedFormatError extends Error {
+    /** Which unsupported binary container was detected. */
+    public readonly format: UsdUnsupportedFormatKind;
+
+    /**
+     * Creates a UsdUnsupportedFormatError.
+     * @param format which unsupported binary container was detected
+     * @param message a human-readable description of the failure
+     */
+    public constructor(format: UsdUnsupportedFormatKind, message: string) {
+        super(message);
+        this.name = "UsdUnsupportedFormatError";
+        this.format = format;
+        // Restore the prototype chain so `instanceof` works when this class is transpiled/bundled.
+        Object.setPrototypeOf(this, UsdUnsupportedFormatError.prototype);
+    }
+}
+
 /**
  * Validates that a configured resource limit is a finite, non-negative safe integer (zero is allowed).
  *

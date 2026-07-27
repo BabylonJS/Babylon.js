@@ -46,7 +46,7 @@ export function MapLayerToResolvedStage(layer: ISdfLayer): IResolvedStage {
         skeletonIndexByPath: new Map(),
         diagnostics,
     };
-    const metadata = ResolveStageMetadata(layer);
+    const metadata = ResolveStageMetadata(layer, diagnostics);
     const root: IResolvedPrim = {
         path: "/",
         name: "",
@@ -66,15 +66,50 @@ export function MapLayerToResolvedStage(layer: ISdfLayer): IResolvedStage {
     };
 }
 
-function ResolveStageMetadata(layer: ISdfLayer): IStageMetadata {
+function ResolveStageMetadata(layer: ISdfLayer, diagnostics: IResolvedDiagnostic[]): IStageMetadata {
     return {
         upAxis: layer.upAxis === "Z" ? "Z" : "Y",
         metersPerUnit: layer.metersPerUnit ?? 0.01,
-        timeCodesPerSecond: layer.timeCodesPerSecond ?? layer.framesPerSecond ?? 24,
+        timeCodesPerSecond: ResolveTimeCodesPerSecond(layer, diagnostics),
         startTimeCode: layer.startTimeCode ?? 0,
         endTimeCode: layer.endTimeCode ?? 0,
         defaultPrimPath: layer.defaultPrim ? (layer.defaultPrim.startsWith("/") ? layer.defaultPrim : `/${layer.defaultPrim}`) : undefined,
     };
+}
+
+// USD's default stage time-code rate.
+const DefaultTimeCodesPerSecond = 24;
+
+function IsValidRate(value: number): boolean {
+    return Number.isFinite(value) && value > 0;
+}
+
+// Resolves the stage time-code rate: the divisor that converts authored time codes into seconds when baking
+// time samples, so it must stay positive and finite or animation timing becomes infinite, NaN, or reversed.
+// USD prefers `timeCodesPerSecond`, then the legacy `framesPerSecond`, then a default of 24, but validates the
+// two fields with different severities to match OpenUSD:
+//   - `framesPerSecond` is a validated layer field; OpenUSD rejects the entire layer when it is authored
+//     non-positive or non-finite, so an invalid value is a fatal load error even when another rate is present.
+//   - `timeCodesPerSecond` is not range-checked by OpenUSD and parses at 0 or negative, so an invalid value is
+//     handled defensively: it is ignored with a warning and the next valid candidate (a valid `framesPerSecond`,
+//     otherwise the default) is used so timing stays finite.
+function ResolveTimeCodesPerSecond(layer: ISdfLayer, diagnostics: IResolvedDiagnostic[]): number {
+    if (layer.framesPerSecond !== undefined && !IsValidRate(layer.framesPerSecond)) {
+        throw new Error(`USD: invalid value for field framesPerSecond (${layer.framesPerSecond}); it must be a positive, finite number.`);
+    }
+
+    const fallback = layer.framesPerSecond ?? DefaultTimeCodesPerSecond;
+    if (layer.timeCodesPerSecond === undefined) {
+        return fallback;
+    }
+    if (IsValidRate(layer.timeCodesPerSecond)) {
+        return layer.timeCodesPerSecond;
+    }
+    diagnostics.push({
+        severity: "warning",
+        message: `Ignoring non-positive or non-finite timeCodesPerSecond (${layer.timeCodesPerSecond}); using ${fallback} time codes per second instead.`,
+    });
+    return fallback;
 }
 
 function MapPrim(primSpec: ISdfPrimSpec, parentVisible: boolean, metadata: IStageMetadata, context: StageMapperContext, inheritedMaterialPath: string | undefined): IResolvedPrim {

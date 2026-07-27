@@ -19,12 +19,14 @@ import { AdaptResolvedStageToScene } from "./adapter/usdAdapter";
 
 /**
  * @experimental
- * OpenUSD (`.usd` / `.usda` / `.usdc` / `.usdz`) scene loader plugin.
+ * OpenUSD scene loader plugin for single-layer USDA text (`.usda` and textual `.usd`).
  *
- * The loader is split into a USD *resolution layer* (parsing, composition and stage/time
- * evaluation, producing a fully-resolved {@link IResolvedStage}) and a Babylon *adapter layer*
- * (mapping the resolved stage onto Babylon nodes, meshes, materials and animations). Babylon is
- * used only as a rendering backend; it performs no USD reasoning.
+ * Input is selected by content rather than by extension: USDA text is parsed, while binary crate
+ * (`PXR-USDC`) and USDZ package (ZIP) bytes are rejected with a typed {@link UsdUnsupportedFormatError}.
+ * The loader is split into a USD *resolution layer* (parsing, composition and stage/time evaluation,
+ * producing a fully-resolved {@link IResolvedStage}) and a Babylon *adapter layer* (mapping the resolved
+ * stage onto Babylon nodes, meshes, materials and animations). Babylon is used only as a rendering
+ * backend; it performs no USD reasoning.
  */
 export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /**
@@ -59,7 +61,7 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Imports meshes (and other nodes) from the loaded USD data and adds them to the scene.
      * @param _meshesNames the mesh names to load (unused; the whole stage is imported)
      * @param scene the scene the objects should be added to
-     * @param data the USD data to load (ArrayBuffer for binary/usdz, string for ASCII usda)
+     * @param data the USD data to load (USDA text as a string, or bytes that are sniffed and decoded as USDA text)
      * @param rootUrl root url to resolve external assets against
      * @param _onProgress callback called while the file is loading
      * @param fileName name of the file being loaded, used for format hints and diagnostics

@@ -21,7 +21,7 @@ import { DecomposeMatrix, UsdMatrixToResolvedLayout } from "./transformMapping";
  * @returns resolved animation, or undefined when the prim has no supported tracks
  */
 export function ResolvePrimAnimation(prim: ISdfPrimSpec, layer: ISdfLayer, metadata: IStageMetadata, diagnostics: IResolvedDiagnostic[]): IResolvedAnimation | undefined {
-    const interpolation = ResolveLayerInterpolation(layer);
+    const interpolation = ResolveStageInterpolation(layer);
     const tracks: IResolvedAnimationTrack[] = [];
 
     for (const [name, property] of Object.entries(prim.properties)) {
@@ -48,8 +48,12 @@ export function ResolvePrimAnimation(prim: ISdfPrimSpec, layer: ISdfLayer, metad
     return tracks.length > 0 ? { tracks } : undefined;
 }
 
-function ResolveLayerInterpolation(layer: ISdfLayer): ResolvedInterpolation {
-    return GetMetadataToken(layer.metadata, "interpolation") === "linear" ? "linear" : "held";
+// USD resolves time samples of linearly-interpolatable value types (floats and their vector/quaternion/matrix
+// forms, as used by every animated xformOp here) with linear interpolation by default; only an explicit stage
+// `interpolation = "held"` opinion forces held stepping across the whole stage. Non-interpolatable types such
+// as the visibility token are always held regardless of this value and are handled by their own track builder.
+function ResolveStageInterpolation(layer: ISdfLayer): ResolvedInterpolation {
+    return GetMetadataToken(layer.metadata, "interpolation") === "held" ? "held" : "linear";
 }
 
 function BuildVec3Track(target: "translation" | "scale", attribute: ISdfAttributeSpec, timeCodesPerSecond: number, interpolation: ResolvedInterpolation): IResolvedAnimationTrack {

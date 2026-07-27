@@ -9,11 +9,11 @@ export const USDFileLoaderMetadata = {
     name: "usd",
 
     extensions: {
-        // All USD containers are read as binary and the concrete format is sniffed from magic bytes,
-        // because a ".usd" file may be either ASCII (usda) or binary crate (usdc).
+        // Both extensions are read as binary so the concrete container is sniffed from magic bytes rather
+        // than trusted from the extension: only single-layer USDA text is supported, and a ".usd" file may
+        // be either USDA text or a binary crate. Binary crate (usdc) and USDZ package bytes are rejected
+        // up front by the resolver; ".usdc"/".usdz" are intentionally not advertised.
         ".usd": { isBinary: true, mimeType: "model/vnd.usd" },
         ".usda": { isBinary: true, mimeType: "model/vnd.usda" },
-        ".usdc": { isBinary: true, mimeType: "model/vnd.usdc" },
-        ".usdz": { isBinary: true, mimeType: "model/vnd.usdz+zip" },
     } as const satisfies ISceneLoaderPluginExtensions,
 } as const satisfies ISceneLoaderPluginMetadata;

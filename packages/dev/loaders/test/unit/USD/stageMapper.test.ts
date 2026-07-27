@@ -207,7 +207,7 @@ describe("USD stage mapper", () => {
 
         expect(world.animation?.tracks).toHaveLength(1);
         expect(world.animation?.tracks[0].target).toBe("translation");
-        expect(world.animation?.tracks[0].interpolation).toBe("held");
+        expect(world.animation?.tracks[0].interpolation).toBe("linear");
         expect(Array.from(world.animation!.tracks[0].times)).toEqual([0, 1]);
         expect(Array.from(world.animation!.tracks[0].values)).toEqual([1, 2, 3, 4, 5, 6]);
     });

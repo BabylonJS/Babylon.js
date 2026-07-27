@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import * as fflate from "fflate";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Scene } from "core/scene";
@@ -159,48 +158,6 @@ def Xform "World"
             uniform token info:id = "UsdPrimvarReader_float2"
             token inputs:varname = "st"
             float2 outputs:result
-        }
-    }
-}
-`;
-
-// A textured material whose UsdUVTexture addresses an archive-relative asset with a leading "./".
-// Used to prove a USDZ-embedded image both resolves to its archive key (the "./" is normalized away)
-// and has its bytes inlined onto the resolved texture, since Babylon cannot fetch an archive-internal
-// path by URL.
-const usdzTextureUsda = `#usda 1.0
-(
-    upAxis = "Y"
-    metersPerUnit = 1
-)
-
-def Xform "World"
-{
-    def Mesh "Quad"
-    {
-        int[] faceVertexCounts = [4]
-        int[] faceVertexIndices = [0, 1, 2, 3]
-        point3f[] points = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0)]
-        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1)] (interpolation = "vertex")
-        rel material:binding = </World/Mat>
-    }
-
-    def Material "Mat"
-    {
-        token outputs:surface.connect = </World/Mat/Preview.outputs:surface>
-
-        def Shader "Preview"
-        {
-            uniform token info:id = "UsdPreviewSurface"
-            color3f inputs:diffuseColor.connect = </World/Mat/Albedo.outputs:rgb>
-            token outputs:surface
-        }
-
-        def Shader "Albedo"
-        {
-            uniform token info:id = "UsdUVTexture"
-            asset inputs:file = @./textures/tiny.png@
-            float3 outputs:rgb
         }
     }
 }
@@ -703,35 +660,6 @@ def Mesh "SmallConcave"
         engine.dispose();
     });
 
-    it("reads a USDZ archive and composes its embedded inner layer offline", async () => {
-        const engine = new NullEngine();
-        const scene = new Scene(engine);
-
-        // Pack the root and child layers into a STORE-compressed USDZ; the inner root references the
-        // sibling child by name, so composing it relies on archive-embedded resolution, not the network.
-        const archive = fflate.zipSync(
-            {
-                "root.usda": new TextEncoder().encode(rootUsda),
-                "child.usda": new TextEncoder().encode(childUsda),
-            },
-            { level: 0 }
-        );
-
-        const stage = await ResolveUsdStageWithFetcherAsync(archive.buffer, "", "model.usdz", { fflate }, (identifier) => {
-            throw new Error(`USDZ composition must not hit the network, but requested: ${identifier}`);
-        });
-
-        const result = AdaptResolvedStageToScene(stage, scene, null, {});
-
-        // "Ref" resolves only if the embedded child.usda was composed straight from the archive.
-        const referenced = result.meshes.find((mesh) => mesh.name === "Ref");
-        expect(referenced).toBeDefined();
-        expect(referenced!.getTotalVertices()).toBe(9);
-
-        scene.dispose();
-        engine.dispose();
-    });
-
     it("maps a UsdLux light and a UsdGeomCamera to Babylon objects end to end", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -785,47 +713,6 @@ def Mesh "SmallConcave"
         expect(stage.materials[0].textures.baseColor?.uri).toBe("file:albedo.png");
     });
 
-    it("inlines USDZ-embedded texture bytes onto the resolved material", async () => {
-        // A USDZ carries its textures inside the archive, so the resolved texture URI ("./textures/tiny.png")
-        // addresses an archive-internal asset that Babylon's Texture loader cannot fetch by URL. The
-        // resolver must normalize the path to the archive key and inline the image bytes onto the texture.
-        const pngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4]);
-        const usdz = fflate.zipSync(
-            {
-                "scene.usda": new TextEncoder().encode(usdzTextureUsda),
-                "textures/tiny.png": pngBytes,
-            },
-            { level: 0 }
-        );
-
-        const stage = await ResolveUsdStageWithFetcherAsync(usdz.buffer, "", "scene.usdz", { fflate }, (identifier) => {
-            throw new Error(`USDZ texture loading must not hit the network, but requested: ${identifier}`);
-        });
-
-        const baseColor = stage.materials[0]?.textures.baseColor;
-        expect(baseColor?.uri).toBe("textures/tiny.png");
-        expect(baseColor?.data).toBeDefined();
-        expect(new Uint8Array(baseColor!.data!)).toEqual(pngBytes);
-        expect(baseColor?.mimeType).toBe("image/png");
-    });
-
-    it("retains missing embedded texture failures in resolved-stage diagnostics", async () => {
-        const usdz = fflate.zipSync({ "scene.usda": new TextEncoder().encode(usdzTextureUsda) }, { level: 0 });
-
-        const stage = await ResolveUsdStageWithFetcherAsync(usdz.buffer, "", "scene.usdz", { fflate }, async () => {
-            throw new Error("missing texture");
-        });
-
-        expect(stage.diagnostics).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    severity: "warning",
-                    message: expect.stringContaining("Failed to load embedded texture"),
-                }),
-            ])
-        );
-    });
-
     it("returns asset-container-owned materials and removes loaded entities from the scene", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -863,19 +750,6 @@ def "Ref" (
 
         expect(stage.root.children.map((prim) => prim.name)).toEqual(["Ref"]);
         expect(stage.diagnostics.some((diagnostic) => diagnostic.message.includes("USDC") && diagnostic.message.includes("skipped"))).toBe(false);
-    });
-
-    it("resolves USDZ external fallbacks relative to the source archive URL", async () => {
-        const archive = fflate.zipSync({ "root.usda": new TextEncoder().encode(rootUsda) }, { level: 0 });
-        const requested: string[] = [];
-
-        const stage = await ResolveUsdStageWithFetcherAsync(archive.buffer, "https://example.com/models/", "scene.usdz", { fflate }, async (identifier) => {
-            requested.push(identifier);
-            return childUsda;
-        });
-
-        expect(stage.root.children[0].children.some((prim) => prim.name === "Ref")).toBe(true);
-        expect(requested).toContain("https://example.com/models/child.usda");
     });
 
     it("records malformed external layers without aborting the root stage", async () => {

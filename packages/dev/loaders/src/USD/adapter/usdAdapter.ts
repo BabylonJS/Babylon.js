@@ -99,9 +99,9 @@ export function AdaptResolvedStageToScene(
 
 // Resolves the bake fps: an explicit loader override wins, otherwise the stage's time-codes-per-second.
 function ResolveFps(stage: IResolvedStage, options: Readonly<USDLoadingOptions>): number {
-    if (options.targetFps && options.targetFps > 0) {
+    if (options.targetFps !== undefined && Number.isFinite(options.targetFps) && options.targetFps > 0) {
         return options.targetFps;
     }
     const timeCodesPerSecond = stage.metadata.timeCodesPerSecond;
-    return timeCodesPerSecond && timeCodesPerSecond > 0 ? timeCodesPerSecond : 24;
+    return Number.isFinite(timeCodesPerSecond) && timeCodesPerSecond > 0 ? timeCodesPerSecond : 24;
 }

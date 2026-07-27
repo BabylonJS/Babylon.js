@@ -1,7 +1,7 @@
 import { Tools } from "core/Misc/tools.pure";
 
 import { type USDLoadingOptions } from "../usdLoadingOptions";
-import { FreezeResolvedStage, type IResolvedStage, type IResolvedDiagnostic, type ResolvedDiagnosticSeverity, type IResolvedTexture } from "./resolvedStage";
+import { FreezeResolvedStage, type IResolvedStage, type IResolvedDiagnostic, type ResolvedDiagnosticSeverity } from "./resolvedStage";
 import { type ISdfLayer } from "./sdf/index";
 import { ReadListOpItems } from "./sdf/sdfListOp";
 import { type ISdfCompositionFields, type ISdfPrimSpec } from "./sdf/sdfSpec";
@@ -9,8 +9,7 @@ import { ParseUsda, ParseUsdaWithDiagnostics, type IUsdaParseDiagnostic } from "
 import { ComposeLayerStack, type ICompositionDiagnostic, type IComposeLayerStackOptions } from "./composition/composeLayerStack";
 import { MapLayerToResolvedStage } from "./mapping/stageMapper";
 import { ParseCrate } from "./parser/crate/crateReader";
-import { ReadUsdzArchive } from "./parser/usdzArchive";
-import { ValidateResourceLimit } from "../usdErrors";
+import { ValidateResourceLimit, UsdUnsupportedFormatError } from "../usdErrors";
 import { ResolveAssetIdentifier } from "./assetPath";
 
 /** The concrete on-disk USD container format, sniffed from magic bytes rather than the file extension. */
@@ -52,15 +51,19 @@ export function DetectUsdFormat(data: ArrayBuffer | string): { format: UsdFormat
 /**
  * Resolves raw USD data into a fully-resolved {@link IResolvedStage}.
  *
- * This is the single entry point of the USD resolution layer. It detects the container format and
- * drives parsing, composition (LIVERPS) and stage/time evaluation. The returned stage is pure data:
- * every USD semantic has been resolved, so the Babylon adapter performs no further USD reasoning.
+ * This is the single entry point of the USD resolution layer. It sniffs the container format from the
+ * data's magic bytes, parses single-layer USDA text, and drives composition (LIVERPS) and stage/time
+ * evaluation. Binary crate (`PXR-USDC`) and USDZ package (ZIP) input is rejected with a typed
+ * {@link UsdUnsupportedFormatError} before parsing, so binary bytes are never decoded as text. The
+ * returned stage is pure data: every USD semantic has been resolved, so the Babylon adapter performs no
+ * further USD reasoning.
  *
- * @param data the raw USD data (ArrayBuffer for binary/usdz, string for ASCII usda)
+ * @param data the raw USD data (USDA text as a string, or bytes that are sniffed and decoded as USDA text)
  * @param rootUrl root url to resolve external assets against
  * @param fileName name of the file being loaded, used for diagnostics
- * @param options loader options (used by the USDZ/crate readers)
+ * @param options loader options (composition resource limits and animation baking)
  * @returns a promise resolving to the fully-resolved stage
+ * @throws UsdUnsupportedFormatError when the data is binary crate (USDC) or a USDZ package
  */
 export async function ResolveUsdStageAsync(
     data: ArrayBuffer | string,
@@ -78,9 +81,10 @@ export async function ResolveUsdStageAsync(
  * @param data the raw USD data
  * @param rootUrl root url external assets are resolved against
  * @param fileName name of the file being loaded
- * @param options loader options (used by the USDZ/crate readers)
+ * @param options loader options (composition resource limits and animation baking)
  * @param fetchAsset callback fetching an external layer's bytes by resolved identifier
  * @returns a promise resolving to the fully-resolved stage
+ * @throws UsdUnsupportedFormatError when the data is binary crate (USDC) or a USDZ package
  */
 export async function ResolveUsdStageWithFetcherAsync(
     data: ArrayBuffer | string,
@@ -94,11 +98,16 @@ export async function ResolveUsdStageWithFetcherAsync(
     const detected = DetectUsdFormat(data);
     const rootIdentifier = `${rootUrl ?? ""}${fileName ?? "stage.usda"}`;
 
+    // Only single-layer USDA text is supported. Binary crate and USDZ package bytes are sniffed from
+    // their magic bytes and rejected here, before the text parser, so they can never be decoded as text.
+    if (detected.format === "usdc") {
+        throw new UsdUnsupportedFormatError("usdc", "USD: binary crate (USDC) data is not supported; only single-layer USDA text can be loaded.");
+    }
     if (detected.format === "usdz") {
-        return await ResolveUsdzStageAsync(data as ArrayBuffer, rootIdentifier, options, compositionOptions, fetchAsset, diagnostics);
+        throw new UsdUnsupportedFormatError("usdz", "USD: USDZ package data is not supported; only single-layer USDA text can be loaded.");
     }
 
-    const rootLayer = detected.format === "usdc" ? ParseCrate(data as ArrayBuffer, rootIdentifier) : ParseRootUsdaLayer(detected.text ?? "", rootIdentifier, diagnostics);
+    const rootLayer = ParseRootUsdaLayer(detected.text ?? "", rootIdentifier, diagnostics);
     return FreezeResolvedStage(await ComposeAndMapStageAsync(rootLayer, fetchAsset, compositionOptions, diagnostics));
 }
 
@@ -119,130 +128,8 @@ function ResolveCompositionOptions(options: Readonly<USDLoadingOptions>): ICompo
     return composition;
 }
 
-// Unzips a USDZ archive, parses its inner root layer (USDA or USDC), and composes the stage with a
-// fetcher that resolves sibling layer references from the archive's embedded assets before falling
-// back to the host fetcher. This lets a self-contained USDZ compose its inner layer stack offline.
-async function ResolveUsdzStageAsync(
-    data: ArrayBuffer,
-    rootIdentifier: string,
-    options: Readonly<USDLoadingOptions>,
-    compositionOptions: IComposeLayerStackOptions,
-    fetchAsset: FetchUsdAsset,
-    diagnostics: IResolvedDiagnostic[]
-): Promise<IResolvedStage> {
-    const archive = await ReadUsdzArchive(data, options.fflate, options.deflateURL);
-    const innerIdentifier = archive.rootLayer.fileName;
-    const innerDetected = DetectUsdFormat(archive.rootLayer.data);
-
-    let rootLayer: ISdfLayer;
-    if (innerDetected.format === "usdc") {
-        rootLayer = ParseCrate(archive.rootLayer.data, innerIdentifier);
-    } else if (innerDetected.format === "usda") {
-        rootLayer = ParseUsda(innerDetected.text ?? "", innerIdentifier);
-    } else {
-        diagnostics.push({
-            severity: "error",
-            message: `USDZ root layer '${innerIdentifier}' has an unsupported nested format and was skipped.`,
-            path: `${rootIdentifier}[${innerIdentifier}]`,
-        });
-        rootLayer = ParseUsda("#usda 1.0\n", innerIdentifier);
-    }
-
-    const fetchArchiveAssetAsync: FetchUsdAsset = async (resolvedIdentifier) => {
-        const embedded = archive.assets.get(resolvedIdentifier);
-        if (embedded) {
-            const copy = new ArrayBuffer(embedded.byteLength);
-            new Uint8Array(copy).set(embedded);
-            return copy;
-        }
-        return await fetchAsset(ResolveAssetIdentifier(resolvedIdentifier, rootIdentifier));
-    };
-
-    const stage = await ComposeAndMapStageAsync(rootLayer, fetchArchiveAssetAsync, compositionOptions, diagnostics);
-    await LoadEmbeddedTextureDataAsync(stage, fetchArchiveAssetAsync, stage.diagnostics);
-    return FreezeResolvedStage(stage);
-}
-
-// USDZ packs its textures inside the archive, so a resolved texture URI such as "textures/base.png"
-// addresses an archive-internal asset that Babylon's Texture loader cannot fetch by URL. Pull those image
-// bytes here and inline them onto the resolved texture so the adapter can build each texture from a data
-// URI. Bytes are fetched once per unique URI and shared across every slot that references it; assets that
-// already carry a URL scheme (file:/http(s):/data:) or absolute path are left for the adapter to load.
-async function LoadEmbeddedTextureDataAsync(stage: IResolvedStage, fetchAsset: FetchUsdAsset, diagnostics: IResolvedDiagnostic[]): Promise<void> {
-    const texturesByUri = new Map<string, IResolvedTexture[]>();
-    for (const material of stage.materials) {
-        for (const texture of Object.values(material.textures)) {
-            if (!texture || texture.data || HasUriScheme(texture.uri)) {
-                continue;
-            }
-            const group = texturesByUri.get(texture.uri);
-            if (group) {
-                group.push(texture);
-            } else {
-                texturesByUri.set(texture.uri, [texture]);
-            }
-        }
-    }
-
-    await Promise.all(
-        Array.from(texturesByUri.entries()).map(async ([uri, textures]) => {
-            const bytes = await FetchTextureBytesAsync(fetchAsset, uri, diagnostics);
-            if (!bytes || bytes.byteLength === 0) {
-                return;
-            }
-            const mimeType = GuessImageMimeType(uri);
-            for (const texture of textures) {
-                texture.data = bytes;
-                if (mimeType) {
-                    texture.mimeType = mimeType;
-                }
-            }
-        })
-    );
-}
-
-// Returns true when a texture URI already names something the adapter can load directly: a URL scheme
-// (file:/http(s):/data:) or an absolute path. Archive-relative paths return false so their bytes are
-// pulled from the USDZ archive instead.
-function HasUriScheme(uri: string): boolean {
-    return /^[a-z][a-z0-9+.-]*:/i.test(uri) || uri.startsWith("/");
-}
-
-// Fetches one texture's bytes, downgrading any failure (or a text payload, which an image never is) to a
-// non-fatal diagnostic so a single missing texture cannot abort the whole load.
-async function FetchTextureBytesAsync(fetchAsset: FetchUsdAsset, uri: string, diagnostics: IResolvedDiagnostic[]): Promise<Uint8Array | undefined> {
-    try {
-        const asset = await fetchAsset(uri);
-        return typeof asset === "string" ? undefined : new Uint8Array(asset);
-    } catch (error) {
-        diagnostics.push({ severity: "warning", message: `Failed to load embedded texture '${uri}': ${error}`, path: uri });
-        return undefined;
-    }
-}
-
-// Maps a texture file extension to its image MIME type so the adapter can build a correct data URI.
-// Unknown extensions return undefined, letting the adapter fall back to its own default.
-function GuessImageMimeType(uri: string): string | undefined {
-    const extension = uri.split(".").pop()?.toLowerCase();
-    switch (extension) {
-        case "png":
-            return "image/png";
-        case "jpg":
-        case "jpeg":
-            return "image/jpeg";
-        case "webp":
-            return "image/webp";
-        case "bmp":
-            return "image/bmp";
-        case "gif":
-            return "image/gif";
-        default:
-            return undefined;
-    }
-}
-
 // Pre-fetches the external layer stack, composes it with LIVERPS strength ordering, and maps the
-// flattened result into a resolved stage. Shared by every container format once a root layer exists.
+// flattened result into a resolved stage, once the root USDA layer has been parsed.
 async function ComposeAndMapStageAsync(
     rootLayer: ISdfLayer,
     fetchAsset: FetchUsdAsset,

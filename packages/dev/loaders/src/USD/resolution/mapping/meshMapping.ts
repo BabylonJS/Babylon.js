@@ -44,19 +44,42 @@ const MaxEarClippingChecks = 1_000_000;
  */
 export function ResolveMesh(prim: ISdfPrimSpec, context: IStageMappingContext): IResolvedMesh | undefined {
     const points = AsVec3Array(GetAttributeValue(GetAttribute(prim, "points")));
-    const faceVertexCounts = AsNumberArray(GetAttributeValue(GetAttribute(prim, "faceVertexCounts")))?.map((value) => Math.trunc(value));
-    const faceVertexIndices = AsNumberArray(GetAttributeValue(GetAttribute(prim, "faceVertexIndices")))?.map((value) => Math.trunc(value));
+    const faceVertexCounts = AsNumberArray(GetAttributeValue(GetAttribute(prim, "faceVertexCounts")));
+    const faceVertexIndices = AsNumberArray(GetAttributeValue(GetAttribute(prim, "faceVertexIndices")));
 
     if (!points || !faceVertexCounts || !faceVertexIndices) {
         context.diagnostics.push({ severity: "error", path: prim.path, message: "Mesh is missing points, faceVertexCounts, or faceVertexIndices and was skipped." });
         return undefined;
     }
 
+    if (!ValidateMeshTopology(prim.path, points, faceVertexCounts, faceVertexIndices, context)) {
+        return undefined;
+    }
+
+    const pointCount = points.length;
+    const faceCount = faceVertexCounts.length;
+    const cornerCount = faceVertexIndices.length;
     const topology = TriangulateTopology(points, faceVertexCounts, faceVertexIndices, prim.path, context);
-    const normalSource = ResolveVec3Primvar(prim, "normals", points.length, faceVertexCounts.length, faceVertexIndices.length);
-    const uvSources = ResolveUvSources(prim, points.length, faceVertexCounts.length, faceVertexIndices.length);
-    const displayColorSource = ResolveVec3Primvar(prim, "primvars:displayColor", points.length, faceVertexCounts.length, faceVertexIndices.length);
-    const displayOpacitySource = ResolveNumberPrimvar(prim, "primvars:displayOpacity", points.length, faceVertexCounts.length, faceVertexIndices.length);
+    const normalSource = ValidatePrimvar(ResolveVec3Primvar(prim, "normals", pointCount, faceCount, cornerCount), prim.path, pointCount, faceCount, cornerCount, context);
+    const uvSources = ResolveUvSources(prim, pointCount, faceCount, cornerCount).filter(
+        (source) => ValidatePrimvar(source, prim.path, pointCount, faceCount, cornerCount, context) !== undefined
+    );
+    const displayColorSource = ValidatePrimvar(
+        ResolveVec3Primvar(prim, "primvars:displayColor", pointCount, faceCount, cornerCount),
+        prim.path,
+        pointCount,
+        faceCount,
+        cornerCount,
+        context
+    );
+    const displayOpacitySource = ValidatePrimvar(
+        ResolveNumberPrimvar(prim, "primvars:displayOpacity", pointCount, faceCount, cornerCount),
+        prim.path,
+        pointCount,
+        faceCount,
+        cornerCount,
+        context
+    );
 
     const vertices: IResolvedVertex[] = [];
     const vertexByKey = new Map<string, number>();
@@ -116,6 +139,144 @@ export function BuildMeshPoolKey(mesh: IResolvedMesh): string {
         mesh.doubleSided ? "1" : "0",
         mesh.orientation,
     ].join(";");
+}
+
+/**
+ * Validates that a mesh's topology arrays are self-consistent and in range before any Babylon vertex
+ * buffers are built. Malformed topology is skipped with an error diagnostic rather than coerced into a
+ * plausible-but-wrong or out-of-bounds buffer.
+ * @param path prim path used for diagnostics
+ * @param points authored point positions
+ * @param faceVertexCounts authored per-face vertex counts
+ * @param faceVertexIndices authored flattened face-corner point indices
+ * @param context mapping context used for diagnostics
+ * @returns true when the topology is valid and safe to map
+ */
+function ValidateMeshTopology(path: string, points: Vec3[], faceVertexCounts: number[], faceVertexIndices: number[], context: IStageMappingContext): boolean {
+    for (let index = 0; index < points.length; index++) {
+        const point = points[index];
+        if (!Number.isFinite(point[0]) || !Number.isFinite(point[1]) || !Number.isFinite(point[2])) {
+            context.diagnostics.push({ severity: "error", path, message: `Mesh point ${index} has a non-finite coordinate; the mesh was skipped.` });
+            return false;
+        }
+    }
+
+    let expectedCornerCount = 0;
+    for (let face = 0; face < faceVertexCounts.length; face++) {
+        const count = faceVertexCounts[face];
+        if (!Number.isSafeInteger(count) || count < 0) {
+            context.diagnostics.push({ severity: "error", path, message: `Mesh faceVertexCounts[${face}] (${count}) is not a non-negative integer; the mesh was skipped.` });
+            return false;
+        }
+        expectedCornerCount += count;
+    }
+
+    if (expectedCornerCount !== faceVertexIndices.length) {
+        context.diagnostics.push({
+            severity: "error",
+            path,
+            message: `Mesh faceVertexCounts sum (${expectedCornerCount}) does not match faceVertexIndices length (${faceVertexIndices.length}); the mesh was skipped.`,
+        });
+        return false;
+    }
+
+    for (let corner = 0; corner < faceVertexIndices.length; corner++) {
+        const pointIndex = faceVertexIndices[corner];
+        if (!Number.isSafeInteger(pointIndex) || pointIndex < 0 || pointIndex >= points.length) {
+            context.diagnostics.push({
+                severity: "error",
+                path,
+                message: `Mesh faceVertexIndices[${corner}] (${pointIndex}) is out of range for ${points.length} points; the mesh was skipped.`,
+            });
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Drops a primvar that cannot safely cover the mesh topology, so the loader never fabricates per-vertex
+ * data by silently reusing the first value or reading out of bounds, and never writes a non-finite
+ * component into a Babylon buffer. A primvar is skipped when it is under-provisioned, carries an
+ * out-of-range or non-integer index, or authors a non-finite value component. Inferred interpolations
+ * always match by construction; only explicitly-authored primvars are dropped for cardinality.
+ * @param source resolved primvar source, if any
+ * @param path prim path used for diagnostics
+ * @param pointCount number of authored points
+ * @param faceCount number of authored faces
+ * @param cornerCount number of authored face corners (equals faceVertexIndices length)
+ * @param context mapping context used for diagnostics
+ * @returns the source when it can cover the topology, otherwise undefined
+ */
+function ValidatePrimvar<T>(
+    source: IPrimvarSource<T> | undefined,
+    path: string,
+    pointCount: number,
+    faceCount: number,
+    cornerCount: number,
+    context: IStageMappingContext
+): IPrimvarSource<T> | undefined {
+    if (!source) {
+        return undefined;
+    }
+    const requiredCount = PrimvarDomainCount(source.interpolation, pointCount, faceCount, cornerCount);
+    const authoredCount = source.indices ? source.indices.length : source.values.length;
+    const indicesInBounds =
+        !source.indices || source.indices.slice(0, requiredCount).every((valueIndex) => Number.isSafeInteger(valueIndex) && valueIndex >= 0 && valueIndex < source.values.length);
+    if (source.values.length === 0 || authoredCount < requiredCount || !indicesInBounds) {
+        context.diagnostics.push({
+            severity: "warning",
+            path,
+            message: `Primvar '${source.name}' with ${source.interpolation} interpolation does not provide enough in-range values for the mesh topology; it was skipped.`,
+        });
+        return undefined;
+    }
+    if (!source.values.every((value) => AreComponentsFinite(value))) {
+        context.diagnostics.push({
+            severity: "warning",
+            path,
+            message: `Primvar '${source.name}' authors a non-finite value component; it was skipped.`,
+        });
+        return undefined;
+    }
+    return source;
+}
+
+/**
+ * Returns the number of authored values a primvar interpolation must be able to address for a topology.
+ * @param interpolation primvar interpolation mode
+ * @param pointCount number of authored points
+ * @param faceCount number of authored faces
+ * @param cornerCount number of authored face corners
+ * @returns required addressable value count
+ */
+function PrimvarDomainCount(interpolation: SdfInterpolation, pointCount: number, faceCount: number, cornerCount: number): number {
+    switch (interpolation) {
+        case "uniform":
+            return faceCount;
+        case "varying":
+        case "vertex":
+            return pointCount;
+        case "faceVarying":
+            return cornerCount;
+        case "constant":
+        default:
+            return 1;
+    }
+}
+
+/**
+ * Determines whether every numeric component of a primvar value is finite, so authored Infinity or NaN
+ * never reaches a Babylon vertex buffer even when the primvar is otherwise cardinality-valid.
+ * @param value primvar value: a scalar or a numeric tuple
+ * @returns true when all components are finite numbers
+ */
+function AreComponentsFinite(value: unknown): boolean {
+    if (typeof value === "number") {
+        return Number.isFinite(value);
+    }
+    return Array.isArray(value) && value.every((component) => typeof component === "number" && Number.isFinite(component));
 }
 
 function TriangulateTopology(points: Vec3[], faceVertexCounts: number[], faceVertexIndices: number[], path: string, context: IStageMappingContext): IMeshTopology {
@@ -342,7 +503,7 @@ function BuildPrimvarSource<T>(
     return {
         name,
         values,
-        indices: AsNumberArray(GetAttributeValue(GetAttribute(prim, `${name}:indices`)))?.map((value) => Math.trunc(value)),
+        indices: AsNumberArray(GetAttributeValue(GetAttribute(prim, `${name}:indices`))),
         interpolation: attribute?.interpolation ?? InferInterpolation(values.length, pointCount, faceCount, faceVertexCount),
     };
 }
@@ -446,8 +607,17 @@ function ResolveGeomSubsets(prim: ISdfPrimSpec, faceRanges: IFaceIndexRange[], c
         }
         const materialBinding = ResolveMaterialBinding(child, context);
         const materialIndex = materialBinding?.materialIndex;
-        const faceIndices = AsNumberArray(GetAttributeValue(GetAttribute(child, "indices")))?.map((value) => Math.trunc(value)) ?? [];
+        const faceIndices = AsNumberArray(GetAttributeValue(GetAttribute(child, "indices"))) ?? [];
         if (materialIndex === undefined || faceIndices.length === 0) {
+            continue;
+        }
+        const invalidFaceIndex = faceIndices.find((faceIndex) => !Number.isSafeInteger(faceIndex) || faceIndex < 0 || faceIndex >= faceRanges.length);
+        if (invalidFaceIndex !== undefined) {
+            context.diagnostics.push({
+                severity: "warning",
+                path: child.path,
+                message: `GeomSubset references an invalid face index ${invalidFaceIndex}; face indices must be non-negative integers below ${faceRanges.length}. The subset was skipped.`,
+            });
             continue;
         }
         for (const range of BuildSubsetRanges(faceIndices, faceRanges)) {
