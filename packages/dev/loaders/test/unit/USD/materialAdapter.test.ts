@@ -6,13 +6,10 @@ import { Texture } from "core/Materials/Textures/texture.pure";
 import { type IResolvedMaterial } from "loaders/USD/resolution/resolvedStage";
 import { CreateMaterialFromResolved } from "loaders/USD/adapter/materialAdapter";
 
-const OneByOnePng = new Uint8Array([
-    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84, 120, 156, 99, 248, 207, 192,
-    240, 31, 0, 5, 0, 1, 255, 137, 153, 61, 29, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
-]);
+const OneByOnePngDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFgAH/iZk9HQAAAABJRU5ErkJggg==";
 
 describe("USD material adapter", () => {
-    it("maps resolved PBR values and embedded albedo texture settings", () => {
+    it("maps resolved PBR values and data-URI albedo texture settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const resolvedMaterial: IResolvedMaterial = {
@@ -30,9 +27,7 @@ describe("USD material adapter", () => {
             specularColor: [1, 1, 1],
             textures: {
                 baseColor: {
-                    uri: "inline-base-color.png",
-                    data: OneByOnePng,
-                    mimeType: "image/png",
+                    uri: OneByOnePngDataUri,
                     uvSet: 1,
                     wrapU: "repeat",
                     wrapV: "clamp",
@@ -78,8 +73,7 @@ describe("USD material adapter", () => {
             specularColor: [1, 1, 1],
             textures: {
                 roughness: {
-                    uri: "roughness.png",
-                    data: OneByOnePng,
+                    uri: OneByOnePngDataUri,
                     uvSet: 0,
                     wrapU: "repeat",
                     wrapV: "repeat",
@@ -150,8 +144,7 @@ describe("USD material adapter", () => {
             specularColor: [1, 1, 1],
             textures: {
                 metallic: {
-                    uri: "packed.png",
-                    data: OneByOnePng,
+                    uri: OneByOnePngDataUri,
                     uvSet: 0,
                     wrapU: "black",
                     wrapV: "black",
@@ -160,8 +153,7 @@ describe("USD material adapter", () => {
                     scale: [1, 1, 0.25, 1],
                 },
                 roughness: {
-                    uri: "packed.png",
-                    data: OneByOnePng,
+                    uri: OneByOnePngDataUri,
                     uvSet: 0,
                     wrapU: "black",
                     wrapV: "black",

@@ -1,4 +1,3 @@
-import { Logger } from "core/Misc/logger";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -7,7 +6,6 @@ import { TransformNode } from "core/Meshes/transformNode.pure";
 import { type Material } from "core/Materials/material";
 import { MultiMaterial, RegisterMultiMaterial } from "core/Materials/multiMaterial.pure";
 import { SubMesh } from "core/Meshes/subMesh.pure";
-import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
 import { type Skeleton } from "core/Bones/skeleton";
 import { type Animation } from "core/Animations/animation";
@@ -18,15 +16,14 @@ import { type USDLoadingOptions } from "../usdLoadingOptions";
 import { ApplyResolvedTransform } from "./transformAdapter";
 import { CreateMeshFromResolved } from "./geometryAdapter";
 import { CreateMaterialFromResolved } from "./materialAdapter";
-import { CreateLightFromResolved, CreateCameraFromResolved } from "./lightCameraAdapter";
-import { CreateInstance, CreatePointInstancerThinInstances } from "./instancingAdapter";
+import { CreateCameraFromResolved } from "./cameraAdapter";
 import { CreateSkeletonFromResolved, ApplySkinningToMesh, CreateSkeletonAnimation } from "./skinningAdapter";
 import { CreateAnimationsForPrim } from "./animationAdapter";
 
 /**
  * Mutable context threaded through the recursive prim-tree walk. It collects every Babylon object the
  * adapter creates (so the loader can return them and populate an asset container) and caches shared
- * resources — materials, instance source meshes and skeletons — that USD references by stage index.
+ * resources — materials and skeletons — that USD references by stage index.
  */
 export interface IUsdAdapterContext {
     /** The scene objects are created in. */
@@ -39,12 +36,10 @@ export interface IUsdAdapterContext {
     options: Readonly<USDLoadingOptions>;
     /** Frames/keys per second used when baking USD time samples into Babylon animations. */
     fps: number;
-    /** Collected meshes (includes instances and point-instancer prototypes). */
+    /** Collected meshes. */
     meshes: AbstractMesh[];
     /** Collected transform nodes. */
     transformNodes: TransformNode[];
-    /** Collected lights. */
-    lights: Light[];
     /** Collected cameras. */
     cameras: Camera[];
     /** Collected skeletons. */
@@ -55,8 +50,6 @@ export interface IUsdAdapterContext {
     animationEntries: { node: TransformNode; animations: Animation[] }[];
     /** Materials by stage material index. */
     materialCache: Map<number, Material>;
-    /** Instance source meshes by stage mesh index (the first `instanceable` prim becomes the source). */
-    sourceMeshCache: Map<string, Mesh>;
     /** Skeletons by stage skeleton index. */
     skeletonCache: Map<number, Skeleton>;
 }
@@ -70,21 +63,10 @@ export interface IUsdAdapterContext {
  */
 export function AdaptPrim(prim: IResolvedPrim, parent: TransformNode, context: IUsdAdapterContext): void {
     let node: TransformNode;
-    let recurseChildren = true;
 
     switch (prim.kind) {
         case "mesh":
             node = AdaptMeshPrim(prim, context);
-            break;
-        case "instance":
-            node = AdaptInstancePrim(prim, context);
-            break;
-        case "pointInstancer":
-            node = AdaptPointInstancerPrim(prim, context);
-            recurseChildren = false;
-            break;
-        case "light":
-            node = AdaptLightPrim(prim, context);
             break;
         case "camera":
             node = AdaptCameraPrim(prim, context);
@@ -114,10 +96,8 @@ export function AdaptPrim(prim: IResolvedPrim, parent: TransformNode, context: I
         }
     }
 
-    if (recurseChildren) {
-        for (const child of prim.children) {
-            AdaptPrim(child, node, context);
-        }
+    for (const child of prim.children) {
+        AdaptPrim(child, node, context);
     }
 }
 
@@ -134,83 +114,6 @@ function AdaptMeshPrim(prim: IResolvedPrim, context: IUsdAdapterContext): Mesh {
     }
 
     return mesh;
-}
-
-function AdaptInstancePrim(prim: IResolvedPrim, context: IUsdAdapterContext): TransformNode {
-    const sourceIndex = prim.instanceSourceMeshIndex!;
-    const cacheKey = `${sourceIndex}:${prim.materialBinding?.materialIndex ?? -1}`;
-    const cachedSource = context.sourceMeshCache.get(cacheKey);
-
-    // The first instanceable prim for a prototype becomes the rendered source mesh; later prims that
-    // share the prototype become Babylon hardware instances of it. This matches USD instanceable
-    // semantics (only instances render — there is no extra copy at the prototype location).
-    if (!cachedSource) {
-        const resolvedMesh = context.stage.meshes[sourceIndex];
-        const source = CreateMeshFromResolved(prim.name, resolvedMesh, context.scene);
-        context.sourceMeshCache.set(cacheKey, source);
-        context.meshes.push(source);
-        BindMaterial(source, prim.materialBinding, resolvedMesh, context);
-        return source;
-    }
-
-    const instance = CreateInstance(cachedSource, prim.name);
-    context.meshes.push(instance);
-    return instance;
-}
-
-function AdaptPointInstancerPrim(prim: IResolvedPrim, context: IUsdAdapterContext): TransformNode {
-    const node = new TransformNode(prim.name, context.scene);
-    context.transformNodes.push(node);
-
-    const instancer = prim.instancer;
-    if (!instancer) {
-        return node;
-    }
-
-    // Build a dedicated prototype mesh per prototype index (thin-instance buffers are per-mesh, so
-    // prototypes are never shared across instancers). The instancer node carries the instancer's own
-    // transform; the per-instance matrices stay in the instancer's local space.
-    const prototypeMeshes = instancer.prototypeMeshIndices.map((meshIndex, prototypeOrder) => {
-        if (meshIndex === undefined) {
-            return undefined;
-        }
-        const resolvedMesh = context.stage.meshes[meshIndex];
-        const prototypeMesh = CreateMeshFromResolved(`${prim.name}_proto${prototypeOrder}`, resolvedMesh, context.scene);
-        BindMaterial(prototypeMesh, instancer.prototypeMaterialBindings?.[prototypeOrder], resolvedMesh, context);
-        return prototypeMesh;
-    });
-
-    const rendered = CreatePointInstancerThinInstances(instancer, prototypeMeshes, context.scene);
-    const renderedSet = new Set(rendered);
-    for (const prototypeMesh of prototypeMeshes) {
-        if (!prototypeMesh) {
-            continue;
-        }
-        if (renderedSet.has(prototypeMesh)) {
-            prototypeMesh.parent = node;
-            context.meshes.push(prototypeMesh);
-        } else {
-            // Prototype received no visible instances; keep it out of the rendered scene.
-            prototypeMesh.dispose();
-        }
-    }
-
-    return node;
-}
-
-function AdaptLightPrim(prim: IResolvedPrim, context: IUsdAdapterContext): TransformNode {
-    const node = new TransformNode(prim.name, context.scene);
-    context.transformNodes.push(node);
-
-    const light = prim.light ? CreateLightFromResolved(prim.light, prim.name, context.scene) : null;
-    if (light) {
-        light.parent = node;
-        context.lights.push(light);
-    } else {
-        Logger.Warn(`USD: light at '${prim.path}' could not be mapped to a Babylon light and was skipped.`);
-    }
-
-    return node;
 }
 
 function AdaptCameraPrim(prim: IResolvedPrim, context: IUsdAdapterContext): TransformNode {

@@ -4,7 +4,7 @@ import { Scene } from "core/scene";
 import { USDFileLoader } from "loaders/USD/usdFileLoader";
 import { USDFileLoaderMetadata } from "loaders/USD/usdFileLoader.metadata";
 import { UsdUnsupportedFormatError } from "loaders/USD/usdErrors";
-import { ResolveUsdStageWithFetcherAsync } from "loaders/USD/resolution/usdResolver";
+import { ResolveUsdStageAsync } from "loaders/USD/resolution/usdResolver";
 
 // The public USD loader is a single-layer USDA text importer. It selects USDA text from the *bytes*
 // (content sniffing) rather than trusting the extension, and rejects binary crate (PXR-USDC) and
@@ -117,21 +117,13 @@ describe("USD content sniffing - rejected binary containers", () => {
     });
 
     it("rejects crate bytes at the resolution seam before the text parser, tagging the format", async () => {
-        const error = await captureRejection(
-            ResolveUsdStageWithFetcherAsync(crateBytes(), "", "model.usd", {}, async () => {
-                throw new Error("external assets must never be fetched for rejected binary input");
-            })
-        );
+        const error = await captureRejection(ResolveUsdStageAsync(crateBytes(), "", "model.usd", {}));
         expect(error).toBeInstanceOf(UsdUnsupportedFormatError);
         expect((error as UsdUnsupportedFormatError).format).toBe("usdc");
     });
 
     it("rejects ZIP bytes at the resolution seam, tagging the package format", async () => {
-        const error = await captureRejection(
-            ResolveUsdStageWithFetcherAsync(zipBytes(), "", "model.usd", {}, async () => {
-                throw new Error("external assets must never be fetched for rejected binary input");
-            })
-        );
+        const error = await captureRejection(ResolveUsdStageAsync(zipBytes(), "", "model.usd", {}));
         expect(error).toBeInstanceOf(UsdUnsupportedFormatError);
         expect((error as UsdUnsupportedFormatError).format).toBe("usdz");
     });

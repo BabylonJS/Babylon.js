@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { ParseUsda, ParseUsdaWithDiagnostics } from "loaders/USD/resolution/parser/usda/usdaParser";
 import { UsdConfigurationError, UsdResourceLimitError } from "loaders/USD/usdErrors";
-import { ResolveUsdStageWithFetcherAsync } from "loaders/USD/resolution/usdResolver";
+import { ResolveUsdStageAsync } from "loaders/USD/resolution/usdResolver";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Scene } from "core/scene";
+import { USDFileLoader } from "loaders/USD/usdFileLoader";
 
 const SampleUsda = `#usda 1.0
 def Xform "P" {
@@ -113,12 +116,9 @@ def Xform "P" {
 
     it("rejects an oversized raw buffer at the resolver seam before decoding", async () => {
         const data = new TextEncoder().encode('#usda 1.0\ndef Xform "P" {}\n').buffer;
-        const fetchAsset = async () => {
-            throw new Error("fetch should not be called for an oversized buffer");
-        };
         let caught: unknown;
         try {
-            await ResolveUsdStageWithFetcherAsync(data, "", "oversized.usda", { maxInputBytes: 4 }, fetchAsset);
+            await ResolveUsdStageAsync(data, "", "oversized.usda", { maxInputBytes: 4 });
         } catch (error) {
             caught = error;
         }
@@ -127,5 +127,24 @@ def Xform "P" {
         expect(limitError.kind).toBe("input-bytes");
         expect(limitError.actual).toBe(data.byteLength);
         expect(limitError.limit).toBe(4);
+    });
+
+    it("rejects an oversized ArrayBufferView at the loader boundary before normalization", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const loader = new USDFileLoader({ maxInputBytes: 8 });
+        const view = new TextEncoder().encode('#usda 1.0\ndef Xform "P" {}\n');
+        let caught: unknown;
+        try {
+            await loader.importMeshAsync(null, scene, view, "");
+        } catch (error) {
+            caught = error;
+        }
+        expect(caught).toBeInstanceOf(UsdResourceLimitError);
+        const limitError = caught as UsdResourceLimitError;
+        expect(limitError.kind).toBe("input-bytes");
+        expect(limitError.actual).toBe(view.byteLength);
+        scene.dispose();
+        engine.dispose();
     });
 });

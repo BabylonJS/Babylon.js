@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { USDFileLoader } from "loaders/USD/usdFileLoader";
-import { ResolveUsdStageWithFetcherAsync } from "loaders/USD/resolution/usdResolver";
+import { ResolveUsdStageAsync } from "loaders/USD/resolution/usdResolver";
 import { type IResolvedStage, type IResolvedPrim, type ResolvedPrimKind } from "loaders/USD/resolution/resolvedStage";
 import { ParseUsdaWithDiagnostics } from "loaders/USD/resolution/parser/usda/usdaParser";
 
@@ -14,7 +14,7 @@ import { ParseUsdaWithDiagnostics } from "loaders/USD/resolution/parser/usda/usd
 // USDA-only product promise on real-world text: in-profile assets resolve to the expected
 // resolved-stage data, and intentionally out-of-profile assets are diagnosed rather than silently
 // producing a plausible-but-wrong scene. The harness is offline and bounded: every fixture is read
-// from disk and the external-layer fetcher denies all requests, so no network access occurs.
+// from disk as a single flat layer, so no network access occurs.
 
 const corpusRoot = new URL("./corpus/", import.meta.url);
 
@@ -22,16 +22,9 @@ function readCorpus(relativePath: string): string {
     return fs.readFileSync(fileURLToPath(new URL(relativePath, corpusRoot)), "utf8");
 }
 
-// Denies every external-layer fetch so resolution stays offline and deterministic. In-profile
-// fixtures are single flat layers and never call it; out-of-profile external references hit it and
-// must surface a diagnostic instead of silently succeeding.
-const denyExternalFetch = async (identifier: string): Promise<never> => {
-    throw new Error(`external fetch denied: ${identifier}`);
-};
-
 async function resolveCorpusAsync(relativePath: string): Promise<IResolvedStage> {
     const fileName = relativePath.split("/").pop();
-    return await ResolveUsdStageWithFetcherAsync(readCorpus(relativePath), "", fileName, {}, denyExternalFetch);
+    return await ResolveUsdStageAsync(readCorpus(relativePath), "", fileName, {});
 }
 
 function collectPrims(stage: IResolvedStage): IResolvedPrim[] {
@@ -144,23 +137,20 @@ describe("USD corpus smoke - out-of-profile", () => {
 
     it("surfaces an unresolved external (MaterialX) reference as diagnostics, not a silent success", async () => {
         const stage = await resolveCorpusAsync("out-of-scope/materialx_basic.usda");
-        const warnings = stage.diagnostics.filter((diagnostic) => diagnostic.severity === "warning");
-        expect(warnings.length).toBeGreaterThan(0);
-        expect(stage.diagnostics.some((diagnostic) => /reference|external|mtlx|MaterialX/i.test(diagnostic.message))).toBe(true);
+        // The MaterialX Scope authors an external reference arc, which the single-layer importer
+        // rejects with a diagnostic rather than silently dropping it.
+        const referenceDiagnostics = stage.diagnostics.filter((diagnostic) => /reference|external|mtlx|MaterialX/i.test(diagnostic.message));
+        expect(referenceDiagnostics.length).toBeGreaterThan(0);
+        expect(referenceDiagnostics.some((diagnostic) => diagnostic.severity === "error" || diagnostic.severity === "warning")).toBe(true);
     });
 
-    it("does not crash on an out-of-profile implicit gprim", async () => {
-        // Current (pre-subtraction) behavior: an implicit UsdGeomSphere is still tessellated into a
-        // mesh. The harness only guarantees no crash here; explicit rejection is enforced by the
-        // loader-subtraction work (parent PRD #55, subtraction issue #56) and asserted below.
+    it("rejects an out-of-profile implicit gprim with a diagnostic and maps no mesh", async () => {
+        // An implicit UsdGeomSphere is out of the polygonal-Mesh profile: it must be diagnosed and
+        // skipped rather than tessellated into a mesh.
         const stage = await resolveCorpusAsync("out-of-scope/implicit_sphere.usda");
-        expect(stage).toBeDefined();
+        expect(stage.diagnostics.some((diagnostic) => /Sphere prims are not supported/i.test(diagnostic.message))).toBe(true);
+        expect(stage.meshes).toHaveLength(0);
     });
-
-    // Tracks the target profile: an implicit gprim must be rejected/skipped with a diagnostic rather
-    // than silently mapped to a mesh. Enforced by the loader subtraction (parent PRD #55, issue #56),
-    // which removes implicit-gprim support; promote this to a real assertion once that lands.
-    it.todo("rejects an out-of-profile implicit gprim with a diagnostic once subtraction (#56) removes implicit-gprim support");
 });
 
 describe("USD corpus smoke - format policy", () => {

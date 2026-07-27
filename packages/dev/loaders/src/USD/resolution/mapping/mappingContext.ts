@@ -1,7 +1,7 @@
 import { type ISdfLayer, type ISdfPrimSpec } from "../sdf/index";
 import { type IResolvedDiagnostic, type IResolvedMaterial, type IResolvedMesh } from "../resolvedStage";
 
-/** Shared state used while mapping one flattened Sdf layer into a resolved stage. */
+/** Shared state used while mapping one validated single Sdf layer into a resolved stage. */
 export interface IStageMappingContext {
     /** Source layer being mapped. */
     layer: ISdfLayer;

@@ -3,7 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { USDFileLoader } from "loaders/USD/usdFileLoader";
-import { ResolveUsdStageWithFetcherAsync } from "loaders/USD/resolution/usdResolver";
+import { ResolveUsdStageAsync } from "loaders/USD/resolution/usdResolver";
 import { type IResolvedMaterial, type IResolvedMesh, type IResolvedPrim, type IResolvedStage } from "loaders/USD/resolution/resolvedStage";
 
 // These tests exercise issue #61's material/primvar/texture resolution slice at the resolved-stage
@@ -11,9 +11,7 @@ import { type IResolvedMaterial, type IResolvedMesh, type IResolvedPrim, type IR
 // resolver with a fetcher that throws, so nothing touches the network.
 
 async function ResolveStageAsync(usda: string, rootUrl = "", fileName = "test.usda"): Promise<IResolvedStage> {
-    return ResolveUsdStageWithFetcherAsync(usda, rootUrl, fileName, {}, (identifier: string) => {
-        throw new Error(`No external layers expected, but requested: ${identifier}`);
-    });
+    return ResolveUsdStageAsync(usda, rootUrl, fileName, {});
 }
 
 function FindPrim(root: IResolvedPrim, name: string): IResolvedPrim | undefined {
@@ -402,7 +400,7 @@ ${QuadMesh}
 }
 `;
         const stage = await ResolveStageAsync(usda, "file:", "Quad.usda");
-        expect(HasWarning(stage, "USD layer")).toBe(true);
+        expect(stage.diagnostics.some((diagnostic) => diagnostic.message.includes("[usda-asset-layer-unsupported]"))).toBe(true);
         expect(stage.materials[0].textures.baseColor).toBeUndefined();
     });
 });

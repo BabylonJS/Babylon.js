@@ -4,13 +4,11 @@ import { type Nullable } from "core/types";
 import { type AssetContainer } from "core/assetContainer";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type TransformNode } from "core/Meshes/transformNode.pure";
-import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
 import { type Skeleton } from "core/Bones/skeleton";
 import { type Animation } from "core/Animations/animation";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Material } from "core/Materials/material";
-import { type Mesh } from "core/Meshes/mesh.pure";
 
 import { type IResolvedStage } from "../resolution/resolvedStage";
 import { type USDLoadingOptions } from "../usdLoadingOptions";
@@ -40,7 +38,6 @@ export function AdaptResolvedStageToScene(
     const existingGeometries = new Set(scene.geometries);
     const meshes: AbstractMesh[] = [];
     const transformNodes: TransformNode[] = [];
-    const lights: Light[] = [];
     const cameras: Camera[] = [];
     const skeletons: Skeleton[] = [];
     const animationGroups: AnimationGroup[] = [];
@@ -57,13 +54,11 @@ export function AdaptResolvedStageToScene(
         fps: ResolveFps(stage, options),
         meshes,
         transformNodes,
-        lights,
         cameras,
         skeletons,
         animationGroups,
         animationEntries,
         materialCache: new Map<number, Material>(),
-        sourceMeshCache: new Map<string, Mesh>(),
         skeletonCache: new Map<number, Skeleton>(),
     };
 
@@ -92,7 +87,7 @@ export function AdaptResolvedStageToScene(
         animationGroups,
         transformNodes,
         geometries: scene.geometries.filter((geometry) => !existingGeometries.has(geometry)),
-        lights,
+        lights: [],
         spriteManagers: [],
     };
 }

@@ -1,15 +1,12 @@
 import { Color3 } from "core/Maths/math.color.pure";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { Texture } from "core/Materials/Textures/texture.pure";
-import { EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 import { type Scene } from "core/scene";
 import { type IResolvedMaterial, type IResolvedTexture, type ResolvedTextureSlot } from "../resolution/resolvedStage";
 import { type USDLoadingOptions } from "../usdLoadingOptions";
 
 type ResolvedTextureChannel = NonNullable<IResolvedTexture["channel"]>;
 type ResolvedTextureWrap = IResolvedTexture["wrapU"];
-
-const DefaultEmbeddedTextureMimeType = "image/png";
 
 /**
  * Creates a Babylon PBR material from an already-resolved USD material.
@@ -163,10 +160,7 @@ function ApplyTransparencyMode(babylonMaterial: PBRMaterial, material: IResolved
 
 function CreateTexture(texture: IResolvedTexture, scene: Scene, slot: ResolvedTextureSlot): Texture {
     const gammaSpace = texture.colorSpace === "sRGB";
-    const babylonTexture = new Texture(GetTextureUrl(texture), scene, {
-        gammaSpace,
-        mimeType: texture.data ? (texture.mimeType ?? DefaultEmbeddedTextureMimeType) : undefined,
-    });
+    const babylonTexture = new Texture(texture.uri, scene, { gammaSpace });
 
     babylonTexture.name = texture.uri;
     babylonTexture.coordinatesIndex = texture.uvSet;
@@ -176,15 +170,6 @@ function CreateTexture(texture: IResolvedTexture, scene: Scene, slot: ResolvedTe
     ApplyTextureScaleBias(babylonTexture, texture, slot);
 
     return babylonTexture;
-}
-
-function GetTextureUrl(texture: IResolvedTexture): string {
-    if (!texture.data) {
-        return texture.uri;
-    }
-
-    const mimeType = texture.mimeType ?? DefaultEmbeddedTextureMimeType;
-    return `data:${mimeType};base64,${EncodeArrayBufferToBase64(texture.data)}`;
 }
 
 function GetAddressMode(wrap: ResolvedTextureWrap): number {
@@ -274,14 +259,7 @@ function GetChannelIndex(channel: ResolvedTextureChannel): number {
 
 function AreSameTextureSource(left: IResolvedTexture, right: IResolvedTexture): boolean {
     return (
-        left === right ||
-        (left.uri === right.uri &&
-            left.data === right.data &&
-            left.mimeType === right.mimeType &&
-            left.uvSet === right.uvSet &&
-            left.wrapU === right.wrapU &&
-            left.wrapV === right.wrapV &&
-            left.colorSpace === right.colorSpace)
+        left === right || (left.uri === right.uri && left.uvSet === right.uvSet && left.wrapU === right.wrapU && left.wrapV === right.wrapV && left.colorSpace === right.colorSpace)
     );
 }
 

@@ -72,53 +72,76 @@ describe("USD fidelity diagnostics", () => {
         expect(stage.diagnostics.filter((entry) => /subdivision/i.test(entry.message))).toHaveLength(1);
     });
 
-    it("flags area lights approximated as point lights", () => {
+    it("diagnoses UsdLux lights as unsupported and skips them", () => {
         const stage = MapLayerToResolvedStage(
             layerOf([
+                { name: "Sun", path: "/Sun", specifier: "def", typeName: "DistantLight", properties: {}, children: [] },
                 { name: "Rect", path: "/Rect", specifier: "def", typeName: "RectLight", properties: {}, children: [] },
                 { name: "Sphere", path: "/Sphere", specifier: "def", typeName: "SphereLight", properties: {}, children: [] },
+                { name: "Sky", path: "/Sky", specifier: "def", typeName: "DomeLight", properties: {}, children: [] },
             ])
         );
-        expect(stage.diagnostics.find((diagnostic) => diagnostic.path === "/Rect")?.message).toMatch(/point light/i);
-        expect(stage.diagnostics.find((diagnostic) => diagnostic.path === "/Sphere")?.message).toMatch(/point light/i);
-    });
-
-    it("flags a textured dome light as approximated with a dropped environment texture", () => {
-        const dome: ISdfPrimSpec = {
-            name: "Sky",
-            path: "/Sky",
-            specifier: "def",
-            typeName: "DomeLight",
-            properties: { "inputs:texture:file": { kind: "attribute", typeName: "asset", default: { type: "asset", value: { authoredPath: "./sky.exr" } } } },
-            children: [],
-        };
-        const diagnostic = MapLayerToResolvedStage(layerOf([dome])).diagnostics.find((entry) => entry.path === "/Sky");
-        expect(diagnostic?.message).toMatch(/hemispheric/i);
-        expect(diagnostic?.message).toMatch(/texture/i);
-    });
-
-    it("flags a textureless dome light as approximated without mentioning a dropped texture", () => {
-        const dome: ISdfPrimSpec = { name: "Sky", path: "/Sky", specifier: "def", typeName: "DomeLight", properties: {}, children: [] };
-        const diagnostic = MapLayerToResolvedStage(layerOf([dome])).diagnostics.find((entry) => entry.path === "/Sky");
-        expect(diagnostic?.message).toMatch(/hemispheric/i);
-        expect(diagnostic?.message).not.toMatch(/texture/i);
-    });
-
-    it.each(["Plane", "BasisCurves", "NurbsCurves", "HermiteCurves", "Points", "NurbsPatch", "TetMesh", "Volume"])(
-        "emits exactly one diagnostic naming an unsupported %s prim",
-        (typeName) => {
-            const prim: ISdfPrimSpec = { name: typeName, path: `/${typeName}`, specifier: "def", typeName, properties: {}, children: [] };
-            const diagnostics = MapLayerToResolvedStage(layerOf([prim])).diagnostics.filter((entry) => entry.path === `/${typeName}`);
-            expect(diagnostics).toHaveLength(1);
-            expect(diagnostics[0].message).toContain(typeName);
+        for (const path of ["/Sun", "/Rect", "/Sphere", "/Sky"]) {
+            expect(stage.diagnostics.find((diagnostic) => diagnostic.path === path)?.message).toMatch(/not supported/i);
         }
-    );
+    });
 
-    it.each(["Capsule", "Cone", "Cube", "Cylinder", "Sphere"])("does not flag a supported %s prim as unsupported", (typeName) => {
+    it.each([
+        "Plane",
+        "BasisCurves",
+        "NurbsCurves",
+        "HermiteCurves",
+        "Points",
+        "NurbsPatch",
+        "TetMesh",
+        "Volume",
+        "Cube",
+        "Sphere",
+        "Cylinder",
+        "Cone",
+        "Capsule",
+        "PointInstancer",
+    ])("emits exactly one diagnostic naming an unsupported %s prim and creates no mesh", (typeName) => {
         const prim: ISdfPrimSpec = { name: typeName, path: `/${typeName}`, specifier: "def", typeName, properties: {}, children: [] };
         const stage = MapLayerToResolvedStage(layerOf([prim]));
-        expect(stage.meshes).toHaveLength(1);
-        expect(stage.diagnostics.some((entry) => /not supported/i.test(entry.message) && entry.path === `/${typeName}`)).toBe(false);
+        const diagnostics = stage.diagnostics.filter((entry) => entry.path === `/${typeName}`);
+        expect(diagnostics).toHaveLength(1);
+        expect(diagnostics[0].message).toContain(typeName);
+        expect(stage.meshes).toHaveLength(0);
+    });
+
+    it("skips PointInstancer prototype targets instead of rendering them once at their authored pose", () => {
+        const prototype = meshPrim("Prototype");
+        prototype.path = "/Prototypes/Prototype";
+        const stage = MapLayerToResolvedStage(
+            layerOf([
+                {
+                    name: "Instancer",
+                    path: "/Instancer",
+                    specifier: "def",
+                    typeName: "PointInstancer",
+                    properties: {
+                        prototypes: {
+                            kind: "relationship",
+                            targets: { isExplicit: true, explicit: ["../Prototypes/Prototype"] },
+                        },
+                    },
+                    children: [],
+                },
+                {
+                    name: "Prototypes",
+                    path: "/Prototypes",
+                    specifier: "def",
+                    typeName: "Scope",
+                    properties: {},
+                    children: [prototype],
+                },
+            ])
+        );
+
+        expect(stage.diagnostics.find((diagnostic) => diagnostic.path === "/Instancer")?.message).toMatch(/prototype targets.*skipped/i);
+        expect(stage.meshes).toHaveLength(0);
+        expect(stage.root.children.find((prim) => prim.path === "/Prototypes")?.children).toHaveLength(0);
     });
 
     it("does not flag a supported Mesh as unsupported", () => {

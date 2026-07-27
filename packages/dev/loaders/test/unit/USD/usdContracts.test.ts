@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { AdaptResolvedStageToScene, type IResolvedStage, ResolveUsdStageWithFetcherAsync } from "loaders/USD/pure";
+import { AdaptResolvedStageToScene, type IResolvedStage, ResolveUsdStageAsync } from "loaders/USD/pure";
 
 const triangleUsda = `#usda 1.0
 (
@@ -20,9 +20,7 @@ def Mesh "Triangle"
 
 describe("USD resolved-stage contract", () => {
     it("returns a deeply frozen plain-data stage while leaving typed buffers readable", async () => {
-        const stage = await ResolveUsdStageWithFetcherAsync(triangleUsda, "", "triangle.usda", {}, async () => {
-            throw new Error("No external assets expected.");
-        });
+        const stage = await ResolveUsdStageAsync(triangleUsda, "", "triangle.usda", {});
 
         expect(Object.isFrozen(stage)).toBe(true);
         expect(Object.isFrozen(stage.metadata)).toBe(true);

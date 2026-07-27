@@ -2,21 +2,16 @@ import { describe, expect, it } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { USDFileLoader } from "loaders/USD/usdFileLoader";
-import { ResolveUsdStageWithFetcherAsync } from "loaders/USD/resolution/usdResolver";
+import { ResolveUsdStageAsync } from "loaders/USD/resolution/usdResolver";
 import { type IResolvedPrim, type IResolvedStage } from "loaders/USD/resolution/resolvedStage";
 
 // Issue #63: honor single-layer transform stacks (order/invert/reset), parent-child accumulation,
 // inherited (namespace) visibility, and diagnose unsupported inherited purpose. These fixtures drive
-// real USDA text through parse -> compose -> map (parse-to-stage seam) and, for the transform/visibility
-// behavior the adapter owns, all the way to a NullEngine scene graph. Everything is offline (no network,
-// no external layers), so the injected fetcher must never be called.
-
-const noFetch = async (): Promise<ArrayBuffer> => {
-    throw new Error("These fixtures reference no external assets.");
-};
+// real USDA text through the parse-to-stage seam and, for the transform/visibility behavior the adapter
+// owns, all the way to a NullEngine scene graph. Everything is offline (no network, single layer).
 
 async function ResolveStageAsync(usda: string): Promise<IResolvedStage> {
-    return await ResolveUsdStageWithFetcherAsync(usda, "", "stage.usda", {}, noFetch);
+    return await ResolveUsdStageAsync(usda, "", "stage.usda", {});
 }
 
 function FindPrim(prim: IResolvedPrim, path: string): IResolvedPrim | undefined {

@@ -23,9 +23,9 @@ const MaxSplineBakeSubdivisions = 32;
 /**
  * Creates Babylon animations for a resolved USD prim animation.
  *
- * The resolution layer is expected to have already evaluated USD time samples, value clips, and
- * spline sample values. This adapter only converts seconds to Babylon frames and maps resolved
- * values to Babylon animation value types. Held tracks use step interpolation. Linear tracks use
+ * The resolution layer supplies final sample times and values. This adapter only converts seconds
+ * to Babylon frames and maps resolved values to Babylon animation value types. Held tracks use step
+ * interpolation. Linear tracks use
  * Babylon's default interpolation. Bezier and Hermite tracks are baked into denser linear keys using
  * supplied tangents as an approximation; if tangents are unavailable, the resolved samples are used
  * as linear keys.

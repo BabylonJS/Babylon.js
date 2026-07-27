@@ -2,24 +2,19 @@ import { type ISdfPrimSpec } from "./sdfSpec";
 import { type SdfMetadata } from "./sdfValue";
 
 /**
- * Sdf layer data model: the parser-composition seam for USD loading.
+ * Sdf layer data model: the USDA parser-to-policy seam.
  *
  * Design rules:
  * - Pure, plain data only. NO Babylon imports, NO parser state, NO functions, NO classes.
- * - This is post-parse and pre-composition. USDA and USDC decoders populate one `ISdfLayer`
- *   per parsed layer; the composition engine consumes a layer stack and applies USD strength
- *   ordering, including LIVERPS arc ordering, to produce the resolved stage contract.
+ * - The USDA parser populates one `ISdfLayer`; the single-layer policy then rejects composition
+ *   opinions and normalizes the supported authored content before stage mapping.
  * - Prim data is represented as a hierarchy of `ISdfPrimSpec` objects with absolute `path`
- *   strings. This matches USDA's nested authoring form. A crate decoder starts from flat PATHS,
- *   SPECS, FIELDSETS, and FIELDS tables, creates prim/property specs by absolute path, then
- *   walks parent path components to attach each prim to the correct `children` array.
+ *   strings. This matches USDA's nested authoring form.
  * - Values use a tagged convention: every authored value is `{ type, value }`. The `type` tag
  *   preserves the USD value token (`float`, `point3f[]`, `asset`, `matrix4d`, etc.) even when
  *   several tokens share the same JavaScript payload shape.
- * - A layer stack is not resolved here. `subLayers`, references, payloads, inherits,
- *   specializes, variants, and relocates are only modeled as authored opinions so the later
- *   composition module can apply strength, offsets, selections, and list operations in one
- *   place.
+ * - `subLayers`, references, payloads, inherits, specializes, variants, and relocates are modeled
+ *   only so the single-layer policy can detect and reject their authored presence.
  */
 
 /**
@@ -67,18 +62,16 @@ export interface ISdfPayload {
 }
 
 /**
- * One parsed USD layer before composition.
+ * One parsed USDA layer before single-layer validation.
  */
 export interface ISdfLayer {
-    /** Layer identifier used for diagnostics and as the key for layer-stack lookups. */
+    /** Layer identifier used for diagnostics and relative texture resolution. */
     identifier: string;
-    /** Optional resolved file path or URI when it differs from `identifier`. */
-    filePath?: string;
-    /** Authored stage up axis. When absent, composition applies USD's fallback. */
+    /** Authored stage up axis. When absent, stage mapping applies USD's fallback. */
     upAxis?: "Y" | "Z";
-    /** Authored meters represented by one stage unit. When absent, composition applies USD's fallback. */
+    /** Authored meters represented by one stage unit. When absent, stage mapping applies USD's fallback. */
     metersPerUnit?: number;
-    /** Authored time codes per second. When absent, composition applies USD's fallback. */
+    /** Authored time codes per second. When absent, stage mapping applies USD's fallback. */
     timeCodesPerSecond?: number;
     /** Authored playback frame rate; on a root layer, this is the legacy fallback when timeCodesPerSecond is absent. */
     framesPerSecond?: number;
@@ -88,7 +81,7 @@ export interface ISdfLayer {
     endTimeCode?: number;
     /** Authored default prim token for this layer. */
     defaultPrim?: string;
-    /** Authored sublayers in strongest-to-weakest layer-stack order for this layer's metadata. */
+    /** Authored sublayers, retained so the single-layer policy can reject them. */
     subLayers: ISdfSubLayer[];
     /** Top-level prim specs. Each child recursively carries its own authored subtree. */
     rootPrims: ISdfPrimSpec[];

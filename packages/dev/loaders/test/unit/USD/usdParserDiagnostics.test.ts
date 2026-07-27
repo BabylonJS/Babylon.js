@@ -3,7 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import { USDFileLoader } from "loaders/USD/usdFileLoader";
-import { ResolveUsdStageWithFetcherAsync } from "loaders/USD/resolution/usdResolver";
+import { ResolveUsdStageAsync } from "loaders/USD/resolution/usdResolver";
 
 // Malformed but recoverable: the prim metadata block omits the '=' after `kind`. The parser diagnoses the
 // problem and recovers, still producing the `World` Xform. Before parser diagnostics were carried through
@@ -25,13 +25,9 @@ def Xform "World"
 }
 `;
 
-const noFetch = () => {
-    throw new Error("USDA parser-diagnostic tests must not fetch external layers.");
-};
-
 describe("USDA parser diagnostic propagation", () => {
     it("converts recoverable parser diagnostics into resolved-stage diagnostics with severity and source location", async () => {
-        const stage = await ResolveUsdStageWithFetcherAsync(recoverableUsda, "", "recoverable.usda", {}, noFetch);
+        const stage = await ResolveUsdStageAsync(recoverableUsda, "", "recoverable.usda", {});
 
         // The stage still resolves the recovered prim rather than failing.
         expect(stage.root.children.map((prim) => prim.name)).toEqual(["World"]);
@@ -45,8 +41,8 @@ describe("USDA parser diagnostic propagation", () => {
     });
 
     it("does not let malformed-but-recoverable USDA produce a silently clean stage", async () => {
-        const clean = await ResolveUsdStageWithFetcherAsync(cleanUsda, "", "clean.usda", {}, noFetch);
-        const recovered = await ResolveUsdStageWithFetcherAsync(recoverableUsda, "", "recoverable.usda", {}, noFetch);
+        const clean = await ResolveUsdStageAsync(cleanUsda, "", "clean.usda", {});
+        const recovered = await ResolveUsdStageAsync(recoverableUsda, "", "recoverable.usda", {});
 
         // Both sources resolve to the same World prim, but only the malformed one advertises a parser warning.
         expect(clean.root.children.map((prim) => prim.name)).toEqual(recovered.root.children.map((prim) => prim.name));
@@ -73,6 +69,6 @@ describe("USDA parser diagnostic propagation", () => {
     it("keeps fatal parser failures as load failures rather than success-shaped diagnostics", async () => {
         // A missing '#usda 1.0' header is a fatal parse error: it must reject the load, never resolve to a
         // stage that carries an error diagnostic in place of a real failure.
-        await expect(ResolveUsdStageWithFetcherAsync("not a usd document", "", "bad.usda", {}, noFetch)).rejects.toThrow(/#usda 1\.0/);
+        await expect(ResolveUsdStageAsync("not a usd document", "", "bad.usda", {})).rejects.toThrow(/#usda 1\.0/);
     });
 });

@@ -1,20 +1,18 @@
 /**
  * The `ResolvedStage` contract: the single boundary between the USD *resolution layer*
- * (parsing + composition + stage/time evaluation) and the Babylon *adapter layer*.
+ * (parsing + single-layer validation + stage/time evaluation) and the Babylon *adapter layer*.
  *
  * Design rules:
  * - Pure, plain data only. NO Babylon imports, NO USD-runtime objects, NO functions.
- * - Every USD semantic (composition arcs, variants, xformOp stacks, primvar interpolation,
- *   time samples, value clips, splines) is *already resolved* before objects of these types
- *   are produced. The adapter performs zero USD reasoning — it only maps this data onto
- *   Babylon nodes, meshes, materials, animations, lights and cameras.
+ * - Unsupported composition-bearing opinions are rejected before mapping. Supported single-layer
+ *   semantics such as xformOp stacks, primvar interpolation and time samples are resolved before
+ *   objects of these types are produced. The adapter performs zero USD reasoning.
  * - Coordinates are expressed in USD's native space (right-handed, units = `metersPerUnit`,
  *   up = `upAxis`). The adapter enables Babylon's right-handed scene mode and applies only
  *   up-axis / unit conversion; authored geometry buffers are not rewritten.
  *
  * Resource pooling: meshes, materials and skeletons live in flat arrays on `IResolvedStage`
- * and are referenced from prims by index, so that USD `instanceable` prims and `PointInstancer`
- * prototypes can share a single source without duplication.
+ * and are referenced from prims by index, so shared geometry is stored once.
  */
 
 /** A 2-component vector `[x, y]`. */
@@ -36,13 +34,13 @@ export interface IResolvedStage {
     metadata: IStageMetadata;
     /** The synthetic root prim. Its `children` are the stage's top-level prims; it carries no geometry. */
     root: IResolvedPrim;
-    /** Shared mesh geometry pool. Prims and point-instancer prototypes reference entries by index. */
+    /** Shared mesh geometry pool. Mesh prims reference entries by index. */
     meshes: IResolvedMesh[];
     /** Shared material pool. Mesh bindings reference entries by index. */
     materials: IResolvedMaterial[];
     /** Shared skeleton pool. Skinned meshes reference entries by index. */
     skeletons: IResolvedSkeleton[];
-    /** Non-fatal diagnostics collected during resolution (composition warnings, skipped features, etc.). */
+    /** Non-fatal diagnostics collected during parsing, single-layer validation and mapping. */
     diagnostics: IResolvedDiagnostic[];
 }
 
@@ -123,12 +121,6 @@ export type ResolvedPrimKind =
     | "transform"
     /** A renderable mesh; `meshIndex` indexes `IResolvedStage.meshes`. */
     | "mesh"
-    /** A USD `instanceable` instance sharing a prototype; `instanceSourceMeshIndex` indexes the shared mesh. */
-    | "instance"
-    /** A USD `PointInstancer`; `instancer` holds the per-instance data. */
-    | "pointInstancer"
-    /** A UsdLux light; `light` holds the resolved parameters. */
-    | "light"
     /** A UsdGeomCamera; `camera` holds the resolved parameters. */
     | "camera";
 
@@ -152,19 +144,10 @@ export interface IResolvedPrim {
 
     /** `kind === "mesh"`: index into `IResolvedStage.meshes`. */
     meshIndex?: number;
-    /** `kind === "mesh" | "instance"`: material binding for this prim. */
+    /** `kind === "mesh"`: material binding for this prim. */
     materialBinding?: IResolvedMaterialBinding;
     /** `kind === "mesh"`: optional skinning data binding this mesh to a skeleton. */
     skinning?: IResolvedSkinning;
-
-    /** `kind === "instance"`: index into `IResolvedStage.meshes` of the shared prototype mesh. */
-    instanceSourceMeshIndex?: number;
-
-    /** `kind === "pointInstancer"`: resolved point-instancer payload. */
-    instancer?: IResolvedPointInstancer;
-
-    /** `kind === "light"`: resolved light payload. */
-    light?: IResolvedLight;
 
     /** `kind === "camera"`: resolved camera payload. */
     camera?: IResolvedCamera;
@@ -176,7 +159,7 @@ export interface IResolvedPrim {
 /**
  * Resolved local transform. The resolution layer collapses the ordered USD `xformOpOrder`
  * stack (translate/orient/scale/pivot/transform) into a single TRS triple.
- * When the composed transform contains shear or otherwise cannot be represented losslessly by
+ * When the resolved transform contains shear or otherwise cannot be represented losslessly by
  * TRS, `matrix` is also provided and the adapter should prefer it.
  */
 export interface IResolvedTransform {
@@ -288,12 +271,8 @@ export type ResolvedTextureSlot = "baseColor" | "metallic" | "roughness" | "norm
 
 /** A resolved texture reference with its sampling and color-management parameters. */
 export interface IResolvedTexture {
-    /** Fully-resolved asset locator: either an absolute/relative URL or a key into `IResolvedStage`-adjacent embedded assets. */
+    /** Fully-resolved texture locator, including absolute, relative, dropped-file and data URLs. */
     uri: string;
-    /** Pre-decoded bytes when the texture came from inside a USDZ archive; when present the adapter uses these instead of fetching `uri`. */
-    data?: Uint8Array;
-    /** MIME type for embedded `data` (e.g. "image/png"), when known. */
-    mimeType?: string;
     /** Which UV set this texture samples (index into the mesh `uvSets`). */
     uvSet: number;
     /** Wrap mode along U. */
@@ -308,61 +287,6 @@ export interface IResolvedTexture {
     bias?: Vec4;
     /** Single channel to read for scalar slots (e.g. "r", "g", "b", "a"). */
     channel?: "r" | "g" | "b" | "a";
-}
-
-/**
- * A resolved UsdGeomPointInstancer. All per-instance variability is pre-computed; the adapter
- * emits one Babylon `InstancedMesh` (or thin instance) per visible instance, drawing from the
- * `prototypeMeshIndices` pool.
- */
-export interface IResolvedPointInstancer {
-    /** Indices into `IResolvedStage.meshes` for each authored prototype slot; unsupported slots are `undefined`. */
-    prototypeMeshIndices: (number | undefined)[];
-    /** Material bindings aligned with `prototypeMeshIndices`, when authored on prototype meshes. */
-    prototypeMaterialBindings?: (IResolvedMaterialBinding | undefined)[];
-    /** Per-instance prototype selector (index into `prototypeMeshIndices`). */
-    protoIndices: Int32Array;
-    /** Optional authored instance ids aligned with `protoIndices`; array index is used when absent. */
-    ids?: Int32Array;
-    /** Per-instance translation (3 per instance), in the instancer's local space. */
-    positions: Float32Array;
-    /** Per-instance orientation quaternion (4 per instance). */
-    orientations?: Float32Array;
-    /** Per-instance scale (3 per instance). */
-    scales?: Float32Array;
-    /** Authored instance ids that are invisible and must be skipped. */
-    invisibleIds?: Int32Array;
-}
-
-/** The kind of a resolved UsdLux light. */
-export type ResolvedLightKind = "distant" | "sphere" | "rect" | "disk" | "dome" | "cylinder";
-
-/**
- * A resolved UsdLux light reduced to parameters expressible via Babylon's existing light API.
- * Light kinds without a Babylon-core equivalent (e.g. true rect/disk area lights) are mapped to
- * the closest available light or recorded as a diagnostic by the adapter.
- */
-export interface IResolvedLight {
-    /** Light kind. */
-    kind: ResolvedLightKind;
-    /** Linear light color. */
-    color: Vec3;
-    /** Intensity (UsdLux `intensity`). */
-    intensity: number;
-    /** Exposure stops applied multiplicatively as `2^exposure`. */
-    exposure: number;
-    /** For `distant`: angular diameter in degrees. */
-    angle?: number;
-    /** For `sphere`/`disk`/`cylinder`: radius in stage units. */
-    radius?: number;
-    /** For `rect`: width in stage units. */
-    width?: number;
-    /** For `rect`: height in stage units. */
-    height?: number;
-    /** For `dome`: resolved environment texture reference (IBL). */
-    domeTexture?: IResolvedTexture;
-    /** Whether `normalize` is set (power independent of size). */
-    normalize?: boolean;
 }
 
 /** A resolved UsdGeomCamera reduced to Babylon camera parameters. */
@@ -450,9 +374,8 @@ export interface IResolvedAnimation {
 }
 
 /**
- * A single resolved animation track. Time-sample, value-clip and spline resolution have all been
- * performed: `times` (seconds) and `values` are the final samples; `interpolation` (and optional
- * tangents) tell the adapter how to rebuild Babylon keyframes faithfully.
+ * A single resolved animation track. `times` (seconds) and `values` are the final samples;
+ * `interpolation` and optional tangents tell the adapter how to rebuild Babylon keyframes.
  */
 export interface IResolvedAnimationTrack {
     /** Which prim property this track drives. */

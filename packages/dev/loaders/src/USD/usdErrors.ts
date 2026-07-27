@@ -1,18 +1,10 @@
 /**
  * The kind of USD resource limit that was exceeded. Doubles as a stable programmatic code.
  */
-export type UsdResourceLimitKind =
-    | "value-nesting"
-    | "prim-nesting"
-    | "composition-nodes"
-    | "composition-depth"
-    | "composition-work"
-    | "input-bytes"
-    | "token-count"
-    | "parser-work";
+export type UsdResourceLimitKind = "value-nesting" | "prim-nesting" | "input-bytes" | "token-count" | "parser-work";
 
 /**
- * Error thrown when parsing or composing an untrusted USD asset exceeds a configured resource limit.
+ * Error thrown when parsing an untrusted USD asset exceeds a configured resource limit.
  *
  * Carries structured fields ({@link kind}, {@link limit}, {@link actual}, {@link path}) so callers can
  * branch on the failure programmatically without parsing the message string. It is intentionally

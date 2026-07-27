@@ -26,9 +26,8 @@ export interface ISdfAssetPath {
 /**
  * Represents a USD signed or unsigned 64-bit integer payload.
  *
- * JavaScript `number` values are exact only up to `Number.MAX_SAFE_INTEGER`; decoders should
- * use `bigint` for authored or crate values outside that safe range when exact round-tripping
- * matters.
+ * JavaScript `number` values are exact only up to `Number.MAX_SAFE_INTEGER`; parsers should use
+ * `bigint` for authored values outside that safe range when exact round-tripping matters.
  */
 export type SdfInteger64 = number | bigint;
 
@@ -241,7 +240,7 @@ export type SdfDictionaryValue = ISdfTypedValue<"dictionary", SdfMetadata>;
  */
 export type SdfValueBlockValue = ISdfTypedValue<"block", null>;
 
-/** Tagged union of all Sdf value payloads supported by the parser-composition seam. */
+/** Tagged union of all Sdf value payloads supported by the parser-policy seam. */
 export type SdfValue =
     | SdfBooleanValue
     | SdfIntegerValue

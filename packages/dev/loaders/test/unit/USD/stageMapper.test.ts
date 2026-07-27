@@ -444,7 +444,7 @@ describe("USD stage mapper", () => {
                 expect.stringContaining("Animation for 'xformOp:rotateZYX' is deferred"),
                 expect.stringContaining("Schema PortalLight mapping is not supported"),
                 expect.stringContaining("depth-of-field"),
-                expect.stringContaining("PointInstancer prototype target was not found"),
+                expect.stringContaining("PointInstancer prims are not supported"),
                 expect.stringContaining("Material binding target was not found"),
                 expect.stringContaining("Skel binding target was not found"),
             ])

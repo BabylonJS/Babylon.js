@@ -1,16 +1,13 @@
 /**
- * Resolves an authored asset path against the identifier of the layer that referenced it.
+ * Resolves an authored texture path against the identifier of the USDA layer that referenced it.
  *
- * This is the single source of truth for asset-path resolution: both external layer references
- * (sublayers/references/payloads) and material texture references resolve through it, so a sibling
- * `.usd` layer and a sibling `.png` texture authored with the same relative path always resolve to the
- * same identifier. Absolute URLs and absolute paths pass through unchanged; under the dropped-file
- * scheme a flat drag-and-drop set is addressed by lower-cased basename; otherwise the path is joined
- * onto the referrer's directory and normalized (collapsing `.` and `..` segments).
+ * Absolute URLs and absolute paths pass through unchanged. Under the dropped-file scheme, a flat
+ * drag-and-drop set is addressed by lower-cased basename; otherwise the path is joined onto the
+ * referrer's directory and normalized (collapsing `.` and `..` segments).
  *
  * @param assetPath the authored, delimiter-free relative or absolute asset path
  * @param fromIdentifier the identifier of the layer that authored the reference
- * @returns the resolved identifier the prefetch/archive maps are keyed under
+ * @returns resolved texture identifier
  */
 export function ResolveAssetIdentifier(assetPath: string, fromIdentifier: string): string {
     if (/^[a-z][a-z0-9+.-]*:/i.test(assetPath)) {

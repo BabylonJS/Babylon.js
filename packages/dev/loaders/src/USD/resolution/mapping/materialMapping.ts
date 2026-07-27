@@ -349,8 +349,7 @@ function ResolveAssetUri(path: string, layerIdentifier: string): string {
     if (cleanPath.startsWith("data:")) {
         return cleanPath;
     }
-    // Resolve textures through the same normalizer as external layers so a sibling .png and a sibling
-    // .usd authored with the same relative path resolve identically (including the dropped-file scheme).
+    // Resolve relative texture sidecars against the source layer, including the dropped-file scheme.
     return ResolveAssetIdentifier(cleanPath, layerIdentifier);
 }
 

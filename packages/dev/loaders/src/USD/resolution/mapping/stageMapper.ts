@@ -10,24 +10,22 @@ import {
 import { type ISdfLayer, type ISdfPrimSpec } from "../sdf/index";
 import { ResolvePrimAnimation } from "./animationMapping";
 import { ResolveCamera } from "./cameraMapping";
-import { ResolveGeometricPrimitive } from "./geometricPrimitiveMapping";
-import { ResolveLight } from "./lightMapping";
 import { ResolveMaterialIndex, GetMaterialBindingPath, GetDisplayColorFallback } from "./materialMapping";
 import { type IStageMappingContext } from "./mappingContext";
 import { BuildMeshPoolKey, CollectInheritablePrimvars, EmptyInheritedPrimvars, ResolveMesh, type IInheritedPrimvars } from "./meshMapping";
-import { ResolvePointInstancer } from "./pointInstancerMapping";
 import { ResolveSkeletonIndex, ResolveSkinning } from "./skeletonMapping";
 import { IdentityTransform, ResolveTransform } from "./transformMapping";
-import { AsToken, GetAttribute, GetAttributeValue } from "./valueAccess";
+import { AsToken, GetAttribute, GetAttributeValue, GetRelationship, GetRelationshipTargets } from "./valueAccess";
 
 type StageMapperContext = IStageMappingContext & {
     skeletons: IResolvedSkeleton[];
     skeletonIndexByPath: Map<string, number>;
+    pointInstancerPrototypePaths: ReadonlySet<string>;
 };
 
 /**
- * Maps one already-composed flattened Sdf layer into the read-only resolved stage contract.
- * @param layer flattened Sdf layer to map
+ * Maps one validated and normalized USDA layer into the read-only resolved stage contract.
+ * @param layer single Sdf layer to map
  * @returns resolved stage consumed by the Babylon USD adapter
  */
 export function MapLayerToResolvedStage(layer: ISdfLayer): IResolvedStage {
@@ -44,6 +42,7 @@ export function MapLayerToResolvedStage(layer: ISdfLayer): IResolvedStage {
         meshIndexByKey: new Map(),
         materialIndexByPath: new Map(),
         skeletonIndexByPath: new Map(),
+        pointInstancerPrototypePaths: CollectPointInstancerPrototypePaths(layer.rootPrims),
         diagnostics,
     };
     const metadata = ResolveStageMetadata(layer, diagnostics);
@@ -53,7 +52,7 @@ export function MapLayerToResolvedStage(layer: ISdfLayer): IResolvedStage {
         kind: "transform",
         transform: IdentityTransform(),
         visible: true,
-        children: layer.rootPrims.map((prim) => MapPrim(prim, true, metadata, context, undefined, EmptyInheritedPrimvars)),
+        children: MapPrims(layer.rootPrims, true, metadata, context, undefined, EmptyInheritedPrimvars),
     };
 
     return {
@@ -138,7 +137,7 @@ function MapPrim(
     ApplySchemaPayload(prim, primSpec, metadata, context, effectiveMaterialPath, inheritedPrimvars);
     const animation = ResolvePrimAnimation(primSpec, context.layer, metadata, context.diagnostics);
     if (animation) {
-        const tracks = animation.tracks.filter((track) => track.target !== "visibility" || prim.kind === "mesh" || prim.kind === "instance");
+        const tracks = animation.tracks.filter((track) => track.target !== "visibility" || prim.kind === "mesh");
         if (tracks.length !== animation.tracks.length) {
             context.diagnostics.push({ severity: "info", path: primSpec.path, message: "Animated visibility on non-mesh prims is not supported by the direct Babylon adapter." });
         }
@@ -149,7 +148,7 @@ function MapPrim(
     // Constant primvars inherit down namespace, so descendants that omit them fall back to this
     // subtree's authored constants merged over the set inherited from ancestors.
     const childPrimvars = CollectInheritablePrimvars(primSpec, inheritedPrimvars);
-    prim.children = prim.kind === "pointInstancer" ? [] : primSpec.children.map((child) => MapPrim(child, visible, metadata, context, effectiveMaterialPath, childPrimvars));
+    prim.children = MapPrims(primSpec.children, visible, metadata, context, effectiveMaterialPath, childPrimvars);
     return prim;
 }
 
@@ -161,13 +160,6 @@ function ApplySchemaPayload(
     materialPath: string | undefined,
     inheritedPrimvars: IInheritedPrimvars
 ): void {
-    const light = ResolveLight(primSpec, context);
-    if (light) {
-        prim.kind = "light";
-        prim.light = light;
-        return;
-    }
-
     const camera = ResolveCamera(primSpec);
     if (camera) {
         prim.kind = "camera";
@@ -182,38 +174,25 @@ function ApplySchemaPayload(
         return;
     }
 
-    const instancer = ResolvePointInstancer(primSpec, context);
-    if (instancer) {
-        prim.kind = "pointInstancer";
-        prim.instancer = instancer;
-        return;
-    }
-
     if (primSpec.typeName === "Skeleton") {
         ResolveSkeletonIndex(primSpec.path, context, metadata.timeCodesPerSecond);
         return;
     }
 
-    const mesh = primSpec.typeName === "Mesh" ? ResolveMesh(primSpec, context, inheritedPrimvars) : ResolveGeometricPrimitive(primSpec);
+    // Only polygonal UsdGeomMesh is in profile. Implicit gprims, point instancers, lights, curves,
+    // points and volumes are diagnosed and skipped at this schema seam rather than mapped.
+    const mesh = primSpec.typeName === "Mesh" ? ResolveMesh(primSpec, context, inheritedPrimvars) : undefined;
     if (!mesh) {
         ApplyUnsupportedSchemaDiagnostics(primSpec, context);
         return;
     }
 
-    const meshIndex = PoolMesh(mesh, context);
+    prim.kind = "mesh";
+    prim.meshIndex = PoolMesh(mesh, context);
     if (materialPath) {
         prim.materialBinding = { materialIndex: ResolveMaterialIndex(materialPath, context, GetDisplayColorFallback(primSpec)) };
     }
-    if (primSpec.instanceable) {
-        prim.kind = "instance";
-        prim.instanceSourceMeshIndex = meshIndex;
-    } else {
-        prim.kind = "mesh";
-        prim.meshIndex = meshIndex;
-    }
-    if (primSpec.typeName === "Mesh") {
-        prim.skinning = ResolveSkinning(primSpec, context, metadata.timeCodesPerSecond, mesh);
-    }
+    prim.skinning = ResolveSkinning(primSpec, context, metadata.timeCodesPerSecond, mesh);
 }
 
 function PoolMesh(mesh: NonNullable<ReturnType<typeof ResolveMesh>>, context: IStageMappingContext): number {
@@ -258,28 +237,98 @@ function BuildPrimIndex(rootPrims: ISdfPrimSpec[]): ReadonlyMap<string, ISdfPrim
     return primByPath;
 }
 
+function CollectPointInstancerPrototypePaths(rootPrims: ISdfPrimSpec[]): ReadonlySet<string> {
+    const prototypePaths = new Set<string>();
+    const visit = (prim: ISdfPrimSpec) => {
+        if (prim.typeName === "PointInstancer") {
+            for (const target of GetRelationshipTargets(GetRelationship(prim, "prototypes"))) {
+                const prototypePath = ResolvePrimTargetPath(target, prim.path);
+                if (prototypePath) {
+                    prototypePaths.add(prototypePath);
+                }
+            }
+        }
+        prim.children.forEach(visit);
+    };
+    rootPrims.forEach(visit);
+    return prototypePaths;
+}
+
+function ResolvePrimTargetPath(path: string, ownerPath: string): string {
+    const leafStart = path.lastIndexOf("/") + 1;
+    const leaf = path.slice(leafStart);
+    const propertyIndex = leaf === "." || leaf === ".." ? -1 : path.indexOf(".", leafStart);
+    const primPath = propertyIndex >= 0 ? path.slice(0, propertyIndex) : path;
+    const segments = primPath.startsWith("/") ? [] : ownerPath.split("/").filter(Boolean);
+    for (const segment of primPath.split("/")) {
+        if (!segment || segment === ".") {
+            continue;
+        }
+        if (segment === "..") {
+            segments.pop();
+        } else {
+            segments.push(segment);
+        }
+    }
+    return segments.length > 0 ? `/${segments.join("/")}` : "/";
+}
+
+function MapPrims(
+    primSpecs: ISdfPrimSpec[],
+    parentVisible: boolean,
+    metadata: IStageMetadata,
+    context: StageMapperContext,
+    inheritedMaterialPath: string | undefined,
+    inheritedPrimvars: IInheritedPrimvars
+): IResolvedPrim[] {
+    const prims: IResolvedPrim[] = [];
+    for (const primSpec of primSpecs) {
+        if (primSpec.typeName === "PointInstancer" || !context.pointInstancerPrototypePaths.has(primSpec.path)) {
+            prims.push(MapPrim(primSpec, parentVisible, metadata, context, inheritedMaterialPath, inheritedPrimvars));
+        }
+    }
+    return prims;
+}
+
 function ApplyUnsupportedSchemaDiagnostics(primSpec: ISdfPrimSpec, context: IStageMappingContext): void {
     if (IsUnsupportedLightSchema(primSpec.typeName)) {
         context.diagnostics.push({ severity: "info", path: primSpec.path, message: `Schema ${primSpec.typeName} mapping is not supported.` });
+    } else if (primSpec.typeName === "PointInstancer") {
+        context.diagnostics.push({
+            severity: "info",
+            path: primSpec.path,
+            message: "PointInstancer prims are not supported by the USD loader; their prototype targets are also skipped.",
+        });
     } else if (IsUnsupportedRenderableSchema(primSpec.typeName)) {
         context.diagnostics.push({ severity: "info", path: primSpec.path, message: `${primSpec.typeName} prims are not supported by the USD loader and were skipped.` });
     }
-    if (primSpec.instanceable) {
-        context.diagnostics.push({ severity: "info", path: primSpec.path, message: "Instanceable non-Mesh prim mapping is deferred." });
-    }
 }
 
-// Renderable UsdGeom gprim/curve/volume types this loader cannot yet import. They are skipped, so
-// surface a diagnostic rather than dropping them silently.
-const UnsupportedRenderableSchemas = ["Plane", "BasisCurves", "NurbsCurves", "HermiteCurves", "Points", "NurbsPatch", "TetMesh", "Volume"];
+// Renderable USD schema types outside the polygonal-Mesh profile. They are skipped with a diagnostic
+// rather than dropped silently or mapped into misleading geometry: implicit gprims, point instancers,
+// curves, points, patches and volumes.
+const UnsupportedRenderableSchemas = [
+    "Cube",
+    "Sphere",
+    "Cylinder",
+    "Cone",
+    "Capsule",
+    "Plane",
+    "PointInstancer",
+    "BasisCurves",
+    "NurbsCurves",
+    "HermiteCurves",
+    "Points",
+    "NurbsPatch",
+    "TetMesh",
+    "Volume",
+];
 
 function IsUnsupportedRenderableSchema(typeName: string | undefined): boolean {
     return typeName !== undefined && UnsupportedRenderableSchemas.includes(typeName);
 }
 
+// UsdLux lights are out of profile; every light schema is diagnosed and skipped.
 function IsUnsupportedLightSchema(typeName: string | undefined): boolean {
-    return (
-        (typeName?.endsWith("Light") === true || typeName?.startsWith("UsdLux") === true) &&
-        !["DistantLight", "SphereLight", "RectLight", "DiskLight", "DomeLight", "CylinderLight"].includes(typeName)
-    );
+    return typeName?.endsWith("Light") === true || typeName?.startsWith("UsdLux") === true;
 }
