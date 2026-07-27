@@ -1,0 +1,16 @@
+#usda 1.0
+(
+    customLayerData = {
+        string copyright = "Copyright 2022 Apple Inc. All rights reserved."
+    }
+    defaultPrim = "Sphere"
+    upAxis = "Y"
+    metersPerUnit = 0.01
+)
+
+def Sphere "Sphere"
+{
+    float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+    double radius = 1
+}
+

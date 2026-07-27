@@ -5,7 +5,7 @@ import { FreezeResolvedStage, type IResolvedStage, type IResolvedDiagnostic, typ
 import { type ISdfLayer } from "./sdf/index";
 import { ReadListOpItems } from "./sdf/sdfListOp";
 import { type ISdfCompositionFields, type ISdfPrimSpec } from "./sdf/sdfSpec";
-import { ParseUsda } from "./parser/usda/usdaParser";
+import { ParseUsda, ParseUsdaWithDiagnostics, type IUsdaParseDiagnostic } from "./parser/usda/usdaParser";
 import { ComposeLayerStack, type ICompositionDiagnostic, type IComposeLayerStackOptions } from "./composition/composeLayerStack";
 import { MapLayerToResolvedStage } from "./mapping/stageMapper";
 import { ParseCrate } from "./parser/crate/crateReader";
@@ -98,7 +98,7 @@ export async function ResolveUsdStageWithFetcherAsync(
         return await ResolveUsdzStageAsync(data as ArrayBuffer, rootIdentifier, options, compositionOptions, fetchAsset, diagnostics);
     }
 
-    const rootLayer = detected.format === "usdc" ? ParseCrate(data as ArrayBuffer, rootIdentifier) : ParseUsda(detected.text ?? "", rootIdentifier);
+    const rootLayer = detected.format === "usdc" ? ParseCrate(data as ArrayBuffer, rootIdentifier) : ParseRootUsdaLayer(detected.text ?? "", rootIdentifier, diagnostics);
     return FreezeResolvedStage(await ComposeAndMapStageAsync(rootLayer, fetchAsset, compositionOptions, diagnostics));
 }
 
@@ -396,5 +396,29 @@ function ToResolvedDiagnostic(diagnostic: ICompositionDiagnostic): IResolvedDiag
         severity,
         message: `[${diagnostic.code}] ${diagnostic.message}`,
         path: diagnostic.primPath ?? diagnostic.assetPath ?? diagnostic.layerIdentifier,
+    };
+}
+
+// Parses the root USDA layer and lifts its recoverable parser diagnostics onto the resolution diagnostics
+// list, so a source that only parsed after error recovery is surfaced on the resolved stage instead of
+// staying hidden in opaque layer metadata. Fatal parse failures (missing/invalid header, resource-limit
+// breaches) are thrown by the parser and reject the load rather than being recorded as diagnostics.
+function ParseRootUsdaLayer(text: string, identifier: string, diagnostics: IResolvedDiagnostic[]): ISdfLayer {
+    const result = ParseUsdaWithDiagnostics(text, identifier);
+    for (const parserDiagnostic of result.diagnostics) {
+        diagnostics.push(ToResolvedParserDiagnostic(parserDiagnostic, identifier));
+    }
+    return result.layer;
+}
+
+// Converts a recoverable USDA parser diagnostic into a resolved-stage diagnostic, preserving its 1-based
+// source location. Recoverable diagnostics are warnings: the parser recovered and continued, so the stage
+// still loads but must advertise the problem rather than appear clean.
+function ToResolvedParserDiagnostic(diagnostic: IUsdaParseDiagnostic, layerIdentifier: string): IResolvedDiagnostic {
+    return {
+        severity: "warning",
+        message: diagnostic.message,
+        path: layerIdentifier,
+        sourceLocation: { line: diagnostic.line, column: diagnostic.column },
     };
 }

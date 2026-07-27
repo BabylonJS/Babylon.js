@@ -79,6 +79,7 @@ function ResolveStageMetadata(layer: ISdfLayer): IStageMetadata {
 
 function MapPrim(primSpec: ISdfPrimSpec, parentVisible: boolean, metadata: IStageMetadata, context: StageMapperContext, inheritedMaterialPath: string | undefined): IResolvedPrim {
     const visible = parentVisible && ResolveVisibility(primSpec);
+    DiagnoseUnsupportedPurpose(primSpec, context.diagnostics);
     const prim: IResolvedPrim = {
         path: primSpec.path,
         name: primSpec.name,
@@ -177,6 +178,22 @@ function PoolMesh(mesh: NonNullable<ReturnType<typeof ResolveMesh>>, context: IS
 
 function ResolveVisibility(primSpec: ISdfPrimSpec): boolean {
     return AsToken(GetAttributeValue(GetAttribute(primSpec, "visibility"))) !== "invisible";
+}
+
+// USD `purpose` (default/render/proxy/guide) is an inherited render-pass hint. This importer targets the
+// default/glTF profile only, so it does not prune or reclassify geometry by purpose. A non-default authored
+// purpose is diagnosed (rather than silently importing render/proxy/guide geometry as if it were default)
+// so callers know the profile deviation. The opinion is inherited, so it is reported once at the prim that
+// authors it and applies to that prim's whole subtree.
+function DiagnoseUnsupportedPurpose(primSpec: ISdfPrimSpec, diagnostics: IResolvedDiagnostic[]): void {
+    const purpose = AsToken(GetAttributeValue(GetAttribute(primSpec, "purpose")));
+    if (purpose !== undefined && purpose !== "default") {
+        diagnostics.push({
+            severity: "warning",
+            path: primSpec.path,
+            message: `Prim purpose '${purpose}' is not supported; '${primSpec.path}' and its descendants are imported with default purpose.`,
+        });
+    }
 }
 
 function BuildPrimIndex(rootPrims: ISdfPrimSpec[]): ReadonlyMap<string, ISdfPrimSpec> {

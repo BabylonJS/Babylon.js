@@ -109,13 +109,22 @@ export function ParseUsda(text: string, identifier: string): ISdfLayer {
  * @returns Parsed Sdf layer plus recoverable diagnostics.
  */
 export function ParseUsdaWithDiagnostics(text: string, identifier: string): IUsdaParseResult {
-    const header = /^\uFEFF?\s*#usda\s+1\.0(?:\s|$)/.exec(text);
+    const header = /^\uFEFF?\s*#usda\s+(\d+)\.(\d+)(?:\.(\d+))?(?:\s|$)/.exec(text);
     if (!header) {
         throw new Error("USD: not a valid USDA document (missing '#usda 1.0' header).");
     }
 
+    const [, major, minor, patch] = header;
+    // AOUSD authoring tools stamp cosmetic patch levels (e.g. `#usda 1.0.32`); treat any `1.0.x` as
+    // USDA 1.0. Newer major/minor versions imply unsupported grammar and are rejected explicitly.
+    if (major !== "1" || minor !== "0") {
+        const version = patch !== undefined ? `${major}.${minor}.${patch}` : `${major}.${minor}`;
+        throw new Error(`USD: unsupported USDA version '${version}'; only '#usda 1.0' is supported.`);
+    }
+
     const lexer = new UsdaLexer(text, header[0].length);
-    const parser = new UsdaParser(lexer.scan(), identifier);
+    const { tokens, diagnostics } = lexer.scan();
+    const parser = new UsdaParser(tokens, identifier, diagnostics);
     return parser.parseLayer();
 }
 
@@ -123,6 +132,7 @@ class UsdaLexer {
     private _position: number;
     private _line = 1;
     private _column = 1;
+    private readonly _diagnostics: IUsdaParseDiagnostic[] = [];
 
     public constructor(
         private readonly _text: string,
@@ -134,7 +144,7 @@ class UsdaLexer {
         }
     }
 
-    public scan(): IToken[] {
+    public scan(): { tokens: IToken[]; diagnostics: IUsdaParseDiagnostic[] } {
         const tokens: IToken[] = [];
         while (!this._isAtEnd()) {
             this._skipWhitespaceAndComments();
@@ -145,23 +155,23 @@ class UsdaLexer {
             const line = this._line;
             const column = this._column;
             const char = this._peekChar();
-            if (char === '"') {
-                tokens.push({ kind: "string", value: this._readString(), line, column });
+            if (char === '"' || char === "'") {
+                tokens.push({ kind: "string", value: this._readString(line, column), line, column });
             } else if (char === "@") {
-                tokens.push({ kind: "asset", value: this._readDelimited("@", "@"), line, column });
+                tokens.push({ kind: "asset", value: this._readDelimited("@", "@", "asset reference", line, column), line, column });
             } else if (char === "<") {
-                tokens.push({ kind: "path", value: this._readDelimited("<", ">"), line, column });
+                tokens.push({ kind: "path", value: this._readDelimited("<", ">", "path reference", line, column), line, column });
             } else if (IsSymbol(char)) {
                 this._advance();
                 tokens.push({ kind: "symbol", value: char, line, column });
             } else if (IsNumberStart(char, this._peekChar(1))) {
-                tokens.push({ kind: "number", value: this._readNumber(), line, column });
+                tokens.push({ kind: "number", value: this._readNumber(line, column), line, column });
             } else {
                 tokens.push({ kind: "identifier", value: this._readIdentifier(), line, column });
             }
         }
         tokens.push({ kind: "eof", value: "", line: this._line, column: this._column });
-        return tokens;
+        return { tokens, diagnostics: this._diagnostics };
     }
 
     private _skipWhitespaceAndComments(): void {
@@ -182,12 +192,16 @@ class UsdaLexer {
                 this._advanceUntilLineEnd();
                 skipped = true;
             } else if (this._peekChar() === "/" && this._peekChar(1) === "*") {
+                const commentLine = this._line;
+                const commentColumn = this._column;
                 this._advance();
                 this._advance();
                 while (!this._isAtEnd() && !(this._peekChar() === "*" && this._peekChar(1) === "/")) {
                     this._advance();
                 }
-                if (!this._isAtEnd()) {
+                if (this._isAtEnd()) {
+                    this._diagnose("Unterminated block comment.", commentLine, commentColumn);
+                } else {
                     this._advance();
                     this._advance();
                 }
@@ -196,26 +210,34 @@ class UsdaLexer {
         }
     }
 
-    private _readString(): string {
-        if (this._peekChar(1) === '"' && this._peekChar(2) === '"') {
+    private _readString(line: number, column: number): string {
+        const quote = this._peekChar();
+        if (this._peekChar(1) === quote && this._peekChar(2) === quote) {
             this._advance();
             this._advance();
             this._advance();
             let value = "";
-            while (!this._isAtEnd() && !(this._peekChar() === '"' && this._peekChar(1) === '"' && this._peekChar(2) === '"')) {
-                value += this._advance();
+            while (!this._isAtEnd() && !(this._peekChar() === quote && this._peekChar(1) === quote && this._peekChar(2) === quote)) {
+                const char = this._advance();
+                if (char === "\\" && !this._isAtEnd()) {
+                    value += DecodeEscape(this._advance());
+                } else {
+                    value += char;
+                }
             }
-            if (!this._isAtEnd()) {
-                this._advance();
-                this._advance();
-                this._advance();
+            if (this._isAtEnd()) {
+                this._diagnose("Unterminated triple-quoted string.", line, column);
+                return value;
             }
+            this._advance();
+            this._advance();
+            this._advance();
             return value;
         }
 
         this._advance();
         let value = "";
-        while (!this._isAtEnd() && this._peekChar() !== '"') {
+        while (!this._isAtEnd() && this._peekChar() !== quote && this._peekChar() !== "\n") {
             const char = this._advance();
             if (char === "\\" && !this._isAtEnd()) {
                 value += DecodeEscape(this._advance());
@@ -223,16 +245,18 @@ class UsdaLexer {
                 value += char;
             }
         }
-        if (!this._isAtEnd()) {
-            this._advance();
+        if (this._peekChar() !== quote) {
+            this._diagnose("Unterminated string literal.", line, column);
+            return value;
         }
+        this._advance();
         return value;
     }
 
-    private _readDelimited(open: string, close: string): string {
+    private _readDelimited(open: string, close: string, label: string, line: number, column: number): string {
         this._advance();
         let value = "";
-        while (!this._isAtEnd() && this._peekChar() !== close) {
+        while (!this._isAtEnd() && this._peekChar() !== close && this._peekChar() !== "\n") {
             const char = this._advance();
             if (char === "\\" && !this._isAtEnd()) {
                 value += this._advance();
@@ -240,13 +264,15 @@ class UsdaLexer {
                 value += char;
             }
         }
-        if (!this._isAtEnd()) {
-            this._advance();
+        if (this._peekChar() !== close) {
+            this._diagnose(`Unterminated ${label}.`, line, column);
+            return value;
         }
+        this._advance();
         return value;
     }
 
-    private _readNumber(): string {
+    private _readNumber(line: number, column: number): string {
         let value = "";
         if (this._peekChar() === "+" || this._peekChar() === "-") {
             value += this._advance();
@@ -265,6 +291,9 @@ class UsdaLexer {
             if (this._peekChar() === "+" || this._peekChar() === "-") {
                 value += this._advance();
             }
+            if (!/\d/.test(this._peekChar())) {
+                this._diagnose(`Malformed exponent in number literal '${value}'.`, line, column);
+            }
             while (/\d/.test(this._peekChar())) {
                 value += this._advance();
             }
@@ -276,7 +305,7 @@ class UsdaLexer {
         let value = "";
         while (!this._isAtEnd()) {
             const char = this._peekChar();
-            if (/\s/.test(char) || IsSymbol(char) || char === "#" || char === "@" || char === "<" || char === ">" || char === '"') {
+            if (/\s/.test(char) || IsSymbol(char) || char === "#" || char === "@" || char === "<" || char === ">" || char === '"' || char === "'") {
                 break;
             }
             if (char === "/" && (this._peekChar(1) === "/" || this._peekChar(1) === "*")) {
@@ -291,6 +320,13 @@ class UsdaLexer {
         while (!this._isAtEnd() && this._peekChar() !== "\n") {
             this._advance();
         }
+    }
+
+    private _diagnose(message: string, line: number, column: number): void {
+        if (this._diagnostics.length >= MaxUsdaDiagnostics) {
+            return;
+        }
+        this._diagnostics.push({ message, line, column });
     }
 
     private _advance(): string {
@@ -318,12 +354,15 @@ class UsdaParser {
     private _nestingDepth = 0;
     private _valueDepth = 0;
     private _position = 0;
-    private readonly _diagnostics: IUsdaParseDiagnostic[] = [];
+    private readonly _diagnostics: IUsdaParseDiagnostic[];
 
     public constructor(
         private readonly _tokens: IToken[],
-        private readonly _identifier: string
-    ) {}
+        private readonly _identifier: string,
+        lexerDiagnostics: IUsdaParseDiagnostic[] = []
+    ) {
+        this._diagnostics = [...lexerDiagnostics];
+    }
 
     public parseLayer(): IUsdaParseResult {
         const layer: ISdfLayer = {

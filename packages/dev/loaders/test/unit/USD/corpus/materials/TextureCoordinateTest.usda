@@ -1,0 +1,365 @@
+#usda 1.0
+(
+    defaultPrim = "Asset"
+    doc = "Converted from glTF with guc 0.2"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "Asset" (
+    customData = {
+        string copyright = "Copyright 2017-2018 Analytical Graphics, Inc., CC-BY 4.0 https://creativecommons.org/licenses/by/4.0/ - Mesh and textures by Ed Mackey."
+        string generator = "guc conversion from Khronos Blender glTF 2.0 exporter, plus hand-edits"
+        string version = "2.0"
+    }
+    kind = "component"
+)
+{
+    def Scope "Materials"
+    {
+        def "UsdPreviewSurface"
+        {
+            def "Materials"
+            {
+                def Material "BackPlaneMat"
+                {
+                    token outputs:surface.connect = </Asset/Materials/UsdPreviewSurface/Materials/BackPlaneMat/UsdPreviewSurface.outputs:surface>
+
+                    def Shader "UsdPreviewSurface"
+                    {
+                        uniform token info:id = "UsdPreviewSurface"
+                        float3 inputs:diffuseColor = (0.16000001, 0.16000001, 0.16000001)
+                        float3 inputs:emissiveColor = (0, 0, 0)
+                        float inputs:metallic = 0
+                        float3 inputs:normal
+                        float inputs:occlusion
+                        float inputs:opacity
+                        float inputs:roughness = 1
+                        token outputs:surface
+                    }
+                }
+
+                def Material "BottomLeftMat"
+                {
+                    token outputs:surface.connect = </Asset/Materials/UsdPreviewSurface/Materials/BottomLeftMat/UsdPreviewSurface.outputs:surface>
+
+                    def Shader "UsdPreviewSurface"
+                    {
+                        uniform token info:id = "UsdPreviewSurface"
+                        float3 inputs:diffuseColor.connect = </Asset/Materials/UsdPreviewSurface/Materials/BottomLeftMat/TextureMapper.outputs:rgb>
+                        float3 inputs:emissiveColor = (0, 0, 0)
+                        float inputs:metallic = 0
+                        float3 inputs:normal
+                        float inputs:occlusion
+                        float inputs:opacity
+                        float inputs:roughness = 1
+                        token outputs:surface
+                    }
+
+                    def Shader "TextureMapper"
+                    {
+                        uniform token info:id = "UsdUVTexture"
+                        float4 inputs:fallback = (1, 1, 1, 1)
+                        asset inputs:file = @TextureCoordinateTemplate.png@
+                        float4 inputs:scale = (0, 0.16000001, 0.8, 1)
+                        token inputs:sourceColorSpace = "sRGB"
+                        float2 inputs:st.connect = </Asset/Materials/UsdPreviewSurface/Materials/BottomLeftMat/TextureCoordinateReader.outputs:result>
+                        token inputs:wrapS = "repeat"
+                        token inputs:wrapT = "repeat"
+                        float3 outputs:rgb
+                    }
+
+                    def Shader "TextureCoordinateReader"
+                    {
+                        uniform token info:id = "UsdPrimvarReader_float2"
+                        string inputs:varname = "st0"
+                        float2 outputs:result
+                    }
+                }
+
+                def Material "BottomRightMat"
+                {
+                    token outputs:surface.connect = </Asset/Materials/UsdPreviewSurface/Materials/BottomRightMat/UsdPreviewSurface.outputs:surface>
+
+                    def Shader "UsdPreviewSurface"
+                    {
+                        uniform token info:id = "UsdPreviewSurface"
+                        float3 inputs:diffuseColor.connect = </Asset/Materials/UsdPreviewSurface/Materials/BottomRightMat/TextureMapper.outputs:rgb>
+                        float3 inputs:emissiveColor = (0, 0, 0)
+                        float inputs:metallic = 0
+                        float3 inputs:normal
+                        float inputs:occlusion
+                        float inputs:opacity
+                        float inputs:roughness = 1
+                        token outputs:surface
+                    }
+
+                    def Shader "TextureMapper"
+                    {
+                        uniform token info:id = "UsdUVTexture"
+                        float4 inputs:fallback = (1, 1, 1, 1)
+                        asset inputs:file = @TextureCoordinateTemplate.png@
+                        float4 inputs:scale = (0, 0.8, 0, 1)
+                        token inputs:sourceColorSpace = "sRGB"
+                        float2 inputs:st.connect = </Asset/Materials/UsdPreviewSurface/Materials/BottomRightMat/TextureCoordinateReader.outputs:result>
+                        token inputs:wrapS = "repeat"
+                        token inputs:wrapT = "repeat"
+                        float3 outputs:rgb
+                    }
+
+                    def Shader "TextureCoordinateReader"
+                    {
+                        uniform token info:id = "UsdPrimvarReader_float2"
+                        string inputs:varname = "st0"
+                        float2 outputs:result
+                    }
+                }
+
+                def Material "TopLeftMat"
+                {
+                    token outputs:surface.connect = </Asset/Materials/UsdPreviewSurface/Materials/TopLeftMat/UsdPreviewSurface.outputs:surface>
+
+                    def Shader "UsdPreviewSurface"
+                    {
+                        uniform token info:id = "UsdPreviewSurface"
+                        float3 inputs:diffuseColor.connect = </Asset/Materials/UsdPreviewSurface/Materials/TopLeftMat/TextureMapper.outputs:rgb>
+                        float3 inputs:emissiveColor = (0, 0, 0)
+                        float inputs:metallic = 0
+                        float3 inputs:normal
+                        float inputs:occlusion
+                        float inputs:opacity
+                        float inputs:roughness = 1
+                        token outputs:surface
+                    }
+
+                    def Shader "TextureMapper"
+                    {
+                        uniform token info:id = "UsdUVTexture"
+                        float4 inputs:fallback = (1, 1, 1, 1)
+                        asset inputs:file = @TextureCoordinateTemplate.png@
+                        float4 inputs:scale = (0.8, 0.8, 0, 1)
+                        token inputs:sourceColorSpace = "sRGB"
+                        float2 inputs:st.connect = </Asset/Materials/UsdPreviewSurface/Materials/TopLeftMat/TextureCoordinateReader.outputs:result>
+                        token inputs:wrapS = "repeat"
+                        token inputs:wrapT = "repeat"
+                        float3 outputs:rgb
+                    }
+
+                    def Shader "TextureCoordinateReader"
+                    {
+                        uniform token info:id = "UsdPrimvarReader_float2"
+                        string inputs:varname = "st0"
+                        float2 outputs:result
+                    }
+                }
+
+                def Material "TopRightMat"
+                {
+                    token outputs:surface.connect = </Asset/Materials/UsdPreviewSurface/Materials/TopRightMat/UsdPreviewSurface.outputs:surface>
+
+                    def Shader "UsdPreviewSurface"
+                    {
+                        uniform token info:id = "UsdPreviewSurface"
+                        float3 inputs:diffuseColor.connect = </Asset/Materials/UsdPreviewSurface/Materials/TopRightMat/TextureMapper.outputs:rgb>
+                        float3 inputs:emissiveColor = (0, 0, 0)
+                        float inputs:metallic = 0
+                        float3 inputs:normal
+                        float inputs:occlusion
+                        float inputs:opacity
+                        float inputs:roughness = 1
+                        token outputs:surface
+                    }
+
+                    def Shader "TextureMapper"
+                    {
+                        uniform token info:id = "UsdUVTexture"
+                        float4 inputs:fallback = (1, 1, 1, 1)
+                        asset inputs:file = @TextureCoordinateTemplate.png@
+                        float4 inputs:scale = (0.8, 0.080000006, 0, 1)
+                        token inputs:sourceColorSpace = "sRGB"
+                        float2 inputs:st.connect = </Asset/Materials/UsdPreviewSurface/Materials/TopRightMat/TextureCoordinateReader.outputs:result>
+                        token inputs:wrapS = "repeat"
+                        token inputs:wrapT = "repeat"
+                        float3 outputs:rgb
+                    }
+
+                    def Shader "TextureCoordinateReader"
+                    {
+                        uniform token info:id = "UsdPrimvarReader_float2"
+                        string inputs:varname = "st0"
+                        float2 outputs:result
+                    }
+                }
+            }
+        }
+    }
+
+    def Xform "Scenes"
+    {
+        def Xform "Scene"
+        {
+            def Xform "BackPlane"
+            {
+                def Xform "BackPlaneMesh"
+                {
+                    def Mesh "submesh" (
+                        prepend apiSchemas = ["MaterialBindingAPI"]
+                    )
+                    {
+                        uniform bool doubleSided = 1
+                        float3[] extent = [(-1.0000001, -1.0000001, -0.052591152), (1.0000001, 1.0000001, -0.052591003)]
+                        int[] faceVertexCounts = [3, 3]
+                        int[] faceVertexIndices = [0, 1, 2, 0, 3, 1]
+                        rel material:binding = </Asset/Materials/UsdPreviewSurface/Materials/BackPlaneMat>
+                        normal3f[] normals = [(1.0658143e-14, -7.450581e-8, -1), (1.0658143e-14, -7.450581e-8, -1), (1.0658143e-14, -7.450581e-8, -1), (1.0658143e-14, -7.450581e-8, -1)] (
+                            interpolation = "vertex"
+                        )
+                        point3f[] points = [(-1.0000001, 0.9999998, -0.052591152), (1.0000001, -0.9999998, -0.052591003), (-0.9999998, -1.0000001, -0.052591003), (0.9999998, 1.0000001, -0.052591152)]
+                        color3f[] primvars:displayColor = [(0.16000001, 0.16000001, 0.16000001)] (
+                            customData = {
+                                dictionary guc = {
+                                    bool generated = 1
+                                }
+                            }
+                            interpolation = "constant"
+                        )
+                        uniform token subdivisionScheme = "none"
+                    }
+                }
+            }
+
+            def Xform "BottomRightObj"
+            {
+                def Xform "BottomRightMesh"
+                {
+                    def Mesh "submesh" (
+                        prepend apiSchemas = ["MaterialBindingAPI"]
+                    )
+                    {
+                        uniform bool doubleSided = 1
+                        float3[] extent = [(0.20000009, -1.2, 6.208698e-8), (1.2000002, -0.19999963, 5.2551184e-7)]
+                        int[] faceVertexCounts = [3, 3]
+                        int[] faceVertexIndices = [0, 1, 2, 3, 1, 0]
+                        rel material:binding = </Asset/Materials/UsdPreviewSurface/Materials/BottomRightMat>
+                        normal3f[] normals = [(-1.7807025e-7, 2.853546e-7, 1), (-1.7807025e-7, 2.853546e-7, 1), (-1.7807025e-7, 2.853546e-7, 1), (-1.7807025e-7, 2.853546e-7, 1)] (
+                            interpolation = "vertex"
+                        )
+                        point3f[] points = [(1.2000002, -1.1999998, 5.2551184e-7), (0.20000009, -0.19999991, 6.208698e-8), (0.20000038, -1.2, 3.474417e-7), (1.1999999, -0.19999963, 2.4015714e-7)]
+                        color3f[] primvars:displayColor = [(0, 0.8, 0)] (
+                            customData = {
+                                dictionary guc = {
+                                    bool generated = 1
+                                }
+                            }
+                            interpolation = "constant"
+                        )
+                        texCoord2f[] primvars:st0 = [(0.9999998, 0), (0.6000001, 0.4000001), (0.60000014, 0), (0.9999999, 0.4000001)] (
+                            interpolation = "vertex"
+                        )
+                        uniform token subdivisionScheme = "none"
+                    }
+                }
+            }
+
+            def Xform "BottomLeftObj"
+            {
+                def Xform "BottomLeftMesh"
+                {
+                    def Mesh "submesh" (
+                        prepend apiSchemas = ["MaterialBindingAPI"]
+                    )
+                    {
+                        uniform bool doubleSided = 1
+                        float3[] extent = [(-1.2, -1.2000002, 6.208701e-8), (-0.19999969, -0.20000008, 5.2551184e-7)]
+                        int[] faceVertexCounts = [3, 3]
+                        int[] faceVertexIndices = [0, 1, 2, 3, 1, 0]
+                        rel material:binding = </Asset/Materials/UsdPreviewSurface/Materials/BottomLeftMat>
+                        normal3f[] normals = [(-8.526513e-14, 4.6342487e-7, 1), (-8.526513e-14, 4.6342487e-7, 1), (-8.526513e-14, 4.6342487e-7, 1), (-8.526513e-14, 4.6342487e-7, 1)] (
+                            interpolation = "vertex"
+                        )
+                        point3f[] points = [(-0.19999969, -1.1999999, 5.2551184e-7), (-1.2, -0.20000032, 6.2087054e-8), (-1.1999998, -1.2000002, 5.2551184e-7), (-0.19999993, -0.20000008, 6.208701e-8)]
+                        color3f[] primvars:displayColor = [(0, 0.16000001, 0.8)] (
+                            customData = {
+                                dictionary guc = {
+                                    bool generated = 1
+                                }
+                            }
+                            interpolation = "constant"
+                        )
+                        texCoord2f[] primvars:st0 = [(0.4000001, 5.9604645e-8), (5.9604645e-8, 0.39999998), (0, 5.9604645e-8), (0.4, 0.39999998)] (
+                            interpolation = "vertex"
+                        )
+                        uniform token subdivisionScheme = "none"
+                    }
+                }
+            }
+
+            def Xform "TopRightObj"
+            {
+                def Xform "TopRightMesh"
+                {
+                    def Mesh "submesh" (
+                        prepend apiSchemas = ["MaterialBindingAPI"]
+                    )
+                    {
+                        uniform bool doubleSided = 1
+                        float3[] extent = [(0.19999981, 0.20000005, -1.5933927e-7), (1.2, 1.2000002, -5.2054858e-8)]
+                        int[] faceVertexCounts = [3, 3]
+                        int[] faceVertexIndices = [0, 1, 2, 3, 1, 0]
+                        rel material:binding = </Asset/Materials/UsdPreviewSurface/Materials/TopRightMat>
+                        normal3f[] normals = [(-2.1316282e-14, 1.07284414e-7, 1), (-2.1316282e-14, 1.07284414e-7, 1), (-2.1316282e-14, 1.07284414e-7, 1), (-2.1316282e-14, 1.07284414e-7, 1)] (
+                            interpolation = "vertex"
+                        )
+                        point3f[] points = [(1.2, 0.2000002, -5.2054858e-8), (0.19999981, 1.1999999, -1.5933927e-7), (0.19999996, 0.20000005, -5.2054858e-8), (1.1999998, 1.2000002, -1.5933927e-7)]
+                        color3f[] primvars:displayColor = [(0.8, 0.080000006, 0)] (
+                            customData = {
+                                dictionary guc = {
+                                    bool generated = 1
+                                }
+                            }
+                            interpolation = "constant"
+                        )
+                        texCoord2f[] primvars:st0 = [(1, 0.6), (0.6, 1), (0.6, 0.6), (1, 1)] (
+                            interpolation = "vertex"
+                        )
+                        uniform token subdivisionScheme = "none"
+                    }
+                }
+            }
+
+            def Xform "TopLeftObj"
+            {
+                def Xform "TopLeftMesh"
+                {
+                    def Mesh "submesh" (
+                        prepend apiSchemas = ["MaterialBindingAPI"]
+                    )
+                    {
+                        uniform bool doubleSided = 1
+                        float3[] extent = [(-1.2000002, 0.19999975, -3.3740952e-7), (-0.20000006, 1.2, 1.260154e-7)]
+                        int[] faceVertexCounts = [3, 3]
+                        int[] faceVertexIndices = [0, 1, 2, 3, 1, 0]
+                        rel material:binding = </Asset/Materials/UsdPreviewSurface/Materials/TopLeftMat>
+                        normal3f[] normals = [(1.780702e-7, 2.853547e-7, 1), (1.780702e-7, 2.853547e-7, 1), (1.780702e-7, 2.853547e-7, 1), (1.780702e-7, 2.853547e-7, 1)] (
+                            interpolation = "vertex"
+                        )
+                        point3f[] points = [(-0.20000006, 0.19999994, -5.2054844e-8), (-1.2000002, 1.1999998, -1.593393e-7), (-1.1999999, 0.19999975, 1.260154e-7), (-0.20000026, 1.2, -3.3740952e-7)]
+                        color3f[] primvars:displayColor = [(0.8, 0.8, 0)] (
+                            customData = {
+                                dictionary guc = {
+                                    bool generated = 1
+                                }
+                            }
+                            interpolation = "constant"
+                        )
+                        texCoord2f[] primvars:st0 = [(0.39999995, 0.6), (7.9153054e-8, 1), (7.9153054e-8, 0.6), (0.39999995, 1)] (
+                            interpolation = "vertex"
+                        )
+                        uniform token subdivisionScheme = "none"
+                    }
+                }
+            }
+        }
+    }
+}
+

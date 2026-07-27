@@ -1,0 +1,19 @@
+#usda 1.0
+(
+    customLayerData = {
+        string copyright = "Copyright 2022 Apple Inc. All rights reserved."
+    }
+    defaultPrim = "mesh"
+    upAxis = "Y"
+    metersPerUnit = 0.01
+)
+
+def Mesh "mesh"
+{
+    float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+    int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+    int[] faceVertexIndices = [0, 4, 6, 2, 0, 1, 5, 4, 4, 5, 7, 6, 3, 7, 5, 1, 6, 7, 3, 2, 2, 3, 1, 0]
+    point3f[] points = [(-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (-0.5, 0.5, -0.5), (0.5, 0.5, -0.5), (-0.5, -0.5, 0.5), (0.5, -0.5, 0.5), (-0.5, 0.5, 0.5), (0.5, 0.5, 0.5)]
+    uniform token subdivisionScheme = "none"
+}
+

@@ -14,30 +14,28 @@ export function IdentityTransform(): IResolvedTransform {
 
 /**
  * Resolves a USD xformOp stack into TRS plus an optional fallback matrix.
+ *
+ * When `xformOpOrder` is authored it is authoritative: only the ops it lists (in order) are applied,
+ * a leading `!resetXformStack!` breaks parent inheritance (surfaced via `resetsXformStack`), and
+ * entries that are misplaced or reference an unauthored xformOp are diagnosed and skipped. When
+ * `xformOpOrder` is absent the resolver falls back to the individually authored translate/rotate/scale
+ * attributes.
  * @param prim prim whose xformOps should be evaluated
- * @param diagnostics diagnostics sink for unsupported operations
+ * @param diagnostics diagnostics sink for unsupported/invalid operations
  * @returns resolved local transform
  */
 export function ResolveTransform(prim: ISdfPrimSpec, diagnostics: IResolvedDiagnostic[]): IResolvedTransform {
-    const orderedOps = GetOrderedXformOps(prim);
-    if (orderedOps.length === 0) {
+    const order = GetTokenArrayAttribute(prim, "xformOpOrder");
+    if (order === undefined) {
         return ResolveFallbackTransform(prim);
     }
 
-    const cleanTransform = TryResolveCleanTrs(prim, orderedOps);
-    if (cleanTransform) {
-        return cleanTransform;
+    const { ops, resetsStack } = NormalizeXformOpOrder(order, prim, diagnostics);
+    const transform = ResolveOrderedTransform(prim, ops, diagnostics);
+    if (resetsStack) {
+        transform.resetsXformStack = true;
     }
-
-    let matrix = IdentityMatrix();
-    for (const orderedOp of orderedOps) {
-        const op = ResolveXformOpMatrix(prim, orderedOp, diagnostics);
-        if (op) {
-            matrix = MultiplyMatrices(matrix, op);
-        }
-    }
-
-    return { ...DecomposeMatrix(matrix), matrix };
+    return transform;
 }
 
 /**
@@ -88,10 +86,68 @@ export function DecomposeMatrix(matrix: Mat4): IResolvedTransform {
     return { translation, rotation, scale };
 }
 
-function GetOrderedXformOps(prim: ISdfPrimSpec): string[] {
-    const order = GetTokenArrayAttribute(prim, "xformOpOrder") ?? [];
-    const resetIndex = order.lastIndexOf("!resetXformStack!");
-    return resetIndex >= 0 ? order.slice(resetIndex + 1) : order;
+/**
+ * Validates an authored `xformOpOrder` into the ordered ops the resolver will apply.
+ *
+ * `!resetXformStack!` is honored only as the first entry (its documented USD position); anywhere else it
+ * is diagnosed and dropped. Entries that name an xformOp with no authored attribute are diagnosed and
+ * dropped so a typo cannot silently contribute an identity op. Invert markers are preserved for the
+ * downstream resolver.
+ * @param order authored `xformOpOrder` token list
+ * @param prim prim that owns the referenced xformOp attributes
+ * @param diagnostics diagnostics sink for misplaced resets and dangling references
+ * @returns the validated ops (in order) and whether the stack resets
+ */
+function NormalizeXformOpOrder(order: string[], prim: ISdfPrimSpec, diagnostics: IResolvedDiagnostic[]): { ops: string[]; resetsStack: boolean } {
+    let resetsStack = false;
+    const ops: string[] = [];
+    for (let index = 0; index < order.length; index++) {
+        const token = order[index];
+        if (token === "!resetXformStack!") {
+            if (index === 0) {
+                resetsStack = true;
+            } else {
+                diagnostics.push({
+                    severity: "warning",
+                    path: prim.path,
+                    message: "'!resetXformStack!' is only valid as the first xformOpOrder entry; the misplaced entry was ignored.",
+                });
+            }
+            continue;
+        }
+        const { opName } = NormalizeXformOpToken(token);
+        if (!GetAttribute(prim, opName)) {
+            diagnostics.push({
+                severity: "warning",
+                path: prim.path,
+                message: `xformOpOrder references '${token}', which has no authored xformOp attribute; the entry was ignored.`,
+            });
+            continue;
+        }
+        ops.push(token);
+    }
+    return { ops, resetsStack };
+}
+
+function ResolveOrderedTransform(prim: ISdfPrimSpec, orderedOps: string[], diagnostics: IResolvedDiagnostic[]): IResolvedTransform {
+    if (orderedOps.length === 0) {
+        return IdentityTransform();
+    }
+
+    const cleanTransform = TryResolveCleanTrs(prim, orderedOps);
+    if (cleanTransform) {
+        return cleanTransform;
+    }
+
+    let matrix = IdentityMatrix();
+    for (const orderedOp of orderedOps) {
+        const op = ResolveXformOpMatrix(prim, orderedOp, diagnostics);
+        if (op) {
+            matrix = MultiplyMatrices(matrix, op);
+        }
+    }
+
+    return { ...DecomposeMatrix(matrix), matrix };
 }
 
 function ResolveFallbackTransform(prim: ISdfPrimSpec): IResolvedTransform {

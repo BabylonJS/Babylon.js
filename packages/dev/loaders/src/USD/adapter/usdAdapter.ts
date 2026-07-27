@@ -51,6 +51,7 @@ export function AdaptResolvedStageToScene(
 
     const context: IUsdAdapterContext = {
         scene,
+        stageRoot: root,
         stage,
         options,
         fps: ResolveFps(stage, options),

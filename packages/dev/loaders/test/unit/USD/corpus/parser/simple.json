@@ -1,0 +1,60 @@
+{
+    "/": {
+        "framesPerSecond": 24.0,
+        "framePrecision": 3,
+        "startFrame": 1,
+        "endFrame": 1,
+        "primChildren": ["overview_cam", "TestOver", "TestOverWithoutTypename"]
+    },
+    "/overview_cam": {
+        "specifier": "def",
+        "typeName": "Camera",
+        "primChildren": ["Head"],
+        "propertyChildren": ["camx", "camy", "camz", "cama", "myPoint", "myList"]
+    },
+    "/overview_cam.camx": {
+        "typeName": "double",
+        "default": 1.2
+    },
+    "/overview_cam.camy": {
+        "typeName": "double",
+        "default": 3.4
+    },
+    "/overview_cam.camz": {
+        "typeName": "double",
+        "default": 5.6
+    },
+    "/overview_cam.cama": {
+        "typeName": "double",
+        "custom": true,
+        "default": 7.8
+    },
+    "/overview_cam.myPoint": {
+        "typeName": "point3d",
+        "default": [-48.4, 0.0, 32.93]
+    },
+    "/overview_cam.myList": {
+        "typeName": "int[]",
+        "default": [5, 6, 7, -2147483648]
+    },
+    "/overview_cam/Head": {
+        "specifier": "def",
+        "typeName": "Scope",
+        "propertyChildren": ["aspect", "width"]
+    },
+    "/overview_cam/Head.aspect": {
+        "typeName": "double",
+        "default": 1.02517
+    },
+    "/overview_cam/Head.width": {
+        "typeName": "double",
+        "default": 1905.41
+    },
+    "/TestOver": {
+        "specifier": "over",
+        "typeName": "MfScope"
+    },
+    "/TestOverWithoutTypename": {
+        "specifier": "over"
+    }
+}

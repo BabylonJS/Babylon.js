@@ -86,7 +86,8 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const stage = await ResolveUsdStageAsync(USDFileLoader._NormalizeData(data), rootUrl, fileName, this._loadingOptions);
 
         for (const diagnostic of stage.diagnostics) {
-            const message = `USD: ${diagnostic.message}${diagnostic.path ? ` (${diagnostic.path})` : ""}`;
+            const location = diagnostic.sourceLocation ? ` [line ${diagnostic.sourceLocation.line}, column ${diagnostic.sourceLocation.column}]` : "";
+            const message = `USD: ${diagnostic.message}${diagnostic.path ? ` (${diagnostic.path})` : ""}${location}`;
             if (diagnostic.severity === "error") {
                 Logger.Error(message);
             } else if (diagnostic.severity === "warning") {

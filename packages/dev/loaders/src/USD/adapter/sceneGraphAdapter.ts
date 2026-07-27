@@ -31,6 +31,8 @@ import { CreateAnimationsForPrim } from "./animationAdapter";
 export interface IUsdAdapterContext {
     /** The scene objects are created in. */
     scene: Scene;
+    /** The stage conversion root every prim is parented under; also the re-parent target for prims that reset the xform stack. */
+    stageRoot: TransformNode;
     /** The resolved stage being adapted (provides the shared mesh/material/skeleton pools). */
     stage: IResolvedStage;
     /** Loader options. */
@@ -95,7 +97,10 @@ export function AdaptPrim(prim: IResolvedPrim, parent: TransformNode, context: I
     }
 
     ApplyResolvedTransform(node, prim.transform);
-    node.parent = parent;
+    // A prim that authored `!resetXformStack!` does not inherit its namespace parent's transform. Its
+    // resolved transform is relative to the stage root, so parent it there while its Babylon children stay
+    // under it (they still inherit the reset prim's transform, matching USD).
+    node.parent = prim.transform.resetsXformStack ? context.stageRoot : parent;
     if (!prim.visible && node instanceof AbstractMesh && prim.animation?.tracks.some((track) => track.target === "visibility")) {
         node.visibility = 0;
     } else if (!prim.visible) {

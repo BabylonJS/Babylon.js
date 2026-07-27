@@ -75,6 +75,14 @@ function FreezePlainData(value: unknown, visited: Set<object>): void {
 /** Severity of a resolution-time diagnostic. */
 export type ResolvedDiagnosticSeverity = "info" | "warning" | "error";
 
+/** A 1-based line/column position within the originating layer text. */
+export interface IResolvedSourceLocation {
+    /** 1-based source line. */
+    line: number;
+    /** 1-based source column. */
+    column: number;
+}
+
 /**
  * A structured, non-fatal diagnostic emitted while resolving the stage. Fatal problems
  * (invalid grammar, unsupported document version) are thrown instead of collected here.
@@ -86,6 +94,8 @@ export interface IResolvedDiagnostic {
     message: string;
     /** Optional USD prim/property path the diagnostic relates to. */
     path?: string;
+    /** Optional 1-based source location within the originating layer text (e.g. from the USDA parser). */
+    sourceLocation?: IResolvedSourceLocation;
 }
 
 /**
@@ -165,7 +175,7 @@ export interface IResolvedPrim {
 
 /**
  * Resolved local transform. The resolution layer collapses the ordered USD `xformOpOrder`
- * stack (translate/orient/scale/pivot/transform/resetXformStack) into a single TRS triple.
+ * stack (translate/orient/scale/pivot/transform) into a single TRS triple.
  * When the composed transform contains shear or otherwise cannot be represented losslessly by
  * TRS, `matrix` is also provided and the adapter should prefer it.
  */
@@ -178,6 +188,13 @@ export interface IResolvedTransform {
     scale: Vec3;
     /** Optional full local matrix in the same flat layout as {@link Mat4}. Present when TRS is lossy; adapter prefers this when set. */
     matrix?: Mat4;
+    /**
+     * True when the prim authored `!resetXformStack!` as the first `xformOpOrder` entry. The TRS/matrix
+     * above is then the prim's transform relative to the stage root rather than to its namespace parent:
+     * the adapter must apply it while ignoring every ancestor transform (e.g. by parenting the node under
+     * the stage conversion root). Absent/`false` means the transform composes with the parent as usual.
+     */
+    resetsXformStack?: boolean;
 }
 
 /** USD primvar interpolation already expanded by the resolution layer to one value per mesh vertex. */

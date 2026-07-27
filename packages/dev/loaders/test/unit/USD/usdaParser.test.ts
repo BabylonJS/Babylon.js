@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ParseUsda, ParseUsdaWithDiagnostics } from "loaders/USD/resolution/parser/usda/usdaParser";
+import { ParseUsda, ParseUsdaWithDiagnostics, type IUsdaParseDiagnostic } from "loaders/USD/resolution/parser/usda/usdaParser";
 
 const representativeUsda = `#usda 1.0
 (
@@ -148,5 +148,141 @@ def Xform "Root" (
                 message: "Expected reference or payload target.",
             }),
         ]);
+    });
+});
+
+function propertiesOf(source: string, identifier = "memory:lexer.usda") {
+    const layer = ParseUsda(source, identifier);
+    return layer.rootPrims[0].properties;
+}
+
+function attributeValue(source: string, propertyName: string): unknown {
+    const property = propertiesOf(source)[propertyName];
+    if (property?.kind !== "attribute") {
+        throw new Error(`Expected '${propertyName}' to be an attribute`);
+    }
+    return property.default?.value;
+}
+
+function stringAttribute(literal: string): unknown {
+    return attributeValue(`#usda 1.0\ndef Xform "Root" {\n    string val = ${literal}\n}\n`, "val");
+}
+
+function diagnosticsFor(source: string): IUsdaParseDiagnostic[] {
+    return ParseUsdaWithDiagnostics(source, "memory:lexer-diagnostics.usda").diagnostics;
+}
+
+function numberDiagnostics(literal: string): IUsdaParseDiagnostic[] {
+    return diagnosticsFor(`#usda 1.0\ndef Xform "Root" {\n    double val = ${literal}\n}\n`);
+}
+
+describe("USDA lexer hardening", () => {
+    it.each([
+        { literal: `"hello"`, expected: "hello" },
+        { literal: `""`, expected: "" },
+        { literal: `"tab\\tafter"`, expected: "tab\tafter" },
+        { literal: `"newline\\nafter"`, expected: "newline\nafter" },
+        { literal: `"escaped\\"quote"`, expected: `escaped"quote` },
+        { literal: `"back\\\\slash"`, expected: "back\\slash" },
+        { literal: `"""single line triple"""`, expected: "single line triple" },
+        { literal: `"""triple\\ttab"""`, expected: "triple\ttab" },
+        { literal: `'single quoted'`, expected: "single quoted" },
+        { literal: `'escaped\\'apostrophe'`, expected: "escaped'apostrophe" },
+        { literal: `'''single line triple'''`, expected: "single line triple" },
+        { literal: `'''triple\\'quote'''`, expected: "triple'quote" },
+    ])("parses string literal $literal with escapes", ({ literal, expected }) => {
+        expect(stringAttribute(literal)).toBe(expected);
+    });
+
+    it("parses multi-line triple-quoted strings", () => {
+        expect(stringAttribute(`"""line one\nline two"""`)).toBe("line one\nline two");
+    });
+
+    it("parses multi-line triple-single-quoted strings", () => {
+        expect(stringAttribute(`'''line one\nline two'''`)).toBe("line one\nline two");
+    });
+
+    it.each([
+        { source: `#usda 1.0\ndef Xform "Root" {\n    string s = "oops\n}\n`, message: "Unterminated string literal." },
+        { source: `#usda 1.0\ndef Xform "Root" {\n    string s = """oops\n}\n`, message: "Unterminated triple-quoted string." },
+        { source: `#usda 1.0\ndef Xform "Root" {\n    string s = 'oops\n}\n`, message: "Unterminated string literal." },
+        { source: `#usda 1.0\ndef Xform "Root" {\n    string s = '''oops\n}\n`, message: "Unterminated triple-quoted string." },
+        { source: `#usda 1.0\ndef Xform "Root" {\n    asset a = @tex.png\n}\n`, message: "Unterminated asset reference." },
+        { source: `#usda 1.0\ndef Xform "Root" {\n    rel r = </Foo\n}\n`, message: "Unterminated path reference." },
+        { source: `#usda 1.0\ndef Xform "Root" {\n}\n/* dangling comment\n`, message: "Unterminated block comment." },
+    ])("emits a bounded diagnostic for $message", ({ source, message }) => {
+        const diagnostics = diagnosticsFor(source);
+        expect(diagnostics).toContainEqual(expect.objectContaining({ message }));
+        // Bounded recovery: a single truncated token must not cascade into an unbounded diagnostic flood.
+        expect(diagnostics.length).toBeLessThanOrEqual(4);
+    });
+
+    it.each([`1e`, `1e+`, `1e-`, `2.5e`, `.5e-`, `10E`])("rejects the malformed exponent %s", (literal) => {
+        expect(numberDiagnostics(literal)).toContainEqual(expect.objectContaining({ message: expect.stringContaining("Malformed exponent") }));
+    });
+
+    it.each([
+        { literal: `1e3`, expected: 1000 },
+        { literal: `1.5e-3`, expected: 0.0015 },
+        { literal: `2E+2`, expected: 200 },
+        { literal: `42`, expected: 42 },
+        { literal: `3.14`, expected: 3.14 },
+    ])("accepts the well-formed number $literal without an exponent diagnostic", ({ literal, expected }) => {
+        expect(numberDiagnostics(literal)).not.toContainEqual(expect.objectContaining({ message: expect.stringContaining("Malformed exponent") }));
+        expect(attributeValue(`#usda 1.0\ndef Xform "Root" {\n    double val = ${literal}\n}\n`, "val")).toBeCloseTo(expected, 10);
+    });
+
+    it("treats semicolons as statement separators alongside newlines", () => {
+        const properties = propertiesOf(`#usda 1.0\ndef Xform "Root" {\n    double a = 1; double b = 2\n    double c = 3\n}\n`);
+        expect(properties.a?.kind === "attribute" ? properties.a.default?.value : undefined).toBe(1);
+        expect(properties.b?.kind === "attribute" ? properties.b.default?.value : undefined).toBe(2);
+        expect(properties.c?.kind === "attribute" ? properties.c.default?.value : undefined).toBe(3);
+    });
+
+    it("tolerates hostile whitespace (tabs, CRLF, mixed spacing)", () => {
+        const source = '#usda 1.0\ndef\tXform\t"Root"\t{\r\n\t\tdouble\ta\t=\t1\r\n}\r\n';
+        const result = ParseUsdaWithDiagnostics(source, "memory:whitespace.usda");
+        expect(result.diagnostics).toEqual([]);
+        const attribute = result.layer.rootPrims[0].properties.a;
+        expect(attribute?.kind === "attribute" ? attribute.default?.value : undefined).toBe(1);
+    });
+
+    it("accepts UTF-8 identifiers and string values", () => {
+        const properties = propertiesOf(`#usda 1.0\ndef Xform "Root" {\n    string café = "naïve"\n    token 日本 = "x"\n}\n`);
+        expect(properties["café"]?.kind === "attribute" ? properties["café"].default?.value : undefined).toBe("naïve");
+        expect(properties["日本"]).toBeDefined();
+    });
+
+    it("skips '#' comments and legacy '//' comments", () => {
+        const source = `#usda 1.0
+def Xform "Root" { # trailing hash comment
+    double a = 1 // trailing legacy comment
+    // full-line legacy comment
+    # full-line hash comment
+    double b = 2
+}
+`;
+        const result = ParseUsdaWithDiagnostics(source, "memory:comments.usda");
+        expect(result.diagnostics).toEqual([]);
+        const properties = result.layer.rootPrims[0].properties;
+        expect(properties.a?.kind === "attribute" ? properties.a.default?.value : undefined).toBe(1);
+        expect(properties.b?.kind === "attribute" ? properties.b.default?.value : undefined).toBe(2);
+    });
+
+    it.each([
+        { header: `#usda 1.1`, version: "1.1" },
+        { header: `#usda 1.2`, version: "1.2" },
+        { header: `#usda 2.0`, version: "2.0" },
+    ])("rejects unsupported version $version with an explicit message", ({ header, version }) => {
+        expect(() => ParseUsda(`${header}\ndef Xform "Root" {\n}\n`, "memory:version.usda")).toThrow(`unsupported USDA version '${version}'`);
+    });
+
+    it.each([`#usda 1.0`, `#usda 1.0.1`, `#usda 1.0.32`, `#usda 1.0.234`])("accepts USDA 1.0 header %s including cosmetic patch levels", (header) => {
+        const layer = ParseUsda(`${header}\ndef Xform "Root" {\n}\n`, "memory:version-ok.usda");
+        expect(layer.rootPrims[0].path).toBe("/Root");
+    });
+
+    it("reports a non-USDA document distinctly from an unsupported version", () => {
+        expect(() => ParseUsda(`#foo 1.0\ndef Xform "Root" {\n}\n`, "memory:not-usda.usda")).toThrow("not a valid USDA document");
     });
 });

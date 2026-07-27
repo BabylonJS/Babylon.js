@@ -1,0 +1,20 @@
+#usda 1.0
+(
+    defaultPrim = "sphere"
+    upAxis = "Y"
+    metersPerUnit = 0.01
+)
+
+def Scope "MaterialX" (
+    references = @./usd_preview_surface_plastic.mtlx@</MaterialX>
+)
+{
+}
+
+def Sphere "sphere" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+)
+{
+    rel material:binding = </MaterialX/Materials/USD_Plastic>
+}
+
