@@ -106,7 +106,7 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
                 bufferData = await this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView);
             }
             babylonSpotLight!.iesProfileTexture = new Texture(
-                name + "_iesProfile",
+                babylonSpotLight!.name + "_iesProfile",
                 this._loader.babylonScene,
                 true,
                 false,
