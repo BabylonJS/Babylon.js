@@ -2,10 +2,80 @@ import { type AnimationConfiguration, type LottieCompatibilityMode, type LottieC
 import { type RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
+import { type ILottieFile } from "lottie-player/animation/lottieRaw";
+import { CreateVectorEngine, IsPlayerReady, RenderLottieFrame } from "lottie-player/player/playerCore";
+import { CreateLottiePlayer } from "lottie-player/player/fullPlayer";
+import { CalculateScaleFactors } from "lottie-player/rendering/calculateScaleFactor";
 import { DecodeQspStringToObject } from "./utils";
 
 function ParseCompatibilityMode(value: string | null): LottieCompatibilityMode | undefined {
     return value === "spec" || value === "babylon8" ? value : undefined;
+}
+
+/**
+ * Drives the experimental stencil-then-cover vector renderer directly, bypassing the sprite-atlas
+ * Player/LocalPlayer wrappers. Canvas sizing mirrors LocalPlayer so the two renderers can be
+ * compared like-for-like in the same container.
+ * @param container The div to render into.
+ * @param file The raw Lottie document.
+ * @param configuration The player configuration. Only `backgroundColor` applies to this path today.
+ * @param variables Text substitutions applied to text layers.
+ * @param stopAtFrame When set, renders this single frame instead of playing.
+ * @param onFirstRender Invoked once the first frame has been drawn.
+ */
+function PlayVectorAnimation(
+    container: HTMLDivElement,
+    file: ILottieFile,
+    configuration: Partial<AnimationConfiguration>,
+    variables: Map<string, string>,
+    stopAtFrame: number | undefined,
+    onFirstRender: () => void
+): void {
+    const canvas = document.createElement("canvas");
+    canvas.id = "babylon-canvas";
+
+    // Same container-fit math the sprite path uses, so both renderers land on the same CSS size.
+    const scaleFactors = CalculateScaleFactors(file.w, file.h, container);
+    canvas.style.width = `${file.w * scaleFactors.canvasScale}px`;
+    canvas.style.height = `${file.h * scaleFactors.canvasScale}px`;
+    container.appendChild(canvas);
+
+    const engine = CreateVectorEngine(canvas);
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    engine.setSize(file.w * scaleFactors.canvasScale * devicePixelRatio, file.h * scaleFactors.canvasScale * devicePixelRatio);
+
+    const player = CreateLottiePlayer(engine, file, { backgroundColor: configuration.backgroundColor, variables: Object.fromEntries(variables) });
+
+    const frameRate = file.fr || 30;
+    const firstFrame = file.ip ?? 0;
+    const lastFrame = file.op ?? frameRate;
+    let frame = stopAtFrame ?? firstFrame;
+    let hasRendered = false;
+    let lastTime = 0;
+
+    const renderLoop = (now: number): void => {
+        // Effects compile asynchronously; skip frames until every renderer is ready.
+        if (IsPlayerReady(player)) {
+            RenderLottieFrame(player, frame);
+
+            if (!hasRendered) {
+                hasRendered = true;
+                onFirstRender();
+            }
+
+            if (stopAtFrame === undefined) {
+                if (lastTime !== 0) {
+                    frame += ((now - lastTime) / 1000) * frameRate;
+                    if (frame >= lastFrame) {
+                        frame = firstFrame;
+                    }
+                }
+                lastTime = now;
+            }
+        }
+        requestAnimationFrame(renderLoop);
+    };
+    requestAnimationFrame(renderLoop);
 }
 
 function GetCompatibilityOptions(searchParams: URLSearchParams): LottieCompatibilityOptions | undefined {
@@ -96,6 +166,14 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // Create the player and play the animation
     const animationInput = { container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration, onFirstRender };
+
+    // Experimental stencil-then-cover vector renderer. Opt-in only, so the sprite-atlas path
+    // (and the visual tests that pin it) is untouched by default.
+    if (searchParams.get("renderer") === "vector") {
+        const vectorFile = animationData ?? ((await (await fetch(fileUrl)).json()) as RawLottieAnimation);
+        PlayVectorAnimation(div, vectorFile as unknown as ILottieFile, configuration, variables, stopAtFrame, onFirstRender);
+        return;
+    }
 
     if (useWorker) {
         const player = new Player();
