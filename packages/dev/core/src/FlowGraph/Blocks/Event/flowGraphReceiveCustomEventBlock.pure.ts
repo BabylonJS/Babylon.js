@@ -10,7 +10,6 @@ import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
 import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
@@ -37,9 +36,9 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public override initPriority: number = 1;
 
     /**
-     * Output: the KHR_interactivity event reference for the received custom event.
-     * Per spec (event/receive) receivers of the same event index return the same,
-     * non-null event reference. We key the reference by the configured event id.
+     * Output: the opaque reference identifying the received event source.
+     * Receivers configured with the same event id share the same reference, so comparing their
+     * `event` outputs for equality succeeds. The reference format is owned by the host environment.
      */
     public readonly eventRef: FlowGraphDataConnection<string>;
 
@@ -66,7 +65,11 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         this.eventRef =
             this.config.eventData && Object.prototype.hasOwnProperty.call(this.config.eventData, "event")
                 ? this.getDataOutput("event")!
-                : this.registerDataOutput("event", RichTypeString, GetEventReference(this.config.eventId));
+                : this.registerDataOutput("event", RichTypeString);
+    }
+
+    public override _updateOutputs(context: FlowGraphContext): void {
+        this.eventRef.setValue(context.getEventReference(this.config.eventId), context);
     }
 
     public override _preparePendingTasks(context: FlowGraphContext): void {
@@ -87,7 +90,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
                     this.getDataOutput(key)?.setValue(eventData[key], context);
                 }
                 // Expose the event reference before activating downstream flow.
-                this.eventRef.setValue(GetEventReference(this.config.eventId), context);
+                this.eventRef.setValue(context.getEventReference(this.config.eventId), context);
                 this._execute(context);
             } finally {
                 context.configuration.coordinator._endEventDispatch();

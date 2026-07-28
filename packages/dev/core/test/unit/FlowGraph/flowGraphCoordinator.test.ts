@@ -1,6 +1,6 @@
 import { type Engine, NullEngine } from "core/Engines";
 import { FlowGraphCoordinator } from "core/FlowGraph";
-import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
+import { GetDefaultEventReference } from "core/FlowGraph/flowGraphHostResolver";
 import { FlowGraphConsoleLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock";
 import { Scene } from "core/scene";
 
@@ -97,7 +97,7 @@ describe("FlowGraphCoordinator", () => {
                 calls.push("A");
                 coordinator._beginEventDispatch(eventId, state);
                 try {
-                    coordinator.stopEventPropagation(GetEventReference(eventId), false);
+                    coordinator.stopEventPropagation(GetDefaultEventReference(eventId), false);
                 } finally {
                     coordinator._endEventDispatch();
                 }
@@ -119,7 +119,7 @@ describe("FlowGraphCoordinator", () => {
                 calls.push("A");
                 coordinator._beginEventDispatch(eventId, state);
                 try {
-                    coordinator.stopEventPropagation(GetEventReference(eventId), true);
+                    coordinator.stopEventPropagation(GetDefaultEventReference(eventId), true);
                 } finally {
                     coordinator._endEventDispatch();
                 }

@@ -80,7 +80,7 @@ export class FlowGraphPathConverterComponent {
         for (const info of this.templateInfos) {
             const raw = info.connection.getValue(context);
             const placeholder = info.style === "curly" ? `{${info.name}}` : `[${info.name}]`;
-            const substitution = ResolveTemplateSubstitution(this.path, info.name, raw);
+            const substitution = ResolveTemplateSubstitution(this.path, info.name, raw, context);
             finalPath = finalPath.replace(placeholder, substitution);
         }
         return pathConverter.convert(finalPath);
@@ -91,15 +91,17 @@ export class FlowGraphPathConverterComponent {
  * Decide what string to splice into a templated path for a given runtime value.
  *
  * - FlowGraphInteger / number → use the integer's decimal representation.
- * - string → treat as a JSON Pointer to a glTF object and pull the segment whose position
+ * - string → treat as a JSON Pointer to an object and pull the segment whose position
  *   in the ref matches the position of `{name}` (or `[name]`) in the surrounding template.
  *   Falls back to the last non-empty segment, then to the raw ref string.
+ * - object → ask the host environment for the reference addressing it, then substitute as above.
  * @param template the original templated path (used to locate the placeholder position)
  * @param name the name of the template parameter being resolved
  * @param raw the runtime value supplied for the template parameter
+ * @param context the context used to reach the host resolver for object values
  * @returns the substring to splice into the templated path in place of the placeholder
  */
-function ResolveTemplateSubstitution(template: string, name: string, raw: any): string {
+function ResolveTemplateSubstitution(template: string, name: string, raw: any, context: FlowGraphContext): string {
     if (raw instanceof FlowGraphInteger) {
         AssertNonNegativeInt(raw.value, name);
         return raw.value.toString();
@@ -114,16 +116,12 @@ function ResolveTemplateSubstitution(template: string, name: string, raw: any): 
         }
         return ExtractRefSubstitution(template, name, raw);
     }
-    // Babylon object refs (e.g. a Mesh delivered by `event/onSelect.selectedNode`):
-    // the glTF loader stamps `_internalMetadata.gltf.pointers` with one entry
-    // per JSON-Pointer the object can be addressed by, e.g. a single-primitive
-    // Mesh holds both `/nodes/<i>` and `/meshes/<j>/primitives/<k>`. We pick
-    // the pointer whose root segment matches the segment in the template that
-    // immediately precedes the placeholder, so a template like
-    // `/nodes/{nodeRef}/globalMatrix` resolves against the `/nodes/<i>` ref
-    // even if `/meshes/<j>/primitives/<k>` was added to the object first.
+    // A runtime object (e.g. a Mesh delivered by a selection event). Mapping it back to a
+    // reference is knowledge the host environment owns, so it is delegated to the host resolver.
+    // The segment preceding the placeholder (e.g. "nodes" in `/nodes/{nodeRef}/globalMatrix`) is
+    // passed as a hint, because an object may be addressable in more than one way.
     if (raw && typeof raw === "object") {
-        const pointer = ExtractGltfPointerFromObject(raw, template, name);
+        const pointer = context.getObjectReference(raw as object, GetPlaceholderParentSegment(template, name));
         if (pointer) {
             return ExtractRefSubstitution(template, name, pointer);
         }
@@ -131,28 +129,14 @@ function ResolveTemplateSubstitution(template: string, name: string, raw: any): 
     throw new Error(`Invalid value for templated input "${name}": got ${typeof raw}.`);
 }
 
-function ExtractGltfPointerFromObject(obj: any, template: string, name: string): string | undefined {
-    const pointers = obj?._internalMetadata?.gltf?.pointers;
-    if (!Array.isArray(pointers) || pointers.length === 0) {
-        return undefined;
-    }
-    const stringPointers = pointers.filter((p: unknown): p is string => typeof p === "string");
-    if (stringPointers.length === 0) {
-        return undefined;
-    }
-    // Find the segment in the template that precedes the placeholder, e.g.
-    // "nodes" for "/nodes/{nodeRef}/globalMatrix".
+function GetPlaceholderIndex(template: string, name: string): number {
     const placeholders = [`{${name}}`, `[${name}]`];
-    const templateSegments = template.split("/");
-    const placeholderIndex = templateSegments.findIndex((s) => placeholders.indexOf(s) >= 0);
-    const expectedRoot = placeholderIndex > 0 ? templateSegments[placeholderIndex - 1] : undefined;
-    if (expectedRoot) {
-        const match = stringPointers.find((p) => p.split("/")[1] === expectedRoot);
-        if (match) {
-            return match;
-        }
-    }
-    return stringPointers[0];
+    return template.split("/").findIndex((segment) => placeholders.indexOf(segment) >= 0);
+}
+
+function GetPlaceholderParentSegment(template: string, name: string): string | undefined {
+    const placeholderIndex = GetPlaceholderIndex(template, name);
+    return placeholderIndex > 0 ? template.split("/")[placeholderIndex - 1] : undefined;
 }
 
 function AssertNonNegativeInt(value: number, name: string): void {

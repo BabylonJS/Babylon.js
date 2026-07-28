@@ -10,7 +10,7 @@ import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
-import { IsDelayActive, MarkDelayActive, MarkDelayInactive } from "core/FlowGraph/flowGraphDelayReference";
+import { IsDelayActive, MarkDelayActive, MarkDelayInactive } from "core/FlowGraph/flowGraphDelayRegistry";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**

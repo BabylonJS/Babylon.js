@@ -9,13 +9,12 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
- * Stops the propagation of an in-flight custom event, backing the
- * KHR_interactivity `event/stopPropagation` operation.
+ * Stops the propagation of an in-flight custom event.
  *
  * When activated it asks the coordinator to skip the remaining handler nodes of
  * the currently-dispatching event referenced by the `event` input, then activates
  * its `out` flow. If the `event` input is not a valid, currently-dispatching event
- * reference, activating this block only fires `out` with no other effect (per spec).
+ * reference, activating this block only fires `out` with no other effect.
  */
 export class FlowGraphStopEventPropagationBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**

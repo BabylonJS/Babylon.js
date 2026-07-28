@@ -5,7 +5,7 @@ import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterface
 import { type IObjectAccessor } from "./typeDefinitions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
-import { EventReferencePrefix, IsEventReference } from "./flowGraphEventReference";
+import { type IFlowGraphHostResolver, GetDefaultEventReferenceKey, GetDefaultEventReference } from "./flowGraphHostResolver";
 
 /**
  * Parameters used to create a flow graph engine.
@@ -15,6 +15,11 @@ export interface IFlowGraphCoordinatorConfiguration {
      * The scene that the flow graph engine belongs to.
      */
     scene: Scene;
+    /**
+     * Optional resolver letting the environment hosting the graphs decide how runtime entities are
+     * represented as opaque reference values. When omitted, a neutral built-in representation is used.
+     */
+    hostResolver?: IFlowGraphHostResolver;
 }
 
 /**
@@ -292,11 +297,10 @@ export class FlowGraphCoordinator {
     /**
      * Stops the propagation of an in-flight custom event, preventing any event
      * handler nodes that have not been activated yet from running for the current
-     * dispatch. This backs the KHR_interactivity `event/stopPropagation` operation.
+     * dispatch.
      *
-     * The `event` argument is the opaque event reference produced by an event
-     * operation (see {@link IsEventReference}). If it does not reference an event
-     * that is currently being dispatched, this is a no-op.
+     * The `event` argument is the opaque event reference produced by an event block on its `event`
+     * output. If it does not reference an event that is currently being dispatched, this is a no-op.
      *
      * Babylon custom events have no scene-graph propagation layer, so there are
      * no transitive activations to cancel when `stopImmediate` is false. When it
@@ -305,10 +309,14 @@ export class FlowGraphCoordinator {
      * @param stopImmediate whether to also stop remaining immediate handlers
      */
     public stopEventPropagation(event: string, stopImmediate: boolean): void {
-        if (!IsEventReference(event) || !stopImmediate) {
+        if (typeof event !== "string" || !stopImmediate) {
             return;
         }
-        const eventId = event.substring(EventReferencePrefix.length);
+        const decode = this.config.hostResolver?.decodeEventReference ?? GetDefaultEventReferenceKey;
+        const eventId = decode(event);
+        if (eventId === undefined) {
+            return;
+        }
         // Find the most recent matching in-flight dispatch and skip its remaining observers.
         for (let i = this._eventDispatchStack.length - 1; i >= 0; i--) {
             if (this._eventDispatchStack[i].eventId === eventId) {
@@ -316,5 +324,17 @@ export class FlowGraphCoordinator {
                 return;
             }
         }
+    }
+
+    /**
+     * @internal
+     * Encodes an event source key as the opaque reference exposed on an event block's `event`
+     * output, delegating to the host resolver when one is configured.
+     * @param key the event source key
+     * @returns the event reference
+     */
+    public _getEventReference(key: string): string {
+        const encode = this.config.hostResolver?.encodeEventReference;
+        return encode ? encode(key) : GetDefaultEventReference(key);
     }
 }

@@ -18,8 +18,8 @@ import { CompositePathToObjectConverter, type IPathConverterPrefixEntry } from "
 import { BabylonScenePathToObjectConverter, BABYLON_SCENE_OBJECT_MODEL_PREFIX, CreateDefaultBabylonSceneObjectModelTree } from "./babylonScenePathToObjectConverter";
 import { InteractivityRefPathToObjectConverter } from "./interactivityRefPathToObjectConverter";
 import { InteractivityAssetPathToObjectConverter, InteractivityAssetCapabilitiesPrefix, InteractivityLimitsPrefix } from "./interactivityAssetPathToObjectConverter";
-import { EventReferencePrefix } from "core/FlowGraph/flowGraphEventReference";
-import { DelayReferencePrefix } from "core/FlowGraph/flowGraphDelayReference";
+import { EventReferencePrefix, DelayReferencePrefix } from "./KHR_interactivity/interactivityReferences";
+import { InteractivityHostResolver } from "./KHR_interactivity/interactivityHostResolver";
 import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import { Logger } from "core/Misc/logger";
@@ -114,7 +114,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return;
         }
 
-        const coordinator = new FlowGraphCoordinator({ scene });
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
         coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
         // The specification requires an invalid behavior graph to be rejected. Reject each graph individually and
         // keep loading the rest of the asset instead of failing the whole scene load.

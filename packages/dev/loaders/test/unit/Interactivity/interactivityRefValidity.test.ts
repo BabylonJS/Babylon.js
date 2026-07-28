@@ -3,8 +3,8 @@ import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { getNumericValue } from "core/FlowGraph/utils";
-import { MarkDelayActive, MarkDelayInactive, IsDelayActive } from "core/FlowGraph/flowGraphDelayReference";
-import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
+import { MarkDelayActive, MarkDelayInactive, IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
+import { GetEventReference } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
 import { InteractivityRefPathToObjectConverter } from "loaders/glTF/2.0/Extensions/interactivityRefPathToObjectConverter";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 

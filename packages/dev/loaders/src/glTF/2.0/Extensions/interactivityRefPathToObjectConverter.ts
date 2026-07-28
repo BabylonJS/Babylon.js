@@ -2,8 +2,8 @@ import { type IObjectInfo, type IPathToObjectConverter } from "core/ObjectModel/
 import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { EventReferencePrefix } from "core/FlowGraph/flowGraphEventReference";
-import { DelayReferencePrefix, IsDelayActive } from "core/FlowGraph/flowGraphDelayReference";
+import { EventReferencePrefix, DelayReferencePrefix } from "./KHR_interactivity/interactivityReferences";
+import { IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
 
 /**
  * Sentinel target returned by the validity accessors. The KHR_interactivity

@@ -6,8 +6,10 @@ import { RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichType
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
-import { GetEventReference } from "core/FlowGraph/flowGraphEventReference";
 import { RegisterClass } from "../../../Misc/typeStore";
+
+/** Event source key used to build this block's event reference. */
+const EventKey = "sceneTick";
 
 /**
  * Payload for the scene tick event.
@@ -50,7 +52,11 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
         super();
         this.timeSinceStart = this.registerDataOutput("timeSinceStart", RichTypeNumber);
         this.deltaTime = this.registerDataOutput("deltaTime", RichTypeNumber);
-        this.eventRef = this.registerDataOutput("event", RichTypeString, GetEventReference("onTick"));
+        this.eventRef = this.registerDataOutput("event", RichTypeString);
+    }
+
+    public override _updateOutputs(context: FlowGraphContext): void {
+        this.eventRef.setValue(context.getEventReference(EventKey), context);
     }
 
     /**
@@ -66,7 +72,7 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     public override _executeEvent(context: FlowGraphContext, payload: IFlowGraphOnTickEventPayload): boolean {
         this.timeSinceStart.setValue(payload.timeSinceStart, context);
         this.deltaTime.setValue(payload.deltaTime, context);
-        this.eventRef.setValue(GetEventReference("onTick"), context);
+        this.eventRef.setValue(context.getEventReference(EventKey), context);
         this._execute(context);
         return true;
     }

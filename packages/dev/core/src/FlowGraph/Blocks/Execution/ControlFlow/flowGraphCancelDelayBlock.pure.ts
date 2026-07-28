@@ -10,7 +10,7 @@ import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { getNumericValue } from "core/FlowGraph/utils";
-import { MarkDelayInactive } from "core/FlowGraph/flowGraphDelayReference";
+import { MarkDelayInactive } from "core/FlowGraph/flowGraphDelayRegistry";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
