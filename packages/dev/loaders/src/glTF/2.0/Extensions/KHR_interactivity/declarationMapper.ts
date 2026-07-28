@@ -726,6 +726,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 scale: { name: "scaling" },
             },
         },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            // KHR_interactivity step 4 of the matDecompose algorithm requires a non-decomposable matrix to still
+            // report the extracted translation and the raw column lengths, instead of the type defaults the
+            // FlowGraph block emits by default. The block has no `isValid` output in glTF, so the caller can only
+            // observe those values.
+            serializedObjects[0].config ||= {};
+            serializedObjects[0].config.keepDegenerateComponents = true;
+            return serializedObjects;
+        },
     },
     "math/quatConjugate": getSimpleInputMapping(FlowGraphBlockNames.Conjugate, ["a"]),
     "math/quatMul": {
@@ -1386,6 +1395,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/get": {
         blocks: [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser],
+        validation: ValidateJsonPointerTemplate,
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1430,6 +1440,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
+        validation: ValidateJsonPointerTemplate,
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1482,6 +1493,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
         blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing],
+        validation: ValidateJsonPointerTemplate,
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1790,6 +1802,76 @@ function ValidateTypes(gltfBlock: IKHRInteractivity_Node): { valid: boolean; err
             return { valid: false, error: "All inputs must be of the same type" };
         }
     }
+    return { valid: true };
+}
+
+/**
+ * Returns whether a literal path segment has an odd number of consecutive occurrences of any bracket character.
+ * Brackets used literally inside a path segment must be doubled, so an odd run means the segment is malformed.
+ * @param segment the literal path segment
+ * @returns true when the segment contains an odd run of brackets
+ */
+function HasOddBracketRun(segment: string): boolean {
+    for (let index = 0; index < segment.length; index++) {
+        const character = segment[index];
+        if ("[]{}".indexOf(character) === -1) {
+            continue;
+        }
+        let runLength = 1;
+        while (segment[index + runLength] === character) {
+            runLength++;
+        }
+        if (runLength % 2 !== 0) {
+            return true;
+        }
+        index += runLength - 1;
+    }
+    return false;
+}
+
+/**
+ * Validates the `pointer` configuration value of a `pointer/*` operation, following the JSON Pointer Template
+ * Parsing steps of the KHR_interactivity specification. A template parameter must span an entire path segment, so
+ * a template such as `/materials/{materialRef}pbrMetallicRoughness/...` is a syntax error, and the specification
+ * requires the whole behavior graph to be rejected.
+ * @param gltfBlock the glTF interactivity node
+ * @returns the validation result
+ */
+function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid: boolean; error?: string } {
+    const pointer = gltfBlock.configuration?.pointer?.value?.[0];
+    if (typeof pointer !== "string") {
+        return { valid: false, error: "A pointer operation requires a string `pointer` configuration value" };
+    }
+    // A JSON Pointer (RFC 6901) is either empty or a sequence of `/`-prefixed reference tokens.
+    if (pointer.length !== 0 && pointer[0] !== "/") {
+        return { valid: false, error: `The JSON Pointer Template "${pointer}" is not a syntactically valid JSON Pointer` };
+    }
+
+    const invalid = (reason: string) => ({ valid: false, error: `The JSON Pointer Template "${pointer}" is invalid: ${reason}` });
+    const socketIds = new Set<string>();
+    for (const segment of pointer.split("/")) {
+        const isIntegerParameter = segment[0] === "[" && segment[1] !== "[";
+        const isReferenceParameter = segment[0] === "{" && segment[1] !== "{";
+        if (!isIntegerParameter && !isReferenceParameter) {
+            if (HasOddBracketRun(segment)) {
+                return invalid(`the path segment "${segment}" contains an odd number of consecutive brackets`);
+            }
+            continue;
+        }
+
+        const closingBracket = isIntegerParameter ? "]" : "}";
+        const body = segment.substring(1, segment.length - 1);
+        if (segment.length < 3 || segment[segment.length - 1] !== closingBracket || /[[{]/.test(body) || /[\]}]/.test(body)) {
+            return invalid(`the template parameter path segment "${segment}" is malformed`);
+        }
+
+        const socketId = body.replace(/~1/g, "/").replace(/~0/g, "~");
+        if (socketIds.has(socketId)) {
+            return invalid(`the template parameter "${socketId}" is used more than once`);
+        }
+        socketIds.add(socketId);
+    }
+
     return { valid: true };
 }
 

@@ -2522,6 +2522,64 @@ describe("Interactivity math nodes", () => {
         expect(roundArray3(scaleGraph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop()!.payload.value.asArray())).toEqual([2, 2, 2]);
     });
 
+    // math/matDecompose keeps the translation and the raw column lengths when the matrix is not decomposable
+    // (KHR_interactivity math/matDecompose step 4)
+
+    it("should keep translation and raw scale for a non-decomposable math/matDecompose matrix", async () => {
+        // Column-major matrix: scale (2, 2, NaN), translation (1, 2, 3).
+        const matrix = [2, 0, 0, 0, 0, 2, 0, 0, 0, 0, NaN, 0, 1, 2, 3, 1];
+        const translationGraph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [{ declaration: 0, values: { a: { type: 0, value: matrix } } }],
+            [{ signature: "float4x4" }],
+            0,
+            "translation"
+        );
+        expect(roundArray3(translationGraph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop()!.payload.value.asArray())).toEqual([1, 2, 3]);
+
+        const rotationGraph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [{ declaration: 0, values: { a: { type: 0, value: matrix } } }],
+            [{ signature: "float4x4" }],
+            0,
+            "rotation"
+        );
+        expect(roundArray3(rotationGraph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop()!.payload.value.asArray())).toEqual([0, 0, 0, 1]);
+
+        const scaleGraph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [{ declaration: 0, values: { a: { type: 0, value: matrix } } }],
+            [{ signature: "float4x4" }],
+            0,
+            "scale"
+        );
+        const scale = scaleGraph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop()!.payload.value.asArray();
+        expect(scale.slice(0, 2)).toEqual([2, 2]);
+        expect(scale[2]).toBeNaN();
+    });
+
+    it("should keep the translation of a zero-scale math/matDecompose matrix", async () => {
+        // Column-major matrix: zero 3x3, translation (1, 2, 3).
+        const matrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 1];
+        const translationGraph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [{ declaration: 0, values: { a: { type: 0, value: matrix } } }],
+            [{ signature: "float4x4" }],
+            0,
+            "translation"
+        );
+        expect(roundArray3(translationGraph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop()!.payload.value.asArray())).toEqual([1, 2, 3]);
+
+        const scaleGraph = await generateSimpleNodeGraph(
+            [{ op: "math/matDecompose" }],
+            [{ declaration: 0, values: { a: { type: 0, value: matrix } } }],
+            [{ signature: "float4x4" }],
+            0,
+            "scale"
+        );
+        expect(roundArray3(scaleGraph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop()!.payload.value.asArray())).toEqual([0, 0, 0]);
+    });
+
     // math/eq compares a quaternion against a float4 value (KHR_interactivity has no dedicated quaternion type)
 
     it("should compare a quaternion and a float4 with math/eq", async () => {

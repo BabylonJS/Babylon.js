@@ -36,6 +36,21 @@ export interface IFlowGraphMatrixBlockConfiguration extends IFlowGraphBlockConfi
      */
     matrixType: FlowGraphTypes;
 }
+
+/**
+ * Configuration for the matrix decompose block.
+ */
+export interface IFlowGraphMatrixDecomposeBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * When a matrix cannot be decomposed, output the translation and the raw column lengths that were
+     * extracted from the matrix instead of the type-default translation and scale. `isValid` is reported
+     * as `false` either way. Defaults to `false`.
+     *
+     * This is what the glTF KHR_interactivity `math/matDecompose` operation requires, so the glTF loader
+     * turns it on; it is opt-in so that the default block behaviour stays unchanged.
+     */
+    keepDegenerateComponents?: boolean;
+}
 /**
  * Transposes a matrix.
  */
@@ -151,7 +166,7 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
      */
     public readonly isValid: FlowGraphDataConnection<boolean>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(config?: IFlowGraphMatrixDecomposeBlockConfiguration) {
         super(config);
         this.input = this.registerDataInput("input", RichTypeMatrix);
         this.position = this.registerDataOutput("position", RichTypeVector3);
@@ -163,41 +178,36 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
     public override _updateOutputs(context: FlowGraphContext) {
         const matrix = this.input.getValue(context);
         const m = matrix.m;
+        const keepDegenerateComponents = !!(this.config as IFlowGraphMatrixDecomposeBlockConfiguration | undefined)?.keepDegenerateComponents;
 
-        // Per the KHR_interactivity matDecompose algorithm the fourth row of the matrix is ignored: the translation
-        // comes from the first three elements of the fourth column, the scale from the lengths of the first three
-        // columns of the upper-left 3x3, and the rotation from that 3x3 once normalized.
-        const translationX = m[12];
-        const translationY = m[13];
-        const translationZ = m[14];
+        // The fourth row of the matrix is ignored: the translation comes from the first three elements of the
+        // fourth column, the scale from the lengths of the first three columns of the upper-left 3x3, and the
+        // rotation from that 3x3 once normalized.
+        const translation = new Vector3(m[12], m[13], m[14]);
         let scaleX = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
         const scaleY = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
         const scaleZ = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
-        const allFinite =
-            Number.isFinite(translationX) &&
-            Number.isFinite(translationY) &&
-            Number.isFinite(translationZ) &&
-            Number.isFinite(scaleX) &&
-            Number.isFinite(scaleY) &&
-            Number.isFinite(scaleZ);
-
-        // A non-finite matrix (NaN/Infinity propagated from the input) is not decomposable: emit the type-default TRS.
-        if (!allFinite) {
+        // The matrix cannot be decomposed: the rotation is undefined, so report an identity rotation and either the
+        // components that were extracted from the matrix or the type defaults.
+        const setDegenerateOutputs = (keepComponents: boolean) => {
             this.isValid.setValue(false, context);
-            this.position.setValue(Vector3.Zero(), context);
             this.rotationQuaternion.setValue(Quaternion.Identity(), context);
-            this.scaling.setValue(Vector3.One(), context);
+            this.position.setValue(keepComponents ? translation : Vector3.Zero(), context);
+            this.scaling.setValue(keepComponents ? new Vector3(scaleX, scaleY, scaleZ) : Vector3.One(), context);
+        };
+
+        const areScalesFinite = Number.isFinite(scaleX) && Number.isFinite(scaleY) && Number.isFinite(scaleZ);
+        const isTranslationFinite = Number.isFinite(m[12]) && Number.isFinite(m[13]) && Number.isFinite(m[14]);
+        if (!areScalesFinite || (!keepDegenerateComponents && !isTranslationFinite)) {
+            setDegenerateOutputs(keepDegenerateComponents);
             return;
         }
 
         if (scaleX === 0 || scaleY === 0 || scaleZ === 0) {
-            // A zero scale component leaves the rotation undefined and the matrix non-decomposable, but the
-            // translation and (degenerate) scale are still well-defined, so they are reported as-is.
-            this.isValid.setValue(false, context);
-            this.position.setValue(new Vector3(translationX, translationY, translationZ), context);
-            this.rotationQuaternion.setValue(Quaternion.Identity(), context);
-            this.scaling.setValue(new Vector3(scaleX, scaleY, scaleZ), context);
+            // A zero scale component leaves the rotation undefined, but the translation and the (degenerate) scale
+            // are still well-defined, so they are reported as-is.
+            setDegenerateOutputs(true);
             return;
         }
 
@@ -207,10 +217,7 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
         const determinant = m[0] * (m[5] * m[10] - m[6] * m[9]) - m[4] * (m[1] * m[10] - m[2] * m[9]) + m[8] * (m[1] * m[6] - m[2] * m[5]);
         const normalizedDeterminant = determinant / (scaleX * scaleY * scaleZ);
         if (Math.abs(normalizedDeterminant) < MatrixDecomposeDegenerateEpsilon) {
-            this.isValid.setValue(false, context);
-            this.position.setValue(Vector3.Zero(), context);
-            this.rotationQuaternion.setValue(Quaternion.Identity(), context);
-            this.scaling.setValue(Vector3.One(), context);
+            setDegenerateOutputs(keepDegenerateComponents);
             return;
         }
 
@@ -242,7 +249,7 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
         );
 
         this.isValid.setValue(true, context);
-        this.position.setValue(new Vector3(translationX, translationY, translationZ), context);
+        this.position.setValue(translation, context);
         this.rotationQuaternion.setValue(Quaternion.FromRotationMatrix(rotationMatrix), context);
         this.scaling.setValue(new Vector3(scaleX, scaleY, scaleZ), context);
     }

@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const RepositoryUrl = "https://github.com/KhronosGroup/glTF-Test-Assets-Interactivity.git";
-const RepositoryRevision = "da6dd1fe5019aa5b1c09bb35205ad948ed4fb5de";
+const RepositoryRevision = "6930de2ee3d7838cbbb4aef9af5fc7e5f34e8e47";
 const RootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CacheRoot = path.join(RootDirectory, "node_modules", ".cache", "khr-interactivity-assets");
 const AssetDirectory = path.join(CacheRoot, RepositoryRevision);

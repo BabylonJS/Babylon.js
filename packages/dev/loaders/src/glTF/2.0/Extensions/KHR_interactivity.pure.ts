@@ -4,7 +4,7 @@ import { type GLTFLoader } from "../glTFLoader.pure";
 import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
-import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension, registeredGLTFExtensions } from "../glTFLoaderExtensionRegistry";
 import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
@@ -17,10 +17,12 @@ import { type IAnimation } from "../glTFLoaderInterfaces";
 import { CompositePathToObjectConverter, type IPathConverterPrefixEntry } from "./compositePathToObjectConverter";
 import { BabylonScenePathToObjectConverter, BABYLON_SCENE_OBJECT_MODEL_PREFIX, CreateDefaultBabylonSceneObjectModelTree } from "./babylonScenePathToObjectConverter";
 import { InteractivityRefPathToObjectConverter } from "./interactivityRefPathToObjectConverter";
+import { InteractivityAssetPathToObjectConverter, InteractivityAssetCapabilitiesPrefix, InteractivityLimitsPrefix } from "./interactivityAssetPathToObjectConverter";
 import { EventReferencePrefix } from "core/FlowGraph/flowGraphEventReference";
 import { DelayReferencePrefix } from "core/FlowGraph/flowGraphDelayReference";
 import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import { Logger } from "core/Misc/logger";
 
 const NAME = "KHR_interactivity";
 
@@ -69,6 +71,17 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             const refConverter = new InteractivityRefPathToObjectConverter();
             initialPrefixes.push({ prefix: EventReferencePrefix, converter: refConverter });
             initialPrefixes.push({ prefix: DelayReferencePrefix, converter: refConverter });
+            // Asset capabilities and runtime limits (`/extensions/KHR_interactivity/asset/...` and
+            // `/extensions/KHR_interactivity/limits/...`) are virtual too: they describe the asset and the
+            // implementation running it rather than addressing a glTF object. The set of enabled extensions is
+            // resolved eagerly because the loader is released once loading completes, while the behavior graph
+            // keeps querying these pointers at runtime.
+            const enabledExtensions = new Set(
+                (this._loader.gltf.extensionsUsed ?? []).filter((name) => registeredGLTFExtensions.has(name) && this._loader.parent.extensionOptions[name]?.enabled !== false)
+            );
+            const assetConverter = new InteractivityAssetPathToObjectConverter(this._loader.gltf, (extensionName) => enabledExtensions.has(extensionName));
+            initialPrefixes.push({ prefix: InteractivityAssetCapabilitiesPrefix, converter: assetConverter });
+            initialPrefixes.push({ prefix: InteractivityLimitsPrefix, converter: assetConverter });
             this._pathConverter = new CompositePathToObjectConverter<IObjectAccessor>(
                 initialPrefixes,
                 this._gltfPathConverter as unknown as IPathToObjectConverter<IObjectAccessor>
@@ -103,12 +116,18 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
         const coordinator = new FlowGraphCoordinator({ scene });
         coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
-        const graphs = interactivityDefinition.graphs.map((graph) => {
-            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
-            return parser.serializeToFlowGraph();
-        });
-        // parse each graph async
-        await Promise.all(graphs.map(async (graph) => await ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
+        // The specification requires an invalid behavior graph to be rejected. Reject each graph individually and
+        // keep loading the rest of the asset instead of failing the whole scene load.
+        await Promise.all(
+            interactivityDefinition.graphs.map(async (graph, index) => {
+                try {
+                    const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
+                    await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: this._pathConverter });
+                } catch (error) {
+                    Logger.Error(`KHR_interactivity: rejecting behavior graph #${index}: ${(error as Error)?.message ?? error}`);
+                }
+            })
+        );
 
         coordinator.start();
     }
