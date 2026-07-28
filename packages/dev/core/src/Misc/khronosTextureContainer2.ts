@@ -346,6 +346,20 @@ export class KhronosTextureContainer2 {
      * @internal
      */
     public async _uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: IKTX2DecoderOptions & IDecodedData): Promise<void> {
+        const decodedData = await this._decodeAsync(data, options);
+        this._createTexture(decodedData, internalTexture, options);
+    }
+
+    /**
+     * Decodes a KTX2 file and returns the decoded data, without uploading it to a texture.
+     * Kept separate from _uploadAsync so consumers that build their own texture (2D array textures, for eg)
+     * can reuse the worker pool, decoder module and url configuration handled here.
+     * @param data defines the KTX2 file content
+     * @param options defines the options to use when decoding
+     * @returns a promise resolved with the decoded data
+     * @internal
+     */
+    public async _decodeAsync(data: ArrayBufferView, options?: IKTX2DecoderOptions): Promise<IDecodedData> {
         const caps = this._engine.getCaps();
 
         const compressedTexturesCaps: ICompressedFormatCapabilities = {
@@ -377,13 +391,7 @@ export class KhronosTextureContainer2 {
                                 // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                 reject({ message: message.data.msg });
                             } else {
-                                try {
-                                    this._createTexture(message.data.decodedData, internalTexture, options);
-                                    resolve();
-                                } catch (err) {
-                                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                                    reject({ message: err });
-                                }
+                                resolve(message.data.decodedData);
                             }
                             onComplete();
                         }
@@ -406,11 +414,10 @@ export class KhronosTextureContainer2 {
             }
             return await new Promise((resolve, reject) => {
                 decoder
-                    .decode(data, caps)
+                    .decode(data, caps, options)
                     // eslint-disable-next-line github/no-then
-                    .then((data: IDecodedData) => {
-                        this._createTexture(data, internalTexture);
-                        resolve();
+                    .then((decodedData: IDecodedData) => {
+                        resolve(decodedData);
                     })
                     // eslint-disable-next-line github/no-then
                     .catch((reason: any) => {
@@ -424,6 +431,13 @@ export class KhronosTextureContainer2 {
     }
 
     protected _createTexture(data: IDecodedData, internalTexture: InternalTexture, options?: IKTX2DecoderOptions & IDecodedData): void {
+        // The decoder can now return array textures (one mipmap entry per layer per level), but this
+        // upload path is 2D only: it binds gl.TEXTURE_2D and walks mipmaps as if each entry were a
+        // distinct level. Fail loudly rather than silently uploading layer data as mip levels.
+        if ((data.layerCount ?? 1) > 1) {
+            throw new Error("KTX2 container - array textures are not supported by this texture loader.");
+        }
+
         const oglTexture2D = 3553; // gl.TEXTURE_2D
 
         this._engine._bindTextureDirectly(oglTexture2D, internalTexture);

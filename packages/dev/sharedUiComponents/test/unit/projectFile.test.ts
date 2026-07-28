@@ -12,9 +12,11 @@ const mockDispose = vi.fn();
 
 function createMockContainer(meshNames: string[] = ["Mesh1"], materialNames: string[] = ["Material1"]) {
     const materials = materialNames.map((name) => ({ name, alpha: 1.0 }));
+    const transformNodes = [{ name: "AssetTransformNode" }];
 
     return {
         meshes: meshNames.map((name) => ({ name })),
+        transformNodes,
         materials,
         textures: [] as { name: string }[],
         animationGroups: [] as { name: string }[],
@@ -22,6 +24,9 @@ function createMockContainer(meshNames: string[] = ["Mesh1"], materialNames: str
         cameras: [] as { name: string }[],
         addAllToScene: vi.fn(() => {
             if (_currentScene) {
+                for (const transformNode of transformNodes) {
+                    (_currentScene.transformNodes as any[]).push(transformNode);
+                }
                 for (const m of materials) {
                     (_currentScene.materials as any[]).push(m);
                 }
@@ -29,6 +34,12 @@ function createMockContainer(meshNames: string[] = ["Mesh1"], materialNames: str
         }),
         removeAllFromScene: vi.fn(() => {
             if (_currentScene) {
+                for (const transformNode of transformNodes) {
+                    const idx = (_currentScene.transformNodes as any[]).indexOf(transformNode);
+                    if (idx >= 0) {
+                        (_currentScene.transformNodes as any[]).splice(idx, 1);
+                    }
+                }
                 for (const m of materials) {
                     const idx = (_currentScene.materials as any[]).indexOf(m);
                     if (idx >= 0) {
@@ -277,6 +288,22 @@ describe("ProjectSerializer", () => {
 
             expect(GetAllSmartAssets(scene).get("table")).toBe("table.glb");
             expect(GetOverrides(scene).length).toBe(0);
+        });
+
+        it("should exclude smart asset transform nodes from the companion scene", async () => {
+            const projectDoc = {
+                version: 2 as const,
+                assets: {
+                    character: { url: "character.glb" },
+                },
+                overrides: [],
+            };
+
+            await LoadProjectAsync(scene, projectDoc);
+
+            const bundle = SerializeProject(scene);
+            expect(bundle.companionBabylon).toBeUndefined();
+            expect(bundle.project.assets["__project_locals__"]).toBeUndefined();
         });
 
         it("should re-attach a SAM-tracked texture to a companion material via companionBindings", async () => {

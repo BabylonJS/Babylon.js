@@ -1,13 +1,38 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CreateTexture2DArrayFromImageUrlsAsync, LoadImageToTexture2DArrayLayerAsync, UploadImageToTexture2DArrayLayer } from "core/Materials/Textures/rawTexture2DArray.functions";
+import {
+    CreateTexture2DArrayFromImageUrlsAsync,
+    CreateTexture2DArrayFromKTX2Async,
+    LoadImageToTexture2DArrayLayerAsync,
+    UploadImageToTexture2DArrayLayer,
+} from "core/Materials/Textures/rawTexture2DArray.functions";
 import { type RawTexture2DArray } from "core/Materials/Textures/rawTexture2DArray";
 
 // Registry of RawTexture2DArray instances constructed during a test, so a test can assert dispose()
 // was called. The mocked class's engine upload always throws, which lets us exercise the
 // dispose-on-error path in CreateTexture2DArrayFromImageUrlsAsync without a real engine.
 const mockState = vi.hoisted(() => {
-    return { instances: [] as { dispose: ReturnType<typeof vi.fn> }[] };
+    return {
+        instances: [] as { dispose: ReturnType<typeof vi.fn>; args: unknown[] }[],
+        // Result returned by the mocked KhronosTextureContainer2._decodeAsync, set per test.
+        decoded: null as any,
+        isValid: true,
+        decodeOptions: null as any,
+    };
+});
+
+vi.mock("core/Misc/khronosTextureContainer2", () => {
+    return {
+        KhronosTextureContainer2: class {
+            public static IsValid() {
+                return mockState.isValid;
+            }
+            public async _decodeAsync(_data: unknown, options: unknown) {
+                mockState.decodeOptions = options;
+                return mockState.decoded;
+            }
+        },
+    };
 });
 
 vi.mock("core/Materials/Textures/rawTexture2DArray", () => {
@@ -15,9 +40,11 @@ vi.mock("core/Materials/Textures/rawTexture2DArray", () => {
         RawTexture2DArray: class {
             public dispose = vi.fn();
             public depth: number;
+            public args: unknown[];
             private _internal = { generateMipMaps: false };
-            constructor(_data: unknown, _width: number, _height: number, depth: number) {
+            constructor(_data: unknown, _width: number, _height: number, depth: number, ...rest: unknown[]) {
                 this.depth = depth;
+                this.args = [_data, _width, _height, depth, ...rest];
                 mockState.instances.push(this);
             }
             public getInternalTexture() {
@@ -228,6 +255,120 @@ describe("rawTexture2DArray.functions", () => {
             // Bitmaps are still released on the error path.
             expect(bitmaps[0].close).toHaveBeenCalledTimes(1);
             expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("CreateTexture2DArrayFromKTX2Async", () => {
+        function makeMipmap(layerIndex: number, byte: number, width = 2, height = 2) {
+            return { data: new Uint8Array(width * height * 4).fill(byte), width, height, layerIndex };
+        }
+
+        function stubFetch(ok = true) {
+            vi.stubGlobal(
+                "fetch",
+                vi.fn(async () => ({ ok, status: ok ? 200 : 404, statusText: ok ? "OK" : "Not Found", arrayBuffer: async () => new ArrayBuffer(16) }))
+            );
+        }
+
+        beforeEach(() => {
+            mockState.instances.length = 0;
+            mockState.isValid = true;
+            mockState.decodeOptions = null;
+            mockState.decoded = null;
+        });
+
+        afterEach(() => {
+            vi.unstubAllGlobals();
+        });
+
+        it("concatenates the base mip level layers in order and forces RGBA", async () => {
+            stubFetch();
+            mockState.decoded = {
+                layerCount: 3,
+                // Two mip levels, each contributing layerCount consecutive entries.
+                mipmaps: [makeMipmap(0, 1), makeMipmap(1, 2), makeMipmap(2, 3), makeMipmap(0, 9, 1, 1), makeMipmap(1, 9, 1, 1), makeMipmap(2, 9, 1, 1)],
+            };
+
+            const texture = (await CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")) as any;
+
+            expect(mockState.decodeOptions).toEqual({ forceRGBA: true });
+            expect(texture.depth).toBe(3);
+            const [data, width, height] = texture.args;
+            expect(width).toBe(2);
+            expect(height).toBe(2);
+            // Only the base level is uploaded, with its layers back to back.
+            expect((data as Uint8Array).byteLength).toBe(2 * 2 * 4 * 3);
+            expect((data as Uint8Array)[0]).toBe(1);
+            expect((data as Uint8Array)[16]).toBe(2);
+            expect((data as Uint8Array)[32]).toBe(3);
+        });
+
+        it("accepts already fetched data and skips the network", async () => {
+            const fetchSpy = vi.fn();
+            vi.stubGlobal("fetch", fetchSpy);
+            mockState.decoded = { layerCount: 1, mipmaps: [makeMipmap(0, 7)] };
+
+            const texture = (await CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, new Uint8Array(16))) as any;
+
+            expect(fetchSpy).not.toHaveBeenCalled();
+            expect(texture.depth).toBe(1);
+        });
+
+        it("defaults layerCount to 1 for a non-array file", async () => {
+            stubFetch();
+            mockState.decoded = { mipmaps: [makeMipmap(0, 5), makeMipmap(0, 6, 1, 1)] };
+
+            const texture = (await CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")) as any;
+
+            expect(texture.depth).toBe(1);
+            expect((texture.args[0] as Uint8Array).byteLength).toBe(2 * 2 * 4);
+        });
+
+        it("rejects when the fetch fails", async () => {
+            stubFetch(false);
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/Failed to fetch KTX2 file/);
+        });
+
+        it("rejects when the data is not a KTX2 file", async () => {
+            stubFetch();
+            mockState.isValid = false;
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/not a valid KTX2 file/);
+        });
+
+        it("rejects when the decoder reports errors", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 1, mipmaps: [], errors: "boom" };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/boom/);
+        });
+
+        it("rejects when the base mip level is missing layers", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 3, mipmaps: [makeMipmap(0, 1), makeMipmap(1, 2)] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/expected 3 layers/);
+        });
+
+        it("rejects when a layer has no data", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 2, mipmaps: [makeMipmap(0, 1), { data: null, width: 2, height: 2, layerIndex: 1 }] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/layer 1 of the base mip level is empty/);
+        });
+
+        it("rejects when the layers do not share dimensions", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 2, mipmaps: [makeMipmap(0, 1), makeMipmap(1, 2, 4, 4)] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/layer 1 of the base mip level is 4x4 but layer 0 is 2x2/);
+        });
+
+        it("rejects when a layer does not hold the expected number of RGBA bytes", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 2, mipmaps: [makeMipmap(0, 1), { data: new Uint8Array(8), width: 2, height: 2, layerIndex: 1 }] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/holds 8 bytes but 16 were expected/);
+        });
+
+        it("rejects rather than crashing when the decoder reports no layers", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 0, mipmaps: [] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/expected 1 layers/);
         });
     });
 });

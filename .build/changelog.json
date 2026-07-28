@@ -1,6 +1,193 @@
 {
-    "fromTag": "9.17.1",
+    "fromTag": "9.18.0",
     "changelog": {
+        "9.18.1": [
+            {
+                "pr": "18740",
+                "title": "Support array and uncompressed textures in the KTX2 decoder",
+                "description": "Fixes two independent gaps in the KTX2 pipeline, both surfaced by a forum request to load a multi-layer `.ktx2` file as a 2D texture array: https://forum.babylonjs.com/t/populate-2d-texture-array-from-image-asset/35140\r\n\r\n### 1. Array textures were rejected\r\n\r\n`KTX2FileReader.parse()` threw `\"Array textures are not currently supported\"` for any file with `layerCount > 1`, so nothing downstream could ever see a multi-layer KTX2.\r\n\r\n- Removed the throw. `pixelDepth > 0` (3D) and `faceCount > 1` (cubemap) still throw.\r\n- `_decodeDataAsync` now wraps the face loop in an outer layer loop, and every `IMipmap` is tagged with its `layerIndex`. BasisLZ image-descriptor indexing accounts for the layer stride (`firstImageDescIndex + layerIndex * numImagesInLevel + imageIndex`).\r\n- `IDecodedData` gained `layerCount`.\r\n\r\n### 2. Uncompressed KTX2 files could never be loaded at all\r\n\r\nThis one is orthogonal to arrays and was found by actually running the reporter's file. `KTX2FileReader.textureFormat` was:\r\n\r\n```ts\r\nreturn this._dfdBlock.colorModel === DFDModel.UASTC ? SourceTextureFormat.UASTC4x4 : SourceTextureFormat.ETC1S;\r\n```\r\n\r\nso **any** file whose DFD color model is `RGBSDA` (1, i.e. plain uncompressed RGBA) was misread as ETC1S and handed to a Basis transcoder that then failed. Array or not, no uncompressed `.ktx2` worked.\r\n\r\n- Added `SourceTextureFormat.RGBA32` and made `textureFormat` a real 3-way switch on `colorModel`.\r\n- Added `UncompressedRGBA32Transcoder`, a passthrough transcoder, plus a decision-tree leaf for it.\r\n- Added a `vkFormat` allowlist so unsupported uncompressed formats fail with a clear message instead of producing garbage. Currently `R8G8B8A8_UNORM` (37) and `R8G8B8A8_SRGB` (43).\r\n- Generalized the per-level byte-length math to use the DFD texel block dimension rather than assuming 4x4 blocks, since uncompressed formats are 1x1.\r\n- `hasAlpha` now inspects the DFD samples for an alpha channel in the RGBA32 case.\r\n\r\n### 3. Core-side consumer\r\n\r\n- Extracted `KhronosTextureContainer2._decodeAsync` out of `_uploadAsync`, so callers that want decoded pixel data (rather than an `InternalTexture` upload) don't have to duplicate the worker/non-worker plumbing. `_uploadAsync` is now a thin wrapper over it.\r\n- `_createTexture` throws early if handed array data, since the `InternalTexture` texture-loader path can't represent it.\r\n- Added `CreateTexture2DArrayFromKTX2Async(scene, urlOrData, options?)` to `rawTexture2DArray.functions.ts`, alongside the existing `CreateTexture2DArrayFromImageUrlsAsync`.\r\n\r\n### Tests\r\n\r\n- New `ktx2Decoder.test.ts` synthesizes a valid uncompressed KTX2 container byte-by-byte in memory (no fixture files) and asserts header/DFD parsing, layer splitting, and the passthrough transcode.\r\n- 8 new cases covering `CreateTexture2DArrayFromKTX2Async`.\r\n- Full `Materials` unit suite green (232), `Materials/Textures` 117/117.\r\n\r\n## Breaking change\r\n\r\n`IDecodedData.layerCount` and `IMipmap.layerIndex` are **required**, not optional. This is source-breaking for anyone implementing `IKTX2Decoder` outside the repo. Making them optional would push a `?? 1` / `?? 0` onto every consumer and let a decoder silently omit layer information, which is exactly the failure mode this PR exists to remove.\r\n\r\n## Other behavior changes worth flagging\r\n\r\n- The non-worker decode path now forwards `options` to `decoder.decode(data, caps, options)`; previously it only passed `(data, caps)`, so `IKTX2DecoderOptions` were silently dropped when no worker pool was in use.\r\n- When `_createTexture` throws on the worker path, the promise now rejects with the raw error rather than `{ message: err }`.\r\n\r\n## Known limitations\r\n\r\n- **`CreateTexture2DArrayFromKTX2Async` decodes to RGBA.** It passes `forceRGBA: true`, because the engine has no `compressedTexImage3D` path for `TEXTURE_2D_ARRAY`. Compressed array files therefore load correctly but lose their VRAM advantage. Adding native compressed array upload is a follow-up; the decoder side is now ready for it.\r\n- **Only mip level 0 is uploaded**, and the engine regenerates the rest. `MakeUpdateRawTextureFunction` in `engine.rawTexture.pure.ts` has no `mipLevel` parameter and always calls `texImage3D(target, 0, ...)`, so `RawTexture2DArray.updateMipLevel()`'s 7th argument is ignored on WebGL (WebGPU does honor it). For MSDF-style content with an authored mip chain this is a real difference; it's documented in the function's JSDoc. Fixing the WebGL path is out of scope here.\r\n- The compressed (UASTC / ETC1S) **array** path follows the spec's image ordering and typechecks, but I could not find or generate a compressed array `.ktx2` to verify it at runtime. The uncompressed array path is verified end-to-end against the reporter's actual file.\r\n\r\n## Validation\r\n\r\nThe reporter's file (`material-icons-msdf-array.ktx2`, 256x256, 5 layers, 9 mip levels, `vkFormat=37`, `supercompressionScheme=0`) now decodes to 45 mipmaps with distinct per-layer contents. I also ran it through a locally-built bundle of this decoder in Babylon Lite, which uploads layers directly via WebGPU `writeTexture` without `forceRGBA`, and confirmed all 5 layers render correctly with an empty WebGPU validation error scope.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/ktx2decoderTypes.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/ktx2Decoder.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/rawTexture2DArray.functions.test.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/index.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/uncompressedRGBA32Transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2Decoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2FileReader.ts",
+                    "packages/tools/ktx2Decoder/src/transcodeDecisionTree.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "18739",
+                "title": "OpenPBR: Ensures relative IOR goes to one as the specular_weight goes to zero",
+                "description": "Relative IOR of base layer should move to match outer layer as weight goes to zero. This fixes the same problem found recently in the Adobe open source OpenPBR BSDF:\r\n\r\nhttps://github.com/adobe/openpbr-bsdf/pull/29\r\n\r\nI also added a visual test for base specular with coat. The base specular (roughness 0.5) shouldn't be visible when `specular_weight` goes to 0.0 with a coat.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/openpbrDielectricReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/openpbrDielectricReflectance.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-IBL-Specular-Weight-vs-Coat-Weight.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18741",
+                "title": "Fix GS with nosort+native",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18737",
+                "title": "Fix EXT_lights_ies profile texture naming",
+                "description": "## Summary\n\n- Name the IES profile texture from the `SpotLight` created by the extension.\n- Add a loader regression test that runs without a browser `name` global.\n\nThe previous free `name` reference compiled because DOM typings declare `window.name`, but throws in non-browser runtimes.\n\n## Validation\n\n- New test fails on the previous implementation with `name is not defined`.\n- `npx vitest run packages/dev/loaders/test/unit/glTF/EXT_lights_ies.test.ts`",
+                "author": {
+                    "name": "matthargett",
+                    "url": "https://github.com/matthargett"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_lights_ies.pure.ts",
+                    "packages/dev/loaders/test/unit/glTF/EXT_lights_ies.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18731",
+                "title": "Add animated shadows to Viewer Lite",
+                "description": "## Why\n\nViewer Lite could not render a correctly fitted, animated shadow for deforming glTF models such as the UFO sample. This updates the Viewer to use the deformation-aware shadow support published in `@babylonjs/lite` 1.14.0 while keeping optional morph and skeleton support out of static-model loads.\n\n## What changed\n\n- Configure the Lite Viewer shadow task and receiver ground so arbitrary glTF models receive soft directional shadows with bounds that follow animation.\n- Detect morph-target and skeletal casters after loading, then lazily load one combined Viewer shadow module that enables only the required Lite opt-ins.\n- Defer initial Lite scene registration when the initial model casts shadows so the required frame-graph builders are available before the first render.\n- Reorganize Viewer sources into matching `src/full` and `src/lite` layouts, keeping shared bases at the source root.\n- Emit the full public library under `lib/full` and update package exports, build inputs, tests, and Viewer Configurator deep imports accordingly.\n- Add focused Lite shadow development pages, scale fixtures, and Vite configuration for faster Viewer startup and optional local `@babylonjs/lite` development.\n\nThe underlying deformation-aware shadow APIs were added in Babylon-Lite PR https://github.com/BabylonJS/Babylon-Lite/pull/433.\n\n## Validation\n\n- Clean Viewer public library and distribution builds.\n- Full and Lite Viewer smoke tests.\n- Isolated browser loads of `lib/full`, `lib/lite`, full `dist`, and Lite `dist`; each rendered 30 frames without page or console errors.\n- Viewer TypeScript compilation and Viewer Configurator build.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/@babylonjs/viewer/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer/rollup.config.lib.mjs",
+                    "packages/public/@babylonjs/viewer/serve.brotli-max.mjs",
+                    "packages/public/@babylonjs/viewer/test/apps/web/index.html",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.lib.json",
+                    "packages/tools/viewer-configurator/src/components/babylonViewer/viewer.tsx",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer-configurator/src/modelLoader.ts",
+                    "packages/tools/viewer-configurator/src/viewerService.tsx",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/viewer/rollup.config.common.mjs",
+                    "packages/tools/viewer/src/full/Shaders/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/full/Shaders/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/full/ShadersWGSL/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/full/ShadersWGSL/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/full/index.ts",
+                    "packages/tools/viewer/src/full/viewer.ts",
+                    "packages/tools/viewer/src/full/viewerElement.ts",
+                    "packages/tools/viewer/src/full/viewerFactory.ts",
+                    "packages/tools/viewer/src/lite/defaultBRDF.ts",
+                    "packages/tools/viewer/src/lite/index.ts",
+                    "packages/tools/viewer/src/lite/viewer.ts",
+                    "packages/tools/viewer/src/lite/viewerElement.ts",
+                    "packages/tools/viewer/src/lite/viewerShadows.ts",
+                    "packages/tools/viewer/test/apps/web/analyze.html",
+                    "packages/tools/viewer/test/apps/web/coverage.html",
+                    "packages/tools/viewer/test/apps/web/index.html",
+                    "packages/tools/viewer/test/apps/web/test.html",
+                    "packages/tools/viewer/test/viewer.lite.test.ts",
+                    "packages/tools/viewer/test/viewer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18725",
+                "title": "Move alpha-to-coverage support to engine extensions",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n\r\nThis is a follow-up to #18696 and #18718 that moves the niche alpha-to-coverage implementation out of the default engine state and hot paths and into opt-in WebGL and WebGPU engine extensions.\r\n\r\nLegacy root and UMD imports continue to register the extensions automatically. Pure consumers can explicitly register only the backend they need, and `TextRenderer` registers its active backend before use.\r\n\r\n## Changes\r\n\r\n- Add standard `.pure.ts`, `.types.ts`, and side-effect wrapper modules for WebGL and WebGPU alpha-to-coverage support.\r\n- Remove alpha-to-coverage state and sample tracking from `AbstractEngine`, WebGL `ThinEngine`, `AlphaState`, and `NullEngine`.\r\n- Activate WebGPU pipeline descriptor support only when the WebGPU extension is registered.\r\n- Keep the MSDF render path straight-line while restoring the previous alpha-to-coverage state after drawing.\r\n- Preserve the single-sample fallback and use alpha-to-coverage only for multisampled, depth-writing text.\r\n- Add focused WebGL extension tests, update WebGPU pipeline tests, and synchronize pure barrels and side-effect metadata.\r\n- Add a screenshot-based visual regression test for transparent red/green overlap rendered through an explicit 4× MSAA target.\r\n\r\n## Testing\r\n\r\n### Playgrounds\r\n\r\n- [Analytic non-text alpha-to-coverage edge comparison](https://playground.babylonjs.com/#SOKCBN#1)\r\n- [50% front alpha over an opaque rear shape](https://playground.babylonjs.com/#R1CZ40) — A2C off keeps the solid front color; A2C on resolves the red and green samples to olive/yellow across the overlap.\r\n- [MSDF text depth-writing comparison](https://playground.babylonjs.com/#6RLCWP#104)\r\n\r\nAll three Playgrounds were validated with WebGL2 and WebGPU at 4× MSAA.\r\n\r\n### Automated validation\r\n\r\n- `npm run build:dev`\r\n- `npm run format:check`\r\n- `npm run lint:check`\r\n- Focused A2C, WebGPU pipeline, alpha state, and NullEngine unit tests: 24 passed, 1 expected failure\r\n- All 16 tree-shaking structure checks and side-effect synchronization checks\r\n- `Alpha-to-coverage transparent overlap` visual test passes on WebGL2 and WebGPU using [dedicated snippet #M4GBLK#0](https://playground.babylonjs.com/#M4GBLK#0)\r\n- Negative control without multisampled A2C differs by 88,887 pixels (38% of the screenshot), confirming strong regression sensitivity\r\n\r\nNo behavior change is expected for existing MSDF text usage. Alpha-to-coverage remains active only when depth writing and multisampling are both enabled.\r\n\r\n## Screenshots\r\n\r\n<img width=\"574\" height=\"755\" alt=\"image\" src=\"https://github.com/user-attachments/assets/34564f0d-fe25-4998-ad36-18c82d6c2902\" />\r\n<img width=\"567\" height=\"704\" alt=\"image\" src=\"https://github.com/user-attachments/assets/f32dfd18-c340-4f66-abbb-e50830087e5f\" />\r\n",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alphaToCoverage.pure.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alphaToCoverage.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alphaToCoverage.types.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alphaToCoverage.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alphaToCoverage.types.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/States/alphaCullingState.ts",
+                    "packages/dev/core/test/unit/Engines/Extensions/engine.alphaToCoverage.sideEffects.test.ts",
+                    "packages/dev/core/test/unit/Engines/Extensions/engine.alphaToCoverage.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuCacheRenderPipeline.test.ts",
+                    "packages/dev/core/test/unit/Engines/nullEngine.test.ts",
+                    "packages/dev/core/test/unit/States/alphaCullingState.test.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/tools/tests/test/visualization/ReferenceImages/alpha-to-coverage-transparent-overlap.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Engines.json"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "18726",
+                "title": "Add onEffectiveEnabledStateChangedObservable to node class",
+                "description": "The existing onEnabledStateChangedObservable only notifies when the local enabled value changes, but if the effective value changes (due to a parent become disabled), it doesn't notify. The new onEffectiveEnabledStateChangedObservable will in both cases.  It is lazy loaded to reduce extra work for those not using it.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/test/unit/babylon.nodeEnabledState.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18724",
+                "title": "fix: scene can be nil in rgbd post process",
+                "description": "Compiler is right in this case: when scene or engine is quickly destroyed before the effects are initialized the `texture.getScene()` actually can be already undefined.\r\n\r\nHappens in our app when the user quickly navigates back from a component with the babylon scene (component is destroyed and engine disposed before fully intialized).\r\n\r\n\r\n\r\n<img width=\"637\" height=\"316\" alt=\"image\" src=\"https://github.com/user-attachments/assets/d0151ebc-4688-4437-86a4-3ef88a61de83\" />\r\n",
+                "author": {
+                    "name": "jmheretik",
+                    "url": "https://github.com/jmheretik"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts"
+                ],
+                "tags": []
+            }
+        ],
         "9.18.0": [
             {
                 "pr": "18721",

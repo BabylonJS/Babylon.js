@@ -12,8 +12,25 @@ export enum SupercompressionScheme {
 }
 
 const enum DFDModel {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    RGBSDA = 1,
     ETC1S = 163,
     UASTC = 166,
+}
+
+const enum DFDChannel_RGBSDA {
+    R = 0,
+    G = 1,
+    B = 2,
+    A = 15,
+}
+
+// vkFormat values for the uncompressed layouts that can be uploaded without any transcoding.
+const enum VkFormat {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    R8G8B8A8_UNORM = 37,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    R8G8B8A8_SRGB = 43,
 }
 
 const enum DFDChannel_ETC1S {
@@ -186,10 +203,6 @@ export class KTX2FileReader {
             throw new Error(`Failed to parse KTX2 file - Only 2D textures are currently supported.`);
         }
 
-        if (header.layerCount > 1) {
-            throw new Error(`Failed to parse KTX2 file - Array textures are not currently supported.`);
-        }
-
         if (header.faceCount > 1) {
             throw new Error(`Failed to parse KTX2 file - Cube textures are not currently supported.`);
         }
@@ -271,6 +284,12 @@ export class KTX2FileReader {
             dfdBlock.samples.push(sample);
         }
 
+        if (dfdBlock.colorModel === DFDModel.RGBSDA && header.vkFormat !== (VkFormat.R8G8B8A8_UNORM as number) && header.vkFormat !== (VkFormat.R8G8B8A8_SRGB as number)) {
+            throw new Error(
+                `Failed to parse KTX2 file - Unsupported uncompressed format (vkFormat=${header.vkFormat}). Only R8G8B8A8_UNORM and R8G8B8A8_SRGB are currently supported.`
+            );
+        }
+
         /**
          * Get the Supercompression Global Data (sgd)
          */
@@ -321,7 +340,14 @@ export class KTX2FileReader {
     }
 
     public get textureFormat(): KTX2.SourceTextureFormat {
-        return this._dfdBlock.colorModel === DFDModel.UASTC ? KTX2.SourceTextureFormat.UASTC4x4 : KTX2.SourceTextureFormat.ETC1S;
+        switch (this._dfdBlock.colorModel) {
+            case DFDModel.UASTC:
+                return KTX2.SourceTextureFormat.UASTC4x4;
+            case DFDModel.RGBSDA:
+                return KTX2.SourceTextureFormat.RGBA32;
+            default:
+                return KTX2.SourceTextureFormat.ETC1S;
+        }
     }
 
     public get hasAlpha(): boolean {
@@ -336,6 +362,9 @@ export class KTX2FileReader {
 
             case KTX2.SourceTextureFormat.UASTC4x4:
                 return this._dfdBlock.samples[0].channelType === DFDChannel_UASTC.RGBA;
+
+            case KTX2.SourceTextureFormat.RGBA32:
+                return this._dfdBlock.samples.some((sample) => sample.channelType === DFDChannel_RGBSDA.A);
         }
 
         return false;
