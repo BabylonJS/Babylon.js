@@ -6,6 +6,7 @@
 // The caller supplies an ITexturedQuadSource: the layer kind, how to find a layer's quad rect and
 // texture, an optional extra readiness check (image decode is async), and texture teardown.
 
+import "core/Engines/Extensions/engine.alpha";
 import "core/Engines/Extensions/engine.dynamicBuffer";
 
 import { Constants } from "core/Engines/constants";

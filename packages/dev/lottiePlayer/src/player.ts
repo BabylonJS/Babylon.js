@@ -10,7 +10,7 @@ import {
     type PreWarmMessage,
     type WorkerLoadedMessagePayload,
 } from "./messageTypes";
-import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ILottieFile as RawLottieAnimation } from "./animation/lottieRaw";
 import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
 // Keep this local alias named "Worker" so Webpack/Rspack statically detect the worker entry.
 // Their parsers match the NewExpression callee against a fixed identifier list ("Worker",

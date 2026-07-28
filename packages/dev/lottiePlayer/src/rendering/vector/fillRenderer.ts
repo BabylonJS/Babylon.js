@@ -22,6 +22,7 @@
 // Rendering targets the default framebuffer (MSAA + stencil via engine creation options), so this
 // renderer only issues imperative draws — there is no render pass object.
 
+import "core/Engines/Extensions/engine.alpha";
 import "core/Engines/Extensions/engine.dynamicBuffer";
 
 import { Constants } from "core/Engines/constants";

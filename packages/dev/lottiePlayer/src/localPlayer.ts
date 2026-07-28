@@ -1,9 +1,9 @@
 import { type Nullable } from "core/types";
 import { type AnimationInput } from "./types";
-import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ILottieFile as RawLottieAnimation } from "./animation/lottieRaw";
 import { type ScaleFactors, CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 
-import { GetRawAnimationDataAsync } from "./parsing/parser";
+import { GetRawAnimationDataAsync } from "./animation/loadAnimation";
 import { AnimationController } from "./rendering/animationController";
 
 /**
@@ -63,7 +63,6 @@ export class LocalPlayer {
             this._canvas,
             this._rawAnimation,
             this._scaleFactors.canvasScale,
-            this._scaleFactors.atlasScale,
             this._input.variables ?? new Map<string, string>(),
             this._input.configuration ?? {},
             undefined, // mainThreadDevicePixelRatio not needed for main thread

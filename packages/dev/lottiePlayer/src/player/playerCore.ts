@@ -47,9 +47,10 @@ export interface ILottiePlayer {
  * stencil-then-cover fill renderer requires the stencil buffer; `antialias` provides
  * multisampled edge coverage directly on the canvas.
  * @param canvas The canvas (or OffscreenCanvas, in the worker path) to render into.
+ * @param supportDeviceLost When true, the engine handles WebGL context-lost recovery.
  * @returns The configured engine.
  */
-export function CreateVectorEngine(canvas: HTMLCanvasElement | OffscreenCanvas): ThinEngine {
+export function CreateVectorEngine(canvas: HTMLCanvasElement | OffscreenCanvas, supportDeviceLost = true): ThinEngine {
     const engine = new ThinEngine(
         canvas,
         true, // Antialias — MSAA on the default framebuffer, used for vector edge coverage
@@ -62,6 +63,7 @@ export function CreateVectorEngine(canvas: HTMLCanvasElement | OffscreenCanvas):
             audioEngine: false,
             // Important to allow skip frame and tiled optimizations
             preserveDrawingBuffer: false,
+            doNotHandleContextLost: !supportDeviceLost,
         },
         false
     );
