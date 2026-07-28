@@ -2,6 +2,8 @@ export enum SourceTextureFormat {
     ETC1S,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     UASTC4x4,
+    /** Uncompressed 8 bits per channel RGBA data, stored as-is in the container (no transcoding required) */
+    RGBA32,
 }
 
 export enum TranscodeTarget {
@@ -111,9 +113,9 @@ export interface INode {
  */
 export interface IDecisionTree {
     /**
-     * textureFormat can be either UASTC or ETC1S
+     * textureFormat can be either UASTC, ETC1S or RGBA32
      */
-    [textureFormat: string]: INode;
+    [textureFormat: string]: INode | ILeaf;
 }
 
 /**
@@ -139,8 +141,14 @@ export interface IDecodedData {
     /**
      * List of mipmap levels.
      * The first element is the base level, the last element is the smallest mipmap level (if more than one mipmap level is present)
+     * For array textures (layerCount greater than 1), each level contributes layerCount consecutive entries, ordered by layer.
      */
     mipmaps: Array<IMipmap>;
+
+    /**
+     * Number of array layers of the texture. 1 for a regular (non array) texture
+     */
+    layerCount: number;
 
     /**
      * Whether the texture data is in gamma space or not
@@ -181,6 +189,11 @@ export interface IMipmap {
      * The height of the mipmap level
      */
     height: number;
+
+    /**
+     * The array layer this mipmap level belongs to. 0 for a regular (non array) texture
+     */
+    layerIndex: number;
 }
 
 /**
