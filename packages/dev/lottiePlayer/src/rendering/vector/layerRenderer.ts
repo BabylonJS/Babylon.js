@@ -1,8 +1,8 @@
-// Shared contract for a per-layer-kind renderer. Each Lottie layer type (shape, and later
-// image/text) is handled by one of these. The player walks layers in z-order, dispatching
-// each to the renderer for its kind.
+// Shared contract for a per-layer-kind renderer. Each Lottie layer type (shape, text, image) is
+// handled by one of these. The player walks layers in z-order, dispatching each to the renderer for
+// its kind.
 //
-// lite-gl is imperative: each renderer issues draws directly against the engine it captured at
+// Rendering is imperative: each renderer issues draws directly against the engine it captured at
 // construction, so `recordLayer` takes only the opaque token and optional matte token.
 
 import { type Mat2D } from "../../animation/matrix2D";
@@ -26,8 +26,8 @@ export interface ILayerRenderer {
     /** Lottie layer `ty` this renderer handles. */
     readonly kind: number;
     /** True once every GPU effect this renderer owns has compiled and linked. The player
-     *  skips rendering until all active renderers report ready (lite-gl effects compile
-     *  asynchronously, unlike WebGPU pipelines). */
+     *  skips rendering until all active renderers report ready (effects compile
+     *  asynchronously). */
     isReady(): boolean;
     /** Reset per-frame accumulation. */
     beginFrame(ctx: ILayerRenderContext): void;

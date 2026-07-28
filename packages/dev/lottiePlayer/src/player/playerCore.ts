@@ -196,7 +196,8 @@ export function RenderLottieFrame(pl: ILottiePlayer, frame: number): void {
             continue;
         }
         let matteToken = -1;
-        if (layer.matteMode !== undefined) {
+        // A falsy matte mode (absent, or an explicit 0 = "no matte") means the layer paints normally.
+        if (layer.matteMode) {
             if (layer.matteMode !== 1 || layer.matteSource === undefined) {
                 continue;
             }

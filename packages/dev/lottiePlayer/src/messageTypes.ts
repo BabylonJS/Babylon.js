@@ -105,8 +105,6 @@ export type StartAnimationMessagePayload = {
     canvas: OffscreenCanvas;
     /** The canvas/viewport scale factor (may be \< 1 when the animation is larger than the container). */
     canvasScale: number;
-    /** The sprite-atlas scale factor (always \>= 1 so sprites are never rasterised too small). */
-    atlasScale: number;
     /** Optional variables to replace in the animation file. */
     variables: Nullable<Map<string, string>>;
     /** Optional configuration object to customize the animation playback. */

@@ -114,9 +114,18 @@ export interface IMaskProperty {
 
 /** A layer. We render shape layers (`ty === 4`) and image layers (`ty === 2`). */
 export interface ILayer {
-    ind: number;
+    /** Index used for parenting. Optional in the spec; the parser assigns a synthetic one when absent. */
+    ind?: number;
     ty: number;
     nm?: string;
+    /** Hidden. */
+    hd?: boolean;
+    /** Time stretch. */
+    sr?: number;
+    /** Auto-orient (0 false, 1 true). */
+    ao?: number;
+    /** Collapse transform (0 false, 1 true). */
+    ct?: number;
     /** IAsset reference (image layers point at an entry in `assets`). */
     refId?: string;
     /** ILayer masks. Each clips the layer's content to a path region. */
@@ -147,11 +156,11 @@ export interface ILayer {
     /** Solid layer height. */
     sh?: number;
     /** In point (first visible frame). */
-    ip: number;
+    ip?: number;
     /** Out point (first hidden frame). */
-    op: number;
+    op?: number;
     /** Start time (timeline offset). */
-    st: number;
+    st?: number;
     parent?: number;
 }
 
@@ -188,6 +197,12 @@ export interface IFontDef {
     fFamily: string;
     fStyle?: string;
     fWeight?: string;
+    /** Path to the font file. When absent the font is expected to be available to the browser. */
+    fPath?: string;
+    /** Font path origin: 0 local, 1 css url, 2 script url, 3 font url. */
+    origin?: number;
+    /** Ascent in pixels. */
+    ascent?: number;
 }
 
 /** An asset entry. Image assets carry width/height and a (possibly embedded) source. */
@@ -208,6 +223,8 @@ export interface IAsset {
 /** Top-level Lottie document. */
 export interface ILottieFile {
     v: string;
+    /** Human readable name. */
+    nm?: string;
     /** Comp width. */
     w: number;
     /** Comp height. */

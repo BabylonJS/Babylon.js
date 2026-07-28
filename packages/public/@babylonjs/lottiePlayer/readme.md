@@ -35,13 +35,19 @@ You can pass a variables map through `AnimationInput.variables`. These variables
 You can use `AnimationConfiguration` to change certain parameters of the player. The most commonly used options are:
 
 - `loopAnimation`: when `true`, the animation restarts from the beginning after the last frame.
-- `backgroundColor`: RGBA color used to clear the canvas before each frame. Use an alpha of `0` for a transparent canvas.
-- `devicePixelRatio`: rendering scale; set to `0` to follow the system device pixel ratio.
+- `backgroundColor`: RGBA color used to clear the canvas before each frame. Defaults to opaque black; use an alpha of `0` for a transparent canvas.
+- `devicePixelRatio`: rendering scale; set to `0` (the default) to follow the system device pixel ratio.
 - `supportDeviceLost`: enable WebGL context-lost recovery.
 - `stopAtFrame`: stop playback at a specific frame number (useful for visual testing).
-- `debug`: reserved for diagnostics.
 
-The following options are deprecated. They belonged to the previous sprite-atlas renderer and are still accepted so existing code keeps compiling, but they no longer have any effect: `spriteAtlasWidth`, `spriteAtlasHeight`, `gapSize`, `spritesCapacity`, `scaleMultiplier`, `easingSteps`, and `compatibility`.
+The following options are deprecated. They belonged to the previous sprite-atlas renderer and are still accepted so existing code keeps compiling, but they no longer have any effect: `spriteAtlasWidth`, `spriteAtlasHeight`, `gapSize`, `spritesCapacity`, `scaleMultiplier`, `easingSteps`, `debug`, and `compatibility`.
+
+## Upgrading
+
+The player renders vectors on the GPU instead of rasterizing a sprite atlas. Two behavior changes are worth knowing about when upgrading:
+
+- **Default rendering resolution changed.** With `devicePixelRatio: 0` the canvas previously used 2x-4x supersampling to keep atlas sprites crisp. The vector renderer uses multisampling instead, so it now follows the system device pixel ratio. Expect a smaller backing store and lower memory use; pass an explicit `devicePixelRatio` to override.
+- **Keyframe easing is more accurate.** Cubic-bezier easing is solved to a fixed tolerance rather than a fixed number of steps, so mid-animation frames can land a fraction of a pixel away from where the previous renderer put them.
 
 ## Security
 

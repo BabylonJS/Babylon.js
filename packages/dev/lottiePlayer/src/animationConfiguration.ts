@@ -7,27 +7,25 @@ export type LottieCompatibilityMode = "spec" | "babylon8";
 
 /**
  * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
+ * @deprecated The vector renderer implements the spec behavior only. Accepted for backward
+ * compatibility but has no effect.
  */
 export type LottieCompatibilityOptions = {
     /**
      * Controls text layer positioning compatibility.
-     * "spec" uses the corrected Lottie text placement introduced in Babylon.js 9.x.
-     * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
-     * In "babylon8" mode, layers parented to a text layer also follow Babylon.js 8.x semantics and inherit the text
-     * sprite's alignment/baseline offsets rather than the text layer's anchor point.
-     * Default is "spec".
+     * @deprecated Accepted for backward compatibility but has no effect.
      */
     textLayerPlacement?: LottieCompatibilityMode;
     /**
      * Controls solid layer rendering compatibility.
-     * "spec" renders Lottie solid layers (`ty: 1`). "babylon8" treats solid layers as unsupported, matching Babylon.js 8.x.
-     * Default is "spec".
+     * @deprecated Accepted for backward compatibility but has no effect.
      */
     solidLayerRendering?: LottieCompatibilityMode;
 };
 
 /**
  * Fully resolved compatibility options used internally by the Lottie animation player.
+ * @deprecated Accepted for backward compatibility but has no effect.
  */
 export type ResolvedLottieCompatibilityOptions = {
     /** Resolved text layer positioning compatibility. */
@@ -92,7 +90,7 @@ export type AnimationConfiguration = {
     easingSteps: number;
     /**
      * Whether to support device lost events for WebGL contexts.
-     * Default is false.
+     * Default is true.
      */
     supportDeviceLost: boolean;
     /**
@@ -103,12 +101,13 @@ export type AnimationConfiguration = {
     stopAtFrame?: number;
     /**
      * When true, the parser logs unsupported lottie features to the console after parsing.
-     * Useful for diagnosing why a given animation does not render as expected.
-     * Default is false.
+     * @deprecated The vector renderer has no parse diagnostics. Accepted for backward compatibility
+     * but has no effect.
      */
     debug?: boolean;
     /**
      * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
+     * @deprecated Accepted for backward compatibility but has no effect.
      */
     compatibility?: LottieCompatibilityOptions;
 };

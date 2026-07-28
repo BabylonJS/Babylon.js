@@ -109,7 +109,7 @@ void main() {
 }`;
 
 interface IFillDraw {
-    /** Stroke draws stencil a winding-independent union; fills use nonzero winding (cull-twice). */
+    /** Stroke draws stencil a winding-independent union; fills use nonzero winding. */
     stroke: boolean;
     fanFirst: number;
     fanCount: number;
@@ -186,8 +186,8 @@ function EmitWindingFan(pts: number[], np: number, verts: number[], bounds: numb
     return (np - 1) * 3;
 }
 
-/** Create the vector (shape-layer) renderer. Renders fills (solid / linear / radial gradient)
- *  and strokes (solid color).
+/** Create the vector (shape-layer) renderer. Renders fills and strokes, each painted with a solid
+ *  color or a linear / radial gradient.
  * @param engine The engine to render with. Must have been created with a stencil buffer.
  * @returns A layer renderer for Lottie shape layers (`ty === 4`).
  */
@@ -297,8 +297,13 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
     }
 
     function emitOp(op: IDrawOp, worldLayer: Mat2D, frame: number, layerAlpha: number): void {
-        const m = MultiplyMat2D(worldLayer, BuildTransformMatrix(op.groupTransform, frame, a, p, s));
-        const groupOpacity = SampleScalar(op.groupTransform.o, frame, 100) / 100;
+        // Compose the enclosing groups outermost-first; each contributes its transform and opacity.
+        let m = worldLayer;
+        let groupOpacity = 1;
+        for (const groupTransform of op.groupTransforms) {
+            m = MultiplyMat2D(m, BuildTransformMatrix(groupTransform, frame, a, p, s));
+            groupOpacity *= SampleScalar(groupTransform.o, frame, 100) / 100;
+        }
         const paintOpacity = SampleScalar(op.paintOpacity, frame, 100) / 100;
         const alpha = layerAlpha * groupOpacity * paintOpacity;
         if (alpha <= 0.0001) {

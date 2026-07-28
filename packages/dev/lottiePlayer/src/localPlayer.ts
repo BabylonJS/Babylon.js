@@ -14,7 +14,7 @@ import { AnimationController } from "./rendering/animationController";
 export class LocalPlayer {
     private _input: Nullable<AnimationInput> = null;
     private _rawAnimation: RawLottieAnimation | undefined = undefined;
-    private _scaleFactors: ScaleFactors = { canvasScale: 1, atlasScale: 1 };
+    private _scaleFactors: ScaleFactors = { canvasScale: 1 };
     private _playing = false;
     private _disposed = false;
     private _canvas: HTMLCanvasElement | null = null;

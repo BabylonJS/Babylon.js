@@ -39,7 +39,7 @@ export class Player {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _animationWidth: number = 0;
     private _animationHeight: number = 0;
-    private _scaleFactors: ScaleFactors = { canvasScale: 1, atlasScale: 1 };
+    private _scaleFactors: ScaleFactors = { canvasScale: 1 };
     private _resizeObserver: Nullable<ResizeObserver> = null;
     private _resizeDebounceHandle: number | null = null;
     private _resizeDebounceMs: number = 1000 / 60; // Debounce resize updates to approximately 60 FPS
@@ -234,7 +234,6 @@ export class Player {
             payload: {
                 canvas: offscreen,
                 canvasScale: this._scaleFactors.canvasScale,
-                atlasScale: this._scaleFactors.atlasScale,
                 variables: this._input.variables,
                 configuration: this._input.configuration,
                 animationData: IsRawLottieAnimation(animationData) ? animationData : undefined,

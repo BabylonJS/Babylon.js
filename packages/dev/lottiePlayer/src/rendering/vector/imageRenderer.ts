@@ -6,6 +6,7 @@
 import "core/Misc/fileTools";
 
 import { Constants } from "core/Engines/constants";
+import { Logger } from "core/Misc/logger";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { type Nullable } from "core/types";
@@ -19,6 +20,8 @@ import { CreateTexturedQuadRenderer, type IQuadRect } from "./texturedQuad";
 interface IAssetTexture {
     texture: ThinTexture;
     internal: InternalTexture;
+    /** Set when the decode failed; the layer is then skipped instead of blocking readiness. */
+    failed: boolean;
 }
 
 /**
@@ -34,17 +37,25 @@ export function CreateImageRenderer(engine: ThinEngine, assets: readonly IParsed
         if (!asset.src) {
             return null;
         }
+        const entry: IAssetTexture = { texture: null as unknown as ThinTexture, internal: null as unknown as InternalTexture, failed: false };
+        const onError = (message?: string): void => {
+            // A broken asset must not stall readiness, or the whole animation never paints.
+            entry.failed = true;
+            Logger.Warn(`Lottie image asset failed to load and will be skipped: ${message ?? asset.src}`);
+        };
         // invertY false: the quad's uv origin is its top-left, matching the decoded image's first row.
-        const internal = engine.createTexture(asset.src, true, false, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        return { texture: new ThinTexture(internal), internal };
+        entry.internal = engine.createTexture(asset.src, true, false, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, onError);
+        entry.texture = new ThinTexture(entry.internal);
+        return entry;
     });
 
     return CreateTexturedQuadRenderer(engine, {
         kind: 2,
-        ready: () => textures.every((t) => t === null || t.internal.isReady),
+        ready: () => textures.every((t) => t === null || t.failed || t.internal.isReady),
         fillRect(layer: IParsedLayer, rect: IQuadRect): boolean {
             const image = layer.image;
-            if (!image || !textures[image.assetIndex]) {
+            const entry = image ? textures[image.assetIndex] : null;
+            if (!image || !entry || entry.failed) {
                 return false;
             }
             // Local image rect (0,0)-(w,h); the shared renderer maps it to screen.
@@ -54,10 +65,14 @@ export function CreateImageRenderer(engine: ThinEngine, assets: readonly IParsed
             rect.height = image.height;
             return true;
         },
-        textureFor: (layer) => (layer.image ? (textures[layer.image.assetIndex]?.texture ?? null) : null),
+        textureFor: (layer) => {
+            const entry = layer.image ? textures[layer.image.assetIndex] : null;
+            return entry && !entry.failed ? entry.texture : null;
+        },
         disposeTextures() {
-            for (const entry of textures) {
-                entry?.texture.dispose();
+            for (let i = 0; i < textures.length; i++) {
+                textures[i]?.texture.dispose();
+                textures[i] = null;
             }
         },
     });

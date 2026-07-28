@@ -104,8 +104,8 @@ export interface IDrawOp {
      * are stencilled together before a single cover pass.
      */
     contours: IContour[];
-    /** The owning group's transform. */
-    groupTransform: ITransform;
+    /** The enclosing groups' transforms, outermost first. Applied in order under the layer transform. */
+    groupTransforms: ITransform[];
     paint: Paint;
     /** When set, the contours are stroked with this style instead of filled. */
     stroke?: IStrokeStyle;
@@ -263,20 +263,27 @@ function ParseStrokeStyle(it: IShapeItem): IStrokeStyle {
     return { width: it.w as IProp, dash: ParseDash(it.d), lineCap: it.lc };
 }
 
-function WalkGroup(items: IShapeItem[], ops: IDrawOp[]): void {
+/** A paint collected from a shape group, with the stroke style when it is a stroke. */
+interface IGroupPaint {
+    paint: Paint;
+    opacity?: IProp;
+    stroke?: IStrokeStyle;
+}
+
+// Walk a shape tree level. Two passes, because Lottie puts a group's transform and its layer-level
+// decorators AFTER the nested groups they apply to: the first pass collects this level's contours,
+// transform and paints, the second recurses with them in hand.
+function WalkGroup(items: IShapeItem[], ops: IDrawOp[], parentTransforms: ITransform[], inheritedPaints: IGroupPaint[]): void {
     // A group's paths/rects combine into one compound shape that its fill(s) paint together.
     const contours: IContour[] = [];
-    let transform: ITransform = {};
-    const paints: { paint: Paint; opacity?: IProp; stroke?: IStrokeStyle }[] = [];
+    let transform: ITransform | undefined;
+    const paints: IGroupPaint[] = [];
 
     for (const it of items) {
         if (it.hd) {
             continue;
         }
         switch (it.ty) {
-            case "gr":
-                WalkGroup(it.it ?? [], ops);
-                break;
             case "sh":
                 if (it.ks) {
                     contours.push({ path: it.ks });
@@ -315,9 +322,20 @@ function WalkGroup(items: IShapeItem[], ops: IDrawOp[]): void {
         }
     }
 
+    const transforms = transform ? [...parentTransforms, transform] : parentTransforms;
+    // A nested group without its own paints inherits this level's, which is how a layer-level fill
+    // paints its sibling groups.
+    const effectivePaints = paints.length > 0 ? paints : inheritedPaints;
+
+    for (const it of items) {
+        if (!it.hd && it.ty === "gr") {
+            WalkGroup(it.it ?? [], ops, transforms, effectivePaints);
+        }
+    }
+
     if (contours.length > 0) {
-        for (const pt of paints) {
-            ops.push({ contours, groupTransform: transform, paint: pt.paint, stroke: pt.stroke, paintOpacity: pt.opacity });
+        for (const pt of effectivePaints) {
+            ops.push({ contours, groupTransforms: transforms, paint: pt.paint, stroke: pt.stroke, paintOpacity: pt.opacity });
         }
     }
 }
@@ -400,7 +418,7 @@ function CreateSolidLayerOp(layer: ILayer): IDrawOp {
     return {
         // Rect centered at (w/2, h/2) so its top-left is the layer origin (Lottie solid convention).
         contours: [{ rect: { p: CreateStaticProp([w / 2, h / 2]), s: CreateStaticProp([w, h]) } }],
-        groupTransform: {},
+        groupTransforms: [],
         paint: { kind: "solid", color: CreateStaticProp(color) },
     };
 }
@@ -422,12 +440,12 @@ function ParseMasks(layer: ILayer): IParsedMask[] | undefined {
     return masks.length > 0 ? masks : undefined;
 }
 
-function ParseLayer(layer: ILayer, assetIndex: Map<string, number>, assets: IParsedAsset[], fonts: Map<string, IFontDef>, variables?: LottieVariables): IParsedLayer {
+function ParseLayer(layer: ILayer, ind: number, assetIndex: Map<string, number>, assets: IParsedAsset[], fonts: Map<string, IFontDef>, variables?: LottieVariables): IParsedLayer {
     const ops: IDrawOp[] = [];
     let image: IParsedImage | undefined;
     let text: IParsedText | undefined;
     if (layer.ty === 4 && layer.shapes) {
-        WalkGroup(layer.shapes, ops);
+        WalkGroup(layer.shapes, ops, [], []);
     } else if (layer.ty === 1) {
         // Solid layer: a full-size colored rectangle (rendered through the vector fill path).
         ops.push(CreateSolidLayerOp(layer));
@@ -442,12 +460,12 @@ function ParseLayer(layer: ILayer, assetIndex: Map<string, number>, assets: IPar
     return {
         // Solid layers (ty 1) render through the vector fill path, so report them as kind 4.
         kind: layer.ty === 1 ? 4 : layer.ty,
-        ind: layer.ind,
+        ind,
         parent: layer.parent,
         name: layer.nm ?? "",
         transform: layer.ks,
-        ip: layer.ip,
-        op: layer.op,
+        ip: layer.ip ?? 0,
+        op: layer.op ?? Number.MAX_SAFE_INTEGER,
         st: layer.st ?? 0,
         ops,
         image,
@@ -491,12 +509,19 @@ export function ParseAnimation(file: ILottieFile, variables?: LottieVariables): 
     }
     const layers: IParsedLayer[] = [];
     const parsedByInd = new Map<number, IParsedLayer>();
+    // `ind` is optional in the spec. Layers that omit it get a unique synthetic index, otherwise they
+    // would all collide in the parent lookup, the matte pairing and the per-frame world cache.
+    let syntheticInd = Number.MIN_SAFE_INTEGER;
+    const indexOf = new Map<ILayer, number>();
+    for (const layer of file.layers) {
+        indexOf.set(layer, layer.ind ?? syntheticInd++);
+    }
     // Keep the layer kinds the renderers handle: shape (4, with shapes), solid (1), image (2, with a
     // refId), text (5, with a doc), and null (3, kept so children can resolve it as a transform parent).
     // ParseLayer dispatches on the same kinds, so one filter here avoids duplicating that logic.
     for (const layer of file.layers) {
         if ((layer.ty === 4 && layer.shapes) || layer.ty === 1 || (layer.ty === 2 && layer.refId !== undefined) || (layer.ty === 5 && layer.t) || layer.ty === 3) {
-            const parsed = ParseLayer(layer, assetIndex, assets, fonts, variables);
+            const parsed = ParseLayer(layer, indexOf.get(layer) as number, assetIndex, assets, fonts, variables);
             layers.push(parsed);
             parsedByInd.set(parsed.ind, parsed);
         }
@@ -506,8 +531,9 @@ export function ParseAnimation(file: ILottieFile, variables?: LottieVariables): 
         if (!layer.tt) {
             continue;
         }
-        const consumer = parsedByInd.get(layer.ind);
-        const source = parsedByInd.get(layer.tp ?? file.layers[i - 1]?.ind);
+        const consumer = parsedByInd.get(indexOf.get(layer) as number);
+        const previous = file.layers[i - 1];
+        const source = parsedByInd.get(layer.tp ?? (previous ? (indexOf.get(previous) as number) : Number.NaN));
         if (consumer && source) {
             consumer.matteSource = source.ind;
             source.matteOnly = true;
