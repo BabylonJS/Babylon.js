@@ -160,7 +160,7 @@ export async function CreateTexture2DArrayFromKTX2Async(scene: Scene, data: stri
         throw new Error("Failed to decode the KTX2 file. " + decodedData.errors);
     }
 
-    const layerCount = decodedData.layerCount ?? 1;
+    const layerCount = Math.max(decodedData.layerCount ?? 1, 1);
     // mipmaps are ordered level by level, and within a level layer by layer, so the base level occupies
     // the first layerCount entries and its layers are already in ascending order.
     const baseLevel = decodedData.mipmaps.slice(0, layerCount);
@@ -169,16 +169,30 @@ export async function CreateTexture2DArrayFromKTX2Async(scene: Scene, data: stri
         throw new Error(`Failed to decode the KTX2 file: expected ${layerCount} layers for the base mip level but got ${baseLevel.length}.`);
     }
 
-    let totalByteLength = 0;
+    // Every layer of a level shares the level's dimensions, and forceRGBA above means each one must be exactly
+    // width * height * 4 bytes. RawTexture2DArray takes all the layers as one flat buffer and cannot detect a
+    // short or mismatched layer, so validate here rather than uploading malformed data.
+    const { width, height } = baseLevel[0];
+    const expectedLayerByteLength = width * height * 4;
+
     for (const mipmap of baseLevel) {
         if (!mipmap.data) {
             throw new Error(`Failed to decode the KTX2 file: layer ${mipmap.layerIndex} of the base mip level is empty.`);
         }
-        totalByteLength += mipmap.data.byteLength;
+        if (mipmap.width !== width || mipmap.height !== height) {
+            throw new Error(
+                `Failed to decode the KTX2 file: layer ${mipmap.layerIndex} of the base mip level is ${mipmap.width}x${mipmap.height} but layer 0 is ${width}x${height}.`
+            );
+        }
+        if (mipmap.data.byteLength !== expectedLayerByteLength) {
+            throw new Error(
+                `Failed to decode the KTX2 file: layer ${mipmap.layerIndex} of the base mip level holds ${mipmap.data.byteLength} bytes but ${expectedLayerByteLength} were expected.`
+            );
+        }
     }
 
     // A 2D array texture is uploaded as a single buffer holding every layer back to back.
-    const textureData = new Uint8Array(totalByteLength);
+    const textureData = new Uint8Array(expectedLayerByteLength * layerCount);
     let byteOffset = 0;
     for (const mipmap of baseLevel) {
         textureData.set(mipmap.data!, byteOffset);
@@ -187,8 +201,8 @@ export async function CreateTexture2DArrayFromKTX2Async(scene: Scene, data: stri
 
     return new RawTexture2DArray(
         textureData,
-        baseLevel[0].width,
-        baseLevel[0].height,
+        width,
+        height,
         layerCount,
         Constants.TEXTUREFORMAT_RGBA,
         scene,

@@ -348,5 +348,23 @@ describe("rawTexture2DArray.functions", () => {
             mockState.decoded = { layerCount: 2, mipmaps: [makeMipmap(0, 1), { data: null, width: 2, height: 2, layerIndex: 1 }] };
             await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/layer 1 of the base mip level is empty/);
         });
+
+        it("rejects when the layers do not share dimensions", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 2, mipmaps: [makeMipmap(0, 1), makeMipmap(1, 2, 4, 4)] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/layer 1 of the base mip level is 4x4 but layer 0 is 2x2/);
+        });
+
+        it("rejects when a layer does not hold the expected number of RGBA bytes", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 2, mipmaps: [makeMipmap(0, 1), { data: new Uint8Array(8), width: 2, height: 2, layerIndex: 1 }] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/holds 8 bytes but 16 were expected/);
+        });
+
+        it("rejects rather than crashing when the decoder reports no layers", async () => {
+            stubFetch();
+            mockState.decoded = { layerCount: 0, mipmaps: [] };
+            await expect(CreateTexture2DArrayFromKTX2Async({ getEngine: () => ({}) } as any, "a.ktx2")).rejects.toThrow(/expected 1 layers/);
+        });
     });
 });

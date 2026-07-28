@@ -121,14 +121,18 @@ export class KTX2Decoder {
 
             const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
-            let levelDataBuffer: ArrayBufferLike | ArrayBufferView = kfr.data.buffer;
+            let levelDataBuffer: ArrayBufferLike = kfr.data.buffer;
 
             let levelDataOffset = kfr.levels[level].byteOffset + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === SupercompressionScheme.ZStandard) {
-                levelDataBuffer = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
-                levelDataOffset = 0;
+                // The decompressed level is a view that does not necessarily start at the beginning of its backing
+                // buffer, so keep the buffer and its offset separately. Passing the view itself to the Uint8Array
+                // constructor below would silently copy the whole level and ignore the offset/length arguments.
+                const decompressedLevel = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
+                levelDataBuffer = decompressedLevel.buffer;
+                levelDataOffset = decompressedLevel.byteOffset;
             }
 
             if (level === 0) {
@@ -148,12 +152,12 @@ export class KTX2Decoder {
                         imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + layerIndex * numImagesInLevel + imageIndex];
 
                         encodedData = new Uint8Array(
-                            levelDataBuffer as ArrayBuffer,
+                            levelDataBuffer,
                             levelDataOffset + imageDesc.rgbSliceByteOffset,
                             imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength
                         );
                     } else {
-                        encodedData = new Uint8Array(levelDataBuffer as ArrayBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
+                        encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
 
                         imageOffsetInLevel += levelImageByteLength;
                     }

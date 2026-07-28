@@ -16,9 +16,10 @@ const DFD_TRANSFER_LINEAR = 1;
  * @param layerCount number of array layers
  * @param levelCount number of mip levels
  * @param vkFormat the vkFormat value to write in the header
+ * @param supercompressionScheme the supercompression scheme to declare in the header (the level data is left uncompressed)
  * @returns the raw KTX2 bytes
  */
-function createUncompressedKtx2(width: number, layerCount: number, levelCount: number, vkFormat = VK_FORMAT_R8G8B8A8_UNORM): Uint8Array {
+function createUncompressedKtx2(width: number, layerCount: number, levelCount: number, vkFormat = VK_FORMAT_R8G8B8A8_UNORM, supercompressionScheme = 0): Uint8Array {
     const numSamples = 4;
     const descriptorBlockSize = 24 + numSamples * 16;
     const dfdByteLength = 4 + descriptorBlockSize;
@@ -60,7 +61,7 @@ function createUncompressedKtx2(width: number, layerCount: number, levelCount: n
     writeU32(layerCount);
     writeU32(1); // faceCount
     writeU32(levelCount);
-    writeU32(0); // supercompressionScheme: none
+    writeU32(supercompressionScheme);
     writeU32(dfdByteOffset);
     writeU32(dfdByteLength);
     writeU32(0); // kvdByteOffset
@@ -171,5 +172,30 @@ describe("KTX2Decoder", () => {
         const file = createUncompressedKtx2(4, 1, 1, 23 /* VK_FORMAT_R8G8B8_UNORM */);
 
         await expect(new KTX2Decoder().decode(file, EmptyCaps)).rejects.toThrow(/Unsupported uncompressed format/);
+    });
+
+    it("honors the byte offset of a decompressed ZStandard level", async () => {
+        const file = createUncompressedKtx2(4, 3, 1, VK_FORMAT_R8G8B8A8_UNORM, 2 /* SupercompressionScheme.ZStandard */);
+
+        const decoder = new KTX2Decoder();
+        // Stand in for the real ZStandard decoder: pass the level through unchanged, but hand it back as a view
+        // that starts partway into a larger buffer, which is what the wasm decoder does in practice.
+        (decoder as any)._zstdDecoder = {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            init: async () => {},
+            decode: (array: Uint8Array) => {
+                const backingBuffer = new Uint8Array(array.byteLength + 8);
+                backingBuffer.set(array, 8);
+                return backingBuffer.subarray(8);
+            },
+        };
+
+        const decoded = await decoder.decode(file, EmptyCaps);
+
+        expect(decoded.errors).toBeUndefined();
+        expect(decoded.mipmaps).toHaveLength(3);
+        // Each layer must be sliced out of the decompressed level, not silently replaced by the whole level.
+        expect(decoded.mipmaps.map((mipmap) => mipmap.data![0])).toEqual([1, 2, 3]);
+        expect(decoded.mipmaps.map((mipmap) => mipmap.data!.byteLength)).toEqual([4 * 4 * 4, 4 * 4 * 4, 4 * 4 * 4]);
     });
 });
