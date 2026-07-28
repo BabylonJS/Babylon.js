@@ -1412,7 +1412,11 @@ export class GaussianSplattingMeshBase extends Mesh {
             return a.frameIdLastUpdate - b.frameIdLastUpdate;
         });
 
-        const hasSortFunction = this._worker || Native?.sortSplats || this._disableDepthSort;
+        // The native sort writes into _splatPositions/_splatIndex: both must be allocated (they still are
+        // null before any splat data has been committed) or the native binding throws on the conversion.
+        const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
+        // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
+        const hasSortFunction = !this._disableDepthSort && (this._worker || hasNativeSort);
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             const worldMatrix = this.computeWorldMatrix(true);
             // view infos sorted by least recent updated frame id
@@ -1465,14 +1469,16 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             });
         } else if (this._disableDepthSort) {
-            activeViewInfos.forEach((cameraViewInfos) => {
-                if (!cameraViewInfos.splatIndexBufferSet) {
-                    cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
-                    cameraViewInfos.splatIndexBufferSet = true;
-                }
-            });
+            if (this._splatIndex) {
+                activeViewInfos.forEach((cameraViewInfos) => {
+                    if (!cameraViewInfos.splatIndexBufferSet) {
+                        cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                        cameraViewInfos.splatIndexBufferSet = true;
+                    }
+                });
+                this._readyToDisplay = true;
+            }
             this._canPostToWorker = true;
-            this._readyToDisplay = true;
         }
     }
     /**
@@ -3088,10 +3094,12 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!this._vertexCount) {
             return;
         }
+        // The identity index buffer must exist even when no sort worker is needed: every render path
+        // (including the Native one) reads it, and a null buffer breaks the Native bindings.
+        this._updateSplatIndexBuffer(this._vertexCount);
         if (this._disableDepthSort) {
             return;
         }
-        this._updateSplatIndexBuffer(this._vertexCount);
 
         // no worker in native
         if (IsNative) {
