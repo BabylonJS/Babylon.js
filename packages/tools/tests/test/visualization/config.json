@@ -3889,6 +3889,12 @@
             "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
+            "title": "OpenPBR IBL Specular Weight vs Coat Weight",
+            "playgroundId": "#GRQHVV#328",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
+        },
+        {
             "title": "OpenPBR IBL Specular Roughness vs Coat Roughness",
             "playgroundId": "#GRQHVV#183",
             "excludedEngines": ["webgl1"],
