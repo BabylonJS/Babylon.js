@@ -15,6 +15,7 @@ function createMockContainer(meshNames: string[] = ["Mesh1"], materialNames: str
 
     return {
         meshes: meshNames.map((name) => ({ name })),
+        transformNodes: [] as { name: string }[],
         materials,
         textures: [] as { name: string }[],
         animationGroups: [] as { name: string }[],
