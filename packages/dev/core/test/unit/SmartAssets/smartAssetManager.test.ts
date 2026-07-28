@@ -25,6 +25,7 @@ const mockDispose = vi.fn();
 function createMockContainer(meshNames: string[] = ["Mesh1"], materialNames: string[] = ["Material1"]) {
     return {
         meshes: meshNames.map((name) => ({ name })),
+        transformNodes: [{ name: "TransformNode1" }],
         materials: materialNames.map((name) => ({ name })),
         textures: [] as { name: string }[],
         animationGroups: [] as { name: string }[],
@@ -325,6 +326,13 @@ describe("SmartAssetManager", () => {
             const container = await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
             const mesh = container.meshes[0];
             expect(FindSmartAssetKeyForObject(scene, mesh as any)).toBe("chair");
+        });
+
+        it("should track transform nodes loaded from a smart asset", async () => {
+            const container = await LoadSmartAssetAsync(scene, "character", "models/character.glb");
+            const transformNode = container.transformNodes[0];
+
+            expect(FindSmartAssetKeyForObject(scene, transformNode as any)).toBe("character");
         });
     });
 
