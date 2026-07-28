@@ -10,6 +10,7 @@ import { type KTX2FileReader, type IKTX2_ImageDesc } from "../ktx2FileReader";
  * @internal
  */
 export class UncompressedRGBA32Transcoder extends Transcoder {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static override CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
         return src === KTX2.SourceTextureFormat.RGBA32 && dst === KTX2.TranscodeTarget.RGBA32;
     }

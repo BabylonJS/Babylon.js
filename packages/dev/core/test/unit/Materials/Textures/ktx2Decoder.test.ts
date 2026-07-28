@@ -174,6 +174,12 @@ describe("KTX2Decoder", () => {
         await expect(new KTX2Decoder().decode(file, EmptyCaps)).rejects.toThrow(/Unsupported uncompressed format/);
     });
 
+    it("rejects a BasisLZ file that carries no supercompression global data", async () => {
+        const file = createUncompressedKtx2(4, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 1 /* SupercompressionScheme.BasisLZ */);
+
+        await expect(new KTX2Decoder().decode(file, EmptyCaps)).rejects.toThrow(/BasisLZ supercompression is declared but the file has no supercompression global data/);
+    });
+
     it("honors the byte offset of a decompressed ZStandard level", async () => {
         const file = createUncompressedKtx2(4, 3, 1, VK_FORMAT_R8G8B8A8_UNORM, 2 /* SupercompressionScheme.ZStandard */);
 

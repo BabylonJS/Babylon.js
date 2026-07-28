@@ -102,6 +102,14 @@ export class KTX2Decoder {
             transcoderName: transcoder.getName(),
         };
 
+        // The image descriptors are only read when the file carries supercompression global data, so a file that
+        // declares BasisLZ without any would otherwise fail deep in the loop below with an opaque type error.
+        const imageDescs = kfr.supercompressionGlobalData.imageDescs;
+
+        if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ && !imageDescs) {
+            throw new Error("Invalid KTX2 file: BasisLZ supercompression is declared but the file has no supercompression global data.");
+        }
+
         let firstImageDescIndex = 0;
 
         for (let level = 0; level < kfr.header.levelCount; level++) {
@@ -149,7 +157,7 @@ export class KTX2Decoder {
                     let imageDesc: IKTX2_ImageDesc | null = null;
 
                     if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
-                        imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + layerIndex * numImagesInLevel + imageIndex];
+                        imageDesc = imageDescs![firstImageDescIndex + layerIndex * numImagesInLevel + imageIndex];
 
                         encodedData = new Uint8Array(
                             levelDataBuffer,

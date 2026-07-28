@@ -277,6 +277,10 @@ describe("rawTexture2DArray.functions", () => {
             mockState.decoded = null;
         });
 
+        afterEach(() => {
+            vi.unstubAllGlobals();
+        });
+
         it("concatenates the base mip level layers in order and forces RGBA", async () => {
             stubFetch();
             mockState.decoded = {
