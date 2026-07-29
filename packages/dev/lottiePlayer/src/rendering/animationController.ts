@@ -1,7 +1,7 @@
 import { type ILottieFile } from "../animation/lottieRaw";
 import { type AnimationConfiguration, type ResolvedAnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
 import { CreateVectorEngine, DisposeVectorPlayer, IsPlayerReady, RenderLottieFrame, type ILottiePlayer } from "../player/playerCore";
-import { CreateLottiePlayerAsync } from "../player/fullPlayer";
+import { CreateLottiePlayerAsync } from "../player/playerFactory";
 
 import { type ThinEngine } from "core/Engines/thinEngine";
 

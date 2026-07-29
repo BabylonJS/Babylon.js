@@ -1,5 +1,5 @@
-// Full player: parses a Lottie document, always builds the vector fill renderer, then loads the
-// text and image renderers only when those layer kinds are present.
+// Parses a Lottie document, installs the base fill renderer, then loads optional renderer chunks
+// for the layer kinds present in that document.
 
 import { type ThinEngine } from "core/Engines/thinEngine";
 
