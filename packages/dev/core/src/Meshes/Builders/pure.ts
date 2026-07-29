@@ -1,6 +1,6 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 export * from "./boxBuilder.pure";
-export * from "./tiledBoxBuilder";
+export * from "./tiledBoxBuilder.pure";
 export * from "./discBuilder.pure";
 export * from "./ribbonBuilder.pure";
 export * from "./sphereBuilder.pure";
@@ -13,7 +13,7 @@ export * from "./polygonBuilder.pure";
 export * from "./shapeBuilder.pure";
 export * from "./latheBuilder.pure";
 export * from "./planeBuilder.pure";
-export * from "./tiledPlaneBuilder";
+export * from "./tiledPlaneBuilder.pure";
 export * from "./groundBuilder.pure";
 export * from "./tubeBuilder.pure";
 export * from "./polyhedronBuilder.pure";

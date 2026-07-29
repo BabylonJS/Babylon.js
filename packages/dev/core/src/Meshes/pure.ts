@@ -13,7 +13,7 @@ export * from "./instancedMesh.pure";
 export * from "./linesMesh.pure";
 export * from "./mesh.pure";
 export * from "./mesh.vertexData";
-export * from "./meshBuilder";
+export * from "./meshBuilder.pure";
 export * from "./meshSimplification";
 export * from "./meshSimplificationSceneComponent.pure";
 export * from "./meshUtils";

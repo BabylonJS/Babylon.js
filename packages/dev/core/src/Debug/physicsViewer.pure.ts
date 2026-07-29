@@ -20,7 +20,7 @@ import { type ICreateCapsuleOptions, CreateCapsule } from "../Meshes/Builders/ca
 import { Logger } from "../Misc/logger";
 import { type PhysicsBody } from "../Physics/v2/physicsBody";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { MeshBuilder } from "../Meshes/meshBuilder.pure";
 import { type PhysicsConstraint } from "../Physics/v2/physicsConstraint";
 import { AxesViewer } from "./axesViewer";
 import { TransformNode } from "../Meshes/transformNode.pure";
