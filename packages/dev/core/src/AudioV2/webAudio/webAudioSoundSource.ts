@@ -16,6 +16,7 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     protected _webAudioNode: Nullable<AudioNode> = null;
 
     private _mediaStreamAudioElement: Nullable<HTMLAudioElement> = null;
+    private _stopMediaStreamTracksOnDispose = false;
 
     /** @internal */
     public _audioContext: AudioContext | OfflineAudioContext;
@@ -29,6 +30,8 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
 
         this._audioContext = this.engine._audioContext;
         this._webAudioNode = webAudioNode;
+
+        this._stopMediaStreamTracksOnDispose = options.stopMediaStreamTracksOnDispose === true;
 
         if (options.mediaStreamSinkEnabled !== false && webAudioNode instanceof MediaStreamAudioSourceNode) {
             this._attachMediaStreamSink(webAudioNode.mediaStream);
@@ -115,7 +118,7 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
         }
 
         if (this._webAudioNode) {
-            if (this._webAudioNode instanceof MediaStreamAudioSourceNode) {
+            if (this._stopMediaStreamTracksOnDispose && this._webAudioNode instanceof MediaStreamAudioSourceNode) {
                 for (const track of this._webAudioNode.mediaStream.getTracks()) {
                     track.stop();
                 }

@@ -36,6 +36,19 @@ export interface ISoundSourceOptions extends IAbstractAudioOutNodeOptions, ISpat
      * creating a redundant one. Has no effect for sources that are not backed by a `MediaStreamAudioSourceNode`.
      */
     mediaStreamSinkEnabled: boolean;
+
+    /**
+     * Whether disposing the sound source stops the tracks of its backing `MediaStream` (via `MediaStreamTrack.stop()`).
+     * Defaults to `false`.
+     *
+     * When the `MediaStream` is owned by the caller (for example, a remote WebRTC stream), stopping its tracks on dispose
+     * would permanently end them and could not be resumed without renegotiation, so the sound source leaves the stream
+     * lifecycle to the caller by default. The microphone source enables this so it releases the capture device it owns.
+     *
+     * Set this to `true` if the sound source should own and stop the stream's tracks when disposed. Has no effect for
+     * sources that are not backed by a `MediaStreamAudioSourceNode`.
+     */
+    stopMediaStreamTracksOnDispose: boolean;
 }
 
 /**
