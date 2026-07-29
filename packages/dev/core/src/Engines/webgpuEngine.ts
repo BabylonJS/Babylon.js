@@ -2,6 +2,7 @@ export * from "./webgpuEngine.pure";
 
 import "../ShadersWGSL/clearQuad.vertex";
 import "../ShadersWGSL/clearQuad.fragment";
+import "./WebGPU/webgpuShaderProcessorsWGSL";
 import "../Buffers/buffer.align";
 import "./AbstractEngine/abstractEngine.loadingScreen";
 import "./AbstractEngine/abstractEngine.dom";

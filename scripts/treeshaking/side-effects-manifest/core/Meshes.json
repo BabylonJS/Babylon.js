@@ -120,6 +120,7 @@
         "Meshes/instancedMesh.types.ts": ["declare-module"],
         "Meshes/linesMesh.ts": ["top-level-call"],
         "Meshes/mesh.ts": ["top-level-call"],
+        "Meshes/meshBuilder.ts": ["bare-import"],
         "Meshes/meshSimplificationSceneComponent.ts": ["top-level-call"],
         "Meshes/meshSimplificationSceneComponent.types.ts": ["declare-module"],
         "Meshes/meshUVSpaceRenderer.types.ts": ["declare-module"],

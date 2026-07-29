@@ -548,6 +548,7 @@
         "Meshes/instancedMesh.js",
         "Meshes/linesMesh.js",
         "Meshes/mesh.js",
+        "Meshes/meshBuilder.js",
         "Meshes/meshSimplificationSceneComponent.js",
         "Meshes/subMesh.project.js",
         "Meshes/thinInstanceMesh.js",
