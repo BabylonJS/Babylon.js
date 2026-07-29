@@ -2,6 +2,8 @@
  * @vitest-environment jsdom
  */
 
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+
 vi.mock("core/Misc/logger");
 
 import { WebDeviceInputSystem } from "core/DeviceInput/webDeviceInputSystem";
@@ -79,7 +81,7 @@ describe("WebDeviceInputSystem", () => {
 
                     // Act
                     raiseOnPointerDown({ pointerType: "touch", button: 0, pointerId });
-                    raiseOnPointerMove({ pointerType: "touch", button: -1, pointerId });
+                    raiseOnPointerMove({ pointerType: "touch", button: -1, buttons: 1, pointerId });
                     raiseOnPointerUp({ pointerType: "touch", button: 0, pointerId });
 
                     // Assert
@@ -96,7 +98,7 @@ describe("WebDeviceInputSystem", () => {
         describe("initial pointermove", () => {
             it("should raise deviceConnected", () => {
                 // Act
-                raiseOnPointerMove({ pointerType: "touch", button: -1, pointerId: 1 });
+                raiseOnPointerMove({ pointerType: "touch", button: -1, buttons: 1, pointerId: 1 });
 
                 // Assert
                 expect(mockOnDeviceConnected).toHaveBeenCalled();
@@ -106,11 +108,11 @@ describe("WebDeviceInputSystem", () => {
         describe("subsequent pointermove", () => {
             it("should not raise deviceConnected again", () => {
                 // Arrange
-                raiseOnPointerMove({ pointerType: "touch", button: -1, pointerId: 1 });
+                raiseOnPointerMove({ pointerType: "touch", button: -1, buttons: 1, pointerId: 1 });
                 mockOnDeviceConnected.mockReset();
 
                 // Act
-                raiseOnPointerMove({ pointerType: "touch", button: -1, pointerId: 1 });
+                raiseOnPointerMove({ pointerType: "touch", button: -1, buttons: 1, pointerId: 1 });
 
                 // Assert
                 expect(mockOnDeviceConnected).not.toHaveBeenCalled();
@@ -126,7 +128,7 @@ describe("WebDeviceInputSystem", () => {
                     mockOnDeviceDisconnected.mockClear();
 
                     // Act
-                    raiseOnPointerMove({ pointerType: "touch", button: -1, pointerId });
+                    raiseOnPointerMove({ pointerType: "touch", button: -1, buttons: 1, pointerId });
                     raiseOnPointerDown({ pointerType: "touch", button: 0, pointerId });
                     raiseOnPointerUp({ pointerType: "touch", button: 0, pointerId });
 
@@ -137,6 +139,21 @@ describe("WebDeviceInputSystem", () => {
                     expect(mockOnDeviceDisconnected).toHaveBeenCalled();
                 }
             });
+        });
+    });
+
+    describe("when a touch pointer hovers without contact", () => {
+        it("should not exhaust the available touch slots", () => {
+            // Act
+            for (let pointerId = 0; pointerId < 25; pointerId++) {
+                raiseOnPointerMove({ pointerType: "touch", button: -1, buttons: 0, pointerId });
+            }
+            raiseOnPointerDown({ pointerType: "touch", button: 0, pointerId: 25 });
+
+            // Assert
+            expect(mockOnDeviceConnected).toHaveBeenCalledTimes(1);
+            expect(mockOnInputChanged).toHaveBeenCalledTimes(1);
+            expect(mockTraceWarn).not.toHaveBeenCalled();
         });
     });
 });
