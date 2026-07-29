@@ -25,6 +25,23 @@ export class InteractivityHostResolver implements IFlowGraphHostResolver {
     }
 
     /**
+     * @param reference the reference to decode
+     * @returns the index the reference denotes, or `undefined` when it is not an indexed JSON Pointer
+     */
+    public decodeIndexReference(reference: string): number | undefined {
+        if (reference.length === 0 || reference[0] !== "/") {
+            return undefined;
+        }
+        const tail = reference.substring(reference.lastIndexOf("/") + 1);
+        // RFC 6901 array indices are unsigned decimal integers with no leading zeros, so reject
+        // anything else rather than letting `Number` accept "0x2", "1e1" or " 3".
+        if (!/^(0|[1-9]\d*)$/.test(tail)) {
+            return undefined;
+        }
+        return parseInt(tail, 10);
+    }
+
+    /**
      * Maps a Babylon object loaded from the glTF back to a JSON Pointer addressing it.
      *
      * The glTF loader stamps `_internalMetadata.gltf.pointers` with one entry per JSON Pointer the

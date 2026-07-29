@@ -106,6 +106,18 @@ describe("FlowGraph host resolver", () => {
             expect(context.getObjectReference({}, "nodes")).toBe("/nodes/7");
         });
 
+        it("delegates indexed reference decoding to the host", () => {
+            const { context } = createGraph({ decodeIndexReference: (reference) => (reference === "/animations/3" ? 3 : undefined) });
+
+            expect(context.decodeIndexReference("/animations/3")).toBe(3);
+            expect(context.decodeIndexReference("/animations/nope")).toBeUndefined();
+        });
+
+        it("cannot decode an indexed reference without a resolver", () => {
+            const { context } = createGraph();
+            expect(context.decodeIndexReference("/animations/3")).toBeUndefined();
+        });
+
         it("decodes a host event reference when stopping propagation", () => {
             const { graph } = createGraph(hostResolver);
             // An unknown reference format must be ignored rather than throwing.

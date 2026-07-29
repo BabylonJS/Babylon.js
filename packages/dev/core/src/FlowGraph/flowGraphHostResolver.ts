@@ -56,6 +56,15 @@ export interface IFlowGraphHostResolver {
     decodeEventReference?(reference: string): string | undefined;
 
     /**
+     * Decodes the array index denoted by a reference, for cases where a reference addresses an
+     * element of one of the host's collections. Must return `undefined` for values the host does
+     * not recognise as an indexed reference.
+     * @param reference the reference to decode
+     * @returns the index the reference denotes, or `undefined` when it does not denote one
+     */
+    decodeIndexReference?(reference: string): number | undefined;
+
+    /**
      * Maps a runtime object to the reference the host addresses it by, for example the JSON
      * Pointer of the resource a loaded object originates from.
      *

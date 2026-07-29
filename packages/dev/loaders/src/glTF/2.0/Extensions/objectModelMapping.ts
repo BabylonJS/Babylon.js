@@ -541,25 +541,25 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             // Per KHR_interactivity Object Model: read-only ref pointing to the
             // attached camera, encoded as a JSON Pointer string. Empty string
             // when no camera is attached (the spec's null-ref convention).
-            get: (node: INode) => (node.camera !== undefined ? `/cameras/${node.camera}/` : ""),
+            get: (node: INode) => (node.camera !== undefined ? `/cameras/${node.camera}` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
         mesh: {
             type: "string",
-            get: (node: INode) => (node.mesh !== undefined ? `/meshes/${node.mesh}/` : ""),
+            get: (node: INode) => (node.mesh !== undefined ? `/meshes/${node.mesh}` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
         skin: {
             type: "string",
-            get: (node: INode) => (node.skin !== undefined ? `/skins/${node.skin}/` : ""),
+            get: (node: INode) => (node.skin !== undefined ? `/skins/${node.skin}` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
         parent: {
             type: "string",
-            get: (node: INode) => (node.parent && node.parent.index !== undefined ? `/nodes/${node.parent.index}/` : ""),
+            get: (node: INode) => (node.parent && node.parent.index !== undefined ? `/nodes/${node.parent.index}` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
@@ -574,9 +574,8 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 __target__: true,
                 type: "string",
                 // The wrapping converter passes the indexed child value (an
-                // INode index) as `childIndex`; convert it to a JSON Pointer
-                // ref string so ref/eq comparisons work as authored.
-                get: (childIndex: any) => (typeof childIndex === "number" ? `/nodes/${childIndex}/` : ""),
+                // INode index); convert it to a JSON Pointer ref string.
+                get: (childIndex: any) => (typeof childIndex === "number" ? `/nodes/${childIndex}` : ""),
                 getTarget: () => ({ __nodeIndex: true }),
                 isReadOnly: true,
             },
@@ -640,16 +639,13 @@ const animationsTree = {
         getPropertyName: [() => "length"],
     },
     __array__: {
-        // Indexed access to the animation. KHR_interactivity Opaque-Reference
-        // spec defines the trailing-slash form ``/animations/<i>/`` as a ref
-        // to the animation itself; we surface that here as a JSON-Pointer ref
-        // string so blocks like ``animation/start`` can consume it directly.
-        // Use the animation's own ``index`` property (populated by the loader's
-        // ArrayItem.Assign step) so the ref is resolved without needing a
-        // separate index payload from the path converter.
+        // Indexed access to the animation, surfaced as a JSON Pointer ref string so blocks like
+        // ``animation/start`` can consume it directly. Uses the animation's own ``index`` property
+        // (populated by the loader's ArrayItem.Assign step) so the ref is resolved without needing
+        // a separate index payload from the path converter.
         __target__: true,
         type: "string",
-        get: (animation: IAnimation) => (animation && typeof animation.index === "number" ? `/animations/${animation.index}/` : ""),
+        get: (animation: IAnimation) => (animation && typeof animation.index === "number" ? `/animations/${animation.index}` : ""),
         getTarget: (animation: IAnimation) => animation._babylonAnimationGroup,
         isReadOnly: true,
     },
@@ -676,7 +672,7 @@ const meshesTree: IGLTFObjectModelTreeMeshesObject = {
                 material: {
                     type: "string",
                     // Read-only ref to the assigned material, JSON Pointer encoded.
-                    get: (primitive: IMeshPrimitive) => (primitive.material !== undefined ? `/materials/${primitive.material}/` : ""),
+                    get: (primitive: IMeshPrimitive) => (primitive.material !== undefined ? `/materials/${primitive.material}` : ""),
                     getTarget: (primitive: IMeshPrimitive) => primitive,
                     isReadOnly: true,
                 },
@@ -1659,7 +1655,7 @@ const scenesTree: IGLTFObjectModelTreeScenesObject = {
                 type: "string",
                 // Indexed scene root: the underlying value is the INode index;
                 // KHR_interactivity expects a ref-typed JSON Pointer string.
-                get: (nodeIndex: any) => (typeof nodeIndex === "number" ? `/nodes/${nodeIndex}/` : ""),
+                get: (nodeIndex: any) => (typeof nodeIndex === "number" ? `/nodes/${nodeIndex}` : ""),
                 getTarget: () => ({ __nodeIndex: true }),
                 isReadOnly: true,
             },
@@ -1687,7 +1683,7 @@ const skinsTree: IGLTFObjectModelTreeSkinsObject = {
                 __target__: true,
                 type: "string",
                 // Indexed skin joint: returns a ref to the joint node.
-                get: (jointIndex: any) => (typeof jointIndex === "number" ? `/nodes/${jointIndex}/` : ""),
+                get: (jointIndex: any) => (typeof jointIndex === "number" ? `/nodes/${jointIndex}` : ""),
                 getTarget: () => ({ __nodeIndex: true }),
                 isReadOnly: true,
             },
@@ -1698,7 +1694,7 @@ const skinsTree: IGLTFObjectModelTreeSkinsObject = {
             // (null ref) when no skeleton root is declared.
             get: (skin: ISkin) => {
                 const skeleton = (skin as any).skeleton;
-                return typeof skeleton === "number" ? `/nodes/${skeleton}/` : "";
+                return typeof skeleton === "number" ? `/nodes/${skeleton}` : "";
             },
             getTarget: (skin: ISkin) => skin,
             isReadOnly: true,
