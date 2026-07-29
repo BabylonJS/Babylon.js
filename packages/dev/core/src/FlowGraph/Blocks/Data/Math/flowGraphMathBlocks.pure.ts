@@ -678,7 +678,7 @@ function Interpolate(a: number, b: number, c: number) {
 }
 
 /**
- * Smooth step (Hermite interpolation) per KHR_interactivity `math/smoothStep`.
+ * Smooth step (Hermite interpolation) coefficient.
  * Given the edges `a`/`b` and the value `c`, computes the smooth interpolation
  * coefficient `t * t * (3 - 2 * t)` where `t = saturate((c - min(a, b)) / |b - a|)`.
  * Note that this returns the coefficient in [0, 1]; it does not interpolate between `a` and `b`.
@@ -712,7 +712,7 @@ export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBl
 
 /**
  * Spherical linear interpolation between two unit quaternions, matching the
- * KHR_interactivity `math/quatSlerp` operation. The two inputs are treated as
+ * quaternion slerp operation. The two inputs are treated as
  * Babylon `Quaternion` values regardless of their concrete class (the spec
  * defines them as `float4`), and the output is a `Quaternion`.
  *
@@ -727,7 +727,7 @@ export class FlowGraphMathSlerpBlock extends FlowGraphTernaryOperationBlock<Quat
 }
 
 /**
- * Smooth-step block, backing the KHR_interactivity `math/smoothStep` operation.
+ * Smooth-step block, returning the Hermite interpolation coefficient.
  * Operates component-wise over floatN inputs (the two edges `a`/`b` and the
  * value `c`).
  */
@@ -757,7 +757,7 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicEq(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
-        // KHR_interactivity has no dedicated quaternion type: rotations are float4 values. Treat Quaternion and
+        // A rotation may arrive either as a Quaternion or as a four-component vector, so treat Quaternion and
         // Vector4 (both four-component) as comparable so that, for example, a decomposed rotation can be compared
         // against a float4 literal.
         const isFourComponent = (className?: string) => className === FlowGraphTypes.Vector4 || className === FlowGraphTypes.Quaternion;
@@ -1367,7 +1367,7 @@ export class FlowGraphOneBitsCounterBlock extends FlowGraphUnaryOperationBlock<F
 
 /**
  * Converts a linear sRGB color to OkLCh (the polar form of the Oklab color space).
- * Uses the single-precision matrices listed by KHR_interactivity.
+ * Uses Ottosson's original single-precision matrices.
  * The RGB inputs are treated as linear; hue is returned in radians.
  * @param r linear red component
  * @param g linear green component

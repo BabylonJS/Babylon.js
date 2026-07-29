@@ -69,9 +69,8 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         const newIndex = lastDelayIndex + 1;
         this.lastDelayIndex.setValue(new FlowGraphInteger(newIndex), context);
         context._setGlobalContextVariable("lastDelayIndex", newIndex);
-        // Track the delay as active so `pointer/get` on
-        // `/extensions/KHR_interactivity/delays/{}` reports it as valid until it
-        // fires or is cancelled (KHR_interactivity spec §4.2.4).
+        // Track the delay as active so a host can report the handle as valid until it fires or
+        // is cancelled.
         MarkDelayActive(context, newIndex);
 
         timers[newIndex] = timer;

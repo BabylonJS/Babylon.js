@@ -46,8 +46,7 @@ export class FlowGraphIntToBoolean extends FlowGraphUnaryOperationBlock<FlowGrap
 /**
  * A block that converts an integer to a float.
  *
- * KHR_interactivity ``type/intToFloat`` is spec-defined to take an ``int``
- * input. The Babylon FlowGraph runtime represents ``int`` as
+ * Conversion from an integer to a float. The FlowGraph runtime represents ``int`` as
  * ``FlowGraphInteger`` (a wrapper carrying ``.value``). Accept both shapes —
  * a plain JavaScript ``number`` and a ``FlowGraphInteger`` — so accessors that
  * return a raw integer (e.g. the ``/nodes/{}/children.length`` pointer/get

@@ -39,8 +39,7 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
             delete timers[delayIndex];
             context._setGlobalContextVariable("pendingDelays", timers);
         }
-        // The delay is cancelled, so drop it from the active set used by the
-        // `/extensions/KHR_interactivity/delays/{}` validity check.
+        // The delay is cancelled, so drop it from the active set used by handle validity checks.
         MarkDelayInactive(context, delayIndex);
         // activate the out output flow
         this.out._activateSignal(context);

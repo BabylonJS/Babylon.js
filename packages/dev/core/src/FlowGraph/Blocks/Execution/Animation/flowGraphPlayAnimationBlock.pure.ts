@@ -163,9 +163,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // not accepting 0
             const to = rawTo || animationGroupToUse.to;
 
-            // KHR_interactivity animation/start validation. Only applies to animation-group playback
+            // Input validation. Only applies to animation-group playback
             // (animation/start); interpolation uses the `animation` input and has its own validation below.
-            // Per the spec the operation activates its `err` flow when the speed is NaN, infinite, or <= 0, or
+            // The operation activates its `err` flow when the speed is NaN, infinite, or <= 0, or
             // when the end time is NaN. A NaN or infinite start time is caught by the finite check on `from`.
             if (!animation) {
                 if (isNaN(rawTo)) {

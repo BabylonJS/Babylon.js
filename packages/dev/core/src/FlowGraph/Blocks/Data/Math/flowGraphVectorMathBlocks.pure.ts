@@ -122,7 +122,7 @@ export class FlowGraphNormalizeBlock extends FlowGraphCachedOperationBlock<FlowG
                 const length = (a as Vector3).length();
                 if (length === 0 || !Number.isFinite(length)) {
                     if (this.config?.nanOnZeroLength) {
-                        // Legacy behavior preserved for non-glTF consumers that opt into NaN output.
+                        // Legacy behavior preserved for consumers that opt into NaN output.
                         const nanVector = a.normalizeToNew();
                         nanVector.setAll(NaN);
                         return nanVector;
@@ -201,7 +201,7 @@ function TransformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVecto
         case FlowGraphTypes.Vector4:
             a = a as Vector4;
             // transform the vector 4 with the matrix here. Vector4.TransformCoordinates transforms a 3D coordinate, not Vector4.
-            // Babylon's Matrix stores its elements column-major (m[0..3] is the first column), and glTF/KHR_interactivity
+            // Babylon's Matrix stores its elements column-major (m[0..3] is the first column), and the incoming
             // float4x4 values are column-major as well, so M * a reads down the columns: value[i] = sum_j M[i][j] * a[j]
             // with M[i][j] = m[j * 4 + i].
             return new Vector4(
@@ -358,7 +358,7 @@ export class FlowGraphQuaternionFromDirectionsBlock extends FlowGraphBinaryOpera
 }
 
 /**
- * Get a rotation quaternion from the specified up and forward directions (KHR_interactivity `math/quatFromUpForward`).
+ * Get a rotation quaternion from the specified up and forward directions.
  */
 export class FlowGraphQuaternionFromUpForwardBlock extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Quaternion> {
     constructor(config?: IFlowGraphBlockConfiguration) {
@@ -367,7 +367,7 @@ export class FlowGraphQuaternionFromUpForwardBlock extends FlowGraphBinaryOperat
 }
 
 /**
- * Spherical linear interpolation between two vectors (KHR_interactivity `math/slerp`).
+ * Spherical linear interpolation between two vectors.
  * Supports float2 and float3 vectors; the interpolation coefficient is a number.
  */
 export class FlowGraphVectorSlerpBlock extends FlowGraphTernaryOperationBlock<FlowGraphVector, FlowGraphVector, number, FlowGraphVector> {
@@ -401,7 +401,7 @@ export interface IFlowGraphQuaternionFromAnglesBlockConfiguration extends IFlowG
 
 /**
  * Creates a rotation quaternion from three Tait–Bryan intrinsic Euler angles applied in a
- * configurable order (KHR_interactivity `math/quatFromAngles`).
+ * configurable order.
  *
  * Inputs `a`, `b`, `c` are the rotations (in radians) around the X, Y and Z axes respectively.
  * The `order` configuration selects the intrinsic rotation order; NaN and infinite inputs
@@ -424,7 +424,7 @@ export class FlowGraphQuaternionFromAnglesBlock extends FlowGraphTernaryOperatio
             config
         );
         const order = config?.order;
-        // Per the spec, a missing, non-string or unrecognized order MUST use the default `yxz`.
+        // A missing, non-string or unrecognized order falls back to the default `yxz`.
         this._order = typeof order === "string" && (QuaternionEulerAngleOrders as readonly string[]).indexOf(order) !== -1 ? order : "yxz";
     }
 }

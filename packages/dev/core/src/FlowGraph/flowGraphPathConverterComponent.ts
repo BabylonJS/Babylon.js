@@ -6,7 +6,7 @@ import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger.pure";
 import { RichTypeAny } from "./flowGraphRichTypes.pure";
 import { type IObjectAccessor } from "./typeDefinitions";
 
-// KHR_interactivity-style JSON Pointer templates may use either bracket style:
+// JSON Pointer templates may use either bracket style:
 //   {name}  → a reference template parameter.
 //   [name]  → an integer template parameter.
 // Real-world assets mix both conventions, so the bracket style by itself is not enough to determine

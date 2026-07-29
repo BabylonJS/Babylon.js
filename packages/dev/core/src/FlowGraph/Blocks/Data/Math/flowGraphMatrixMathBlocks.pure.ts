@@ -61,8 +61,8 @@ export interface IFlowGraphMatrixDecomposeBlockConfiguration extends IFlowGraphB
      * extracted from the matrix instead of the type-default translation and scale. `isValid` is reported
      * as `false` either way. Defaults to `false`.
      *
-     * This is what the glTF KHR_interactivity `math/matDecompose` operation requires, so the glTF loader
-     * turns it on; it is opt-in so that the default block behaviour stays unchanged.
+     * A host whose specification requires those components to be preserved can turn this on; it is
+     * opt-in so that the default block behaviour stays unchanged.
      */
     keepDegenerateComponents?: boolean;
 }

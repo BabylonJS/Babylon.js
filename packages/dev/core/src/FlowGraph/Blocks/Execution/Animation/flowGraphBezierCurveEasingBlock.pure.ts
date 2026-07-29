@@ -10,10 +10,7 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
- * Cubic Bézier easing used by the KHR_interactivity `variable/interpolate` and
- * `pointer/interpolate` operations.
- *
- * KHR_interactivity follows CSS cubic-bezier semantics: for input progress `t`,
+ * Cubic Bézier easing, following CSS cubic-bezier semantics: for input progress `t`,
  * solve the curve parameter where X equals `t`, then use the corresponding Y
  * coordinate as the eased output progress.
  */

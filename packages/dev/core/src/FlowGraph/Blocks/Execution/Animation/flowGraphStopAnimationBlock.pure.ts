@@ -121,7 +121,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const index = currentlyRunning.indexOf(animationGroup.uniqueId);
         if (index !== -1) {
             // Skip the animation-end observable so that stopping does not activate the originating
-            // animation/start operation's `done` flow. Per the KHR_interactivity spec, when an animation is
+            // starting block's `done` flow. When an animation is
             // stopped (animation/stop or animation/stopAt) the previously associated `done` flows MUST NOT be
             // activated; only animation/stopAt's own `done` flow (fired from _executeOnTick) should run.
             animationGroup.stop(true);

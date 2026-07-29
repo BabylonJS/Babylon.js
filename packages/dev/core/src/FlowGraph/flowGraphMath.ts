@@ -9,7 +9,7 @@ import { type DeepImmutable } from "../types";
 // be imported which is big. To avoid the larger bundle size, they are kept inside flow graph for now.
 
 /**
- * Implementation-defined threshold used by the KHR_interactivity slerp/quatFromUpForward operations
+ * Implementation-defined threshold used by the slerp and up/forward quaternion operations
  * to detect near-zero lengths and (anti)parallel vectors.
  */
 const SlerpEpsilon = 1e-6;
@@ -83,8 +83,8 @@ export function GetQuaternionFromDirectionsToRef<T extends Vector3, ResultT exte
 }
 
 /**
- * Spherical linear interpolation between two 2D vectors, as defined by the KHR_interactivity
- * `math/slerp` operation. NaN and infinity values are propagated through the arithmetic.
+ * Spherical linear interpolation between two 2D vectors.
+ * NaN and infinity values are propagated through the arithmetic.
  * @param a the first vector
  * @param b the second vector
  * @param c the (unclamped) interpolation coefficient
@@ -112,8 +112,8 @@ export function GetVector2Slerp(a: DeepImmutable<Vector2>, b: DeepImmutable<Vect
 }
 
 /**
- * Spherical linear interpolation between two 3D vectors, as defined by the KHR_interactivity
- * `math/slerp` operation. NaN and infinity values are propagated through the arithmetic.
+ * Spherical linear interpolation between two 3D vectors.
+ * NaN and infinity values are propagated through the arithmetic.
  * @param a the first vector
  * @param b the second vector
  * @param c the (unclamped) interpolation coefficient
@@ -149,7 +149,7 @@ export function GetVector3Slerp(a: DeepImmutable<Vector3>, b: DeepImmutable<Vect
 
 /**
  * Creates a quaternion from the specified up and forward directions, as defined by the
- * KHR_interactivity `math/quatFromUpForward` operation. Both inputs are assumed to be unit length.
+ * up/forward quaternion operation. Both inputs are assumed to be unit length.
  * @param up the up direction
  * @param forward the forward direction
  * @returns the rotation quaternion
@@ -170,14 +170,14 @@ export function GetQuaternionFromUpForward(up: DeepImmutable<Vector3>, forward: 
 }
 
 /**
- * The rotation orders accepted by the KHR_interactivity `math/quatFromAngles` operation
+ * The rotation orders accepted by the Euler-angle quaternion operation
  * (and {@link GetQuaternionFromEulerAngles}). The default order is `yxz`.
  */
 export const QuaternionEulerAngleOrders = ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"] as const;
 
 /**
  * Builds a rotation quaternion from three Tait–Bryan intrinsic Euler angles applied in the
- * specified order (KHR_interactivity `math/quatFromAngles`).
+ * specified order.
  *
  * Babylon only exposes the `yxz` order natively (via `Quaternion.RotationYawPitchRoll`), so the
  * result is composed from the individual per-axis rotations to support every order. For an
@@ -208,7 +208,7 @@ export function GetQuaternionFromEulerAngles(order: string, x: number, y: number
             return qz.multiplyInPlace(qy).multiplyInPlace(qx);
         case "yxz":
         default:
-            // Default order per the spec.
+            // Default order.
             return qy.multiplyInPlace(qx).multiplyInPlace(qz);
     }
 }

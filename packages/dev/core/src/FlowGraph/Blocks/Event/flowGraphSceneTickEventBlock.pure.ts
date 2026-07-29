@@ -40,9 +40,9 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     public readonly deltaTime: FlowGraphDataConnection<number>;
 
     /**
-     * Output: the KHR_interactivity event reference for this lifecycle event.
-     * Per spec (event/onTick) all instances of this operation return the same,
-     * non-null event reference within a tick.
+     * Output: the opaque reference identifying this event source.
+     * All instances of this block share the same reference, so comparing the `event` output of two
+     * of them for equality succeeds. The reference format is owned by the host environment.
      */
     public readonly eventRef: FlowGraphDataConnection<string>;
 
