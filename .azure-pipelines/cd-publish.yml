@@ -114,6 +114,14 @@ jobs:
             displayName: "push to git"
 
           - bash: |
+                set -euo pipefail
+                pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
+                releaseCommit=$(git rev-parse "${pv}^{commit}")
+                echo "##vso[task.setvariable variable=PackageVersion]${pv}"
+                echo "##vso[task.setvariable variable=ReleaseCommit]${releaseCommit}"
+            displayName: "Get release version and commit"
+
+          - bash: |
                 npm run prepare-snapshot
 
                 zip -r $(Build.ArtifactStagingDirectory)/cdnSnapshot.zip .snapshot
@@ -128,19 +136,14 @@ jobs:
                 gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
                 repositoryName: "BabylonJS/Babylon.js"
                 action: create
-                target: master
-                tagSource: gitTag
+                target: "$(ReleaseCommit)"
+                tagSource: userSpecifiedTag
+                tag: "$(PackageVersion)"
                 assets: "$(Build.ArtifactStagingDirectory)/cdnSnapshot.zip"
                 isDraft: false
                 isPreRelease: false
                 addChangeLog: false
                 releaseNotesFilePath: ".build/release-notes.md"
-
-          - bash: |
-                pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
-                echo "##vso[task.setvariable variable=PackageVersion]${pv}"
-            displayName: "Get version"
-            continueOnError: true
 
           - script: |
                 cd .snapshot
